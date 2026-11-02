@@ -8,8 +8,24 @@ p { line-height: 1.6; }
 a { color: #0b5a60; text-underline-offset: .15em; }
 a:focus-visible, button:focus-visible { outline: 3px solid #0b5a60; outline-offset: 3px; }
 button { cursor: pointer; font: inherit; }
-.connection-notice { position: fixed; z-index: 10; left: 50%; bottom: max(2rem, env(safe-area-inset-bottom)); transform: translateX(-50%); display: flex; align-items: center; gap: 1rem; max-width: calc(100vw - 2rem); padding: .55rem .65rem .55rem 1rem; background: #1c1e21; color: #fff; border-radius: .45rem; box-shadow: 0 3px 12px #0003; }
-.connection-notice p { margin: 0; line-height: 1.35; }
-.connection-notice button { display: grid; place-items: center; flex: 0 0 auto; width: 2.75rem; height: 2.75rem; border: 1px solid #fff; border-radius: .3rem; color: #fff; background: transparent; }
-.connection-notice button:focus-visible { outline-color: #fff; }
-.pull-notice { position: fixed; z-index: 9; top: max(.5rem, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); background: #0b5a60; color: #fff; padding: .5rem 1rem; border-radius: .3rem; font-size: .875rem; white-space: nowrap; }
+/* Compact floating status messages; text and touch targets remain accessible. */
+.connection-notice {
+  position: fixed; z-index: 10; left: 50%; bottom: max(1rem, env(safe-area-inset-bottom));
+  transform: translateX(-50%); box-sizing: border-box; display: flex; align-items: center;
+  gap: .6rem; width: max-content; max-width: min(25rem, calc(100vw - 2rem));
+  padding: .25rem .3rem .25rem .75rem; background: #1c1e21; color: #fff;
+  border: 1px solid #ffffff24; border-radius: 999px; box-shadow: 0 8px 24px #0003;
+}
+.connection-notice p { min-width: 0; margin: 0; padding-block: .45rem; font-size: .9375rem; line-height: 1.35; }
+.connection-notice__icon { display: grid; place-items: center; flex: 0 0 1.5rem; width: 1.5rem; height: 1.5rem; border-radius: 50%; background: #ffffff20; color: #fff; }
+.connection-notice__icon svg { width: 1rem; height: 1rem; }
+.connection-notice[data-state="online"] .connection-notice__icon { background: #2e7d32; }
+.connection-notice[data-state="checking"] .connection-notice__icon { background: #0b5a60; }
+.connection-notice__spinner { animation: connection-spin 1s linear infinite; }
+@keyframes connection-spin { to { transform: rotate(360deg); } }
+.connection-notice button { display: grid; place-items: center; flex: 0 0 2.75rem; width: 2.75rem; height: 2.75rem; padding: 0; border: 1px solid #ffffff4d; border-radius: 50%; color: #fff; background: #ffffff12; }
+.connection-notice button:hover { background: #ffffff2a; }
+.connection-notice button:focus-visible { outline-color: #fff; outline-offset: 2px; }
+.pull-notice { display: flex; align-items: center; gap: .4rem; position: fixed; z-index: 9; top: max(.75rem, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); box-sizing: border-box; max-width: calc(100vw - 2rem); background: #0b5a60; color: #fff; padding: .5rem .9rem; border-radius: 999px; box-shadow: 0 6px 18px #0002; font-size: .875rem; line-height: 1.35; text-align: center; }
+.pull-notice svg { width: 1rem; height: 1rem; flex: 0 0 1rem; }
+@media (prefers-reduced-motion: reduce) { .connection-notice__spinner { animation: none; } }

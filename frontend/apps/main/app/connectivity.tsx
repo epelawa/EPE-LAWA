@@ -86,9 +86,15 @@ export default function Connectivity() {
 
   const message = notice === "offline" ? "You’re offline" : notice === "checking" ? "Checking for updates…" : notice === "online" ? "You’re now online" : "Couldn’t check the connection";
   return <>
-    {pull && <div className="pull-notice" aria-hidden="true">Pull down to refresh</div>}
+    {pull && <div className="pull-notice" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 4v14m-5-5 5 5 5-5"/></svg><span>Pull down to refresh</span></div>}
     <div role="status" aria-live="polite" aria-atomic="true">
-      {notice && <div className="connection-notice"><p>{message}</p>{(notice === "offline" || notice === "unreachable") && <button type="button" aria-label="Retry connection" title="Retry connection" onClick={() => void check("retry")}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 7v5h-5"/><path d="M4 17v-5h5"/><path d="M5.6 9a7 7 0 0 1 11.6-2L20 12M4 12l2.8 5a7 7 0 0 0 11.6-2"/></svg></button>}</div>}
+      {notice && <div className="connection-notice" data-state={notice}>
+        <span className="connection-notice__icon" aria-hidden="true">
+          {notice === "online" ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 4 4L19 6"/></svg> : notice === "checking" ? <svg className="connection-notice__spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 3a9 9 0 1 0 9 9"/></svg> : notice === "offline" ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 2l20 20M8.5 8.5A15 15 0 0 1 22 10M2 10a15 15 0 0 1 3.1-1.9M5 13a10 10 0 0 1 4-2.2M15.5 11.6A10 10 0 0 1 19 13M8.5 16a5 5 0 0 1 7 0M12 20h.01"/></svg> : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 7v6m0 4h.01"/><circle cx="12" cy="12" r="9"/></svg>}
+        </span>
+        <p>{message}</p>
+        {(notice === "offline" || notice === "unreachable") && <button type="button" aria-label="Retry connection" title="Retry connection" onClick={() => void check("retry")}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 7v5h-5"/><path d="M4 17v-5h5"/><path d="M5.6 9a7 7 0 0 1 11.6-2L20 12M4 12l2.8 5a7 7 0 0 0 11.6-2"/></svg></button>}
+      </div>}
     </div>
   </>;
 }

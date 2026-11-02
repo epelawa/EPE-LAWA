@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { NextResponse, type NextRequest } from "next/server.js";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { authorizeAdminAccess, type AdminAccess, type StaffAccessProvider } from "@epelawa/auth";
 
@@ -122,5 +123,50 @@ export async function getAdminAccessForToken(token: string | null | undefined): 
     return await authorizeAdminAccess(token, provider);
   } catch {
     return { allowed: false };
+  }
+}
+
+/**
+ * Experimental route-handler adapter; not a login, Proxy, or resource guard.
+ * The callback builds an authorised READ-ONLY response. It must not perform
+ * mutations: cookie-copy failure cannot roll back side effects. A denied request
+ * never invokes it. Each call uses fresh responses; never stream/cache/share them.
+ * Resource access still requires separate authorisation and RLS-scoped reads.
+ * Returned responses must not be replaced or have their security headers removed.
+ * This remains unwired pending real-provider, Next.js and browser verification.
+ */
+export async function respondToAdminRead(
+  request: NextRequest,
+  onAllowed: (access: Extract<AdminAccess, { allowed: true }>) => NextResponse,
+): Promise<NextResponse> {
+  const noStore = (response: NextResponse) => {
+    response.headers.set("Cache-Control", "private, no-store, max-age=0");
+    response.headers.set("Pragma", "no-cache");
+    response.headers.set("Expires", "0");
+  };
+  const unavailable = () => {
+    const response = new NextResponse("Administration is not available yet.", { status: 503 });
+    noStore(response);
+    return response;
+  };
+  try {
+    // Stage writes on a fresh response while the gate checks identity and grant.
+    const staged = new NextResponse();
+    noStore(staged);
+    const access = await getAdminAccessForSession({
+      getAll: () => request.cookies.getAll().map(({ name, value }) => ({ name, value })),
+      setAll: (cookies) => {
+        for (const { name, value, options } of cookies) staged.cookies.set(name, value, options);
+      },
+    });
+    const response = access.allowed
+      ? onAllowed(access)
+      : new NextResponse("Administration access denied.", { status: 403 });
+    noStore(response);
+    for (const cookie of staged.cookies.getAll()) response.cookies.set(cookie);
+    return response;
+  } catch {
+    // Never return an authorised response when headers/cookie propagation fails.
+    return unavailable();
   }
 }
