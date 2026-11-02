@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CloseIcon, SearchIcon } from "@epelawa/ui";
+import { CloseIcon, MenuIcon, SearchIcon, SunIcon, MoonIcon } from "@epelawa/ui";
 import ThemeToggle from "./theme-toggle";
 import { BrandLockup } from "./brand";
 import { primaryNavigation, upcomingSections, type NavItem } from "../lib/navigation";
@@ -43,14 +43,13 @@ function useScrolled(threshold = 8): boolean {
 }
 
 /**
- * Fixed navigation.
+ * Premium fixed navigation.
  *
- * The bar is `position: sticky` with `top: 0`, which keeps it on screen for the whole page
- * without stealing layout height the way `position: fixed` does — no body padding to keep in
- * sync, and no anchor jumping under the bar.
+ * Sticky pill-shaped shell. On mobile it collapses to a hamburger (two lines only)
+ * that opens a slide-in drawer from the right — medium width, graceful ease.
  *
- * The drawer is a modal dialog: focus moves in, Tab cycles inside it, Escape closes and
- * returns focus to the button that opened it, and the page behind does not scroll.
+ * The drawer is modal: focus moves in, Tab cycles inside, Escape closes and returns
+ * focus to the button that opened it, and the page behind does not scroll.
  */
 export default function SiteHeader({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
@@ -67,7 +66,7 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
   const inline = primaryNavigation(items);
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
 
-  // A route change closes everything, so the next page starts at the top, not mid-menu.
+  // A route change closes everything, so the next page starts at the top.
   useEffect(() => {
     setDrawerOpen(false);
     setSearchOpen(false);
@@ -89,7 +88,7 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [drawerOpen, searchOpen]);
 
-  // Drawer: lock the page behind it, move focus in, and keep Tab inside.
+  // Drawer: lock the page behind it, move focus in, keep Tab inside.
   useEffect(() => {
     if (!drawerOpen) return;
 
@@ -105,7 +104,6 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
       );
       target?.focus();
     };
-    // One frame later, so the drawer is painted before focus lands inside it.
     const frame = window.requestAnimationFrame(focusFirst);
 
     const onKeyDown = (event: KeyboardEvent) => {
@@ -165,8 +163,10 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
         <div className="ep-container site-header__inner">
           <div className="nav-shell">
             <Link className="nav-brand" href="/" aria-label="EPE LAWA — home">
-              <BrandLockup size={34} />
+              <BrandLockup size={32} />
             </Link>
+
+            <ThemeToggle />
 
             <nav className="nav-inline" aria-label="Main">
               <ul className="nav-inline__list">
@@ -190,61 +190,62 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
               </ul>
             </nav>
 
-            <div className="nav-actions">
-              <button
-                ref={searchButtonRef}
-                type="button"
-                className="ep-icon-btn"
-                aria-expanded={searchOpen}
-                aria-controls={SEARCH_ID}
-                aria-label={searchOpen ? "Close search" : "Search EPE LAWA"}
-                onClick={toggleSearch}
-              >
-                <SearchIcon size={20} />
-              </button>
+            <button
+              ref={searchButtonRef}
+              type="button"
+              className="ep-icon-btn"
+              aria-expanded={searchOpen}
+              aria-controls={SEARCH_ID}
+              aria-label={searchOpen ? "Close search" : "Search EPE LAWA"}
+              onClick={toggleSearch}
+            >
+              <SearchIcon size={18} />
+            </button>
 
-              <ThemeToggle />
-
-              <button
-                ref={menuButtonRef}
-                type="button"
-                className="menu-btn"
-                aria-expanded={drawerOpen}
-                aria-controls={DRAWER_ID}
-                aria-label={drawerOpen ? "Close menu" : "Open menu"}
-                onClick={toggleDrawer}
-              >
-                {/* Two lines. They cross into a close mark when the drawer is open. */}
-                <span className="menu-btn__lines" aria-hidden="true">
-                  <span />
-                  <span />
-                </span>
-              </button>
-            </div>
-          </div>
-
-          <div className="search-panel" id={SEARCH_ID} data-open={searchOpen ? "true" : "false"}>
-            <form className="search-panel__form" action="/search" method="get" role="search">
-              <label className="ep-sr-only" htmlFor="site-search-input">
-                Search news, people and businesses
-              </label>
-              <input
-                ref={searchInputRef}
-                id="site-search-input"
-                className="search-panel__input"
-                type="search"
-                name="q"
-                placeholder="Search news, people, businesses"
-                autoComplete="off"
-                tabIndex={searchOpen ? 0 : -1}
-              />
-              <button className="ep-btn ep-btn--primary search-panel__submit" type="submit" tabIndex={searchOpen ? 0 : -1}>
-                Search
-              </button>
-            </form>
+            <button
+              ref={menuButtonRef}
+              type="button"
+              className="menu-btn"
+              aria-expanded={drawerOpen}
+              aria-controls={DRAWER_ID}
+              aria-label={drawerOpen ? "Close menu" : "Open menu"}
+              onClick={toggleDrawer}
+            >
+              {/* Two lines only. Cross into a close mark when the drawer is open. */}
+              <span className="menu-btn__lines" aria-hidden="true">
+                <span />
+                <span />
+              </span>
+              <MenuIcon size={18} />
+            </button>
           </div>
         </div>
       </header>
+
+      <div className="search-panel" id={SEARCH_ID} data-open={searchOpen ? "true" : "false"}>
+        <form className="search-panel__form" action="/search" method="get" role="search">
+          <label className="ep-sr-only" htmlFor="site-search-input">
+            Search news, people and businesses
+          </label>
+          <input
+            ref={searchInputRef}
+            id="site-search-input"
+            className="search-panel__input"
+            type="search"
+            name="q"
+            placeholder="Search news, people, businesses"
+            autoComplete="off"
+            tabIndex={searchOpen ? 0 : -1}
+          />
+          <button
+            className="ep-btn ep-btn--primary search-panel__submit"
+            type="submit"
+            tabIndex={searchOpen ? 0 : -1}
+          >
+            Search
+          </button>
+        </form>
+      </div>
 
       <div className="drawer-root" data-open={drawerOpen ? "true" : "false"}>
         <button

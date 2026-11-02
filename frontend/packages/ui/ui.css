@@ -1,12 +1,11 @@
 /*
- * @epelawa/ui — primitive component styles.
+ * @epelawa/ui — premium component styles.
  *
- * Every value here resolves to a token in tokens.css. No hex, no magic spacing.
- * Load order in each app: tokens.css → ui.css → app globals.css.
+ * Every value resolves to a token in tokens.css. No hex, no magic spacing, no
+ * decorative chrome. Load order in each app: tokens.css → ui.css → app globals.css.
  */
 
-/* Motion guard · docs/05 §4 and §8. Applies to the whole document, not just these
-   components, because a single missed animation is the one that hurts. */
+/* ── Motion guard · docs/05 §4 and §8 ────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -18,7 +17,7 @@
   }
 }
 
-/* Focus ring · 2px at 2px offset. Never removed, only moved. */
+/* ── Focus ring · 2px at 2px offset · never removed, only moved ──────────── */
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
@@ -30,7 +29,6 @@ summary:focus-visible,
   outline-offset: var(--focus-ring-offset);
 }
 
-/* A dark region flips the ring to white so it stays visible. */
 .ep-on-dark {
   --focus-ring-color: var(--color-white);
 }
@@ -61,7 +59,52 @@ summary:focus-visible,
   }
 }
 
-/* ── Button ──────────────────────────────────────────────────────────────── */
+/* ── Typography helpers ──────────────────────────────────────────────────── */
+.ep-text-display {
+  font-family: var(--font-display);
+  font-size: var(--text-display);
+  line-height: var(--leading-display);
+  letter-spacing: var(--tracking-tight);
+  font-weight: var(--weight-bold);
+}
+
+.ep-text-h1 {
+  font-family: var(--font-display);
+  font-size: var(--text-h1);
+  line-height: var(--leading-tight);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.ep-text-h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  line-height: var(--leading-heading);
+  font-weight: var(--weight-bold);
+}
+
+.ep-text-h3 {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  line-height: var(--leading-snug);
+  font-weight: var(--weight-semibold);
+}
+
+.ep-text-body-lg {
+  font-size: var(--text-body-lg);
+  line-height: var(--leading-body);
+}
+
+.ep-text-label {
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+  letter-spacing: var(--tracking-label);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+}
+
+/* ── Button · premium · rounded a little, fixed touch target ─────────────── */
 .ep-btn {
   position: relative;
   display: inline-flex;
@@ -70,29 +113,30 @@ summary:focus-visible,
   gap: var(--space-2);
   box-sizing: border-box;
   min-height: var(--touch-min);
-  padding: var(--space-3) var(--space-6);
+  padding: var(--space-3) var(--space-7);
   border: var(--border-width) solid transparent;
-  /* Softer than a tag, tighter than a card. "Rounded a little", not a pill. */
   border-radius: var(--radius-md);
   background: var(--ep-btn-bg);
   color: var(--ep-btn-fg);
-  font-family: var(--font-body);
+  font-family: var(--font-display);
   font-size: var(--text-body);
   font-weight: var(--weight-semibold);
   line-height: var(--leading-small);
   text-align: center;
   text-decoration: none;
   cursor: pointer;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
 }
 
-/* Only transform and opacity are animated anywhere in this system. Colour changes on
-   hover are instant on purpose: it is cheap, and it feels immediate on a slow phone. */
 .ep-btn:active:not(:disabled) {
   transform: translateY(1px);
 }
 
 .ep-btn:disabled {
-  background: var(--color-bg);
+  background: var(--color-ink-100);
   color: var(--color-text-muted);
   border-color: var(--color-border);
   cursor: not-allowed;
@@ -105,8 +149,6 @@ summary:focus-visible,
   gap: var(--space-2);
 }
 
-/* Hidden with opacity, not `visibility`, so the accessible name survives the loading state.
-   Width is preserved because the label never leaves the layout. */
 .ep-btn[aria-busy="true"] .ep-btn__label {
   opacity: 0;
 }
@@ -149,22 +191,22 @@ summary:focus-visible,
 }
 
 .ep-btn--secondary:hover:not(:disabled) {
-  background: var(--color-surface-muted);
+  background: var(--color-ink-100);
 }
 
 .ep-btn--secondary:active:not(:disabled) {
-  background: var(--color-surface-muted);
+  background: var(--color-primary-hover);
   color: var(--color-primary-active);
 }
 
 .ep-btn--ghost {
   --ep-btn-bg: transparent;
   --ep-btn-fg: var(--color-primary);
-  padding-inline: var(--space-3);
+  padding-inline: var(--space-4);
 }
 
 .ep-btn--ghost:hover:not(:disabled) {
-  background: var(--color-surface-muted);
+  background: var(--color-ink-100);
 }
 
 .ep-btn--danger {
@@ -173,18 +215,47 @@ summary:focus-visible,
 }
 
 .ep-btn--danger:hover:not(:disabled) {
-  background: var(--color-charcoal-900);
+  background: var(--color-error);
+  opacity: 0.9;
 }
 
-/* ── Badge ───────────────────────────────────────────────────────────────── */
+/* ── Icon button · square 44px · accessible name from aria-label ─────────── */
+.ep-icon-btn {
+  display: inline-grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  padding: 0;
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-600);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.ep-icon-btn:hover {
+  background: var(--color-ink-100);
+  color: var(--color-primary);
+}
+
+.ep-icon-btn svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* ── Badge · pill · surface only, never ink ──────────────────────────────── */
 .ep-badge {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  padding: var(--space-1) var(--space-2);
+  padding: var(--space-1) var(--space-3);
   border: var(--border-width) solid transparent;
   border-radius: var(--radius-full);
-  font-family: var(--font-body);
+  font-family: var(--font-display);
   font-size: var(--text-label);
   font-weight: var(--weight-semibold);
   line-height: var(--leading-label);
@@ -198,8 +269,8 @@ summary:focus-visible,
 }
 
 .ep-badge--verified {
-  background: var(--color-surface-muted);
-  color: var(--color-teal-900);
+  background: var(--color-success-surface);
+  color: var(--color-success);
 }
 
 .ep-badge--unverified {
@@ -210,10 +281,10 @@ summary:focus-visible,
 
 .ep-badge--neutral {
   background: var(--color-gold-100);
-  color: var(--color-charcoal-900);
+  color: var(--color-ink-900);
 }
 
-/* ── Alert ───────────────────────────────────────────────────────────────── */
+/* ── Alert · bordered left edge · tone-coded ─────────────────────────────── */
 .ep-alert {
   display: grid;
   gap: var(--space-1);
@@ -245,13 +316,13 @@ summary:focus-visible,
 .ep-alert--info {
   --ep-alert-accent: var(--color-info);
   --ep-alert-surface: var(--color-info-surface);
-  --ep-alert-ink: var(--color-teal-900);
+  --ep-alert-ink: var(--color-ink-700);
 }
 
 .ep-alert--success {
   --ep-alert-accent: var(--color-success);
   --ep-alert-surface: var(--color-success-surface);
-  --ep-alert-ink: var(--color-charcoal-900);
+  --ep-alert-ink: var(--color-ink-900);
 }
 
 .ep-alert--warning {
@@ -266,55 +337,80 @@ summary:focus-visible,
   --ep-alert-ink: var(--color-error);
 }
 
-/* ── Card ────────────────────────────────────────────────────────────────── */
+/* ── Card · premium · gentle hover lift · elevated on hover ─────────────── */
 .ep-card {
   box-sizing: border-box;
-  padding: var(--space-4);
+  padding: var(--space-6);
   border: var(--border-width) solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background: var(--color-surface);
+  transition:
+    transform var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.ep-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-2);
+  border-color: var(--color-border-strong);
+}
+
+.ep-card:active {
+  transform: translateY(0);
 }
 
 @media (min-width: 768px) {
   .ep-card {
-    padding: var(--space-6);
+    padding: var(--space-8);
   }
 }
 
-/* ── Empty state · icon, one sentence, one action where one genuinely exists ── */
+/* ── Empty state · icon, one sentence, one real action where one exists ─── */
 .ep-empty {
   display: grid;
-  gap: var(--space-3);
-  justify-items: start;
-  padding: var(--space-6) var(--space-4);
+  gap: var(--space-4);
+  justify-items: center;
+  text-align: center;
+  padding: var(--space-10) var(--space-6);
   border: var(--border-width) solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background: var(--color-surface);
 }
 
 @media (min-width: 768px) {
   .ep-empty {
-    padding: var(--space-6);
+    padding: var(--space-12) var(--space-8);
+    text-align: left;
+    justify-items: start;
   }
 }
 
 .ep-empty__icon {
   display: grid;
   place-items: center;
-  width: 2rem;
-  height: 2rem;
-  border-radius: var(--radius-sm);
-  background: var(--color-surface-muted);
-  color: var(--color-teal-700);
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--radius-md);
+  background: var(--color-ink-100);
+  color: var(--color-primary);
 }
 
 .ep-empty__icon svg {
-  width: 1.125rem;
-  height: 1.125rem;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.ep-empty__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  line-height: var(--leading-snug);
+  color: var(--color-text-900);
 }
 
 .ep-empty__text {
-  margin: 0;
+  margin: var(--space-2) 0 0 0;
   color: var(--color-text-muted);
   font-size: var(--text-body);
   line-height: var(--leading-body);
@@ -326,40 +422,39 @@ summary:focus-visible,
   line-height: var(--leading-small);
 }
 
-/* The action is a real destination, so it gets a real touch target rather than a 17px
-   line of underlined text. Inline links inside a sentence are exempt from this. */
 .ep-empty__action a {
   display: inline-flex;
   align-items: center;
   min-height: var(--touch-min);
 }
 
-/* ── Skeleton · matches the shape of the thing that is loading ───────────── */
+/* ── Skeleton · matches the shape of the thing loading ───────────────────── */
 .ep-skeleton {
   display: block;
   border-radius: var(--radius-sm);
-  background: var(--color-surface-muted);
+  background: var(--color-ink-100);
   animation: ep-pulse 1600ms var(--ease-in-out) infinite;
 }
 
 .ep-skeleton--title {
-  height: 2rem;
-  max-width: 18rem;
+  height: 2.25rem;
+  max-width: 20rem;
 }
 
 .ep-skeleton--line {
-  height: 0.875rem;
+  height: 1rem;
   max-width: 34rem;
 }
 
 .ep-skeleton--line-short {
-  height: 0.875rem;
+  height: 1rem;
   max-width: 14rem;
 }
 
 .ep-skeleton--media {
-  height: 8rem;
+  height: 10rem;
   max-width: 100%;
+  border-radius: var(--radius-lg);
 }
 
 @keyframes ep-pulse {
@@ -372,61 +467,17 @@ summary:focus-visible,
   }
 }
 
-/* ── Icon button ─────────────────────────────────────────────────────────── */
-/* Square, 44px, no visible label. The accessible name comes from `aria-label` on the
-   control or from an `.ep-sr-only` child — never from the icon alone. */
-.ep-icon-btn {
-  display: inline-grid;
-  place-items: center;
-  box-sizing: border-box;
-  width: var(--touch-min);
-  height: var(--touch-min);
-  padding: 0;
-  border: var(--border-width) solid transparent;
-  border-radius: var(--radius-md);
-  background: transparent;
-  color: var(--color-text);
-  cursor: pointer;
-  transition:
-    background-color var(--dur-fast) var(--ease-out),
-    color var(--dur-fast) var(--ease-out);
-}
-
-.ep-icon-btn:hover {
-  background: var(--color-surface-muted);
-  color: var(--color-primary);
-}
-
-.ep-icon-btn svg {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-/* ── Card hover · gentle lift on interactive cards ───────────────────────── */
-.ep-card {
-  transition:
-    transform var(--dur-base) var(--ease-out),
-    box-shadow var(--dur-base) var(--ease-out),
-    border-color var(--dur-fast) var(--ease-out);
-}
-.ep-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-2);
-}
-.ep-card:active {
-  transform: translateY(0);
-}
-
-/* ── Placeholder image frame · used where a photograph belongs ───────────── */
+/* ── Placeholder image frame · 16:9 · used where a photograph belongs ────── */
 .ep-figure-frame {
   position: relative;
   width: 100%;
-  padding-top: 56.25%; /* 16:9 */
-  border-radius: var(--radius-md);
+  padding-top: 56.25%;
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  background: var(--color-surface-muted);
+  background: var(--color-ink-100);
   border: var(--border-width) solid var(--color-border);
 }
+
 .ep-figure-frame img {
   position: absolute;
   inset: 0;
