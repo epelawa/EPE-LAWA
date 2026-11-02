@@ -1,14 +1,16 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import { isPullRefreshGesture, probeConnection } from "../lib/connectivity";
+import { usePathname, useRouter } from "next/navigation";
+import { isPullRefreshEnabled, isPullRefreshGesture, probeConnection } from "../lib/connectivity";
 
 type Notice = "offline" | "checking" | "online" | "unreachable" | null;
 type Reason = "online" | "retry" | "pull";
 
 export default function Connectivity() {
   const router = useRouter();
+  const pathname = usePathname();
+  const pullEnabled = isPullRefreshEnabled(pathname);
   const [notice, setNotice] = useState<Notice>(null);
   const [pull, setPull] = useState(false);
   const inFlight = useRef<AbortController | null>(null);
@@ -45,6 +47,7 @@ export default function Connectivity() {
   }, [check]);
 
   useEffect(() => {
+    if (!pullEnabled) return;
     let startX = 0, startY = 0, deltaX = 0, deltaY = 0;
     let tracking = false, pulling = false;
     const start = (event: TouchEvent) => {
@@ -81,12 +84,13 @@ export default function Connectivity() {
       window.removeEventListener("touchmove", move);
       window.removeEventListener("touchend", end);
       window.removeEventListener("touchcancel", cancel);
+      setPull(false);
     };
-  }, [check]);
+  }, [check, pullEnabled]);
 
   const message = notice === "offline" ? "You’re offline" : notice === "checking" ? "Checking for updates…" : notice === "online" ? "You’re now online" : "Couldn’t check the connection";
   return <>
-    {pull && <div className="pull-notice" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 4v14m-5-5 5 5 5-5"/></svg><span>Pull down to refresh</span></div>}
+    {pullEnabled && pull && <div className="pull-notice" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 4v14m-5-5 5 5 5-5"/></svg><span>Pull down to refresh</span></div>}
     <div role="status" aria-live="polite" aria-atomic="true">
       {notice && <div className="connection-notice" data-state={notice}>
         <span className="connection-notice__icon" aria-hidden="true">

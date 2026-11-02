@@ -40,3 +40,15 @@ test('forged identity, provider errors and non-boolean grants fail closed', asyn
   ];
   for (const provider of cases) assert.deepEqual(await authorizeAdminAccess('token', provider), { allowed: false });
 });
+
+test('unwired admin redirect helper only accepts explicit literal same-host paths', async () => {
+  const { safeAdminRedirect } = await import('../../backend/packages/auth/src/access.ts');
+  const allowed = ['/dashboard', '/articles/review', '/'];
+  for (const path of allowed) assert.equal(safeAdminRedirect(path, allowed), path);
+  for (const path of [null, undefined, '', '/articles', '//evil.invalid', 'https://evil.invalid', '/\\evil.invalid', '/%2F%2Fevil.invalid', '/%2e%2e/dashboard', '/articles/../dashboard', '/articles//review', '/dashboard?next=https://evil.invalid', '/dashboard#section', '/dashboard/', '/dashboard\n', '/dashboard\r\nLocation: https://evil.invalid', '/é', '/x'.repeat(300)]) {
+    assert.equal(safeAdminRedirect(path, allowed), '/', String(path));
+  }
+  assert.equal(safeAdminRedirect('/dashboard', []), '/');
+  assert.equal(safeAdminRedirect('//evil.invalid', ['//evil.invalid']), '/');
+  assert.equal(safeAdminRedirect('/articles/../dashboard', ['/articles/../dashboard']), '/');
+});

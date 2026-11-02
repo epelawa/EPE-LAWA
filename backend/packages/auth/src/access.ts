@@ -31,3 +31,15 @@ export async function authorizeAdminAccess(
     return { allowed: false };
   }
 }
+
+/**
+ * Unwired helper for future admin flows. Only an explicitly allowed literal
+ * same-host path is returned; everything else falls back to '/'. No query,
+ * fragment, encoding, dot segment, backslash, empty segment or external URL is
+ * accepted. This does not authorise a user or configure Supabase redirects.
+ */
+export function safeAdminRedirect(candidate: string | null | undefined, allowedPaths: readonly string[]): string {
+  const literalPath = /^\/(?:[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)*)?$/;
+  if (!candidate || candidate.length > 512 || !literalPath.test(candidate)) return "/";
+  return allowedPaths.some((path) => path === candidate && literalPath.test(path)) ? candidate : "/";
+}
