@@ -43,7 +43,7 @@ follows once there is content worth installing it for. See `00-master-plan.md` Â
 
 | ID | Requirement | Priority |
 | --- | --- | --- |
-| N1 | Staff create, save, preview and submit drafts; a different authorised person approves; an authorised publisher publishes | Must |
+| N1 | Staff create, save, preview and publish drafts directly; no separate review gate | Must |
 | N2 | Published content is immutable. A correction is a new version with its own approval | Must |
 | N3 | Categories (Politics, Sports, Culture, Education, Events, Business, Community) and free tags | Must |
 | N4 | Author records with public name, bio and photo; a profile page per author | Must |

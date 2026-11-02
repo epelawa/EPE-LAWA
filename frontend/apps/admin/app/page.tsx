@@ -59,11 +59,9 @@ export default async function DashboardPage() {
             <Link href="/newsroom/new" className={buttonClassName("primary")}>
               Create draft
             </Link>
-            <Link href="/newsroom/review" className={buttonClassName("secondary")}>
-              Review queue
-            </Link>
-            <Link href="/newsroom/publish" className={buttonClassName("ghost")}>
-              Publish queue
+
+            <Link href="/newsroom/publish" className={buttonClassName("secondary")}>
+              Publish approved
             </Link>
           </div>
         </div>

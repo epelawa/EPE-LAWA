@@ -8,8 +8,7 @@ export type NavItem = {
 const sectionPages = [
   { label: "Dashboard", href: "/", hint: "Real counts and queues" },
   { label: "Newsroom", href: "/newsroom", hint: "All articles" },
-  { label: "Review", href: "/newsroom/review", hint: "Awaiting editor decision" },
-  { label: "Publish", href: "/newsroom/publish", hint: "Approved, awaiting publish" },
+
   { label: "People", href: "/people", hint: "Who is Who records" },
   { label: "Radio", href: "/radio", hint: "Stream config and schedule" },
   { label: "Businesses", href: "/businesses", hint: "Submissions and verification" },
