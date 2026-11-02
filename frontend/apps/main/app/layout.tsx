@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://epelawa.vercel.app"),
   title: { default: "EPE LAWA — The Voice of Epe Division", template: "%s | EPE LAWA" },
   description,
+  other: { "clyvro-verification": "clyvro-verification=bgGvrkMEUkTOaufJIGTtWi-l7mQSZ4dmh-QpuoM4_WM" },
   // Preview deployments must not be indexed; the owner explicitly approved indexing the public holding page.
   robots: process.env.VERCEL_ENV && process.env.VERCEL_ENV !== "production" ? { index: false, follow: false } : undefined,
   alternates: { canonical: "/" },
