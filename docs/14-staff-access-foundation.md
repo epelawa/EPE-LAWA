@@ -19,7 +19,7 @@
 
 ## Required before enabling admin
 
-1. The owner has requested a new Supabase project. Confirm its plan, region and environment purpose before creation; the connected organisation is `epelawa`. Do not send passwords, secret API keys or tokens in chat.
+1. The owner requested a new **production** Supabase project in the `epelawa` organisation on the **Free** plan in **Ireland (`eu-west-1`)**. It is not created yet: the available project-creation connector requires a plaintext database password as a tool argument, and no secure password-input mechanism is exposed here. Use a secure provisioning path; do not put passwords, secret API keys or tokens in chat or logs. A separate test environment is still needed for provider-security verification.
 2. Review the proposed migration, final capability/role matrix, ownership restrictions, staff onboarding/revocation, audit logging and break-glass process. Entry is **not** permission to publish or administer content. Apply migrations only to the explicitly approved project/environment after review.
 3. Implement and test secure staff-only login, verified server sessions/refresh, cookie/CSRF controls, safe recovery and redirect allowlists. Confirm Resend SMTP and sender-domain setup through an approved secure process.
 4. Run the full positive and negative [security test plan](08-permissions-security.md) against a real isolated Supabase test project, including direct table/API access, revoked users, JWT/session expiry and service-role isolation. Implement audit and operational recovery; do not rely on mocked tests as production proof.
