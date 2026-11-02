@@ -1,14 +1,14 @@
 # EPE LAWA — Proposed Database Schema
 
 **Document:** 07 — Workstream 0.6 (database design)\
-**Status:** Workstream 0.6 approved by the owner on 2 November 2026; the proposed schema remains under review. One staff-access migration exists locally but is not applied; no production tables or seed data have been created.\
+**Status:** Workstream 0.6 approved by the owner on 2 November 2026; the proposed schema remains under review. The staff-access foundation migration is applied to the production project; no staff accounts, grants or seed data were created.\
 **Prepared:** 2 November 2026\
 **Inputs:** [Approved requirements](01-product-requirements.md), [approved journeys](02-user-journeys.md), [approved sitemap](03-sitemap.md) and [approved architecture direction](06-system-architecture.md).\
 **Companion:** [Permissions and security](08-permissions-security.md). Documents 07 and 08 were approved as Workstream 0.6; proceed to Workstream 0.7. Phase 0 approval is required before production coding.
 
 ## 1. Scope and principles
 
-Proposed system of record: Supabase PostgreSQL with Supabase Auth for staff identities; Cloudflare R2 stores asset bytes, not database rows. Resend is the owner-specified transactional email service. The owner confirmed the visible Paris Supabase project as the production target; credentials, configuration, permissions and integrations remain unverified. No project migrations have been applied.
+Proposed system of record: Supabase PostgreSQL with Supabase Auth for staff identities; Cloudflare R2 stores asset bytes, not database rows. Resend is the owner-specified transactional email service. The owner confirmed the visible Paris Supabase project as the production target; credentials, configuration, permissions and integrations remain unverified. The staff-access foundation migration has been applied.
 
 This document models **Phase 1 only**. Later-phase domains are identified as extensions, not tables to create now. The owner directed top-level `frontend/`, `backend/` and `docs/` folders; future reviewed migrations belong under proposed `backend/supabase/migrations/`, subject to toolchain validation. No application scaffolding is created during this workstream.
 
@@ -139,7 +139,7 @@ No future entities should be created simply because this table exists. Mobile ap
 
 ## 10. Verification and approval
 
-Prior to implementation, approve exact schema, roles, status transitions, grants/RLS and form handling. Later tests must cover FK/uniqueness and version ownership constraints; publish/update/unpublish transaction atomicity; public denial of draft/notes/contact; concurrent edits; staff role changes; R2 private/public separation; cache invalidation failures; backup restoration and deletion/retention. The staff-access migration has been exercised only in an ephemeral in-memory Postgres-compatible simulation; no actual Supabase project has been migrated or tested.
+Prior to implementation, approve exact schema, roles, status transitions, grants/RLS and form handling. Later tests must cover FK/uniqueness and version ownership constraints; publish/update/unpublish transaction atomicity; public denial of draft/notes/contact; concurrent edits; staff role changes; R2 private/public separation; cache invalidation failures; backup restoration and deletion/retention. The staff-access migration has been applied on production; RLS flags, policies, table privileges and empty tables were inspected. Behavioural tests use an ephemeral Postgres-compatible simulation; real-provider end-to-end security testing remains outstanding.
 
 **Open decisions:** category/tag snapshot strategy; precise workflow and correction approval; staff role split; storage upload and scanning; contact persistence and retention; provider setup, backup/restore and performance budgets. These are not resolved by approval of the high-level architecture.
 

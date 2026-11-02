@@ -20,7 +20,7 @@ test('staff-access migration defaults to deny and isolates user grants in epheme
       grant usage on schema public, auth to anon, authenticated;
       grant execute on function auth.uid() to anon, authenticated;
     `);
-    const migration = await readFile(new URL('../../backend/supabase/migrations/20261102130000_staff_access_foundation.sql', import.meta.url), 'utf8');
+    const migration = await readFile(new URL('../../backend/supabase/migrations/20261102133703_staff_access_foundation.sql', import.meta.url), 'utf8');
     await db.exec(migration);
     assert.equal((await db.query('select count(*)::int as count from public.staff_profiles')).rows[0].count, 0);
     assert.equal((await db.query('select count(*)::int as count from public.staff_capability_grants')).rows[0].count, 0);

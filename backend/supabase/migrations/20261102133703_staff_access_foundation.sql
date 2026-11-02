@@ -1,4 +1,4 @@
--- Local, unapplied foundation. Contains no accounts, grants or seeded data.
+-- Foundation schema. Contains no accounts, grants or seeded data.
 -- Administrative writes must use a separately reviewed, auditable provisioning process.
 
 create table public.staff_profiles (
@@ -17,7 +17,6 @@ create table public.staff_capability_grants (
 alter table public.staff_profiles enable row level security;
 alter table public.staff_capability_grants enable row level security;
 
--- Explicit grants and policies ensure an authenticated account is not automatically staff.
 revoke all on table public.staff_profiles from public, anon, authenticated;
 revoke all on table public.staff_capability_grants from public, anon, authenticated;
 grant select on table public.staff_profiles to authenticated;
