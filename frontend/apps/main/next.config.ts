@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
+import { siteUrl } from "./lib/site";
 
 const nextConfig: NextConfig = {
+  // @epelawa/ui ships TypeScript source so the apps compile one copy of it.
+  transpilePackages: ["@epelawa/ui"],
   allowedDevOrigins: ["*.e2b.app"],
   async headers() {
     return [{
@@ -12,8 +15,9 @@ const nextConfig: NextConfig = {
         { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
         // Report-only until real Next.js scripts, media, and embeds have been reviewed.
         { key: "Content-Security-Policy-Report-Only", value: "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'" },
-        // Only the confirmed public origin; no wildcard or credentials.
-        { key: "Access-Control-Allow-Origin", value: "https://epelawa.vercel.app" },
+        // Only the configured public origin; no wildcard and no credentials. Read from
+        // NEXT_PUBLIC_SITE_URL so the Cloud Run domain is never hardcoded.
+        { key: "Access-Control-Allow-Origin", value: siteUrl },
       ],
     }];
   },

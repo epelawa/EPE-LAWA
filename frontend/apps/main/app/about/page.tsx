@@ -1,27 +1,76 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Container } from "@epelawa/ui";
+import { pageMetadata } from "../../lib/metadata";
 
-const description = "Learn about EPE LAWA's vision for community journalism, broadcasting and cultural storytelling for Epe Division and its diaspora, and what is being prepared.";
-export const metadata: Metadata = {
-  title: "About",
-  description,
-  alternates: { canonical: "/about" },
-  openGraph: { title: "About EPE LAWA", description, url: "/about", type: "website", images: [{ url: "/share.png", width: 1200, height: 630, alt: "EPE LAWA — The Voice of Epe Division" }] },
-  twitter: { card: "summary_large_image", title: "About EPE LAWA", description, images: ["/share.png"] },
-};
+const description =
+  "What EPE LAWA is, who runs it, where it broadcasts and how it is funded.";
 
-export default function About() {
+export const metadata: Metadata = pageMetadata({ title: "About", description, path: "/about" });
+
+export default function AboutPage() {
   return (
-    <main>
-      <p className="eyebrow">EPE LAWA</p>
-      <h1>About EPE LAWA</h1>
-      <p>EPE LAWA is a website-first platform being built for Epe Division and people connected to it, at home and around the world.</p>
-      <h2>Our direction</h2>
-      <p>Our aim is to inform, connect, empower and represent the community through journalism, broadcasting and cultural storytelling. The project is intended to make public-interest information easier to find and use.</p>
-      <h2>What is being prepared?</h2>
-      <p>We are preparing a main website, a distinct news publication and a media experience. News articles, radio and media are not connected yet. A working authorised live radio stream is a requirement for launch.</p>
-      <p>Community participation and local discovery are part of the longer-term vision, not available services today.</p>
-      <p><Link href="/">Return to the homepage</Link></p>
-    </main>
+    <Container>
+      <div className="page-header">
+        <p className="page-header__eyebrow">EPE LAWA</p>
+        <h1>About EPE LAWA</h1>
+        <p className="page-header__lede">
+          A community, news and broadcasting platform for Epe Division, Lagos State, at home and
+          abroad.
+        </p>
+      </div>
+
+      <div className="prose">
+        <h2>What EPE LAWA is</h2>
+        <p>
+          EPE LAWA is being built as one place for reporting, public information about people and
+          public office holders, radio, community conversation and local businesses in Epe
+          Division. It is intended for people living in the division and for people connected to
+          it from elsewhere.
+        </p>
+
+        <h2>Who runs it</h2>
+        <p>
+          EPE LAWA is run by its founding team. The editorial staff, their roles, and who may
+          approve or publish a story have not been published yet. Those details will appear here
+          once they are confirmed.
+        </p>
+
+        <h2>Where it broadcasts</h2>
+        <p>
+          EPE LAWA produces a radio programme on Radio Lagos 107.5 FM Àmitítí. That is a station
+          broadcast. Playing it in a browser is a separate thing, and it needs three things this
+          project does not have yet: the stream address, its format, and permission to embed it.
+        </p>
+        <p>
+          So the web player is not connected yet. There is nothing to listen to on this site
+          today, and the site does not pretend otherwise.
+        </p>
+
+        <h2>How it is funded</h2>
+        <p>
+          No funding arrangement has been agreed and published. EPE LAWA does not charge for
+          publication, and no paid placement or sponsorship is live. If a funding arrangement is
+          agreed, it will be stated on this page before it takes effect.
+        </p>
+
+        <h2>What is not connected yet</h2>
+        <p>
+          News, radio, the Who is Who directory, the forum, member accounts and the business
+          directory are all not connected yet. The pages that exist today are the ones linked in
+          the header and footer. Nothing else is advertised.
+        </p>
+
+        <h2>Contact</h2>
+        <p>
+          Write to <a href="mailto:info.epelawa@gmail.com">info.epelawa@gmail.com</a>, or use the{" "}
+          <Link href="/contact">contact page</Link>. Corrections and privacy requests go to the
+          same address.
+        </p>
+        <p>
+          <Link href="/">Return to the homepage</Link>
+        </p>
+      </div>
+    </Container>
   );
 }

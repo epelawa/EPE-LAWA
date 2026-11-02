@@ -71,7 +71,7 @@ test('main has honest indexable metadata, working public links and security head
       assert.equal(response.headers.get('permissions-policy'), 'camera=(), microphone=(), geolocation=()', path);
       assert.match(response.headers.get('content-security-policy-report-only') || '', /frame-ancestors 'none'/, path);
       assert.equal(response.headers.get('content-security-policy'), null, 'CSP is report-only');
-      assert.equal(response.headers.get('access-control-allow-origin'), 'https://epelawa.vercel.app', path);
+      assert.equal(response.headers.get('access-control-allow-origin'), 'https://epelawa.ng', path);
     }
     const response = await fetch(base);
     assert.equal(response.status, 200);
@@ -79,11 +79,11 @@ test('main has honest indexable metadata, working public links and security head
     assert.match(html, /not connected yet/i);
     assert.doesNotMatch(html, /<meta name="robots" content="[^"]*noindex/i);
     assert.match(html, /<meta name="description" content="[^"]+"/);
-    assert.match(html, /<link rel="canonical" href="https:\/\/epelawa\.vercel\.app\/?"/);
+    assert.match(html, /<link rel="canonical" href="https:\/\/epelawa\.ng\/?"/);
     assert.match(html, /<meta name="clyvro-verification" content="clyvro-verification=bgGvrkMEUkTOaufJIGTtWi-l7mQSZ4dmh-QpuoM4_WM"\/>/);
     assert.match(html, /<meta property="og:title"/);
     assert.match(html, /<meta property="og:description"/);
-    assert.match(html, /<meta property="og:image" content="https:\/\/epelawa\.vercel\.app\/share\.png"/);
+    assert.match(html, /<meta property="og:image" content="https:\/\/epelawa\.ng\/share\.png"/);
     assert.match(html, /<meta name="twitter:card" content="summary_large_image"/);
     assert.match(html, /<link rel="icon"/);
     assert.match(html, /href="\/about"/);
@@ -91,7 +91,7 @@ test('main has honest indexable metadata, working public links and security head
     assert.equal(about.status, 200);
     const aboutHtml = await about.text();
     assert.match(aboutHtml, /<meta name="clyvro-verification" content="clyvro-verification=bgGvrkMEUkTOaufJIGTtWi-l7mQSZ4dmh-QpuoM4_WM"\/>/);
-    assert.match(aboutHtml, /<link rel="canonical" href="https:\/\/epelawa\.vercel\.app\/about"/);
+    assert.match(aboutHtml, /<link rel="canonical" href="https:\/\/epelawa\.ng\/about"/);
     assert.match(aboutHtml, /href="\/"/);
     assert.match(aboutHtml, /not connected yet/i);
     const missing = await fetch(base + '/not-a-real-page');
@@ -99,13 +99,13 @@ test('main has honest indexable metadata, working public links and security head
     assert.match(await missing.text(), /Page not found/);
     const robots = await fetch(base + '/robots.txt');
     assert.equal(robots.status, 200);
-    assert.match(await robots.text(), /Sitemap: https:\/\/epelawa\.vercel\.app\/sitemap\.xml/i);
+    assert.match(await robots.text(), /Sitemap: https:\/\/epelawa\.ng\/sitemap\.xml/i);
     const sitemap = await fetch(base + '/sitemap.xml');
     assert.equal(sitemap.status, 200);
     const xml = await sitemap.text();
     assert.match(xml, /<urlset/);
-    assert.match(xml, /<loc>https:\/\/epelawa\.vercel\.app\/<\/loc>/);
-    assert.match(xml, /<loc>https:\/\/epelawa\.vercel\.app\/about<\/loc>/);
+    assert.match(xml, /<loc>https:\/\/epelawa\.ng\/<\/loc>/);
+    assert.match(xml, /<loc>https:\/\/epelawa\.ng\/about<\/loc>/);
     for (const [path, width, height] of [['/icon.png', 192, 192], ['/apple-touch-icon.png', 180, 180], ['/share.png', 1200, 630]]) {
       const image = await fetch(base + path);
       assert.equal(image.status, 200, path);

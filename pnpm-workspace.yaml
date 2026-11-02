@@ -1,5 +1,6 @@
 packages:
   - 'frontend/apps/*'
+  - 'frontend/packages/*'
   - 'backend/packages/*'
 
 # esbuild (used by tsx, which runs the TypeScript test files) needs its

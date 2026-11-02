@@ -1,14 +1,567 @@
-html { color-scheme: light; overscroll-behavior-y: contain; }
-body { margin: 0; background: #f9f8f6; color: #1c1e21; font-family: system-ui, sans-serif; }
-main { box-sizing: border-box; max-width: 44rem; margin: 0 auto; padding: 5rem 1.5rem; }
-.brand-logo { display: block; width: min(100%, 19rem); height: auto; }
-.eyebrow { color: #0b5a60; font-weight: 700; }
-h1 { line-height: 1.15; }
-p { line-height: 1.6; }
-a { color: #0b5a60; text-underline-offset: .15em; }
-a:focus-visible, button:focus-visible { outline: 3px solid #0b5a60; outline-offset: 3px; }
-button { cursor: pointer; font: inherit; }
-/* Compact floating status messages; text and touch targets remain accessible. */
+/*
+ * EPE LAWA — main app shell styles.
+ *
+ * Tokens come from @epelawa/ui/tokens.css and primitives from @epelawa/ui/ui.css.
+ * Nothing here may hardcode a colour, a spacing step or a duration; if a value is needed
+ * twice, it belongs in the token file.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: light;
+  overscroll-behavior-y: contain;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  /* Long place names and pasted URLs must wrap instead of forcing a 320px screen wider.
+     This is the real fix; `overflow-x: hidden` would only hide the breakage. */
+  overflow-wrap: break-word;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+}
+
+h1 {
+  font-size: var(--text-h1);
+  line-height: var(--leading-tight);
+}
+
+h2 {
+  font-size: var(--text-h2);
+  line-height: var(--leading-heading);
+}
+
+h3 {
+  font-size: var(--text-h3);
+  line-height: var(--leading-snug);
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--color-text-link);
+  text-underline-offset: 0.15em;
+}
+
+ul,
+ol {
+  margin: 0;
+}
+
+/* ── Skip link · first focusable element in the document ─────────────────── */
+.skip-link {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-4);
+  z-index: 11;
+  transform: translateY(-300%);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  color: var(--color-primary-fg);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+.site-header {
+  position: relative;
+  z-index: var(--layer-header);
+  background: var(--color-bg);
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.site-header__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0 var(--space-4);
+  padding-block: var(--space-1);
+}
+
+.site-brand {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min);
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-label);
+  text-decoration: none;
+}
+
+.site-nav-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--touch-min);
+  padding: var(--space-1) var(--space-3);
+  border: var(--border-width) solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.site-nav-toggle svg {
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.site-nav-toggle[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+.site-nav {
+  flex-basis: 100%;
+}
+
+.site-nav__list {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  list-style: none;
+}
+
+.site-nav__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min);
+  color: var(--color-text);
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+}
+
+.site-nav__link:hover {
+  color: var(--color-text-link);
+}
+
+.site-nav__link[aria-current="page"] {
+  color: var(--color-text-link);
+  text-decoration: underline;
+}
+
+/* The mobile menu is a disclosure, not a dialog: no overlay, no focus trap.
+   CSS keys off `aria-expanded`, so the DOM holds one state, not two. */
+@media (max-width: 767.98px) {
+  .site-nav {
+    display: none;
+  }
+
+  .site-nav-toggle[aria-expanded="true"] + .site-nav {
+    display: block;
+  }
+
+  .site-nav__list > li + li {
+    border-top: var(--border-width) solid var(--color-border);
+  }
+}
+
+/* Desktop only: sticky, and only visible while scrolling up. On a 320px phone the header
+   scrolls away with the page instead of eating a third of the viewport. */
+@media (min-width: 768px) {
+  .site-nav-toggle {
+    display: none;
+  }
+
+  .site-nav {
+    flex-basis: auto;
+  }
+
+  .site-nav__list {
+    flex-direction: row;
+    gap: var(--space-6);
+  }
+}
+
+@media (min-width: 1024px) {
+  .site-header {
+    position: sticky;
+    top: 0;
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+
+  .site-header[data-hidden="true"] {
+    transform: translateY(-100%);
+  }
+}
+
+/* ── Main ────────────────────────────────────────────────────────────────── */
+.site-main {
+  display: block;
+  padding-block: var(--space-6) var(--space-12);
+}
+
+/* ── Landing: hero ───────────────────────────────────────────────────────── */
+.hero {
+  padding-block: var(--space-4) var(--space-8);
+}
+
+.hero__rule {
+  display: block;
+  width: var(--space-12);
+  height: var(--border-width-strong);
+  margin-bottom: var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+}
+
+.hero__eyebrow {
+  margin-bottom: var(--space-3);
+  color: var(--color-teal-700);
+  font-size: var(--text-label);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-label);
+  line-height: var(--leading-label);
+  text-transform: uppercase;
+}
+
+.hero__title {
+  max-width: 24ch;
+  font-size: var(--text-display);
+  line-height: var(--leading-display);
+}
+
+.hero__lede {
+  max-width: var(--measure);
+  margin-top: var(--space-4);
+  color: var(--color-text-muted);
+  font-size: var(--text-body-lg);
+  line-height: var(--leading-body);
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+.hero__note {
+  max-width: var(--measure);
+  margin-top: var(--space-4);
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+}
+
+/* ── Landing: section blocks ─────────────────────────────────────────────── */
+.home-block {
+  border-top: var(--border-width-strong) solid var(--color-text);
+  padding-block: var(--space-6) var(--space-8);
+}
+
+.home-block__note {
+  max-width: var(--measure);
+  margin-top: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+}
+
+.home-block__body {
+  margin-top: var(--space-4);
+}
+
+@media (min-width: 1024px) {
+  .home-block {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    gap: var(--space-8);
+    align-items: start;
+  }
+
+  .home-block__body {
+    margin-top: 0;
+    max-width: var(--measure);
+  }
+}
+
+/* ── Landing: radio panel ────────────────────────────────────────────────── */
+.radio-panel {
+  padding: var(--space-6);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-inverse);
+  color: var(--color-text-inverse);
+}
+
+.radio-panel__station {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-snug);
+}
+
+.radio-panel__status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding: var(--space-1) var(--space-3);
+  border: var(--border-width) solid var(--color-charcoal-300);
+  border-radius: var(--radius-full);
+  color: var(--color-text-inverse);
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-small);
+}
+
+.radio-panel__detail {
+  max-width: var(--measure);
+  margin-top: var(--space-3);
+  color: var(--color-charcoal-300);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+}
+
+/* ── Landing: trust line ─────────────────────────────────────────────────── */
+.trust {
+  border-top: var(--border-width-strong) solid var(--color-text);
+  padding-block: var(--space-6) 0;
+}
+
+.trust__text {
+  max-width: var(--measure);
+  margin-top: var(--space-3);
+  color: var(--color-text-muted);
+}
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+.site-footer {
+  background: var(--color-surface-inverse);
+  color: var(--color-text-inverse);
+  padding-block: var(--space-8);
+}
+
+.site-footer a {
+  color: var(--color-text-inverse);
+}
+
+.site-footer__brand {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-label);
+}
+
+.site-footer__summary {
+  max-width: var(--measure);
+  margin-top: var(--space-2);
+  color: var(--color-charcoal-300);
+  font-size: var(--text-small);
+}
+
+.site-footer__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-6);
+  margin-top: var(--space-4);
+  padding: 0;
+  list-style: none;
+}
+
+.site-footer__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min);
+  color: var(--color-text-inverse);
+  font-size: var(--text-small);
+  text-decoration: none;
+}
+
+.site-footer__link:hover,
+.site-footer__link:focus-visible {
+  text-decoration: underline;
+}
+
+.site-footer__meta {
+  margin-top: var(--space-4);
+  color: var(--color-charcoal-300);
+  font-size: var(--text-small);
+}
+
+/* ── Static pages ────────────────────────────────────────────────────────── */
+.page-header {
+  padding-block: var(--space-4) var(--space-6);
+}
+
+/* Anchor targets clear the sticky desktop header instead of hiding behind it. */
+h2[id],
+h3[id] {
+  scroll-margin-top: var(--space-16);
+}
+
+.page-header__eyebrow {
+  margin-bottom: var(--space-3);
+  color: var(--color-teal-700);
+  font-size: var(--text-label);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-label);
+  line-height: var(--leading-label);
+  text-transform: uppercase;
+}
+
+.page-header__lede {
+  max-width: var(--measure);
+  margin-top: var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--text-body-lg);
+  line-height: var(--leading-body);
+}
+
+.prose {
+  max-width: var(--measure);
+}
+
+.prose > * + * {
+  margin-top: var(--space-4);
+}
+
+.prose h2 {
+  margin-top: var(--space-8);
+  font-size: var(--text-h2);
+  line-height: var(--leading-heading);
+}
+
+.prose h3 {
+  margin-top: var(--space-6);
+  font-size: var(--text-h3);
+  line-height: var(--leading-snug);
+}
+
+.prose ul,
+.prose ol {
+  padding-left: var(--space-6);
+}
+
+.prose li + li {
+  margin-top: var(--space-2);
+}
+
+.prose a {
+  text-underline-offset: 0.15em;
+}
+
+/* ── Forms ───────────────────────────────────────────────────────────────── */
+.form {
+  display: grid;
+  gap: var(--space-4);
+  max-width: var(--measure);
+}
+
+.field {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.field__label {
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+}
+
+.field__hint {
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+}
+
+.field__control {
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width) solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  /* 16px, not 14px: anything smaller makes iOS zoom the page when the field is focused. */
+  font-size: var(--text-body);
+  line-height: var(--leading-small);
+}
+
+textarea.field__control {
+  min-height: calc(var(--touch-min) * 2);
+  resize: vertical;
+}
+
+.field__control[aria-invalid="true"] {
+  border-color: var(--color-error);
+}
+
+.field__error {
+  color: var(--color-error);
+  font-size: var(--text-small);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-small);
+}
+
+.form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.form-summary__list {
+  margin-top: var(--space-2);
+  padding-left: var(--space-6);
+}
+
+/* ── Error and not-found pages ───────────────────────────────────────────── */
+.notice-page {
+  max-width: var(--measure);
+  padding-block: var(--space-8);
+}
+
+.notice-page p {
+  margin-top: var(--space-3);
+  color: var(--color-text-muted);
+}
+
+.notice-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+/* ── Route loading fallback ──────────────────────────────────────────────── */
+.page-loading {
+  display: grid;
+  gap: var(--space-3);
+  padding-block: var(--space-8);
+}
+
+/* ── Compact floating status messages; text and touch targets remain accessible. ── */
 .connection-notice {
   position: fixed; z-index: 10; left: 50%; bottom: max(1rem, env(safe-area-inset-bottom));
   transform: translateX(-50%); box-sizing: border-box; display: flex; align-items: center;

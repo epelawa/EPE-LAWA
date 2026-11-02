@@ -1,16 +1,41 @@
 import type { Metadata } from "next";
+import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+// Shared token layer. Every app imports it exactly once, here or in its own root layout.
+import "@epelawa/ui/tokens.css";
+import "@epelawa/ui/ui.css";
 import "./globals.css";
 import Connectivity from "./connectivity";
+import SiteHeader from "../components/site-header";
+import SiteFooter from "../components/site-footer";
+import { mainNavigation } from "../lib/navigation";
+import { isIndexingAllowed, newsUrl, siteUrl } from "../lib/site";
 
-const description = "EPE LAWA is preparing a home for news, broadcasting and community information for Epe Division and people connected to it around the world, at home and abroad.";
+// next/font downloads and self-hosts these files at build time, so a reader on a metered
+// connection never talks to a third-party font host.
+const displayFont = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["500", "700"],
+  display: "swap",
+  variable: "--font-display-face",
+});
+
+const bodyFont = Inter({
+  subsets: ["latin"],
+  weight: ["400", "600"],
+  display: "swap",
+  variable: "--font-body-face",
+});
+
+const description =
+  "EPE LAWA brings news, conversation, radio and local businesses together for Epe Division, Lagos State, at home and abroad.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://epelawa.vercel.app"),
+  metadataBase: new URL(siteUrl),
   title: { default: "EPE LAWA — The Voice of Epe Division", template: "%s | EPE LAWA" },
   description,
   other: { "clyvro-verification": "clyvro-verification=bgGvrkMEUkTOaufJIGTtWi-l7mQSZ4dmh-QpuoM4_WM" },
-  // Preview deployments must not be indexed; the owner explicitly approved indexing the public holding page.
-  robots: process.env.VERCEL_ENV && process.env.VERCEL_ENV !== "production" ? { index: false, follow: false } : undefined,
+  // Indexing is decided in lib/site.ts, not by a hosting provider's environment variable.
+  robots: isIndexingAllowed() ? undefined : { index: false, follow: false },
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
@@ -24,6 +49,22 @@ export const metadata: Metadata = {
   icons: { icon: [{ url: "/favicon.ico", sizes: "48x48", type: "image/x-icon" }, { url: "/icon.png", sizes: "192x192", type: "image/png" }], apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }] },
 };
 
+const navigation = mainNavigation(newsUrl);
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body>{children}<Connectivity /></body></html>;
+  return (
+    <html lang="en" className={`${displayFont.variable} ${bodyFont.variable}`}>
+      <body>
+        <a className="skip-link" href="#main">
+          Skip to content
+        </a>
+        <SiteHeader items={navigation} />
+        <main id="main" className="site-main" tabIndex={-1}>
+          {children}
+        </main>
+        <SiteFooter />
+        <Connectivity />
+      </body>
+    </html>
+  );
 }

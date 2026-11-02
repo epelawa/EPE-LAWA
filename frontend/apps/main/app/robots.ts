@@ -1,8 +1,13 @@
 import type { MetadataRoute } from "next";
+import { absoluteUrl, isIndexingAllowed } from "../lib/site";
 
+/**
+ * The hosting provider no longer decides this. `isIndexingAllowed()` reads the configured
+ * public origin, so a preview deploy on any host can be excluded without touching this file.
+ */
 export default function robots(): MetadataRoute.Robots {
-  if (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== "production") {
+  if (!isIndexingAllowed()) {
     return { rules: { userAgent: "*", disallow: "/" } };
   }
-  return { rules: { userAgent: "*", allow: "/" }, sitemap: "https://epelawa.vercel.app/sitemap.xml" };
+  return { rules: { userAgent: "*", allow: "/" }, sitemap: absoluteUrl("/sitemap.xml") };
 }

@@ -1,0 +1,372 @@
+/*
+ * @epelawa/ui — primitive component styles.
+ *
+ * Every value here resolves to a token in tokens.css. No hex, no magic spacing.
+ * Load order in each app: tokens.css → ui.css → app globals.css.
+ */
+
+/* Motion guard · docs/05 §4 and §8. Applies to the whole document, not just these
+   components, because a single missed animation is the one that hurts. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Focus ring · 2px at 2px offset. Never removed, only moved. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* A dark region flips the ring to white so it stays visible. */
+.ep-on-dark {
+  --focus-ring-color: var(--color-white);
+}
+
+.ep-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Container ───────────────────────────────────────────────────────────── */
+.ep-container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+@media (min-width: 480px) {
+  .ep-container {
+    padding-inline: var(--gutter-wide);
+  }
+}
+
+/* ── Button ──────────────────────────────────────────────────────────────── */
+.ep-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  box-sizing: border-box;
+  min-height: var(--touch-min);
+  padding: var(--space-3) var(--space-6);
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-sm);
+  background: var(--ep-btn-bg);
+  color: var(--ep-btn-fg);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-small);
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Only transform and opacity are animated anywhere in this system. Colour changes on
+   hover are instant on purpose: it is cheap, and it feels immediate on a slow phone. */
+.ep-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.ep-btn:disabled {
+  background: var(--color-bg);
+  color: var(--color-text-muted);
+  border-color: var(--color-border);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.ep-btn__label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Hidden with opacity, not `visibility`, so the accessible name survives the loading state.
+   Width is preserved because the label never leaves the layout. */
+.ep-btn[aria-busy="true"] .ep-btn__label {
+  opacity: 0;
+}
+
+.ep-btn__spinner {
+  position: absolute;
+  inset: 0;
+  width: 1rem;
+  height: 1rem;
+  margin: auto;
+  border: var(--border-width-strong) solid currentColor;
+  border-top-color: transparent;
+  border-radius: var(--radius-full);
+  animation: ep-spin 700ms linear infinite;
+}
+
+@keyframes ep-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+.ep-btn--primary {
+  --ep-btn-bg: var(--color-primary);
+  --ep-btn-fg: var(--color-primary-fg);
+}
+
+.ep-btn--primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.ep-btn--primary:active:not(:disabled) {
+  background: var(--color-primary-active);
+}
+
+.ep-btn--secondary {
+  --ep-btn-bg: transparent;
+  --ep-btn-fg: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.ep-btn--secondary:hover:not(:disabled) {
+  background: var(--color-surface-muted);
+}
+
+.ep-btn--secondary:active:not(:disabled) {
+  background: var(--color-surface-muted);
+  color: var(--color-primary-active);
+}
+
+.ep-btn--ghost {
+  --ep-btn-bg: transparent;
+  --ep-btn-fg: var(--color-primary);
+  padding-inline: var(--space-3);
+}
+
+.ep-btn--ghost:hover:not(:disabled) {
+  background: var(--color-surface-muted);
+}
+
+.ep-btn--danger {
+  --ep-btn-bg: var(--color-error);
+  --ep-btn-fg: var(--color-white);
+}
+
+.ep-btn--danger:hover:not(:disabled) {
+  background: var(--color-charcoal-900);
+}
+
+/* ── Badge ───────────────────────────────────────────────────────────────── */
+.ep-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-full);
+  font-family: var(--font-body);
+  font-size: var(--text-label);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-label);
+  white-space: nowrap;
+}
+
+.ep-badge svg {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex: none;
+}
+
+.ep-badge--verified {
+  background: var(--color-surface-muted);
+  color: var(--color-teal-900);
+}
+
+.ep-badge--unverified {
+  background: transparent;
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.ep-badge--neutral {
+  background: var(--color-gold-100);
+  color: var(--color-charcoal-900);
+}
+
+/* ── Alert ───────────────────────────────────────────────────────────────── */
+.ep-alert {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  border-left: var(--border-width-strong) solid var(--ep-alert-accent);
+  border-radius: var(--radius-sm);
+  background: var(--ep-alert-surface);
+  color: var(--ep-alert-ink);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+}
+
+.ep-alert__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-body);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-snug);
+}
+
+.ep-alert__body > * {
+  margin: 0;
+}
+
+.ep-alert__body > * + * {
+  margin-top: var(--space-2);
+}
+
+.ep-alert--info {
+  --ep-alert-accent: var(--color-info);
+  --ep-alert-surface: var(--color-info-surface);
+  --ep-alert-ink: var(--color-teal-900);
+}
+
+.ep-alert--success {
+  --ep-alert-accent: var(--color-success);
+  --ep-alert-surface: var(--color-success-surface);
+  --ep-alert-ink: var(--color-charcoal-900);
+}
+
+.ep-alert--warning {
+  --ep-alert-accent: var(--color-warning);
+  --ep-alert-surface: var(--color-warning-surface);
+  --ep-alert-ink: var(--color-warning);
+}
+
+.ep-alert--error {
+  --ep-alert-accent: var(--color-error);
+  --ep-alert-surface: var(--color-error-surface);
+  --ep-alert-ink: var(--color-error);
+}
+
+/* ── Card ────────────────────────────────────────────────────────────────── */
+.ep-card {
+  box-sizing: border-box;
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+@media (min-width: 768px) {
+  .ep-card {
+    padding: var(--space-6);
+  }
+}
+
+/* ── Empty state · icon, one sentence, one action where one genuinely exists ── */
+.ep-empty {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: start;
+  padding: var(--space-6) var(--space-4);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+@media (min-width: 768px) {
+  .ep-empty {
+    padding: var(--space-6);
+  }
+}
+
+.ep-empty__icon {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-muted);
+  color: var(--color-teal-700);
+}
+
+.ep-empty__icon svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.ep-empty__text {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+}
+
+.ep-empty__action {
+  margin: 0;
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+}
+
+/* The action is a real destination, so it gets a real touch target rather than a 17px
+   line of underlined text. Inline links inside a sentence are exempt from this. */
+.ep-empty__action a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min);
+}
+
+/* ── Skeleton · matches the shape of the thing that is loading ───────────── */
+.ep-skeleton {
+  display: block;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-muted);
+  animation: ep-pulse 1600ms var(--ease-in-out) infinite;
+}
+
+.ep-skeleton--title {
+  height: 2rem;
+  max-width: 18rem;
+}
+
+.ep-skeleton--line {
+  height: 0.875rem;
+  max-width: 34rem;
+}
+
+.ep-skeleton--line-short {
+  height: 0.875rem;
+  max-width: 14rem;
+}
+
+.ep-skeleton--media {
+  height: 8rem;
+  max-width: 100%;
+}
+
+@keyframes ep-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
