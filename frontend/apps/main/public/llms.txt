@@ -1,0 +1,8 @@
+# EPE LAWA
+
+EPE LAWA is a website-first platform being prepared for Epe Division and people connected to it. News, radio and media are not connected yet.
+
+## Pages
+
+- [Home](https://epelawa.vercel.app/): EPE LAWA's current introduction and service status.
+- [About EPE LAWA](https://epelawa.vercel.app/about): The project's aims and what is being prepared.

@@ -47,4 +47,8 @@ The owner-directed palette remains the design baseline: Riverine Teal `#0B5A60`,
 
 ## 5. Open inputs
 
-Owner-approved logo, authentic licensed Epe photography, programme details, real articles/media, mobile usability participants and exact final typeface licences remain outstanding. The radio stream and embedding rights remain launch blockers. Future Phase 2–5 designs must receive their own scope and safety approval.
+The owner supplied the composite EPE LAWA logo on 2 November 2026 and instructed that it be used whole without cropping. The original is preserved in `frontend/apps/main/public/brand-logo.png`; resized assets retain the entire canvas. Confirm ongoing rights to all elements of the supplied artwork. Authentic licensed Epe photography, programme details, real articles/media, mobile usability participants and exact final typeface licences remain outstanding. The radio stream and embedding rights remain launch blockers. Future Phase 2–5 designs must receive their own scope and safety approval.
+
+## 6. Audit and system-page increment
+
+The November audit and system-page work uses the reference register above, the existing palette and functional error/connection states; it does not reproduce reference screens or assert that the listed Pinterest images were inspected. See [16-audit-and-delivery.md](16-audit-and-delivery.md) for implementation, verification and limitations.

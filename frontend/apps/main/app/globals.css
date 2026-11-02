@@ -1,6 +1,15 @@
-html { color-scheme: light; }
+html { color-scheme: light; overscroll-behavior-y: contain; }
 body { margin: 0; background: #f9f8f6; color: #1c1e21; font-family: system-ui, sans-serif; }
 main { box-sizing: border-box; max-width: 44rem; margin: 0 auto; padding: 5rem 1.5rem; }
+.brand-logo { display: block; width: min(100%, 19rem); height: auto; }
 .eyebrow { color: #0b5a60; font-weight: 700; }
 h1 { line-height: 1.15; }
 p { line-height: 1.6; }
+a { color: #0b5a60; text-underline-offset: .15em; }
+a:focus-visible, button:focus-visible { outline: 3px solid #0b5a60; outline-offset: 3px; }
+button { cursor: pointer; font: inherit; }
+.connection-notice { position: fixed; z-index: 10; left: 50%; bottom: max(2rem, env(safe-area-inset-bottom)); transform: translateX(-50%); display: flex; align-items: center; gap: 1rem; max-width: calc(100vw - 2rem); padding: .55rem .65rem .55rem 1rem; background: #1c1e21; color: #fff; border-radius: .45rem; box-shadow: 0 3px 12px #0003; }
+.connection-notice p { margin: 0; line-height: 1.35; }
+.connection-notice button { display: grid; place-items: center; flex: 0 0 auto; width: 2.75rem; height: 2.75rem; border: 1px solid #fff; border-radius: .3rem; color: #fff; background: transparent; }
+.connection-notice button:focus-visible { outline-color: #fff; }
+.pull-notice { position: fixed; z-index: 9; top: max(.5rem, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); background: #0b5a60; color: #fff; padding: .5rem 1rem; border-radius: .3rem; font-size: .875rem; white-space: nowrap; }
