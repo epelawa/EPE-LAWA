@@ -8,7 +8,7 @@
 
 ## 1. Scope and principles
 
-Proposed system of record: Supabase PostgreSQL with Supabase Auth for staff identities; Cloudflare R2 stores asset bytes, not database rows. Resend is the owner-specified transactional email service. A Supabase project is visible, but its Paris region differs from the selected Ireland region; target confirmation, credentials, configuration, permissions and integrations remain unverified. No project migrations have been applied.
+Proposed system of record: Supabase PostgreSQL with Supabase Auth for staff identities; Cloudflare R2 stores asset bytes, not database rows. Resend is the owner-specified transactional email service. The owner confirmed the visible Paris Supabase project as the production target; credentials, configuration, permissions and integrations remain unverified. No project migrations have been applied.
 
 This document models **Phase 1 only**. Later-phase domains are identified as extensions, not tables to create now. The owner directed top-level `frontend/`, `backend/` and `docs/` folders; future reviewed migrations belong under proposed `backend/supabase/migrations/`, subject to toolchain validation. No application scaffolding is created during this workstream.
 
