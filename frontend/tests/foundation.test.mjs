@@ -30,7 +30,10 @@ async function startApp(app) {
   let output = '';
   try {
     await new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => reject(new Error(`Timed out starting ${app}: ${output}`)), 15000);
+      // Start-up is dominated by cold module resolution, not by the app itself. Under
+      // `--test` the files run concurrently, so a 15s ceiling produced flaky failures on
+      // slower CI/sandbox machines. 90s still fails fast on a genuinely broken build.
+      const timeout = setTimeout(() => reject(new Error(`Timed out starting ${app}: ${output}`)), 90000);
       const fail = (error) => { clearTimeout(timeout); reject(error); };
       child.once('error', fail);
       child.once('exit', (code) => fail(new Error(`${app} exited with ${code}: ${output}`)));

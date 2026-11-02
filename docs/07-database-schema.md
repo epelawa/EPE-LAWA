@@ -1,146 +1,508 @@
-# EPE LAWA — Proposed Database Schema
+# EPE LAWA — Database Schema
 
-**Document:** 07 — Workstream 0.6 (database design)\
-**Status:** Workstream 0.6 approved by the owner on 2 November 2026; the proposed schema remains under review. The staff-access foundation migration is applied to the production project; no staff accounts, grants or seed data were created.\
-**Prepared:** 2 November 2026\
-**Inputs:** [Approved requirements](01-product-requirements.md), [approved journeys](02-user-journeys.md), [approved sitemap](03-sitemap.md) and [approved architecture direction](06-system-architecture.md).\
-**Companion:** [Permissions and security](08-permissions-security.md). Documents 07 and 08 were approved as Workstream 0.6; proceed to Workstream 0.7. Phase 0 approval is required before production coding.
+**Document:** 07
+**Status:** Design. The only migration applied to any environment is
+`20261102133703_staff_access_foundation`. Everything below is proposed and requires review before it
+becomes a migration.
+**Authority:** `00-master-plan.md`. Companion: `08-permissions-security.md`.
 
-## 1. Scope and principles
+---
 
-Proposed system of record: Supabase PostgreSQL with Supabase Auth for staff identities; Cloudflare R2 stores asset bytes, not database rows. Resend is the owner-specified transactional email service. The owner confirmed the visible Paris Supabase project as the production target; credentials, configuration, permissions and integrations remain unverified. The staff-access foundation migration has been applied.
+## 1. Principles
 
-This document models **Phase 1 only**. Later-phase domains are identified as extensions, not tables to create now. The owner directed top-level `frontend/`, `backend/` and `docs/` folders; future reviewed migrations belong under proposed `backend/supabase/migrations/`, subject to toolchain validation. No application scaffolding is created during this workstream.
+- Supabase Postgres is the system of record. Object bytes live in Google Cloud Storage; the database
+  holds metadata and access classification.
+- UUID primary keys (`gen_random_uuid()`). Slugs are for URLs, never for authorisation.
+- All timestamps `timestamptz`, stored UTC.
+- **Two identity axes.** Staff identity and public member identity are separate profile tables over
+  one `auth.users` table. A member never inherits staff capability and vice versa.
+- **RLS on every exposed table.** Default deny. No table is readable by `anon` without an explicit
+  policy.
+- **Soft delete for anything with an audit or moderation trail.** `deleted_at timestamptz null`.
+- **Migrations are the source of truth.** Never edit an applied migration.
+- No seed data. No demo rows. Reference data (categories, roles) is created by authorised operations.
 
-Core principles:
+---
 
-- Database-generated primary keys, explicit foreign keys, constraints, server-side validation, UTC timestamps and auditable updates. UUIDs are proposed identifiers; exposed slugs are not authorisation.
-- Normalise reusable editorial metadata without creating speculative future-phase tables. Public reads use approved published snapshots; private authoring and operational data are isolated.
-- Apply least privilege, RLS to exposed tables and explicit policy/grant tests. RLS is not a substitute for protected state transitions, secret management, API access controls or storage permissions.
-- Protect personal data, form submissions and audits with restricted access, retention/deletion rules and tested backup/restore procedures. No private contact message is automatically public.
-- Migrations are the schema source of truth after implementation is authorised. Do not create data-seeding scripts or preload demo records; legitimate staff and real approved content are provisioned through authorised operations. No production schema changes are authorised now.
+## 2. Identity
 
-## 2. Phase 1 entity relationship overview
+### 2.1 Existing — staff access foundation (applied)
 
-```text
-Supabase Auth user ──1:0..1── staff_profiles ──1:N── staff_role_assignments
-                                       │                         │
-                                       │                         N:1
-                                       │                    roles / permissions (model TBD)
-                                       │
-                                       ├── authors (optional link)
-                                       ├── articles (owner/editor)
-                                       ├── editorial_reviews
-                                       └── audit_events
-
-authors ──1:N── articles ──1:N── article_versions ──1:N── editorial_reviews
-                   │                  │
-                   │                  └── version metadata / content snapshot
-                   ├── N:1 category
-                   └── N:M tags via version-level mapping (candidate; see §4)
-
-articles ──optional published-version pointer──> article_versions
-media_assets ──1:N── asset_objects (private/public representations)
-programmes ──1:N── episodes ──optional──> media_assets / external video records
-radio_settings ──optional──> programme information
-site_settings       audit_events
-contact_submissions ──1:N── contact_notification_attempts  [conditional design]
+```sql
+staff_profiles(user_id uuid pk → auth.users, is_active bool default false, created_at)
+staff_capability_grants(user_id → staff_profiles, capability text check (capability='admin.access'), granted_at)
 ```
 
-This is a logical overview. The exact ownership of category/tag/author/media metadata by each article version is an open design decision; published metadata **must** remain tied to the approved version and must not silently change when a draft is edited. Relationships and public projections must enforce that outcome even if the table layout differs from this sketch.
+Retained. Will be extended in Phase 2 with a capability catalogue rather than a single hardcoded
+capability — see §2.3.
 
-## 3. Naming, common fields and lifecycle
+### 2.2 Public members — new in Phase 5
 
-- Proposed table names below are design labels, not existing database objects. Each entity has a primary key (`id`) and appropriate foreign keys. An auth ID is a UUID matching the provider identity, not an editable email address.
-- Typical fields: `created_at`, `updated_at` (UTC), `created_by`/`updated_by` where appropriate, and an explicit status only where relevant. Publication fields, version/ownership fields and approval timestamps must be written by authorised operations, not blindly trusted from clients.
-- Use validation and constraints for allowed states, lengths, uniqueness and referential integrity. Exact limits, status representations and database-generated defaults require implementation review.
-- Soft deletion is not automatic: preserve editorial and audit history where required; design retention, takedown and personal-data deletion separately. Use restrictive foreign keys for content/history where deletion would break traceability; a reviewed deletion procedure must not accidentally publish or orphan sensitive data.
-- Proposed unique slugs must be normalised, collision-checked and reserved as appropriate. Define redirects and reuse of deleted/archived slugs in page/API work; do not silently route a formerly private slug to other content.
+```sql
+profiles(
+  user_id       uuid pk → auth.users on delete cascade,
+  handle        citext unique not null,        -- public identity, e.g. @adaeze
+  display_name  text not null,
+  avatar_key    text null,                     -- GCS object key, not a URL
+  bio           text null,
+  is_verified   bool not null default false,   -- sourced staff review, see §7.3
+  verified_at   timestamptz null,
+  verified_by   uuid null → auth.users,
+  created_at, updated_at,
+  deleted_at    timestamptz null               -- anonymised, not removed
+)
+```
 
-## 4. Identity and editorial entities
+`handle` is unique, case-insensitive, 3–24 chars, `[a-z0-9_]`, with a reserved-word list
+(`admin`, `epe`, `epelawa`, `support`, `moderator`, `news`, `radio`, `api`, …).
 
-Field lists identify required design concerns, not a complete migration. `?` means nullable or conditional, not a promise that all constraints are final.
+### 2.3 Staff capabilities
 
-| Entity | Key fields and relationships | Constraints, access and rationale |
+```sql
+capabilities(key text pk, description text)      -- 'admin.access','article.create','article.review',
+                                                 -- 'article.publish','article.unpublish','people.manage',
+                                                 -- 'radio.manage','moderation.review','business.review',
+                                                 -- 'order.manage','staff.manage','audit.read'
+staff_capability_grants(user_id, capability references capabilities(key), granted_at, granted_by, revoked_at)
+```
+
+Replaces the single-value check constraint. The existing migration is followed by an additive one; the
+old constraint is dropped in a later migration after data migration, never edited in place.
+
+**Why a capability table and not roles:** the client's role list (super admin, editor-in-chief,
+editor, journalist, radio manager) keeps changing. Capabilities are stable; roles are a UI grouping
+over capabilities. Store the capability, present the role.
+
+---
+
+## 3. Editorial
+
+```sql
+authors(
+  id uuid pk, staff_user_id uuid null → auth.users,  -- a byline need not be a login
+  display_name text not null, slug citext unique not null,
+  bio text null, photo_key text null, created_at
+)
+
+categories(id uuid pk, slug citext unique not null, label text not null,
+           description text null, sort_order int default 0, is_active bool default true)
+
+tags(id uuid pk, slug citext unique not null, label text not null)
+
+articles(
+  id uuid pk,
+  slug citext unique not null,                -- reserved forever, even after archive
+  owner_id uuid not null → auth.users,        -- the journalist who owns the draft
+  current_version_id uuid null → article_versions,
+  published_version_id uuid null → article_versions,
+  published_at timestamptz null,
+  revision bigint not null default 1,         -- compare-and-swap guard
+  is_breaking bool not null default false,
+  breaking_until timestamptz null,
+  created_at, updated_at
+)
+
+article_versions(
+  id uuid pk,
+  article_id uuid not null → articles on delete restrict,
+  version_number int not null,
+  title text not null, summary text null, body jsonb not null,   -- Tiptap JSON, sanitised on render
+  author_id uuid not null → authors,
+  category_id uuid not null → categories,
+  seo_title text null, seo_description text null, og_image_key text null,
+  state text not null check (state in ('draft','review','approved','rejected')),
+  created_by uuid not null → auth.users,
+  created_at timestamptz not null default now(),
+  unique (article_id, version_number)
+)
+
+article_version_tags(version_id → article_versions, tag_id → tags, primary key (version_id, tag_id))
+```
+
+**Tags live on the version, not the article.** A tag change after publication must not retroactively
+alter a published snapshot.
+
+**The public read model is a view**, not the tables:
+
+```sql
+create view published_articles as
+select a.id, a.slug, a.published_at, a.is_breaking, a.breaking_until,
+       v.title, v.summary, v.body, v.seo_title, v.seo_description, v.og_image_key,
+       au.display_name as author_name, au.slug as author_slug,
+       c.slug as category_slug, c.label as category_label
+from articles a
+join article_versions v on v.id = a.published_version_id and v.state = 'approved'
+join authors au on au.id = v.author_id
+join categories c on c.id = v.category_id
+where a.published_version_id is not null;
+```
+
+The view is `security_invoker = true` in Postgres 15+ so the caller's identity and RLS apply. Do not
+rely on a view as a security boundary without testing it as that caller.
+
+### 3.1 Editorial media
+
+```sql
+media_assets(
+  id uuid pk, kind text check (kind in ('image','video_thumb','document')),
+  title text, credit text, rights_note text,
+  bucket text not null check (bucket in ('public','private')),
+  object_key text not null, mime_type text not null, byte_size bigint not null,
+  width int null, height int null,
+  uploaded_by uuid → auth.users, created_at,
+  unique (bucket, object_key)
+)
+
+programmes(id uuid pk, slug citext unique, name text, description text, schedule_note text, is_active bool)
+episodes(id uuid pk, programme_id → programmes, slug citext unique, title text,
+         description text, aired_on date, duration_seconds int,
+         media_asset_id uuid null → media_assets, external_url text null, published_at timestamptz)
+
+radio_schedule(id uuid pk, programme_id → programmes, day_of_week smallint check (0..6),
+               starts_at time, ends_at time, note text)
+stream_config(id int pk default 1, stream_url_encrypted bytea, status_check_url text,
+              updated_by uuid, updated_at)
+stream_status_checks(id bigserial, checked_at timestamptz, ok bool, latency_ms int, error_class text)
+```
+
+`stream_status_checks` is append-only and pruned after 7 days by a scheduled job. "LIVE" is derived
+from the most recent row within 60 seconds where `ok = true`. **Never from `stream_config` alone.**
+
+---
+
+## 4. Comments
+
+```sql
+comments(
+  id uuid pk,
+  article_id uuid not null → articles,
+  parent_id uuid null → comments,
+  author_id uuid not null → profiles,
+  body text not null check (char_length(body) between 1 and 4000),
+  state text not null default 'visible' check (state in ('visible','hidden','deleted')),
+  hidden_reason text null, hidden_by uuid null → auth.users, hidden_at timestamptz null,
+  created_at, updated_at,
+  deleted_at timestamptz null
+)
+
+comment_reports(id uuid pk, comment_id → comments, reporter_id → profiles, reason text not null,
+                note text null, state text default 'open' check (state in ('open','actioned','dismissed')),
+                created_at, resolved_by uuid, resolved_at)
+```
+
+One-level threading: `parent_id` must reference a comment with `parent_id is null` — enforced by a
+trigger, because RLS cannot express it.
+
+---
+
+## 5. Forum
+
+```sql
+forum_categories(id uuid pk, slug citext unique, name text, description text, rules text,
+                 sort_order int, is_active bool)
+
+forum_threads(
+  id uuid pk, category_id → forum_categories, author_id → profiles,
+  slug citext unique, title text not null check (char_length(title) between 3 and 160),
+  state text default 'open' check (state in ('open','locked','hidden','deleted')),
+  is_pinned bool default false,
+  post_count int default 0, last_activity_at timestamptz,
+  created_at, deleted_at
+)
+
+forum_posts(
+  id uuid pk, thread_id → forum_threads, author_id → profiles,
+  body text not null check (char_length(body) between 1 and 20000),
+  quote_post_id uuid null → forum_posts,
+  state text default 'visible' check (state in ('visible','hidden','deleted')),
+  created_at, updated_at, deleted_at
+)
+
+forum_polls(id uuid pk, thread_id → forum_threads unique, question text,
+            closes_at timestamptz null, allow_multiple bool default false)
+forum_poll_options(id uuid pk, poll_id → forum_polls, label text, sort_order int, unique (poll_id, label))
+forum_poll_votes(poll_id, option_id, voter_id, created_at, primary key (poll_id, voter_id, option_id))
+
+forum_reports(id uuid pk, post_id → forum_posts, reporter_id → profiles, reason text not null,
+              note text, state text default 'open', created_at, resolved_by, resolved_at)
+
+moderation_actions(
+  id uuid pk, moderator_id → auth.users, target_type text, target_id uuid,
+  action text check (action in ('hide','restore','lock','unlock','ban','unban','dismiss')),
+  reason text not null, created_at
+)
+```
+
+`post_count` and `last_activity_at` are denormalised for the thread list. Maintain them with a trigger
+on `forum_posts`, not on read — a `count(*)` per thread in a list query will not survive growth.
+
+---
+
+## 6. Business directory
+
+```sql
+business_categories(id uuid pk, slug citext unique, label text, sort_order int)
+
+businesses(
+  id uuid pk, slug citext unique, owner_user_id uuid null → profiles,
+  name text not null, category_id → business_categories,
+  description text, area text, address text, landmark text,
+  phone text, whatsapp text, email text, website text,
+  hours jsonb null,                            -- {mon:[["09:00","17:00"]], ...}
+  status text default 'submitted'
+    check (status in ('submitted','reviewing','published','rejected','delisted')),
+  is_verified bool default false,
+  verified_at timestamptz null, verified_by uuid null → auth.users, verification_note text null,
+  created_at, updated_at, published_at, deleted_at
+)
+
+business_photos(id uuid pk, business_id → businesses, media_asset_id → media_assets,
+                sort_order int, alt_text text not null)
+
+business_reviews(
+  id uuid pk, business_id → businesses, author_id → profiles,
+  rating smallint check (rating between 1 and 5), body text,
+  created_at, updated_at, deleted_at,
+  unique (business_id, author_id) where deleted_at is null   -- one live review per member
+)
+
+business_featured(
+  id uuid pk, business_id → businesses, starts_at timestamptz, ends_at timestamptz,
+  payment_id uuid null → payments, created_at,
+  check (ends_at > starts_at)
+)
+```
+
+**`is_verified` is a record, not a checkbox.** It cannot be true without `verified_at`, `verified_by`
+and `verification_note` — enforce with a `check` constraint:
+`check (is_verified = false or (verified_at is not null and verified_by is not null))`.
+
+Featured placement is derived: `exists(select 1 from business_featured where business_id = b.id and now() between starts_at and ends_at)`. Never a column that has to be unset by hand.
+
+---
+
+## 7. Who is Who
+
+```sql
+people(
+  id uuid pk, slug citext unique, full_name text not null,
+  preferred_name text null, portrait_key text null,
+  community text null,                    -- Eko Epe / Ijebu Epe / other, as recorded by source
+  biography text null, is_deceased bool default false,
+  status text default 'draft' check (status in ('draft','review','published','withdrawn')),
+  created_at, updated_at, published_at, deleted_at
+)
+
+people_offices(
+  id uuid pk, person_id → people, title text not null, institution text not null,
+  term_start date null, term_end date null, is_current bool default false,
+  source_id uuid null → people_sources
+)
+
+people_sources(
+  id uuid pk, person_id → people,
+  kind text check (kind in ('interview','document','publication','government_record','family_record')),
+  citation text not null, url text null, recorded_by uuid → auth.users, recorded_at
+)
+
+people_verifications(
+  id uuid pk, person_id → people unique,
+  verified_by uuid not null → auth.users, verified_at timestamptz not null,
+  source_id uuid not null → people_sources, note text
+)
+
+people_corrections(
+  id uuid pk, person_id → people, submitted_by uuid null → profiles,
+  submitted_email text null, claim text not null, evidence text null,
+  state text default 'open' check (state in ('open','accepted','rejected')),
+  created_at, resolved_by uuid, resolved_at
+)
+```
+
+**Publish gate, enforced in the database:**
+
+```sql
+alter table people add constraint publish_requires_source
+  check (status <> 'published' or exists (
+    select 1 from people_sources s where s.person_id = people.id
+  ));
+```
+
+A `check` constraint cannot reference another table. Use a `before update` trigger that raises instead,
+and assert it in the migration test. This is the single most important constraint in the schema —
+without it the verification badge is decoration.
+
+---
+
+## 8. Marketplace and money
+
+```sql
+products(
+  id uuid pk, business_id → businesses, slug citext, name text not null, description text,
+  price_kobo bigint not null check (price_kobo >= 0),      -- integer minor units, never float
+  currency char(3) not null default 'NGN',
+  stock int null check (stock >= 0),                        -- null = unlimited / made to order
+  is_available bool default true,
+  created_at, updated_at, deleted_at,
+  unique (business_id, slug)
+)
+
+orders(
+  id uuid pk,
+  reference text unique not null,             -- human + provider reference base
+  buyer_id uuid not null → profiles,
+  status text not null default 'pending'
+    check (status in ('pending','paid','preparing','out_for_delivery','delivered','cancelled','refunded')),
+  subtotal_kobo bigint not null, delivery_kobo bigint not null default 0,
+  total_kobo bigint not null, currency char(3) default 'NGN',
+  contact_name text not null, contact_phone text not null,
+  delivery_method text check (delivery_method in ('pickup','delivery','quote')),
+  delivery_address text null, delivery_landmark text null, notes text null,
+  created_at, updated_at, paid_at timestamptz null
+)
+
+order_items(
+  id uuid pk, order_id → orders on delete cascade, product_id → products,
+  name_snapshot text not null, unit_price_kobo bigint not null, quantity int not null check (quantity > 0),
+  line_total_kobo bigint not null
+)
+
+order_status_history(id uuid pk, order_id → orders, from_status text, to_status text not null,
+                     actor_id uuid null, note text, created_at)
+
+payments(
+  id uuid pk, order_id → orders,
+  provider text not null default 'paystack',
+  provider_reference text unique not null,   -- idempotency key, from the provider
+  amount_kobo bigint not null, currency char(3) not null,
+  status text not null check (status in ('initialised','pending','succeeded','failed','abandoned')),
+  raw_event_id text null,
+  created_at, updated_at, verified_at timestamptz null
+)
+
+payment_events(                              -- append-only webhook ledger
+  id uuid pk, provider text, event_id text unique not null,
+  event_type text not null, payload_hash text not null,
+  processed_at timestamptz null, error text null, received_at timestamptz default now()
+)
+
+delivery_requests(id uuid pk, order_id → orders unique, address text not null, landmark text,
+                  contact_phone text not null, notes text, created_at)
+```
+
+**Snapshot the price on the order line.** `unit_price_kobo` is copied at order time. If the product
+price changes later, the order still shows what the buyer agreed to.
+
+**`payment_events.event_id` is unique.** That single constraint is what makes webhook replay safe.
+
+---
+
+## 9. Notifications
+
+```sql
+push_subscriptions(
+  id uuid pk, user_id → profiles, endpoint text unique not null,
+  p256dh text not null, auth text not null,
+  user_agent text null, created_at, last_used_at, failed_count int default 0
+)
+
+notification_preferences(user_id → profiles pk, news bool default true, radio bool default false,
+                         comments bool default true, forum bool default false)
+
+notifications(id uuid pk, user_id → profiles, kind text, title text, body text, url text,
+              read_at timestamptz null, created_at)
+```
+
+---
+
+## 10. Audit
+
+```sql
+audit_events(
+  id bigserial pk,
+  actor_id uuid null → auth.users,
+  actor_kind text check (actor_kind in ('staff','member','system')),
+  action text not null,                    -- 'article.publish', 'forum.hide', 'order.refund', ...
+  resource_type text not null, resource_id uuid null,
+  outcome text not null check (outcome in ('success','denied','error')),
+  metadata jsonb not null default '{}',    -- no secrets, no message bodies, no tokens
+  created_at timestamptz default now()
+)
+```
+
+Append-only for application roles: no `update` or `delete` grant. Retained 24 months; pruned by a
+scheduled job, not by hand.
+
+---
+
+## 11. Indexes that matter
+
+| Table | Index | Reason |
 | --- | --- | --- |
-| `staff_profiles` | `user_id` PK/FK to Auth identity; display name, account status, created/updated timestamps. | Staff-only; do not expose private email or account status via public author pages. An Auth account alone grants no staff permissions. Define status/revocation synchronisation. |
-| `roles` | `id`, unique role key, description. | Candidate role catalog in doc 08; only approved Phase 1 roles enabled. Avoid trusting client-editable metadata. |
-| `staff_role_assignments` | `user_id` FK, `role_id` FK, assigned by/at, revoked at?. | Unique active assignment per user/role; tightly restricted writes, expiry and audit. Role derivation and permission lookup must be tamper-resistant. |
-| `authors` | `id`, optional `staff_user_id`, public display name, unique slug, approved bio/photo?, status. | Public projection contains only approved author information linked to published content; authors need not be login accounts. Staff linkage is private. |
-| `categories` | `id`, unique slug, label, status, ordering? | Authorised editable categories. Conflict/replacement rules needed; do not confuse Events news category with an event calendar. |
-| `tags` | `id`, unique slug and label, status. | Authorised management; no private/draft-only taxonomy exposed through public projections. |
-| `articles` | `id`, unique public slug, internal owner, current draft/workflow reference?, published version pointer?, created/updated timestamps. | Canonical identity; public only through a published projection. FK/pointer must reference an approved version belonging to this article. A draft edit must not overwrite a public snapshot. |
-| `article_versions` | `id`, `article_id` FK, version number, immutable content snapshot: headline, summary, body, category, tags, author, media/credits and SEO fields; created by/at, review status. | Unique `(article_id, version number)`; approved snapshots and prior history are retained. Enforce that published content has an approved version; metadata including tags/media must be snapshotted or linked to immutable version records. Published or reviewed snapshots cannot be silently mutated. |
-| `editorial_reviews` | `id`, `article_id` and version FK, reviewer FK, decision, internal notes?, created at. | Private; review refers to a specific version and records decisions. Review/approval separation and reapproval rules remain owner decisions. |
-| `article_version_tags` (candidate) | version FK, tag FK, optional label/slug snapshot. | Unique `(version_id, tag_id)`; retain public metadata consistency even if tag names change. Alternative snapshot representation acceptable only if it preserves approved version history. |
+| `articles` | `(published_at desc, id desc)` where published | The news home feed; stable pagination |
+| `article_versions` | `(article_id, version_number desc)` | Version history |
+| `article_versions` | GIN on `to_tsvector('english', title \|\| ' ' \|\| coalesce(summary,''))` | Search without a search service |
+| `comments` | `(article_id, created_at)` where `state='visible'` | Thread load |
+| `forum_threads` | `(category_id, is_pinned desc, last_activity_at desc)` | Thread list |
+| `forum_posts` | `(thread_id, created_at)` | Thread view |
+| `businesses` | `(category_id, area)` where `status='published'` | Directory filter |
+| `business_reviews` | `(business_id, created_at desc)` | Review list |
+| `orders` | `(buyer_id, created_at desc)`, `(status)` | Buyer history, seller queue |
+| `payments` | `unique (provider_reference)` | Idempotency |
+| `audit_events` | `(actor_id, created_at desc)`, `(resource_type, resource_id)` | Investigation |
 
-**Published content invariant:** A public article representation must derive from an approved, currently published version of that same article, not merely from a mutable article record or `status = published`. Publish, unpublish, archive and approved-update operations must atomically update state/pointers and record actions under appropriate authorisation. Drafting or editing after publication does not alter the public version until the new version passes the approved workflow. Optimistic concurrency/version checks or equivalent prevent overwriting concurrent edits; exact error/retry behaviour is for API design.
+---
 
-**Editorial model clarification:** The brief's `Draft → In Review → Approved → Published → Updated / Archived` is a business overview. Track draft/review/approval on a version and publication on the article or equivalent, allowing a public approved version and a private pending update to coexist. Return-for-revision, who may approve their own work, reapproval for corrections, unpublish and archive rules require owner approval before implementation.
+## 12. Money — do not model naively
 
-## 5. Media and platform entities
+1. **Integers only.** `*_kobo bigint`. Never `numeric` with a float cast, never `real`, never a JS
+   `number` parsed from a float string.
+2. **Server recomputes.** The checkout handler reads `products.price_kobo` and rebuilds the cart. The
+   request body's prices are ignored and logged when they differ.
+3. **Idempotency lives in the database.** `payments.provider_reference unique` and
+   `payment_events.event_id unique`. Not in application memory.
+4. **Webhook is the truth.** A browser redirect after checkout proves nothing and must never set
+   `orders.status = 'paid'`.
+5. **Signature verified on the raw body**, before parsing, with the provider's secret.
+6. **No `authenticated` write grant on `orders`, `payments`, `payment_events` or `order_items`.**
+   Writes go through server-side functions with an explicit capability check.
+7. **A reconciliation job** compares `payments` against the provider's records daily and alerts on
+   mismatch. Without it, a missed webhook becomes a silent loss.
+8. **Refunds and payouts are out of scope** and the schema does not pretend otherwise. `refunded` is a
+   status a human sets after doing it in the Paystack dashboard.
 
-| Entity | Key fields and relationships | Constraints, access and rationale |
+---
+
+## 13. Deletion and retention
+
+| Data | On account deletion | Retention |
 | --- | --- | --- |
-| `media_assets` | `id`, kind, title/description, rights/credit, owner, publication status, created/updated timestamps. | Separate editorial metadata from object bytes. Publish only authorised media; public projection excludes private source keys and internal notes. |
-| `asset_objects` | `id`, `asset_id` FK, representation kind, R2 bucket identifier/key (private metadata), content type, byte size, checksum?, access classification. | Unique object location as appropriate. Store private originals/derivatives separately from explicitly public approved variants. R2 access is enforced separately from PostgreSQL. Signed URLs are short-lived bearer credentials, not public metadata. |
-| `video_records` | `id`, approved provider URL or provider identifier, title, description, thumbnail reference?, date?, category?, status. | Manual curation; accept only supported provider URLs after validation and rights review. Embed availability is not guaranteed. A video may reference an authorised media asset. |
-| `programmes` | `id`, name, slug, description, publication status, approved schedule information?. | Do not invent programme content or schedule. Detailed programme routing is unresolved. |
-| `episodes` | `id`, `programme_id` FK?, slug, title, description, published date?, media/video references, status. | Published records only through public projections; nullable relationships depend on approved content model. |
-| `radio_settings` | Stable settings identifier, stream reference/configuration, status-related configuration?, programme metadata references. | Private admin writes. Exact stream URL visibility and status-verification implementation are undecided. A configured URL alone never proves LIVE. Official direct stream and permission are launch prerequisites. |
-| `site_settings` | Explicit allowlisted setting name and typed/value payload, scope, updated by/at. | Do not use as an unrestricted secret store or public JSON dump. Classify each field public or private and expose only approved public settings. |
-| `audit_events` | `id`, actor identity/service, action, resource type/id, time, outcome, restricted metadata. | Append-only for normal application roles; no secrets, tokens, full contact messages or unnecessary personal data. Define privileged maintenance and retention with owner/legal review. |
+| `profiles` | Anonymised: email destroyed with the auth user, handle replaced with `deleted-<hash>`, display name → "Deleted member" | Row kept for referential integrity |
+| `comments`, `forum_posts` | Kept, shown as authored by a deleted member | Kept — other people replied to them |
+| `businesses` (owned) | Delisted; reviews retained | Retained |
+| `orders` | Retained with personal fields nulled | 7 years (financial record convention) |
+| `payments` | Retained, never deleted | 7 years |
+| `audit_events` | Actor anonymised | 24 months |
+| `push_subscriptions` | Deleted on logout and on account deletion | — |
 
-## 6. General contact — conditional proposed model
+Deletion is a server-side routine with a test. It is never a `delete from` cascade that removes
+someone else's content.
 
-The owner approved a general contact form plus WhatsApp. Durable database storage before Resend notification is an **architecture option**, not yet an approved retention or implementation decision. If approved, candidate entities are:
+---
 
-| Entity | Candidate fields | Controls and unresolved questions |
+## 14. Migration order
+
+| # | Migration | Phase |
 | --- | --- | --- |
-| `contact_submissions` | `id`, submitted time, minimum approved contact fields and message, handling state. | Public users may submit only through a validated, abuse-controlled server operation; no public list/read. Recipient, notice, retention, deletion, access and required fields remain undecided. Not Speak Up and no anonymous/confidential promise. |
-| `contact_notification_attempts` | `id`, submission FK, status, provider message reference?, attempts, timestamps, last error category?. | Restricted operational record; no mail keys or message contents in logs. Retrying requires deduplication/idempotency and a failure/reconciliation process. Provider acceptance is not confirmed delivery. |
+| 1 | `20261102133703_staff_access_foundation` **(applied)** | — |
+| 2 | `capabilities_catalogue` — adds `capabilities`, migrates the existing grant | 2 |
+| 3 | `editorial_core` — authors, categories, tags, articles, versions, view | 2 |
+| 4 | `editorial_media_and_radio` — media assets, programmes, episodes, schedule, stream status | 2/4 |
+| 5 | `people_directory` | 3 |
+| 6 | `member_identity_and_comments` | 5 |
+| 7 | `forum` | 6 |
+| 8 | `business_directory` | 7 |
+| 9 | `marketplace_and_payments` | 8 |
+| 10 | `notifications_and_audit_hardening` | 9 |
 
-If the owner chooses an alternative delivery/storage model, update this design and security/retention implications before building. Do not model WhatsApp conversations as collected records; the link is external and the destination must be verified. No newsletter data is included in Phase 1.
-
-## 7. Public access and RLS design intent
-
-- Default deny for private tables, internal authoring versions, role assignments, reviews, audit and contact data. Only explicitly exposed, published-safe content may be available to anonymous users.
-- Prefer narrowly defined public projections/views or controlled server endpoints exposing an allowlist of fields from the current approved published version. Underlying table grants, view owner/security mode, RLS and API exposure must be tested together; a view alone is **not** proof of RLS enforcement.
-- Staff access depends on authenticated identity **and** a current trusted role assignment. Limit action and row scope; draft ownership alone does not grant review, publication or administrative rights. Use controlled operations for transitions and immutable snapshots rather than generic table writes.
-- RLS must cover both read and write (`USING` and `WITH CHECK` where applicable), direct API and any storage-related metadata. Avoid recursive or user-writable role lookups; securely designed policy helpers require review, a fixed search path and minimal privileges if definer rights are used.
-- Do not expose service-role credentials. Administrative or maintenance paths that bypass RLS must be narrowly scoped, validated, auditable and tested. Public object access in R2 cannot be protected by database RLS; object policy and publication controls must independently enforce access.
-- Full policy matrix and negative cases are in [08-permissions-security.md](08-permissions-security.md). Final SQL, grants, exposed schemas and exact functions remain future migration work.
-
-## 8. Indexing, integrity, lifecycle and operations
-
-| Concern | Proposed approach; validate against actual query plans and policy |
-| --- | --- |
-| Slugs and identity | Unique indexes for canonical article and author slugs, category/tag slugs and relevant programme/episode slugs. Define normalisation, case handling and collision rules. |
-| Published discovery | Index publication state/date and category/author associations of the **published projection/version**; support pagination with a stable tie-breaker. Published-only indexes must not return drafts. |
-| Search | Select a PostgreSQL full-text search or equivalent after evaluating language, diacritics, relevance and load. Index only published-safe content; empty and permission-denied behaviour must be tested. |
-| Workflow queues | Index draft/review state and updated time where justified; use version/article foreign-key indexes and uniqueness constraints. |
-| Media and audit | Index approved media status/date, asset relationships and audit actor/resource/time according to actual access patterns; avoid exposing audit search publicly. |
-| Contact | If durable storage is approved, index handling state/time and notification status for authorised operators; do not make sensitive fields unnecessarily searchable. |
-| Concurrency and integrity | Use transactions for state/pointer changes and audit events where possible; avoid stale approval and lost updates with version checks. Validate DB constraints and cross-entity ownership. |
-| Backup and restore | Agree recovery objectives and retention; test Postgres restore, Auth configuration recovery and R2 object restoration/reconciliation separately. A database backup alone does not back up R2. No backups are assumed configured. |
-| Caching and withdrawal | Define invalidation/reconciliation for all published projections and CDN/object caches, especially unpublication/corrections. No promise of immediate object revocation once publicly distributed. |
-| Migration | Reviewed, reversible where feasible, staged compatibility across separately deployed apps. Rollback of deployed app code does not automatically reverse a data migration. |
-
-## 9. Later-phase domains — conceptual only
-
-| Phase | Potential future domains, not Phase 1 tables | Gate |
-| --- | --- | --- |
-| 2 | Speak Up reports and moderation actions; accounts/discussions/comments/reports; events. | Separate sensitive-data access model, consent, retention, abuse response and staffing. |
-| 3 | Public people, development projects, updates and source evidence. | Review and traceable evidence/verification. |
-| 4 | Communities, heritage stories, places, businesses and media. | Local historical review, cultural distinction, attribution, approved listings. |
-| 5 | Newsletter subscribers/campaigns/consent and advanced media discovery. | Confirmed subscription, unsubscribe, campaign controls, retention and approved operations. |
-
-No future entities should be created simply because this table exists. Mobile apps, payments and marketplace operations are not current website scope.
-
-## 10. Verification and approval
-
-Prior to implementation, approve exact schema, roles, status transitions, grants/RLS and form handling. Later tests must cover FK/uniqueness and version ownership constraints; publish/update/unpublish transaction atomicity; public denial of draft/notes/contact; concurrent edits; staff role changes; R2 private/public separation; cache invalidation failures; backup restoration and deletion/retention. The staff-access migration has been applied on production; RLS flags, policies, table privileges and empty tables were inspected. Behavioural tests use an ephemeral Postgres-compatible simulation; real-provider end-to-end security testing remains outstanding.
-
-**Open decisions:** category/tag snapshot strategy; precise workflow and correction approval; staff role split; storage upload and scanning; contact persistence and retention; provider setup, backup/restore and performance budgets. These are not resolved by approval of the high-level architecture.
-
-**Approval record:** Owner approved Workstream 0.6 documents 07 and 08 on 2 November 2026. Unresolved implementation details and dependencies remain open; approval does not mean production development may begin.
+Each migration ships with: the SQL, an RLS policy set, a negative test, and a line in the tracker.

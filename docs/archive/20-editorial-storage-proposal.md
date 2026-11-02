@@ -1,3 +1,5 @@
+> **ARCHIVED 2026-11-02.** Superseded by `docs/00-master-plan.md` and `docs/12-development-roadmap.md`. Retained as a record of what was actually built and verified at the time. Some statements in this file are no longer true — do not follow it as current guidance.
+
 # Phase 1 — experimental editorial storage and commands
 
 **Status: isolated prototype only; not a migration, not deployed, and not a usable CMS.** `backend/supabase/proposals/editorial_storage.sql` and `editorial_commands.sql` are intentionally outside the migration directory. The previous session's unmerged storage proposal was absent from this new branch; its design and tests were reconstructed here and extended with experimental commands. No production data or provider configuration was changed.

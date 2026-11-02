@@ -1,118 +1,211 @@
-# EPE LAWA — Proposed API Contracts
+# EPE LAWA — API Contracts
 
-**Document:** 09 — Workstream 0.8\
-**Status:** Workstream 0.8 approved on 2 November 2026; illustrative API contracts are not implemented or deployed.\
-**Prepared:** 2 November 2026\
-**Inputs:** [Product requirements](01-product-requirements.md), [system architecture](06-system-architecture.md), [database schema](07-database-schema.md), [security](08-permissions-security.md), [integrations](10-integrations.md).\
-**Gate:** The owner approved Workstream 0.8 and the full Phase 0 exit on 2 November 2026. Resolve launch/security decisions before affected implementation.
+**Document:** 09
+**Status:** Design. Nothing here is implemented or deployed.
 
-## 1. Purpose and scope
+---
 
-Define candidate Phase 1 service contracts and failure semantics to guide later implementation and tests. No endpoint, provider connection, API key or backend service exists merely because it is described here. Paths and schemas below are proposals; actual handler location (Next.js application server, shared backend operation or controlled database function) must be decided with the final security model. An independent API server is not required.
+## 1. Conventions
 
-Public operations expose only approved published information. Private operations require an active staff session and explicit role/capability checks as described in [08](08-permissions-security.md). API design does not override unresolved editorial permissions, contact policy or owner approval of later phases. Speak Up, public accounts/forum, governance tracker, directories and newsletter APIs are not Phase 1 contracts.
+- Base path `/api/v1` on the host that owns the resource.
+- JSON in and out. `application/json; charset=utf-8`.
+- ISO 8601 UTC timestamps. IDs are UUIDs. Money is an integer in **kobo**, field name ends `_kobo`.
+- Success: `{ data, meta? }`. Error: `{ error: { code, message, fields? }, requestId }`.
+- Never leak stack traces, SQL, provider payloads, private review notes, or another user's data.
+- Pagination: cursor-based, `?cursor=&limit=` (default 20, max 50). Response carries `meta.nextCursor`.
+- Validation: zod schema on the server, the same schema shared with the client. Unrecognised keys are
+  rejected, not ignored.
 
-## 2. Conventions
+### Status codes
 
-- **Candidate paths:** `/api/v1/...` on the application responsible for the operation; the host/application is identified in each table. These are API endpoints, not the public page routes approved in [03](03-sitemap.md). Public pages may use server-side access instead of a public HTTP API where it preserves the same protections.
-- **Transport:** HTTPS; JSON request/response unless upload or provider webhook requires a documented alternative. Times use ISO 8601 UTC; IDs are opaque and validated, slugs normalised. Payloads are schemas, not real users or fabricated content.
-- **Authentication:** Public reads are anonymous; staff requests use a verified server-side session and current staff capabilities. Cookies, CSRF, origin and redirect controls follow the final security design; never accept a role or user ID from client data as authority.
-- **Request validation:** Reject unrecognised, missing or invalid fields, overlong bodies and unsupported media before processing. Actual limits and rate policies are open and must be documented/tested before implementation.
-- **Idempotency and concurrency:** State-changing publication/transition operations require current version/revision checks; return a conflict for stale or ineligible transitions. Idempotency for retries (especially contact and notifications) needs a documented key scope, retention and duplicate behaviour before implementation.
-- **No credentials in URLs or logs:** Private preview requires staff session and authorisation. R2 presigned object URLs, if selected, are time-limited bearer credentials and must be protected from logs, referrers and public pages; they are not identity proof.
-- **Caching:** Public reads may cache only approved published representations. Private, contact, auth, draft, audit and preview responses must not enter shared/public caches. Publish/update/unpublish requires cross-application revalidation and a tested failure/reconciliation strategy; cached previously public assets cannot be recalled from third-party copies.
-
-### Response and error conventions
-
-Proposed envelope: successful object/list responses contain `data` and optional `meta`; error responses contain `error.code`, a safe `error.message`, optional field-level `error.fields`, and a non-sensitive `request_id` where available. Never return stack traces, internal review notes, keys or another user's information. Exact fields and localisation remain review items.
-
-| Status | Meaning |
+| Code | Use |
 | --- | --- |
-| `200` | Successful read or completed state change where appropriate. |
-| `201` | A resource was created; do not claim a contact message was delivered simply from creation. |
-| `202` | Accepted for further processing only after the agreed durable-acceptance condition; not provider delivery or human receipt. |
-| `204` | Completed action with no response body, if contract explicitly permits it. |
-| `400` / `422` | Invalid format or input; choose consistent distinction in implementation. |
-| `401` | Missing or invalid authentication without sensitive account details. |
-| `403` | Authenticated but not authorised; use a non-disclosing `404` where resource existence itself is sensitive. |
-| `404` | Missing or unavailable resource, including private/unpublished public content. |
-| `409` | Slug collision, state transition or concurrency conflict; no silent overwrites. |
-| `429` | Rate limited, with safe retry guidance when possible. |
-| `5xx` | Service or dependency failure; safe message and traceable request ID; do not imply success. |
+| 200 | Read, or a completed transition |
+| 201 | Resource created |
+| 202 | Accepted for async work (a notification queued, a payment initialised) |
+| 204 | Completed, no body |
+| 400 | Malformed request |
+| 401 | No valid session |
+| 403 | Authenticated, not permitted — only where existence is not secret |
+| 404 | Missing **or** private. Do not use 403 for private content |
+| 409 | Version conflict, duplicate handle, duplicate review, slug collision |
+| 422 | Valid shape, invalid content (field-level detail returned) |
+| 429 | Rate limited, `Retry-After` set |
+| 500 | Server fault, opaque message, `requestId` for correlation |
+| 503 | Admin closed / dependency unavailable. Must be honest, never a pretend success |
 
-Pagination: proposed cursor or page-based scheme must use a deterministic ordering and stable tie-breaker; return only actual results and `next_cursor` or equivalent when there are more. Search text, pagination limits and retention of analytics are subject to privacy review. No arbitrary numeric limits are approved here.
+---
 
-## 3. Public read contracts — candidate
+## 2. Public reads
 
-| Host / method / path | Request | Successful response / boundary |
+| Method | Path | Host | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/v1/articles` | news | `?category=&tag=&author=&cursor=&limit=`. Published only |
+| GET | `/api/v1/articles/{slug}` | news | Current published snapshot. Draft or archived → 404 |
+| GET | `/api/v1/search?q=` | news | Postgres FTS, published only |
+| GET | `/api/v1/categories` | news | Active categories with published counts |
+| GET | `/api/v1/authors/{slug}` | news | Author + their published articles |
+| GET | `/api/v1/people` | main | `?office=&community=&q=`. Published only |
+| GET | `/api/v1/people/{slug}` | main | Profile + offices + public sources |
+| GET | `/api/v1/businesses` | main | `?category=&area=&q=`. Published only |
+| GET | `/api/v1/businesses/{slug}` | main | + reviews (paginated) |
+| GET | `/api/v1/products` | main | `?business=&category=&q=` |
+| GET | `/api/v1/radio` | main | Status, schedule, current programme — never a raw stream URL |
+| GET | `/api/v1/episodes` | main | Archive, paginated |
+
+**Public response shape — article summary**
+
+```ts
+{
+  slug: string,
+  title: string,
+  summary: string | null,
+  author: { name: string, slug: string },
+  category: { label: string, slug: string },
+  publishedAt: string,
+  updatedAt: string | null,
+  image: { url: string, alt: string, credit: string } | null
+}
+```
+
+Never include `id`, `versionId`, `ownerId`, `revision`, review notes, or unpublished fields.
+
+---
+
+## 3. Member endpoints
+
+All require a member session. All are rate limited per §5.
+
+| Method | Path | Body / query | Notes |
+| --- | --- | --- | --- |
+| POST | `/api/v1/auth/signup` | `{ email, password, handle, displayName }` | 201. Same response for a taken and a free email until verification |
+| POST | `/api/v1/auth/signin` | `{ email, password }` | 200 + cookie. Generic failure message |
+| POST | `/api/v1/auth/signout` | — | 204, clears cookies |
+| POST | `/api/v1/auth/reset` | `{ email }` | 202 always, existent or not |
+| POST | `/api/v1/auth/reset/confirm` | `{ token, password }` | 200 or 410 if expired |
+| GET | `/api/v1/me` | — | Own profile |
+| PATCH | `/api/v1/me` | `{ displayName?, bio? }` | 422 with field errors |
+| DELETE | `/api/v1/me` | `{ password, confirm: "DELETE" }` | 204. Anonymises, destroys sessions |
+| POST | `/api/v1/comments` | `{ articleSlug, parentId?, body }` | 201 |
+| PATCH | `/api/v1/comments/{id}` | `{ body }` | Own only |
+| DELETE | `/api/v1/comments/{id}` | — | Own only, soft delete |
+| POST | `/api/v1/reports` | `{ targetType, targetId, reason, note? }` | 201 |
+| POST | `/api/v1/forum/threads` | `{ categoryId, title, body, poll? }` | 201 |
+| POST | `/api/v1/forum/threads/{id}/posts` | `{ body, quotePostId? }` | 201 |
+| POST | `/api/v1/forum/polls/{id}/vote` | `{ optionId }` | 201 or 409 if already voted |
+| POST | `/api/v1/businesses` | business payload | 201, status `submitted` |
+| PATCH | `/api/v1/businesses/{id}` | owner-editable fields | Own only |
+| POST | `/api/v1/businesses/{id}/reviews` | `{ rating, body }` | 201. 409 on duplicate |
+| PATCH | `/api/v1/reviews/{id}` | `{ rating?, body? }` | Own only |
+| POST | `/api/v1/cart/items` | `{ productId, quantity }` | 201 |
+| POST | `/api/v1/orders` | `{ items[], contact, delivery }` | 201. **Prices ignored; recomputed** |
+| GET | `/api/v1/orders` | `?cursor=` | Own only |
+| GET | `/api/v1/orders/{id}` | — | Own only, 404 otherwise |
+| POST | `/api/v1/orders/{id}/cancel` | — | Only while `pending` |
+
+---
+
+## 4. Payments — the only 3 endpoints that matter
+
+### `POST /api/v1/payments/initialise`
+
+```ts
+// request
+{ orderId: string }
+// server does: load order → assert buyer → assert status 'pending'
+//              → recompute total from products → call Paystack /transaction/initialize
+//              → insert payments row (status 'initialised', provider_reference unique)
+// response 201
+{ authorizationUrl: string, reference: string }
+```
+
+The client never supplies an amount. If it sends one and it differs, the request is rejected **and
+logged as a tampering attempt.**
+
+### `GET /api/v1/payments/verify?reference=`
+
+Used only to render the post-checkout page. It may show "processing" but it must never be the thing
+that marks an order paid.
+
+### `POST /api/v1/webhooks/paystack`
+
+```ts
+// 1. Read the RAW body (no JSON parse first)
+// 2. Verify x-paystack-signature = HMAC-SHA512(rawBody, PAYSTACK_WEBHOOK_SECRET)
+// 3. Insert into payment_events; unique on event_id → duplicate means already handled, return 200
+// 4. Re-fetch the transaction from Paystack by reference (do not trust the event body's amount)
+// 5. Compare amount and currency against the server-side order
+// 6. In one transaction: update payments, set orders.status='paid', insert order_status_history,
+//    append audit_events
+// 7. Return 200 fast. Everything slow happens after the response, or in a queued job.
+```
+
+Signature failure → 401, no state change, logged. Amount mismatch → mark `payments.status='failed'`,
+alert, do not fulfil.
+
+---
+
+## 5. Staff endpoints
+
+Require a staff session **and** the named capability. `-` means the capability is checked at the
+action boundary, not the route.
+
+| Method | Path | Capability |
 | --- | --- | --- |
-| News `GET /api/v1/articles` | Optional category slug, author slug, tag slug, cursor and page size within agreed limits. | Published article summaries and pagination metadata only. No drafts, unpublished counts or internal notes. |
-| News `GET /api/v1/articles/{slug}` | Valid public slug. | Current approved published article snapshot, public author/category/tags, media credits, dates, public corrections and metadata. Unavailable/private/unpublished → safe `404` or approved withdrawal response. |
-| News `GET /api/v1/search` | Valid search query and optional pagination. | Published-only matching summaries; empty results are real, not sample content. |
-| News `GET /api/v1/categories`, `/authors/{slug}`, `/tags/{slug}` | Valid identifiers; pagination where needed. | Allowlisted public records and associated published articles. Private staff details and draft-only information are excluded. |
-| News `GET /api/v1/trending` | Pagination or period only after methodology approval. | **Conditional:** real, privacy-reviewed engagement ranking; if unavailable, no active feature or fabricated list. |
-| Main `GET /api/v1/media`, `/programmes`, `/episodes/{slug}` | Approved category/filter and pagination where applicable. | Only published media/programme/episode records and safe public links; external playback availability remains independent. |
-| Main `GET /api/v1/radio` | None. | Approved public programme/player information and a truthful status **only if independently verifiable**. No private credentials or invented stream. Player integration mechanism is pending. |
-| Main `GET /api/v1/site-settings` | None. | Explicit public allowlist only; never expose arbitrary `site_settings`, staff settings or secrets. |
+| POST | `/api/v1/staff/auth/signin` | — |
+| POST | `/api/v1/staff/auth/signout` | — |
+| GET | `/api/v1/staff/articles` | `article.create` (own scope) |
+| POST | `/api/v1/staff/articles` | `article.create` |
+| PATCH | `/api/v1/staff/articles/{id}/draft` | `article.create` \| `article.review` |
+| POST | `/api/v1/staff/articles/{id}/submit` | `article.create` |
+| POST | `/api/v1/staff/articles/{id}/review` | `article.review` |
+| POST | `/api/v1/staff/articles/{id}/approve` | `article.review` |
+| POST | `/api/v1/staff/articles/{id}/publish` | `article.publish` |
+| POST | `/api/v1/staff/articles/{id}/unpublish` | `article.unpublish` |
+| GET | `/api/v1/staff/articles/{id}/versions` | `article.review` \| `article.publish` |
+| POST | `/api/v1/staff/media/upload-url` | `article.create` |
+| POST | `/api/v1/staff/media/{id}/promote` | `article.publish` |
+| POST | `/api/v1/staff/people/{id}/verify` | `people.manage` |
+| POST | `/api/v1/staff/businesses/{id}/verify` | `business.review` |
+| POST | `/api/v1/staff/moderation/{id}/action` | `moderation.review` |
+| PATCH | `/api/v1/staff/orders/{id}/status` | `order.manage` |
+| GET | `/api/v1/staff/audit` | `audit.read` |
 
-**Public data shape:** Article summaries include stable slug, headline, approved summary?, public author/category, publication date and an approved public image/credit when available. Full articles add the approved body, available updated date, tags, captions, permitted media, public correction information and canonical/SEO metadata. `?` indicates optional data only where actually present. Private version IDs, review comments, workflow data, raw storage keys and unpublished metadata are excluded.
+**Every transition takes `expectedRevision`.** A stale revision returns 409, never a silent overwrite.
 
-Public related-article discovery may be included in the article response or a separate approved read operation, but must return published content only. Breaking banners need actual editorial designation; trending requires real data and an agreed method. Do not generate synthetic results or counts.
+---
 
-## 4. Contact and WhatsApp
+## 6. Concurrency and idempotency
 
-| Host / method / path | Request / proposed operation | Success and failure |
-| --- | --- | --- |
-| Main `POST /api/v1/contact` | Approved fields, privacy acknowledgement if required, server-side validation and spam/rate controls. Field names and required/optional status are **not decided**. | Return acknowledgement only for the explicitly agreed acceptance condition; `202` if durably accepted for later processing is the approved model. Do not claim email delivered or response guaranteed. Return safe validation/rate/failure states and a retry path. |
-| WhatsApp external link | Public, owner-approved WhatsApp destination. | Browser leaves site for the external service. Not a platform API; no implicit form forwarding or confidential reporting promise. |
-
-Contact storage, recipient, retention, privacy notice, email provider path, deduplication and recovery are unresolved. If durable acceptance is adopted, use a transactionally reliable handoff to a notification workflow and test duplicate requests, service outages and retries. Never return or expose another person's message or notification record. Do not introduce public submission lookup, anonymous-report claims or Speak Up reference numbers.
-
-## 5. Private editorial and admin contracts — candidate
-
-The table names **capabilities**, not final roles. Actual role mapping, reviewer independence and approval of revisions remain unresolved. All resources and operations require verified staff identity, current permission and state checks; audit sensitive actions.
-
-### 5.1 Articles and workflow
-
-| Host / method / path | Capability / input | Result and safeguards |
-| --- | --- | --- |
-| Admin `GET /api/v1/articles` | View permitted work; optional approved status/filter/pagination. | Private list scoped by role/ownership; no-store and no public cache. |
-| Admin `POST /api/v1/articles` | Create draft with agreed editorial fields. | `201` private article/draft reference and revision; reject invalid or unauthorised data. |
-| Admin `GET /api/v1/articles/{id}` | Read authorised private draft and permitted history. | Private data only for authorised staff; omit private review notes if the role cannot access them. |
-| Admin `PATCH /api/v1/articles/{id}/draft` | Edit draft using expected revision and validated fields. | New revision or conflict; public published snapshot is unchanged. Do not mutate an approved snapshot in place. |
-| Admin `GET /api/v1/articles/{id}/preview` | Authenticated private preview of an authorised version. | Session-protected, no shared cache, noindex; no publicly shareable bearer token. Mechanism and access lifetime still require design. |
-| Admin `POST /api/v1/articles/{id}/submit` | Submit a specified current draft version for review. | Transactionally record transition/actor; reject stale or invalid version. |
-| Admin `POST /api/v1/articles/{id}/review` | Record authorised review decision for a specified version; optional private notes. | Review or revision request, audited; separation-of-duties policy pending. |
-| Admin `POST /api/v1/articles/{id}/approve` | Approve a specified eligible version. | Only an authorised approver can do so; default proposal is separate author/approver pending owner decision. |
-| Admin `POST /api/v1/articles/{id}/publish` | Publish a specified approved version with expected revision. | Atomically set published reference and audit; trigger/reconcile main/news/search/cache invalidation. `200` means DB transition succeeded, not that every cache has refreshed. |
-| Admin `POST /api/v1/articles/{id}/unpublish` or `/archive` | Authorised transition and current revision. | Remove from public projection, audit and initiate verified invalidation; specify withdrawal status and failure recovery. |
-| Admin `GET /api/v1/articles/{id}/versions` | Authorised history access. | Private snapshots and review history only to permitted staff, with no public cache. |
-
-**State invariant:** A public article points only to an approved version of the same article. A currently published article may have a separate private edit in progress. Corrections create a new version and follow the ultimately approved review/reapproval policy; do not silently expose edited content before approval. Publication and withdrawal cannot rely solely on hiding controls or a public cache TTL.
-
-### 5.2 Editorial metadata, media and configuration
-
-| Host / contract family | Capabilities and constraints |
+| Operation | Guard |
 | --- | --- |
-| Admin `/api/v1/categories`, `/tags`, `/authors` | Authorised list/create/update/archive as permitted; unique slug conflicts return `409`. Define handling of references and public snapshots before deletion or renaming. |
-| Admin `/api/v1/media`, `/videos`, `/programmes`, `/episodes` | Authorised list/create/edit/feature and approve/publish operations per final matrix. Validate provider URLs, rights, credits and status. Public exposure requires explicit approval. |
-| Admin `POST /api/v1/uploads/initiate`, `POST /api/v1/uploads/{id}/complete` | Candidate two-step authorised upload. Initial request declares permitted metadata; response may use a server-controlled upload or a narrowly scoped short-lived R2 URL. Completion must independently verify actual object size/content, ownership, classification and approved inspection before media is made public. Exact limits and scanning policy remain open. Reject unauthorised or invalid uploads; revoke/clean up failed or abandoned objects. |
-| Admin `/api/v1/radio`, `/settings` | Restricted read/update of explicit allowed settings; audit changes. Do not expose secrets or claim a configured stream is live. |
-| Admin `/api/v1/staff`, `/roles` | Explicitly authorised staff/permission management only; verify identity and prevent self-escalation. Activation, revocation, expiry and audit details require security review. |
-| Admin `GET /api/v1/audit-events` | Restricted audit read, filtered/paginated as permitted; no passwords, keys, signed URLs or full contact messages in records. Retention and visibility pending. |
-| Admin `/api/v1/contact-submissions` | **Conditional on approved durable storage:** restricted handling only; no public read/list. Role scope and lifecycle pending privacy decision. |
+| Article transition | `expectedRevision` compare-and-swap; 409 on mismatch |
+| Payment initialise | unique `provider_reference`; repeat call returns the existing authorization |
+| Webhook | unique `event_id`; repeat returns 200 without side effects |
+| Order create | client `Idempotency-Key` header, stored 24 h |
+| Business review | unique `(business_id, author_id) where deleted_at is null`; 409 |
+| Poll vote | primary key `(poll_id, voter_id, option_id)`; 409 |
 
-Specific HTTP methods, request fields, public object promotion and deletion semantics for these families must be finalised in implementation-ready contracts after owner decisions. This table is not permission to create generic CRUD endpoints that bypass review, RLS or audit.
+---
 
-## 6. Provider callbacks and background work
+## 7. Caching
 
-- **Resend:** Optional webhook endpoint only if a delivery-event workflow is approved. Verify provider signatures against raw request data per current documentation, reject unauthenticated/replayed or invalid events, deduplicate retries, store minimum metadata and return an accurate processing response. Provider acceptance and delivery remain different states.
-- **Auth:** Supabase Auth owns its supported login/recovery protocols; client and server integration, session refresh, logout, redirect allowlists and callback leakage protection must be specified and tested rather than inventing a custom authentication API.
-- **R2:** Credentials and signing are server-only; a signed URL, if used, is time-limited and scoped to an operation/object. Database policies do not protect a public bucket. API must not return R2 secrets or private keys.
-- **Jobs / revalidation:** Candidate authenticated internal operations only when justified. Require independent secret/identity, durable event persistence, idempotency, retries, logs without sensitive payloads and failure reconciliation. Vercel cron failures are not automatically retried per [10](10-integrations.md); do not rely on a single invocation.
+| Response | Header |
+| --- | --- |
+| Published article | `public, s-maxage=60, stale-while-revalidate=300` |
+| Article listing | `public, s-maxage=30` |
+| `/api/v1/me`, orders, admin | `private, no-store` |
+| Payments | `no-store` |
+| Any staff response | `private, no-store` |
 
-## 7. Contract acceptance and open decisions
+`unpublish` must actively purge, not wait for the TTL. A test asserts the article is gone on the next
+request after unpublish, not after 60 seconds.
 
-Before implementation, specify exact payload schemas, field constraints, error codes, role/resource rules, pagination, rate and idempotency policies, article version concurrency, upload inspection, safe preview access, cache invalidation, webhook handling and contract ownership. Validate them against docs 07/08 and user decisions. Contract tests must cover positive and negative cases, including direct anonymous attempts against drafts, stale transitions, forbidden roles, private R2 access, contact failure and invalid callbacks. Later phases require separate contracts.
+---
 
-**Approval record:** The owner approved Workstream 0.8 and the full Phase 0 plan on 2 November 2026. No API is implemented, deployed or tested by this document.
+## 8. Versioning
+
+`/api/v1` until the first external consumer exists. Breaking changes get `/api/v2`; the old path is
+kept for 90 days with a `Deprecation` header. There is no external consumer today, so v1 may change
+freely — but the shapes above are what the frontend is built against, so changing them is a
+coordinated change across client and server in the same commit.

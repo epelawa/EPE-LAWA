@@ -1,47 +1,117 @@
 # EPE LAWA
 
-EPE LAWA — The Voice of Epe Division. A website-first civic, cultural, journalism and media platform for Epe Division.
+**The Voice of Epe Division.** A community, news, cultural and commerce platform for Epe Division,
+Lagos State, Nigeria — editorial, forum, radio, business directory and marketplace in one place.
 
-## Current status
+**Start here → [`docs/00-master-plan.md`](docs/00-master-plan.md).** It is the authority on scope and
+phase order. Everything else supports it.
 
-**Phase 1: foundation.** The owner approved Workstream 0.8 and the full Phase 0 plan on 2 November 2026. Three minimal Next.js application shells and shared workspace tooling are present; they are not launch-ready. Main and news explicitly report that content is not connected, and admin returns 503 until secure authentication and permissions are implemented. The staff-access foundation migration has been applied to the owner-confirmed production Supabase project; unwired session/sign-in/sign-out helpers and an experimental editorial workflow model are under development, the applications are not connected, and real-provider security tests remain outstanding. The mandatory live radio stream, domains and provider configurations remain unverified.
+---
 
-The owner requested no demo or seeded application data. Available features should have useful, truthful empty states when there are no real records. See the [pre-development handoff](docs/13-pre-development-handoff.md) for the proposed structure, dependency decisions and next steps.
+## Status
+
+**Phase 1 — public shell, in progress.**
+
+The planning baseline has been re-written for the five-module build and the old website-only scope is
+archived. Three Next.js application shells exist and build. The staff-access foundation migration is
+applied to the Supabase project. Nothing is connected to real data yet: the admin returns `503` by
+design, and the public pages state honestly that content is not connected.
+
+No demo data, no seeded records, no invented metrics. Every list route ships with a real empty state
+until real records exist.
+
+| Item | State |
+| --- | --- |
+| Docs | Re-baselined and current |
+| Toolchain (`typecheck`, `build`, `test`) | Green — 28/28 tests |
+| Public shell | In progress |
+| News engine | Not started |
+| Radio | Blocked on the stream URL (B1) |
+| Providers (Cloud Run, GCS, Resend, Paystack) | Not configured |
+| Native app (React Native + Expo) | Deferred by decision |
+
+---
 
 ## Local setup
 
-Requires Node.js 22 and Corepack. Enable Corepack so the pinned pnpm binary is on your PATH, then:
+Requires Node.js 22 and pnpm 10.
 
 ```sh
-corepack enable
 pnpm install --frozen-lockfile
 pnpm typecheck
 pnpm build
 pnpm test
 ```
 
-`pnpm test` runs foundation smoke tests against built applications, unit tests and an ephemeral in-memory RLS simulation, so run `pnpm build` first. These do not replace real Supabase/security testing. Start a development server with `pnpm --filter @epelawa/main dev` (or substitute `@epelawa/news` / `@epelawa/admin`); each binds to `0.0.0.0` and defaults to port 3000. Run apps on separate ports if running concurrently. The admin intentionally responds with HTTP 503 and `no-store`; it is **not** an authenticated dashboard. No provider credentials or environment variables are needed for these shells.
+`pnpm test` spawns the built apps against real HTTP responses, so **run `pnpm build` first**. The
+in-memory PGlite RLS simulation in the suite is a fast local check — it is **not** proof that RLS
+works against real Supabase.
 
-The current foundation uses pnpm 10.34.9, Turborepo 2.11.10, Next.js 16.4.4, React 19.3.1 and TypeScript 5.9.3. See [the handoff](docs/13-pre-development-handoff.md) for uninstalled candidates, the three-folder layout, open decisions and launch blockers. No demo content or seeding scripts are included.
+Run one app:
 
-## Phase 0 documents
+```sh
+pnpm --filter @epelawa/main dev     # also @epelawa/news, @epelawa/admin
+```
 
-1. [Product requirements](docs/01-product-requirements.md)
-2. [User journeys](docs/02-user-journeys.md)
-3. [Sitemap](docs/03-sitemap.md)
-4. [Page specifications](docs/04-page-specifications.md)
-5. [Design system](docs/05-design-system.md)
-6. [System architecture](docs/06-system-architecture.md)
-7. [Database schema](docs/07-database-schema.md)
-8. [Permissions and security](docs/08-permissions-security.md)
-9. [API contracts](docs/09-api-contracts.md)
-10. [Integrations](docs/10-integrations.md)
-11. [Testing and acceptance](docs/11-testing-acceptance.md)
-12. [Development roadmap](docs/12-development-roadmap.md)
+Each binds `0.0.0.0` on port 3000 — use different ports when running more than one. The admin responds
+`503` with `no-store` and `noindex` until authentication and authorisation are real. That is deliberate;
+do not remove it to make a demo work.
 
-Additional: [Pre-development handoff](docs/13-pre-development-handoff.md), [staff-access foundation](docs/14-staff-access-foundation.md), [UI research](docs/15-ui-research.md), and [audit and delivery notes](docs/16-audit-and-delivery.md). Provider names and domains in these documents are design direction or unverified dependencies, not evidence of working infrastructure.
+No provider credentials are needed to build or run the shells.
 
+### Build note
 
-## Project progress
+Both `next build` and the test runner are configured for portability rather than speed:
 
-See the [full project implementation tracker](docs/17-project-implementation-tracker.md) for Phase 0–5 checklists, current progress, remaining steps and release gates.
+- Builds use `next build --webpack`. Turbopack cannot read the symlinks pnpm creates on some
+  filesystems, which breaks the build outright there.
+- Tests run through `tsx`. Some Node 22 builds are shipped without experimental TypeScript stripping,
+  so `node --experimental-strip-types` fails on files that import `.ts` modules.
+
+Both are documented in [`docs/13-tech-stack.md`](docs/13-tech-stack.md).
+
+---
+
+## Documentation
+
+| # | Document |
+| --- | --- |
+| 00 | [Master plan](docs/00-master-plan.md) — scope, phases, blockers |
+| 01 | [Product requirements](docs/01-product-requirements.md) |
+| 02 | [User journeys](docs/02-user-journeys.md) |
+| 03 | [Sitemap and information architecture](docs/03-sitemap.md) |
+| 04 | [Page specifications](docs/04-page-specifications.md) |
+| 05 | [Design system](docs/05-design-system.md) |
+| 06 | [System architecture](docs/06-system-architecture.md) |
+| 07 | [Database schema](docs/07-database-schema.md) |
+| 08 | [Permissions and security](docs/08-permissions-security.md) |
+| 09 | [API contracts](docs/09-api-contracts.md) |
+| 10 | [Integrations and deployment](docs/10-integrations.md) |
+| 11 | [Testing and acceptance](docs/11-testing-acceptance.md) |
+| 12 | [Development roadmap](docs/12-development-roadmap.md) |
+| 13 | [Tech stack](docs/13-tech-stack.md) |
+| 14 | [Implementation tracker](docs/14-tracker.md) |
+| 15 | [UI research register](docs/15-ui-research.md) |
+
+Superseded documents are kept in [`docs/archive/`](docs/archive/) with a banner explaining why.
+
+---
+
+## Repository layout
+
+```
+frontend/apps/{main,news,admin}   three Next.js applications
+frontend/packages/                shared browser-safe UI and contracts
+frontend/tests/                   HTTP, unit and integration tests
+backend/packages/                 auth, editorial, http-security, data access
+backend/supabase/migrations/      reviewed SQL — the schema source of truth
+docs/                             planning, architecture, operations
+```
+
+---
+
+## Contributing
+
+Read [`AGENTS.md`](AGENTS.md) first. It carries the definition of done: `typecheck`, `build` and
+`test` must pass, responsive and accessible states must exist, then commit and push. One logical
+change per commit. Never commit a red tree.

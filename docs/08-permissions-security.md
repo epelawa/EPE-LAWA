@@ -1,163 +1,235 @@
-# EPE LAWA — Permissions and Security Design
+# EPE LAWA — Permissions and Security
 
-**Document:** 08 — Workstream 0.6 (security design)\
-**Status:** Workstream 0.6 approved by the owner on 2 November 2026. The first staff-entry controls have a local implementation and limited simulated tests; the complete security model remains unimplemented and unverified against Supabase.\
-**Prepared:** 2 November 2026\
-**Inputs:** [Product requirements](01-product-requirements.md), [approved architecture](06-system-architecture.md), [proposed database schema](07-database-schema.md).\
-**Gate:** Documents 07 and 08 were approved as Workstream 0.6; proceed to Workstream 0.7. Full Phase 0 approval is still required before production development.
+**Document:** 08
+**Status:** Design. Only the staff-access foundation is applied. Nothing here is verified against a
+real Supabase project yet.
+**Companion:** `07-database-schema.md`.
 
-## 1. Security objectives and boundaries
+---
 
-Protect public editorial integrity; staff accounts and operations; unpublished content and versions; general-contact messages; private storage; provider credentials; and audit and recovery processes. Public browsing is anonymous. Staff access requires verified authentication **and** current authorisation. Future Speak Up reports, discussions and other later-phase data need separate designs before those phases begin.
+## 1. Two identity axes
 
-Trust boundaries: browser ↔ public/news/admin server; server ↔ Supabase Auth/Postgres; server ↔ R2 and Resend; browser ↔ third-party radio/video/WhatsApp. None of these integrations is verified here. A public object in R2 is accessible independently of Postgres; database RLS does not protect it. Secrets stay in trusted server environments, never in client bundles, repository files or chat.
+This is the single most important structural decision. Getting it wrong means rebuilding auth twice.
 
-### Information classification
-
-| Class | Examples | Proposed handling |
+| | Staff identity | Member identity |
 | --- | --- | --- |
-| Public approved | Published article snapshot, approved author profile, deliberately public asset, approved contact/WhatsApp link. | Public allowlisted projection/URL only after approval; cache and withdrawal policies apply. Public delivery cannot guarantee recall of third-party copies. |
-| Internal | Drafts, unpublished versions, editorial notes/reviews, media provenance, private previews, non-public configuration. | Authorised staff only; no shared public caching, indexation, metadata or unauthorised object URL. |
-| Restricted personal / operational | General-contact messages and contact details, staff identity/role details, audit details, provider message metadata. | Minimum access and collection, retention/deletion policy, auditable access where required; never public by default. |
-| Secret | Service-role, R2 and Resend keys; passwords, session tokens, webhook or job secrets. | Server-only secret management, least privilege, separation/rotation; never in logs, URLs deliberately used for sharing or public code. |
+| Who | Journalists, editors, publishers, moderators, administrators | The public |
+| Table | `staff_profiles` + `staff_capability_grants` | `profiles` |
+| Session | httpOnly `__Host-` cookie, admin host only | httpOnly cookie on public hosts; secure store on native |
+| Host | `admin.epelawa.ng` only | `epelawa.ng`, `news.epelawa.ng` |
+| Grant | Explicit capability rows | Account existence only |
+| Failure | 503 (admin closed) | 401 / redirect to sign in |
 
-General contact is **not** an emergency service or a confidential Speak Up reporting channel; do not promise anonymity. The pending contact storage decision affects risk and must be approved before implementation. The existence of a privacy policy, RLS or encryption alone is not proof that a user's message is safe.
+**Rules.**
 
-## 2. Candidate roles and permission matrix
+1. A member account grants nothing on the admin host. The admin host rejects any session without a
+   current capability grant, regardless of who the user is.
+2. A staff cookie is never valid on the public hosts. Public pages do not read staff session.
+3. A staff member who also wants to comment registers a separate member account. This is deliberate —
+   it keeps moderation actions and public speech visually distinct, and it keeps the capability
+   surface small.
+4. Both axes use Supabase Auth for the credential. Neither trusts a JWT claim for authorisation; the
+   capability or profile row is read on every protected request.
 
-The owner identified the owner and developer as responsible, but has not assigned individual accounts or approved a role split. The following is a **proposed least-privilege starting matrix**, not an implemented policy or assertion about actual staff. Enable only needed Phase 1 roles. Alternative role assignments and who may self-approve require owner decision before implementation.
+---
 
-Legend: **✓** proposed permission; **O** own assigned drafts only; **—** denied by default; **R** restricted to the role's assigned scope. Each permission also requires an active account, resource state and server/database checks.
+## 2. Capability matrix
 
-| Action | Public | Journalist | Editor | Editor-in-Chief | Radio Manager | Administrator | Super Admin |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Read approved published content | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Read own drafts and authoring history | — | O | R | ✓ | — | R | R |
-| Create/edit assigned drafts, submit for review | — | O | R | ✓ | — | R | R |
-| Review / request revision | — | — | R | ✓ | — | R | R |
-| Approve / publish / update / unpublish / archive articles | — | — | — | ✓ | — | R | R |
-| Manage categories, tags, author records | — | — | R | ✓ | — | R | R |
-| Manage media/curation | — | R | R | ✓ | R | R | R |
-| Manage radio configuration | — | — | — | — | ✓ | R | R |
-| Read general-contact submissions, if stored | — | — | — | R | — | R | R |
-| Change website settings | — | — | — | — | — | R | R |
-| Manage staff / role assignments | — | — | — | — | — | — | ✓ |
-| Read audit logs | — | — | — | — | — | R | ✓ |
-| Change security-sensitive configuration | — | — | — | — | — | — | ✓ |
+**Legend:** ✓ permitted · O own resources only · R restricted to assigned scope · — denied.
 
-`R` is **not blanket permission**: it means a specific capability and resource scope must be granted explicitly in the final role/action matrix. Administrator and Super Admin do not automatically gain editorial approval merely because they have technical access. Broad operational powers must not silently bypass the editorial approval process. Separate account management from publishing where practical. Decide whether editor and publisher can be the same person, who can approve their own work, who can read contact messages and which powers owner/developer actually need.
+| Action | anon | member | verified member | business owner | moderator | journalist | editor | publisher | admin |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Read published article | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Read draft / version history | — | — | — | — | — | O | R | R | R |
+| Create draft | — | — | — | — | — | ✓ | ✓ | ✓ | R |
+| Review / request revision | — | — | — | — | — | — | ✓ | ✓ | R |
+| Approve | — | — | — | — | — | — | ✓ | ✓ | R |
+| Publish / unpublish | — | — | — | — | — | — | — | ✓ | R |
+| Manage categories / tags / authors | — | — | — | — | — | — | ✓ | ✓ | R |
+| Manage media | — | — | — | — | — | R | R | R | R |
+| Manage radio config | — | — | — | — | — | — | — | — | R |
+| Read Who is Who drafts | — | — | — | — | — | — | ✓ | ✓ | R |
+| Verify a person / business | — | — | — | — | — | — | — | — | R |
+| Comment | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Create forum thread / post | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Vote in a poll | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Report content | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Moderate (hide / lock / ban) | — | — | — | — | ✓ | — | — | — | R |
+| Submit own business | — | — | — | ✓ | — | — | — | — | — |
+| Publish a business | — | — | — | — | — | — | — | — | R |
+| Review a business | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Place an order | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| See any order (not own) | — | — | — | — | — | — | — | — | R |
+| Advance an order status | — | — | — | O | — | — | — | — | R |
+| Read audit log | — | — | — | — | R | — | — | — | R |
+| Manage staff | — | — | — | — | — | — | — | — | ✓ |
 
-Community Moderator and Directory Manager are future-phase candidate roles, not enabled by this matrix. No public user account or forum role is required in Phase 1. Additional granular permissions may be preferable to multiple broad roles; avoid role proliferation without operational need.
+`R` is never blanket. Each capability is a row; each is checked at the action boundary, not at the
+route.
 
-### Permission enforcement and changes
+---
 
-1. Use a trusted staff role assignment store, not user-editable profile or JWT metadata as the authority. Public clients cannot assign themselves roles or create staff status.
-2. Default deny, including direct requests to APIs, tables, functions and object stores. The UI may hide actions for clarity but cannot grant or enforce rights by itself.
-3. Validate action, resource ownership/scope, state, reviewer eligibility and current role at the server and database boundary. Role deactivation/revocation must take effect according to a documented maximum delay and session handling strategy.
-4. Restrict role grants and security configuration to an explicitly authorised administrator; require audit records for grants, revocation and privileged actions. Define bootstrap/break-glass access without a permanent shared account and test recovery/revocation.
-5. Protect approved/published snapshots from generic edits: use validated, authorised transition operations with transactional integrity and retained history. No one, including an operator with infrastructure access, should silently alter approved public content.
+## 3. Enforcement — where, and in what order
 
-## 3. Authentication and session flow
+Every protected operation passes four gates. All four, in this order, every time.
 
-Phase 1 recommendation: staff log in on the admin host; main and news are public and do not automatically share staff cookies. The details must be tested against the actual Supabase Auth/Next.js deployment and preview domains.
-
-```text
-Staff → admin login → Supabase Auth verification
-                         ↓
-             admin-host session established / refreshed
-                         ↓
-       server verifies identity + current staff role for each protected action
-                         ↓
-                authorised operation or denial + appropriate audit
-                         ↓
-                   logout / expiry / revocation
+```
+1. Session verified            → Supabase Auth getUser(), never getSession(), never a JWT claim
+2. Identity mapped             → staff_profiles row with is_active = true, or profiles row not deleted
+3. Capability checked          → explicit grant row, read fresh, never cached across requests
+4. Resource authorisation      → does this actor own / moderate / administer this specific row?
 ```
 
-- Validate authenticated server-side sessions rather than trusting browser-supplied user IDs or role claims. Establish appropriate `Secure`, `HttpOnly`, host-only and `SameSite` cookie settings, CSRF protection for cookie-authenticated state changes, and secure session rotation/refresh/logout.
-- Allowlist exact approved redirect origins/paths for login, recovery and preview environments; reject open redirects. Supabase recovery mechanisms may involve short-lived verification links: assess provider flow and leakage risks, avoid exposing reusable bearer tokens in URLs or logs, and test actual callback handling before approval.
-- Evaluate MFA for privileged accounts, password recovery, email verification, rate limiting, session lifetime, account lockout, deactivation and support procedures. MFA and specific timeouts are not yet approved. Protect against account enumeration with appropriately generic public responses.
-- Do not use local storage or share cookies across subdomains as an unreviewed shortcut. Public pages and admin previews must not leak tokens, draft content or personal information in referrers, logs, page metadata or shared caches.
-- Consider separation of production and preview identities; never use production users and confidential data in unprotected previews. Establish incident handling for suspected credential compromise.
+Then the **database repeats gates 3 and 4 in RLS.** The application check gives a good error message;
+the RLS policy is the actual boundary. If the two disagree, RLS wins and the application has a bug.
 
-## 4. Database access and RLS policy design
+**A hidden button is not authorisation.** A disabled input is not authorisation. A route that returns
+403 for a valid member is a bug if the member is allowed.
 
-RLS must be enabled and tested on each exposed table as appropriate, with explicit grants and default-deny policies. A table with RLS enabled but no applicable policy should be inaccessible to ordinary roles; test actual Supabase/Postgres behaviour. Safe public views, exposed schema configuration, function privileges and view ownership/security mode require explicit verification; a view or noindex tag alone does not protect a draft.
+---
 
-| Data / operation | Anonymous | Authorised staff | Enforcement intent |
+## 4. RLS policy intent by table
+
+| Table | anon | member | staff |
 | --- | --- | --- | --- |
-| Published articles, safe authors, category/tag data | Read only safe approved published projection. | Read within appropriate editorial scope. | Projection must reference the current approved published version; no private metadata or other versions. Deny direct access to underlying private tables. |
-| Draft articles, snapshots and editorial reviews | Denied. | Assigned/authorised scope only. | RLS and server checks for read/write; immutable approved versions; controlled transitions and same-article version ownership. |
-| Staff roles, settings, audit | Denied except allowlisted public settings. | Specific roles/capabilities only. | Restricted grants, row/column exposure and privileged operations; never expose private identity/role details via public views. |
-| Media metadata / R2 objects | Only approved public projection and intentionally public objects. | Relevant management role; private objects only with explicit authorisation. | RLS protects metadata, **not** R2 bytes. Separate private and public storage, server checks and scoped access. |
-| Contact submissions / notification records (if adopted) | No list/read; submission only through controlled validated server operation. | Explicit restricted contact-handling permission. | Default-deny direct table APIs, minimal data, rate limits, audit and retention. Test unauthorised staff denial. |
-| Transition / role-management operations | Denied. | Explicitly permitted role and state only. | Grant only specific reviewed procedures/endpoints; concurrency-safe updates and auditing; do not expose unrestricted direct updates. |
+| `published_articles` (view) | `select` where published | same | same |
+| `articles`, `article_versions` | — | — | `select` where owner or `article.review` / `article.publish` |
+| `comments` | `select` where `state='visible'` | `insert` where `author_id = auth.uid()`; `update`/`delete` own | `update state` with `moderation.review` |
+| `comment_reports` | — | `insert` own | `select`/`update` with `moderation.review` |
+| `forum_*` read | `select` where not hidden | same | same |
+| `forum_posts` write | — | `insert`/`update` own, blocked when banned | moderator `update state` |
+| `profiles` | `select` public columns via view | `update` own | `select` all with `admin.access` |
+| `businesses` | `select` where `status='published'` | `select` own regardless of status | full with capability |
+| `business_reviews` | `select` not deleted | `insert`/`update` own | `update state` with capability |
+| `orders`, `payments` | — | `select` own only | `select` with capability; **no writes for anyone** |
+| `people*` | `select` where `status='published'` | same | per capability |
+| `audit_events` | — | — | `select` with `audit.read`; **no update, no delete** |
+| `staff_*` | — | — | `select` own only (existing policy) |
 
-For each actual policy, specify role, operation, predicate for existing rows and `WITH CHECK` for resulting rows, data exposure, direct table/function grants and negative tests in the migration/security review. Avoid recursive role-policy lookups. If privileged/definer helpers are necessary, minimise execution rights, fix `search_path`, validate caller and parameters, and test that they cannot be exploited. An Auth user without a staff assignment receives no staff permissions.
+Writes to `orders`, `payments`, `payment_events` and any publish transition happen through
+`security definer` functions with a fixed `search_path`, an explicit caller check, and `revoke all`
+from `public` before `grant execute` to the specific role. Function-level security is tested in
+negative tests, not assumed.
 
-### Editorial security invariants
+---
 
-- A publicly served article must reference an approved version belonging to that article. Private draft updates cannot change public title, body, images or metadata until reapproved and published.
-- Decide whether an author may review/approve their own work; default proposal is to require a different authorised approver, with no emergency bypass until the owner explicitly approves a safe procedure.
-- Publishing, correcting, unpublishing and archiving must be authorised, transactionally consistent and audited. Preserve earlier versions and expose only public corrections, not private notes.
-- Public caches, search, feeds, SEO metadata, previews, R2 images and CDNs must be included in withdrawal testing. Publicly distributed assets may already have been copied; avoid claiming absolute revocation.
+## 5. Session and cookie rules — web
 
-## 5. R2 object and media security
+- Cookie name `__Host-epelawa-<scope>`; `Secure`, `HttpOnly`, `SameSite=Lax`, `Path=/`, no `Domain`.
+- Access token lifetime short; refresh token rotated on use; reuse detection revokes the family.
+- Every response that touches a session sends `Cache-Control: private, no-store`.
+- `Origin` checked against an exact allowlist on every mutating request, plus a 32-byte CSRF token in
+  a cookie and a matching header compared in constant time. Both already exist in
+  `backend/packages/http-security` — wire them, do not reimplement.
+- Sign-in and sign-out are POST, never GET.
+- Redirect targets are literal allowlisted paths. The existing `safeAdminRedirect` is the model.
 
-1. Use separately controlled private and public buckets or an equivalently verified isolation design; private content is never placed behind a public access path. Environment isolation and key scopes must be verified in the owner's actual Cloudflare account.
-2. The authorised upload workflow validates file type/content, size, permissions and rights; determine scan/inspection requirements and safe image processing. Never trust a client filename or claimed MIME type alone.
-3. Keep originals and unreviewed variants private. Promote only specifically approved public derivatives to public delivery; tie publication and R2 lifecycle to the approved content workflow. Store private object location metadata only in restricted records.
-4. Private reads use a server-authorised proxy or narrowly scoped short-lived signed access, after evaluating risks. Signed URLs are bearer credentials: avoid logs, referrers, public metadata and excessive expiry; document revocation and cache limitations. Never put secret keys in the browser.
-5. On unpublication or takedown, revoke the public publication path and purge where feasible, invalidate page and object caches, and verify results. This cannot recall cached or copied public objects outside platform control; operational procedures and legal response must account for that.
-6. Verify R2 permissions, network policies, CORS, object lifecycle, actual backup/restore, billing and audit support; do not assert these capabilities are configured. Separate test/preview objects from production and use no real confidential fixtures in public testing.
+---
 
-## 6. Contact, email and external integrations
+## 6. Session and tokens — native (future)
 
-- Contact submission fields, privacy notice, recipient, retention, deletion, abuse controls and operator access remain open. If stored, validate on a server-controlled path and block direct public reads. A general enquiry may contain sensitive information: collect the minimum necessary and do not log the message.
-- If the approved design durably stores messages and sends Resend notifications, distinguish accepted into the platform from provider acceptance, delivery and human response. Use truthful user-facing messages and a retry/reconciliation process with deduplication and monitoring. Provider webhooks, if used, require signature and replay verification and minimal data storage.
-- For Supabase Auth email, evaluate supported Resend SMTP configuration and test sender-domain verification, recovery links, delivery and limits. No provider account is assumed configured; separate production and non-production credentials and sending destinations.
-- WhatsApp is an external link, not an authenticated or private submission workflow. Verify the destination number and tell users they are leaving. Avoid pre-populating sensitive text; do not promise confidentiality or automatic follow-up.
-- Live radio requires an authorised, compatible direct stream and embedding permission at launch. Do not mark LIVE from a configured URL alone. Test playback, HTTPS/mixed-content, format, origin restrictions and unavailable states. YouTube/Facebook use only supported embeds/links; do not scrape. Evaluate script/privacy and content-security policies with actual providers.
+- Tokens in `expo-secure-store` (Keychain / EncryptedSharedPreferences). **Never** AsyncStorage, never
+  a plain file, never a global JS variable that survives a screenshot.
+- No cookie is used. The API must therefore accept a bearer token for member routes — which means
+  CSRF does not apply, but origin checks do not protect either. Bearer tokens carry their own risk, so:
+  short access lifetime, refresh rotation, device binding recorded, and revocation on logout.
+- The admin host never accepts a bearer token from the native app. Staff must use the web admin.
 
-## 7. Audit, operations, privacy and incident response
+---
 
-### Audit events
+## 7. Money
 
-Record, as applicable, staff login/security events available from the chosen provider, account activation/deactivation and role changes, editorial submissions/reviews/approval/publication/corrections/unpublication/archive, restricted media and settings actions, and contact access or handling actions according to the approved policy. Record actor or service, action, target, timestamp, outcome and limited relevant metadata; avoid passwords, keys, tokens, signed URLs, full contact messages and unnecessary personal data. Distinguish successful and denied sensitive attempts where feasible.
+| Rule | Consequence if broken |
+| --- | --- |
+| Amount recomputed server-side from `products.price_kobo` | Attacker buys a ₦50,000 item for ₦50 |
+| Webhook signature verified on the raw body before parse | Forged "payment succeeded" |
+| `payments.provider_reference` unique | Duplicate charge on retry |
+| `payment_events.event_id` unique | Replayed webhook double-fulfils an order |
+| Order status changed only by the webhook handler or an authorised staff action | Client marks its own order paid |
+| No `authenticated` insert/update/delete on `orders`, `payments`, `order_items` | Direct API writes bypass every check |
+| Daily reconciliation against Paystack's records | A missed webhook becomes silent revenue loss |
+| No card data ever touches our servers | PCI scope, and a breach |
 
-Application roles must not freely change/delete audit entries. Define who can read them, integrity and retention, privileged maintenance, legal deletion requirements, export and monitoring before implementation. Audit logs are not a substitute for access prevention and must not be published.
+**Out of scope and stated as such in the UI:** seller payouts, refund automation, commission splits.
 
-### Retention and legal review
+---
 
-Set and approve data minimisation, purpose, access, retention and deletion periods for staff, drafts, media, contact messages, notifications and logs. Review privacy/terms, Nigerian data protection obligations and cross-border processor arrangements with appropriate legal guidance. No retention duration is assumed here.
+## 8. Moderation and honesty
 
-### Backups and recovery
+- **Moderation is a record.** `moderation_actions` stores moderator, action, target, reason, time.
+  Without a reason the insert is rejected by a `check` constraint.
+- **Soft delete only** for forum posts, comments and reviews. A tombstone keeps the thread readable.
+- **Ban is a database fact**, expressed as a row RLS checks, not a UI flag.
+- **Verification is a record.** `people_verifications` and `businesses.verified_*` columns must be
+  populated together or the constraint fails. A badge with no reviewer, no date, or no source is a
+  lie and is treated as a defect.
 
-Agree recovery-point/time objectives and test Postgres, Auth configuration and R2 object backup/restore separately, including metadata/object reconciliation. Protect backups, restrict access and review deletions, published content and credential rotation after restore. Do not assume provider defaults meet recovery requirements or claim backups exist.
+---
 
-### Incident response
+## 9. Privacy and data protection
 
-Assign an incident owner and escalation/communication procedure; isolate compromised accounts/keys, preserve appropriate evidence without exposing sensitive data, rotate/revoke credentials, address affected caches/objects, assess notification duties with legal guidance and record remediation. Define a safe break-glass process and test it; avoid permanent shared superuser credentials. Operations owner allocation remains open between the owner and developer.
+- Collect the minimum: email, handle, display name. No date of birth, no address, no phone unless an
+  order requires delivery.
+- Email is never rendered publicly. Handles are.
+- Analytics: aggregate only. No third-party pixel on a page a logged-in member sees without consent.
+- Nigerian Data Protection Act applies. The privacy notice must state: what is collected, why, who
+  processes it (Supabase, Google Cloud, Resend, Paystack), where it is stored, how long, and how to
+  request deletion.
+- Account deletion runs server-side, anonymises authored content, and destroys the auth user. Tested.
 
-## 8. Security testing and acceptance plan
+---
 
-The staff-entry foundation has unit, mocked-provider and ephemeral in-memory RLS tests; no real Supabase integration or complete security assessment has been performed. Before release, execute and record tests in isolated environments using approved synthetic private fixtures:
+## 10. Secrets
 
-1. **Authentication:** unauthenticated access denied; invalid/expired sessions denied; recovery and redirect validation, refresh, logout, account deactivation and privilege revocation behave as agreed; CSRF and preview-host cases covered.
-2. **Role boundaries:** for every final role and capability, exercise allowed and denied server/API/database requests, including a valid Auth user with no staff role, another author's drafts, self-approval rules, role escalation and access after revocation.
-3. **RLS and grants:** test direct reads and writes with anonymous and staff identities, underlying tables, views, functions and helper permissions; test resulting-row checks and attempts to alter roles or bypass workflow through generic updates. Confirm service-role material never appears in a client bundle.
-4. **Editorial integrity:** publish only a reviewed approved version; attempted cross-article version pointers fail; concurrent edits do not overwrite approval; draft update after publication stays private; review notes and previous private versions do not leak through API, search, metadata, caches or preview.
-5. **R2:** private objects deny anonymous and insufficiently scoped requests even with a guessed key; uploads enforce approved size/type and permission; public promotion is explicit; signed-access expiry/leak controls and takedown/cache purging are tested with documented limitations.
-6. **Contact and mail:** validate/rate-limit/spam controls; deny public and unauthorised staff reads; success is truthful on storage/provider failures; retries and duplicate handling work; Resend delivery and signed webhooks, if used, are verified without leaking message contents.
-7. **Operational security:** scan dependencies and upload paths, test secure headers and redirect handling, audit completeness/tamper resistance, secret rotation, backup restoration and incident playbooks. Document exceptions and obtain explicit approval before release.
-8. **Radio/social:** verify rights and actual playback under supported mobile/browser conditions; honest unavailable states, supported embeds and privacy/security headers are tested. Live radio is mandatory for launch.
+| Secret | Lives in | Never |
+| --- | --- | --- |
+| `SUPABASE_SERVICE_ROLE_KEY` | Cloud Run secret, server only | In a client bundle, a log, a test fixture, or chat |
+| `PAYSTACK_SECRET_KEY`, `PAYSTACK_WEBHOOK_SECRET` | Cloud Run secret | Anywhere else |
+| `RESEND_API_KEY` | Cloud Run secret | Anywhere else |
+| `VAPID_PRIVATE_KEY` | Cloud Run secret | Anywhere else |
+| `GCS_*` credentials | Workload Identity, no key file | A committed JSON key |
+| `CRON_SECRET` | Cloud Run secret | A query string |
 
-Tests and acceptance criteria will be detailed in the testing workstream; passing a UI demonstration alone is insufficient.
+A secret in a client bundle is the worst kind of bug because it looks like it works. The build must
+be scanned for the service-role key and for `PAYSTACK_SECRET` before any release.
 
-## 9. Decisions and approval
+---
 
-- Confirm who holds each staff capability, whether an author may approve their own work, and which staff may access contact messages and audit logs. The proposed matrix is not final.
-- Decide the contact form's fields, delivery/storage model, recipient, retention and privacy notice. Obtain the approved WhatsApp destination without posting credentials.
-- Confirm provider ownership/access and validate Supabase, R2, Resend, domain and recovery settings; supply and test the authorised radio stream. Never include provider keys or passwords in chat or documents.
-- Define workflow transitions, post-publication reapproval, preview design, cache withdrawal, operational ownership, backup objectives and legal review before implementation.
+## 11. Abuse and rate limits
 
-**Approval record:** Owner approved Workstream 0.6 documents 07 and 08 on 2 November 2026. The provisional role matrix and other named decisions still need refinement; proceed to Workstream 0.7 integrations and operational requirements. Full Phase 0 review is still required before production coding.
+| Surface | Limit | Why |
+| --- | --- | --- |
+| Sign in | 5 / 15 min per IP + per account, then backoff | Credential stuffing |
+| Registration | 3 / hour per IP | Account farming |
+| Password reset | 3 / hour per account | Email bombing |
+| Comment create | 10 / hour per member | Flooding |
+| Forum post | 20 / hour per member; new accounts 5/day for 48 h | Flooding, spam |
+| Report | 20 / day per member | Report abuse |
+| Business submission | 3 / day per member | Spam listings |
+| Order create | 10 / hour per member | Card testing |
+| Contact form | 5 / hour per IP | Spam |
+
+Limits live in Postgres or a shared store, not in process memory — Cloud Run scales horizontally and
+an in-memory counter is not a limit.
+
+---
+
+## 12. Security test plan (must actually run)
+
+1. Anonymous `select` on every private table returns zero rows, not an error that leaks schema.
+2. Member A cannot read member B's orders, comments-as-draft, profile email, or notifications.
+3. A member token cannot reach any admin route or capability.
+4. A staff token cannot post as a member on the public host.
+5. Draft article reachable by direct slug → 404.
+6. Publish transition with a stale `revision` → conflict, not overwrite.
+7. Journalist cannot approve their own article.
+8. Banned member insert into `forum_posts` → refused by RLS.
+9. `orders` direct insert with a client price → refused by privilege, not by validation.
+10. Webhook with a bad signature → 401, no state change.
+11. Webhook replayed → one paid order.
+12. `people` publish without a source → constraint/trigger raises.
+13. Account deletion → auth user gone, email gone, content intact and anonymised.
+14. Service-role key absent from every client bundle.
+
+Tests run against a real isolated Supabase project, not an in-memory simulation. The existing PGlite
+simulation stays as a fast local check and is **explicitly labelled as not proof.**

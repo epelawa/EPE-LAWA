@@ -1,3 +1,5 @@
+> **ARCHIVED 2026-11-02.** Superseded by `docs/00-master-plan.md` and `docs/12-development-roadmap.md`. Retained as a record of what was actually built and verified at the time. Some statements in this file are no longer true — do not follow it as current guidance.
+
 # EPE LAWA — Pre-development Handoff
 
 **Status:** Owner approved Phase 0 on 2 November 2026; Phase 1 foundation in progress.\

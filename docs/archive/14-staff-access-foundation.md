@@ -1,3 +1,5 @@
+> **ARCHIVED 2026-11-02.** Superseded by `docs/00-master-plan.md` and `docs/12-development-roadmap.md`. Retained as a record of what was actually built and verified at the time. Some statements in this file are no longer true — do not follow it as current guidance.
+
 # EPE LAWA — Staff Access Foundation
 
 **Status:** Foundation migration applied on production; applications and access flow remain incomplete and are not production-ready.\

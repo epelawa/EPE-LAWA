@@ -1,3 +1,5 @@
+> **ARCHIVED 2026-11-02.** Superseded by `docs/00-master-plan.md` and `docs/12-development-roadmap.md`. Retained as a record of what was actually built and verified at the time. Some statements in this file are no longer true — do not follow it as current guidance.
+
 # EPE LAWA — Audit and Delivery Notes
 
 **Scope:** Local changes responding to the owner's 2 November 2026 Clyvro findings and subsequent requests. Not yet deployed or verified by Clyvro. The scanner inspected one page; heuristics and raw-HTML observations are not a full site or security assessment. The existing app source and a local production-style build were checked rather than assuming every observation remained true. The public holding page remains unfinished; removing its `noindex` follows the owner's explicit audit instruction and is not Phase 1 release approval.
