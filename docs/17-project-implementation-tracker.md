@@ -43,7 +43,7 @@
 - [ ] Securely create and verify both designated Auth identities and grant only reviewed capabilities; admin remains closed until the Phase 1 security gate passes.
 - [x] Add inactive-by-default staff profiles and explicit `admin.access` grant with RLS; no accounts seeded — [migration and checks](14-staff-access-foundation.md).
 - [x] Implement and test unwired identity, session, response and redirect foundations — [PR #3](https://github.com/epelawa/EPE-LAWA/pull/3), [PR #6](https://github.com/epelawa/EPE-LAWA/pull/6), [PR #7](https://github.com/epelawa/EPE-LAWA/pull/7). These do not open admin or provide full login.
-- [ ] Implement reviewed email/password sign-in, sign-out, session refresh and password recovery on the real admin host; configure verified email delivery and safe redirects.
+- [ ] Implement reviewed email/password sign-in, sign-out, session refresh and password recovery on the real admin host; an unwired sign-in and logout foundation exists but is not a portal; configure verified email delivery and safe redirects.
 - [ ] Finalise staff roles, explicit capabilities, editorial approval authority, account provisioning, revocation, audit, recovery and incident responsibilities.
 - [ ] Enforce current permissions at each route/action and database boundary; integrate CSRF and rate limiting before enabling mutations.
 - [ ] Complete positive and negative real-provider, browser and security tests, including revoked/inactive staff and recovery. Maintain admin as closed until all safeguards and review pass.
@@ -52,7 +52,7 @@
 
 - [ ] Finalise article data contracts, role/capability matrix, ownership and independent/self-approval rules before migrations.
 - [ ] Design and review migrations/RLS for articles, immutable versions, drafts, reviews, approvals, publication, corrections and audit history. Test safely before production.
-- [ ] Build server-side draft → review → approval → publish/unpublish/correct transitions with concurrency protection and audit; prevent direct draft or privilege bypass.
+- [ ] Build server-side draft → review → approval → publish/unpublish/correct transitions with concurrency protection and audit; prevent direct draft or privilege bypass. An unwired model and transaction contract exist — see [editorial foundation](19-editorial-workflow-foundation.md) — but they have no real database transaction, public API or content. The owner wants publication and removal reflected promptly; real cache behaviour and deletion/retention require review and testing.
 - [ ] Build secure private preview and staff editorial interfaces only after backend permissions exist; test draft privacy, approved-version integrity, withdrawal and cache invalidation.
 
 ### 1.4 News publication

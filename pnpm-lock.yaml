@@ -29,6 +29,8 @@ importers:
 
   backend/packages/auth: {}
 
+  backend/packages/editorial: {}
+
   backend/packages/http-security: {}
 
   frontend/apps/admin:
