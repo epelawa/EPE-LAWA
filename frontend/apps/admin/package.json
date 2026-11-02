@@ -1,0 +1,20 @@
+{
+  "name": "@epelawa/admin",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "next dev --hostname 0.0.0.0",
+    "build": "next build",
+    "start": "next start --hostname 0.0.0.0",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@epelawa/auth": "workspace:*",
+    "@supabase/supabase-js": "2.118.0",
+    "next": "16.4.4",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "server-only": "0.0.1"
+  },
+  "type": "module"
+}

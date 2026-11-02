@@ -1,7 +1,7 @@
 # EPE LAWA — Proposed System Architecture
 
 **Document:** 06 — Workstream 0.5\
-**Status:** Workstream 0.5 approved by the owner on 2 November 2026, with a new top-level folder direction; recommendations still require validation and no production implementation is authorised.\
+**Status:** Workstream 0.5 and the complete Phase 0 plan were approved on 2 November 2026. The initial foundation is authorised; provider recommendations still require validation.\
 **Prepared:** 2 November 2026\
 **Inputs:** [Product requirements](01-product-requirements.md), [user journeys](02-user-journeys.md), [sitemap](03-sitemap.md), [page specifications](04-page-specifications.md) and [design system](05-design-system.md).\
 **Owner direction:** On 2 November 2026 the owner reported using **Resend** and **Cloudflare R2**. Treat these as owner-specified services, not as proof of configured accounts, access, permissions or working integrations.\
@@ -71,7 +71,7 @@ These are proposals for review, not silently finalised stack choices. Later docu
 | --- | --- | --- | --- |
 | AD-01 | Three separately deployed applications in a pnpm/Turborepo monorepo, organised beneath `frontend/`, `backend/` and `docs/` as directed by the owner; shared packages only where useful. | Allows distinct public/news/admin lifecycles and shared foundations while separating frontend, backend and documentation. A single app would reduce deployment overhead but change the approved structure. | Confirm the proposed child layout, budget, workspace boundaries and build/deploy support. |
 | AD-02 | Next.js App Router, TypeScript strict, Tailwind and Zod as proposed in the brief. | Aligned with proposed stack and typed server/client boundaries; alternatives remain possible if operational or accessibility constraints warrant. | Test deployment, team familiarity, component accessibility and dependency/licence suitability. |
-| AD-03 | Supabase PostgreSQL and Auth for identity and relational content. | Shared source of truth and policy-capable database; alternatives should be compared if cost, region or security requirements conflict. | Verify project ownership, location, recovery, RLS, auth/email and quotas; no assumption that a project exists. |
+| AD-03 | Supabase PostgreSQL and Auth for identity and relational content. | Shared source of truth and policy-capable database; alternatives should be compared if cost, region or security requirements conflict. | Verify project ownership, location, recovery, RLS, auth/email and quotas. The owner confirmed the visible Paris project as the production target, superseding the earlier Ireland selection. |
 | AD-04 | Use **Cloudflare R2**, per owner, for media objects; keep relational metadata in Postgres. | Avoid duplicating the same storage role between R2 and Supabase Storage. The brief proposed Supabase Storage; this recommendation changes that candidate, not the database/auth choice. | Confirm account/region, bucket design, integration, access and costs; introduce Supabase Storage only for a justified, explicitly approved need. |
 | AD-05 | Use **Resend**, per owner, for appropriate transactional mail. | Shared owner-specified provider; for Supabase Auth evaluate a supported Resend SMTP setup rather than assume direct API configuration. | Verify sender domain, auth email method, provider limits, retries and delivery; separate marketing/newsletter from transactional mail. |
 | AD-06 | Default to an admin-host-only secure session for Phase 1. | Public sites need no login; avoids broad subdomain cookies and token sharing. Alternative shared auth adds exposure and coordination. | Validate Supabase SSR/session refresh, host-only cookie behaviour, CSRF, redirects and preview domains. Do not treat cookie scope as automatic. |
@@ -83,7 +83,7 @@ Rich-text tooling (Tiptap or equivalent), analytics, specific caching mechanisms
 
 ## 4. Repository and application boundaries
 
-**Owner direction:** Organise the repository into three top-level folders, `frontend/`, `backend/` and `docs/`, in addition to necessary root files. The following child structure is a proposed interpretation; no new application folders or scaffolding have been created.
+**Owner direction:** Organise the repository into three top-level folders, `frontend/`, `backend/` and `docs/`, in addition to necessary root files. The following child structure is a proposed interpretation; the initial application shells and backend README now exist, while other child folders remain planned.
 
 ```text
 frontend/
@@ -106,7 +106,7 @@ README.md, package.json, pnpm-workspace.yaml, turbo.json, etc.  # future root fi
 
 Next.js applications may contain server-side rendering and application-specific server handlers within `frontend/apps/`; `backend/` groups shared backend code, database/infrastructure and any approved service. This is a responsibility boundary, **not** a requirement to introduce an independent API server or duplicate business rules. Shared server-only modules must never be included in browser bundles; browser-safe contracts can be shared without exporting secrets. Final workspace dependencies, test placement and deployment boundaries require later validation.
 
-Root workspace/config files follow only after implementation authorisation. The original brief also proposed `.github/workflows/`; GitHub Actions requires that root directory, so use of GitHub Actions would require an explicit exception to the three-folder direction, or choose a compatible alternative after review. No extra top-level folder is authorised here. Avoid circular dependencies. Do not create data-seeding files or scripts or preload demo records. Isolated, temporary in-memory test fixtures may be used only in tests and must not be loaded into application databases or shown as real content. Folder names do not imply migration or application files exist today.
+Root workspace/config files were added after the owner authorised the foundation. The original brief also proposed `.github/workflows/`; GitHub Actions requires that root directory, so use of GitHub Actions would require an explicit exception to the three-folder direction, or choose a compatible alternative after review. No extra top-level folder is authorised here. Avoid circular dependencies. Do not create data-seeding files or scripts or preload demo records. Isolated, temporary in-memory test fixtures may be used only in tests and must not be loaded into application databases or shown as real content. The tree does not imply that migrations, shared backend packages or provider integrations have been created.
 
 ## 5. Data flows and content lifecycle
 
