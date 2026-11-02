@@ -1,252 +1,232 @@
-# EPE LAWA — Page Specifications and Low-Fidelity Wireframes
+# EPE LAWA — Page Specifications
 
-**Document:** 04 — Workstream 0.4\
-**Status:** Workstream 0.4 approved by the owner on 2 November 2026; layouts and interaction details still require real-world validation, not production authorisation.\
-**Prepared:** 2 November 2026\
-**Inputs:** [Product requirements](01-product-requirements.md), [user journeys](02-user-journeys.md), [sitemap](03-sitemap.md) and the companion [design system](05-design-system.md).\
-**Gate:** Workstream 0.4 is approved; proceed to technical architecture. No production code until the full Phase 0 exit condition is approved.
+**Document:** 04
+**Status:** Active. Low-fidelity. Wireframes are described in words, not drawn. Contrast and layout
+must be verified in a real browser before a page is considered done.
 
-## 1. Specification conventions
+---
 
-- **P1:** first-release scope; **conditional:** show only with real approved content/capability. **Future:** not an active Phase 1 feature. Routes and domains follow the approved sitemap but remain subject to detailed technical and content validation.
-- Text wireframes convey hierarchy, not final copy or a claim that content already exists. [ ] denotes a component/region, not real content. Use no public-facing dummy data.
-- Shared rules: semantic headings, keyboard operation, visible focus, readable contrast, meaningful image descriptions, responsive layouts, honest loading/empty/error/success states and actual authorised data. See document 05.
-- Public visitors do not need accounts. Admin pages require server-side authorisation and appropriate database controls. Private previews, drafts and review notes must never be accessible through public routes, metadata, caches or search.
-- Radio must be functional at launch: an official direct stream, compatible format and embedding rights must be supplied and tested. During outages show the actual unavailable/error state and recordings, not an invented LIVE label. Contact is a general form plus WhatsApp, not Speak Up Epe or an emergency channel.
-- Field-level validation, legal text, exact copy, permissions, availability thresholds, technical contracts, and any unresolved editorial decisions are **not** silently specified here; later workstreams and owner review must resolve them.
-
-## 2. Shared page patterns
+## 1. Shared patterns
 
 ### Public shell
 
-```text
-Desktop: [Logo] [Primary navigation: Listen & Watch | News | About | Contact]
-         [Page title / context]
-         [Primary content                     ] [Optional supporting rail]
-         [Footer: approved links | social | privacy | terms]
-
-Mobile:  [Logo]                                      [Menu]
-         [Page title / context]
-         [Primary content — one column]
-         [Supporting content — below main content]
-         [Footer]
+```
+[skip link]
+[header: brand wordmark | News Who-is-Who Radio Forum Businesses Shop | Sign in]
+[main: <h1> + content]
+[footer: About · Contact · Guidelines · Privacy · Terms · WhatsApp]
 ```
 
-- News has its own publication masthead and editorial hierarchy; main and news clearly identify cross-site links. Footer links point to actual approved destinations only. Mobile menu exposes the same available destinations and can be opened, traversed and closed by keyboard.
-- Approved team information is conditional. Future feature previews must not act like operating services. Loading indicators may reserve layout space but must not simulate content or real counts.
-- Long lists paginate; no-result views explain the situation and offer navigation or search adjustment. Failed loads offer a retry where meaningful, without exposing internals. Not-found experiences return an appropriate status rather than a fake page.
+- One `h1` per page. Header is `<header>`, navigation is `<nav aria-label="Main">`, footer is
+  `<footer>`.
+- Mobile: brand + menu trigger. Trigger has `aria-expanded`, escape closes, focus returns.
+- Sticky header only on scroll-up. Never steals vertical space on a 320 px screen.
 
-### Admin shell
+### Empty / loading / error / denied — one component each
 
-```text
-Desktop: [Brand / account]
-         [Role-appropriate navigation] | [Page title + permitted primary action]
-                                      | [filters / real records / work area]
-Mobile:  [Brand] [Navigation control] [Account]
-         [Page title + permitted action]
-         [Filters and records; preserve labels and actions]
+| State | Content |
+| --- | --- |
+| Empty | Icon + one sentence explaining why it is empty + one action where one genuinely exists |
+| Loading | Skeleton matching the shape of the content, with `aria-busy` |
+| Error | What failed, whether the user's input survived, and a retry |
+| Denied | What permission is needed, and how to get it. Never reveals the protected data |
+
+---
+
+## 2. Main — public pages
+
+### 2.1 `/` — Landing
+
+**Job:** in five seconds, say what EPE LAWA is and let the visitor act.
+
+```
+Hero
+  eyebrow: EPE LAWA · Epe Division
+  h1: The Voice of Epe Division
+  lede: one sentence — news, conversation, radio and businesses for Epe Division,
+        at home and abroad
+  [Read the news]  [Listen to the radio]
+
+Sections (five blocks, each a real link or an honest state)
+  News          latest 3 published headlines, or "No stories published yet."
+  Who is Who    three published profiles, or the empty state
+  Radio         the player, in its honest current state
+  Forum         three recent threads, or the empty state
+  Businesses    three verified businesses, or the empty state
+
+Trust line
+  a short paragraph on sourcing, corrections and moderation, linking to /guidelines
+
+[footer]
 ```
 
-Keep authoring tools usable on small screens without assuming every editorial task is optimal there. Do not rely on hidden buttons as security; show only actions the user may attempt, then enforce those permissions server-side. Confirm destructive actions, describe consequences and record audit events according to later security policy. Tables must not lose row relationships at narrow widths.
+Rules: no invented metrics, no testimonials, no carousel, no autoplay, no fake urgency. A section with
+no data shows its empty state — it is not hidden, and it is not filled.
 
-## 3. Main website specifications
+### 2.2 `/about`
 
-### 3.1 Homepage — `/`
+What EPE LAWA is, who runs it, where it broadcasts, how it is funded. Contact route. No team photos
+until real ones exist.
 
-**Goal / journeys:** Introduce the platform and direct visitors to news, radio, media and about/contact (J01–J03, J05–J06).\
-**Layout:**
+### 2.3 `/contact`
 
-```text
-[Main navigation]
-[Hero: approved heading + short purpose | available actions]
-[Radio player: verified state, controls, available programme]
-[Latest published news: lead + recent → news site]
-[Curated media → archive]
-[About EPE LAWA → About]
-[Approved informational previews only if genuinely available]
-[Footer]
+Form: name, email, subject, message. Server validation, rate limit, honest success only on durable
+acceptance. A WhatsApp link that opens the app and states that it leaves the site. Not an emergency
+service, and the page says so.
+
+### 2.4 `/within` — Who is Who
+
+```
+h1: Who is Who in Epe
+[search input]  [office filter]  [community filter]
+[result count, real]
+[grid of profile cards: portrait, name, office, verified badge]
+[empty state]  [pagination]
 ```
 
-Mobile uses that same meaningful order in one column, with actions reachable without horizontal scroll. Desktop may place hero text and authentic licensed imagery side by side. If the radio is temporarily unavailable after launch, show a clear error/offline message and recordings. Omit or truthfully label empty news/media sections. No newsletter control, fictional metrics or active links to future modules. “Explore Epe” must not lead to an unimplemented Phase 4 service.
+### 2.5 `/who-is-who/[slug]`
 
-**Acceptance:** Visitor can identify purpose and enter news/media/radio/contact; content is real, published and responsive; live radio meets the launch prerequisite.\
-**Dependencies:** Approved copy, brand and licensed Epe imagery, published content, working stream and programme details.
-
-### 3.2 About and team — `/about/`, `/team/`
-
-**Goal:** Explain organisation, mission, vision, purpose and approved background; optionally present approved team information (J01).\
-**Layout:** `[Title + introduction] → [Mission / vision] → [Approved background] → [Optional team link] → [Contact]`. On narrow screens stack sections and avoid decorative sidebars.\
-**States:** Omit team link/page when no approved information exists; do not invent biographies. Missing/unavailable content should not appear as real.\
-**Acceptance / dependency:** Approved text, names, images and permissions; accessible contact link. Team display is conditional, not a fabricated launch requirement.
-
-### 3.3 Contact — `/contact/`
-
-**Goal:** Allow a visitor to reach EPE LAWA through an approved general contact form or WhatsApp (J02).\
-**Layout:** `[Heading and purpose] → [General form + privacy link] → [Approved WhatsApp action] → [Response expectations only if agreed]`. Desktop may use two columns; mobile stacks form before WhatsApp.
-
-**Flow:** Explain general purpose and data use; user completes fields after the owner approves their exact names, required/optional status and validation. Validate accessibly, then submit to the agreed recipient. A success message is shown only after the delivery mechanism confirms the agreed success condition; failures identify a retry or alternative without revealing private details. WhatsApp is an external action; identify that the user is leaving and use only the owner-approved number.
-
-**States:** Default, focus, disabled only when appropriate, validation errors associated with their fields, submitting, confirmed success, delivery failure and rate-limit/abuse feedback. Never auto-publish messages or promise anonymity, confidentiality, emergency response or a response time not established by policy.\
-**Acceptance / dependencies:** Real delivery, meaningful status, keyboard use and verified WhatsApp destination. Recipient, fields, privacy notice, retention, abuse controls, provider and operational ownership remain open. Formal external story intake and confidential civic reporting are not part of this page.
-
-### 3.4 Media hub, programmes and archive — `/media/`, `/media/programmes/`, `/media/archive/`
-
-**Goal:** Help users find live radio and approved programme recordings (J03, J05–J06).\
-**Layout:** Hub `[Title] → [Radio entry] → [Programmes] → [Curated video / archive links]`; lists `[Title] → [Available categories or pagination] → [Real records]`. Mobile stacks records and prioritises text over heavy embeds.\
-**States:** Real empty state when no records exist; loading and retry on failure. No invented schedule, programme or availability. Media archive may link to the canonical video/episode detail rather than duplicate a full record.\
-**Acceptance / dependencies:** A published record opens its intended detail or valid external source; approved programme information and permitted media required. Filters beyond approved scope remain design decisions.
-
-### 3.5 Radio — `/media/radio/` and homepage player
-
-**Goal:** Make the authorised live broadcast usable without an account (J05).\
-**Layout:** `[Player name and verified status] → [Play/pause] [Volume where supported] → [Available programme information] → [Recording alternatives]`.
-
-**States:** Idle; loading; playing; paused; buffering; unavailable/offline when verifiable; playback failure; volume unsupported. Play starts only on intentional interaction. Provide accessible names, status announcements without excessive interruption, and retry when useful. Do not claim LIVE simply because a URL is configured.\
-**Acceptance / dependencies:** Official direct stream, confirmed embedding rights and compatible browser/mobile playback are required for launch; test actual audio and controls. A truthful outage fallback does not replace that launch requirement. Programme and station wording need owner/rights-holder confirmation.
-
-### 3.6 Videos and episode detail — `/media/videos/`, `/media/episodes/[slug]/`
-
-**Goal:** Discover and watch an approved recorded broadcast (J06).\
-**List:** `[Title] → [Approved categories] → [Thumbnail + title + available date/description] → [Pagination if needed]`.\
-**Detail:** `[Title + available metadata / credits] → [User-initiated playback or external link] → [Description] → [Related approved recordings]`. On mobile keep one column and do not load heavy third-party players until needed.
-
-**States:** Empty archive; thumbnail unavailable with accessible fallback; loading; unavailable/deleted/restricted embed; external link where useful; captions/transcripts only where supplied.\
-**Acceptance / dependencies:** Records are curated and published by authorised staff, rights/credit are recorded and unavailable content does not falsely appear playable. Exact record fields and supported embeds remain for later specifications.
-
-### 3.7 Policies and not-found — `/privacy/`, `/terms/`, unmatched paths
-
-**Goal:** Make approved policies accessible and help a visitor recover from an invalid destination.\
-**Layout:** Policy `[Title] → [Effective/update information if supplied] → [Readable sections] → [Contact]`; not-found `[Clear status] → [Home / relevant navigation]`.\
-**States:** Unpublished policy text must not be represented as reviewed; unmatched route returns appropriate not-found status.\
-**Dependencies:** Owner and appropriate legal review of actual policy content; not-found handling and archived content rules require technical/editorial decisions.
-
-## 4. News publication specifications
-
-### 4.1 News homepage — `/`
-
-**Goal:** Offer an editorially distinct, trustworthy starting point (J04).\
-**Layout:**
-
-```text
-[Publication masthead + navigation / search]
-[Breaking banner ONLY for a real designated story]
-[Lead published story] [Other real latest stories]
-[Published category coverage]
-[Video coverage → approved media]
-[Trending ONLY if approved real-data ranking exists]
-[Editorial footer / main-site contact and policy links]
+```
+breadcrumb
+h1: name   [verified badge]
+portrait  |  biography
+Offices held — table: title | institution | term | current
+Sources — numbered list of citations with links
+Correction notice, if any
+[Report a correction]
 ```
 
-Mobile prioritises lead story and a clear single-column reading order; desktop can use an editorial grid. No fabricated lead, banner, trending list, engagement figure or article count. Empty and error states remain useful.\
-**Acceptance:** Real published stories navigate to canonical news article pages; discovery and cross-site links work. **Dependencies:** Published stories, approved category labels and editorial controls.
+The badge links to `/guidelines#verification`, which explains what verification means here.
 
-### 4.2 Discovery pages — `/latest/`, `/category/[slug]/`, `/author/[slug]/`, `/tag/[slug]/`, `/search/`, conditional `/trending/`
+### 2.6 `/radio`
 
-**Goal:** Help readers locate published articles by recency, topic, author, tag or search (J04).\
-**Layout:** `[Page context / title] → [Search or relevant context] → [Article summaries] → [Pagination]`. Author information appears only when approved. Mobile cards/rows retain title and metadata without excessive imagery.
-
-**States:** Loading, actual results, no results with adjustment/navigation option, invalid or unavailable category/author/tag, and retryable failure. Never return draft/private information. Trending is visible only when real engagement data and an agreed method exist; otherwise it is not an active destination.\
-**Acceptance:** Every result resolves to a published article; pagination and search are operable by keyboard. **Dependencies:** Search approach, pagination size, ranking/privacy method and category management require later decisions.
-
-### 4.3 Article — `/article/[slug]/`
-
-**Goal:** Provide a readable published story, source context and shareable canonical URL (J04).\
-**Layout:**
-
-```text
-[Category] [Headline] [Summary]
-[Author | Published date | Updated date when applicable]
-[Featured image + credit/caption when present]
-[Accessible rich text / inline images and allowed embeds]
-[Public correction information when relevant]
-[Tags | Share action]
-[Related published stories]
+```
+h1: EPE LAWA Radio
+player card: programme name, presenter, LIVE or "Not live right now"
+[Play]  volume  state label
+data-use note on mobile
+This week's schedule — table: day | time | programme
+[Browse the archive]
 ```
 
-Desktop uses a comfortable reading measure; mobile preserves reading order and avoids horizontal scroll. Appropriate public article metadata is distinct from private editorial history.\
-**States:** Normal, no related results, unavailable embedded content, unpublished/archived/not-found per approved policy, load error. A private or unapproved version cannot be retrieved via a guessed slug, cache, share link or metadata.\
-**Acceptance:** Published article displays its approved content, credits and available correction history; sharing resolves to the public canonical URL. **Dependencies:** Editorial review, versioning, corrections policy, permitted embeds and sanitisation.
+States: idle, loading, buffering, playing, paused, offline, error, unavailable. `LIVE` requires a
+verified status check in the last 60 seconds. When unavailable, the archive is the primary action.
 
-### 4.4 News videos, about and contact — `/videos/`, `/about/`, `/contact/`
+### 2.7 `/forum`, `/forum/[category]`, `/forum/t/[slug]`
 
-**Goal:** Provide publication-specific context and route users to the shared media/contact experiences.\
-**Layout:** `[Page title] → [Approved description or relevant published video coverage] → [Main-site archive/contact link]`; news contact must not create a second unexplained intake route.\
-**States:** Empty/failed video content is honest; external embeds and links are identified appropriately.\
-**Acceptance / dependencies:** Approved publication copy, working cross-site links and one general contact destination. Opinion and dedicated submit-story routes remain pending rather than silently implemented.
+Index: category cards with description, thread count, last activity.
+Category: pinned threads first, then by `last_activity_at`. Row = title, author, replies, last activity.
+Thread: original post, replies, quote blocks, composer at the bottom (or a sign-in prompt), report on
+each post, poll rendered inside the first post.
 
-## 5. Administration specifications
+### 2.8 `/business`, `/business/[slug]`
 
-### 5.1 Login and recovery — `/login/`
+Index: filter bar (category, area), grid of cards. Card = photo, name, category, area, verified badge
+**only when verified**, rating.
+Profile: photo gallery, description, hours table, contact block (call, WhatsApp, directions as text —
+no map in this phase), reviews with author handle and date, review form for signed-in members.
 
-**Goal:** Admit only authorised staff (J07–J09).\
-**Layout:** `[Brand] → [Sign-in form] → [Recovery entry] → [Accessible support information if approved]`. Keep the page usable at small widths.\
-**States:** Default, field validation, submitting, generic authentication failure, expired session and recovery confirmation/error without disclosing account existence.\
-**Acceptance / dependencies:** Authorised access succeeds; unauthorised access fails; session, recovery, MFA and cookie/redirect policies remain security decisions. Do not expose secrets or tokens in links.
+### 2.9 `/shop`, `/shop/[business]/[product]`, `/cart`, `/checkout`
 
-### 5.2 Dashboard — `/dashboard/`
+Product: name, price in NGN, availability, business link, description, add to cart.
+Cart: lines with quantity stepper, line total, subtotal.
+Checkout: contact, delivery method (pickup / delivery / request a quote), notes, total breakdown, pay
+button. Server recomputes the total; the client never sends prices.
 
-**Goal:** Orient authorised staff to actual newsroom and media work.\
-**Layout:** `[Title] → [Actual operational summaries] → [Review queue / recent permitted activity] → [Relevant system messages]`.\
-**States:** Real zero/empty counts, loading, unavailable data and error. Do not substitute demo counts.\
-**Acceptance / dependencies:** Information is role-appropriate and sourced from real records; what each role may view is pending the permission matrix.
+### 2.10 Auth pages
 
-### 5.3 Article list, drafts and review — `/newsroom/articles/`, `/newsroom/drafts/`, `/newsroom/review/`
+`/login`, `/signup`, `/verify`, `/reset`, `/reset/[token]`. One column, labelled fields, inline errors,
+a summary on submit failure. Generic messages that do not reveal whether an email is registered.
 
-**Goal:** Find and manage permitted articles by state.\
-**Layout:** `[Title + permitted create action] → [Agreed filters/search] → [Real records with status and permitted actions] → [Pagination]`. Lists can become labelled rows or cards on mobile without losing status/action context.\
-**States:** No records, no filter matches, loading, permission denied and query failure.\
-**Acceptance:** Role-appropriate records and actions are accurate; direct requests for unauthorised data/actions are denied. **Dependencies:** Role matrix, article states and filter specifications.
+---
 
-### 5.4 Create, edit, preview and history — `/newsroom/create/`, `/newsroom/articles/[id]/`
+## 3. News host
 
-**Goal:** Enable authorised authoring, review and corrections (J07–J08).\
-**Layout:**
+### 3.1 `/`
 
-```text
-[Title + status]
-[Headline / summary / rich-text editor]
-[Category, tags, author, featured asset and credits]
-[Additional supported metadata / inline media]
-[Save draft] [Private preview] [Submit / review / publish as permitted]
-[Private version / review history for permitted roles]
+```
+masthead: EPE LAWA NEWS
+section nav: Politics Sports Culture Education Business Community | Latest | Search
+lead story: image, headline, dek, byline, date
+secondary: two stories
+[live region for breaking, only when published]
+Latest — list of summaries
 ```
 
-On mobile place controls in document order, preserve labels and provide usable editing without horizontal clipping. Confirmation dialogs state what will change; do not label a failed action successful.
+### 3.2 `/article/[slug]`
 
-**States:** Unsaved changes, validation errors, saving/saved, upload errors, private preview unavailable or expired, submitted, returned for revision, approved, published, update/correction and archived as allowed; failures must not leak draft material. Include recoverable navigation away from unsaved changes where feasible.\
-**Acceptance / dependencies:** Save, preview, submit, approve, publish and version retention operate only for authorised roles; public viewers see only the approved published version. Required fields, revision/approval rules, version display, concurrency and exact preview mechanism remain open for security and contract design.
+```
+breadcrumb
+category eyebrow
+h1 headline
+dek
+byline · published date · updated date
+hero image with caption and credit
+[correction notice, if any]
+article body (prose measure 62–72ch)
+tags
+share: copy link, WhatsApp, X
+related stories
+comments (Phase 5)
+```
 
-### 5.5 Categories, tags and authors — newsroom management routes
+Structured data: `NewsArticle`. Canonical points here, never to the main host.
 
-**Goal:** Maintain controlled editorial metadata used in discovery.\
-**Layout:** `[Title + permitted add action] → [Actual records] → [Edit / archive actions as authorised]`.\
-**States:** Empty, validation/duplicate conflict, saved, failure and permission denied.\
-**Acceptance / dependencies:** Authorised changes are reflected correctly without exposing private content; slug conflict and changing/deleting referenced records need later editorial/data policy.
+### 3.3 `/latest`, `/category/[slug]`, `/author/[slug]`, `/tag/[slug]`, `/search`
 
-### 5.6 Media library, videos, programmes and episodes — `/media/*` admin routes
+Consistent list layout: filter context, count, summaries, pagination. Empty states name the actual
+filter that returned nothing.
 
-**Goal:** Manage permitted assets and curated records (J09).\
-**Layout:** `[Title + permitted add/upload] → [Actual items / metadata] → [Edit / feature / publication controls]`. A record editor includes approved title, description, category, source and rights/credit details as applicable.\
-**States:** Empty, upload progress/failure, invalid file/link, unavailable external embed, saved, publication failure and permission denied.\
-**Acceptance / dependencies:** Only allowed users can upload/edit/publish; file type/size limits, permissions, media rights, sanitisation and storage design require later decisions. Lazy public embeds and external fallback apply.
+---
 
-### 5.7 Radio, settings, staff and audit — `/radio/`, `/settings/`, `/staff/`, `/permissions/`, `/audit-logs/`
+## 4. Admin host
 
-**Goal:** Support secure, traceable operations.\
-**Layout:** `[Title] → [Permitted configuration/list] → [Explicit save or action]`; audit is a read-only view unless a later policy expressly allows otherwise. Privileged controls are grouped and labelled clearly.
+### 4.1 `/login`
+Staff only. Email and password. Generic failure. No "register" link.
 
-**States:** Unconfigured, validation/permission error, saving, saved, unavailable service and audit/list empty. Show no secrets in logs or public UI. Do not suggest a configured stream is live until status is verifiable.\
-**Acceptance / dependencies:** Actions are authorised and audited; configuration errors and access revocation are handled according to the later security/operations model. Radio source, role-to-action mapping, audit retention and ownership are open.
+### 4.2 `/` — Dashboard
+Real counts only: drafts awaiting review, approved awaiting publish, open reports, orders needing
+action. Each is a link. Zero shows zero.
 
-## 6. Future-phase page boundaries
+### 4.3 `/newsroom` and children
+List: title, author, state, revision, updated. Filters by state.
+Editor: title, summary, body (Tiptap), category, author, tags, featured image, SEO fields. Autosave
+with an explicit save state. Preview opens a private, session-gated view.
+Actions by capability: Save · Submit for review · Request revision · Approve · Publish · Unpublish.
+Every transition sends `expectedRevision`; a 409 says "someone else changed this" and offers a reload.
 
-Phase 2 includes Speak Up, forum and events; Phase 3 governance and evidence records; Phase 4 heritage, community, tourism and reviewed business directories; Phase 5 dedicated diaspora and newsletter experiences. These are described in the approved [sitemap](03-sitemap.md) and [journeys](02-user-journeys.md), not specified here as active pages. Each needs separate product, safety, data, moderation and design decisions. No newsletter signup, forum, civic-report form or marketplace appears as operational in Phase 1.
+### 4.4 `/newsroom/[id]` — version history
+Version number, author, state, timestamp, reviewer. Diff is out of scope in this phase; side-by-side
+view is enough.
 
-## 7. Review, handoff and outstanding decisions
+### 4.5 `/people/*`
+List and editor. Sources are a repeatable field. **Publish is disabled, with an explanation, until at
+least one source exists** — and the database refuses regardless.
 
-- **Design validation:** Test navigation, hierarchy, contact expectations, radio playback and editorial tasks with actual participants; journeys remain hypotheses. High-fidelity visual assets and final responsive component behaviour are not yet approved.
-- **Launch blockers:** Official stream and embedding permission, verified WhatsApp number and a functioning form delivery process; legal/privacy text, domain access, real content and licensed assets are still needed.
-- **Later specifications:** Role matrix, preview protection, editorial transition rules, form fields/retention, SEO/cache behaviour, actual APIs and performance budgets belong to subsequent Phase 0 documents.
-- **Owner review:** The wireframes and page behaviours were approved together with [05-design-system.md](05-design-system.md), subject to outstanding validation. Approval of Workstream 0.4 is not permission to build.
+### 4.6 `/radio/*`
+Stream config (secret, never rendered back to the client), status history, schedule editor, episodes.
 
-**Approval record:** Owner approved Workstream 0.4 on 2 November 2026; no changes to these page specifications requested.
+### 4.7 `/moderation`
+Queue: target, reporter, reason, age. Actions: hide, restore, dismiss — each requires a reason.
+`/moderation/actions` is the audit view.
+
+### 4.8 `/businesses/*`
+Submissions with the fields to check, a verification form recording what was checked, publish/delist.
+
+### 4.9 `/shop/orders`
+Order queue with status, buyer contact for fulfilment only, advance-status action with a note.
+
+### 4.10 `/staff`, `/audit`
+Capability grants with a reason; audit log filtered by actor, action and resource.
+
+---
+
+## 5. Every page must answer
+
+1. What is this page for, in one sentence, in the `h1` or a dek?
+2. What does it look like with zero records?
+3. What does it look like while loading?
+4. What happens when the request fails?
+5. What happens when the user lacks permission?
+6. Does it work at 320 px, keyboard-only, at 200% text size?
+7. Can a machine index it, and should it?
