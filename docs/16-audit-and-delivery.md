@@ -38,3 +38,9 @@ The SEO check's homepage `noindex` was reproduced in source and removed for the 
 ## Local verification
 
 `pnpm install --frozen-lockfile`, `pnpm build`, `pnpm typecheck`, `pnpm test` and `pnpm audit` were run locally. Tests inspect real local HTTP responses for metadata, headers, 404s, sitemap, robots, icons, security.txt, status references and admin fail-closed behaviour; additional tests cover origin/CSRF primitives and connectivity decisions. A separate preview build was checked for noindex/disallow/empty sitemap. Automated tests do not prove security, accessibility, mobile gesture behaviour, actual cache/CDN behaviour or live deployment; run the owner's scans again only after approval and deployment. A headless Chromium attempt could not start because the sandbox lacks `libnspr4.so`, `libnss3.so` and `libnssutil3.so`; real-browser offline, retry, pull, 500-boundary and screen-reader testing is still outstanding.
+
+## Connectivity notice refinement — 2 November 2026
+
+At the owner's request, the connectivity and pull-to-refresh notices use more compact rounded surfaces and state icons; the existing truthful messages, connection probe, refresh behaviour, live region and labelled icon-only retry are retained. The retry control retains a 44×44 CSS-pixel target, the notice allows its text to wrap, safe-area offsets are retained, and the checking indicator respects reduced-motion preferences. The original audit increment has since been deployed; this refinement is a subsequent local change until separately committed and deployed.
+
+A temporary JSDOM smoke check loaded the local production build and exercised hydration, offline and online icons, a simulated pull indicator, reconnection and labelled retry markup; it does not test visual layout, actual browser network conditions, touch gestures, assistive technology, reduced-motion rendering or mobile reflow. Those real-device/browser checks remain outstanding.

@@ -114,3 +114,102 @@ test('refreshed session cookies retain host-only security flags and no-store hea
     if (oldKey === undefined) delete process.env.SUPABASE_PUBLISHABLE_KEY; else process.env.SUPABASE_PUBLISHABLE_KEY = oldKey;
   }
 });
+
+test('read-only route adapter returns refreshed cookies and denies without rendering protected content', async () => {
+  const { NextRequest, NextResponse } = await import('../apps/admin/node_modules/next/server.js');
+  const { respondToAdminRead } = await import('../apps/admin/lib/supabase-access.ts');
+  const oldFetch = globalThis.fetch;
+  const oldUrl = process.env.SUPABASE_URL;
+  const oldKey = process.env.SUPABASE_PUBLISHABLE_KEY;
+  process.env.SUPABASE_URL = 'https://unit.example.invalid';
+  process.env.SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_test_only';
+  let revoked = false;
+  let largeSession = false;
+  const calls = [];
+  globalThis.fetch = async (input, init) => {
+    const req = new Request(input, init);
+    const path = new URL(req.url).pathname;
+    calls.push(path);
+    assert.equal(req.cache, 'no-store');
+    if (path === '/auth/v1/token') return Response.json({ access_token: largeSession ? 'x'.repeat(10000) : 'refreshed-token', refresh_token: 'refreshed-refresh', token_type: 'bearer', expires_in: 3600, user: { id: 'staff-a', aud: 'authenticated' } });
+    assert.equal(req.headers.get('authorization'), 'Bearer ' + (largeSession ? 'x'.repeat(10000) : 'refreshed-token'));
+    if (path === '/auth/v1/user') return Response.json({ id: 'staff-a', aud: 'authenticated' });
+    if (path === '/rest/v1/staff_profiles') return Response.json([{ user_id: 'staff-a', is_active: true }]);
+    if (path === '/rest/v1/staff_capability_grants') return Response.json(revoked ? [] : [{ user_id: 'staff-a', capability: 'admin.access' }]);
+    throw new Error(`Unexpected request: ${path}`);
+  };
+  const expired = sessionCookie(Math.floor(Date.now() / 1000) - 10);
+  const request = () => new NextRequest('https://admin.example.invalid/', { headers: { cookie: `${expired.name}=${expired.value}` } });
+  let renders = 0;
+  const protectedResponse = (access) => {
+    renders++;
+    assert.equal(access.userId, 'staff-a');
+    return new NextResponse('protected content', { headers: { 'Cache-Control': 'public, max-age=3600', 'X-Test': 'preserved' } });
+  };
+  try {
+    const response = await respondToAdminRead(request(), protectedResponse);
+    assert.equal(response.status, 200);
+    assert.equal(renders, 1);
+    assert.deepEqual(calls, ['/auth/v1/token', '/auth/v1/user', '/rest/v1/staff_profiles', '/rest/v1/staff_capability_grants']);
+    assert.equal(response.headers.get('cache-control'), 'private, no-store, max-age=0');
+    assert.equal(response.headers.get('pragma'), 'no-cache');
+    assert.equal(response.headers.get('expires'), '0');
+    assert.equal(response.headers.get('x-test'), 'preserved');
+    assert.equal(await response.text(), 'protected content');
+    const setCookie = response.headers.get('set-cookie');
+    assert.match(setCookie, /^__Host-epelawa-admin(?:\.\d+)?=/);
+    assert.match(setCookie, /Path=\//i);
+    assert.match(setCookie, /HttpOnly/i);
+    assert.match(setCookie, /Secure/i);
+    assert.match(setCookie, /SameSite=Lax/i);
+    assert.doesNotMatch(setCookie, /Domain=/i);
+
+    largeSession = true;
+    const chunked = await respondToAdminRead(request(), protectedResponse);
+    const chunks = chunked.cookies.getAll().filter(({ name }) => /^__Host-epelawa-admin\.\d+$/.test(name));
+    assert.ok(chunks.length > 1, 'all chunks are carried to the returned response');
+    for (const cookie of chunks) {
+      assert.equal(cookie.httpOnly, true);
+      assert.equal(cookie.secure, true);
+      assert.equal(cookie.sameSite, 'lax');
+      assert.equal(cookie.path, '/');
+      assert.equal(cookie.domain, undefined);
+    }
+    assert.match(chunked.headers.get('cache-control'), /no-store/);
+    largeSession = false;
+
+    revoked = true;
+    const denied = await respondToAdminRead(request(), protectedResponse);
+    assert.equal(denied.status, 403);
+    assert.equal(renders, 2, 'no protected response on revocation');
+    assert.match(denied.headers.get('cache-control'), /no-store/);
+    assert.match(denied.headers.get('set-cookie'), /^__Host-epelawa-admin/);
+    assert.doesNotMatch(await denied.text(), /protected content/);
+
+    revoked = false;
+    const broken = await respondToAdminRead(request(), () => {
+      const response = new NextResponse('must not escape');
+      response.cookies.set = () => { throw new Error('cannot write cookie'); };
+      return response;
+    });
+    assert.equal(broken.status, 503);
+    assert.match(broken.headers.get('cache-control'), /no-store/);
+    assert.doesNotMatch(await broken.text(), /must not escape/);
+    const thrown = await respondToAdminRead(request(), () => { throw new Error('render failed'); });
+    assert.equal(thrown.status, 503);
+    assert.match(thrown.headers.get('cache-control'), /no-store/);
+
+    calls.length = 0;
+    delete process.env.SUPABASE_URL;
+    const noConfig = await respondToAdminRead(request(), protectedResponse);
+    assert.equal(noConfig.status, 403);
+    assert.equal(renders, 2);
+    assert.match(noConfig.headers.get('cache-control'), /no-store/);
+    assert.equal(noConfig.headers.get('set-cookie'), null);
+    assert.deepEqual(calls, []);
+  } finally {
+    globalThis.fetch = oldFetch;
+    if (oldUrl === undefined) delete process.env.SUPABASE_URL; else process.env.SUPABASE_URL = oldUrl;
+    if (oldKey === undefined) delete process.env.SUPABASE_PUBLISHABLE_KEY; else process.env.SUPABASE_PUBLISHABLE_KEY = oldKey;
+  }
+});
