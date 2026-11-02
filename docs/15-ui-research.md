@@ -51,4 +51,4 @@ The owner supplied the composite EPE LAWA logo on 2 November 2026 and instructed
 
 ## 6. Audit and system-page increment
 
-The November audit and system-page work uses the reference register above, the existing palette and functional error/connection states; it does not reproduce reference screens or assert that the listed Pinterest images were inspected. See [16-audit-and-delivery.md](16-audit-and-delivery.md) for implementation, verification and limitations.
+The November audit and system-page work uses the reference register above, the existing palette and functional error/connection states; it does not reproduce reference screens or assert that the listed Pinterest images were inspected. See [the audit record](archive/16-audit-and-delivery.md) for implementation, verification and limitations.
