@@ -16,3 +16,8 @@ export async function probeConnection(
 export function isPullRefreshGesture(deltaX: number, deltaY: number): boolean {
   return deltaY >= 80 && deltaY > Math.abs(deltaX) * 1.5;
 }
+
+/** The owner removed the custom gesture from the landing page only. */
+export function isPullRefreshEnabled(pathname: string | null): boolean {
+  return pathname !== null && pathname.startsWith("/") && pathname !== "/";
+}

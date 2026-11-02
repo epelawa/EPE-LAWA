@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { probeConnection, isPullRefreshGesture } from '../apps/main/lib/connectivity.ts';
+import { probeConnection, isPullRefreshEnabled, isPullRefreshGesture } from '../apps/main/lib/connectivity.ts';
 
 test('connection engine distinguishes browser offline, a successful probe, and an unreachable service', async () => {
   let calls = 0;
@@ -17,4 +17,13 @@ test('pull refresh requires a deliberate mostly vertical downward gesture', () =
   assert.equal(isPullRefreshGesture(5, 79), false);
   assert.equal(isPullRefreshGesture(70, 90), false);
   assert.equal(isPullRefreshGesture(0, -100), false);
+});
+
+
+test('custom pull refresh is disabled on the landing page and unknown paths', () => {
+  assert.equal(isPullRefreshEnabled('/'), false);
+  assert.equal(isPullRefreshEnabled(null), false);
+  assert.equal(isPullRefreshEnabled(''), false);
+  assert.equal(isPullRefreshEnabled('/about'), true);
+  assert.equal(isPullRefreshEnabled('/status/404'), true);
 });
