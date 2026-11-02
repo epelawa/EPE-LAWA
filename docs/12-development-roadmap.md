@@ -10,7 +10,7 @@
 
 EPE LAWA is a long-term civic, editorial, media and community platform delivered incrementally. Each phase follows **requirements → design → implementation → testing → review → approval → release**, with its own scope, dependencies, risks, exclusions and accountable owner. A later-phase feature in this roadmap is not permission to build it now. Do not call a phase complete while blockers remain.
 
-**Current stage:** Phase 1 foundation. Owner approved Workstream 0.8 and the full Phase 0 exit on 2 November 2026. The three app shells and foundation tests have been added; migrations, production integrations, editorial functionality and deployment remain incomplete.
+**Current stage:** Phase 1 foundation. Owner approved Workstream 0.8 and the full Phase 0 exit on 2 November 2026. The three app shells and foundation tests exist; one staff foundation migration has been applied in production. A server-only session gate is in progress but unwired; real-provider security testing, complete identity flows, editorial functionality and integrations remain incomplete.
 
 **Recorded owner direction:**
 

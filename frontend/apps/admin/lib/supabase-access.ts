@@ -1,5 +1,6 @@
 import "server-only";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { authorizeAdminAccess, type AdminAccess, type StaffAccessProvider } from "@epelawa/auth";
 
 /** Only public/publishable keys are accepted; service-role and secret keys are rejected. */
@@ -15,26 +16,99 @@ function isPublicKey(key: string): boolean {
   }
 }
 
+const ADMIN_COOKIE = "__Host-epelawa-admin";
+
+/** The response writer must write all cookies AND all headers to the same response. */
+export type SessionCookieStore = {
+  getAll(): { name: string; value: string }[];
+  setAll(cookies: { name: string; value: string; options: CookieOptions }[], headers: Record<string, string>): void;
+};
+
+function publicProviderConfig(): { url: string; key: string } | null {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_PUBLISHABLE_KEY;
+  if (!url || !key || !isPublicKey(key)) return null;
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "https:" || parsed.username || parsed.password || parsed.search || parsed.hash || parsed.pathname !== "/") return null;
+    return { url: parsed.origin, key };
+  } catch {
+    return null;
+  }
+}
+
+async function hasActiveAdminGrant(client: SupabaseClient, userId: string): Promise<boolean> {
+  const profile = await client.from("staff_profiles")
+    .select("user_id,is_active").eq("user_id", userId).maybeSingle();
+  if (profile.error || !profile.data || profile.data.user_id !== userId || profile.data.is_active !== true) return false;
+  const grant = await client.from("staff_capability_grants")
+    .select("user_id,capability").eq("user_id", userId).eq("capability", "admin.access").maybeSingle();
+  return !grant.error && grant.data?.user_id === userId && grant.data.capability === "admin.access";
+}
+
+/**
+ * Unwired session gate, NOT a login implementation. The caller must create a fresh
+ * cookie store per request, return its cookie/header writes on the same response,
+ * and set Cache-Control: no-store on every response, even without a cookie write.
+ * Only a verified Auth user plus a current RLS-scoped entry grant is allowed.
+ * Never share the client or store across requests or call this from a browser.
+ */
+export async function getAdminAccessForSession(store: SessionCookieStore): Promise<AdminAccess> {
+  const config = publicProviderConfig();
+  if (!config) return { allowed: false };
+  try {
+    let cookieWriteFailed = false;
+    const client = createServerClient(config.url, config.key, {
+      global: { fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }) },
+      cookieOptions: { name: ADMIN_COOKIE, path: "/", httpOnly: true, secure: true, sameSite: "lax" },
+      cookies: {
+        getAll: () => store.getAll(),
+        setAll: (cookies, headers) => {
+          if (cookies.some(({ name }) => name !== ADMIN_COOKIE && !/^__Host-epelawa-admin\.\d+$/.test(name))) {
+            cookieWriteFailed = true;
+            return;
+          }
+          const safe = cookies.map(({ name, value, options }) => {
+            const { domain: _domain, ...rest } = options;
+            return { name, value, options: { ...rest, path: "/", httpOnly: true, secure: true, sameSite: "lax" as const } };
+          });
+          try {
+            store.setAll(safe, { ...headers, "Cache-Control": "private, no-store, max-age=0" });
+          } catch {
+            // The auth library can dispatch cookie writes to async subscribers;
+            // throwing here can create unhandled rejections. Record a failure
+            // and deny this request instead.
+            cookieWriteFailed = true;
+          }
+        },
+      },
+    });
+    // getUser verifies with Auth; cookie contents and getSession are not proof of identity.
+    const { data, error } = await client.auth.getUser();
+    if (cookieWriteFailed || error || !data.user || typeof data.user.id !== "string" || !data.user.id) return { allowed: false };
+    const granted = await hasActiveAdminGrant(client, data.user.id);
+    return granted && !cookieWriteFailed ? { allowed: true, userId: data.user.id } : { allowed: false };
+  } catch {
+    return { allowed: false };
+  }
+}
+
 /**
  * Verify with Supabase Auth, then check the active profile and explicit entry grant
  * through the caller's RLS-scoped identity. No service-role credential is used.
  * This helper is not wired to a login or dashboard; those remain unavailable.
  */
 export async function getAdminAccessForToken(token: string | null | undefined): Promise<AdminAccess> {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_PUBLISHABLE_KEY;
-  if (!token || token.length > 8192 || /\s/.test(token) || !url || !key || !isPublicKey(key)) {
-    return { allowed: false };
-  }
+  const config = publicProviderConfig();
+  if (!token || token.length > 8192 || /\s/.test(token) || !config) return { allowed: false };
 
   try {
-    const parsed = new URL(url);
-    if (parsed.protocol !== "https:" || parsed.username || parsed.password || parsed.search || parsed.hash || parsed.pathname !== "/") {
-      return { allowed: false };
-    }
-    const client = createClient(parsed.origin, key, {
+    const client = createClient(config.url, config.key, {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
-      global: { headers: { Authorization: `Bearer ${token}` } },
+      global: {
+        headers: { Authorization: `Bearer ${token}` },
+        fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }),
+      },
     });
     const provider: StaffAccessProvider = {
       async verifyUser(accessToken) {
@@ -42,12 +116,7 @@ export async function getAdminAccessForToken(token: string | null | undefined): 
         return !error && data.user ? { id: data.user.id } : null;
       },
       async hasActiveAdminGrant(userId) {
-        const profile = await client.from("staff_profiles")
-          .select("user_id,is_active").eq("user_id", userId).maybeSingle();
-        if (profile.error || !profile.data || profile.data.user_id !== userId || profile.data.is_active !== true) return false;
-        const grant = await client.from("staff_capability_grants")
-          .select("user_id,capability").eq("user_id", userId).eq("capability", "admin.access").maybeSingle();
-        return !grant.error && grant.data?.user_id === userId && grant.data.capability === "admin.access";
+        return hasActiveAdminGrant(client, userId);
       },
     };
     return await authorizeAdminAccess(token, provider);
