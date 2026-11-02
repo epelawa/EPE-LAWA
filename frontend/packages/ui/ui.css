@@ -72,7 +72,8 @@ summary:focus-visible,
   min-height: var(--touch-min);
   padding: var(--space-3) var(--space-6);
   border: var(--border-width) solid transparent;
-  border-radius: var(--radius-sm);
+  /* Softer than a tag, tighter than a card. "Rounded a little", not a pill. */
+  border-radius: var(--radius-md);
   background: var(--ep-btn-bg);
   color: var(--ep-btn-fg);
   font-family: var(--font-body);
@@ -370,3 +371,34 @@ summary:focus-visible,
     opacity: 1;
   }
 }
+
+/* ── Icon button ─────────────────────────────────────────────────────────── */
+/* Square, 44px, no visible label. The accessible name comes from `aria-label` on the
+   control or from an `.ep-sr-only` child — never from the icon alone. */
+.ep-icon-btn {
+  display: inline-grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  padding: 0;
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.ep-icon-btn:hover {
+  background: var(--color-surface-muted);
+  color: var(--color-primary);
+}
+
+.ep-icon-btn svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+

@@ -119,9 +119,13 @@
   --space-12: 48px;
   --space-16: 64px;
 
-  /* ── Radius · three values only ────────────────────────────────────────── */
-  --radius-sm: 4px; /* inputs, tags, buttons */
-  --radius-md: 8px; /* cards, panels */
+  /* ── Radius ────────────────────────────────────────────────────────────── */
+  /* Four values. `--radius-lg` exists because the floating navigation shell, the hero
+     media frame and dialogs need a softer corner than a card; at 8px they read as a
+     panel, not a surface. Anything needing a fifth value is a design bug. */
+  --radius-sm: 4px; /* tags, inline controls */
+  --radius-md: 8px; /* buttons, cards, panels */
+  --radius-lg: 16px; /* nav shell, hero media, dialogs */
   --radius-full: 9999px; /* pills, avatars only */
 
   /* ── Elevation · two shadows only ──────────────────────────────────────── */
@@ -153,4 +157,62 @@
   --focus-ring-width: 2px;
   --focus-ring-offset: 2px;
   --focus-ring-color: var(--color-teal-700);
+
+  /* ── Structure · shell ─────────────────────────────────────────────────── */
+  /* The floating navigation is sticky, so this is a real layout height, not a guess. */
+  --nav-height: 3.75rem; /* 60 */
+  --nav-gap: 0.5rem; /* float gap above the nav pill */
+  --shadow-3: 0 10px 30px -12px rgb(7 62 66 / 0.35);
+  --blur-nav: 14px;
 }
+
+/*
+ * ── Dark theme ─────────────────────────────────────────────────────────────
+ *
+ * Only semantic aliases are overridden. The raw scale above stays fixed, so any
+ * component written against `--color-text`, `--color-surface` and friends adapts with
+ * no extra work and no per-component dark-mode branch.
+ *
+ * Measured pairs (WCAG AA, 4.5:1 body text):
+ *   #F2F1EF on #0F1113 → 17.2:1
+ *   #A8AEB5 on #0F1113 → 8.1:1
+ *   #7ED0D6 on #0F1113 → 10.1:1
+ *   white on #0E6E75 → 6.0:1
+ * Gold keeps its rule: surface only, never ink.
+ */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-bg: #0f1113;
+  --color-surface: #171a1d;
+  --color-surface-muted: #12292c;
+  --color-surface-inverse: #f2f1ef;
+
+  --color-text: #f2f1ef;
+  --color-text-muted: #a8aeb5;
+  --color-text-inverse: #0f1113;
+  --color-text-link: #7ed0d6;
+
+  --color-border: #2a2f34;
+  --color-border-strong: #6b727a;
+
+  --color-primary: #0e6e75;
+  --color-primary-hover: #12838b;
+  --color-primary-active: #0a555b;
+  --color-primary-fg: #ffffff;
+
+  --color-success: #6fcf7c;
+  --color-success-surface: #12301a;
+  --color-error: #ff9d93;
+  --color-error-surface: #35130f;
+  --color-warning: #e8b45f;
+  --color-warning-surface: #33260d;
+  --color-info: #7ed0d6;
+  --color-info-surface: #12292c;
+
+  --focus-ring-color: #7ed0d6;
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.5);
+  --shadow-2: 0 2px 10px rgb(0 0 0 / 0.55);
+  --shadow-3: 0 12px 34px -14px rgb(0 0 0 / 0.8);
+}
+

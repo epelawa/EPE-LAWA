@@ -14,11 +14,25 @@ export { Container } from "./container";
 export { Card } from "./card";
 
 export {
+  ArrowRightIcon,
   BusinessIcon,
   CheckIcon,
   ChevronIcon,
+  CloseIcon,
+  DownloadIcon,
   ForumIcon,
+  GalleryIcon,
+  MenuIcon,
+  MoonIcon,
   NewsIcon,
+  OfflineIcon,
+  PauseIcon,
   PeopleIcon,
+  PlayIcon,
   RadioIcon,
+  SearchIcon,
+  SpinnerIcon,
+  SunIcon,
+  VolumeIcon,
+  VolumeOffIcon,
 } from "./icons";
