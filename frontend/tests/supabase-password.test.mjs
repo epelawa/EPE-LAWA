@@ -78,3 +78,44 @@ test('password sign-in stages cookies until identity and active admin grant are 
     if (oldKey === undefined) delete process.env.SUPABASE_PUBLISHABLE_KEY; else process.env.SUPABASE_PUBLISHABLE_KEY = oldKey;
   }
 });
+
+test('unwired logout clears only host-only admin cookies and reports provider failure honestly', async () => {
+  const { signOutAdminSession } = await import('../apps/admin/lib/supabase-access.ts');
+  const oldFetch = globalThis.fetch, oldUrl = process.env.SUPABASE_URL, oldKey = process.env.SUPABASE_PUBLISHABLE_KEY;
+  process.env.SUPABASE_URL = 'https://unit.example.invalid';
+  process.env.SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_test_only';
+  const value = { access_token: 'fake-access', refresh_token: 'fake-refresh', token_type: 'bearer', expires_at: Math.floor(Date.now() / 1000) + 3600, expires_in: 3600, user: { id: 'staff-a' } };
+  const cookies = [{ name: cookieName, value: 'base64-' + Buffer.from(JSON.stringify(value)).toString('base64url') }, { name: cookieName + '.0', value: 'old' }, { name: 'unrelated', value: 'keep' }];
+  let fail = false, calls = 0;
+  globalThis.fetch = async (input, init) => {
+    const req = new Request(input, init);
+    assert.equal(req.cache, 'no-store');
+    assert.equal(new URL(req.url).pathname, '/auth/v1/logout');
+    assert.equal(req.headers.get('authorization'), 'Bearer fake-access');
+    calls++;
+    if (fail) throw new Error('offline');
+    return new Response(null, { status: 204 });
+  };
+  const makeStore = () => { const writes = []; return { writes, getAll: () => cookies, setAll: (items, headers) => writes.push({ items, headers }) }; };
+  try {
+    const saved = makeStore();
+    assert.deepEqual(await signOutAdminSession(saved), { revoked: true, cookiesCleared: true });
+    assert.equal(calls, 1);
+    assert.match(saved.writes[0].headers['Cache-Control'], /no-store/);
+    assert.deepEqual(saved.writes[0].items.map(c => c.name).sort(), [cookieName, cookieName + '.0'].sort());
+    for (const c of saved.writes[0].items) assert.deepEqual(c.options, { path: '/', httpOnly: true, secure: true, sameSite: 'lax', maxAge: 0 });
+    fail = true;
+    const offline = makeStore();
+    assert.deepEqual(await signOutAdminSession(offline), { revoked: false, cookiesCleared: true });
+    assert.equal(offline.writes.length, 1);
+    const broken = makeStore(); broken.setAll = () => { throw new Error('write failed'); };
+    assert.deepEqual(await signOutAdminSession(broken), { revoked: false, cookiesCleared: false });
+    delete process.env.SUPABASE_URL;
+    const noConfig = makeStore();
+    assert.deepEqual(await signOutAdminSession(noConfig), { revoked: false, cookiesCleared: true });
+  } finally {
+    globalThis.fetch = oldFetch;
+    if (oldUrl === undefined) delete process.env.SUPABASE_URL; else process.env.SUPABASE_URL = oldUrl;
+    if (oldKey === undefined) delete process.env.SUPABASE_PUBLISHABLE_KEY; else process.env.SUPABASE_PUBLISHABLE_KEY = oldKey;
+  }
+});

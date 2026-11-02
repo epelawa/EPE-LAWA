@@ -232,3 +232,39 @@ export async function signInAdminWithPassword(
     }
   }
 }
+
+/**
+ * Unwired logout foundation. Attempts provider-side local-session revocation and
+ * independently clears all host-only admin cookie chunks. `revoked` reflects the
+ * provider response, not proof that other sessions are revoked. A future route
+ * must enforce CSRF/origin and return the actual no-store response atomically.
+ */
+export async function signOutAdminSession(store: SessionCookieStore): Promise<{ revoked: boolean; cookiesCleared: boolean }> {
+  let revoked = false;
+  let names: string[];
+  try {
+    names = Array.from(new Set([ADMIN_COOKIE, ...store.getAll().map(cookie => cookie.name)
+      .filter(name => /^__Host-epelawa-admin\.\d+$/.test(name))]));
+  } catch {
+    return { revoked: false, cookiesCleared: false };
+  }
+  const config = publicProviderConfig();
+  if (config) {
+    try {
+      const client = createServerClient(config.url, config.key, {
+        global: { fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }) },
+        cookieOptions: { name: ADMIN_COOKIE, path: "/", httpOnly: true, secure: true, sameSite: "lax" },
+        cookies: { getAll: () => store.getAll(), setAll: () => {} },
+      });
+      const { error } = await client.auth.signOut({ scope: "local" });
+      revoked = !error;
+    } catch { /* Local cleanup still proceeds even if the provider is unavailable. */ }
+  }
+  try {
+    store.setAll(names.map(name => ({ name, value: "", options: { path: "/", httpOnly: true, secure: true, sameSite: "lax", maxAge: 0 } })),
+      { "Cache-Control": "private, no-store, max-age=0", Pragma: "no-cache", Expires: "0" });
+    return { revoked, cookiesCleared: true };
+  } catch {
+    return { revoked, cookiesCleared: false };
+  }
+}
