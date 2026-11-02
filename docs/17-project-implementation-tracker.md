@@ -51,7 +51,7 @@
 ### 1.3 Editorial data and CMS
 
 - [ ] Finalise article data contracts, role/capability matrix, ownership and independent/self-approval rules before migrations.
-- [ ] Design and review migrations/RLS for articles, immutable versions, drafts, reviews, approvals, publication, corrections and audit history. Test safely before production.
+- [ ] Design and review migrations/RLS for articles, immutable versions, drafts, reviews, approvals, publication, corrections and audit history. A [database prototype](20-editorial-storage-proposal.md) is tested only in memory, is not a migration and is not deployed. Test safely before production.
 - [ ] Build server-side draft → review → approval → publish/unpublish/correct transitions with concurrency protection and audit; prevent direct draft or privilege bypass. An unwired model and transaction contract exist — see [editorial foundation](19-editorial-workflow-foundation.md) — but they have no real database transaction, public API or content. The owner wants publication and removal reflected promptly; real cache behaviour and deletion/retention require review and testing.
 - [ ] Build secure private preview and staff editorial interfaces only after backend permissions exist; test draft privacy, approved-version integrity, withdrawal and cache invalidation.
 
