@@ -57,3 +57,27 @@ alter table public.editorial_audit_events enable row level security;
 alter table public.editorial_capabilities enable row level security;
 revoke all on public.editorial_articles, public.editorial_versions, public.editorial_approvals, public.editorial_audit_events, public.editorial_capabilities from public, anon, authenticated, service_role;
 -- No table policies or application-role grants.
+
+-- Defence in depth for accidental writes by the function owner. A database owner
+-- can disable or remove triggers; this is not tamper-proof or a retention policy.
+create function public.editorial_prototype_guard_version() returns trigger
+language plpgsql set search_path = '' as $$
+begin
+  if (new.id, new.article_id, new.author_id, new.title, new.summary, new.body, new.created_at)
+     is distinct from (old.id, old.article_id, old.author_id, old.title, old.summary, old.body, old.created_at)
+     or (old.state = 'approved' and new.state is distinct from 'approved') then
+    raise exception 'editorial version is immutable' using errcode = 'P0001';
+  end if;
+  return new;
+end $$;
+create trigger editorial_prototype_version_guard before update on public.editorial_versions
+  for each row execute function public.editorial_prototype_guard_version();
+
+create function public.editorial_prototype_guard_audit() returns trigger
+language plpgsql set search_path = '' as $$
+begin
+  raise exception 'editorial audit is append-only' using errcode = 'P0001';
+end $$;
+create trigger editorial_prototype_audit_guard before update or delete on public.editorial_audit_events
+  for each row execute function public.editorial_prototype_guard_audit();
+revoke all on function public.editorial_prototype_guard_version(), public.editorial_prototype_guard_audit() from public, anon, authenticated, service_role;

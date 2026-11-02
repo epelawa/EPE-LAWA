@@ -21,6 +21,16 @@ begin
   if not found then raise exception 'editorial request denied' using errcode = 'P0001'; end if;
 end $$;
 
+-- Check and lock any edit grant before touching an article row. The function
+-- rechecks the narrower ownership/any-editor condition once the row is locked.
+create function public.editorial_prototype_require_edit(actor uuid) returns void
+language plpgsql security definer set search_path = '' as $$
+begin
+  perform 1 from public.editorial_capabilities where user_id = actor
+    and capability in ('draft.edit.own', 'draft.edit.any') order by capability for share;
+  if not found then raise exception 'editorial request denied' using errcode = 'P0001'; end if;
+end $$;
+
 create function public.editorial_prototype_create(article_id uuid, version_id uuid, title text, summary text, body text) returns bigint
 language plpgsql security definer set search_path = '' as $$
 declare actor uuid;
@@ -46,6 +56,17 @@ declare
   next_revision bigint;
 begin
   actor := public.editorial_prototype_require_active();
+  -- Reject operations for which the caller lacks a relevant capability before
+  -- acquiring an article lock. Ownership is still checked after locking.
+  case operation
+    when 'edit' then perform public.editorial_prototype_require_edit(actor);
+    when 'submit' then perform public.editorial_prototype_require_capability(actor, 'draft.submit'); perform public.editorial_prototype_require_edit(actor);
+    when 'request_revision' then perform public.editorial_prototype_require_capability(actor, 'article.review');
+    when 'approve' then perform public.editorial_prototype_require_capability(actor, 'article.approve');
+    when 'publish' then perform public.editorial_prototype_require_capability(actor, 'article.publish');
+    when 'unpublish' then perform public.editorial_prototype_require_capability(actor, 'article.unpublish');
+    else raise exception 'editorial request denied' using errcode = 'P0001';
+  end case;
   select * into article from public.editorial_articles where id = target for update;
   if not found or expected_revision is distinct from article.revision or article.revision >= 9007199254740991 then
     raise exception 'editorial request denied' using errcode = 'P0001';
@@ -99,6 +120,22 @@ begin
   return next_revision;
 end $$;
 
-revoke all on function public.editorial_prototype_require_active(), public.editorial_prototype_require_capability(uuid,text), public.editorial_prototype_create(uuid,uuid,text,text,text), public.editorial_prototype_command(uuid,bigint,text,uuid,text,text,text) from public, anon, authenticated, service_role;
+revoke all on function public.editorial_prototype_require_active(), public.editorial_prototype_require_capability(uuid,text), public.editorial_prototype_require_edit(uuid), public.editorial_prototype_create(uuid,uuid,text,text,text), public.editorial_prototype_command(uuid,bigint,text,uuid,text,text,text) from public, anon, authenticated, service_role;
 grant execute on function public.editorial_prototype_create(uuid,uuid,text,text,text), public.editorial_prototype_command(uuid,bigint,text,uuid,text,text,text) to authenticated;
 -- All operations remain experimental and unwired. No read API or public projection.
+
+-- EXPERIMENT ONLY. Allowlisted published fields, never internal or draft data.
+-- A real HTTP layer still needs no-store or verified invalidation and tests.
+create function public.editorial_prototype_public_get(target uuid)
+returns table (title text, summary text, body text)
+language sql stable security definer set search_path = '' as $$
+  select v.title, v.summary, v.body
+  from public.editorial_articles a
+  join public.editorial_approvals approval
+    on approval.article_id = a.id and approval.version_id = a.published_version_id
+  join public.editorial_versions v
+    on v.article_id = a.id and v.id = approval.version_id and v.state = 'approved'
+  where a.id = target
+$$;
+revoke all on function public.editorial_prototype_public_get(uuid) from public, anon, authenticated, service_role;
+grant execute on function public.editorial_prototype_public_get(uuid) to anon, authenticated;
