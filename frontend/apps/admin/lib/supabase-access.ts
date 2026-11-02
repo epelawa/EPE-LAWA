@@ -170,3 +170,65 @@ export async function respondToAdminRead(
     return unavailable();
   }
 }
+
+/**
+ * Unwired server-side password sign-in foundation, NOT an endpoint or route guard.
+ * Callers must enforce CSRF/origin checks, request-size and distributed rate
+ * limits, and preserve no-store/cookie writes on the actual response. No public
+ * error details or credentials should be logged. A successful sign-in grants only
+ * admin entry; resource permissions still require separate enforcement.
+ *
+ * Cookie writes are staged until verified identity and the current entry grant
+ * pass. Failure returns the same generic result and attempts to revoke any newly
+ * issued session. This does not prove provider revocation or browser handling.
+ */
+export async function signInAdminWithPassword(
+  email: unknown,
+  password: unknown,
+  store: SessionCookieStore,
+): Promise<{ allowed: boolean }> {
+  const config = publicProviderConfig();
+  if (!config || typeof email !== "string" || typeof password !== "string" ||
+      email.length > 254 || email.length < 3 || /\s/.test(email) || !email.includes("@") ||
+      password.length === 0 || password.length > 1024) return { allowed: false };
+
+  let client: SupabaseClient | null = null;
+  let signedIn = false;
+  let cookieWriteFailed = false;
+  let staged: { name: string; value: string; options: CookieOptions }[] = [];
+  try {
+    client = createServerClient(config.url, config.key, {
+      global: { fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }) },
+      cookieOptions: { name: ADMIN_COOKIE, path: "/", httpOnly: true, secure: true, sameSite: "lax" },
+      cookies: {
+        getAll: () => store.getAll(),
+        setAll: (cookies) => {
+          if (cookies.some(({ name }) => name !== ADMIN_COOKIE && !/^__Host-epelawa-admin\.\d+$/.test(name))) {
+            cookieWriteFailed = true;
+            return;
+          }
+          staged = cookies.map(({ name, value, options }) => {
+            const { domain: _domain, ...rest } = options;
+            return { name, value, options: { ...rest, path: "/", httpOnly: true, secure: true, sameSite: "lax" as const } };
+          });
+        },
+      },
+    });
+    const result = await client.auth.signInWithPassword({ email, password });
+    signedIn = Boolean(result.data.session);
+    if (result.error || !result.data.user?.id || !result.data.session) return { allowed: false };
+    const verified = await client.auth.getUser();
+    if (verified.error || !verified.data.user?.id || verified.data.user.id !== result.data.user.id ||
+        cookieWriteFailed || !(await hasActiveAdminGrant(client, verified.data.user.id)) ||
+        cookieWriteFailed || staged.length === 0) return { allowed: false };
+    store.setAll(staged, { "Cache-Control": "private, no-store, max-age=0", Pragma: "no-cache", Expires: "0" });
+    signedIn = false; // ownership of the issued cookies has transferred to the caller
+    return { allowed: true };
+  } catch {
+    return { allowed: false };
+  } finally {
+    if (signedIn && client) {
+      try { await client.auth.signOut({ scope: "local" }); } catch { /* Best effort; never expose provider details. */ }
+    }
+  }
+}

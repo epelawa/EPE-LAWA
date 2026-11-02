@@ -40,3 +40,8 @@ The current foundation uses pnpm 10.34.9, Turborepo 2.11.10, Next.js 16.4.4, Rea
 12. [Development roadmap](docs/12-development-roadmap.md)
 
 Additional: [Pre-development handoff](docs/13-pre-development-handoff.md), [staff-access foundation](docs/14-staff-access-foundation.md), [UI research](docs/15-ui-research.md), and [audit and delivery notes](docs/16-audit-and-delivery.md). Provider names and domains in these documents are design direction or unverified dependencies, not evidence of working infrastructure.
+
+
+## Project progress
+
+See the [full project implementation tracker](docs/17-project-implementation-tracker.md) for Phase 0–5 checklists, current progress, remaining steps and release gates.
