@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import Script from "next/script";
 // Shared token layer. Every app imports it exactly once, here or in its own root layout.
 import "@epelawa/ui/tokens.css";
 import "@epelawa/ui/ui.css";
@@ -9,6 +10,7 @@ import SiteHeader from "../components/site-header";
 import SiteFooter from "../components/site-footer";
 import { mainNavigation } from "../lib/navigation";
 import { isIndexingAllowed, newsUrl, siteUrl } from "../lib/site";
+import { themeScript } from "../lib/theme";
 
 // next/font downloads and self-hosts these files at build time, so a reader on a metered
 // connection never talks to a third-party font host.
@@ -55,6 +57,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" className={`${displayFont.variable} ${bodyFont.variable}`}>
       <body>
+        {/* Theme applied before first paint: no flash of the wrong theme. */}
+        <Script strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeScript }} />
         <a className="skip-link" href="#main">
           Skip to content
         </a>

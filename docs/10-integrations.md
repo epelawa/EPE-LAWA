@@ -9,9 +9,9 @@
 
 | Concern | Provider | Status |
 | --- | --- | --- |
-| Compute (web) | Google Cloud Run | Not configured |
-| CDN / TLS / LB | Cloud CDN + global HTTPS load balancer | Not configured |
-| Object storage | Google Cloud Storage | Not configured |
+| Compute (web) | Vercel | Configured — project `epe-lawa` |
+| CDN / TLS / LB | Vercel Edge Network + automatic TLS | Configured |
+| Object storage | Cloudflare R2 | Not configured (adapter ready) |
 | Database + auth | Supabase (Postgres, Auth, RLS) | Project exists; only the staff migration applied |
 | Transactional email | Resend | Owner-specified; not configured |
 | Payments | Paystack | Not configured |

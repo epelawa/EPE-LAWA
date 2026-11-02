@@ -18,7 +18,7 @@ A community, news, cultural and commerce platform for Epe Division, Lagos State,
 
 | Form | Status | Notes |
 | --- | --- | --- |
-| Web application (Next.js, installable PWA) | **Building now** | The complete product. Works on any phone, no store approval, no install. |
+| Web application (Next.js, installable PWA) | **Building now** | The complete product. Works on any phone, no store approval, no install. Hosted on Vercel. |
 | Native app (React Native + Expo) | **Later phase** | Shares the same Supabase backend. Not a WebView wrapper, not Capacitor. |
 | Android APK / iOS build | **Not now** | Deferred by decision, not by inability. |
 
@@ -192,8 +192,8 @@ on accounts. Payments last because money is the most expensive thing to get wron
 | Forum moved from "Phase 2" to phase 6; Who is Who from "Phase 3" to phase 3; directory from "Phase 4" to phase 7 | The old order was editorial-first. The new order is dependency-first, then client priority. |
 | Marketplace and payments admitted to scope | They are in the PRD as revenue. They were previously excluded. They now have a dedicated phase with a hard money gate. |
 | Native app recorded as React Native + Expo, deferred | The client expects an app. Capacitor/WebView is explicitly rejected — it is a website in a box and would fail store review and user expectation. |
-| Hosting moved from Vercel to Google Cloud | Developer decision. Cloud Run + Cloud CDN + Cloud Storage, single vendor, predictable cost, no cross-vendor data transfer. |
-| Object storage moved from Cloudflare R2 to Google Cloud Storage | Same vendor as compute. R2 remains a valid fallback if egress cost becomes a problem. |
+| Hosting moved to Vercel | Developer decision. Vercel hosts the three Next.js apps with preview deploys per PR. |
+| Object storage is Cloudflare R2 | S3-compatible, no egress fees; media rows store object keys, never full URLs. |
 | Public member accounts introduced | Forum, comments, reviews and orders all need them. No prior document modelled them. |
 | `.github/` and CI permitted | Required for the "verify before commit" rule to mean anything. |
 | Branch policy relaxed to commit-and-push per verified step | The old "do not merge without instruction" rule was blocking delivery. |

@@ -16,13 +16,11 @@ import { useEffect, useRef, useState } from "react";
 export default function Reveal({
   children,
   delay = 0,
-  as: Tag = "div",
   className = "",
 }: {
   children: React.ReactNode;
   /** Milliseconds. Keep it under 120; anything slower feels like waiting. */
   delay?: number;
-  as?: "div" | "section" | "li";
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -59,13 +57,13 @@ export default function Reveal({
   }, []);
 
   return (
-    <Tag
-      ref={ref as React.RefObject<HTMLDivElement>}
+    <div
+      ref={ref}
       className={`reveal ${className}`.trim()}
       data-visible={visible ? "true" : "false"}
       style={delay ? { transitionDelay: `${delay}ms` } : undefined}
     >
       {children}
-    </Tag>
+    </div>
   );
 }

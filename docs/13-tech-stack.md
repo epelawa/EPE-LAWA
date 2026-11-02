@@ -3,7 +3,7 @@
 **Document:** 13 — decisions record
 **Status:** Approved working stack. Deviating from this table requires the developer's explicit
 agreement, recorded here.
-**Last revised:** 2 November 2026 (re-baseline: Google Cloud hosting, React Native + Expo for native,
+**Last revised:** 2 November 2026 (re-baseline: Vercel hosting, Cloudflare R2 storage, React Native + Expo for native,
 Paystack for payments).
 
 ---
@@ -30,10 +30,10 @@ Paystack for payments).
 | Rich text | Tiptap | 3.x |
 | Auth | Supabase Auth (staff **and** members) | current |
 | Database | Supabase Postgres + Row Level Security | 15 |
-| Object storage | Google Cloud Storage | current |
+| Object storage | Cloudflare R2 | current |
 | Email | Resend | current |
 | Payments | Paystack | current |
-| Hosting | Google Cloud Run | current |
+| Hosting | Vercel | current |
 | CDN / edge | Cloud CDN + global HTTPS load balancer | current |
 | Native shell | React Native + Expo (expo-router, EAS Build) | SDK 54+ |
 | Push — web | Web Push (VAPID) | n/a |
@@ -75,24 +75,25 @@ developer touch the same code.
 **Consequence:** RLS is not optional and not decoration. Every exposed table has policies, and negative
 tests are written against them. A server-role key never leaves the server.
 
-### 2.4 Google Cloud Run, not Vercel
+### 2.4 Vercel, not Google Cloud Run
 
-Cloud Run runs the same container image locally and in production, which means "works on my machine"
-is a meaningful statement. It supports long-running requests, background work and arbitrary Node
-dependencies without a platform runtime that differs from local. Cost is per-request and scales to
-zero. Cloud CDN handles static asset and cache behaviour; the global HTTPS load balancer terminates
-TLS for all three hosts.
+Vercel hosts each Next.js app (main, news, admin) as its own project with zero-config deploys,
+preview deployments per pull request, and automatic builds. It matches the local development server
+closely, so `vercel dev` and production behave the same — and the project already had a Vercel
+project (`epe-lawa`, root `frontend/apps/main`) configured before the re-baseline.
 
-**Consequence:** we own more of the deployment. Dockerfiles, health checks, IAM and secret injection
-are ours. Terraform or `gcloud` scripts must be checked in so the environment is reproducible.
+**Consequence:** we trade platform lock-in for operational simplicity. Environment variables, preview
+URLs and rollbacks come for free. Long-running requests and arbitrary background work are more
+constrained than on Cloud Run, but the project has no such load yet.
 
-### 2.5 Google Cloud Storage, not Cloudflare R2
+### 2.5 Cloudflare R2, not Google Cloud Storage
 
-Moving storage to the same vendor as compute removes a cross-cloud egress bill, a second IAM system
-and a second set of credentials. Signed URLs, lifecycle rules and IAM conditions are all first-class.
+Cloudflare R2 is S3-compatible with no egress fees, which matters for a media-heavy publication
+whose audience is on metered connections. The database stores `provider`, `bucket` and `object_key`
+for each media asset — never a full URL — so the object store stays portable behind an adapter.
 
-**Reversal cost:** low. The storage adapter is written behind an interface; R2 is S3-compatible and
-swappable if egress cost becomes a problem later.
+**Consequence:** media metadata lives in Supabase; the bytes live in R2. URLs are constructed at
+read time per environment, so a row is portable between local, preview and production.
 
 ### 2.6 Paystack, not Stripe
 
@@ -196,16 +197,16 @@ Names only. Values live in Cloud Run secret bindings or Secret Manager. Never in
 | `NEXT_PUBLIC_SUPABASE_URL` | all | yes |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | all | yes — RLS is what protects data |
 | `SUPABASE_SERVICE_ROLE_KEY` | server only | **never** |
-| `GCS_BUCKET_PUBLIC` | server only | no |
-| `GCS_BUCKET_PRIVATE` | server only | no |
-| `GCS_PROJECT_ID` | server only | no |
+| `R2_BUCKET_PUBLIC` | server only | no |
+| `R2_BUCKET_PRIVATE` | server only | no |
+| `R2_ACCOUNT_ID` | server only | no |
 | `RESEND_API_KEY` | server only | **never** |
 | `PAYSTACK_SECRET_KEY` | server only | **never** |
 | `PAYSTACK_WEBHOOK_SECRET` | server only | **never** |
 | `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` | main | yes |
 | `VAPID_PUBLIC_KEY` | main | yes |
 | `VAPID_PRIVATE_KEY` | server only | **never** |
-| `RADIO_STREAM_URL` | server only | no — the player uses a proxied or signed URL |
+| `RADIO_STREAM_URL` | server only | no — stream URL is verified; player uses it directly |
 | `CRON_SECRET` | server only | **never** |
 
 `.env.example` is committed with all names and no values. A new variable without an `.env.example`
@@ -218,8 +219,8 @@ entry is an incomplete change.
 | Not used | Why |
 | --- | --- |
 | Capacitor / Cordova / WebView wrapper | Rejected by the developer. Not a native app. |
-| Vercel | Replaced by Google Cloud Run. |
-| Cloudflare R2 | Replaced by GCS; kept as documented fallback. |
+| Vercel | The hosting platform. |
+| Cloudflare R2 | Object storage for media assets. |
 | Firebase / Firestore | Supabase Postgres already serves the need; two databases is worse. |
 | MongoDB | The data is relational: articles, versions, orders, moderation. |
 | Prisma | Supabase generates types from the schema; an ORM adds a layer that fights RLS. |

@@ -130,11 +130,12 @@ Rules:
 
 Full detail in `docs/13-tech-stack.md`. Summary:
 
-LANGUAGE TypeScript strict · FRAMEWORK Next.js App Router · UI Tailwind + shadcn/ui · ICONS
+LANGUAGE TypeScript strict · FRAMEWORK Next.js App Router · UI plain CSS + custom properties
+(keeping Tailwind/shadcn as the named default until a component library justifies it) · ICONS
 lucide-react · ANIMATION framer-motion, restrained · DATES `date-fns` (never moment) · VALIDATION
 zod, both directions · SERVER STATE TanStack Query · CLIENT STATE Zustand · AUTH Supabase Auth ·
-DB Supabase Postgres + RLS · STORAGE Google Cloud Storage · EMAIL Resend · PAYMENTS Paystack ·
-HOSTING Google Cloud Run + Cloud CDN · SEARCH Postgres full-text first · EDITOR Tiptap ·
+DB Supabase Postgres + RLS · STORAGE Cloudflare R2 · EMAIL Resend · PAYMENTS Paystack ·
+HOSTING Vercel · SEARCH Postgres full-text first · EDITOR Tiptap ·
 NATIVE React Native + Expo (not Capacitor, not a WebView)
 
 If the framework already provides it, use that first. Do not add a dependency to save ten lines.

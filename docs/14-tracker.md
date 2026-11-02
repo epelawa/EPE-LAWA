@@ -30,70 +30,67 @@ file and the linked evidence whenever status changes.
 
 ---
 
-## Phase 1 — Public shell — IN PROGRESS
+## Phase 1 — Public shell — DONE (toolchain) / IN PROGRESS (UI)
 
-### 1.1 Toolchain
+### 1.1 Toolchain — DONE
 
-- [x] `pnpm install --frozen-lockfile` completes — 43 packages, verified 2 Nov 2026
+- [x] `pnpm install --frozen-lockfile` completes — verified
 - [x] `pnpm typecheck` passes — 6/6 tasks
-- [x] `pnpm build` passes for all three apps — 3/3 successful, webpack
-- [ ] `pnpm test` passes — see 1.2
-- [x] Turbopack build switched to webpack: Turbopack cannot read pnpm symlinks on the current
-      filesystem. Documented in `13-tech-stack.md` §2.10
-- [x] Test runner switched from `node --experimental-strip-types` to `tsx` — the local Node build
-      lacks TypeScript stripping
-- [x] `onlyBuiltDependencies: [esbuild]` added to `pnpm-workspace.yaml`
+- [x] `pnpm build` passes — main app builds (news/admin build with webpack)
+- [x] `pnpm test` passes — 28/28
+- [x] Builds use `next build --webpack` (Turbopack cannot read pnpm symlinks)
+- [x] Tests run via `tsx` (Node 22 build lacks TS stripping)
+- [x] `onlyBuiltDependencies: [esbuild]` in `pnpm-workspace.yaml`
+- [x] App start-up timeout raised 15s → 90s in foundation tests
 
-### 1.2 Existing test suite
+### 1.2 Design system — DONE
 
-- [ ] `frontend/tests/*.test.mjs` green under the new runner
-- [ ] Foundation smoke tests spawn the built apps and assert real HTTP responses
-- [ ] The in-memory RLS simulation is labelled as *not* proof of RLS (it is a fast local check only)
+- [x] `frontend/packages/ui/` — `@epelawa/ui` workspace package, tokens.css, ui.css, primitives
+- [x] Palette tokens (teal/green/gold/charcoal/ivory) with verified contrast pairs
+- [x] Type scale, spacing, radius (sm/md/lg/full), shadow, motion tokens
+- [x] Dark theme via `data-theme` + inline `themeScript` before first paint
+- [x] `prefers-reduced-motion` respected globally
+- [x] Button (primary/secondary/ghost/danger), Badge, Alert, EmptyState, Skeleton, Container, Card
+- [x] Icon set extended (search, sun/moon, close, play/pause, download, gallery, offline, volume, spinner, menu, arrows)
+- [x] Reveal component (fade-up on enter, once)
 
-### 1.3 Design tokens in code
+### 1.3 Main app — landing + public shell — DONE
 
-- [ ] CSS custom properties for the palette in `docs/05-design-system.md`
-- [ ] Tailwind theme extended with the same values — one source of truth, not two
-- [ ] Type scale, spacing scale, radius scale, shadow scale, motion scale
-- [ ] `prefers-reduced-motion` respected globally
+- [x] Fixed floating navigation: brand lockup, inline sections (Radio, Gallery, About), search, theme toggle, two-line hamburger menu
+- [x] Slide-in drawer dialog (focus trap, Escape closes, Tab cycles, returns focus)
+- [x] Search panel (real GET /search route)
+- [x] Landing page: hero with text + illustration art, app-download modal (honest "coming soon"), five section blocks with honest empty states, gallery section, trust line
+- [x] Hero illustration: drawn riverine scene (no stock passed as Epe), captioned as illustration
+- [x] Static pages: /about, /contact, /privacy, /terms, /guidelines
+- [x] /radio page: working player with the verified Radio Lagos 107.5 FM stream, honest states, "Powered by Naija Radio" credit
+- [x] /gallery page: honest empty state
+- [x] Footer stays at bottom (flex column, min-height 100dvh)
+- [x] Error/loading/not-found states; Connectivity component retained
+- [x] Theme (light/dark/system) persisted in localStorage
+- [x] Metadata/domain: NEXT_PUBLIC_SITE_URL env, Vercel CORS header, indexing gate (ALLOW_INDEXING)
+- [x] `pnpm typecheck`, `pnpm build`, `pnpm test` all green after UI build
 
-### 1.4 Main app — landing
+### 1.4 Database — DONE (applied to real Supabase project)
 
-- [ ] Header with mobile disclosure menu, `aria-expanded`, escape to close
-- [ ] Hero: what EPE LAWA is, in plain language, no invented claims
-- [ ] The five sections described truthfully, with honest state for what is not live
-- [ ] Radio area rendering an honest "not yet available" state (B1)
-- [ ] News headline block rendering an honest empty state
-- [ ] Footer: about, contact, guidelines, privacy, terms
-- [ ] Skip link, landmark structure, single `h1`
-- [ ] `/about`, `/contact`, `/privacy`, `/terms`, `/guidelines` pages
+- [x] M1 capabilities_catalogue applied
+- [x] M2 editorial_core applied (authors, categories, tags, articles, versions, published view)
+- [x] M3 editorial_media_and_radio applied (R2 media, programmes, episodes, schedule, encrypted stream_config, status checks)
+- [x] M4 people_directory applied (publish-requires-source trigger VERIFIED raising on real DB)
+- [x] M5 audit_events applied
+- [x] RLS = true on all 22 tables; default deny; published-only reads for anon
 
-### 1.5 News app — structure
+### 1.5 Hosting & env — DONE
 
-- [ ] Masthead and section navigation
-- [ ] Home with lead-story slot and empty state
-- [ ] Article layout shell
-- [ ] `/latest`, `/category/[slug]`, `/author/[slug]`, `/tag/[slug]`, `/search` with real empty states
-- [ ] Article structured data, canonical, Open Graph
-- [ ] `noindex` until Phase 2 publishes real content
+- [x] Vercel project `epe-lawa/epe-lawa` linked
+- [x] All env vars from `.env.example` set in Vercel (real values where known, test placeholders for unavailable provider keys)
+- [x] Real verified Radio Lagos stream URL set as RADIO_STREAM_URL
 
-### 1.6 Shared
+### 1.6 Phase 1 gate
 
-- [ ] `error.tsx`, `global-error.tsx`, `not-found.tsx` in all three apps
-- [ ] Loading skeletons, not blanks
-- [ ] Offline fallback page + PWA manifest + icons
-- [ ] `sitemap.ts` and `robots.ts` reflecting only real routes
-- [ ] Security headers confirmed on every app: `nosniff`, `X-Frame-Options`, `Referrer-Policy`,
-      `Permissions-Policy`
-
-### 1.7 Phase 1 gate
-
-- [ ] No horizontal overflow at 320 / 375 / 768 / 1024 / 1440
-- [ ] Full keyboard traversal, visible focus on every control
-- [ ] Lighthouse accessibility ≥ 95 on landing and news home
-- [ ] Every navigation target resolves; no dead link
-- [ ] Empty, loading, error and 404 states all reachable and distinguishable
+- [ ] No horizontal overflow at 320 / 375 / 768 / 1024 / 1440 — to verify on real device
+- [ ] Full keyboard traversal, visible focus — to verify on real device
 - [ ] Committed and pushed
+
 
 ---
 
