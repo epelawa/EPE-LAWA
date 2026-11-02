@@ -103,3 +103,54 @@ export function publishedContent(article: Article): Content | null {
   const version = article.versions.find(v => v.id === article.publishedVersionId && v.state === "approved");
   return version ? { title: version.content.title, summary: version.content.summary, body: version.content.body } : null;
 }
+
+/**
+ * A trusted backend adapter must implement one atomic database transaction:
+ * compare persisted revision, write the complete new article and append the audit
+ * event together, or write nothing. loadArticle must read authoritative current
+ * state; it must never return a stale shared-cache copy. This is a contract only:
+ * no production repository or transaction is implemented by this package.
+ */
+export interface EditorialRepository {
+  loadArticle(id: string): Promise<Article | null>;
+  compareAndCommit(id: string, expectedRevision: number, next: Article, audit: AuditEvent): Promise<"committed" | "conflict">;
+}
+export type ServiceOutcome = { ok: true; revision: number } | { ok: false; error: "invalid" | "denied" | "conflict" | "not_found" | "unavailable" };
+
+/** Actor and capabilities must be verified by the server/data boundary, never from request input. */
+export async function executeEditorialCommand(repository: EditorialRepository, id: string, actor: Actor, command: Command): Promise<ServiceOutcome> {
+  if (!identifier(id)) return { ok: false, error: "invalid" };
+  try {
+    const article = await repository.loadArticle(id);
+    if (!article) return { ok: false, error: "not_found" };
+    if (article.id !== id) return { ok: false, error: "unavailable" };
+    const result = transition(article, actor, command);
+    if (!result.ok) return result;
+    const saved = await repository.compareAndCommit(id, command.expectedRevision, result.article, result.audit);
+    if (saved === "conflict") return { ok: false, error: "conflict" };
+    if (saved !== "committed") return { ok: false, error: "unavailable" };
+    return { ok: true, revision: result.article.revision };
+  } catch {
+    // A commit may have succeeded before a network failure; callers must reload
+    // authoritative state before retrying rather than assuming it did not.
+    return { ok: false, error: "unavailable" };
+  }
+}
+
+/**
+ * Read through the repository every time. Public routes must also disable shared
+ * page/CDN caching (or implement verified invalidation) and never expose private
+ * repository objects. This alone does not guarantee global cache withdrawal.
+ */
+export async function readPublishedArticle(repository: EditorialRepository, id: string): Promise<{ ok: true; content: Content } | { ok: false; error: "not_found" | "unavailable" }> {
+  if (!identifier(id)) return { ok: false, error: "not_found" };
+  try {
+    const article = await repository.loadArticle(id);
+    if (!article) return { ok: false, error: "not_found" };
+    if (article.id !== id) return { ok: false, error: "unavailable" };
+    const content = publishedContent(article);
+    return content ? { ok: true, content } : { ok: false, error: "not_found" };
+  } catch {
+    return { ok: false, error: "unavailable" };
+  }
+}

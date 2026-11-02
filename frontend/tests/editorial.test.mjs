@@ -95,3 +95,55 @@ test('a corrected version needs its own review and approval before replacing the
   assert.deepEqual(publishedContent(a), updated);
   assert.equal(a.versions.find(v => v.id === 'v1').state, 'approved');
 });
+
+test('transaction contract gives fresh publication/withdrawal and rejects racing writes', async () => {
+  const { executeEditorialCommand, readPublishedArticle } = await import('../../backend/packages/editorial/src/index.ts');
+  let stored = success(createDraft(writer, 'a1', 'v1', content));
+  const events = [];
+  let calls = 0;
+  // Synthetic repository only: a real implementation must make this an atomic DB transaction.
+  const repo = {
+    async loadArticle(id) { calls++; return id === stored.id ? structuredClone(stored) : null; },
+    async compareAndCommit(id, expected, next, audit) {
+      if (id !== stored.id || stored.revision !== expected) return 'conflict';
+      stored = structuredClone(next);
+      events.push(structuredClone(audit));
+      return 'committed';
+    },
+  };
+  assert.deepEqual(await readPublishedArticle(repo, 'a1'), { ok: false, error: 'not_found' });
+  const race = await Promise.all([
+    executeEditorialCommand(repo, 'a1', writer, { action: 'submit', expectedRevision: 1 }),
+    executeEditorialCommand(repo, 'a1', writer, { action: 'submit', expectedRevision: 1 }),
+  ]);
+  assert.equal(race.filter(r => r.ok).length, 1);
+  assert.deepEqual(race.find(r => !r.ok), { ok: false, error: 'conflict' });
+  assert.equal(events.length, 1);
+  assert.deepEqual(await executeEditorialCommand(repo, 'a1', editor, { action: 'approve', expectedRevision: 2 }), { ok: true, revision: 3 });
+  assert.deepEqual(await executeEditorialCommand(repo, 'a1', editor, { action: 'publish', expectedRevision: 3 }), { ok: true, revision: 4 });
+  assert.deepEqual(await readPublishedArticle(repo, 'a1'), { ok: true, content });
+  assert.deepEqual(await executeEditorialCommand(repo, 'a1', editor, { action: 'unpublish', expectedRevision: 4 }), { ok: true, revision: 5 });
+  assert.deepEqual(await readPublishedArticle(repo, 'a1'), { ok: false, error: 'not_found' });
+  assert.ok(calls >= 6, 'every read/command loads current state');
+  assert.deepEqual(events.map(e => e.action), ['submit', 'approve', 'publish', 'unpublish']);
+});
+
+test('transaction contract fails closed on missing data, invalid adapters and provider errors', async () => {
+  const { executeEditorialCommand, readPublishedArticle } = await import('../../backend/packages/editorial/src/index.ts');
+  const article = success(createDraft(writer, 'a1', 'v1', content));
+  let commits = 0;
+  const repo = {
+    async loadArticle() { return structuredClone(article); },
+    async compareAndCommit() { commits++; throw new Error('database failure'); },
+  };
+  assert.deepEqual(await executeEditorialCommand(repo, 'a1', writer, { action: 'submit', expectedRevision: 1 }), { ok: false, error: 'unavailable' });
+  assert.equal(commits, 1);
+  repo.loadArticle = async () => { throw new Error('database unavailable'); };
+  assert.deepEqual(await readPublishedArticle(repo, 'a1'), { ok: false, error: 'unavailable' });
+  assert.deepEqual(await executeEditorialCommand(repo, 'a1', writer, { action: 'submit', expectedRevision: 1 }), { ok: false, error: 'unavailable' });
+  repo.loadArticle = async () => null;
+  assert.deepEqual(await readPublishedArticle(repo, 'a1'), { ok: false, error: 'not_found' });
+  assert.deepEqual(await executeEditorialCommand(repo, 'a1', writer, { action: 'submit', expectedRevision: 1 }), { ok: false, error: 'not_found' });
+  repo.loadArticle = async () => ({ ...article, id: 'other' });
+  assert.deepEqual(await readPublishedArticle(repo, 'a1'), { ok: false, error: 'unavailable' });
+});

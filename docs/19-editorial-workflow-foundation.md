@@ -19,3 +19,11 @@ Each transition checks an expected revision, copies snapshots and returns a mini
 ## Verification
 
 `frontend/tests/editorial.test.mjs` covers a synthetic draft/review/approval/publication sequence, provisional independent approval, revision requests, stale revisions, invalid states, denial, snapshot isolation, withdrawal and public field projection. These are pure in-memory tests, not database, provider, HTTP, browser, accessibility or concurrency tests.
+
+## Publication and withdrawal requirement — owner direction
+
+The owner wants published material to appear promptly and removed material to disappear promptly. The unwired `executeEditorialCommand` / `readPublishedArticle` contract now demonstrates a fresh authoritative read after publication and withdrawal, an atomic compare-and-commit requirement for state plus audit, and conflict/error handling in synthetic in-memory tests. The implementation does not provide a database transaction, connected pages, a live publication API or actual cache control. Before release, the real repository, public projection and pages must use authoritative reads with suitable no-store semantics or verified invalidation; test homepage, lists, article URLs, metadata, search and CDN after each publish, correction and removal. Previously copied or cached public material outside the platform cannot be recalled.
+
+The existing `unpublish` model removes the article from the public projection but retains internal history. It is **not** implemented hard deletion or a final retention policy; actual deletion, audit retention and privacy requirements still need review. The model does not yet establish a real-world timing guarantee.
+
+On 2 November 2026, the connected production project reported healthy Auth, database and REST services. Its migration history contained only `20261102133703_staff_access_foundation`, matching the sole local migration; there was no unapplied migration to run. No new migration or provider configuration was applied. A reviewed persistent editorial schema, backup/recovery assessment, role matrix and security tests remain necessary before changing production.
