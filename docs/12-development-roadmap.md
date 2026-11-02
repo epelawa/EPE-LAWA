@@ -128,7 +128,7 @@ Main/news/admin and media work end to end on agreed environments; approved news 
 | General contact | WhatsApp destination, form fields, recipient, handling, storage, retention and notice not supplied/approved. |
 | Staff and editorial | Owner and developer identified; allocate permissions, editorial approver, reviewer independence, support and incident ownership. |
 | Services and domains | Confirm Supabase, Vercel, R2, Resend and DNS ownership/access, sender/domain and separate environments; no secrets in chat. |
-| Brand/content/legal | Approved logo, authentic licensed images, initial stories, programme material, policy text and rights still needed. |
+| Brand/content/legal | Owner supplied a logo for whole-image use; verify rights to its elements. Authentic licensed images, initial stories, programme material and policy text remain needed. |
 | Engineering detail | Exact API schemas, RLS/grants, version workflow, upload scanning, cache invalidation, backup/restore, performance/security targets and CI choice require review before affected work. |
 | Research | Conduct approved usability/interview research; current journeys and designs are not claimed as verified findings. |
 

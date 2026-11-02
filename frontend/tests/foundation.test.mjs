@@ -58,17 +58,99 @@ async function withApp(app, run) {
   }
 }
 
-for (const app of ['main', 'news']) {
-  test(`${app} is honest about its unconnected content and excluded from indexing`, async () => {
-    await withApp(app, async (base) => {
-      const response = await fetch(base);
-      assert.equal(response.status, 200);
-      const html = await response.text();
-      assert.match(html, /not connected yet/i);
-      assert.match(html, /noindex, nofollow/i);
-    });
+test('main has honest indexable metadata, working public links and security headers', async () => {
+  await withApp('main', async (base) => {
+    for (const path of ['/', '/about', '/not-a-real-page', '/robots.txt', '/sitemap.xml', '/icon.png']) {
+      const response = await fetch(base + path);
+      assert.equal(response.headers.get('x-content-type-options'), 'nosniff', path);
+      assert.equal(response.headers.get('x-frame-options'), 'DENY', path);
+      assert.equal(response.headers.get('referrer-policy'), 'strict-origin-when-cross-origin', path);
+      assert.equal(response.headers.get('permissions-policy'), 'camera=(), microphone=(), geolocation=()', path);
+      assert.match(response.headers.get('content-security-policy-report-only') || '', /frame-ancestors 'none'/, path);
+      assert.equal(response.headers.get('content-security-policy'), null, 'CSP is report-only');
+      assert.equal(response.headers.get('access-control-allow-origin'), 'https://epelawa.vercel.app', path);
+    }
+    const response = await fetch(base);
+    assert.equal(response.status, 200);
+    const html = await response.text();
+    assert.match(html, /not connected yet/i);
+    assert.doesNotMatch(html, /<meta name="robots" content="[^"]*noindex/i);
+    assert.match(html, /<meta name="description" content="[^"]+"/);
+    assert.match(html, /<link rel="canonical" href="https:\/\/epelawa\.vercel\.app\/?"/);
+    assert.match(html, /<meta property="og:title"/);
+    assert.match(html, /<meta property="og:description"/);
+    assert.match(html, /<meta property="og:image" content="https:\/\/epelawa\.vercel\.app\/share\.png"/);
+    assert.match(html, /<meta name="twitter:card" content="summary_large_image"/);
+    assert.match(html, /<link rel="icon"/);
+    assert.match(html, /href="\/about"/);
+    const about = await fetch(base + '/about');
+    assert.equal(about.status, 200);
+    const aboutHtml = await about.text();
+    assert.match(aboutHtml, /<link rel="canonical" href="https:\/\/epelawa\.vercel\.app\/about"/);
+    assert.match(aboutHtml, /href="\/"/);
+    assert.match(aboutHtml, /not connected yet/i);
+    const missing = await fetch(base + '/not-a-real-page');
+    assert.equal(missing.status, 404);
+    assert.match(await missing.text(), /Page not found/);
+    const robots = await fetch(base + '/robots.txt');
+    assert.equal(robots.status, 200);
+    assert.match(await robots.text(), /Sitemap: https:\/\/epelawa\.vercel\.app\/sitemap\.xml/i);
+    const sitemap = await fetch(base + '/sitemap.xml');
+    assert.equal(sitemap.status, 200);
+    const xml = await sitemap.text();
+    assert.match(xml, /<urlset/);
+    assert.match(xml, /<loc>https:\/\/epelawa\.vercel\.app\/<\/loc>/);
+    assert.match(xml, /<loc>https:\/\/epelawa\.vercel\.app\/about<\/loc>/);
+    for (const [path, width, height] of [['/icon.png', 192, 192], ['/apple-touch-icon.png', 180, 180], ['/share.png', 1200, 630]]) {
+      const image = await fetch(base + path);
+      assert.equal(image.status, 200, path);
+      const bytes = Buffer.from(await image.arrayBuffer());
+      assert.equal(bytes.readUInt32BE(16), width, path);
+      assert.equal(bytes.readUInt32BE(20), height, path);
+    }
+    assert.equal((await fetch(base + '/favicon.ico')).status, 200);
+    assert.equal((await fetch(base + '/llms.txt')).status, 200);
+    const security = await fetch(base + '/.well-known/security.txt');
+    assert.equal(security.status, 200);
+    assert.match(security.headers.get('content-type'), /text\/plain/);
+    const securityText = await security.text();
+    assert.match(securityText, /Contact: mailto:info\.epelawa@gmail\.com/);
+    assert.match(securityText, /Expires: 2027-05-02T00:00:00Z/);
+    for (const code of [200, 400, 401, 403, 404, 429, 500, 503, 599]) {
+      const statusPage = await fetch(base + '/status/' + code);
+      assert.equal(statusPage.status, code, String(code));
+      assert.equal(statusPage.headers.get('cache-control'), 'no-store');
+      assert.match(statusPage.headers.get('x-robots-tag'), /noindex/);
+      const statusBody = await statusPage.text();
+      assert.match(statusBody, /status reference page/);
+      assert.match(statusBody, /Try again/);
+      if (code === 401) assert.match(statusPage.headers.get('www-authenticate'), /^Bearer/);
+    }
+    assert.equal((await fetch(base + '/status/204')).status, 404);
+    assert.equal((await fetch(base + '/status/302')).status, 404);
+    const logo = await fetch(base + '/brand-logo.png');
+    const logoBytes = Buffer.from(await logo.arrayBuffer());
+    assert.equal(logoBytes.readUInt32BE(16), 1348);
+    assert.equal(logoBytes.readUInt32BE(20), 1167);
   });
-}
+});
+
+test('news remains honest, noindex and uses the custom 404', async () => {
+  await withApp('news', async (base) => {
+    const response = await fetch(base);
+    assert.equal(response.status, 200);
+    const html = await response.text();
+    assert.match(html, /not connected yet/i);
+    assert.match(html, /noindex, nofollow/i);
+    assert.match(html, /<meta name="description"/);
+    assert.match(html, /<link rel="icon"/);
+    assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
+    assert.equal(response.headers.get('x-frame-options'), 'DENY');
+    const missing = await fetch(base + '/not-a-real-page');
+    assert.equal(missing.status, 404);
+    assert.match(await missing.text(), /Page not found/);
+  });
+});
 
 test('admin remains unavailable and does not expose a dashboard', async () => {
   await withApp('admin', async (base) => {
@@ -76,6 +158,8 @@ test('admin remains unavailable and does not expose a dashboard', async () => {
       const response = await fetch(base + pathname);
       assert.equal(response.status, 503, pathname);
       assert.equal(response.headers.get('cache-control'), 'no-store');
+      assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
+      assert.equal(response.headers.get('x-frame-options'), 'DENY');
       assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow');
       assert.match(await response.text(), /not available yet/i);
     }
