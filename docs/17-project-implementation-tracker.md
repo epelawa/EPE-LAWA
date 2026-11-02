@@ -39,6 +39,8 @@
 ### 1.2 Staff identity, permissions and security — CURRENT STEP
 
 - [x] Owner selected email and password for staff sign-in on 2 November 2026. Do not share passwords or provider credentials in chat.
+- [x] Owner designated two initial administrators; read-only production inspection found neither has an Auth account. No account or permission was created — see [onboarding runbook](18-initial-staff-onboarding.md).
+- [ ] Securely create and verify both designated Auth identities and grant only reviewed capabilities; admin remains closed until the Phase 1 security gate passes.
 - [x] Add inactive-by-default staff profiles and explicit `admin.access` grant with RLS; no accounts seeded — [migration and checks](14-staff-access-foundation.md).
 - [x] Implement and test unwired identity, session, response and redirect foundations — [PR #3](https://github.com/epelawa/EPE-LAWA/pull/3), [PR #6](https://github.com/epelawa/EPE-LAWA/pull/6), [PR #7](https://github.com/epelawa/EPE-LAWA/pull/7). These do not open admin or provide full login.
 - [ ] Implement reviewed email/password sign-in, sign-out, session refresh and password recovery on the real admin host; configure verified email delivery and safe redirects.

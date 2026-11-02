@@ -17,7 +17,7 @@
 ## Verification and limitations
 
 - Automated unit tests cover invalid tokens, failed verification, missing/revoked grants and upstream errors. Mocked adapter tests verify Auth is called before RLS-scoped reads and that secret keys/insecure URLs fail closed. These mocks do **not** prove Supabase Auth or production configuration works.
-- Mock-provider tests exercise password sign-in success, invalid credentials, provider failure, mismatched identity, inactive/revoked access and failed response writes; they do not test real Supabase or browser behaviour.
+- Mock-provider tests exercise password sign-in success, invalid credentials, provider failure, mismatched identity, inactive/revoked access, Auth/database errors, invalid provider configuration and failed response writes; they do not test real Supabase or browser behaviour.
 - Session-gate tests use in-memory synthetic cookies and mocked HTTP responses to exercise verification order, absent/malformed/invalid sessions, inactive and revoked staff, provider failure, refresh, cookie flags and failed cookie writes. They do **not** test a real Supabase Auth session, Next.js response cookie propagation, real browser behaviour or real-provider security. No persistent fixture or user was created.
 - An isolated synthetic test uses real Next.js request/response objects with mocked Supabase Auth/RLS. It checks response cookie flags and chunk propagation, no-store override, revoked and unconfigured denials, and generic failure when a response or cookie write fails. It is not an HTTP route, browser, concurrency, CDN, or real Supabase integration test. The callback is deliberately synchronous and read-only, and no actual admin route invokes it.
 - A test runs the local SQL against an ephemeral in-memory Postgres-compatible PGlite instance with synthetic test-only identities and simulated Supabase roles/`auth.uid()`. It checks empty starting tables, own-row isolation, inactive/non-staff denial, write denial and revocation. No application database is seeded. This is useful local evidence, **not** a substitute for testing real Supabase Auth, grants, RLS and service-role behaviour.
@@ -31,6 +31,10 @@
 3. Implement and test secure staff-only login, actual Next.js request/response wiring for verified server sessions/refresh, cookie/CSRF controls, safe recovery and redirect allowlists. Preserve no-store headers and cookies on every relevant response; account for concurrent refresh and enforce authorisation at each data/action boundary. Confirm Resend SMTP and sender-domain setup through an approved secure process.
 4. Run the full positive and negative [security test plan](08-permissions-security.md) against a real isolated Supabase test project, including direct table/API access, revoked users, JWT/session expiry and service-role isolation. Implement audit and operational recovery; do not rely on mocked tests as production proof.
 5. Obtain the official direct radio stream and embedding permission, approved WhatsApp contact and form recipient/privacy decisions before those integrations. Live radio is mandatory before launch.
+
+## Initial administrators
+
+The owner designated two initial administrators on 2 November 2026. A read-only production query found no Supabase Auth account for either address; neither has been provisioned or granted access. The addresses are not hard-coded into the application or checked into documentation. See the [initial onboarding runbook](18-initial-staff-onboarding.md) for the necessary identity, delivery, approval, grant and security checks.
 
 ## Session implementation reference
 

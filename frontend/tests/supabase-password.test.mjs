@@ -28,9 +28,9 @@ test('password sign-in stages cookies until identity and active admin grant are 
     }
     if (path === '/auth/v1/logout') return new Response(null, { status: 204 });
     assert.equal(req.headers.get('authorization'), 'Bearer fake-access');
-    if (path === '/auth/v1/user') return Response.json({ id: scenario === 'mismatch' ? 'staff-b' : 'staff-a', aud: 'authenticated' });
-    if (path === '/rest/v1/staff_profiles') return Response.json([{ user_id: 'staff-a', is_active: scenario !== 'inactive' }]);
-    if (path === '/rest/v1/staff_capability_grants') return Response.json(scenario === 'revoked' ? [] : [{ user_id: 'staff-a', capability: 'admin.access' }]);
+    if (path === '/auth/v1/user') return scenario === 'user-error' ? Response.json({ error: 'unavailable' }, { status: 503 }) : Response.json({ id: scenario === 'mismatch' ? 'staff-b' : 'staff-a', aud: 'authenticated' });
+    if (path === '/rest/v1/staff_profiles') return scenario === 'profile-error' ? Response.json({ error: 'unavailable' }, { status: 503 }) : Response.json([{ user_id: 'staff-a', is_active: scenario !== 'inactive' }]);
+    if (path === '/rest/v1/staff_capability_grants') return scenario === 'grant-error' ? Response.json({ error: 'unavailable' }, { status: 503 }) : Response.json(scenario === 'revoked' ? [] : [{ user_id: 'staff-a', capability: 'admin.access' }]);
     throw new Error('unexpected path ' + path);
   };
   try {
@@ -50,12 +50,12 @@ test('password sign-in stages cookies until identity and active admin grant are 
       }
     }
     assert.ok(result.writes.some(({ cookies }) => cookies.some(({ name }) => name === cookieName)));
-    for (const mode of ['invalid', 'offline', 'inactive', 'revoked', 'mismatch']) {
+    for (const mode of ['invalid', 'offline', 'inactive', 'revoked', 'mismatch', 'user-error', 'profile-error', 'grant-error']) {
       scenario = mode; calls.length = 0;
       const denied = store();
       assert.deepEqual(await signInAdminWithPassword(input.email, input.password, denied), { allowed: false }, mode);
       assert.equal(denied.writes.length, 0, mode);
-      if (['inactive', 'revoked', 'mismatch'].includes(mode)) assert.ok(calls.includes('/auth/v1/logout'), mode);
+      if (['inactive', 'revoked', 'mismatch', 'user-error', 'profile-error', 'grant-error'].includes(mode)) assert.ok(calls.includes('/auth/v1/logout'), mode);
     }
     scenario = 'active'; calls.length = 0;
     const broken = store(); broken.setAll = () => { throw new Error('write failed'); };
@@ -64,6 +64,12 @@ test('password sign-in stages cookies until identity and active admin grant are 
     calls.length = 0;
     for (const [email, password] of [[null, 'x'], ['bad', 'x'], ['a@b', ''], ['a@b', 'x'.repeat(1025)], ['a b@c', 'x']]) {
       assert.deepEqual(await signInAdminWithPassword(email, password, store()), { allowed: false });
+    }
+    assert.equal(calls.length, 0);
+    for (const [url, key] of [['http://unit.example.invalid', 'sb_publishable_test_only'], ['https://unit.example.invalid', 'sb_secret_no'], ['', 'sb_publishable_test_only']]) {
+      process.env.SUPABASE_URL = url;
+      process.env.SUPABASE_PUBLISHABLE_KEY = key;
+      assert.deepEqual(await signInAdminWithPassword(input.email, input.password, store()), { allowed: false });
     }
     assert.equal(calls.length, 0);
   } finally {
