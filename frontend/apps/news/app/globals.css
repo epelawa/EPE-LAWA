@@ -1,0 +1,6 @@
+html { color-scheme: light; }
+body { margin: 0; background: #f9f8f6; color: #1c1e21; font-family: system-ui, sans-serif; }
+main { box-sizing: border-box; max-width: 44rem; margin: 0 auto; padding: 5rem 1.5rem; }
+.eyebrow { color: #0b5a60; font-weight: 700; }
+h1 { line-height: 1.15; }
+p { line-height: 1.6; }

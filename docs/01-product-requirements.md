@@ -3,7 +3,7 @@
 **Document:** 01 — Workstream 0.1, Product Discovery and Scope Definition\
 **Status:** Workstream 0.1 approved by the owner on 2 November 2026; outstanding dependencies and later Phase 0 decisions remain open.\
 **Prepared:** 2 November 2026\
-**Current project stage:** Phase 0; no production development is authorised.\
+**Current project stage:** Phase 1 foundation; the owner approved the complete Phase 0 exit on 2 November 2026.\
 **Product:** EPE LAWA — The Voice of Epe Division\
 **Project delivery:** Brave Hx Technology\
 **Founder/lead:** Akanji Mus'ab Ayomide
@@ -248,5 +248,6 @@ Other open decisions — technical stack, authentication/session design, editori
 - **2 November 2026 — owner:** Approved the updated Workstream 0.1 document. Open dependencies remain open; this is not approval of all Phase 0 deliverables or permission to build.
 - **2 November 2026 — owner:** Reported using Resend and Cloudflare R2; account configuration, integration and operational readiness remain unverified. Evaluate their use in subsequent Phase 0 workstreams without recording credentials.
 - **2 November 2026 — owner:** Approved Workstream 0.5 and directed three top-level folders: `frontend/`, `backend/` and `docs/`, plus necessary root files. Child layout and infrastructure still require validation; see [system architecture](06-system-architecture.md).
-- **2 November 2026 — owner:** Directed no demo or seeded data and useful empty states. No demo data or seeding scripts; isolated temporary in-memory test fixtures are not public content. Full Phase 0 approval remains a separate checkpoint.
+- **2 November 2026 — owner:** Directed no demo or seeded data and useful empty states. No demo data or seeding scripts; isolated temporary in-memory test fixtures are not public content.
+- **2 November 2026 — owner:** Explicitly approved Workstream 0.8 and the full Phase 0 plan and authorised the website foundation. Implementation-specific open decisions and the Phase 1 release gate remain in force.
 - **Follow-on work:** Workstream 0.2 user research and user journeys. Do not start Phase 1 until the full Phase 0 exit condition is approved.

@@ -1,7 +1,7 @@
 # EPE LAWA — Permissions and Security Design
 
 **Document:** 08 — Workstream 0.6 (security design)\
-**Status:** Workstream 0.6 approved by the owner on 2 November 2026. Controls are design proposals, not implemented or tested.\
+**Status:** Workstream 0.6 approved by the owner on 2 November 2026. The first staff-entry controls have a local implementation and limited simulated tests; the complete security model remains unimplemented and unverified against Supabase.\
 **Prepared:** 2 November 2026\
 **Inputs:** [Product requirements](01-product-requirements.md), [approved architecture](06-system-architecture.md), [proposed database schema](07-database-schema.md).\
 **Gate:** Documents 07 and 08 were approved as Workstream 0.6; proceed to Workstream 0.7. Full Phase 0 approval is still required before production development.
@@ -140,7 +140,7 @@ Assign an incident owner and escalation/communication procedure; isolate comprom
 
 ## 8. Security testing and acceptance plan
 
-No security or integration testing has been performed in this workstream. Before release, execute and record tests in isolated environments using synthetic private fixtures:
+The staff-entry foundation has unit, mocked-provider and ephemeral in-memory RLS tests; no real Supabase integration or complete security assessment has been performed. Before release, execute and record tests in isolated environments using approved synthetic private fixtures:
 
 1. **Authentication:** unauthenticated access denied; invalid/expired sessions denied; recovery and redirect validation, refresh, logout, account deactivation and privilege revocation behave as agreed; CSRF and preview-host cases covered.
 2. **Role boundaries:** for every final role and capability, exercise allowed and denied server/API/database requests, including a valid Auth user with no staff role, another author's drafts, self-approval rules, role escalation and access after revocation.

@@ -1,10 +1,10 @@
 # EPE LAWA — Proposed API Contracts
 
 **Document:** 09 — Workstream 0.8\
-**Status:** Draft for owner review; illustrative contracts are not implemented or deployed.\
+**Status:** Workstream 0.8 approved on 2 November 2026; illustrative API contracts are not implemented or deployed.\
 **Prepared:** 2 November 2026\
 **Inputs:** [Product requirements](01-product-requirements.md), [system architecture](06-system-architecture.md), [database schema](07-database-schema.md), [security](08-permissions-security.md), [integrations](10-integrations.md).\
-**Gate:** Review Workstream 0.8 documents 09, 11 and 12 together. Full Phase 0 approval and resolution of launch/security decisions are required before production development.
+**Gate:** The owner approved Workstream 0.8 and the full Phase 0 exit on 2 November 2026. Resolve launch/security decisions before affected implementation.
 
 ## 1. Purpose and scope
 
@@ -115,4 +115,4 @@ Specific HTTP methods, request fields, public object promotion and deletion sema
 
 Before implementation, specify exact payload schemas, field constraints, error codes, role/resource rules, pagination, rate and idempotency policies, article version concurrency, upload inspection, safe preview access, cache invalidation, webhook handling and contract ownership. Validate them against docs 07/08 and user decisions. Contract tests must cover positive and negative cases, including direct anonymous attempts against drafts, stale transitions, forbidden roles, private R2 access, contact failure and invalid callbacks. Later phases require separate contracts.
 
-**Approval record:** Pending owner review of Workstream 0.8. No API is implemented, deployed or tested by this document.
+**Approval record:** The owner approved Workstream 0.8 and the full Phase 0 plan on 2 November 2026. No API is implemented, deployed or tested by this document.

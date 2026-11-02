@@ -1,0 +1,8 @@
+{
+  "name": "@epelawa/auth",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": { ".": "./src/access.ts" },
+  "scripts": { "typecheck": "tsc --noEmit" }
+}

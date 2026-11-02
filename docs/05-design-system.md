@@ -132,7 +132,11 @@ Low-fidelity page layouts and acceptance conditions are in [04-page-specificatio
 4. Test low-bandwidth/slow-device paths: responsive images, sensible font loading, user-initiated embeds, media errors and data usage. Agree measurable budgets later rather than inventing targets.
 5. Verify approved asset licences and credits; avoid loading large third-party scripts on pages where they are unnecessary. Respect reduced-motion preferences; keep motion functional and optional where possible.
 
-## 9. Review, decisions and dependencies
+## 9. Ongoing UI reference research
+
+The owner requires ongoing research of publicly accessible UI examples, including Mobbin and Pinterest where available, and other relevant editorial and accessibility sources. See [15-ui-research.md](15-ui-research.md) for the reference register, access limitations, palette guardrails and original-design workflow. These are inspiration, not a licence to copy assets or permission to bypass source restrictions. Validate visual choices with actual users and real content; never add demo or seeded records.
+
+## 10. Review, decisions and dependencies
 
 - The owner approved the proposed visual direction and page layouts as part of Workstream 0.4; exact logo, brand assets, authentic Epe images and image permissions remain unavailable or unverified. Final component choices still require validation.
 - The direct radio stream and permission are launch blockers; WhatsApp number and form recipient/handling remain open. Third-party embed functionality and legal notices require verification.

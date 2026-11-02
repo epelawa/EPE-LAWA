@@ -1,16 +1,16 @@
 # EPE LAWA — Development Roadmap and Readiness
 
 **Document:** 12 — Workstream 0.8\
-**Status:** Draft for owner review; no dates, costs, staffing commitments or production implementation are implied.\
+**Status:** Workstream 0.8 and the complete Phase 0 exit approved on 2 November 2026; no dates, costs or staffing commitments are implied.\
 **Prepared:** 2 November 2026\
 **Inputs:** [Product requirements](01-product-requirements.md), [architecture](06-system-architecture.md), [database](07-database-schema.md), [security](08-permissions-security.md), [API contracts](09-api-contracts.md), [integrations](10-integrations.md), [testing and acceptance](11-testing-acceptance.md).\
-**Gate:** Review Workstream 0.8 documents 09, 11 and 12 together, then formally review the complete Phase 0 exit condition. Workstream approvals do not by themselves authorise Phase 1.
+**Gate:** Owner approved Workstream 0.8 and the complete Phase 0 exit on 2 November 2026. Phase 1 implementation has begun with the foundation; release requires the Phase 1 gate.
 
 ## 1. Governance and status
 
 EPE LAWA is a long-term civic, editorial, media and community platform delivered incrementally. Each phase follows **requirements → design → implementation → testing → review → approval → release**, with its own scope, dependencies, risks, exclusions and accountable owner. A later-phase feature in this roadmap is not permission to build it now. Do not call a phase complete while blockers remain.
 
-**Current stage:** Phase 0 / Workstream 0.8 documentation. Workstreams 0.1–0.7 were approved by the owner; 0.8 and the complete Phase 0 exit are awaiting review. No production app, migrations, integrations, tests or deployment have been implemented as part of this discovery work.
+**Current stage:** Phase 1 foundation. Owner approved Workstream 0.8 and the full Phase 0 exit on 2 November 2026. The three app shells and foundation tests have been added; migrations, production integrations, editorial functionality and deployment remain incomplete.
 
 **Recorded owner direction:**
 
@@ -18,8 +18,11 @@ EPE LAWA is a long-term civic, editorial, media and community platform delivered
 - **Live radio is required at launch**. A verified, authorised working direct stream and tested playback are prerequisites; outage fallback does not waive that requirement.
 - General contact uses a form and WhatsApp. Owner and developer are responsible, but their detailed role split remains open.
 - Owner reports using **Resend** and **Cloudflare R2**. Their project configuration and integration are unverified; use them only after appropriate validation.
-- Repository has three top-level folders, `frontend/`, `backend/`, `docs/`, plus needed root files. Child layout is proposed; no production scaffolding has been created. GitHub Actions would require `.github/` as a separate root directory, so obtain an exception or approve an alternative CI solution.
+- Repository has three top-level folders, `frontend/`, `backend/`, `docs/`, plus needed root files. Three minimal application shells and backend documentation now exist; other child layout remains proposed. GitHub Actions would require `.github/` as a separate root directory, so obtain an exception or approve an alternative CI solution.
 - No demo or seeded application data or data-seeding scripts; available features without records need meaningful empty states. Real approved records and legitimate staff accounts are provisioned through authorised operations, not fictitious fixtures.
+- At the end of each completed phase, open a pull request for review with checks and outstanding limitations; merging still requires the owner’s instruction. Use the active Arena session branch only.
+- Research publicly accessible UI references, including Mobbin, Pinterest where available and other relevant sources; follow [the UI research record](15-ui-research.md) and the approved palette. Produce original, authentic designs, not copied screens or generic templates.
+- Apply reviewed Supabase migrations incrementally to the approved development/test target, verify history and RLS, and promote to production only after the relevant review and approval; never silently leave migration histories out of sync.
 
 ## 2. Phase 0 — discovery and readiness
 
@@ -34,7 +37,7 @@ EPE LAWA is a long-term civic, editorial, media and community platform delivered
 | 0.5 Architecture | [06 System architecture](06-system-architecture.md). | Owner approved direction and specified folder structure; provider setup remains unverified. |
 | 0.6 Database / security | [07 Database schema](07-database-schema.md), [08 Permissions/security](08-permissions-security.md). | Owner approved design; detailed roles, policies and operational decisions remain open. |
 | 0.7 Integrations / operations | [10 Integrations](10-integrations.md). | Owner approved research/plan; no project integration has been tested. |
-| 0.8 Development readiness | [09 API contracts](09-api-contracts.md), [11 Testing/acceptance](11-testing-acceptance.md), [12 Roadmap](12-development-roadmap.md). | Draft for owner review. |
+| 0.8 Development readiness | [09 API contracts](09-api-contracts.md), [11 Testing/acceptance](11-testing-acceptance.md), [12 Roadmap](12-development-roadmap.md). | Owner approved on 2 November 2026; unresolved implementation decisions remain open. |
 
 Diagrams are included where useful: application relationships and deployment in 06, ERD in 07, auth flow in 08, editorial workflow in 02/06 and textual page wireframes in 04. They are conceptual, not deployed infrastructure.
 
@@ -109,7 +112,7 @@ Main/news/admin and media work end to end on agreed environments; approved news 
 ## 8. Development and operational standards
 
 - **Repository:** Follow owner-directed `frontend/`, `backend/`, `docs/` top-level organisation plus necessary root files. Shared business logic has a clear owner, no circular dependencies and no server-only secrets in browser bundles. Do not force a standalone backend API if an application-specific server handler and shared backend are sufficient.
-- **Git and review:** Preserve the existing working branch and repository; use small, reviewable changes and pull requests when authorised, with protected main and automated checks. Never overwrite uninspected work. Platform-specific branch restrictions take precedence over generic workflow instructions.
+- **Git and review:** Preserve the existing working branch and repository; use small, reviewable changes and open a pull request at the end of each completed phase, with checks, blockers and protected-main review. Merge only when instructed. Never overwrite uninspected work. Platform-specific branch restrictions take precedence over generic workflow instructions.
 - **Coding after approval:** TypeScript strict, validated input, typed access, accessible UI, no hardcoded secrets, no unnecessary dependencies, no demo/preloaded records and no data-seeding scripts. Schema changes go through reviewed migrations. Use only temporary in-memory synthetic test fixtures; integration tests requiring persistent data need a separately approved isolated procedure and cleanup.
 - **Environment and deployment:** Separate development, protected preview and production data/credentials; avoid real contact reports in test. Independent Vercel deployments and Supabase/R2/Resend resources require verified ownership and configuration. Define domain, SSL, secrets, monitoring, rollback, backups and access revocation before release.
 - **API and security:** Finalise [09](09-api-contracts.md) payloads and [08](08-permissions-security.md) policies before affected implementation. Review every privileged action server-side and at data boundary. Do not expose drafts, private object URLs or service keys.
@@ -120,7 +123,7 @@ Main/news/admin and media work end to end on agreed environments; approved news 
 
 | Item | Status / next action |
 | --- | --- |
-| Phase 0 workstream 0.8 and complete Phase 0 | Await owner review and explicit full-gate approval; no production implementation now. |
+| Phase 0 workstream 0.8 and complete Phase 0 | Owner explicitly approved both on 2 November 2026; Phase 1 foundation authorised. |
 | Live radio | Direct stream URL, format, embedding permission and station relationship unverified; test actual playback before launch. |
 | General contact | WhatsApp destination, form fields, recipient, handling, storage, retention and notice not supplied/approved. |
 | Staff and editorial | Owner and developer identified; allocate permissions, editorial approver, reviewer independence, support and incident ownership. |
@@ -133,4 +136,4 @@ Main/news/admin and media work end to end on agreed environments; approved news 
 
 For each authorised task: inspect repository, documentation, current branch and working tree; identify dependencies and decide the smallest safe change; implement only approved scope; enforce permissions on the server/data boundary; run relevant checks; review diff and results; update documentation; report blockers and known limitations. Commit or open a pull request only when authorised and under the session's branch rules. Do not introduce a new phase automatically, expose secrets, invent data, or claim an untested integration works.
 
-**Approval record:** Pending owner review of Workstream 0.8 documents 09, 11 and 12. After review, request explicit approval of the full Phase 0 exit condition; do not start production development before it.
+**Approval record:** Owner approved Workstream 0.8 documents 09, 11 and 12 and the full Phase 0 exit on 2 November 2026. Phase 1 foundation is authorised; release approval and outstanding decisions remain separate.

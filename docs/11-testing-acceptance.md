@@ -1,16 +1,16 @@
 # EPE LAWA — Testing Strategy and Acceptance Criteria
 
 **Document:** 11 — Workstream 0.8\
-**Status:** Draft for owner review; this is a test plan, not a report of completed tests.\
+**Status:** Workstream 0.8 approved on 2 November 2026; this is a test plan, not a report of completed tests.\
 **Prepared:** 2 November 2026\
 **Inputs:** [Requirements](01-product-requirements.md), [journeys](02-user-journeys.md), [page specifications](04-page-specifications.md), [architecture](06-system-architecture.md), [database](07-database-schema.md), [security](08-permissions-security.md), [API proposals](09-api-contracts.md), [integrations](10-integrations.md).\
-**Gate:** Review Workstream 0.8 documents 09, 11 and 12 together. Production development is not authorised until the complete Phase 0 exit condition is approved.
+**Gate:** The owner approved Workstream 0.8 and the complete Phase 0 exit on 2 November 2026. Phase 1 release still requires the release checks described here.
 
 ## 1. Quality principles and evidence
 
 A feature is complete only when its approved requirements, real data flow, authorisation, error states, relevant tests, documentation and acceptance evidence are satisfied. A decorative UI or a provider configuration screen is not proof of functionality. Record tests actually performed, failures, environment, versions, results and unresolved issues; never claim a pass from a plan.
 
-**Current status:** No production application, database migration, endpoint, radio stream, Resend/R2 integration, automated test suite, security assessment or deployment has been built or tested in this repository during Phase 0. Public provider documentation review and a preliminary colour contrast calculation are not product integration or accessibility tests. Research journeys remain hypotheses.
+**Current status:** Phase 1 foundation has begun after owner approval: three application shells, a deliberately unavailable admin and a small foundation smoke test now exist. A staff-entry migration exists but has not been applied to Supabase; in-memory RLS simulation and mocked Auth tests have passed. No editorial API, live radio, Resend/R2 integration, complete security assessment or deployment has been built or integration-tested. Public provider documentation review, a preliminary colour contrast calculation and foundation smoke tests are not product integration or accessibility tests. Research journeys remain hypotheses.
 
 Use privacy-safe, clearly labelled synthetic fixtures only in isolated, temporary in-memory automated tests. Do not seed application databases or deploy test fixtures, present them as real articles/users, or copy confidential production records into preview. Integration tests that need persistent data require a separately approved safe test-data procedure, cleanup and an isolated test environment; do not create application seed scripts. Separate real provider test recipients and storage from production where possible; control costs and accidental sends. No arbitrary numerical performance or business targets are approved.
 
@@ -42,7 +42,7 @@ Implement test automation only after full Phase 0 approval. Proposed tools inclu
 | Development readiness, test strategy and release plan reviewed | Reproducible proposed sequence, environment/security requirements, blockers and acceptance criteria; unresolved implementation decisions identified. |
 | Full Phase 0 exit approval | Owner explicitly approves the complete Phase 0 deliverables and first-release plan after review. Workstream approvals alone are not blanket authorisation to code. |
 
-The 09/11/12 documents in this workstream are drafts awaiting owner review. Actual integration tests or a live stream need not be falsely declared complete for documentation review; **Phase 1 launch** still requires verified working radio and all release conditions below. If a remaining ambiguity makes implementation unsafe, resolve it before the affected task, even after Phase 0 document approval.
+The owner approved documents 09/11/12 and the full Phase 0 exit on 2 November 2026. Actual integration tests or a live stream were not falsely declared complete; **Phase 1 launch** still requires verified working radio and all release conditions below. If a remaining ambiguity makes implementation unsafe, resolve it before the affected task, even after Phase 0 document approval.
 
 ## 4. Phase 1 end-to-end acceptance journeys
 
@@ -123,4 +123,4 @@ Before release, the accountable owner and developer (with roles assigned) review
 5. Production domains, environment isolation, RLS, secret management, R2/Resend, safe caches, monitoring, backups and restore/rollback documented and tested.
 6. Release approver, support/escalation, incident response and post-release monitoring named; deployment and outstanding limitations recorded.
 
-**Approval record:** Pending owner review of Workstream 0.8. This plan is not a test-result report or authorisation for production development.
+**Approval record:** The owner approved Workstream 0.8 and the full Phase 0 plan on 2 November 2026. This document remains a plan, not a test-result report.
