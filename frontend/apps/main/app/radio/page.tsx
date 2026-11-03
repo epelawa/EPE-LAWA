@@ -1,5 +1,6 @@
 import Link from "next/link";
 import RadioPlayer from "../../components/radio-player";
+import { RadioIcon } from "../../components/icons";
 
 /**
  * Radio page.
@@ -27,7 +28,7 @@ export default function RadioPage() {
         <h2 className="text-lg font-bold text-slate-900 mb-2">Schedule</h2>
         <p className="text-slate-600 text-sm mb-4">What is on and when, published by the newsroom.</p>
         <div className="flex items-center justify-center h-32 bg-slate-50 rounded-lg">
-          <span className="text-slate-400 text-sm">📻</span>
+          <RadioIcon size={32} className="text-slate-400" />
         </div>
         <p className="mt-2 text-sm font-medium text-slate-500">
           No programme schedule has been published yet.
@@ -38,7 +39,7 @@ export default function RadioPage() {
         <h2 className="text-lg font-bold text-slate-900 mb-2">Archive</h2>
         <p className="text-slate-600 text-sm mb-4">Past programmes, available on demand.</p>
         <div className="flex items-center justify-center h-32 bg-slate-50 rounded-lg">
-          <span className="text-slate-400 text-sm">📻</span>
+          <RadioIcon size={32} className="text-slate-400" />
         </div>
         <p className="mt-2 text-sm font-medium text-slate-500">
           No past programmes are available yet.

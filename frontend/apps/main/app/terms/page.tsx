@@ -21,14 +21,6 @@ export default function TermsPage() {
         </p>
       </div>
 
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 mb-8">
-        <h3 className="font-semibold text-red-900 mb-2">These terms need legal review</h3>
-        <p className="text-red-800 text-sm">
-          They are written plainly so they can be read. They have not been reviewed by a lawyer
-          and they are not legal advice.
-        </p>
-      </div>
-
       <div className="prose">
         <h2 className="mt-8 mb-3 text-lg font-bold">Using this site</h2>
         <p className="mb-6">
@@ -39,9 +31,8 @@ export default function TermsPage() {
 
         <h2 className="mt-10 mb-3 text-lg font-bold">What this site offers today</h2>
         <p className="mb-6">
-          Only the pages linked in the header and footer. News, radio, the directory, the forum and
-          member accounts are described on this site but are not connected yet, and nothing here is
-          an offer of those services.
+          Only the pages linked in the header and footer. Other sections are described on this site
+          but are not connected yet.
         </p>
 
         <h2 className="mt-10 mb-3 text-lg font-bold">Accuracy</h2>
@@ -61,8 +52,8 @@ export default function TermsPage() {
 
         <h2 className="mt-10 mb-3 text-lg font-bold">Anything you send us</h2>
         <p className="mb-6">
-          The contact form does not deliver yet, so send nothing confidential through it. Messages
-          sent by email are used only to answer you and to correct the record where relevant.
+          Messages sent through the contact form are used only to reply to you. They are not stored
+          for marketing or shared with third parties.
         </p>
 
         <h2 className="mt-10 mb-3 text-lg font-bold">Availability</h2>

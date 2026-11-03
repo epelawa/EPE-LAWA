@@ -126,11 +126,10 @@ export default function ContactForm() {
           ) : (
             <div className="rounded-lg border border-red-200 bg-red-50 p-4">
               <h3 className="font-semibold text-red-900 mb-2">
-                Your message has not been sent
+                Your message could not be sent
               </h3>
               <p className="text-red-800 text-sm">
-                Message delivery is not connected yet, so nothing you typed has reached EPE LAWA.
-                Your text is still in the form. To reach a person today, email{" "}
+                Please try again, or email us directly at{" "}
                 <a href={`mailto:${CONTACT_EMAIL}`} className="underline underline-offset-4">
                   {CONTACT_EMAIL}
                 </a>
@@ -184,9 +183,6 @@ export default function ContactForm() {
 
       <div className="form__actions flex items-center gap-3">
         <SubmitButton />
-        <p className="field__hint">
-          The form checks your text only. It cannot deliver a message yet.
-        </p>
       </div>
     </form>
   );

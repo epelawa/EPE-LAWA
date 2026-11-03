@@ -1,11 +1,11 @@
 import Link from "next/link";
+import { ImageIcon } from "../../components/icons";
 
 /**
  * Gallery page.
  *
  * A place for photographs from across Epe Division. Nothing is published yet, so this
- * renders an honest empty state rather than invented imagery. Real photographs are licensed
- * and credited before they appear — never stock passed off as Epe.
+ * renders an honest empty state rather than invented imagery.
  */
 export default function GalleryPage() {
   return (
@@ -23,7 +23,7 @@ export default function GalleryPage() {
 
       <div className="rounded-lg border border-slate-200 bg-white p-6">
         <div className="flex items-center justify-center h-64 bg-slate-50 rounded-lg">
-          <span className="text-slate-400 text-sm">🖼️</span>
+          <ImageIcon size={32} className="text-slate-400" />
         </div>
         <p className="mt-4 text-sm font-medium text-slate-500">
           No photographs have been published yet.
@@ -33,8 +33,7 @@ export default function GalleryPage() {
       <div className="mt-8 rounded-lg border border-slate-200 bg-white p-6">
         <p className="text-slate-600 text-sm leading-relaxed">
           Every photograph in this gallery will carry a credit and a source. Until EPE LAWA
-          has licensed imagery of Epe Division, this page stays empty — a stock image of a
-          generic waterfront presented as Epe would be a lie told in pixels.
+          has licensed imagery of Epe Division, this page stays empty.
         </p>
       </div>
     </div>

@@ -26,14 +26,6 @@ export default function GuidelinesPage() {
         </p>
       </div>
 
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 mb-8">
-        <h3 className="font-semibold text-red-900 mb-2">Comments and the forum are not connected yet</h3>
-        <p className="text-red-800 text-sm">
-          These rules are published before those features open, so nobody has to agree to
-          something they could not read first. They apply to anything published on EPE LAWA.
-        </p>
-      </div>
-
       <div className="prose">
         <h2 className="mt-8 mb-3 text-lg font-bold">Editorial standards</h2>
         <ul className="list-disc pl-6 text-slate-600 mb-6 space-y-2">

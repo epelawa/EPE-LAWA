@@ -1,8 +1,17 @@
-"use client";
+export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import ThemeToggle from "../components/theme-toggle";
 import DownloadAppButton from "../components/download-app-button";
+import {
+  NewspaperIcon,
+  UsersIcon,
+  RadioIcon,
+  MessageCircleIcon,
+  BuildingIcon,
+  ImageIcon,
+  ChevronRightIcon,
+} from "../components/icons";
 
 /**
  * Landing page.
@@ -50,19 +59,19 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Sections grid - clean cards with lots of whitespace */}
+      {/* Sections grid */}
       <section className="py-20 border-y border-slate-100 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <SectionCard
-              icon="📰"
+              icon={<NewspaperIcon size={24} className="text-slate-600" />}
               title="News"
               description="Reporting from Epe Division."
               state="No stories have been published yet."
               href="/news"
             />
             <SectionCard
-              icon="👥"
+              icon={<UsersIcon size={24} className="text-slate-600" />}
               title="Who is Who"
               description="People and public office holders in Epe Division."
               state="No profiles have been published yet."
@@ -70,7 +79,7 @@ export default function Home() {
               stateLabel="What verification means here"
             />
             <SectionCard
-              icon="📻"
+              icon={<RadioIcon size={24} className="text-slate-600" />}
               title="Radio"
               description="Radio Lagos 107.5 FM."
               state="Not live right now."
@@ -78,7 +87,7 @@ export default function Home() {
               stateLabel="Open the radio page"
             />
             <SectionCard
-              icon="💬"
+              icon={<MessageCircleIcon size={24} className="text-slate-600" />}
               title="Forum"
               description="Conversations between people of Epe Division."
               state="No conversations have been started yet."
@@ -86,13 +95,13 @@ export default function Home() {
               stateLabel="Read the community guidelines"
             />
             <SectionCard
-              icon="🏢"
+              icon={<BuildingIcon size={24} className="text-slate-600" />}
               title="Businesses"
               description="Businesses serving Epe Division."
               state="No businesses have been listed yet."
             />
             <SectionCard
-              icon="🖼️"
+              icon={<ImageIcon size={24} className="text-slate-600" />}
               title="Gallery"
               description="Photographs from across Epe Division."
               state="No photographs have been published yet."
@@ -126,7 +135,7 @@ function SectionCard({
   href,
   stateLabel,
 }: {
-  icon: string;
+  icon: React.ReactNode;
   title: string;
   description: string;
   state: string;
@@ -136,7 +145,7 @@ function SectionCard({
   return (
     <div className="card p-6">
       <div className="flex items-center gap-3 mb-4">
-        <span className="text-2xl">{icon}</span>
+        {icon}
         <h3 className="text-xl font-bold tracking-tight">{title}</h3>
       </div>
       <p className="text-sm text-slate-600 mb-4">{description}</p>
@@ -146,7 +155,7 @@ function SectionCard({
           href={href}
           className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:underline"
         >
-          {stateLabel || "View"} &rarr;
+          {stateLabel || "View"} <ChevronRightIcon size={14} />
         </Link>
       ) : null}
     </div>

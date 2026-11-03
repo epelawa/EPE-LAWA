@@ -1,5 +1,6 @@
+export const dynamic = "force-dynamic";
+
 import type { Metadata } from "next";
-import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import Script from "next/script";
 import Connectivity from "./connectivity";
 import SiteHeader from "../components/site-header";
@@ -8,22 +9,8 @@ import { mainNavigation } from "../lib/navigation";
 import { isIndexingAllowed, siteUrl } from "../lib/site";
 import { themeScript } from "../lib/theme";
 
-const displayFont = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  weight: ["500", "700"],
-  display: "swap",
-  variable: "--font-display-face",
-});
-
-const bodyFont = Inter({
-  subsets: ["latin"],
-  weight: ["400", "600"],
-  display: "swap",
-  variable: "--font-body-face",
-});
-
 const description =
-  "EPE LAWA brings news, conversation, radio and local businesses together for Epe Division, Lagos State, at home and abroad.";
+  "What EPE LAWA is, who runs it, where it broadcasts and how it is funded.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -48,7 +35,7 @@ const navigation = mainNavigation();
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${displayFont.variable} ${bodyFont.variable}`}>
+    <html lang="en" className="font-sans">
       <body>
         <Script strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeScript }} />
         <a className="skip-link" href="#main">

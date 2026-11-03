@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { NewspaperIcon } from "../../components/icons";
 
 /**
  * EPE LAWA News — publication landing page.
@@ -24,7 +25,7 @@ export default function NewsPage() {
           </div>
 
           <div className="card p-8 text-center">
-            <span className="text-4xl mb-4">📰</span>
+            <NewspaperIcon size={32} className="text-slate-400 mb-4" />
             <h2 className="text-xl font-bold mb-2">No stories published yet</h2>
             <p className="text-slate-600">
               The newsroom is being built. When stories are published, they'll
