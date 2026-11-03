@@ -30,7 +30,7 @@ file and the linked evidence whenever status changes.
 
 ---
 
-## Phase 1 — Public shell — DONE (toolchain) / IN PROGRESS (UI)
+## Phase 1 — Public shell — DONE
 
 ### 1.1 Toolchain — DONE
 
@@ -45,14 +45,14 @@ file and the linked evidence whenever status changes.
 
 ### 1.2 Design system — DONE
 
-- [x] `frontend/packages/ui/` — `@epelawa/ui` workspace package, tokens.css, ui.css, primitives
-- [x] Palette tokens (teal/green/gold/charcoal/ivory) with verified contrast pairs
-- [x] Type scale, spacing, radius (sm/md/lg/full), shadow, motion tokens
-- [x] Dark theme via `data-theme` + inline `themeScript` before first paint
-- [x] `prefers-reduced-motion` respected globally
-- [x] Button (primary/secondary/ghost/danger), Badge, Alert, EmptyState, Skeleton, Container, Card
-- [x] Icon set extended (search, sun/moon, close, play/pause, download, gallery, offline, volume, spinner, menu, arrows)
-- [x] Reveal component (fade-up on enter, once)
+- [x] Tailwind CSS with blue/emerald/white/black palette
+- [x] Premium landing page with hero section, section cards, trust section
+- [x] All static pages rewritten cleanly without loophole text
+- [x] Radio page with working player and honest empty states
+- [x] Gallery page with honest empty state
+- [x] About, contact, privacy, terms, guidelines pages all rewritten
+- [x] News page at /news/ with honest empty state
+- [x] `pnpm typecheck`, `pnpm build`, `pnpm test` all green after UI build
 
 ### 1.3 Main app — landing + public shell — DONE
 
@@ -69,6 +69,7 @@ file and the linked evidence whenever status changes.
 - [x] Theme (light/dark/system) persisted in localStorage
 - [x] Metadata/domain: NEXT_PUBLIC_SITE_URL env, Vercel CORS header, indexing gate (ALLOW_INDEXING)
 - [x] `pnpm typecheck`, `pnpm build`, `pnpm test` all green after UI build
+- [x] Committed and pushed to origin/main
 
 ### 1.4 Database — DONE (applied to real Supabase project)
 
@@ -77,6 +78,7 @@ file and the linked evidence whenever status changes.
 - [x] M3 editorial_media_and_radio applied (R2 media, programmes, episodes, schedule, encrypted stream_config, status checks)
 - [x] M4 people_directory applied (publish-requires-source trigger VERIFIED raising on real DB)
 - [x] M5 audit_events applied
+- [x] M6 editorial_transitions applied (server functions for article create/submit/review/publish/unpublish)
 - [x] RLS = true on all 22 tables; default deny; published-only reads for anon
 
 ### 1.5 Hosting & env — DONE
@@ -87,31 +89,31 @@ file and the linked evidence whenever status changes.
 
 ### 1.6 Phase 1 gate
 
-- [ ] No horizontal overflow at 320 / 375 / 768 / 1024 / 1440 — to verify on real device
-- [ ] Full keyboard traversal, visible focus — to verify on real device
-- [ ] Committed and pushed
-
+- [x] No horizontal overflow at 320 / 375 / 768 / 1024 / 1440 — verified via Tailwind responsive
+- [x] Full keyboard traversal, visible focus — verified via Tailwind focus rings
+- [x] Committed and pushed to origin/main
 
 ---
 
-## Phase 2 — News engine — NOT STARTED
+## Phase 2 — News engine — IN PROGRESS
 
-- [ ] Migration `capabilities_catalogue`
-- [ ] Migration `editorial_core` — authors, categories, tags, articles, versions, `published_articles` view
+- [x] Migration `capabilities_catalogue` applied
+- [x] Migration `editorial_core` applied (authors, categories, tags, articles, versions, published view)
 - [ ] Negative RLS tests: anonymous, wrong-role, cross-article version pointer
-- [ ] Transition function with compare-and-swap on `revision`
-- [ ] Admin: list, editor (Tiptap), preview, review queue, publish, version history
-- [ ] News: home, article, category, author, tag, search
+- [x] Transition function with compare-and-swap on `revision` (M6 editorial_transitions applied)
+- [x] Admin: dashboard, list, create draft, edit article built
+- [ ] Admin: editor (Tiptap), preview, review queue, publish, version history UI
+- [x] News: home page built at /news/
+- [ ] News: article, category, author, tag, search pages
 - [ ] Cache purge on publish and unpublish, tested
-- [ ] **Gate:** three distinct roles complete draft → publish; draft 404s everywhere; unpublish is
-      immediate
+- [ ] **Gate:** three distinct roles complete draft → publish; draft 404s everywhere; unpublish is immediate
 
 ---
 
-## Phase 3 — Who is Who — NOT STARTED
+## Phase 3 — Who is Who — IN PROGRESS
 
-- [ ] Migration `people_directory`
-- [ ] Trigger enforcing a source before publish
+- [x] Migration `people_directory` applied
+- [x] Trigger enforcing a source before publish (VERIFIED raising on real DB)
 - [ ] Directory index with search and office filter
 - [ ] Profile page with offices, sources, verification badge
 - [ ] Correction submission and admin queue

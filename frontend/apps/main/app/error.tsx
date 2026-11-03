@@ -23,9 +23,12 @@ export default function ErrorPage({
         it. Try again, or go back to the homepage.
       </p>
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
-        <button type="button" className="btn-primary flex-1 sm:auto" onClick={() => reset()}>
+        <a
+          href="/"
+          className="btn-primary flex-1 sm:auto"
+        >
           Try again
-        </button>
+        </a>
         <Link href="/" className="btn-ghost flex-1 sm:auto">
           Return to the homepage
         </Link>
