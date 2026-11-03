@@ -5,37 +5,36 @@
  * docs/05-design-system.md. Components use the semantic aliases below — a hex value
  * inside a component is a bug.
  *
- * Premium direction: deep midnight ink for authority, warm gold for accent, cream
- * background for editorial warmth. Nothing neon, nothing gradient, nothing decorative.
+ * Premium direction: supplied navy and black for authority, bright gold for accent,
+ * white and light gray for editorial clarity. No gradients or decorative chrome.
  *
- * Gold is a surface/accent only — never ink. #C9A227 on cream is ~2.3:1, so it never
- * carries text or meaning by itself.
+ * Gold is a surface/accent only — never small body ink. Navy or black carry text and meaning.
  */
 
 :root {
   /* ── Colour · premium palette · docs/05 §2 ───────────────────────────── */
-  --color-ink-900: #0a0f1c; /* primary — deep midnight */
-  --color-ink-700: #16213e;
-  --color-ink-600: #1e293b;
-  --color-ink-100: #e2e8f0;
+  --color-ink-900: #14213d; /* primary — supplied navy */
+  --color-ink-700: #1c3156;
+  --color-ink-600: #33486b;
+  --color-ink-100: #e5e5e5;
 
-  --color-gold-500: #c9a227; /* premium gold — accent only */
-  --color-gold-100: #f3e7c8;
+  --color-gold-500: #fca311; /* supplied gold — accent */
+  --color-gold-100: #fff0d6;
 
-  --color-cream-50: #fbfaf6; /* page background — editorial warmth */
-  --color-white: #ffffff; /* surfaces */
+  --color-cream-50: #e5e5e5; /* supplied light neutral */
+  --color-white: #ffffff; /* supplied white */
 
-  --color-text-900: #0a0f1c; /* primary text — 19.6:1 on cream */
-  --color-text-600: #475569; /* secondary text — 7.3:1 on cream */
-  --color-text-muted: #64748b;
+  --color-text-900: #000000; /* supplied black */
+  --color-text-600: #14213d; /* secondary text */
+  --color-text-muted: #53627b;
 
-  --color-border: #e2e8e0; /* decorative border — 3:1 on cream (WCAG 1.4.11) */
-  --color-border-strong: #94a3b8; /* control borders — 4.6:1 on cream */
+  --color-border: #c9c9c9; /* neutral rule */
+  --color-border-strong: #7c8798; /* control borders */
 
   /* Interaction — white on ink-900 is 19.6:1 */
   --color-primary: var(--color-ink-900);
   --color-primary-hover: var(--color-ink-700);
-  --color-primary-active: #050a15;
+  --color-primary-active: #000000;
   --color-primary-fg: var(--color-white);
   --color-accent: var(--color-gold-500);
 
@@ -50,14 +49,20 @@
   --color-info-surface: var(--color-ink-100);
 
   /* ── Type · docs/05 §3 ───────────────────────────────────────────────── */
-  --font-display: var(--font-display-face, "Plus Jakarta Sans"),
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-body: var(--font-body-face, "Inter"),
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display:
+    var(--font-display-face, "Plus Jakarta Sans"), ui-sans-serif, system-ui,
+    -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-body:
+    var(--font-body-face, "Inter"), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, sans-serif;
   --font-editorial: Georgia, "Times New Roman", serif;
 
   /* Sizes in rem so 200% text zoom reflows instead of clipping. */
-  --text-display: clamp(2.75rem, 1.75rem + 5vw, 4.25rem); /* landing hero only */
+  --text-display: clamp(
+    2.75rem,
+    1.75rem + 5vw,
+    4.25rem
+  ); /* landing hero only */
   --text-h1: 2rem; /* 32 */
   --text-h2: 1.625rem; /* 26 */
   --text-h3: 1.25rem; /* 20 */

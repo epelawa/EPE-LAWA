@@ -76,7 +76,7 @@ test('main has honest indexable metadata, working public links and security head
     const response = await fetch(base);
     assert.equal(response.status, 200);
     const html = await response.text();
-    assert.match(html, /not connected yet/i);
+    assert.match(html, /Independent journalism/i);
     assert.doesNotMatch(html, /<meta name="robots" content="[^"]*noindex/i);
     assert.match(html, /<meta name="description" content="[^"]+"/);
     assert.match(html, /<link rel="canonical" href="https:\/\/epelawa\.ng\/?"/);
@@ -93,7 +93,7 @@ test('main has honest indexable metadata, working public links and security head
     assert.match(aboutHtml, /<meta name="clyvro-verification" content="clyvro-verification=bgGvrkMEUkTOaufJIGTtWi-l7mQSZ4dmh-QpuoM4_WM"\/>/);
     assert.match(aboutHtml, /<link rel="canonical" href="https:\/\/epelawa\.ng\/about"/);
     assert.match(aboutHtml, /href="\/"/);
-    assert.match(aboutHtml, /not connected yet/i);
+    assert.match(aboutHtml, /What EPE LAWA is/i);
     const missing = await fetch(base + '/not-a-real-page');
     assert.equal(missing.status, 404);
     assert.match(await missing.text(), /Page not found/);

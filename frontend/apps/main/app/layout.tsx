@@ -29,11 +29,11 @@ const bodyFont = Inter({
 });
 
 const description =
-  "EPE LAWA brings news, conversation, radio and local businesses together for Epe Division, Lagos State, at home and abroad.";
+  "EPE LAWA is the official publication for Epe Division — independent journalism, public knowledge and the people shaping the place.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: { default: "EPE LAWA — The Voice of Epe Division", template: "%s | EPE LAWA" },
+  title: { default: "EPE LAWA — The official Epe Lawa website", template: "%s | EPE LAWA" },
   description,
   other: { "clyvro-verification": "clyvro-verification=bgGvrkMEUkTOaufJIGTtWi-l7mQSZ4dmh-QpuoM4_WM" },
   // Indexing is decided in lib/site.ts, not by a hosting provider's environment variable.
@@ -42,12 +42,12 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "EPE LAWA",
-    title: "EPE LAWA — The Voice of Epe Division",
+    title: "EPE LAWA — The official Epe Lawa website",
     description,
     url: "/",
-    images: [{ url: "/share.png", width: 1200, height: 630, alt: "EPE LAWA — The Voice of Epe Division" }],
+    images: [{ url: "/share.png", width: 1200, height: 630, alt: "EPE LAWA — The official Epe Lawa website" }],
   },
-  twitter: { card: "summary_large_image", title: "EPE LAWA — The Voice of Epe Division", description, images: ["/share.png"] },
+  twitter: { card: "summary_large_image", title: "EPE LAWA — The official Epe Lawa website", description, images: ["/share.png"] },
   icons: { icon: [{ url: "/favicon.ico", sizes: "48x48", type: "image/x-icon" }, { url: "/icon.png", sizes: "192x192", type: "image/png" }], apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }] },
 };
 
