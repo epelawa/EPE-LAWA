@@ -5,6 +5,9 @@
   "engines": {
     "node": ">=22 <25"
   },
+  "devEngines": {
+    "packageManager": "pnpm@10.34.9"
+  },
   "scripts": {
     "build": "turbo run build --concurrency=1",
     "typecheck": "turbo run typecheck --concurrency=1",

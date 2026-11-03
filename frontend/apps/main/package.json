@@ -2,6 +2,7 @@
   "name": "@epelawa/main",
   "private": true,
   "version": "0.0.0",
+  "packageManager": "pnpm@10.34.9",
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0",
     "build": "next build --webpack",
