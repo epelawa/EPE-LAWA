@@ -1,14 +1,49 @@
 "use client";
 
-import {
-  CloseIcon,
-  DownloadIcon,
-  PauseIcon,
-  PlayIcon,
-  VolumeIcon,
-  VolumeOffIcon,
-} from "@epelawa/ui";
 import { useCallback, useEffect, useRef, useState } from "react";
+
+const PlayIcon = ({ size = 18 }: { size?: number }) => (
+  <svg className={`w-${size} h-${size}`} fill="currentColor" viewBox="0 0 24 24">
+    <path d="M8 5.5v13l10.5-6.5z" />
+  </svg>
+);
+
+const PauseIcon = ({ size = 18 }: { size?: number }) => (
+  <svg className={`w-${size} h-${size}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5.5v13M15 5.5v13" />
+  </svg>
+);
+
+const VolumeIcon = ({ size = 18 }: { size?: number }) => (
+  <svg className={`w-${size} h-${size}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.5 5.5A.5.5 0 016 5v14a.5.5 0 01-.5.5H2a.5.5 0 01-.5-.5v-14a.5.5 0 01.5-.5h3.5a.5.5 0 011 1m-1 10l2.25-2.25.75.75 2 2-2 2-.75-.75-2.25-2.25z" />
+  </svg>
+);
+
+const VolumeOffIcon = ({ size = 18 }: { size?: number }) => (
+  <svg className={`w-${size} h-${size}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.5 5.5A.5.5 0 016 5v14a.5.5 0 01-.5.5H2a.5.5 0 01-.5-.5v-14a.5.5 0 01.5-.5h3.5a.5.5 0 011 1m-1 10l2.25-2.25.75.75 2 2-2 2-.75-.75-2.25-2.25zM11.5 8.5l3 3m0 0l3 3m-3-3l-3-3M11.5 15.5l3 3m0 0l3 3m-3-3l-3-3" />
+  </svg>
+);
+
+const DownloadIcon = ({ size = 18 }: { size?: number }) => (
+  <svg className={`w-${size} h-${size}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+  </svg>
+);
+
+const CloseIcon = ({ size = 20 }: { size?: number }) => (
+  <svg className={`w-${size} h-${size}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+  </svg>
+);
+
+const SpinnerIcon = ({ size = 20 }: { size?: number }) => (
+  <svg className={`w-${size} h-${size} animate-spin`} fill="none" viewBox="0 0 24 24">
+    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+  </svg>
+);
 
 /**
  * Radio player.
@@ -46,9 +81,7 @@ export default function RadioPlayer() {
         .catch((err) => {
           if (!isMountedRef.current) return;
           setState("error");
-          setError(
-            err instanceof Error ? err.message : "Playback failed. Try again.",
-          );
+          setError(err instanceof Error ? err.message : "Playback failed. Try again.");
         });
     } else {
       setState("playing");
@@ -93,7 +126,6 @@ export default function RadioPlayer() {
     [],
   );
 
-  // Keep React state in sync with the native element.
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -145,106 +177,101 @@ export default function RadioPlayer() {
   const mutedOrZero = muted || volume === 0;
 
   return (
-    <section className="radio-player" aria-labelledby="radio-player-title">
-      <div className="radio-player__inner ep-container">
-        <div className="radio-player__header">
-          <h2 id="radio-player-title" className="radio-player__title">
-            Radio Lagos 107.5 FM
-          </h2>
-          <p className="radio-player__subtitle">Epe Division · Lagos State · Àmitítí</p>
-        </div>
+    <section className="py-8" aria-labelledby="radio-player-title">
+      <div className="max-w-lg mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="card p-6">
+          <div className="mb-6">
+            <h2 id="radio-player-title" className="text-xl font-bold text-slate-900">
+              Radio Lagos 107.5 FM
+            </h2>
+            <p className="text-sm text-slate-500">Epe Division · Lagos State · Àmitítí</p>
+          </div>
 
-        <div className="radio-player__status">
-          {state === "unavailable" && (
-            <span className="radio-player__pill radio-player__pill--offline">
-              <span className="radio-player__pill-dot" aria-hidden="true" />
-              Unavailable
-            </span>
-          )}
-          {state === "error" && (
-            <span className="radio-player__pill radio-player__pill--error">
-              <span className="radio-player__pill-dot" aria-hidden="true" />
-              Playback error
-            </span>
-          )}
-        </div>
+          <div className="mb-6 flex items-center gap-2">
+            {state === "unavailable" && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                Unavailable
+              </span>
+            )}
+            {state === "error" && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                Playback error
+              </span>
+            )}
+          </div>
 
-        <div className="radio-player__controls">
-          <button
-            type="button"
-            className={`
-              ep-btn ep-btn--primary radio-player__play ${
-                loading ? "ep-btn--loading" : ""
-              }
-            `}
-            aria-busy={loading ? "true" : undefined}
-            disabled={loading || state === "unavailable"}
-            onClick={state === "idle" || state === "paused" ? play : pause}
-          >
-            <span className="ep-btn__label">
-              {playing ? <PauseIcon size={18} /> : <PlayIcon size={18} />}
-              {loading ? "Buffering…" : playing ? "Pause" : "Play"}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            className="ep-icon-btn radio-player__mute"
-            aria-label={mutedOrZero ? "Unmute" : "Mute"}
-            onClick={toggleMute}
-            aria-pressed={mutedOrZero ? "true" : undefined}
-          >
-            {mutedOrZero ? <VolumeOffIcon size={18} /> : <VolumeIcon size={18} />}
-          </button>
-
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.05"
-            value={muted ? 0 : volume}
-            onChange={(e) => setVolumeLevel(Number(e.target.value))}
-            aria-label="Volume"
-            className="radio-player__volume"
-          />
-
-          <button
-            type="button"
-            className="ep-icon-btn radio-player__stop"
-            aria-label="Stop"
-            disabled={state === "idle"}
-            onClick={stop}
-          >
-            <DownloadIcon size={18} />
-          </button>
-
-          {state === "error" && (
+          <div className="flex items-center gap-3">
             <button
               type="button"
-              className="ep-icon-btn radio-player__retry"
-              aria-label="Retry"
-              onClick={play}
+              className="btn-primary flex-1"
+              aria-busy={loading ? "true" : undefined}
+              disabled={loading || state === "unavailable"}
+              onClick={state === "idle" || state === "paused" ? play : pause}
             >
-              <PlayIcon size={18} />
+              <span className="flex items-center justify-center gap-2">
+                {playing ? <PauseIcon size={18} /> : <PlayIcon size={18} />}
+                {loading ? "Buffering…" : playing ? "Pause" : "Play"}
+              </span>
             </button>
-          )}
+
+            <button
+              type="button"
+              className="p-2 text-slate-600 rounded-xl hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+              aria-label={mutedOrZero ? "Unmute" : "Mute"}
+              onClick={toggleMute}
+              aria-pressed={mutedOrZero ? "true" : undefined}
+            >
+              {mutedOrZero ? <VolumeOffIcon size={18} /> : <VolumeIcon size={18} />}
+            </button>
+
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.05"
+              value={muted ? 0 : volume}
+              onChange={(e) => setVolumeLevel(Number(e.target.value))}
+              aria-label="Volume"
+              className="w-24 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+            />
+
+            <button
+              type="button"
+              className="p-2 text-slate-600 rounded-xl hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+              aria-label="Stop"
+              disabled={state === "idle"}
+              onClick={stop}
+            >
+              <DownloadIcon size={18} />
+            </button>
+
+            {state === "error" && (
+              <button
+                type="button"
+                className="p-2 text-slate-600 rounded-xl hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                aria-label="Retry"
+                onClick={play}
+              >
+                <PlayIcon size={18} />
+              </button>
+            )}
+          </div>
+
+          <p className="mt-4 text-sm text-slate-600">
+            {error
+              ? `Playback failed: ${error}. The stream may be down — try again later.`
+              : "The player connects directly to the broadcaster. Nothing starts until you press Play, and nothing claims to be live unless it has actually been verified."}
+          </p>
+
+          <p className="mt-2 text-xs text-slate-400">
+            Stream via{" "}
+            <a href="https://fm.puzzofme.com" target="_blank" rel="noopener" className="text-blue-600 hover:underline">
+              Powered by Naija Radio
+            </a>
+          </p>
         </div>
-
-        <p className="radio-player__note">
-          {error && `Playback failed: ${error}. The stream may be down — try again later.`}{" "}
-          {!error && (
-            <>
-              The player connects directly to the broadcaster. Nothing starts until you press
-              Play, and nothing claims to be live unless it has actually been verified.
-            </>
-          )}
-        </p>
-
-        <p className="radio-player__credit">
-          Stream via <a href="https://fm.puzzofme.com" target="_blank" rel="noopener">
-            Powered by Naija Radio
-          </a>
-        </p>
       </div>
     </section>
   );

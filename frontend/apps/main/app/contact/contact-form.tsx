@@ -2,7 +2,6 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
-import { Alert, Button } from "@epelawa/ui";
 import type { ContactField, ContactState } from "./actions";
 import { submitContactMessage } from "./actions";
 import { CONTACT_EMAIL } from "../../lib/contact";
@@ -53,7 +52,7 @@ function Field({
   };
 
   return (
-    <div className="field">
+    <div className="field mb-5">
       <label className="field__label" htmlFor={id}>
         {label}
       </label>
@@ -79,9 +78,13 @@ function Field({
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" loading={pending} loadingLabel="Checking your message">
-      Submit message
-    </Button>
+    <button
+      type="submit"
+      disabled={pending}
+      className="btn-primary"
+    >
+      {pending ? "Checking your message…" : "Submit message"}
+    </button>
   );
 }
 
@@ -104,12 +107,13 @@ export default function ContactForm() {
   const fields = ["name", "email", "subject", "message"] as const;
 
   return (
-    <form className="form" action={formAction} noValidate>
+    <form className="form max-w-md mx-auto" action={formAction} noValidate>
       {state.status !== "idle" ? (
-        <div className="form-result" ref={resultRef} tabIndex={-1} role="alert">
+        <div ref={resultRef} className="form-result mb-6" tabIndex={-1} role="alert">
           {state.status === "invalid" ? (
-            <Alert tone="error" title="Check the highlighted fields">
-              <ul className="form-summary__list">
+            <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+              <h3 className="font-semibold text-red-900 mb-2">Check the highlighted fields</h3>
+              <ul className="form-summary__list list-disc pl-5 text-red-800 text-sm">
                 {fields.map((field) =>
                   state.errors[field] ? (
                     <li key={field}>
@@ -118,15 +122,21 @@ export default function ContactForm() {
                   ) : null,
                 )}
               </ul>
-            </Alert>
+            </div>
           ) : (
-            <Alert tone="warning" title="Your message has not been sent">
-              <p>
+            <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+              <h3 className="font-semibold text-red-900 mb-2">
+                Your message has not been sent
+              </h3>
+              <p className="text-red-800 text-sm">
                 Message delivery is not connected yet, so nothing you typed has reached EPE LAWA.
                 Your text is still in the form. To reach a person today, email{" "}
-                <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+                <a href={`mailto:${CONTACT_EMAIL}`} className="underline underline-offset-4">
+                  {CONTACT_EMAIL}
+                </a>
+                .
               </p>
-            </Alert>
+            </div>
           )}
         </div>
       ) : null}
@@ -172,7 +182,7 @@ export default function ContactForm() {
         multiline
       />
 
-      <div className="form__actions">
+      <div className="form__actions flex items-center gap-3">
         <SubmitButton />
         <p className="field__hint">
           The form checks your text only. It cannot deliver a message yet.

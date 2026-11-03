@@ -23,7 +23,6 @@ export default function Connectivity() {
     inFlight.current = controller;
     if (!navigator.onLine) { setNotice("offline"); return; }
     setNotice("checking");
-    // A real same-origin request, not a claim that unpublished content synced.
     const result = await probeConnection(navigator.onLine, () => fetch("/", { method: "GET", cache: "no-store", signal: controller.signal }));
     if (controller.signal.aborted) return;
     if (result !== "online") { setNotice(navigator.onLine ? "unreachable" : "offline"); return; }
@@ -52,7 +51,6 @@ export default function Connectivity() {
     let tracking = false, pulling = false;
     const start = (event: TouchEvent) => {
       if (event.touches.length !== 1 || window.scrollY > 1 || !(event.target instanceof Element) || event.target.closest("a,button,input,textarea,select,[contenteditable='true']")) return;
-      // Let independently scrollable regions retain their own gestures.
       for (let node = event.target.parentElement; node && node !== document.body; node = node.parentElement) {
         const overflow = getComputedStyle(node).overflowY;
         if (/(auto|scroll)/.test(overflow) && node.scrollHeight > node.clientHeight) return;
@@ -88,17 +86,38 @@ export default function Connectivity() {
     };
   }, [check, pullEnabled]);
 
-  const message = notice === "offline" ? "You’re offline" : notice === "checking" ? "Checking for updates…" : notice === "online" ? "You’re now online" : "Couldn’t check the connection";
+  const message = notice === "offline" ? "You're offline" : notice === "checking" ? "Checking for updates…" : notice === "online" ? "You're now online" : "Couldn't check the connection";
   return <>
-    {pullEnabled && pull && <div className="pull-notice" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 4v14m-5-5 5 5 5-5"/></svg><span>Pull down to refresh</span></div>}
+    {pullEnabled && pull && (
+      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500 text-white text-sm shadow-lg" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><path d="M12 4v14m-5-5 5 5 5-5"/></svg>
+        <span>Pull down to refresh</span>
+      </div>
+    )}
     <div role="status" aria-live="polite" aria-atomic="true">
-      {notice && <div className="connection-notice" data-state={notice}>
-        <span className="connection-notice__icon" aria-hidden="true">
-          {notice === "online" ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 4 4L19 6"/></svg> : notice === "checking" ? <svg className="connection-notice__spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 3a9 9 0 1 0 9 9"/></svg> : notice === "offline" ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 2l20 20M8.5 8.5A15 15 0 0 1 22 10M2 10a15 15 0 0 1 3.1-1.9M5 13a10 10 0 0 1 4-2.2M15.5 11.6A10 10 0 0 1 19 13M8.5 16a5 5 0 0 1 7 0M12 20h.01"/></svg> : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 7v6m0 4h.01"/><circle cx="12" cy="12" r="9"/></svg>}
-        </span>
-        <p>{message}</p>
-        {(notice === "offline" || notice === "unreachable") && <button type="button" aria-label="Retry connection" title="Retry connection" onClick={() => void check("retry")}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 7v5h-5"/><path d="M4 17v-5h5"/><path d="M5.6 9a7 7 0 0 1 11.6-2L20 12M4 12l2.8 5a7 7 0 0 0 11.6-2"/></svg></button>}
-      </div>}
+      {notice && (
+        <div className={`fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-3 rounded-full shadow-lg border ${
+          notice === "online" ? "bg-emerald-500 text-white border-emerald-400" :
+          notice === "checking" ? "bg-blue-500 text-white border-blue-400" :
+          "bg-slate-900 text-white border-slate-700"
+        }`}>
+          <span className="w-5 h-5 rounded-full flex items-center justify-center bg-white/20">
+            {notice === "online" ? (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3"><path d="m5 12 4 4L19 6"/></svg>
+            ) : notice === "checking" ? (
+              <svg className="animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/></svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3"><path d="M12 7v6m0 4h.01"/><circle cx="12" cy="12" r="9"/></svg>
+            )}
+          </span>
+          <p className="text-sm font-medium">{message}</p>
+          {(notice === "offline" || notice === "unreachable") && (
+            <button type="button" className="ml-auto text-xs font-medium bg-white/10 hover:bg-white/20 rounded px-3 py-1" aria-label="Retry connection" onClick={() => void check("retry")}>
+              Retry
+            </button>
+          )}
+        </div>
+      )}
     </div>
   </>;
 }

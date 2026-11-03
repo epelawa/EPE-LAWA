@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { Container, buttonClassName } from "@epelawa/ui";
 
 export default function ErrorPage({
   error,
@@ -14,23 +13,23 @@ export default function ErrorPage({
   void error;
 
   return (
-    <Container>
-      <div className="notice-page">
-        <p className="page-header__eyebrow">EPE LAWA</p>
-        <h1>This page did not load</h1>
-        <p>
-          Something failed while loading this page. Anything you had typed is still where you left
-          it. Try again, or go back to the homepage.
-        </p>
-        <div className="notice-page__actions">
-          <button type="button" className={buttonClassName("primary")} onClick={() => reset()}>
-            Try again
-          </button>
-          <Link className={buttonClassName("secondary")} href="/">
-            Return to the homepage
-          </Link>
-        </div>
+    <div className="max-w-md mx-auto px-4 py-12 sm:px-6 lg:px-8 text-center">
+      <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-6">
+        EPE LAWA
+      </p>
+      <h1 className="text-2xl font-bold tracking-tight mb-4">This page did not load</h1>
+      <p className="text-slate-600 mb-8 max-w-sm mx-auto leading-relaxed">
+        Something failed while loading this page. Anything you had typed is still where you left
+        it. Try again, or go back to the homepage.
+      </p>
+      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        <button type="button" className="btn-primary flex-1 sm:auto" onClick={() => reset()}>
+          Try again
+        </button>
+        <Link href="/" className="btn-ghost flex-1 sm:auto">
+          Return to the homepage
+        </Link>
       </div>
-    </Container>
+    </div>
   );
 }

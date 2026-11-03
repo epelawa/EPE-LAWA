@@ -1,17 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MoonIcon, SunIcon } from "@epelawa/ui";
 import { applyTheme, readStoredTheme, resolveTheme, type ThemeChoice } from "../lib/theme";
 
-/**
- * Light/dark switch.
- *
- * The button is rendered on the server with a neutral label and no icon-specific state, then
- * updates after mount. That avoids a hydration mismatch, and it means a reader whose browser
- * never runs JavaScript still gets the theme their device asked for — the inline script in
- * <head> already applied it.
- */
+const SunIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+  </svg>
+);
+
+const MoonIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+  </svg>
+);
+
 export default function ThemeToggle() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [ready, setReady] = useState(false);
@@ -19,8 +22,6 @@ export default function ThemeToggle() {
   useEffect(() => {
     setTheme(resolveTheme(readStoredTheme()));
     setReady(true);
-
-    // Follow the device if the reader has not made an explicit choice.
     const media = window.matchMedia("(prefers-color-scheme: dark)");
     const onChange = () => {
       if (readStoredTheme() !== "system") return;
@@ -35,18 +36,14 @@ export default function ThemeToggle() {
   return (
     <button
       type="button"
-      className="ep-icon-btn theme-toggle"
+      className="p-2 text-slate-600 rounded-xl hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
       aria-label={ready ? `Switch to ${next} theme` : "Switch theme"}
       title={ready ? `Switch to ${next} theme` : undefined}
       data-ready={ready ? "true" : "false"}
       onClick={() => setTheme(applyTheme(next))}
     >
-      {/* Both icons exist in the DOM so the button never changes width and never jumps. */}
-      <span className="theme-toggle__icon" data-active={theme === "light" ? "true" : "false"}>
-        <SunIcon size={20} />
-      </span>
-      <span className="theme-toggle__icon" data-active={theme === "dark" ? "true" : "false"}>
-        <MoonIcon size={20} />
+      <span className="flex items-center justify-center w-full h-full">
+        {theme === "light" ? <MoonIcon /> : <SunIcon />}
       </span>
     </button>
   );

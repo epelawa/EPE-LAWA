@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CloseIcon, MenuIcon, SearchIcon, SunIcon, MoonIcon } from "@epelawa/ui";
 import ThemeToggle from "./theme-toggle";
 import { BrandLockup } from "./brand";
 import { primaryNavigation, upcomingSections, type NavItem } from "../lib/navigation";
@@ -17,7 +16,6 @@ function isCurrentPage(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-/** True once the page has scrolled far enough for the bar to need a background. */
 function useScrolled(threshold = 8): boolean {
   const [scrolled, setScrolled] = useState(false);
 
@@ -42,15 +40,6 @@ function useScrolled(threshold = 8): boolean {
   return scrolled;
 }
 
-/**
- * Premium fixed navigation.
- *
- * Sticky pill-shaped shell. On mobile it collapses to a hamburger (two lines only)
- * that opens a slide-in drawer from the right — medium width, graceful ease.
- *
- * The drawer is modal: focus moves in, Tab cycles inside, Escape closes and returns
- * focus to the button that opened it, and the page behind does not scroll.
- */
 export default function SiteHeader({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
   const scrolled = useScrolled();
@@ -66,13 +55,11 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
   const inline = primaryNavigation(items);
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
 
-  // A route change closes everything, so the next page starts at the top.
   useEffect(() => {
     setDrawerOpen(false);
     setSearchOpen(false);
   }, [pathname]);
 
-  // Escape closes whichever surface is open and puts focus back on its trigger.
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
@@ -88,10 +75,8 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [drawerOpen, searchOpen]);
 
-  // Drawer: lock the page behind it, move focus in, keep Tab inside.
   useEffect(() => {
     if (!drawerOpen) return;
-
     const previouslyFocused = document.activeElement as HTMLElement | null;
     const { overflow } = document.body.style;
     document.body.style.overflow = "hidden";
@@ -137,7 +122,6 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
     };
   }, [drawerOpen]);
 
-  // Search: focus the field as soon as the panel opens.
   useEffect(() => {
     if (!searchOpen) return;
     searchInputRef.current?.focus();
@@ -159,28 +143,40 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
 
   return (
     <>
-      <header className="site-header" data-scrolled={scrolled ? "true" : "false"}>
-        <div className="ep-container site-header__inner">
-          <div className="nav-shell">
+      <header
+        className={`site-header sticky top-0 z-50 ${
+          scrolled ? "shadow-sm border-b" : ""
+        } transition-all duration-300`}
+      >
+        <div className="flex items-center justify-between gap-4 px-4 py-3">
+          <div className="flex items-center gap-4 w-full">
             <Link className="nav-brand" href="/" aria-label="EPE LAWA — home">
               <BrandLockup size={32} />
             </Link>
 
             <ThemeToggle />
 
-            <nav className="nav-inline" aria-label="Main">
-              <ul className="nav-inline__list">
+            <nav className="hidden md:flex items-center gap-6" aria-label="Main">
+              <ul className="flex items-center gap-6">
                 {inline.map((item) => (
                   <li key={item.href}>
                     {item.external ? (
-                      <a className="nav-inline__link" href={item.href} rel="noopener">
+                      <a
+                        className="nav-link"
+                        href={item.href}
+                        rel="noopener"
+                        target="_blank"
+                      >
                         {item.label}
                       </a>
                     ) : (
                       <Link
-                        className="nav-inline__link"
+                        className={`nav-link ${
+                          isCurrentPage(pathname, item.href)
+                            ? "text-blue-600 font-medium"
+                            : "text-slate-600 hover:text-blue-600"
+                        }`}
                         href={item.href}
-                        aria-current={isCurrentPage(pathname, item.href) ? "page" : undefined}
                       >
                         {item.label}
                       </Link>
@@ -190,130 +186,158 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
               </ul>
             </nav>
 
-            <button
-              ref={searchButtonRef}
-              type="button"
-              className="ep-icon-btn"
-              aria-expanded={searchOpen}
-              aria-controls={SEARCH_ID}
-              aria-label={searchOpen ? "Close search" : "Search EPE LAWA"}
-              onClick={toggleSearch}
-            >
-              <SearchIcon size={18} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                ref={searchButtonRef}
+                type="button"
+                className="btn-icon"
+                aria-expanded={searchOpen}
+                aria-controls={SEARCH_ID}
+                aria-label={searchOpen ? "Close search" : "Search EPE LAWA"}
+                onClick={toggleSearch}
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </button>
 
+              <button
+                ref={menuButtonRef}
+                type="button"
+                className="menu-btn"
+                aria-expanded={drawerOpen}
+                aria-controls={DRAWER_ID}
+                aria-label={drawerOpen ? "Close menu" : "Open menu"}
+                onClick={toggleDrawer}
+              >
+                <span className="relative inline-block w-6 h-4">
+                  <span
+                    className="w-full h-0.5 bg-slate-900 rounded-full transition-all duration-300 group-hover:bg-blue-600"
+                    aria-hidden="true"
+                  />
+                  <span
+                    className="w-full h-0.5 bg-slate-900 rounded-full transition-all duration-300 group-hover:bg-blue-600"
+                    aria-hidden="true"
+                  />
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="search-panel" id={SEARCH_ID} data-open={searchOpen ? "true" : "false"}>
+          <form className="flex gap-2 px-4 py-3" action="/search" method="get" role="search">
+            <label className="sr-only" htmlFor="site-search-input">
+              Search news, people and businesses
+            </label>
+            <input
+              ref={searchInputRef}
+              id="site-search-input"
+              className="flex-1 px-4 py-2 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900"
+              type="search"
+              name="q"
+              placeholder="Search news, people, businesses"
+              autoComplete="off"
+              tabIndex={searchOpen ? 0 : -1}
+            />
             <button
-              ref={menuButtonRef}
-              type="button"
-              className="menu-btn"
-              aria-expanded={drawerOpen}
-              aria-controls={DRAWER_ID}
-              aria-label={drawerOpen ? "Close menu" : "Open menu"}
-              onClick={toggleDrawer}
+              className="btn-primary"
+              type="submit"
+              tabIndex={searchOpen ? 0 : -1}
             >
-              {/* Two lines only. Cross into a close mark when the drawer is open. */}
-              <span className="menu-btn__lines" aria-hidden="true">
-                <span />
-                <span />
-              </span>
-              <MenuIcon size={18} />
+              Search
             </button>
+          </form>
+        </div>
+
+        <div className="drawer-root" data-open={drawerOpen ? "true" : "false"}>
+          <button
+            type="button"
+            className="drawer-scrim"
+            aria-label="Close menu"
+            tabIndex={drawerOpen ? 0 : -1}
+            onClick={closeDrawer}
+          />
+
+          <div
+            ref={drawerRef}
+            id={DRAWER_ID}
+            className="drawer"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={DRAWER_TITLE_ID}
+            aria-hidden={drawerOpen ? undefined : "true"}
+            inert={!drawerOpen}
+          >
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+              <p className="drawer-title" id={DRAWER_TITLE_ID}>
+                Menu
+              </p>
+              <button type="button" className="btn-icon" aria-label="Close menu" onClick={closeDrawer}>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <nav className="drawer-nav" aria-label="All sections">
+              <ul className="py-4">
+                {items.map((item) => (
+                  <li key={item.href}>
+                    {item.external ? (
+                      <a
+                        className="drawer-link"
+                        href={item.href}
+                        rel="noopener"
+                        target="_blank"
+                      >
+                        <span className="drawer-label">{item.label}</span>
+                        {item.hint ? <span className="drawer-hint">{item.hint}</span> : null}
+                      </a>
+                    ) : (
+                      <Link
+                        className={`drawer-link ${isCurrentPage(pathname, item.href) ? "bg-blue-50 text-blue-600" : ""}`}
+                        href={item.href}
+                      >
+                        <span className="drawer-label">{item.label}</span>
+                        {item.hint ? <span className="drawer-hint">{item.hint}</span> : null}
+                      </Link>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            <div className="p-6 border-t border-slate-200">
+              <p className="drawer-soon-title text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
+                Opening soon
+              </p>
+              <ul className="space-y-2">
+                {upcomingSections.map((section) => (
+                  <li key={section.label} className="drawer-soon-item flex items-center justify-between py-2 border-b border-slate-100 last:border-0 text-sm">
+                    <span className="drawer-soon-label text-slate-900">{section.label}</span>
+                    <span className="drawer-soon-detail text-slate-400">{section.detail}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <p className="drawer-foot text-xs text-slate-500 px-6 py-4 border-t border-slate-200">
+              Epe Division, Lagos State
+            </p>
           </div>
         </div>
       </header>
-
-      <div className="search-panel" id={SEARCH_ID} data-open={searchOpen ? "true" : "false"}>
-        <form className="search-panel__form" action="/search" method="get" role="search">
-          <label className="ep-sr-only" htmlFor="site-search-input">
-            Search news, people and businesses
-          </label>
-          <input
-            ref={searchInputRef}
-            id="site-search-input"
-            className="search-panel__input"
-            type="search"
-            name="q"
-            placeholder="Search news, people, businesses"
-            autoComplete="off"
-            tabIndex={searchOpen ? 0 : -1}
-          />
-          <button
-            className="ep-btn ep-btn--primary search-panel__submit"
-            type="submit"
-            tabIndex={searchOpen ? 0 : -1}
-          >
-            Search
-          </button>
-        </form>
-      </div>
-
-      <div className="drawer-root" data-open={drawerOpen ? "true" : "false"}>
-        <button
-          type="button"
-          className="drawer-scrim"
-          aria-label="Close menu"
-          tabIndex={drawerOpen ? 0 : -1}
-          onClick={closeDrawer}
-        />
-
-        <div
-          ref={drawerRef}
-          id={DRAWER_ID}
-          className="drawer"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby={DRAWER_TITLE_ID}
-          aria-hidden={drawerOpen ? undefined : "true"}
-          inert={!drawerOpen}
-        >
-          <div className="drawer__head">
-            <p className="drawer__title" id={DRAWER_TITLE_ID}>
-              Menu
-            </p>
-            <button type="button" className="ep-icon-btn" aria-label="Close menu" onClick={closeDrawer}>
-              <CloseIcon size={20} />
-            </button>
-          </div>
-
-          <nav className="drawer__nav" aria-label="All sections">
-            <ul className="drawer__list">
-              {items.map((item) => (
-                <li key={item.href}>
-                  {item.external ? (
-                    <a className="drawer__link" href={item.href} rel="noopener">
-                      <span className="drawer__label">{item.label}</span>
-                      {item.hint ? <span className="drawer__hint">{item.hint}</span> : null}
-                    </a>
-                  ) : (
-                    <Link
-                      className="drawer__link"
-                      href={item.href}
-                      aria-current={isCurrentPage(pathname, item.href) ? "page" : undefined}
-                    >
-                      <span className="drawer__label">{item.label}</span>
-                      {item.hint ? <span className="drawer__hint">{item.hint}</span> : null}
-                    </Link>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </nav>
-
-          <div className="drawer__soon">
-            <p className="drawer__soon-title">Opening soon</p>
-            <ul className="drawer__soon-list">
-              {upcomingSections.map((section) => (
-                <li key={section.label} className="drawer__soon-item">
-                  <span className="drawer__soon-label">{section.label}</span>
-                  <span className="drawer__soon-detail">{section.detail}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <p className="drawer__foot">Epe Division, Lagos State</p>
-        </div>
-      </div>
     </>
   );
 }

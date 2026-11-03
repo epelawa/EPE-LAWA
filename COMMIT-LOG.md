@@ -92,3 +92,48 @@ while asleep. Each entry: exact time, commit SHA, reason, tests run, features ad
 ---
 
 **Next steps on autopilot:** Continue building Phase 2 (news engine: editorial transitions, publish flow), then Phase 3 (Who is Who), Phase 4 (radio status verification), Phase 5 (member accounts + comments), Phase 6 (forum), Phase 7 (business directory), Phase 8 (marketplace + Paystack payments), Phase 9 (hardening + release). Commit after every verified step. Update this log with each commit.
+
+### [Tue Nov 03] 9403a45 — feat(admin): restore supabase-access adapter with cookie-based sessions
+**Reason:** Recreate the admin auth adapter that tests depend on, with all session/token verification functions. Admin pages now build and render a real dashboard (no longer 503).
+
+**Tests:** supabase-adapter, supabase-password, supabase-session pass. `pnpm typecheck` 6/6, `pnpm build` 3/3.
+
+**Features added:**
+- getAdminAccessForToken, signInAdminWithPassword, signOutAdminSession, getAdminAccessForSession, respondToAdminRead
+- Admin dashboard, newsroom list, create draft, edit article pages
+- Direct publishing (no review gate) per product decision
+
+---
+
+### [Tue Nov 03] 2009326 — feat: direct publishing — articles publish immediately, no review gate
+**Reason:** Per user instruction, articles publish immediately when staff publish them — no separate review/approve gate.
+
+**Tests:** `pnpm typecheck` 6/6, `pnpm build` 3/3.
+
+**Features added:**
+- Removed review/approve workflow from docs (master plan, roadmap, PRD)
+- Removed review queue and publish queue from admin navigation
+- Dashboard quick actions updated to 'Publish approved'
+
+---
+
+### [Tue Nov 03] 76e02b9 — feat(admin): staff dashboard, newsroom list, create draft, edit article
+**Reason:** Build the admin Phase 2 pages for editorial operations.
+
+**Tests:** `pnpm typecheck` 6/6, `pnpm build` 3/3 (admin build passes).
+
+**Features added:**
+- Admin dashboard with real counts (drafts/review/approved/total)
+- Newsroom article list with state filter
+- Create draft page (server action → article_create RPC)
+- Edit article page (submit for review → article_submit RPC)
+- Premium header/footer shared with main app
+- supabase server client using service-role key
+
+---
+
+**Current state:** 21/28 tests pass. 7 failing:
+- 4 supabase-auth tests now pass (adapter recreated)
+- 3 remaining: foundation smoke test 'admin remains unavailable' (expects 503 but admin now renders dashboard), plus 2 others to investigate
+
+**Next:** Update admin dashboard test assertion, then continue Phase 3 (Who is Who), Phase 4 (radio status verification).

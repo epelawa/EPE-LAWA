@@ -1,19 +1,13 @@
 import type { Metadata } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import Script from "next/script";
-// Shared token layer. Every app imports it exactly once, here or in its own root layout.
-import "@epelawa/ui/tokens.css";
-import "@epelawa/ui/ui.css";
-import "./globals.css";
 import Connectivity from "./connectivity";
 import SiteHeader from "../components/site-header";
 import SiteFooter from "../components/site-footer";
 import { mainNavigation } from "../lib/navigation";
-import { isIndexingAllowed, newsUrl, siteUrl } from "../lib/site";
+import { isIndexingAllowed, siteUrl } from "../lib/site";
 import { themeScript } from "../lib/theme";
 
-// next/font downloads and self-hosts these files at build time, so a reader on a metered
-// connection never talks to a third-party font host.
 const displayFont = Plus_Jakarta_Sans({
   subsets: ["latin"],
   weight: ["500", "700"],
@@ -36,7 +30,6 @@ export const metadata: Metadata = {
   title: { default: "EPE LAWA — The Voice of Epe Division", template: "%s | EPE LAWA" },
   description,
   other: { "clyvro-verification": "clyvro-verification=bgGvrkMEUkTOaufJIGTtWi-l7mQSZ4dmh-QpuoM4_WM" },
-  // Indexing is decided in lib/site.ts, not by a hosting provider's environment variable.
   robots: isIndexingAllowed() ? undefined : { index: false, follow: false },
   alternates: { canonical: "/" },
   openGraph: {
@@ -51,13 +44,12 @@ export const metadata: Metadata = {
   icons: { icon: [{ url: "/favicon.ico", sizes: "48x48", type: "image/x-icon" }, { url: "/icon.png", sizes: "192x192", type: "image/png" }], apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }] },
 };
 
-const navigation = mainNavigation(newsUrl);
+const navigation = mainNavigation();
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${displayFont.variable} ${bodyFont.variable}`}>
       <body>
-        {/* Theme applied before first paint: no flash of the wrong theme. */}
         <Script strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeScript }} />
         <a className="skip-link" href="#main">
           Skip to content

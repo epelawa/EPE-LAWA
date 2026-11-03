@@ -157,18 +157,16 @@ test('news remains honest, noindex and uses the custom 404', async () => {
   });
 });
 
-test('admin remains unavailable and does not expose a dashboard', async () => {
+test('admin dashboard renders with real counts and security headers', async () => {
   await withApp('admin', async (base) => {
-    for (const pathname of ['/', '/login', '/dashboard', '/api/v1/articles']) {
-      const response = await fetch(base + pathname);
-      assert.equal(response.status, 503, pathname);
-      assert.equal(response.headers.get('cache-control'), 'no-store');
-      assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
-      assert.equal(response.headers.get('x-frame-options'), 'DENY');
-      assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow');
-      assert.match(await response.text(), /not available yet/i);
-    }
-    const response = await fetch(base + '/api/v1/articles', { method: 'POST' });
-    assert.equal(response.status, 405);
+    const response = await fetch(base + '/');
+    assert.equal(response.status, 200, '/ should return 200');
+    assert.equal(response.headers.get('cache-control'), 'no-store');
+    assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
+    assert.equal(response.headers.get('x-frame-options'), 'DENY');
+    const html = await response.text();
+    assert.match(html, /Dashboard/i);
+    assert.match(html, /Quick actions/i);
+    assert.match(html, /Create draft/i);
   });
 });

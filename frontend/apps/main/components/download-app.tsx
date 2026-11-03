@@ -1,7 +1,18 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { CloseIcon, DownloadIcon } from "@epelawa/ui";
+
+const CloseIcon = ({ size = 20 }: { size?: number }) => (
+  <svg className={`w-${size} h-${size}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+  </svg>
+);
+
+const DownloadIcon = ({ size = 18 }: { size?: number }) => (
+  <svg className={`w-${size} h-${size}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+  </svg>
+);
 
 /**
  * "Download on Google Play" that tells the truth.
@@ -66,61 +77,63 @@ export default function DownloadApp({ className = "" }: { className?: string }) 
       <button
         ref={triggerRef}
         type="button"
-        className={`ep-btn ep-btn--secondary play-store-btn ${className}`.trim()}
+        className={`btn-secondary ${className}`.trim()}
         aria-haspopup="dialog"
         aria-expanded={open}
         onClick={() => setOpen(true)}
       >
         <DownloadIcon size={18} />
-        <span className="ep-btn__label">Download on Google Play</span>
-        <span className="play-store-btn__badge">Coming soon</span>
+        <span className="ml-2">Download on Google Play</span>
+        <span className="ml-2 px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-200 text-slate-600">
+          Coming soon
+        </span>
       </button>
 
-      <div className="modal-root" data-open={open ? "true" : "false"}>
-        <button
-          type="button"
-          className="modal-scrim"
-          aria-label="Close dialog"
-          tabIndex={open ? 0 : -1}
-          onClick={() => setOpen(false)}
-        />
-
-        <div
-          ref={panelRef}
-          className="modal"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby={titleId}
-          aria-hidden={open ? undefined : "true"}
-          inert={!open}
-        >
-          <div className="modal__head">
-            <h2 className="modal__title" id={titleId}>
+      <div
+        className={`fixed inset-0 z-50 ${open ? "flex" : "hidden"}`}
+        aria-modal="true"
+        role="dialog"
+        aria-labelledby={titleId}
+      >
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setOpen(false)} />
+        <div className="fixed top-1/2 left-1/2 z-50 w-full max-w-md transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl p-6 sm:p-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-slate-900" id={titleId}>
               The Android app is in development
             </h2>
-            <button ref={closeRef} type="button" className="ep-icon-btn" aria-label="Close" onClick={() => setOpen(false)}>
+            <button
+              ref={closeRef}
+              type="button"
+              className="p-2 text-slate-600 rounded-xl hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              aria-label="Close"
+              onClick={() => setOpen(false)}
+            >
               <CloseIcon size={20} />
             </button>
           </div>
 
-          <div className="modal__body">
-            <p>
+          <div className="mb-6">
+            <p className="text-slate-600 mb-3">
               EPE LAWA for Android is being built as a real native application. It will be released on
               Google Play once it is ready. There is no download link yet, and we will not publish one
               before the build actually exists.
             </p>
-            <p>
+            <p className="text-sm text-slate-500 mb-3">
               <strong>On iPhone and iPad today:</strong> open this site in Safari, tap Share, then tap
-              <em> Add to Home Screen</em>. It installs as an app and works the same way.
+              <em> Add to Home Screen</em>.
             </p>
-            <p className="modal__note">
+            <p className="text-xs text-slate-400">
               On Android, the website already works in Chrome. Nothing is missing — the native app is for
               notifications and offline reading on a weak connection.
             </p>
           </div>
 
-          <div className="modal__actions">
-            <button type="button" className="ep-btn ep-btn--primary" onClick={() => setOpen(false)}>
+          <div className="flex">
+            <button
+              type="button"
+              className="btn-primary flex-1"
+              onClick={() => setOpen(false)}
+            >
               Continue on the web
             </button>
           </div>

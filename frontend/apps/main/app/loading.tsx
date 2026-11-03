@@ -1,4 +1,4 @@
-import { Container, Skeleton } from "@epelawa/ui";
+import Link from "next/link";
 
 /**
  * Route-level loading fallback. Next skips prefetching on a slow connection, so this really
@@ -7,13 +7,13 @@ import { Container, Skeleton } from "@epelawa/ui";
  */
 export default function Loading() {
   return (
-    <Container>
-      <div className="page-loading" aria-busy="true">
-        <span className="ep-sr-only">Loading this page</span>
-        <Skeleton shape="title" />
-        <Skeleton shape="line" />
-        <Skeleton shape="line-short" />
+    <div className="max-w-md mx-auto px-4 py-12 sm:px-6 lg:px-8">
+      <div className="space-y-4" aria-busy="true">
+        <span className="sr-only">Loading this page</span>
+        <div className="h-4 bg-slate-200 rounded-lg w-3/4 animate-pulse" />
+        <div className="h-4 bg-slate-200 rounded-lg w-1/2 animate-pulse" />
+        <div className="h-4 bg-slate-200 rounded-lg w-1/3 animate-pulse" />
       </div>
-    </Container>
+    </div>
   );
 }
