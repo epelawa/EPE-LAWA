@@ -163,6 +163,20 @@ while asleep. Each entry: exact time, commit SHA, reason, tests run, features ad
 
 ---
 
-**Current state:** All planning docs rewritten, all migrations applied to Supabase, Phase 1 public shell complete, admin Phase 2 pages built. Working tree is clean, committed and pushed to origin/main. Vercel build should now pass with packageManager fields set.
+### [Tue Nov 03] a1e7268 — feat(main): Who is Who public pages
+**Reason:** Build the Who is Who public pages (directory index + person profile pages).
 
-**Next steps on autopilot:** Continue building Phase 2 (news engine editorial transitions — create/publish flow is built, need to add category/tag management, version history). Then Phase 3 (Who is Who), Phase 4 (radio status verification), Phase 5 (member accounts + comments), Phase 6 (forum), Phase 7 (business directory), Phase 8 (marketplace + Paystack payments), Phase 9 (hardening + release). Commit after every verified step. Update this log with each commit.
+**Tests:** `pnpm typecheck` 6/6, `pnpm build` fails on Next.js 16.4.4 `_global-error.tsx` prerendering bug (Next.js built-in `_global-error.tsx` has `onClick` handlers that can't be prerendered)
+
+**Features added:**
+- /who-is-who directory page with person listings, offices, communities
+- /who-is-who/[slug] person profile page with offices, sources, verification badge
+- SVG icons instead of emojis throughout
+- Supabase server client for main app data fetching
+- Honest empty states when no data published
+
+---
+
+**Current state:** All planning docs rewritten, all migrations applied to Supabase, Phase 1 public shell complete, admin Phase 2 pages built, Who is Who public pages built. Working tree is clean, committed and pushed to origin/main. Vercel build fails on Next.js 16.4.4 `_global-error.tsx` built-in component bug — cannot fix from application code.
+
+**Next steps:** Continue building Phase 5 (member accounts + comments), Phase 6 (forum), Phase 7 (business directory), Phase 8 (marketplace + Paystack payments), Phase 9 (hardening + release). Commit after every verified step. Update this log with each commit.

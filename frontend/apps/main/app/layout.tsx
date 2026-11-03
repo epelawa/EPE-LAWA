@@ -5,6 +5,8 @@ import Script from "next/script";
 import Connectivity from "./connectivity";
 import SiteHeader from "../components/site-header";
 import SiteFooter from "../components/site-footer";
+import CookieBanner from "../components/cookie-banner";
+import NotificationPrompt from "../components/notification-prompt";
 import { mainNavigation } from "../lib/navigation";
 import { isIndexingAllowed, siteUrl } from "../lib/site";
 import { themeScript } from "../lib/theme";
@@ -47,6 +49,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         </main>
         <SiteFooter />
         <Connectivity />
+        <CookieBanner />
+        <NotificationPrompt />
       </body>
     </html>
   );
