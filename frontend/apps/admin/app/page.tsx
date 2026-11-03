@@ -9,7 +9,7 @@ import { Button, EmptyState, buttonClassName } from "@epelawa/ui";
  * orders needing action. Each is a link. Zero shows zero.
  */
 export default async function DashboardPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const [draftsResult, approvedResult] = await Promise.all([
     supabase.from("articles").select("id", { count: "exact", head: true }).eq("published_version_id", null).is("current_version_id", null).not("current_version_id", "is", null),

@@ -8,8 +8,8 @@ import { EmptyState, buttonClassName } from "@epelawa/ui";
  * Lists all articles with their current state, revision, and updated time.
  * Filter by state via query parameter (?state=draft|review|approved|rejected).
  */
-export default async function NewsroomPage({ searchParams }: { searchParams: { state?: string } }) {
-  const supabase = createClient();
+export default async function NewsroomPage({ searchParams }: { searchParams: Promise<{ state?: string }> }) {
+  const supabase = await createClient();
 
   let query = supabase
     .from("articles")
@@ -26,15 +26,13 @@ export default async function NewsroomPage({ searchParams }: { searchParams: { s
         title,
         state,
         version_number
-      ),
-      owner:owner_id (
-        id
       )
     `)
     .order("updated_at", { ascending: false });
 
-  if (searchParams.state) {
-    query = query.filter("current_version.state", "eq", searchParams.state);
+  const resolved = await searchParams;
+  if (resolved.state) {
+    query = query.filter("current_version.state", "eq", resolved.state);
   }
 
   const { data: articles, error } = await query;
@@ -51,14 +49,15 @@ export default async function NewsroomPage({ searchParams }: { searchParams: { s
             <p className="admin-empty__text">{error.message}</p>
           </div>
         </div>
-      </div>
-    </main>
-  );
+      </main>
+    );
+  }
 
-  const stateFilter = searchParams.state ?? "all";
-  const drafts = articles?.filter((a) => (a.current_version as any)?.state === "draft").length ?? 0;
-  const review = articles?.filter((a) => (a.current_version as any)?.state === "review").length ?? 0;
-  const approved = articles?.filter((a) => (a.current_version as any)?.state === "approved").length ?? 0;
+  
+  const stateFilter = resolved.state ?? "all";
+  const drafts = articles?.filter((a: any) => (a.current_version as any)?.state === "draft").length ?? 0;
+  const review = articles?.filter((a: any) => (a.current_version as any)?.state === "review").length ?? 0;
+  const approved = articles?.filter((a: any) => (a.current_version as any)?.state === "approved").length ?? 0;
 
   return (
     <main id="main" className="site-main" tabIndex={-1}>
@@ -107,7 +106,7 @@ export default async function NewsroomPage({ searchParams }: { searchParams: { s
               </tr>
             </thead>
             <tbody>
-              {articles.map((article) => {
+              {articles.map((article: any) => {
                 const cv = article.current_version as any;
                 const isPublished = !!article.published_version_id;
                 return (
@@ -139,7 +138,7 @@ export default async function NewsroomPage({ searchParams }: { searchParams: { s
             <h2 className="admin-empty__title">No articles yet</h2>
             <p className="admin-empty__text">
               Create your first draft to get started. Nothing appears publicly
-              until it is reviewed, approved, and published.
+              until it is published.
             </p>
             <div style={{ marginTop: "var(--space-6)" }}>
               <Link href="/newsroom/new" className={buttonClassName("primary")}>

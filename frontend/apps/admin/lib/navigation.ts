@@ -3,6 +3,7 @@ export type NavItem = {
   href: string;
   hint?: string;
   primary?: boolean;
+  external?: boolean;
 };
 
 const sectionPages = [
@@ -24,6 +25,11 @@ export function mainNavigation(): NavItem[] {
 export function primaryNavigation(items: NavItem[]): NavItem[] {
   return items.filter((item) => item.primary);
 }
+
+export const upcomingSections = [
+  { label: "Who is Who", detail: "Sources and review in progress" },
+  { label: "Forum", detail: "Opens with member accounts" },
+];
 
 export const footerNavigation = [
   { label: "Dashboard", href: "/" },

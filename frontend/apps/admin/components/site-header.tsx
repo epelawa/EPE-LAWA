@@ -240,7 +240,7 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
           <div className="drawer__soon">
             <p className="drawer__soon-title">Opening soon</p>
             <ul className="drawer__soon-list">
-              {upcomingSections.map((section) => (
+              {upcomingSections.map((section: any) => (
                 <li key={section.label} className="drawer__soon-item">
                   <span className="drawer__soon-label">{section.label}</span>
                   <span className="drawer__soon-detail">{section.detail}</span>
