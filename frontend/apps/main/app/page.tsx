@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { Container } from "@epelawa/ui";
+import type { ReactNode } from "react";
 import DownloadApp from "../components/download-app";
-import { newsUrl } from "../lib/site";
 
-const newsroomUrl = newsUrl ?? "https://news.epelawa.ng";
+const newsroomUrl = "https://news.epelawa.ng";
 
 const modules = [
   {
@@ -56,6 +55,10 @@ const coverage = [
   "The coast",
   "Lagos State",
 ];
+
+function Container({ children }: { children: ReactNode }) {
+  return <div className="ep-container">{children}</div>;
+}
 
 export default function Home() {
   return (
