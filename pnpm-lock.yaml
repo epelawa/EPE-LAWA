@@ -70,6 +70,12 @@ importers:
 
   frontend/apps/main:
     dependencies:
+      '@supabase/ssr':
+        specifier: ^0.12.7
+        version: 0.12.7(@supabase/supabase-js@2.118.0)
+      '@supabase/supabase-js':
+        specifier: ^2.118.0
+        version: 2.118.0
       '@swc/helpers':
         specifier: ^0.5.23
         version: 0.5.23
@@ -101,6 +107,9 @@ importers:
       tailwindcss:
         specifier: ^3.3.5
         version: 3.4.19(tsx@4.23.15)
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
 
 packages:
 
