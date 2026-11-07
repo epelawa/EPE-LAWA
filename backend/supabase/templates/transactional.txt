@@ -1,0 +1,17 @@
+EPE LAWA
+
+VERIFY YOUR EMAIL
+Use this link to verify your email address and finish setting up your EPE LAWA member account:
+{{ .ConfirmationURL }}
+
+If you did not request this account, ignore this message.
+
+---
+
+RESET YOUR PASSWORD
+A password reset was requested for your EPE LAWA account. Use this link to choose a new password:
+{{ .ConfirmationURL }}
+
+If you did not request a reset, ignore this message. Your password will not change.
+
+EPE LAWA

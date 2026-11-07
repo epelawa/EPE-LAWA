@@ -102,8 +102,9 @@ for (const file of files) {
 /** Run fn as a given member (authenticated + jwt sub), or as anon when uid is null. */
 async function as(uid, fn) {
   await db.exec('reset role');
+  await db.query("select set_config('request.jwt.claim.sub', $1, false)", [uid ?? '']);
   if (uid) {
-    await db.query("select set_config('request.jwt.claim.sub', $1, false)", [uid]);
+    // The JWT subject was set above; clear it explicitly for anonymous assertions.
   }
   await db.exec(uid ? 'set role authenticated' : 'set role anon');
   try {
@@ -126,6 +127,8 @@ async function fails(sql) {
 }
 
 const asFails = (uid, sql) => as(uid, () => fails(sql));
+
+
 
 // --------------------------------------------------------------------------- fixtures
 
@@ -166,6 +169,9 @@ await db.exec(`
     ('${U.publisher}', 'moderation.review'),
     ('${U.publisher}', 'order.manage');
 
+  insert into public.staff_capability_grants (user_id, capability) values
+    ('${U.publisher}', 'history.review');
+
   insert into public.profiles (user_id, handle, display_name) values
     ('${U.m1}', 'member_one', 'Member One'),
     ('${U.m2}', 'member_two', 'Member Two');
@@ -205,6 +211,81 @@ async function newPublishedArticle(title) {
   await as(U.publisher, () => db.query('select public.article_publish($1, $2)', [id, r]));
   return id;
 }
+
+test('History publishing requires approved copy, preserves private evidence, and rejects stale decisions', async () => {
+  const privateAccount = 'Private family account containing details not approved for publication.';
+  const sourceText = 'Private interview transcript held with the contributor only.';
+  const consentText = 'I consent to review but sensitive family details must remain private.';
+  const rightsText = 'Permission is limited to staff review and must not be published.';
+  const inserted = await rows(`
+    insert into public.history_contributions
+      (contributor_id,title,account,source_description,source_url,consent_version,consent_text,
+       community,category,family_name,lineage_description,rights_description)
+    values ($1,'Family account',$2,$3,'https://example.org/private-source','history-intake-v2',$4,
+       'Community','family-lineage','Private Family','Private lineage context',$5)
+    returning id
+  `, [U.m1, privateAccount, sourceText, consentText, rightsText]);
+  const id = inserted[0].id;
+  const missingText = await asFails(U.publisher, `select public.history_contribution_decide('${id}','published',null,null,null,null,null)`);
+  assert.match(missingText ?? '', /approved_public_account_required/);
+  assert.equal((await rows('select id from public.history_records')).length, 0);
+
+  const approvedText = 'Edited and redacted account with all sensitive family details removed.';
+  const approvedCitation = 'Approved public citation, distinct from the private submitted source.';
+  const approvedUrl = 'https://public.example.org/archive/item-7';
+  await as(U.publisher, () => db.query('select public.history_contribution_decide($1,$2,$3,$4,$5,$6,$7)', [id, 'published', approvedText, null, '   ', approvedCitation, approvedUrl]));
+  const publicRows = await as(null, () => rows('select id,title,account,category,family_name,lineage_description,community from public.history_records'));
+  assert.equal(publicRows.length, 1);
+  assert.equal(publicRows[0].account, approvedText);
+  assert.notEqual(publicRows[0].account, privateAccount);
+  assert.equal(publicRows[0].category, 'family-lineage');
+  assert.equal(publicRows[0].family_name, null);
+  assert.equal(publicRows[0].lineage_description, null);
+  assert.equal(publicRows[0].community, 'Community');
+  const sources = await as(null, () => rows('select citation,source_url from public.history_record_sources'));
+  assert.equal(sources.length, 1);
+  assert.equal(sources[0].citation, approvedCitation);
+  assert.equal(sources[0].source_url, approvedUrl);
+  assert.notEqual(sources[0].citation, sourceText);
+  assert.notEqual(sources[0].source_url, 'https://example.org/private-source');
+  assert.doesNotMatch(JSON.stringify([...publicRows, ...sources]), /Private interview transcript|private-source|sensitive family details must remain private|Permission is limited/i);
+  const decisionAudit = (await rows("select action,metadata->>'decision' as decision,metadata->>'record_id' as record_id from public.audit_events where action='history.contribution_decide' and resource_id=$1", [id]))[0];
+  assert.equal(decisionAudit.action, 'history.contribution_decide');
+  assert.equal(decisionAudit.decision, 'published');
+  assert.equal(decisionAudit.record_id, publicRows[0].id);
+  const anonymousPrivateRead = await as(null, () => fails('select id from public.history_contributions'));
+  assert.match(anonymousPrivateRead ?? '', /permission denied/);
+  const privateRow = (await as(U.publisher, () => rows(
+    'select account,source_description,consent_text,rights_description from public.history_contributions where id=$1', [id],
+  )))[0];
+  assert.equal(privateRow.account, privateAccount);
+  assert.equal(privateRow.source_description, sourceText);
+  assert.equal(privateRow.consent_text, consentText);
+  assert.equal(privateRow.rights_description, rightsText);
+
+  const repeated = await asFails(U.publisher, `select public.history_contribution_decide('${id}','published','${approvedText}',null,null,'Approved citation',null)`);
+  assert.match(repeated ?? '', /history_contribution_already_reviewed/);
+  const revision = await rows(`
+    insert into public.history_contributions
+      (contributor_id,title,account,source_description,consent_version,consent_text,rights_description)
+    values ($1,'Revision request','A private account with sufficient words for review.',
+      'Private source details','history-intake-v2','Contributor consent text long enough for validation.',
+      'Rights restricted to staff review.') returning id
+  `, [U.m2]);
+  await as(U.publisher, () => db.query("select public.history_contribution_decide($1,'needs_revision',null,null,null,null,null)", [revision[0].id]));
+  assert.equal((await rows("select count(*)::int as n from public.history_records where title='Revision request'"))[0].n, 0);
+  const explicitlyApproved = await rows(`
+    insert into public.history_contributions
+      (contributor_id,title,account,source_description,consent_version,consent_text,community,category,family_name,lineage_description,rights_description)
+    values ($1,'Approved family account','Private account that is not public by default.','Private source','history-intake-v2','Consent text for staff review.','Community','family-lineage','Private House','Private lineage details','Rights reviewed by staff.') returning id
+  `, [U.m2]);
+  await as(U.publisher, () => db.query('select public.history_contribution_decide($1,$2,$3,$4,$5,$6,$7)', [explicitlyApproved[0].id, 'published', approvedText, 'Approved House', 'Approved lineage text', approvedCitation, null]));
+  const approvedFields = (await as(null, () => rows("select family_name,lineage_description from public.history_records where title='Approved family account'")))[0];
+  assert.equal(approvedFields.family_name, 'Approved House');
+  assert.equal(approvedFields.lineage_description, 'Approved lineage text');
+  assert.equal((await rows("select count(*)::int as n from pg_proc where proname='history_contribution_decide' and pg_get_function_identity_arguments(oid)='p_contribution_id uuid, p_decision text, p_public_account text, p_public_family_name text, p_public_lineage_description text, p_public_citation text, p_public_source_url text'"))[0].n, 1);
+  assert.equal((await rows("select count(*)::int as n from pg_proc where proname='history_contribution_decide' and pronargs <> 7"))[0].n, 0);
+});
 
 // --------------------------------------------------------------------------- structure
 test('every public table has row level security enabled', async () => {
