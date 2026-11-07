@@ -1,5 +1,6 @@
 import RadioPlayer from "../../components/radio-player";
 import { RadioIcon } from "../../components/icons";
+import { EmptyPanel, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "../../components/design-system";
 import { createClient } from "../../lib/supabase";
 
 export const dynamic = "force-dynamic";
@@ -20,14 +21,78 @@ export default async function RadioPage() {
     else { programmes = p.data ?? []; slots = s.data ?? []; episodes = e.data ?? []; }
   } catch { unavailable = true; }
 
-  return <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
-    <header className="mb-8"><p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Community radio</p><h1 className="text-3xl font-bold tracking-tight">EPE LAWA Radio</h1><p className="mt-2 leading-relaxed text-muted-foreground">Live streaming is not yet available. Browse approved programme information, the schedule and published archive episodes.</p></header>
-    <RadioPlayer />
-    {unavailable ? <p className="mt-6 rounded-lg border p-4 text-sm" role="status">Programme information is temporarily unavailable. Please try again later.</p> : <>
-      <section className="mt-8 rounded-lg border bg-card p-6"><h2 className="text-lg font-bold">Programmes</h2>{programmes.length ? <ul className="mt-3 grid gap-3">{programmes.map(x=><li key={x.id}><h3 className="font-semibold">{x.name}</h3>{x.description?<p className="text-sm text-muted-foreground">{x.description}</p>:null}</li>)}</ul> : <p className="mt-3 text-sm text-muted-foreground">No approved programmes have been published yet.</p>}</section>
-      <section className="mt-6 rounded-lg border bg-card p-6"><h2 className="text-lg font-bold">Schedule</h2>{slots.length ? <ul className="mt-3 grid gap-2">{slots.map(x=><li key={x.id}>{["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][x.day_of_week]} · {x.starts_at.slice(0,5)}–{x.ends_at.slice(0,5)} · {x.programmes[0]?.name}{x.note?` — ${x.note}`:""}</li>)}</ul> : <p className="mt-3 text-sm text-muted-foreground">No programme schedule has been published yet.</p>}</section>
-      <section className="mt-6 rounded-lg border bg-card p-6"><h2 className="text-lg font-bold">Archive</h2>{episodes.length ? <ul className="mt-3 grid gap-4">{episodes.map(x=><li key={x.id}><h3 className="font-semibold">{x.title}</h3><p className="text-sm text-muted-foreground">{x.programmes[0]?.name}{x.aired_on?` · ${x.aired_on}`:""}</p>{x.description?<p className="mt-1 text-sm">{x.description}</p>:null}{x.external_url?<audio className="mt-2 w-full" controls preload="none" src={x.external_url}>Audio playback is not supported by this browser.</audio>:null}</li>)}</ul> : <p className="mt-3 text-sm text-muted-foreground">No published archive episodes are available yet.</p>}</section>
-    </>}
-    <div className="mt-6 flex items-center gap-2 text-xs text-muted-foreground"><RadioIcon size={16}/>Stream availability is not verified; no live status is claimed.</div>
-  </div>;
+  return (
+    <PageFrame className="ui-stack">
+      <PageIntro
+        eyebrow="Community radio"
+        title="EPE LAWA Radio"
+        description="A home for community voices, programmes and conversations. Browse approved programme information, the schedule and published archive episodes."
+        meta={<StatusBadge tone="warning">Live stream not yet available</StatusBadge>}
+      />
+      <RadioPlayer />
+      {unavailable ? (
+        <EmptyPanel
+          title="Programme information is temporarily unavailable"
+          description="Please try again later. The live stream has not been verified and no live status is claimed."
+          icon={<RadioIcon size={22} />}
+        />
+      ) : (
+        <div className="ui-stack">
+          <Panel>
+            <SectionHeading eyebrow="On air and in the community" title="Programmes" />
+            {programmes.length ? (
+              <ul className="ui-list ui-stack-sm">
+                {programmes.map((programme) => (
+                  <li className="ui-item" key={programme.id}>
+                    <h3 className="ui-item-title">{programme.name}</h3>
+                    {programme.description ? <p className="ui-muted">{programme.description}</p> : null}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <EmptyPanel title="No programmes published yet" description="Approved programme information will appear here when it is available." />
+            )}
+          </Panel>
+
+          <Panel>
+            <SectionHeading eyebrow="Weekly listings" title="Schedule" />
+            {slots.length ? (
+              <ul className="ui-list">
+                {slots.map((slot) => (
+                  <li className="ui-item ui-row" key={slot.id}>
+                    <span className="ui-number">{["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][slot.day_of_week]}</span>
+                    <div className="ui-stack-sm">
+                      <h3 className="ui-item-title">{slot.programmes[0]?.name}</h3>
+                      <p className="ui-meta"><span>{slot.starts_at.slice(0, 5)}–{slot.ends_at.slice(0, 5)}</span>{slot.note ? <span>{slot.note}</span> : null}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <EmptyPanel title="No schedule published yet" description="There are no programme times to show at the moment." />
+            )}
+          </Panel>
+
+          <Panel>
+            <SectionHeading eyebrow="Listen again" title="Archive" description="Published episodes from the EPE LAWA Radio community." />
+            {episodes.length ? (
+              <ul className="ui-list">
+                {episodes.map((episode) => (
+                  <li className="ui-item ui-stack-sm" key={episode.id}>
+                    <h3 className="ui-item-title">{episode.title}</h3>
+                    <p className="ui-meta"><span>{episode.programmes[0]?.name}</span>{episode.aired_on ? <span>{episode.aired_on}</span> : null}</p>
+                    {episode.description ? <p className="ui-muted">{episode.description}</p> : null}
+                    {episode.external_url ? <audio className="mt-2 w-full" controls preload="none" src={episode.external_url}>Audio playback is not supported by this browser.</audio> : null}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <EmptyPanel title="No published episodes available" description="When archive episodes are published, you will be able to find them here." />
+            )}
+          </Panel>
+        </div>
+      )}
+      <p className="ui-meta" role="status"><RadioIcon size={16} aria-hidden="true" />Stream availability is not verified; no live status is claimed.</p>
+    </PageFrame>
+  );
 }
