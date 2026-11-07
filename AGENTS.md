@@ -1,170 +1,39 @@
 # EPE LAWA — Agent Working Rules
 
-**Read this file and `docs/00-master-plan.md` before any task.** The master plan is the authority on
-scope and phase order. If this file and the master plan ever disagree, the master plan wins and this
-file must be corrected.
+Read this file and `docs/00-master-plan.md` before project work. `docs/01-product-requirements.md` is the detailed local source of truth.
 
----
+## 1. Current scope
 
-## 1. What this project is
+The current release includes all eight client-approved web areas (sections 3.1–3.8): Trending News; Itan Ilu Mi / My Community History; Chat Forum / Digital Village Square; Map & Navigation; Epe Business Directory & Marketplace; Historical Sites & Tourism; EPE LAWA Radio; and Who is Who in Epe. Cross-cutting requirements: member signup/email verification/login/recovery, secure staff sessions and capabilities, admin analytics, news publishing, branded transactional email templates, audit, privacy, accessibility and full Playwright testing. Native mobile apps alone are deferred. Keep all six section 5 future enhancements in the full roadmap, distinct from the eight current web areas.
 
-EPE LAWA is a community, news, cultural and commerce platform for Epe Division, Lagos State, Nigeria.
-It ships as a **web application first** (installable PWA) with a **React Native + Expo** native shell
-to follow, sharing one Supabase backend.
+## 2. Truthfulness and privacy
 
-Approved build scope, in dependency order:
+Never invent local facts, history, people, businesses, prices, reviews, map locations, metrics or article content. Use approved public records only; distinguish loading, empty, error and denied states. A trend requires real signals; a verification badge requires recorded human review. Current map code builds safe outbound Google Maps search/directions URLs only; there is no configured Maps API key or verified Places/geocoding integration. Offline maps are optional future work. Do not claim email or Paystack providers are operational without evidence.
 
-1. News publishing (§3.1)
-2. Who is Who — notable people and public office holders (§3.8)
-3. Live radio (§3.7)
-4. Public accounts, comments and notifications
-5. Community forum — the digital village square (§3.3)
-6. Business directory (§3.5, discovery half)
-7. Marketplace and payments (§3.5, commerce half)
-8. Hardening and release
+Test content stays private in isolated environments. Production is read-only: no test articles, orders, payments or other writes. Never expose private member, seller, delivery or verification data.
 
-**Not in scope, do not build:** Speak Up Epe reporting, heritage archive, tourism pages, events
-calendar, scholarship/job board, e-learning, multi-language, AI assistant, map navigation, native app
-binaries. These are approved as *future product*, not as current work. Do not scaffold them, do not
-leave dead links to them, do not imply they exist.
+## 3. Identity, authorization and publishing
 
----
+Authorization is enforced server-side and in database policies; hiding a button is not authorization. Staff and member sessions are separate. Protected staff actions require a verified staff session and a fresh capability check. An active verified staff member with `article.publish` may publish directly; no second reviewer is required. Every transition uses the expected revision, rejects stale revisions and is audited. Never trust browser-supplied prices or payment state; payment flows remain unavailable until provider setup and isolated testing are evidenced.
 
-## 2. Truthfulness — non-negotiable
+## 4. Verification and delivery
 
-- **Never invent Epe facts.** No invented history, lineages, place names, office holders, statistics,
-  business names, prices, testimonials, radio schedules or stream URLs.
-- **No demo data, ever.** No seeded articles, users, businesses, reviews, orders or fake counters. No
-  seeding scripts. Legitimate data is created through authorised operations only.
-- **Empty is a design state.** Every list, feed, directory and dashboard must have a real, accessible,
-  distinct empty state. Empty ≠ loading ≠ error ≠ denied. Never fill a gap with placeholder content.
-- **"LIVE" means verified.** Never render a live indicator, a play button state, or a "now playing"
-  label unless status was actually checked. An unavailable stream gets an honest unavailable state.
-- **A "verified" badge means a human checked a source.** It must record who verified, when, and what
-  source. Never a self-declared flag, never cosmetic.
-- **Never claim untested work is done.** Write "not verified", not "should work".
+Use Node.js 22 and pnpm 10. Run `pnpm typecheck`, `pnpm build`, and `pnpm test` when appropriate; a green result must come from a completed command. Full Playwright coverage is required across routes, auth/staff actions and responsive widths 320/375/768/1024/1440 CSS px, plus keyboard/accessibility/reduced-motion checks. Do not claim unrun tests or unverified integrations passed. Production reads only.
 
----
+No credentials, secrets or real personal information in fixtures, logs or commit messages. Add environment-variable names to `.env.example`, never values.
 
-## 3. Money, identity and deletion — extra care every time
+## 5. Git and deployment
 
-These paths get scrutiny on every change, no exceptions:
+This task authorizes documentation/copy changes only. Do not commit, push, merge or otherwise change Git state unless explicitly authorized in the active task. Record deployment/preview status as unverified unless inspected with evidence.
 
-- **Payments.** Never trust a client-supplied price, total, currency or status. Recompute totals on
-  the server. Verify Paystack webhooks by signature. Make every payment operation idempotent on the
-  provider reference. Never mark an order paid from a browser callback.
-- **Authorisation.** Enforce on the server and at the database (RLS). Hiding a button is not
-  authorisation. A user must never read another user's drafts, orders, messages or profile data.
-- **Deletion.** Account deletion, business deletion and content takedown are flagged in the PR. Prefer
-  soft delete for anything with an audit or moderation trail. Never silently delete production data.
+## 6. Project architecture
 
----
+Public app: `frontend/apps/main`; staff app: `frontend/apps/admin`; shared UI: `frontend/packages`; tests: `frontend/tests`; migrations: `backend/supabase/migrations`; docs: `docs/`. Existing database objects may cover additional historical features; that inventory does not expand current product scope. Never rewrite historical migrations/schemas as a documentation shortcut.
 
-## 4. Definition of done — every step, no exceptions
+## 7. Design direction
 
-A step is not done until **all** of these are true *and you have run them*:
+Use Sckooly’s public-site structure as reference, with original EPE-LAWA branding and owner-provided red `#DA251C`, coral `#FF4A3D`, navy `#17253A`, light blue `#EAF3FB`, warm ivory `#FCFAF7`, white and charcoal direction. Do not copy assets. Use restrained surfaces, SVG icons (no emoji), visible focus, accessible contrast, 44×44px touch targets and reduced motion. Clearly label any genuine sponsored placement.
 
-```sh
-pnpm install --frozen-lockfile   # only when dependencies changed
-pnpm typecheck                   # must pass, zero errors
-pnpm build                       # must pass, all three apps
-pnpm test                        # must pass
-```
+## 8. Documentation
 
-Then check by hand:
-
-- [ ] `TypeScript strict` holds — no new `any` outside a documented escape hatch
-- [ ] No secrets, keys, tokens or real personal data in code, logs, fixtures or commit messages
-- [ ] Responsive at 320 / 375 / 768 / 1024 / 1440 CSS px — no horizontal overflow
-- [ ] Keyboard reachable, visible `focus-visible`, no `div` where a semantic element belongs
-- [ ] Empty, loading, error and denied states all render and are distinguishable
-- [ ] No dead links, no fake buttons, no non-functional controls
-- [ ] New environment variables added to `.env.example`
-
-**Report the real command output.** If a check fails, say so, fix it or report it — never report a
-check as passing that you did not run.
-
----
-
-## 5. Git
-
-- Work on `main` unless the developer explicitly asks for a feature branch.
-- **Commit and push after each verified step.** One logical change per commit.
-- Every commit must be preceded by a green `typecheck` + `build` + `test`. Do not commit a red tree.
-- Commit message format: `area: what changed` — e.g. `news: add article publish transition`,
-  `docs: rebaseline scope for five-module build`.
-- **Never** force-push, rewrite published history, `reset --hard` without explicit instruction, or
-  delete a branch you did not create.
-- `.github/` is permitted. CI is expected.
-
----
-
-## 6. Repository layout
-
-```
-frontend/
-  apps/
-    main/       # public platform: landing, who is who, radio, forum, business, marketplace
-    news/       # news publication (separate host)
-    admin/      # staff and moderator dashboard
-  packages/     # shared browser-safe UI and contracts when justified
-  tests/
-backend/
-  supabase/
-    migrations/ # reviewed migrations — the schema source of truth
-  packages/     # auth, editorial, http-security, and domain packages
-  tests/
-docs/           # planning, architecture, operations
-```
-
-Rules:
-
-- Server-only code never enters a browser bundle. Shared server modules stay under `backend/`.
-- Migrations are the source of truth. Never edit an applied migration — write a new one.
-- No circular dependencies between packages.
-- Do not add a new top-level folder without saying why in the PR.
-
----
-
-## 7. Stack — do not substitute without asking
-
-Full detail in `docs/13-tech-stack.md`. Summary:
-
-LANGUAGE TypeScript strict · FRAMEWORK Next.js App Router · UI plain CSS + custom properties
-(keeping Tailwind/shadcn as the named default until a component library justifies it) · ICONS
-lucide-react · ANIMATION framer-motion, restrained · DATES `date-fns` (never moment) · VALIDATION
-zod, both directions · SERVER STATE TanStack Query · CLIENT STATE Zustand · AUTH Supabase Auth ·
-DB Supabase Postgres + RLS · STORAGE Cloudflare R2 · EMAIL Resend · PAYMENTS Paystack ·
-HOSTING Vercel · SEARCH Postgres full-text first · EDITOR Tiptap ·
-NATIVE React Native + Expo (not Capacitor, not a WebView)
-
-If the framework already provides it, use that first. Do not add a dependency to save ten lines.
-
----
-
-## 8. Design direction
-
-**Modern Riverine Editorial.** Civic, cultural, editorial — not a SaaS template.
-
-- Palette (locked): Riverine Teal `#0B5A60` · Palm Green `#2E7D32` · Ochre Gold `#E5A93C` · Deep
-  Charcoal `#1C1E21` · Warm Ivory `#F9F8F6`. Tokens and computed contrast pairs are in
-  `docs/05-design-system.md`.
-- **Banned:** purple gradients, neon, glassmorphism without a stated reason, glow, floating blobs,
-  sparkles, generic "AI" visual language, oversized meaningless typography, three-card marketing rows
-  with invented metrics, emoji in headings or product UI.
-- Radius: 2–3 values maximum. Hover lift: 2–4 px. Icons proportional to their text.
-- Copy: plain, specific, human. No "Unlock growth", "Take your business to the next level",
-  "Launch faster". No em-dash overuse.
-- Authentic Epe imagery only, licensed and credited. Never generic African stock presented as Epe.
-- Before substantial UI work, record what you actually looked at (Mobbin, Pinterest, editorial and
-  accessibility sources) in `docs/15-ui-research.md`. Do not copy protected screens, assets or brands.
-
----
-
-## 9. Documentation
-
-- Update the relevant doc in the same commit as the change it describes. Documentation that lags the
-  code is a bug.
-- Record material scope changes in `docs/00-master-plan.md` and get developer approval.
-- Never document imagined functionality.
-- Keep `docs/14-tracker.md` current — `[x]` requires named evidence, `[ ]` means not finished.
+Keep active scope, tracker and progress evidence consistent. `[x]` requires named evidence. Archive/historical database inventory may mention legacy objects factually, but must not present them as current release features.

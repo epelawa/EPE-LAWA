@@ -1,165 +1,52 @@
 # EPE LAWA — User Journeys
 
-**Document:** 02
-**Status:** Active. These are hypotheses derived from the client brief, **not research findings**. No
-interviews, usability sessions or analytics have been conducted.
+**Status:** Active hypotheses from the client brief, not research findings. No interviews, usability sessions or analytics are claimed.
 
----
+## Actors
 
-## 1. Actors
+Visitors and readers need useful, trustworthy public information; members need secure participation; community contributors need privacy and consent; business owners need accurate listings; staff need bounded capabilities and an audit trail.
 
-| Actor | Needs | Constraint |
-| --- | --- | --- |
-| Visitor | Understand what this is; find something useful | Unknown to the platform, probably on mobile |
-| Reader (home) | Local news they can trust | Cheap Android, metered data, intermittent power |
-| Reader (diaspora) | To feel connected; the archive | Different timezone, may need to share |
-| Listener | The programme, live or recorded | Cannot stream for an hour on 200 MB of data |
-| Member | To say something and be heard | Wants their name; may want to stay semi-anonymous |
-| Business owner | To be found, then to sell | Will judge the product in 10 seconds on a phone |
-| Buyer | To pay safely and know it worked | Distrusts online payment in Nigeria, with reason |
-| Journalist | To get a story published | May only have a phone |
-| Editor | To stop something wrong being published | Needs the workflow to not be in the way |
-| Moderator | To remove harm quickly and accountably | Needs a record, not a mood |
+## Public journeys
 
----
+### J1 — Discover the platform
+A visitor opens the public site, understands its purpose and navigates to any of the eight in-scope modules: Trending News, Itan Ilu Mi / My Community History, Chat Forum / Digital Village Square, Map & Navigation, or Epe Business Directory & Marketplace. Empty sections are represented honestly, not with invented content or fabricated “coming soon” claims.
 
-## 2. Public journeys
+### J2 — Read news
+A reader finds a published story through latest/category/search, opens its canonical URL, sees byline/date and any correction, and shares it. Drafts and private previews never appear in public lists, search or metadata.
 
-### J1 — First visit
+### J3 — Contribute community history
+A contributor submits a history item with provenance and consent. It remains private until an authorized reviewer checks sources, rights and privacy. A reader sees only approved published records and can request correction or takedown.
 
-Visitor opens `epelawa.ng` on a phone. Within a few seconds they should be able to answer: what is
-this, who is it for, what can I do.
+### J4 — Join the Digital Village Square
+A member signs up, verifies email and logs in, reads guidelines, participates in a discussion and reports harmful content. Moderation is reasoned and audited; member email and private details are not public.
 
-1. Lands on the home page. Reads one sentence that says what EPE LAWA is.
-2. Sees the real sections. Every one of them is live or honestly marked.
-3. Taps the one that matters to them.
+### J5 — Find a place or route
+A visitor searches manually for a street, landmark or published business and chooses an outbound Google Maps search/directions link. The page does not request GPS by default or expose private addresses. It does not imply a live Maps API integration.
 
-**Fails if:** the page describes a product that does not exist yet; a section link 404s; anything on
-the page is a fabricated metric, testimonial or "coming soon".
+### J7 — Discover historical sites and tourism
+A visitor browses sourced, approved destinations and follows verified visit information or a clearly external map handoff. Unknown hours, access or location details are omitted, not guessed.
+### J8 — Listen to EPE LAWA Radio
+A listener opens the radio page and sees accurate stream status, programme information and available archive records. If stream/provider readiness is unverified or unavailable, the page says so clearly.
+### J9 — Find a person in Who is Who
+A visitor searches verified public profiles and sees only approved fields. Corrections/removal are available; no profile or office claim is fabricated.
+### J6 — Find a business or product
+A visitor searches approved listings and sees accurate public details. Owners submit listings for review; authenticated members may use supported review/order flows. Ordering/payment remains unavailable unless the provider path is configured and tested in a private sandbox. No unverified listing appears endorsed.
 
-### J2 — Reading the news
+## Staff journeys
 
-1. Taps News → `news.epelawa.ng`.
-2. Sees the lead story, then a feed by recency.
-3. Filters by category, or searches.
-4. Opens an article, reads it, sees author and date and any correction notice.
-5. Shares the canonical link.
+### J10 — Publish a story
+A staff member signs into the protected staff app. A verified active account with `article.publish` can save a private draft and publish its current revision directly; no second reviewer is required. The server checks capability and expected revision, rejects stale revisions, and audits each transition. Preview is private and session-gated.
 
-**Fails if:** a draft appears; the shared link resolves to something else; the correction notice is
-hidden; search returns unpublished work.
+### J11 — Review and moderate community content
+A capable staff member checks history provenance/consent or forum reports, takes an authorized action with a reason, and leaves an audit record. Unpublished submissions and evidence remain private.
 
-### J3 — Listening to the programme
+### J12 — Review business records
+A staff reviewer checks the supplied listing information and records verification evidence before publication. Payment-backed featured placement is used only when a real, date-bounded record and tested provider flow exist.
 
-1. Taps Radio.
-2. Sees whether it is live, and the schedule if it is not.
-3. Presses play deliberately — nothing autoplays.
-4. Buffering is visible; a drop is acknowledged; an outage offers the archive.
+## Cross-cutting acceptance needs
 
-**Fails if:** "LIVE" shows when nothing has been verified; the spinner never ends; the page looks
-broken instead of unavailable.
+Low data use and responsive layouts; keyboard, screen-reader, contrast and reduced-motion accessibility; minimal collection and private email; distinct loading/empty/error/denied states; secure member recovery; secure staff sessions and fresh capability checks; admin analytics from real queries; branded transactional templates without claiming provider delivery is operational; auditability; Playwright coverage for the full eight-module journeys. Test content remains private in isolated environments; production reads only.
 
-### J4 — Finding out who someone is
+## Research limitations
 
-1. Searches Who is Who for a name, or filters by office.
-2. Opens the profile: biography, offices with term dates, sources, verification badge.
-3. Taps the badge and reads what verification actually means.
-4. Submits a correction if something is wrong.
-
-**Fails if:** a claim has no source; the badge appeared without a recorded review; a correction goes
-into a void with no acknowledgement.
-
-### J5 — Finding a business
-
-1. Opens Businesses, filters by category and area.
-2. Opens a profile: hours, phone, WhatsApp, address with a landmark, photos, reviews.
-3. Calls or taps through to WhatsApp.
-4. Leaves a review if signed in.
-
-**Fails if:** an unverified business looks endorsed; hours are prose; the phone number is dead; a
-review can be posted anonymously.
-
-### J6 — Buying something
-
-1. Opens a product, adds to cart.
-2. Sees the cart with prices, then checkout with delivery options.
-3. Pays through Paystack.
-4. Returns to an honest status page: paid, pending or failed — with a way forward.
-
-**Fails if:** the total on the confirmation differs from the total charged; a failed payment leaves a
-dead end; the order shows "paid" before the webhook confirms it.
-
-### J7 — Joining the conversation
-
-1. Registers with email and a handle, verifies the email.
-2. Opens a forum category, reads a thread, replies.
-3. Reports a post that breaks the guidelines.
-4. Later: a moderator action is explained to them.
-
-**Fails if:** registration asks for more than it needs; the handle collides silently; the report goes
-nowhere; nobody ever knows what happened.
-
----
-
-## 3. Staff journeys
-
-### J8 — Publishing a story
-
-1. Journalist signs in to `admin.epelawa.ng`.
-2. Creates a draft: title, summary, body, category, author, tags, image with credit.
-3. Previews it privately.
-4. Submits for review.
-5. Editor requests a change or approves.
-6. Publisher publishes.
-
-**Fails if:** the journalist can approve their own work; preview is reachable without a session; a
-save failure reports success; publish does not purge the public cache.
-
-### J9 — Correcting a published story
-
-1. Editor opens the article, creates a new version.
-2. Edits, submits, is approved by someone else.
-3. Publishes. A dated correction notice appears publicly. The old version stays in history.
-
-**Fails if:** the correction silently replaces the text; the notice is missing; history is lost.
-
-### J10 — Moderating
-
-1. Moderator opens the queue, sorted by age.
-2. Reads the report in context.
-3. Hides the post with a reason, or dismisses with a reason.
-4. The action is recorded and the member is told.
-
-**Fails if:** a hide can happen without a reason; the audit row is missing; the same moderator can
-silently remove anything with no trail.
-
-### J11 — Verifying a business
-
-1. Reviewer opens the submission.
-2. Checks the phone number, the address and a photo.
-3. Verifies, records what was checked and when.
-4. Or rejects with a reason the owner can act on.
-
-**Fails if:** the badge can be set without a recorded check.
-
----
-
-## 4. Cross-cutting needs
-
-| Need | Where it shows up |
-| --- | --- |
-| Data cost | Every image sized and lazy; no autoplay; no third-party script unless needed |
-| Trust | Sources on claims, corrections visible, no invented anything |
-| Offline | Cached shell, honest connectivity state, retry not a dead end |
-| Language | English now. Yoruba is a future decision requiring translation and review |
-| Accessibility | Keyboard, screen reader, contrast — every journey above |
-| Privacy | Contact detail minimum; email never public; deletion actually deletes |
-| Reputation | Who is Who and business verification are the two places we can do real harm |
-
----
-
-## 5. What is not researched
-
-Who actually uses this, what they can afford to spend on data, whether they will pay online, whether
-moderation can be staffed, and what "Epe Division" means to people in each of its communities. All of
-that requires real interviews and must not be invented. Design decisions taken on assumption are
-recorded as assumptions.
+User needs, data affordability, willingness to transact, moderation capacity and the meaning of community boundaries require real research. They must not be invented or presented as findings.

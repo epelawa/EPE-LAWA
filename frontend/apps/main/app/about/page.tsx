@@ -3,7 +3,7 @@ import Link from "next/link";
 import { pageMetadata } from "../../lib/metadata";
 
 const description =
-  "What EPE LAWA is, who runs it, where it broadcasts and how it is funded.";
+  "About EPE LAWA, a web platform for Epe Division featuring news, community history, discussion, maps, local businesses, tourism, radio and Who is Who.";
 
 export const metadata: Metadata = pageMetadata({ title: "About", description, path: "/about" });
 
@@ -16,19 +16,19 @@ export default function AboutPage() {
         </p>
         <h1 className="text-2xl font-bold tracking-tight mb-4">About EPE LAWA</h1>
         <p className="text-muted-foreground mb-6 leading-relaxed">
-          A community, news and broadcasting platform for Epe Division, Lagos State.
+          A web platform for people in Epe Division, Lagos State, and those connected to the community.
         </p>
 
         <h2 className="mt-10 mb-3 text-lg font-bold">What EPE LAWA is</h2>
         <p className="mb-6">
-          EPE LAWA is a place for reporting, public information about people and public office
-          holders, radio, community conversation and local businesses in Epe Division.
+          EPE LAWA brings together local news, Itan Ilu Mi community history, the Digital Village Square,
+          map and navigation links, and an Epe business directory and marketplace. Information and
+          listings are published only when approved; availability of individual features may vary.
         </p>
 
         <h2 className="mt-10 mb-3 text-lg font-bold">Who runs it</h2>
         <p className="mb-6">
-          EPE LAWA is run by its founding team. Editorial staff details will appear here once
-          confirmed.
+          EPE LAWA is run by its founding team. Editorial staff details will appear here once confirmed.
         </p>
 
         <h2 className="mt-10 mb-3 text-lg font-bold">Contact</h2>

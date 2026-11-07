@@ -1,0 +1,37 @@
+# EPE-LAWA — Timestamped Progress Log
+
+**Time zone:** Africa/Lagos (UTC+01:00).
+**Last scope update:** 2026-11-07.
+
+## Current scope and rules
+
+The current release includes all eight client-approved sections (3.1–3.8): Trending News; Itan Ilu Mi / My Community History; Chat Forum / Digital Village Square; Map & Navigation; Epe Business Directory & Marketplace; Historical Sites & Tourism; EPE LAWA Radio; and Who is Who in Epe. Cross-cutting requirements are web member signup/verification/login/recovery, secure staff sessions/capabilities, admin analytics, news publishing, branded transactional email templates, audit, privacy, accessibility and full Playwright testing.
+
+This scope corrects stale documentation. Historical entries below record prior statements at the time and are not current scope or proof that features exist. Use Sckooly’s public-site structure with original EPE-LAWA content and the owner-provided red/coral/navy/ivory direction; do not copy assets.
+
+An active, verified staff member with `article.publish` may publish directly without a required second reviewer. Stale revisions are denied and transitions audited. Test content stays private in isolated environments; production is read-only. Current Map behavior builds safe outbound Google Maps search/directions URLs only; no API key or verified Places/geocoding integration exists. Offline maps are optional future work. Email and Paystack provider readiness are unconfirmed.
+
+## Historical timeline and evidence
+
+- **2026-11-07 18:50:45** — Earlier Node 22 typecheck and optimized builds passed before later route/auth/UI edits; rerun required.
+- **2026-11-07 18:51:07** — Earlier full unit/schema/smoke suite reported 47 pass, 4 fail, 1 skip; stale and not a current release result.
+- **2026-11-07 18:52:24–18:52:56** — Earlier focused admin auth/session tests reported 6/6 with local mocks; not full E2E evidence.
+- **2026-11-07 19:11:49** — Supplied Vercel log: `main` commit `8885e16` failed due to unresolved helper imports; Turbo warned configured env names were filtered.
+- **2026-11-07 19:15:57** — Read-only fetch of public alias returned older site content, not the current branch.
+- **2026-11-07 19:16:15** — Vercel API inspection required authorization; current preview state not verified.
+- **2026-11-07 19:07–19:22** — Earlier task notes recorded changing scope decisions, including an interim all-section direction. These are historical only; the authoritative current scope is all eight sections 3.1–3.8.
+
+## Current verification snapshot
+
+No current full Playwright, release-gate, provider delivery, live RLS, or deployment/preview pass is asserted in this log. Re-run the relevant checks and record exact output. No isolated Supabase development branch was created. No production writes are authorized.
+
+## Immediate verification priorities
+
+1. Verify all eight in-scope routes and member authentication journeys.
+2. Verify protected staff sessions, capability checks, analytics, direct authorized article publishing, stale revision denial and audit.
+3. Test private history submissions, forum moderation and business/order workflows in isolated environments.
+4. Confirm current map behavior is represented as outbound URL handoff, not API integration.
+5. Run full Playwright at required responsive sizes and accessibility checks; record results without overclaiming.
+6. Keep email/Paystack-dependent actions unavailable until provider setup and isolated testing are confirmed.
+
+- **2026-11-07 20:43** — Owner reaffirmed web scope: all eight client brief areas 3.1–3.8, plus cross-cutting auth/admin/email/security/privacy/analytics/testing. Only native mobile apps are deferred. Preserve section 5 future enhancements (event ticketing, emergency contacts, scholarship/job board, e-learning, English/Yoruba, AI local assistant) in the complete roadmap. Documentation/public-copy scope correction only; no tests or deployments run.

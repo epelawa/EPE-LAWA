@@ -13,7 +13,7 @@ import { isIndexingAllowed, siteUrl } from "../lib/site";
 import { themeScript } from "../lib/theme";
 
 const description =
-  "What EPE LAWA is, who runs it, where it broadcasts and how it is funded.";
+  "News, community history, local discussion, maps and business information for Epe Division.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
