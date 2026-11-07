@@ -19,6 +19,11 @@ const nextConfig: NextConfig = {
         // NEXT_PUBLIC_SITE_URL so the Cloud Run domain is never hardcoded.
         { key: "Access-Control-Allow-Origin", value: siteUrl },
       ],
+    }, {
+      source: "/map",
+      // The map requests location only after an explicit user action. All other
+      // routes keep the deny-by-default policy above; camera/microphone stay off.
+      headers: [{ key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(self)" }],
     }];
   },
 };

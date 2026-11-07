@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import MapSearch from "./map-search";
 import { createClient } from "../../lib/supabase";
+import { PageFrame, PageIntro, TextLink } from "../../components/design-system";
 
 export const metadata: Metadata = {
   title: "Map & Navigation",
@@ -19,9 +20,9 @@ export default async function MapPage() {
   } catch {
     // Map search remains usable through its clearly disclosed outbound fallback.
   }
-  return <div className="ep-container py-12">
-    <header className="mb-8"><p className="page-header__eyebrow">Map & Navigation</p><h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Find your way around Epe.</h1><p className="mt-3 max-w-2xl leading-relaxed text-muted-foreground">Find a published business from the EPE LAWA directory or search a street, landmark or address on Google Maps. Choose whether to share your device location; it is never requested automatically.</p></header>
+  return <PageFrame className="ui-stack">
+    <PageIntro eyebrow="Map & navigation" title="Find your way around Epe." description="Find a published business from the EPE LAWA directory or search a street, landmark or address on Google Maps. Choose whether to share your device location; it is never requested automatically." />
     <MapSearch businesses={businesses}/>
-    {businesses.length === 100 ? <p className="mt-4 text-sm text-muted-foreground">Business matches are drawn from the first 100 published listings. Browse the <a className="underline" href="/business-directory">full business directory</a>.</p> : null}
-  </div>;
+    {businesses.length === 100 ? <p className="ui-muted">Business matches are drawn from the first 100 published listings. Browse the <TextLink href="/business-directory">full business directory</TextLink>.</p> : null}
+  </PageFrame>;
 }
