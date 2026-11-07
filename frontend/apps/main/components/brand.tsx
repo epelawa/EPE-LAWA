@@ -34,6 +34,7 @@ export function BrandLockup({ size = 32 }: { size?: number }) {
             alt=""
             width={markWidth}
             height={size}
+            style={{ width: markWidth, height: size }}
             decoding="async"
             aria-hidden="true"
             onError={() => setImageFailed(true)}

@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
 import Script from "next/script";
+import { Inter } from "next/font/google";
 import Connectivity from "./connectivity";
 import SiteHeader from "../components/site-header";
 import SiteFooter from "../components/site-footer";
@@ -34,10 +35,11 @@ export const metadata: Metadata = {
 };
 
 const navigation = mainNavigation();
+const uiFont = Inter({ subsets: ["latin"], display: "swap", variable: "--font-ui-face" });
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className="font-sans">
+    <html lang="en" className={uiFont.variable}>
       <body>
         <Script strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeScript }} />
         <a className="skip-link" href="#main">

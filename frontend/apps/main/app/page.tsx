@@ -1,180 +1,41 @@
 import Link from "next/link";
-import { ArrowRightIcon, ArrowUpRightIcon } from "../components/icons";
+import { ArrowRightIcon, ArrowUpRightIcon, NewspaperIcon, BuildingIcon, UsersIcon } from "../components/icons";
+import { EmptyPanel } from "../components/design-system";
 import { formatPublishedDate } from "../lib/dates";
 import { getLatestStories } from "../lib/home-data";
 
 const modules = [
-  {
-    number: "01",
-    name: "Trending News",
-    href: "/news",
-    description: "Read current reporting and updates from across Epe Division.",
-    tone: "red",
-  },
-  {
-    number: "02",
-    name: "Ìtàn Ilú Mi",
-    href: "/itan-ilu-mi",
-    description: "Explore community history, culture and local knowledge.",
-    tone: "coral",
-  },
-  {
-    number: "03",
-    name: "Chat Forum",
-    href: "/forum",
-    description: "Join conversation with people across the Epe community.",
-    tone: "blue",
-  },
-  {
-    number: "04",
-    name: "Map & Navigation",
-    href: "/map",
-    description: "Search for useful places and find directions around the division.",
-    tone: "red",
-  },
-  {
-    number: "05",
-    name: "Epe Business Directory & Marketplace",
-    href: "/business-directory",
-    description: "Find local businesses and browse available products in one place.",
-    tone: "coral",
-  },
-  {
-    number: "06",
-    name: "Historical Sites & Tourism",
-    href: "/tourism",
-    description: "Explore published heritage places, visiting information and directions.",
-    tone: "blue",
-  },
-  {
-    number: "07",
-    name: "EPE LAWA Radio",
-    href: "/radio",
-    description: "Listen to the programme and check published schedules and episodes.",
-    tone: "red",
-  },
-  {
-    number: "08",
-    name: "Who is Who in Epe",
-    href: "/who-is-who",
-    description: "Find published profiles, biographies and public-office records.",
-    tone: "coral",
-  },
-] as const;
+  {name:"Trending News",href:"/news",description:"Local reporting. The stories that matter here."},
+  {name:"Ìtàn Ilú Mi",href:"/itan-ilu-mi",description:"Community history, kept with care."},
+  {name:"Chat Forum",href:"/forum",description:"A thoughtful space for local conversation."},
+  {name:"Map & Navigation",href:"/map",description:"Useful places and your next direction."},
+  {name:"Epe Business Directory & Marketplace",href:"/business-directory",description:"Discover the people building local business."},
+  {name:"Historical Sites & Tourism",href:"/tourism",description:"Heritage, places and reasons to explore."},
+  {name:"EPE LAWA Radio",href:"/radio",description:"Programmes, schedules and community voices."},
+  {name:"Who is Who in Epe",href:"/who-is-who",description:"The people and public roles shaping Epe."},
+];
 
 export default async function Home() {
   const stories = await getLatestStories(3);
+  return <div className="public-home">
+    <section className="home-hero" aria-labelledby="home-title"><div className="ep-container home-hero__grid">
+      <div className="home-hero__copy"><p className="ui-eyebrow">Epe Division, Lagos State</p><h1 id="home-title">The place.<br />The people.<br /><em>Our Epe.</em></h1><p className="home-hero__lede">A shared home for the stories, conversations and everyday discoveries that bring Epe together.</p><div className="ui-actions"><Link href="/news" className="btn-primary">Discover what’s happening <ArrowRightIcon size={17} aria-hidden="true" /></Link><Link href="/itan-ilu-mi" className="ui-text-link">Know our story <ArrowUpRightIcon size={17} aria-hidden="true" /></Link></div><p className="home-hero__note"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M12 21s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg>Rooted in the community. Open to everyone.</p></div>
+      <figure className="home-hero__art"><img src="/epe-lagoon-editorial.webp" alt="Original editorial illustration of canoes and a lagoon-side community" width="1280" height="1600" fetchPriority="high" /><figcaption><span><strong>Life, by the lagoon.</strong>An illustrated community perspective.</span><ArrowUpRightIcon size={20} aria-hidden="true" /></figcaption></figure>
+    </div></section>
+    <div className="ep-container home-topics" aria-label="A platform for community life"><span>Stories worth knowing</span><span>History worth keeping</span><span>Places worth finding</span><span>People worth connecting</span></div>
 
-  return (
-    <div className="public-home">
-      <section className="landing-hero" aria-labelledby="landing-title">
-        <div className="ep-container landing-hero__inner">
-          <div className="landing-hero__copy">
-            <p className="eyebrow"><span aria-hidden="true" /> Epe Division · Lagos State</p>
-            <h1 id="landing-title">A closer view of <span>Epe.</span></h1>
-            <p className="landing-hero__lede">Stories, voices and useful connections from the place we call home.</p>
-            <p className="landing-hero__body">
-              EPE LAWA brings community information together in one place, with room for local
-              reporting, culture, conversation and discovery.
-            </p>
-            <div className="landing-actions">
-              <Link className="btn-primary" href="/news">
-                Explore EPE LAWA <span aria-hidden="true"><ArrowRightIcon size={18} /></span>
-              </Link>
-              <Link className="landing-link" href="/itan-ilu-mi">
-                Explore community history <span aria-hidden="true"><ArrowUpRightIcon size={18} /></span>
-              </Link>
-            </div>
-          </div>
-          <div className="hero-note" aria-label="A home for the many ways Epe connects">
-            <span className="hero-note__overline">Rooted here</span>
-            <p>Local stories.<br />Shared knowledge.<br /><strong>One community.</strong></p>
-            <span className="hero-note__rule" aria-hidden="true" />
-            <span className="hero-note__caption">A community platform for Epe Division</span>
-          </div>
-        </div>
-      </section>
+    <section className="ep-container home-section" aria-labelledby="start-title"><div className="home-section__head"><div><p className="ui-eyebrow">Start somewhere familiar</p><h2 id="start-title">Closer to the things<br />that make us, us.</h2></div><p>Catch up on local life, trace the stories before us, or find a business around the corner. There’s more than one way to belong.</p></div><div className="home-features">
+      <Link className="home-feature" href="/news"><span className="home-feature__icon"><NewspaperIcon size={20}/></span><h3>Read the room.</h3><p>News and perspectives from across Epe Division.</p><span className="home-feature__arrow" aria-hidden="true"><ArrowUpRightIcon size={20}/></span></Link>
+      <Link className="home-feature home-feature--soft" href="/itan-ilu-mi"><span className="home-feature__icon"><UsersIcon size={20}/></span><h3>Remember our roots.</h3><p>Explore Ìtàn Ilú Mi—our communities, culture and shared history.</p><span className="home-feature__arrow" aria-hidden="true"><ArrowUpRightIcon size={20}/></span></Link>
+      <Link className="home-feature home-feature--accent" href="/business-directory"><span className="home-feature__icon"><BuildingIcon size={20}/></span><h3>Keep it local.</h3><p>Find businesses, browse products and make useful connections.</p><span className="home-feature__arrow" aria-hidden="true"><ArrowUpRightIcon size={20}/></span></Link>
+    </div></section>
 
-      <section className="welcome-band" aria-labelledby="welcome-title">
-        <div className="ep-container welcome-band__inner">
-          <p className="eyebrow">Made for Epe</p>
-          <h2 id="welcome-title">Many ways to stay connected.</h2>
-          <p>Keep up with what matters, find useful local information, and take part in the conversations that shape everyday community life.</p>
-        </div>
-      </section>
+    <section className="ep-container home-index" aria-labelledby="explore-title"><div className="home-section__head"><div><p className="ui-eyebrow">The community index</p><h2 id="explore-title">All of Epe.<br />A little closer.</h2></div><p>Eight ways into community life. Follow your curiosity, find what you need, and come back for what’s next.</p></div><ol className="home-index__list">{modules.map((item,i)=><li key={item.href}><Link className="home-index__link" href={item.href}><span className="ui-number">{String(i+1).padStart(2,"0")}</span><div><h3>{item.name}</h3><p>{item.description}</p></div><ArrowUpRightIcon size={18} aria-hidden="true" /></Link></li>)}</ol></section>
 
-      <section className="module-section" aria-labelledby="modules-title">
-        <div className="ep-container">
-          <div className="section-heading">
-            <div><p className="eyebrow">Explore EPE LAWA</p><h2 id="modules-title">One community, many stories.</h2></div>
-            <p>Read, remember, connect, find your way and support local businesses.</p>
-          </div>
-          <ol className="module-grid">
-            {modules.map((module) => (
-              <li key={module.href}>
-                <Link className={`module-card module-card--${module.tone}`} href={module.href}>
-                  <span className="module-card__number">{module.number}</span>
-                  <span className="module-card__title">{module.name}</span>
-                  <span className="module-card__description">{module.description}</span>
-                  <span className="module-card__arrow" aria-hidden="true"><ArrowUpRightIcon size={18} /></span>
-                </Link>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
+    <section className="ep-container home-section home-news" aria-labelledby="latest-title"><div className="home-news__intro"><p className="ui-eyebrow">From the newsroom</p><h2 id="latest-title">Here’s the latest.</h2><p>Reporting published by EPE LAWA. No filler, just the stories available now.</p><Link className="ui-text-link" href="/news">All news <ArrowRightIcon size={17} aria-hidden="true" /></Link></div><div>{stories.state === "ok" && stories.items.length ? <ul className="ui-list">{stories.items.map(story=><li key={story.slug}><Link className="home-story" href={`/news/${story.slug}`}><span className="ui-meta">{story.category}{story.category && story.publishedAt ? " · " : ""}{formatPublishedDate(story.publishedAt)}</span><h3>{story.title}</h3>{story.summary ? <p>{story.summary}</p> : null}<ArrowUpRightIcon size={18} aria-hidden="true" /></Link></li>)}</ul> : <EmptyPanel title={stories.state === "ok" ? "The next story starts here." : "The newsroom is taking a moment."} description={stories.state === "ok" ? "No stories have been published yet. New reporting will appear here as it is published." : "Stories could not be loaded right now. You can still visit the news page and try again."} actions={<Link href="/news" className="btn-secondary">Visit the newsroom</Link>} />}</div></section>
 
-      <section className="record-section" aria-labelledby="stories-title">
-        <div className="ep-container record-layout">
-          <div className="record-intro">
-            <p className="eyebrow">From the newsroom</p><h2 id="stories-title">The latest stories.</h2>
-            <p>Read reporting published by EPE LAWA.</p>
-            <Link className="text-cta" href="/news">Go to news <ArrowRightIcon size={18} aria-hidden="true" /></Link>
-          </div>
-          <div className="record-content">
-            {stories.state === "ok" && stories.items.length > 0 ? (
-              <ul className="story-list">
-                {stories.items.map((story) => {
-                  const published = formatPublishedDate(story.publishedAt);
-                  return (
-                    <li key={story.slug}>
-                      <Link href={`/news/${story.slug}`} className="story-row">
-                        <span className="story-row__meta">{story.category}{story.category && published ? " · " : ""}{published}</span>
-                        <span className="story-row__title">{story.title}</span>
-                        {story.summary ? <span className="story-row__summary">{story.summary}</span> : null}
-                        <span className="story-row__arrow" aria-hidden="true"><ArrowUpRightIcon size={18} /></span>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            ) : stories.state === "ok" ? (
-              <div className="empty-message"><h3>No stories have been published yet.</h3><p>New reporting will appear here when it is published.</p></div>
-            ) : (
-              <div className="empty-message empty-message--error"><h3>Stories could not be loaded.</h3><p>Please try again later. The newsroom remains available.</p><Link href="/news">Visit the news page</Link></div>
-            )}
-          </div>
-        </div>
-      </section>
+    <section className="ep-container home-section home-community" aria-labelledby="community-title"><div className="home-community__poster" aria-hidden="true"><span>Our place. Our voices.</span><p>Good things<br />begin with<br /><em>connection.</em></p><UsersIcon size={42}/></div><div className="home-community__copy"><p className="ui-eyebrow">A place to take part</p><h2 id="community-title">Not just a place to read.<br />A place to belong.</h2><p>Ask a question, add a perspective, share a memory, or put your business on the map. EPE LAWA makes room for the people behind the place.</p><div className="ui-actions"><Link className="btn-primary" href="/forum">Join the conversation <ArrowRightIcon size={17} aria-hidden="true" /></Link><Link className="ui-text-link" href="/guidelines">Our community guidelines</Link></div></div></section>
 
-      <section className="community-section" aria-labelledby="community-title">
-        <div className="ep-container community-layout">
-          <div><p className="eyebrow">A place to take part</p><h2 id="community-title">Built around people and place.</h2></div>
-          <div className="community-copy">
-            <p>From local reporting to history, conversation and discovery, EPE LAWA is a growing home for the ways people connect with Epe.</p>
-            <p>Stories and local information appear when they are verified and approved, not filled in with guesses.</p>
-            <Link className="text-cta" href="/forum">Join the conversation <ArrowRightIcon size={18} aria-hidden="true" /></Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="closing-cta" aria-labelledby="closing-title">
-        <div className="ep-container closing-cta__inner">
-          <p className="eyebrow">EPE LAWA · Epe Division</p><h2 id="closing-title">Stay close to what’s happening here.</h2>
-          <p>Start with the latest reporting and explore the community platform.</p>
-          <Link className="btn-primary btn-primary--light" href="/news">Read the latest <ArrowRightIcon size={18} aria-hidden="true" /></Link>
-        </div>
-      </section>
-    </div>
-  );
+    <section className="ep-container home-join" aria-labelledby="join-title"><p className="ui-eyebrow">There’s a place for you here</p><h2 id="join-title">Stay connected.<br />Make it your community.</h2><p>Create a member account to take part in conversations and contribute to the growing story of Epe.</p><div className="ui-actions"><Link className="btn-primary" href="/auth">Become a member <ArrowUpRightIcon size={17} aria-hidden="true" /></Link><Link className="btn-ghost" href="/about">Get to know EPE LAWA</Link></div></section>
+  </div>;
 }

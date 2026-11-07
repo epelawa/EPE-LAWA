@@ -1,15 +1,1 @@
-:root {
-  --ep-ui-primary: #da251c;
-  --ep-ui-primary-strong: #b51f18;
-  --ep-ui-coral: #ff4a3d;
-  --ep-ui-navy: #17253a;
-  --ep-ui-sky: #eaf3fb;
-  --ep-ui-ivory: #fcfaf7;
-  --ep-ui-ink: #1c1e21;
-  --ep-ui-muted: #4a4f57;
-  --ep-ui-border: #82888f;
-  --ep-ui-success: #166534;
-  --ep-ui-warning: #8a5a00;
-  --ep-ui-error: #b3261e;
-  --ep-ui-radius: 0.875rem;
-}
+:root { --ep-ui-primary:#60436D; --ep-ui-primary-strong:#3F2B49; --ep-ui-lilac:#EDE7F1; --ep-ui-limestone:#FAF9F6; --ep-ui-ink:#29242D; --ep-ui-muted:#665F6B; --ep-ui-border:#DED9E1; --ep-ui-accent:#DBE8AD; --ep-ui-success:#247044; --ep-ui-warning:#8A5A00; --ep-ui-error:#AD302B; --ep-ui-radius:1.1rem; }
