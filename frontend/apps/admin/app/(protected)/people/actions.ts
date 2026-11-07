@@ -8,6 +8,7 @@ const val = (form: FormData, key: string) => {
   const value = form.get(key);
   return typeof value === "string" ? value.trim() : "";
 };
+
 const uuid = (value: string) => /^[0-9a-f-]{36}$/i.test(value);
 
 function finish(error?: string): never {
@@ -23,7 +24,10 @@ export async function savePerson(form: FormData): Promise<void> {
   const revision = Number(val(form, "revision"));
   const biography = val(form, "biography");
   const achievements = val(form, "achievements");
-  if (name.length < 2 || name.length > 160 || !Number.isSafeInteger(revision)) finish("invalid");
+
+  if (name.length < 2 || name.length > 160 || !Number.isSafeInteger(revision)) {
+    finish("invalid");
+  }
 
   if (id) {
     if (!uuid(id)) finish("invalid");
@@ -43,6 +47,7 @@ export async function savePerson(form: FormData): Promise<void> {
       p_contributor_consent: false,
     });
     if (error) finish("save-failed");
+
     const { error: achievementsError } = await db.rpc("people_update_achievements", {
       p_person_id: id,
       p_expected_revision: revision + 1,
@@ -50,7 +55,7 @@ export async function savePerson(form: FormData): Promise<void> {
     });
     if (achievementsError) finish("achievements-failed");
   } else {
-    const { error } = await db.rpc("people_create", {
+    const { data: createdId, error } = await db.rpc("people_create_with_achievements", {
       p_full_name: name,
       p_preferred_name: val(form, "preferred_name") || null,
       p_community: val(form, "community") || null,
@@ -60,8 +65,9 @@ export async function savePerson(form: FormData): Promise<void> {
       p_portrait_key: val(form, "portrait_key") || null,
       p_portrait_alt: val(form, "portrait_alt") || null,
       p_portrait_credit: val(form, "portrait_credit") || null,
+      p_achievements: achievements || null,
     });
-    if (error) finish("create-failed");
+    if (error || !createdId) finish("create-failed");
   }
 
   finish();
@@ -72,7 +78,9 @@ export async function addSource(form: FormData): Promise<void> {
   const personId = val(form, "person_id");
   const citation = val(form, "citation");
   const url = val(form, "url");
-  if (!uuid(personId) || citation.length < 3 || citation.length > 2000 || (url && !/^https:\/\//.test(url))) finish("invalid");
+  if (!uuid(personId) || citation.length < 3 || citation.length > 2000 || (url && !/^https:\/\//.test(url))) {
+    finish("invalid");
+  }
   const { error } = await db.rpc("people_source_add", {
     p_person_id: personId,
     p_kind: val(form, "kind"),
@@ -120,7 +128,9 @@ export async function changeStatus(form: FormData): Promise<void> {
   const personId = val(form, "person_id");
   const revision = Number(val(form, "revision"));
   const status = val(form, "status");
-  if (!uuid(personId) || !Number.isSafeInteger(revision) || !["draft", "review", "published", "withdrawn"].includes(status)) finish("invalid");
+  if (!uuid(personId) || !Number.isSafeInteger(revision) || !["draft", "review", "published", "withdrawn"].includes(status)) {
+    finish("invalid");
+  }
   const { error } = await db.rpc("people_set_status", {
     p_person_id: personId,
     p_status: status,
