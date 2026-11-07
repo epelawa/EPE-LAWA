@@ -1,7 +1,239 @@
 import { createClient } from "../../../lib/supabase";
 import { decideTourismSubmission } from "../../../lib/tourism-actions";
-export const dynamic="force-dynamic"; export const fetchCache="force-no-store";
-type Submission={id:string;name:string;description:string;visitor_context:string|null;visit_details:string|null;source_citation:string;source_url:string|null;media_url:string|null;media_rights:string|null;submitted_at:string};
-export default async function TourismReviewPage({searchParams}:{searchParams:Promise<{result?:string}>}){const params=await searchParams;let denied=false,failed=false,rows:Submission[]=[];try{const supabase=await createClient();const cap=await supabase.rpc("has_capability",{p_capability:"tourism.review"});if(cap.error)failed=true;else if(cap.data!==true)denied=true;else{const result=await supabase.from("tourism_submissions").select("id,name,description,visitor_context,visit_details,source_citation,source_url,media_url,media_rights,submitted_at").eq("status","pending").order("submitted_at").limit(100);if(result.error)failed=true;else rows=(result.data??[]) as Submission[];}}catch{failed=true;}
- return <div className="ep-container py-10"><header className="mb-8"><p className="page-header__eyebrow">Editorial workspace · Tourism</p><h1 className="text-3xl font-bold">Historical Sites &amp; Tourism review</h1><p className="mt-2 max-w-3xl text-muted-foreground">Review source provenance and publication rights before making a destination public. Hours, prices, access and directions require separate verification. This queue never publishes automatically.</p></header>{params.result==="saved"?<p className="mb-5 rounded-lg border p-4" role="status">Review decision saved.</p>:null}{params.result==="stale"?<p className="mb-5 rounded-lg border p-4" role="alert">The decision could not be applied. The submission may already have been reviewed or the service is unavailable.</p>:null}{params.result==="denied"||denied?<section className="card p-6" role="alert"><h2 className="text-xl font-bold">Tourism review access required</h2><p className="mt-2 text-muted-foreground">This staff account does not have the tourism.review capability.</p></section>:failed?<section className="card p-6" role="alert"><h2 className="text-xl font-bold">Review queue unavailable</h2><p className="mt-2 text-muted-foreground">The queue could not be verified. No submission data is shown.</p></section>:rows.length===0?<section className="card p-6" role="status"><h2 className="text-xl font-bold">No pending Tourism submissions</h2><p className="mt-2 text-muted-foreground">The queue currently has no pending records.</p></section>:<ol className="space-y-6">{rows.map((row)=><li className="card p-6" key={row.id}><p className="text-sm text-muted-foreground">Submitted {new Intl.DateTimeFormat("en",{dateStyle:"medium",timeZone:"UTC"}).format(new Date(row.submitted_at))}</p><h2 className="mt-1 text-2xl font-bold">{row.name}</h2><p className="mt-4 whitespace-pre-wrap leading-relaxed">{row.description}</p>{row.visitor_context?<p className="mt-3 whitespace-pre-wrap"><strong>Visitor context:</strong> {row.visitor_context}</p>:null}{row.visit_details?<p className="mt-3 whitespace-pre-wrap"><strong>Proposed visit details:</strong> {row.visit_details}</p>:null}<div className="mt-5 rounded-lg bg-muted/50 p-4"><h3 className="font-semibold">Provenance and rights evidence</h3><p className="mt-2">{row.source_url?<a className="underline" href={row.source_url} rel="noreferrer">{row.source_citation}</a>:row.source_citation}</p>{row.media_url?<p className="mt-2">Media: <a className="underline" href={row.media_url} rel="noreferrer">Open submitted media</a>. Rights basis: {row.media_rights||"Not supplied"}</p>:<p className="mt-2">No media supplied.</p>}</div><form action={decideTourismSubmission} className="mt-5 grid gap-4"><input type="hidden" name="submission_id" value={row.id}/><fieldset className="grid gap-3 sm:grid-cols-2"><legend className="mb-2 font-semibold">Details to publish, only where personally verified</legend><div><label className="mb-1 block text-sm" htmlFor={`slug-${row.id}`}>Canonical slug (required to publish)</label><input className="input w-full" id={`slug-${row.id}`} name="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" maxLength={180}/></div><div><label className="mb-1 block text-sm" htmlFor={`location-${row.id}`}>Location label</label><input className="input w-full" id={`location-${row.id}`} name="location_label" maxLength={300}/></div><div><label className="mb-1 block text-sm" htmlFor={`directions-${row.id}`}>Verified map search phrase</label><input className="input w-full" id={`directions-${row.id}`} name="directions_query" maxLength={300}/></div><div className="grid grid-cols-2 gap-2"><div><label className="mb-1 block text-sm" htmlFor={`lat-${row.id}`}>Verified latitude</label><input className="input w-full" id={`lat-${row.id}`} name="latitude" type="number" step="any" min="-90" max="90"/></div><div><label className="mb-1 block text-sm" htmlFor={`lon-${row.id}`}>Verified longitude</label><input className="input w-full" id={`lon-${row.id}`} name="longitude" type="number" step="any" min="-180" max="180"/></div></div>{[["opening_hours","Opening hours"],["price_details","Prices"],["access_details","Access details"]].map(([name,label])=><div key={name}><label className="mb-1 block text-sm" htmlFor={`${name}-${row.id}`}>{label}</label><textarea className="input min-h-16 w-full" id={`${name}-${row.id}`} name={name} maxLength={1000}/></div>)}</fieldset><label className="flex gap-3 text-sm"><input className="mt-1 size-4" type="checkbox" name="provenance_verified" value="yes"/><span>I independently checked the cited source and provenance for this destination.</span></label><label className="flex gap-3 text-sm"><input className="mt-1 size-4" type="checkbox" name="rights_verified" value="yes"/><span>I verified publication rights for the submitted content and any media attached.</span></label><p className="text-sm text-muted-foreground">Coordinates are not required. If supplied, verify them against a reliable source. Leave unknown visitor fields blank.</p><div className="flex flex-wrap gap-3"><button className="btn-primary" name="decision" value="published">Verify &amp; publish</button><button className="btn-secondary" name="decision" value="needs_revision">Request revision</button><button className="btn-secondary" name="decision" value="rejected">Reject</button></div></form></li>)}</ol>}</div>;
+import {
+  EmptyPanel,
+  Notice,
+  PageFrame,
+  PageIntro,
+  Panel,
+  SectionHeading,
+  StatusBadge,
+} from "@epelawa/ui";
+
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
+
+type Submission = {
+  id: string;
+  name: string;
+  description: string;
+  visitor_context: string | null;
+  visit_details: string | null;
+  source_citation: string;
+  source_url: string | null;
+  media_url: string | null;
+  media_rights: string | null;
+  submitted_at: string;
+};
+
+export default async function TourismReviewPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ result?: string }>;
+}) {
+  const params = await searchParams;
+  let denied = false;
+  let failed = false;
+  let rows: Submission[] = [];
+
+  try {
+    const supabase = await createClient();
+    const cap = await supabase.rpc("has_capability", {
+      p_capability: "tourism.review",
+    });
+    if (cap.error) failed = true;
+    else if (cap.data !== true) denied = true;
+    else {
+      const result = await supabase
+        .from("tourism_submissions")
+        .select(
+          "id,name,description,visitor_context,visit_details,source_citation,source_url,media_url,media_rights,submitted_at",
+        )
+        .eq("status", "pending")
+        .order("submitted_at")
+        .limit(100);
+      if (result.error) failed = true;
+      else rows = (result.data ?? []) as Submission[];
+    }
+  } catch {
+    failed = true;
+  }
+
+  return (
+    <PageFrame className="ui-stack">
+      <PageIntro
+        eyebrow="Editorial workspace · Tourism"
+        title="Historical Sites &amp; Tourism review"
+        description="Review source provenance and publication rights before making a destination public. Hours, prices, access and directions require separate verification. This queue never publishes automatically."
+        meta={<StatusBadge>Staff review</StatusBadge>}
+      />
+
+      {params.result === "saved" ? (
+        <Notice tone="success" role="status">
+          Review decision saved.
+        </Notice>
+      ) : null}
+      {params.result === "stale" ? (
+        <Notice tone="warning" role="alert">
+          The decision could not be applied. The submission may already have been reviewed or the service is unavailable.
+        </Notice>
+      ) : null}
+
+      {params.result === "denied" || denied ? (
+        <EmptyPanel
+          title="Tourism review access required"
+          description="This staff account does not have the tourism.review capability."
+        />
+      ) : failed ? (
+        <EmptyPanel
+          title="Review queue unavailable"
+          description="The queue could not be verified. No submission data is shown."
+        />
+      ) : rows.length === 0 ? (
+        <EmptyPanel
+          title="No pending Tourism submissions"
+          description="The queue currently has no pending records."
+        />
+      ) : (
+        <ol className="ui-list ui-stack">
+          {rows.map((row) => (
+            <li key={row.id}>
+              <Panel className="ui-stack">
+                <div className="ui-meta">
+                  <span>
+                    Submitted{" "}
+                    {new Intl.DateTimeFormat("en", {
+                      dateStyle: "medium",
+                      timeZone: "UTC",
+                    }).format(new Date(row.submitted_at))}
+                  </span>
+                  <StatusBadge tone="warning">Pending review</StatusBadge>
+                </div>
+                <SectionHeading title={row.name} />
+                <div className="ui-prose">
+                  <p className="whitespace-pre-wrap">{row.description}</p>
+                  {row.visitor_context ? (
+                    <p className="whitespace-pre-wrap">
+                      <strong>Visitor context:</strong> {row.visitor_context}
+                    </p>
+                  ) : null}
+                  {row.visit_details ? (
+                    <p className="whitespace-pre-wrap">
+                      <strong>Proposed visit details:</strong> {row.visit_details}
+                    </p>
+                  ) : null}
+                </div>
+
+                <section className="ui-subtle ui-stack-sm" aria-labelledby={`evidence-${row.id}`}>
+                  <SectionHeading
+                    eyebrow="Source check"
+                    title="Provenance and rights evidence"
+                    id={`evidence-${row.id}`}
+                  />
+                  <p>
+                    {row.source_url ? (
+                      <a href={row.source_url} rel="noreferrer">
+                        {row.source_citation}
+                      </a>
+                    ) : (
+                      row.source_citation
+                    )}
+                  </p>
+                  {row.media_url ? (
+                    <p>
+                      Media: {" "}
+                      <a href={row.media_url} rel="noreferrer">
+                        Open submitted media
+                      </a>
+                      . Rights basis: {row.media_rights || "Not supplied"}
+                    </p>
+                  ) : (
+                    <p>No media supplied.</p>
+                  )}
+                </section>
+
+                <form action={decideTourismSubmission} className="ui-stack">
+                  <input type="hidden" name="submission_id" value={row.id} />
+                  <fieldset className="ui-form-grid">
+                    <legend>
+                      Details to publish, only where personally verified
+                    </legend>
+                    <div className="ui-field">
+                      <label className="label" htmlFor={`slug-${row.id}`}>
+                        Canonical slug (required to publish)
+                      </label>
+                      <input
+                        className="input"
+                        id={`slug-${row.id}`}
+                        name="slug"
+                        pattern="[a-z0-9]+(-[a-z0-9]+)*"
+                        maxLength={180}
+                      />
+                    </div>
+                    <div className="ui-field">
+                      <label className="label" htmlFor={`location-${row.id}`}>
+                        Location label
+                      </label>
+                      <input className="input" id={`location-${row.id}`} name="location_label" maxLength={300} />
+                    </div>
+                    <div className="ui-field">
+                      <label className="label" htmlFor={`directions-${row.id}`}>
+                        Verified map search phrase
+                      </label>
+                      <input className="input" id={`directions-${row.id}`} name="directions_query" maxLength={300} />
+                    </div>
+                    <div className="ui-form-grid">
+                      <div className="ui-field">
+                        <label className="label" htmlFor={`lat-${row.id}`}>
+                          Verified latitude
+                        </label>
+                        <input className="input" id={`lat-${row.id}`} name="latitude" type="number" step="any" min="-90" max="90" />
+                      </div>
+                      <div className="ui-field">
+                        <label className="label" htmlFor={`lon-${row.id}`}>
+                          Verified longitude
+                        </label>
+                        <input className="input" id={`lon-${row.id}`} name="longitude" type="number" step="any" min="-180" max="180" />
+                      </div>
+                    </div>
+                    {[["opening_hours", "Opening hours"], ["price_details", "Prices"], ["access_details", "Access details"]].map(([name, label]) => (
+                      <div className="ui-field" key={name}>
+                        <label className="label" htmlFor={`${name}-${row.id}`}>
+                          {label}
+                        </label>
+                        <textarea className="input" id={`${name}-${row.id}`} name={name} maxLength={1000} rows={3} />
+                      </div>
+                    ))}
+                  </fieldset>
+
+                  <label className="ui-row">
+                    <input type="checkbox" name="provenance_verified" value="yes" />
+                    <span>I independently checked the cited source and provenance for this destination.</span>
+                  </label>
+                  <label className="ui-row">
+                    <input type="checkbox" name="rights_verified" value="yes" />
+                    <span>I verified publication rights for the submitted content and any media attached.</span>
+                  </label>
+                  <p className="ui-muted">
+                    Coordinates are not required. If supplied, verify them against a reliable source. Leave unknown visitor fields blank.
+                  </p>
+                  <div className="ui-actions">
+                    <button className="btn-primary" name="decision" value="published">
+                      Verify &amp; publish
+                    </button>
+                    <button className="btn-secondary" name="decision" value="needs_revision">
+                      Request revision
+                    </button>
+                    <button className="btn-secondary" name="decision" value="rejected">
+                      Reject
+                    </button>
+                  </div>
+                </form>
+              </Panel>
+            </li>
+          ))}
+        </ol>
+      )}
+    </PageFrame>
+  );
 }
