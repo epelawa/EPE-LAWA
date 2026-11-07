@@ -1,43 +1,9 @@
 import type { Metadata } from "next";
 import { CONTACT_EMAIL } from "../../lib/contact";
 import { pageMetadata } from "../../lib/metadata";
+import { PageFrame, PageIntro, Panel, SectionHeading, StatusBadge, Notice } from "../../components/design-system";
 import ContactForm from "./contact-form";
-
-const description = "How to reach EPE LAWA.";
-
-export const metadata: Metadata = pageMetadata({ title: "Contact", description, path: "/contact" });
-
+export const metadata: Metadata = pageMetadata({ title: "Contact", description: "How to reach EPE LAWA.", path: "/contact" });
 export default function ContactPage() {
-  return (
-    <div className="max-w-md mx-auto px-4 py-12 sm:px-6 lg:px-8">
-      <div className="page-header mb-8">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-          EPE LAWA
-        </p>
-        <h1 className="text-2xl font-bold tracking-tight">Contact EPE LAWA</h1>
-        <p className="text-muted-foreground mt-4 max-w-sm leading-relaxed">
-          Corrections, privacy requests, questions about the project.
-        </p>
-      </div>
-
-      <div className="prose mb-8">
-        <h2 className="mt-8 mb-3 text-lg font-bold">Send a message</h2>
-        <p className="text-muted-foreground mb-6">
-          Write to us using the form below. Messages are read by a person and replied to as soon as
-          possible.
-        </p>
-        <ContactForm />
-
-        <h2 className="mt-10 mb-3 text-lg font-bold">Other ways to reach us</h2>
-        <ul className="list-disc pl-6 text-muted-foreground mb-6">
-          <li className="mb-2">
-            Email:{" "}
-            <a href={`mailto:${CONTACT_EMAIL}`} className="text-primary underline underline-offset-4">
-              {CONTACT_EMAIL}
-            </a>. This is the only published address.
-          </li>
-        </ul>
-      </div>
-    </div>
-  );
+  return <PageFrame><PageIntro eyebrow="Let’s talk" title="A good place to start." description="Questions, corrections, community stories or privacy requests—here’s how to reach the EPE LAWA team."/><div className="ui-split"><Panel><SectionHeading title="Write to the team" description="Email is the available contact channel."/><a className="btn-primary" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a><hr className="ui-divider"/><div className="ui-row"><h2>Message form</h2><StatusBadge tone="warning">Coming Soon</StatusBadge></div><Notice tone="warning">Form delivery is not connected yet. The form below can check a draft, but it does not send or store your message. Please email us to get in touch.</Notice><ContactForm/></Panel><aside className="ui-sidebar"><Panel><h2>Help us help you.</h2><div className="ui-prose"><p>For a correction, include the page address and the detail that needs checking.</p><p>For a privacy request, explain which record you mean. Do not send passwords, payment details or sensitive documents.</p><p>For a community story, tell us where it comes from and how we can follow up.</p></div></Panel></aside></div></PageFrame>;
 }

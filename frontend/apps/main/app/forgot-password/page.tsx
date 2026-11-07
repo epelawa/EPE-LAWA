@@ -1,5 +1,8 @@
 import "../auth/auth.css";
 import Link from "next/link";
+import AccountShell from "../../components/account-shell";
 import { ResetForm } from "../auth/auth-forms";
 export const metadata = { title: "Reset your password" };
-export default function ForgotPasswordPage() { return <section className="auth-wrap"><div className="auth-card"><p className="auth-eyebrow">ACCOUNT RECOVERY</p><h1>Reset your password</h1><p>Enter the email address associated with your account.</p><ResetForm/><p className="auth-footnote"><Link href="/login">Back to sign in</Link></p></div></section>; }
+export default function ForgotPasswordPage() {
+  return <AccountShell eyebrow="Account recovery" title="Let’s get you back in." description="Enter the email address associated with your account to request password-reset instructions."><ResetForm/><p className="auth-footnote">Remembered it? <Link href="/login">Back to sign in</Link></p></AccountShell>;
+}

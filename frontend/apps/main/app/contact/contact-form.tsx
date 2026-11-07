@@ -1,189 +1,20 @@
 "use client";
-
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import type { ContactField, ContactState } from "./actions";
 import { submitContactMessage } from "./actions";
 import { CONTACT_EMAIL } from "../../lib/contact";
-
 const initialState: ContactState = { status: "idle", errors: {} };
-
-type FieldProps = {
-  field: ContactField;
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  error?: string;
-  maxLength: number;
-  type?: "text" | "email";
-  autoComplete?: string;
-  hint?: string;
-  multiline?: boolean;
-};
-
-function Field({
-  field,
-  label,
-  value,
-  onChange,
-  error,
-  maxLength,
-  type = "text",
-  autoComplete,
-  hint,
-  multiline = false,
-}: FieldProps) {
-  const id = `contact-${field}`;
-  const hintId = `${id}-hint`;
-  const errorId = `${id}-error`;
-  const describedBy =
-    [hint ? hintId : null, error ? errorId : null].filter(Boolean).join(" ") || undefined;
-
-  const shared = {
-    id,
-    name: field,
-    value,
-    required: true,
-    maxLength,
-    "aria-invalid": error ? ("true" as const) : undefined,
-    "aria-describedby": describedBy,
-    className: "field__control",
-    onChange: (event: { target: { value: string } }) => onChange(event.target.value),
-  };
-
-  return (
-    <div className="field mb-5">
-      <label className="field__label" htmlFor={id}>
-        {label}
-      </label>
-      {hint ? (
-        <p className="field__hint" id={hintId}>
-          {hint}
-        </p>
-      ) : null}
-      {multiline ? (
-        <textarea {...shared} rows={6} />
-      ) : (
-        <input {...shared} type={type} autoComplete={autoComplete} />
-      )}
-      {error ? (
-        <p className="field__error" id={errorId}>
-          {error}
-        </p>
-      ) : null}
-    </div>
-  );
-}
-
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="btn-primary"
-    >
-      {pending ? "Checking your message…" : "Submit message"}
-    </button>
-  );
-}
-
+function SubmitButton() { const { pending } = useFormStatus(); return <button type="submit" className="btn-secondary" disabled={pending}>{pending ? "Checking your message…" : "Check draft — not sent"}</button>; }
 export default function ContactForm() {
   const [state, formAction] = useActionState(submitContactMessage, initialState);
   const [values, setValues] = useState({ name: "", email: "", subject: "", message: "" });
   const resultRef = useRef<HTMLDivElement>(null);
-
-  // On a failed submit the summary takes focus, so a keyboard or screen reader user lands
-  // on the explanation instead of guessing why nothing happened.
-  useEffect(() => {
-    if (state.status === "idle") return;
-    resultRef.current?.focus();
-  }, [state]);
-
-  const setField = (field: ContactField, value: string) => {
-    setValues((current) => ({ ...current, [field]: value }));
-  };
-
-  const fields = ["name", "email", "subject", "message"] as const;
-
-  return (
-    <form className="form max-w-md mx-auto" action={formAction} noValidate>
-      {state.status !== "idle" ? (
-        <div ref={resultRef} className="form-result mb-6" tabIndex={-1} role="alert">
-          {state.status === "invalid" ? (
-            <div className="rounded-lg border-[var(--color-error-700)] bg-[var(--color-error-100)] p-4">
-              <h3 className="font-semibold text-[var(--color-error-700)] mb-2">Check the highlighted fields</h3>
-              <ul className="form-summary__list list-disc pl-5 text-[var(--color-error-700)] text-sm">
-                {fields.map((field) =>
-                  state.errors[field] ? (
-                    <li key={field}>
-                      <a href={`#contact-${field}`}>{state.errors[field]}</a>
-                    </li>
-                  ) : null,
-                )}
-              </ul>
-            </div>
-          ) : (
-            <div className="rounded-lg border-[var(--color-error-700)] bg-[var(--color-error-100)] p-4">
-              <h3 className="font-semibold text-[var(--color-error-700)] mb-2">
-                Your message could not be sent
-              </h3>
-              <p className="text-[var(--color-error-700)] text-sm">
-                Please try again, or email us directly at{" "}
-                <a href={`mailto:${CONTACT_EMAIL}`} className="underline underline-offset-4">
-                  {CONTACT_EMAIL}
-                </a>
-                .
-              </p>
-            </div>
-          )}
-        </div>
-      ) : null}
-
-      <Field
-        field="name"
-        label="Name"
-        value={values.name}
-        onChange={(value) => setField("name", value)}
-        error={state.errors.name}
-        maxLength={100}
-        autoComplete="name"
-      />
-
-      <Field
-        field="email"
-        label="Email"
-        type="email"
-        value={values.email}
-        onChange={(value) => setField("email", value)}
-        error={state.errors.email}
-        maxLength={254}
-        autoComplete="email"
-        hint="Only used to reply to you."
-      />
-
-      <Field
-        field="subject"
-        label="Subject"
-        value={values.subject}
-        onChange={(value) => setField("subject", value)}
-        error={state.errors.subject}
-        maxLength={150}
-      />
-
-      <Field
-        field="message"
-        label="Message"
-        value={values.message}
-        onChange={(value) => setField("message", value)}
-        error={state.errors.message}
-        maxLength={5000}
-        multiline
-      />
-
-      <div className="form__actions flex items-center gap-3">
-        <SubmitButton />
-      </div>
-    </form>
-  );
+  useEffect(() => { if (state.status !== "idle") resultRef.current?.focus(); }, [state]);
+  const fields: { name: ContactField; label: string; max: number; type?: string; autoComplete?: string; hint?: string }[] = [{name:"name",label:"Name",max:100,autoComplete:"name"},{name:"email",label:"Email",max:254,type:"email",autoComplete:"email",hint:"Use an address where the team could reply."},{name:"subject",label:"Subject",max:150},{name:"message",label:"Message",max:5000}];
+  return <form className="ui-stack" action={formAction} noValidate style={{marginTop:24}}>
+    {state.status !== "idle" ? <div ref={resultRef} className={`ui-notice ui-notice--${state.status === "invalid" ? "danger" : "warning"}`} tabIndex={-1} role="alert">{state.status === "invalid" ? <><h3>Check the highlighted fields</h3><ul>{fields.map(field=>state.errors[field.name] ? <li key={field.name}><a href={`#contact-${field.name}`}>{state.errors[field.name]}</a></li> : null)}</ul></> : <><h3>Your message was not sent</h3><p>Delivery is not connected. Email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> to contact the team.</p></>}</div> : null}
+    {fields.map(field=>{const id=`contact-${field.name}`;const error=state.errors[field.name];const describedBy=[field.hint ? `${id}-hint` : null,error ? `${id}-error` : null].filter(Boolean).join(" ") || undefined;const shared={id,name:field.name,value:values[field.name],required:true,maxLength:field.max,"aria-invalid":error ? "true" as const : undefined,"aria-describedby":describedBy,onChange:(event:{target:{value:string}})=>setValues(current=>({...current,[field.name]:event.target.value}))};return <div className="ui-field" key={field.name}><label htmlFor={id}>{field.label}</label>{field.hint ? <small id={`${id}-hint`}>{field.hint}</small> : null}{field.name === "message" ? <textarea {...shared} rows={6}/> : <input {...shared} type={field.type ?? "text"} autoComplete={field.autoComplete}/>} {error ? <p className="ui-danger-text" id={`${id}-error`}>{error}</p> : null}</div>;})}
+    <div className="ui-row"><SubmitButton/><span className="ui-meta">Draft checking only. Nothing is delivered.</span></div>
+  </form>;
 }
