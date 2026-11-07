@@ -1,5 +1,6 @@
 import { createClient } from "../../../../lib/supabase";
 import { decideHistoryContribution } from "../../../../lib/history-actions";
+import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "@epelawa/ui";
 
 type Contribution = {
   id: string; title: string; account: string; source_description: string;
@@ -26,48 +27,104 @@ export default async function HistoryReviewPage({ searchParams }: { searchParams
     rows = (data ?? []) as Contribution[];
   }
 
+  const resultNotices: Record<string, { tone: "success" | "warning" | "danger"; text: string }> = {
+    saved: { tone: "success", text: "Decision recorded." },
+    stale: { tone: "warning", text: "This contribution may already have been reviewed. Refresh the queue before taking another action." },
+    denied: { tone: "danger", text: "Your account is not authorized to review contributions." },
+    invalid: { tone: "danger", text: "The submitted decision was invalid." },
+    missing_public_text: { tone: "warning", text: "Publishing requires an edited or redacted public account (20–20,000 characters) and an explicitly approved public citation (3–1,000 characters). Only explicitly approved account, family/lineage and citation fields are public. Revision and rejection do not require public text." },
+  };
+  const notice = params.result ? resultNotices[params.result] : undefined;
+
   return (
-    <div className="site-main"><div className="ep-container">
-      <header className="page-header"><p className="page-header__eyebrow">Itan Ilu Mi</p>
-        <h1 className="page-header__title">Contribution review</h1>
-        <p className="page-header__lede">Review submitted accounts, provenance, consent, lineage context and publication-rights evidence. Only explicitly approved account, family/lineage and citation fields are public; submitted source evidence, rights and consent remain private.</p>
-      </header>
-      {params.result === "saved" ? <p role="status" className="admin-dashboard-note">Decision recorded.</p> : null}
-      {params.result === "stale" ? <p role="alert" className="admin-dashboard-note">This contribution may already have been reviewed. Refresh the queue before taking another action.</p> : null}
-      {params.result === "denied" ? <p role="alert" className="admin-dashboard-note">Your account is not authorized to review contributions.</p> : null}
-      {params.result === "invalid" ? <p role="alert" className="admin-dashboard-note">The submitted decision was invalid.</p> : null}
-      {params.result === "missing_public_text" ? <p role="alert" className="admin-dashboard-note">Publishing requires an edited or redacted public account (20–20,000 characters) and an explicitly approved public citation (3–1,000 characters). Only explicitly approved account, family/lineage and citation fields are public. Revision and rejection do not require public text.</p> : null}
-      {!permitted ? <section className="admin-empty" role="alert"><h2 className="admin-empty__title">Review access required</h2><p className="admin-empty__text">This staff account does not have the history.review capability.</p></section>
-        : failed ? <section className="admin-empty" role="alert"><h2 className="admin-empty__title">Queue unavailable</h2><p className="admin-empty__text">Pending contributions could not be verified. Try again later.</p></section>
-        : rows.length === 0 ? <section className="admin-empty"><h2 className="admin-empty__title">No pending contributions</h2><p className="admin-empty__text">New submissions will appear here for authorized staff.</p></section>
-        : <div className="admin-review-list">{rows.map((row) => <article className="admin-empty" key={row.id}>
-          <p className="page-header__eyebrow">Submitted {new Date(row.submitted_at).toLocaleString("en-NG")}</p>
-          <h2 className="admin-empty__title">{row.title}</h2><p>{labels[row.category] ?? row.category}{row.community ? ` · ${row.community}` : ""}{row.family_name ? ` · ${row.family_name} family` : ""}</p><p>{row.account}</p>
-          {row.lineage_description ? <><h3>Lineage context</h3><p>{row.lineage_description}</p></> : null}
-          <h3>Source evidence</h3><p>{row.source_description}</p>
-          {row.source_url ? <p><a href={row.source_url} rel="noreferrer">Open submitted source</a></p> : null}
-          <h3>Publication rights evidence</h3><p>{row.rights_description}</p>
-          <h3>Consent evidence</h3><p>{row.consent_text}</p><p>{row.consent_version}; consented {new Date(row.consented_at).toLocaleString("en-NG")}</p>
-          <form action={decideHistoryContribution} className="admin-action-row">
-            <input type="hidden" name="contributionId" value={row.id}/>
-            <label htmlFor={`public-account-${row.id}`}>Edited/redacted public account (required to publish)</label>
-            <textarea id={`public-account-${row.id}`} name="publicAccount" minLength={20} maxLength={20000} rows={8} aria-describedby={`public-account-help-${row.id}`} />
-            <p id={`public-account-help-${row.id}`}>Blank by default. Enter the exact text approved for public display; private family details should be removed unless specifically approved.</p>
-            <label htmlFor={`public-family-name-${row.id}`}>Public family name (optional)</label>
-            <input id={`public-family-name-${row.id}`} name="publicFamilyName" maxLength={180} />
-          <label htmlFor={`public-lineage-description-${row.id}`}>Public lineage description (optional)</label>
-            <textarea id={`public-lineage-description-${row.id}`} name="publicLineageDescription" maxLength={5000} rows={3} />
-            <label htmlFor={`public-citation-${row.id}`}>Public source citation (required to publish, 3–1,000 characters)</label>
-            <textarea id={`public-citation-${row.id}`} name="publicCitation" minLength={3} maxLength={1000} rows={2} aria-describedby={`public-citation-help-${row.id}`} />
-            <p id={`public-citation-help-${row.id}`}>Blank by default. Enter only the citation approved for public display; this is separate from the contributor’s private source description.</p>
-            <label htmlFor={`public-source-url-${row.id}`}>Public source URL (optional, HTTPS only)</label>
-            <input id={`public-source-url-${row.id}`} name="publicSourceUrl" type="url" pattern="https://.*" maxLength={1000} placeholder="https://" />
-            <p>Blank by default. Only this explicitly approved HTTPS link will be public; the submitted source URL remains private.</p>
-            <button className="admin-action admin-action--primary" name="decision" value="published">Publish verified record</button>
-            <button className="admin-action" name="decision" value="needs_revision">Request revision</button>
-            <button className="admin-action" name="decision" value="rejected">Reject</button>
-          </form>
-        </article>)}</div>}
-    </div></div>
+    <PageFrame className="ui-stack">
+      <PageIntro
+        eyebrow="Itan Ilu Mi · Staff"
+        title="Contribution review"
+        description="Review submitted accounts, provenance, consent, lineage context and publication-rights evidence. Only explicitly approved account, family/lineage and citation fields are public; submitted source evidence, rights and consent remain private."
+        meta={<StatusBadge tone="neutral">History review</StatusBadge>}
+      />
+      {notice ? <Notice tone={notice.tone} role={params.result === "saved" ? "status" : "alert"}>{notice.text}</Notice> : null}
+      {!permitted ? (
+        <EmptyPanel title="Review access required" description="This staff account does not have the history.review capability." />
+      ) : failed ? (
+        <EmptyPanel title="Queue unavailable" description="Pending contributions could not be verified. Try again later." />
+      ) : rows.length === 0 ? (
+        <EmptyPanel title="No pending contributions" description="New submissions will appear here for authorized staff." />
+      ) : (
+        <div className="ui-stack">
+          <SectionHeading eyebrow="Pending queue" title="Submissions awaiting review" description="Review private evidence first, then enter only content explicitly approved for public display." />
+          {rows.map((row) => (
+            <Panel className="ui-stack-sm" key={row.id}>
+              <header className="ui-stack-sm">
+                <p className="ui-eyebrow">Submitted {new Date(row.submitted_at).toLocaleString("en-NG")}</p>
+                <h2 className="ui-item-title">{row.title}</h2>
+                <div className="ui-meta">
+                  <StatusBadge tone="neutral">{labels[row.category] ?? row.category}</StatusBadge>
+                  {row.community ? <span>{row.community}</span> : null}
+                  {row.family_name ? <span>{row.family_name} family</span> : null}
+                </div>
+              </header>
+
+              <section className="ui-subtle ui-stack-sm" aria-label="Private submission details">
+                <SectionHeading title="Submitted account" />
+                <p className="ui-prose">{row.account}</p>
+                {row.lineage_description ? <><h3>Lineage context</h3><p className="ui-prose">{row.lineage_description}</p></> : null}
+              </section>
+
+              <div className="ui-grid ui-grid--2">
+                <section className="ui-card ui-stack-sm">
+                  <h3>Source evidence · private</h3>
+                  <p className="ui-prose">{row.source_description}</p>
+                  {row.source_url ? <p><a className="ui-text-link" href={row.source_url} rel="noreferrer">Open submitted source</a></p> : null}
+                </section>
+                <section className="ui-card ui-stack-sm">
+                  <h3>Publication rights evidence · private</h3>
+                  <p className="ui-prose">{row.rights_description}</p>
+                </section>
+                <section className="ui-card ui-stack-sm">
+                  <h3>Consent evidence · private</h3>
+                  <p className="ui-prose">{row.consent_text}</p>
+                  <p className="ui-meta">{row.consent_version}; consented {new Date(row.consented_at).toLocaleString("en-NG")}</p>
+                </section>
+              </div>
+
+              <form action={decideHistoryContribution} className="ui-stack-sm">
+                <input type="hidden" name="contributionId" value={row.id}/>
+                <SectionHeading title="Approved public version" description="Blank by default. Public fields are recorded separately from private submission evidence. Remove private family details unless specifically approved." />
+                <div className="ui-form-grid">
+                  <div className="ui-field">
+                    <label className="label" htmlFor={`public-account-${row.id}`}>Edited/redacted public account (required to publish)</label>
+                    <textarea className="input" id={`public-account-${row.id}`} name="publicAccount" minLength={20} maxLength={20000} rows={8} aria-describedby={`public-account-help-${row.id}`} />
+                    <p className="ui-muted" id={`public-account-help-${row.id}`}>Enter the exact text approved for public display (20–20,000 characters).</p>
+                  </div>
+                  <div className="ui-field">
+                    <label className="label" htmlFor={`public-family-name-${row.id}`}>Public family name (optional)</label>
+                    <input className="input" id={`public-family-name-${row.id}`} name="publicFamilyName" maxLength={180} />
+                    <label className="label" htmlFor={`public-lineage-description-${row.id}`}>Public lineage description (optional)</label>
+                    <textarea className="input" id={`public-lineage-description-${row.id}`} name="publicLineageDescription" maxLength={5000} rows={3} />
+                  </div>
+                  <div className="ui-field">
+                    <label className="label" htmlFor={`public-citation-${row.id}`}>Public source citation (required to publish, 3–1,000 characters)</label>
+                    <textarea className="input" id={`public-citation-${row.id}`} name="publicCitation" minLength={3} maxLength={1000} rows={3} aria-describedby={`public-citation-help-${row.id}`} />
+                    <p className="ui-muted" id={`public-citation-help-${row.id}`}>Enter only the citation approved for public display; this is separate from the contributor’s private source description.</p>
+                  </div>
+                  <div className="ui-field">
+                    <label className="label" htmlFor={`public-source-url-${row.id}`}>Public source URL (optional, HTTPS only)</label>
+                    <input className="input" id={`public-source-url-${row.id}`} name="publicSourceUrl" type="url" pattern="https://.*" maxLength={1000} placeholder="https://" />
+                    <p className="ui-muted">Blank by default. Only this explicitly approved HTTPS link will be public; the submitted source URL remains private.</p>
+                  </div>
+                </div>
+                <div className="ui-actions">
+                  <button className="btn-primary" name="decision" value="published">Publish verified record</button>
+                  <button className="btn-secondary" name="decision" value="needs_revision">Request revision</button>
+                  <button className="btn-secondary" name="decision" value="rejected">Reject</button>
+                </div>
+              </form>
+            </Panel>
+          ))}
+        </div>
+      )}
+    </PageFrame>
   );
 }
