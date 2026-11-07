@@ -8,7 +8,6 @@ import Connectivity from "./connectivity";
 import SiteHeader from "../components/site-header";
 import SiteFooter from "../components/site-footer";
 import CookieBanner from "../components/cookie-banner";
-import NotificationPrompt from "../components/notification-prompt";
 import { mainNavigation } from "../lib/navigation";
 import { isIndexingAllowed, siteUrl } from "../lib/site";
 import { themeScript } from "../lib/theme";
@@ -51,7 +50,20 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <SiteFooter />
         <Connectivity />
         <CookieBanner />
-        <NotificationPrompt />
+
+        {/* `components/notification-prompt.tsx` is intentionally NOT mounted.
+            It asks for browser notification permission, then registers `/sw.js`
+            and POSTs a subscription to `/api/notifications/subscribe` — neither
+            of those exists, and `lib/vapid.ts` holds a key that was never
+            issued. Asking a visitor for a permission we cannot honour is worse
+            than not asking. Re-mount it only once all four exist:
+              1. `public/sw.js` — a service worker that handles `push`
+              2. `app/api/notifications/subscribe/route.ts` — authenticated,
+                 rate-limited, and writes to `push_subscriptions`
+              3. a real VAPID key pair, with the private half server-side only
+              4. something that actually sends a notification
+            The component file itself is kept, unchanged, so the work is not
+            thrown away. */}
       </body>
     </html>
   );
