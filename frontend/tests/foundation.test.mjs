@@ -80,7 +80,7 @@ test('main has honest indexable metadata, working public links and security head
     assert.doesNotMatch(html, /<meta name="robots" content="[^"]*noindex/i);
     assert.match(html, /<meta name="description" content="[^"]+"/);
     assert.match(html, /<link rel="canonical" href="https:\/\/epelawa\.ng\/?"/);
-    assert.match(html, /<meta name="clyvro-verification" content="clyvro-verification=bgGvrkMEUkTOaufJIGTtWi-l7mQSZ4dmh-QpuoM4_WM"\/>/);
+    assert.doesNotMatch(html, /clyvro-verification/, 'unverified third-party verification tag must not ship');
     assert.match(html, /<meta property="og:title"/);
     assert.match(html, /<meta property="og:description"/);
     assert.match(html, /<meta property="og:image" content="https:\/\/epelawa\.ng\/share\.png"/);
@@ -90,7 +90,7 @@ test('main has honest indexable metadata, working public links and security head
     const about = await fetch(base + '/about');
     assert.equal(about.status, 200);
     const aboutHtml = await about.text();
-    assert.match(aboutHtml, /<meta name="clyvro-verification" content="clyvro-verification=bgGvrkMEUkTOaufJIGTtWi-l7mQSZ4dmh-QpuoM4_WM"\/>/);
+    assert.doesNotMatch(aboutHtml, /clyvro-verification/, 'unverified third-party verification tag must not ship');
     assert.match(aboutHtml, /<link rel="canonical" href="https:\/\/epelawa\.ng\/about"/);
     assert.match(aboutHtml, /href="\/"/);
     assert.match(aboutHtml, /not connected yet/i);
