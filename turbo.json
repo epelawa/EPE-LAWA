@@ -2,7 +2,20 @@
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["frontend/packages/ui/**"],
   "tasks": {
-    "build": { "outputs": [".next/**", "!.next/cache/**"] },
+    "build": {
+      "env": [
+        "ALLOW_INDEXING",
+        "NEXT_PUBLIC_NEWS_URL",
+        "NEXT_PUBLIC_R2_PUBLIC_BASE_URL",
+        "NEXT_PUBLIC_SITE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "SUPABASE_ANON_KEY",
+        "SUPABASE_PUBLISHABLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "outputs": [".next/**", "!.next/cache/**"]
+    },
     "typecheck": { "outputs": [] }
   }
 }

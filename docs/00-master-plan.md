@@ -17,9 +17,9 @@ EPE LAWA is a web-first community, news, heritage, civic-discussion and commerce
 7. EPE LAWA Radio
 8. Who is Who in Epe
 
-Native mobile apps alone are deferred. Native mobile apps alone are deferred. Cross-cutting requirements are web member signup, email verification, login and recovery; secure staff sessions and capability checks; admin analytics based on real query results; news publishing; branded transactional email templates; audit, privacy and accessibility; and full Playwright coverage. Native mobile apps alone are deferred; all client sections 3.1–3.8 are current web scope. Section 5 enhancements remain in the full roadmap.
+Cross-cutting requirements include web member signup, email verification, login and recovery; secure staff sessions and capability checks; real-result admin analytics; news publishing; branded transactional email templates; audit, privacy, accessibility and full Playwright coverage. Native mobile apps alone are deferred; section 5 enhancements remain on the full roadmap.
 
-Use Sckooly’s public-site structure as an information-architecture reference, not a source of copied assets or copy. Apply the owner-provided color direction with original EPE-LAWA branding. Never invent Epe facts, history, people, businesses, prices, reviews, map locations, metrics, article content or live status. Public content uses approved records only; empty, loading, error and denied states remain honest.
+Use Sckooly's public-site structure as an information-architecture reference, not a source of copied assets or copy. Apply the owner-provided color direction with original EPE-LAWA branding. Never invent Epe facts, history, people, businesses, prices, reviews, map locations, metrics, article content or live status. Public content uses approved records only; empty, loading, error and denied states remain honest.
 
 ## Full roadmap beyond the current release
 Keep the client brief section 5 future enhancements represented in the complete roadmap: event ticketing, emergency contacts, scholarship/job board, e-learning, English/Yoruba support, and an AI-powered local assistant. They are future enhancements, not features whose implementation is claimed here. Native mobile apps alone are deferred from current scope.
