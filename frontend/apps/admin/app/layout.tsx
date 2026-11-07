@@ -38,9 +38,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" className={`${displayFont.variable} ${bodyFont.variable}`}>
       <body>
         <Script strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeScript }} />
-        <a className="skip-link" href="#main">Skip to content</a>
+        <a className="skip-link" href="#skip-target">Skip to content</a>
         <SiteHeader items={navigation} />
-        <main id="main" className="site-main" tabIndex={-1}>{children}</main>
+        <main id="skip-target" tabIndex={-1}>{children}</main>
         <SiteFooter />
       </body>
     </html>

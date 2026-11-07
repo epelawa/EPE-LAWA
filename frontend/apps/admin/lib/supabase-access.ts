@@ -42,8 +42,16 @@ type SessionValue = {
 function parseSession(value: string | undefined): SessionValue | null {
   if (!value) return null;
   try {
-    const raw = Buffer.from(value, "base64url").toString("utf8");
-    return JSON.parse(raw) as SessionValue;
+    const encoded = value.startsWith("base64-") ? value.slice("base64-".length) : value;
+    if (!encoded || !/^[A-Za-z0-9_-]+$/.test(encoded)) return null;
+    const parsed: unknown = JSON.parse(Buffer.from(encoded, "base64url").toString("utf8"));
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
+    const candidate = parsed as Partial<SessionValue>;
+    if (typeof candidate.access_token !== "string" || !candidate.access_token) return null;
+    if (candidate.user !== undefined &&
+        (!candidate.user || typeof candidate.user !== "object" || Array.isArray(candidate.user) ||
+         typeof candidate.user.id !== "string")) return null;
+    return candidate as SessionValue;
   } catch {
     return null;
   }
@@ -71,6 +79,7 @@ export async function getAdminAccessForToken(
   if (!isPublishableKey(key) || !isSecureUrl(url)) {
     return { allowed: false, userId: null };
   }
+  if (!url || !key) return { allowed: false, userId: null };
 
   let userId: string | null = null;
   try {
@@ -79,9 +88,11 @@ export async function getAdminAccessForToken(
       headers: { Authorization: `Bearer ${token}`, apikey: key },
     });
     if (!userResp.ok) return { allowed: false, userId: null };
-    const user = (await userResp.json()) as { id?: string };
+    const user = (await userResp.json()) as { id?: string; email_confirmed_at?: string | null };
     userId = user.id ?? null;
-    if (!userId) return { allowed: false, userId: null };
+    if (!userId || typeof user.email_confirmed_at !== "string" || !user.email_confirmed_at) {
+      return { allowed: false, userId: null };
+    }
 
     const profileResp = await fetch(`${url}/rest/v1/staff_profiles`, {
       cache: "no-store",
@@ -125,9 +136,14 @@ export async function signInAdminWithPassword(
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_PUBLISHABLE_KEY;
 
-  if (!email || !password || !isPublishableKey(key) || !isSecureUrl(url)) {
+  const normalizedEmail = typeof email === "string" ? email.trim() : "";
+  const validEmail = normalizedEmail.length <= 254 &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail);
+  if (!validEmail || typeof password !== "string" || password.length === 0 || password.length > 1024 ||
+      !isPublishableKey(key) || !isSecureUrl(url)) {
     return { allowed: false };
   }
+  if (!url || !key) return { allowed: false };
 
   let session: SessionValue | null = null;
   try {
@@ -135,43 +151,45 @@ export async function signInAdminWithPassword(
       cache: "no-store",
       method: "POST",
       headers: { apikey: key, "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, gotrue_meta_security: {} }),
+      body: JSON.stringify({ email: normalizedEmail, password, gotrue_meta_security: {} }),
     });
     if (!tokenResp.ok) return { allowed: false };
     session = (await tokenResp.json()) as SessionValue;
-    if (!session.access_token || !session.user?.id) return { allowed: false };
+    const sessionUserId = session.user?.id;
+    const accessToken = session.access_token;
+    if (typeof accessToken !== "string" || !accessToken || typeof sessionUserId !== "string" || !sessionUserId) return { allowed: false };
 
     const userResp = await fetch(`${url}/auth/v1/user`, {
       cache: "no-store",
-      headers: { Authorization: `Bearer ${session.access_token}`, apikey: key },
+      headers: { Authorization: `Bearer ${accessToken}`, apikey: key },
     });
     if (!userResp.ok) {
       await fetch(`${url}/auth/v1/logout`, {
         cache: "no-store",
         method: "POST",
-        headers: { Authorization: `Bearer ${session.access_token}`, apikey: key },
+        headers: { Authorization: `Bearer ${accessToken}`, apikey: key },
       });
       return { allowed: false };
     }
-    const user = (await userResp.json()) as { id?: string };
-    if (user.id !== session.user.id) {
+    const user = (await userResp.json()) as { id?: string; email_confirmed_at?: string | null };
+    if (user.id !== sessionUserId || typeof user.email_confirmed_at !== "string" || !user.email_confirmed_at) {
       await fetch(`${url}/auth/v1/logout`, {
         cache: "no-store",
         method: "POST",
-        headers: { Authorization: `Bearer ${session.access_token}`, apikey: key },
+        headers: { Authorization: `Bearer ${accessToken}`, apikey: key },
       });
       return { allowed: false };
     }
 
     const profileResp = await fetch(`${url}/rest/v1/staff_profiles`, {
       cache: "no-store",
-      headers: { Authorization: `Bearer ${session.access_token}`, apikey: key },
+      headers: { Authorization: `Bearer ${accessToken}`, apikey: key },
     });
     if (!profileResp.ok) {
       await fetch(`${url}/auth/v1/logout`, {
         cache: "no-store",
         method: "POST",
-        headers: { Authorization: `Bearer ${session.access_token}`, apikey: key },
+        headers: { Authorization: `Bearer ${accessToken}`, apikey: key },
       });
       return { allowed: false };
     }
@@ -179,25 +197,25 @@ export async function signInAdminWithPassword(
       user_id: string;
       is_active: boolean;
     }>;
-    const profile = profiles.find((p) => p.user_id === session.user!.id);
+    const profile = profiles.find((p) => p.user_id === sessionUserId);
     if (!profile || !profile.is_active) {
       await fetch(`${url}/auth/v1/logout`, {
         cache: "no-store",
         method: "POST",
-        headers: { Authorization: `Bearer ${session.access_token}`, apikey: key },
+        headers: { Authorization: `Bearer ${accessToken}`, apikey: key },
       });
       return { allowed: false };
     }
 
     const grantsResp = await fetch(`${url}/rest/v1/staff_capability_grants`, {
       cache: "no-store",
-      headers: { Authorization: `Bearer ${session.access_token}`, apikey: key },
+      headers: { Authorization: `Bearer ${accessToken}`, apikey: key },
     });
     if (!grantsResp.ok) {
       await fetch(`${url}/auth/v1/logout`, {
         cache: "no-store",
         method: "POST",
-        headers: { Authorization: `Bearer ${session.access_token}`, apikey: key },
+        headers: { Authorization: `Bearer ${accessToken}`, apikey: key },
       });
       return { allowed: false };
     }
@@ -206,13 +224,13 @@ export async function signInAdminWithPassword(
       capability: string;
     }>;
     const hasAccess = grants.some(
-      (g) => g.user_id === session.user!.id && g.capability === "admin.access",
+      (g) => g.user_id === sessionUserId && g.capability === "admin.access",
     );
     if (!hasAccess) {
       await fetch(`${url}/auth/v1/logout`, {
         cache: "no-store",
         method: "POST",
-        headers: { Authorization: `Bearer ${session.access_token}`, apikey: key },
+        headers: { Authorization: `Bearer ${accessToken}`, apikey: key },
       });
       return { allowed: false };
     }
@@ -238,7 +256,7 @@ export async function signInAdminWithPassword(
     return { allowed: true };
   } catch {
     // On any failure, attempt logout to clear partial state.
-    if (session?.access_token) {
+    if (session?.access_token && url && key) {
       try {
         await fetch(`${url}/auth/v1/logout`, {
           cache: "no-store",
@@ -279,7 +297,7 @@ export async function signOutAdminSession(
   }
 
   let revoked = false;
-  if (accessToken && isPublishableKey(key) && isSecureUrl(url)) {
+  if (accessToken && isPublishableKey(key) && isSecureUrl(url) && url && key) {
     try {
       const resp = await fetch(`${url}/auth/v1/logout`, {
         cache: "no-store",
@@ -323,6 +341,7 @@ export async function getAdminAccessForSession(
   if (!isPublishableKey(key) || !isSecureUrl(url)) {
     return { allowed: false, userId: null };
   }
+  if (!url || !key) return { allowed: false, userId: null };
 
   const cookies = cookieStore.getAll();
   const adminCookie = cookies.find((c) => c.name === ADMIN_COOKIE);
@@ -350,6 +369,9 @@ export async function getAdminAccessForSession(
       });
       if (refreshResp.ok) {
         refreshedSession = (await refreshResp.json()) as SessionValue;
+        if (typeof refreshedSession.access_token !== "string" || !refreshedSession.access_token) {
+          return { allowed: false, userId: null };
+        }
         accessToken = refreshedSession.access_token;
       }
     } catch {
@@ -365,9 +387,11 @@ export async function getAdminAccessForSession(
       headers: { Authorization: `Bearer ${accessToken}`, apikey: key },
     });
     if (!userResp.ok) return { allowed: false, userId: null };
-    const user = (await userResp.json()) as { id?: string };
+    const user = (await userResp.json()) as { id?: string; email_confirmed_at?: string | null };
     userId = user.id ?? null;
-    if (!userId) return { allowed: false, userId: null };
+    if (!userId || typeof user.email_confirmed_at !== "string" || !user.email_confirmed_at) {
+      return { allowed: false, userId: null };
+    }
 
     const profileResp = await fetch(`${url}/rest/v1/staff_profiles`, {
       cache: "no-store",
@@ -461,60 +485,81 @@ export async function respondToAdminRead(
       headers: { "Cache-Control": "private, no-store, max-age=0" },
     });
   }
+  if (!url || !key) return new Response("Administration is not available.", {
+    status: 403,
+    headers: { "Cache-Control": "private, no-store, max-age=0" },
+  });
+
+  const { NextResponse } = await import("next/server.js");
+  const cookieHeader = request.headers.get("cookie") ?? "";
+  let stagedCookies: CookieLike[] = cookieHeader
+    .split(";")
+    .map((part) => {
+      const [name] = part.split("=");
+      return name.trim();
+    })
+    .filter((name) => name === ADMIN_COOKIE || name.startsWith(`${ADMIN_COOKIE}.`))
+    .map((name) => ({
+      name,
+      value: "",
+      options: { ...cookieOptions(true), maxAge: 0 },
+    }));
+
+  const finalize = (response: Response): Response => {
+    const nextResponse = response instanceof NextResponse
+      ? response
+      : new NextResponse(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: response.headers,
+      });
+    nextResponse.headers.set("Cache-Control", "private, no-store, max-age=0");
+    nextResponse.headers.set("Pragma", "no-cache");
+    nextResponse.headers.set("Expires", "0");
+    for (const cookie of stagedCookies) {
+      nextResponse.cookies.set(
+        cookie.name,
+        cookie.value,
+        cookie.options as Parameters<typeof nextResponse.cookies.set>[2],
+      );
+    }
+    return nextResponse;
+  };
 
   let access: { userId: string } | null = null;
   try {
     const result = await getAdminAccessForSession({
-      getAll: () => {
-        const cookieHeader = request.headers.get("cookie") ?? "";
-        return cookieHeader
-          .split(";")
-          .map((part) => {
-            const [name, ...valueParts] = part.split("=");
-            return { name: name.trim(), value: valueParts.join("=") };
-          })
-          .filter((c) => c.name);
+      getAll: () => cookieHeader.split(";").map((part) => {
+        const [name, ...valueParts] = part.split("=");
+        return { name: name.trim(), value: valueParts.join("=") };
+      }).filter((cookie) => cookie.name),
+      setAll: (cookies) => {
+        stagedCookies = cookies;
       },
-      setAll: () => {
-        // No-op during read; cookie writes handled inside getAdminAccessForSession
-        // via a separate mechanism if needed.
-      },
-    } as any);
+    });
     if (result.allowed && result.userId) {
       access = { userId: result.userId };
     }
   } catch {
-    return new Response("Administration is unavailable.", {
+    return finalize(new Response("Administration is unavailable.", {
       status: 503,
       headers: { "Cache-Control": "private, no-store, max-age=0" },
-    });
+    }));
   }
 
   if (!access) {
-    return new Response("Administration is not available.", {
+    return finalize(new Response("Administration is not available.", {
       status: 403,
       headers: { "Cache-Control": "private, no-store, max-age=0" },
-    });
+    }));
   }
 
-  let response: Response;
   try {
-    response = protectedResponse(access);
+    return finalize(protectedResponse(access));
   } catch {
-    return new Response("Administration is unavailable.", {
+    return finalize(new Response("Administration is unavailable.", {
       status: 503,
       headers: { "Cache-Control": "private, no-store, max-age=0" },
-    });
+    }));
   }
-
-  const headers = new Headers(response.headers);
-  headers.set("Cache-Control", "private, no-store, max-age=0");
-  headers.set("Pragma", "no-cache");
-  headers.set("Expires", "0");
-
-  return new Response(response.body, {
-    status: response.status,
-    statusText: response.statusText,
-    headers,
-  });
 }

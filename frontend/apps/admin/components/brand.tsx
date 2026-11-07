@@ -39,7 +39,7 @@ export function BrandMark({ size = 34, onDark = false }: BrandMarkProps) {
         data-on-dark={onDark ? "true" : undefined}
       >
         <rect width="40" height="40" rx="11" fill="currentColor" />
-        <circle cx="27.2" cy="12.4" r="3.1" fill="var(--color-gold-500)" />
+        <circle cx="27.2" cy="12.4" r="3.1" fill="hsl(var(--accent))" />
         <path
           d="M7.4 21.4c3.2 0 3.2 3 6.4 3s3.2-3 6.4-3 3.2 3 6.4 3 3.2-3 6.4-3"
           fill="none"

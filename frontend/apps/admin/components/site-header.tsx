@@ -3,13 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CloseIcon, SearchIcon, SunIcon, MoonIcon, MenuIcon } from "@epelawa/ui";
+import { CloseIcon, MenuIcon } from "@epelawa/ui";
 import ThemeToggle from "./theme-toggle";
 import { BrandLockup } from "./brand";
-import { primaryNavigation, upcomingSections, type NavItem } from "../lib/navigation";
+import { primaryNavigation, type NavItem } from "../lib/navigation";
 
 const DRAWER_ID = "admin-drawer";
-const SEARCH_ID = "admin-search";
 const DRAWER_TITLE_ID = "admin-drawer-title";
 
 function isCurrentPage(pathname: string, href: string): boolean {
@@ -43,17 +42,13 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
   const scrolled = useScrolled();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
-  const searchButtonRef = useRef<HTMLButtonElement>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
   const inline = primaryNavigation(items);
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
 
   useEffect(() => {
     setDrawerOpen(false);
-    setSearchOpen(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -62,14 +57,11 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
       if (drawerOpen) {
         setDrawerOpen(false);
         menuButtonRef.current?.focus();
-      } else if (searchOpen) {
-        setSearchOpen(false);
-        searchButtonRef.current?.focus();
       }
     };
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [drawerOpen, searchOpen]);
+  }, [drawerOpen]);
 
   useEffect(() => {
     if (!drawerOpen) return;
@@ -114,30 +106,17 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
     };
   }, [drawerOpen]);
 
-  useEffect(() => {
-    if (!searchOpen) return;
-    searchInputRef.current?.focus();
-  }, [searchOpen]);
-
   function toggleDrawer() {
     setDrawerOpen((open) => {
-      if (!open) setSearchOpen(false);
       return !open;
     });
   }
-  function toggleSearch() {
-    setSearchOpen((open) => {
-      if (!open) setDrawerOpen(false);
-      return !open;
-    });
-  }
-
   return (
     <>
       <header className="site-header" data-scrolled={scrolled ? "true" : "false"}>
         <div className="ep-container site-header__inner">
           <div className="nav-shell">
-            <Link className="nav-brand" href="/" aria-label="EPE LAWA Admin — home">
+            <Link className="nav-brand" href="/">
               <BrandLockup size={32} />
             </Link>
             <ThemeToggle />
@@ -161,17 +140,6 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
               </ul>
             </nav>
             <button
-              ref={searchButtonRef}
-              type="button"
-              className="ep-icon-btn"
-              aria-expanded={searchOpen}
-              aria-controls={SEARCH_ID}
-              aria-label={searchOpen ? "Close search" : "Search admin"}
-              onClick={toggleSearch}
-            >
-              <SearchIcon size={18} />
-            </button>
-            <button
               ref={menuButtonRef}
               type="button"
               className="menu-btn"
@@ -189,25 +157,6 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
           </div>
         </div>
       </header>
-
-      <div className="search-panel" id={SEARCH_ID} data-open={searchOpen ? "true" : "false"}>
-        <form className="search-panel__form" action="/search" method="get" role="search">
-          <label className="ep-sr-only" htmlFor="admin-search-input">Search admin</label>
-          <input
-            ref={searchInputRef}
-            id="admin-search-input"
-            className="search-panel__input"
-            type="search"
-            name="q"
-            placeholder="Search"
-            autoComplete="off"
-            tabIndex={searchOpen ? 0 : -1}
-          />
-          <button className="ep-btn ep-btn--primary search-panel__submit" type="submit" tabIndex={searchOpen ? 0 : -1}>
-            Search
-          </button>
-        </form>
-      </div>
 
       <div className="drawer-root" data-open={drawerOpen ? "true" : "false"}>
         <button type="button" className="drawer-scrim" aria-label="Close menu" tabIndex={drawerOpen ? 0 : -1} onClick={closeDrawer} />
@@ -237,17 +186,6 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
               ))}
             </ul>
           </nav>
-          <div className="drawer__soon">
-            <p className="drawer__soon-title">Opening soon</p>
-            <ul className="drawer__soon-list">
-              {upcomingSections.map((section: any) => (
-                <li key={section.label} className="drawer__soon-item">
-                  <span className="drawer__soon-label">{section.label}</span>
-                  <span className="drawer__soon-detail">{section.detail}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
           <p className="drawer__foot">Epe Division, Lagos State</p>
         </div>
       </div>
