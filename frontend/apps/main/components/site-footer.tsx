@@ -1,29 +1,24 @@
 import Link from "next/link";
 import { footerNavigation } from "../lib/navigation";
+import { BrandLockup } from "./brand";
 
+/**
+ * Site footer.
+ *
+ * A hairline and a lot of air. The previous version was a filled grey slab,
+ * which made every page end in a box.
+ */
 export default function SiteFooter() {
   return (
-    <footer className="site-footer bg-muted border-t pt-12 pb-8">
+    <footer className="site-footer">
       <div className="ep-container">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b pb-8">
-          <div className="flex items-center gap-2">
-            <img
-              src="/brand-logo.png"
-              alt=""
-              width={32}
-              height={32}
-              className="rounded-sm"
-              decoding="async"
-            />
-            <div className="flex flex-col">
-              <span className="font-bold text-foreground">EPE LAWA</span>
-              <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                Epe Division
-              </span>
-            </div>
-          </div>
+        <div className="site-footer__top">
+          <Link className="nav-brand" href="/" aria-label="EPE LAWA — home">
+            <BrandLockup size={28} />
+          </Link>
+
           <nav aria-label="Footer">
-            <ul className="flex flex-wrap items-center text-sm">
+            <ul>
               {footerNavigation.map((item) => (
                 <li key={item.href}>
                   <Link className="nav-link" href={item.href}>
@@ -34,7 +29,8 @@ export default function SiteFooter() {
             </ul>
           </nav>
         </div>
-        <p className="text-center text-xs text-muted-foreground pt-6">
+
+        <p className="site-footer__note">
           © {new Date().getFullYear()} EPE LAWA. Epe Division, Lagos State.
         </p>
       </div>
