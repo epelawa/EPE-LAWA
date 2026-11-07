@@ -4,6 +4,7 @@ import { createClient } from "../../lib/supabase";
 import { formatIsoDay } from "../../lib/dates";
 import { publicMediaUrl } from "../../lib/media";
 import { UsersIcon } from "../../components/icons";
+import { EmptyPanel, PageFrame, PageIntro, StatusBadge } from "../../components/design-system";
 
 /**
  * Who is Who — directory index.
@@ -76,26 +77,13 @@ export default async function WhoIsWhoPage({ searchParams }: { searchParams: Pro
     console.error("published_people list read failed", { code: error.code });
 
     return (
-      <div className="ep-container py-12">
-        <header className="mb-8">
-          <p className="page-header__eyebrow">Who is Who</p>
-          <h1 className="text-3xl font-bold tracking-tight">Who is Who</h1>
-        </header>
-        <div className="card p-6">
-          <h2 className="text-lg font-bold">The directory did not load</h2>
-          <p className="mt-2 text-muted-foreground">
-            We could not reach the directory, so nothing is shown rather than a partial list that
-            would read as missing people. Nothing has changed on your side.
-          </p>
-          <p className="mt-4 text-sm text-muted-foreground">
-            Reload the page, or{" "}
-            <Link href="/" className="text-primary underline underline-offset-4">
-              return to the homepage
-            </Link>
-            .
-          </p>
-        </div>
-      </div>
+      <PageFrame className="ui-stack">
+        <PageIntro eyebrow="People · Epe Division" title="Who is Who" description="A sourced directory of people and public office holders." />
+        <EmptyPanel title="The directory did not load" description={<>
+            <p>We could not reach the directory, so nothing is shown rather than a partial list that would read as missing people. Nothing has changed on your side.</p>
+            <p className="mt-3">Reload the page, or <Link href="/" className="ui-text-link">return to the homepage</Link>.</p>
+          </>} />
+      </PageFrame>
     );
   }
 
@@ -133,86 +121,70 @@ export default async function WhoIsWhoPage({ searchParams }: { searchParams: Pro
   }
 
   return (
-    <div className="ep-container py-12">
-      <header className="mb-10">
-        <p className="page-header__eyebrow">Who is Who</p>
-        <h1 className="text-3xl font-bold tracking-tight">Who is Who</h1>
-        <p className="mt-3 max-w-2xl leading-relaxed text-muted-foreground">
-          People and public office holders in Epe Division. Every profile rests on at least one
-          recorded source; the badge means a member of the editorial team checked that source and
-          recorded when.
-        </p>
-      </header>
+    <PageFrame className="ui-stack">
+      <PageIntro eyebrow="People · Epe Division" title="Who is Who" description="People and public office holders in Epe Division. Every profile rests on at least one recorded source; the badge means a member of the editorial team checked that source and recorded when." />
 
-      <form method="get" action="/who-is-who" className="card mb-6 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Filter people">
-        <label className="grid gap-1 text-sm font-medium">Name<input className="rounded-md border bg-background px-3 py-2" name="name" defaultValue={nameFilter} maxLength={100} /></label>
-        <label className="grid gap-1 text-sm font-medium">Office or institution<input className="rounded-md border bg-background px-3 py-2" name="office" defaultValue={officeFilter} maxLength={100} /></label>
-        <label className="grid gap-1 text-sm font-medium">Community<select className="rounded-md border bg-background px-3 py-2" name="community" defaultValue={communityFilter}><option value="">All communities</option><option value="eko_epe">Eko Epe</option><option value="ijebu_epe">Ijebu Epe</option><option value="other">Other</option></select></label>
-        <div className="flex items-end gap-2"><button className="btn-primary" type="submit">Search</button><Link className="btn-ghost" href="/who-is-who">Clear</Link></div>
+      <form method="get" action="/who-is-who" className="ui-toolbar ui-form-grid" aria-label="Filter people">
+        <label className="ui-field"><span className="label">Name</span><input className="input" name="name" defaultValue={nameFilter} maxLength={100} /></label>
+        <label className="ui-field"><span className="label">Office or institution</span><input className="input" name="office" defaultValue={officeFilter} maxLength={100} /></label>
+        <label className="ui-field"><span className="label">Community</span><select className="input" name="community" defaultValue={communityFilter}><option value="">All communities</option><option value="eko_epe">Eko Epe</option><option value="ijebu_epe">Ijebu Epe</option><option value="other">Other</option></select></label>
+        <div className="ui-actions"><button className="btn-primary" type="submit">Search</button><Link className="btn-secondary" href="/who-is-who">Clear</Link></div>
       </form>
       {people.length === 0 ? (
-        <div className="card p-8 text-center">
-          <UsersIcon size={32} className="mx-auto text-muted-foreground" />
-          <h2 className="mt-4 text-lg font-bold">No profiles published yet</h2>
-          <p className="mx-auto mt-2 max-w-md text-muted-foreground">
-            {nameFilter || officeFilter || communityFilter ? "No published profiles match these filters. Try another search." : "No profile appears here until it has been written, sourced and published. Inventing an entry to fill the page would be worse than the empty page."}
-          </p>
-        </div>
+        <EmptyPanel icon={<UsersIcon size={28} />} title="No profiles published yet" description={nameFilter || officeFilter || communityFilter ? "No published profiles match these filters. Try another search." : "No profile appears here until it has been written, sourced and published. Inventing an entry to fill the page would be worse than the empty page."} />
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2">
+        <ul className="ui-grid ui-grid--2 ui-list">
           {people.map((person) => {
             const name = person.preferred_name || person.full_name;
             const portrait = publicMediaUrl(person.portrait_key);
             const offices = officesByPerson.get(person.id) ?? [];
 
             return (
-              <li key={person.id} className="card p-4">
-                <div className="flex items-start gap-3">
+              <li key={person.id} className="ui-card">
+                <div className="ui-row items-start">
                   <div className="flex-shrink-0">
                     {portrait ? (
                       /* eslint-disable-next-line @next/next/no-img-element */
                       <img
                         src={portrait}
                         alt={person.portrait_alt || person.full_name}
-                        className="h-14 w-14 rounded-md border object-cover"
+                        className="h-16 w-16 rounded-xl border object-cover"
                         loading="lazy"
                         decoding="async"
                       />
                     ) : (
-                      <div className="flex h-14 w-14 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                      <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-secondary text-muted-foreground">
                         <UsersIcon size={22} />
                       </div>
                     )}
                   </div>
 
                   <div className="min-w-0">
-                    <h2 className="text-lg font-semibold leading-snug">
+                    <h2 className="ui-item-title">
                       <Link
                         href={`/who-is-who/${person.slug}`}
-                        className="text-foreground underline-offset-4 hover:text-primary hover:underline"
+                        className="ui-text-link"
                       >
                         {name}
                       </Link>
                     </h2>
 
-                    <p className="mt-0.5 flex flex-wrap items-baseline gap-x-2 text-sm text-muted-foreground">
+                    <p className="ui-meta mt-1">
                       <span>{person.community || "Community not recorded"}</span>
                       {person.is_deceased ? (
                         <>
                           <span aria-hidden="true">·</span>
-                          <span className="italic">Deceased</span>
+                        <StatusBadge tone="neutral">Deceased</StatusBadge>
                         </>
                       ) : null}
                     </p>
 
                     {person.is_verified ? (
-                      <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-[var(--color-green-700)]">
-                        Verified
-                      </p>
+                      <p className="mt-2"><StatusBadge tone="success">Verified</StatusBadge></p>
                     ) : null}
 
                     {offices.length > 0 ? (
-                      <ul className="mt-2 flex flex-wrap gap-1.5">
+                      <ul className="ui-list ui-meta mt-3">
                         {offices.map((office) => {
                           const start = formatIsoDay(office.term_start);
                           const end = formatIsoDay(office.term_end);
@@ -227,7 +199,7 @@ export default async function WhoIsWhoPage({ searchParams }: { searchParams: Pro
                           return (
                             <li
                               key={`${office.person_id}-${office.title}-${office.term_start ?? "x"}`}
-                              className="rounded-md bg-secondary px-2 py-0.5 text-xs font-medium text-primary"
+                              className="ui-tag"
                             >
                               {office.title}
                               {office.institution ? `, ${office.institution}` : ""}
@@ -246,8 +218,8 @@ export default async function WhoIsWhoPage({ searchParams }: { searchParams: Pro
       )}
 
       {people.length === PAGE_SIZE ? (
-        <p className="mt-8 text-sm text-muted-foreground">Showing up to {PAGE_SIZE} matching profiles. Refine your filters to narrow results.</p>
+        <p className="ui-meta">Showing up to {PAGE_SIZE} matching profiles. Refine your filters to narrow results.</p>
       ) : null}
-    </div>
+    </PageFrame>
   );
 }
