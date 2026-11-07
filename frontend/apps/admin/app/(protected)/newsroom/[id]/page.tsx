@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { buttonClassName } from "@epelawa/ui";
+import { buttonClassName, EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "@epelawa/ui";
 import { createClient } from "../../../../lib/supabase";
 import { publishArticle, reviseArticle, saveDraft, unpublishArticle } from "../../../../lib/actions";
 
@@ -34,12 +34,12 @@ function bodyForEditor(body: unknown): string {
 }
 
 function StatusMessage({ query }: { query: Record<string, string | undefined> }) {
-  if (query.saved) return <p className="admin-alert admin-alert--success" role="status">Private draft saved. It is not public.</p>;
-  if (query.submitted) return <p className="admin-alert admin-alert--success" role="status">This version remains private. Authorized publishers can publish it directly.</p>;
-  if (query.reviewed) return <p className="admin-alert admin-alert--success" role="status">The version status was updated. Publication is a separate, audited action.</p>;
-  if (query.published) return <p className="admin-alert admin-alert--success" role="status">Article published. The published version is now public.</p>;
-  if (query.unpublished) return <p className="admin-alert" role="status">Article unpublished.</p>;
-  if (query.revised) return <p className="admin-alert admin-alert--success" role="status">A new private revision was created. The existing public version is unchanged.</p>;
+  if (query.saved) return <Notice tone="success" role="status">Private draft saved. It is not public.</Notice>;
+  if (query.submitted) return <Notice tone="success" role="status">This version remains private. Authorized publishers can publish it directly.</Notice>;
+  if (query.reviewed) return <Notice tone="success" role="status">The version status was updated. Publication is a separate, audited action.</Notice>;
+  if (query.published) return <Notice tone="success" role="status">Article published. The published version is now public.</Notice>;
+  if (query.unpublished) return <Notice tone="neutral" role="status">Article unpublished.</Notice>;
+  if (query.revised) return <Notice tone="success" role="status">A new private revision was created. The existing public version is unchanged.</Notice>;
   if (query.error) {
     const message = query.error === "save"
       ? "The draft could not be saved. It may have changed; reload before trying again."
@@ -50,7 +50,7 @@ function StatusMessage({ query }: { query: Record<string, string | undefined> })
           : query.error === "revise"
             ? "A new private revision could not be created. Check article.create access and reload."
             : "The requested article action could not be completed.";
-    return <p className="admin-alert" role="alert">{message}</p>;
+    return <Notice tone="danger" role="alert">{message}</Notice>;
   }
   return null;
 }
@@ -104,121 +104,43 @@ export default async function EditArticlePage({
   const canPublishCurrentVersion = ["draft", "review", "approved", "published"].includes(version.state);
 
   return (
-    <div className="site-main">
-      <div className="ep-container">
-        <header className="page-header">
-          <div>
-            <p className="page-header__eyebrow">Newsroom · Revision {article.revision}</p>
-            <h1 className="page-header__title">{version.title}</h1>
-            <p className="page-header__lede">
-              Current version: {version.state}. {currentVersionIsPublic
-                ? "This version is public."
-                : olderVersionRemainsPublic
-                  ? "The previously published version remains live; this current version is private."
-                  : "No version of this article is public yet."}
-            </p>
-          </div>
-          <Link href="/newsroom" className={buttonClassName("ghost")}>Back to newsroom</Link>
-        </header>
+    <PageFrame className="ui-stack">
+      <PageIntro eyebrow={`Newsroom · Revision ${article.revision}`} title={version.title} description={<>Current version: <StatusBadge tone={version.state === "published" ? "success" : version.state === "rejected" ? "danger" : version.state === "review" ? "warning" : "neutral"}>{version.state}</StatusBadge>. {currentVersionIsPublic ? "This version is public." : olderVersionRemainsPublic ? "The previously published version remains live; this current version is private." : "No version of this article is public yet."}</>} actions={<Link href="/newsroom" className={buttonClassName("secondary")}>Back to newsroom</Link>} meta={<><span>Revision {article.revision}</span><span>Slug: {article.slug}</span></>} />
+      <StatusMessage query={query} />
+      {article.published_version_id ? <Notice tone="neutral"><Link href={`/news/${article.slug}`} className="ui-text-link">Open public article</Link>{article.published_at ? <span className="ui-meta">Published {new Date(article.published_at).toLocaleDateString("en-NG")}</span> : null}</Notice> : null}
 
-        <StatusMessage query={query} />
-
-        {article.published_version_id ? (
-          <p className="admin-inline-note">
-            <Link href={`/news/${article.slug}`} className="admin-text-link">Open public article</Link>
-            {article.published_at ? ` · Published ${new Date(article.published_at).toLocaleDateString("en-NG")}` : ""}
-          </p>
-        ) : null}
-
-        {editablePrivateVersion || canCreateRevision ? (
-          !referencesAvailable ? (
-            <section className="admin-empty" role="status">
-              <h2 className="admin-empty__title">Bylines and categories unavailable</h2>
-              <p className="admin-empty__text">The article was not changed. Reload after the reference lists can be verified.</p>
-            </section>
-          ) : (
-            <form action={editablePrivateVersion ? saveDraft : reviseArticle} className="form admin-form">
+      {editablePrivateVersion || canCreateRevision ? (
+        !referencesAvailable ? <EmptyPanel title="Bylines and categories unavailable" description="The article was not changed. Reload after the reference lists can be verified." /> : (
+          <Panel>
+            <SectionHeading eyebrow={editablePrivateVersion ? "Private editing" : "New version"} title={editablePrivateVersion ? "Edit current draft" : "Create a private correction"} description="Changes remain private. Publication is a separate, audited action." />
+            <form action={editablePrivateVersion ? saveDraft : reviseArticle} className="ui-stack">
               <input type="hidden" name="articleId" value={article.id} />
               <input type="hidden" name="revision" value={String(article.revision)} />
-              <div className="field">
-                <label className="field__label" htmlFor="title">Headline</label>
-                <input id="title" name="title" className="field__control" maxLength={200} required defaultValue={version.title} />
+              <div className="ui-field"><label className="label" htmlFor="title">Headline</label><input id="title" name="title" className="input" maxLength={200} required defaultValue={version.title} /></div>
+              <div className="ui-field"><label className="label" htmlFor="summary">Summary</label><textarea id="summary" name="summary" className="input" rows={3} maxLength={1000} defaultValue={version.summary ?? ""} /></div>
+              <div className="ui-field"><label className="label" htmlFor="body">Article body</label><textarea id="body" name="body" className="input" rows={14} maxLength={100000} required defaultValue={bodyForEditor(version.body)} /><p className="ui-meta">Use plain text with a blank line between paragraphs, or the structured document already shown.</p></div>
+              <div className="ui-form-grid">
+                <div className="ui-field"><label className="label" htmlFor="categoryId">Category</label><select id="categoryId" name="categoryId" className="input" required defaultValue={version.category_id}>{categories.map((category) => <option key={category.id} value={category.id}>{category.label}</option>)}</select></div>
+                <div className="ui-field"><label className="label" htmlFor="authorId">Byline</label><select id="authorId" name="authorId" className="input" required defaultValue={version.author_id}>{authors.map((author) => <option key={author.id} value={author.id}>{author.display_name}</option>)}</select></div>
               </div>
-              <div className="field">
-                <label className="field__label" htmlFor="summary">Summary</label>
-                <textarea id="summary" name="summary" className="field__control" rows={3} maxLength={1000} defaultValue={version.summary ?? ""} />
+              <div className="ui-form-grid">
+                <div className="ui-field"><label className="label" htmlFor="seoTitle">Search title</label><input id="seoTitle" name="seoTitle" className="input" maxLength={70} defaultValue={version.seo_title ?? ""} /></div>
+                <div className="ui-field"><label className="label" htmlFor="seoDescription">Search description</label><input id="seoDescription" name="seoDescription" className="input" maxLength={200} defaultValue={version.seo_description ?? ""} /></div>
               </div>
-              <div className="field">
-                <label className="field__label" htmlFor="body">Article body</label>
-                <textarea id="body" name="body" className="field__control" rows={14} maxLength={100000} required defaultValue={bodyForEditor(version.body)} />
-                <p className="field__hint">Use plain text with a blank line between paragraphs, or the structured document already shown.</p>
-              </div>
-              <div className="field-grid">
-                <div className="field">
-                  <label className="field__label" htmlFor="categoryId">Category</label>
-                  <select id="categoryId" name="categoryId" className="field__control" required defaultValue={version.category_id}>
-                    {categories.map((category) => <option key={category.id} value={category.id}>{category.label}</option>)}
-                  </select>
-                </div>
-                <div className="field">
-                  <label className="field__label" htmlFor="authorId">Byline</label>
-                  <select id="authorId" name="authorId" className="field__control" required defaultValue={version.author_id}>
-                    {authors.map((author) => <option key={author.id} value={author.id}>{author.display_name}</option>)}
-                  </select>
-                </div>
-              </div>
-              <div className="field-grid">
-                <div className="field">
-                  <label className="field__label" htmlFor="seoTitle">Search title</label>
-                  <input id="seoTitle" name="seoTitle" className="field__control" maxLength={70} defaultValue={version.seo_title ?? ""} />
-                </div>
-                <div className="field">
-                  <label className="field__label" htmlFor="seoDescription">Search description</label>
-                  <input id="seoDescription" name="seoDescription" className="field__control" maxLength={200} defaultValue={version.seo_description ?? ""} />
-                </div>
-              </div>
-              <div className="form__actions">
-                {editablePrivateVersion ? (
-                  <button className={buttonClassName("primary")} type="submit" name="intent" value="save">Save private draft</button>
-                ) : (
-                  <button className={buttonClassName("primary")} type="submit">Create private correction draft</button>
-                )}
-              </div>
+              <div className="ui-actions">{editablePrivateVersion ? <button className={buttonClassName("primary")} type="submit" name="intent" value="save">Save private draft</button> : <button className={buttonClassName("primary")} type="submit">Create private correction draft</button>}</div>
             </form>
-          )
-        ) : null}
+          </Panel>
+        )
+      ) : <EmptyPanel title="This version is read-only" description="Your current access does not allow editing this version or creating a private correction." />}
 
-        {!currentVersionIsPublic && canPublishCurrentVersion ? (
-          <section className="admin-empty" aria-labelledby="publish-heading">
-            <h2 id="publish-heading" className="admin-empty__title">Publish now</h2>
-            {canPublish ? (
-              <>
-                <p className="admin-empty__text">
-                  This current version will become publicly visible immediately. No second reviewer is required; the database still checks the verified staff session, article.publish capability and current revision, then records the action in the audit log.
-                </p>
-                <form action={publishArticle} className="admin-action-row">
-                  <input type="hidden" name="articleId" value={article.id} />
-                  <input type="hidden" name="revision" value={String(article.revision)} />
-                  <button className="admin-action admin-action--primary" type="submit">Publish now</button>
-                </form>
-              </>
-            ) : <p className="admin-empty__text">This account does not have article.publish access.</p>}
-          </section>
-        ) : null}
-
-        {currentVersionIsPublic ? (
-          <section className="admin-empty" aria-labelledby="unpublish-heading">
-            <h2 id="unpublish-heading" className="admin-empty__title">Public article</h2>
-            {canUnpublish ? (
-              <form action={unpublishArticle} className="admin-action-row">
-                <input type="hidden" name="articleId" value={article.id} />
-                <input type="hidden" name="revision" value={String(article.revision)} />
-                <button className="admin-action" type="submit">Unpublish current article</button>
-              </form>
-            ) : <p className="admin-empty__text">This account does not have article.unpublish access.</p>}
-          </section>
-        ) : null}
-      </div>
-    </div>
+      {!currentVersionIsPublic && canPublishCurrentVersion ? <Panel>
+        <SectionHeading eyebrow="Publication" title="Publish now" description="Publishing makes the current version publicly visible immediately." />
+        {canPublish ? <><p className="ui-muted">No second reviewer is required; the database still checks the verified staff session, article.publish capability and current revision, then records the action in the audit log.</p><form action={publishArticle} className="ui-actions"><input type="hidden" name="articleId" value={article.id} /><input type="hidden" name="revision" value={String(article.revision)} /><button className={buttonClassName("primary")} type="submit">Publish now</button></form></> : <p className="ui-muted">This account does not have article.publish access.</p>}
+      </Panel> : null}
+      {currentVersionIsPublic ? <Panel>
+        <SectionHeading eyebrow="Publication" title="Public article" description="The current version is visible to readers." />
+        {canUnpublish ? <form action={unpublishArticle} className="ui-actions"><input type="hidden" name="articleId" value={article.id} /><input type="hidden" name="revision" value={String(article.revision)} /><button className={buttonClassName("secondary")} type="submit">Unpublish current article</button></form> : <p className="ui-muted">This account does not have article.unpublish access.</p>}
+      </Panel> : null}
+    </PageFrame>
   );
 }

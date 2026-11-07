@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createClient } from "../../../lib/supabase";
-import { EmptyState, buttonClassName } from "@epelawa/ui";
+import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge, buttonClassName } from "@epelawa/ui";
 
 type NewsroomArticle = {
   id: string;
@@ -46,17 +46,7 @@ export default async function NewsroomPage({ searchParams }: { searchParams: Pro
 
   const { data, error } = await query;
   if (error) {
-    return (
-      <div className="site-main">
-        <div className="ep-container">
-          <div className="page-header"><h1 className="page-header__title">Newsroom</h1></div>
-          <div className="admin-empty" role="alert">
-            <h2 className="admin-empty__title">Error loading articles</h2>
-            <p className="admin-empty__text">The newsroom could not verify article data. Try again in a moment.</p>
-          </div>
-        </div>
-      </div>
-    );
+    return <PageFrame className="ui-stack"><PageIntro eyebrow="Staff workspace" title="Newsroom" description="Manage private drafts and published versions." /><Notice tone="danger" role="alert"><strong>Articles could not be loaded.</strong><p>The newsroom could not verify article data. Try again in a moment.</p></Notice></PageFrame>;
   }
 
   const articles = (data ?? []) as unknown as NewsroomArticle[];
@@ -67,56 +57,31 @@ export default async function NewsroomPage({ searchParams }: { searchParams: Pro
     return Boolean(publishable && article.published_version_id !== article.current_version_id);
   }).length;
   const published = articles.filter((article) => Boolean(article.published_version_id)).length;
+  const states = ["draft", "review", "approved", "rejected", "published"];
 
   return (
-    <div className="site-main">
-      <div className="ep-container">
-        <div className="page-header">
-          <div>
-            <h1 className="page-header__title">Newsroom</h1>
-            <p className="page-header__lede">
-              Save privately, then publish immediately when the final version is ready. Publication requires verified staff access and is recorded in the audit log.
-            </p>
-          </div>
-          <Link href="/newsroom/new" className={buttonClassName("primary")}>Create draft</Link>
-        </div>
-
-        <div className="stat-grid" aria-label="Newsroom counts">
-          <div className="stat-card"><p className="stat-card__value">{drafts}</p><p className="stat-card__label">Private drafts</p></div>
-          <div className="stat-card"><p className="stat-card__value">{readyToPublish}</p><p className="stat-card__label">Versions ready to publish</p></div>
-          <div className="stat-card"><p className="stat-card__value">{published}</p><p className="stat-card__label">Articles with a public version</p></div>
-          <div className="stat-card"><p className="stat-card__value">{articles.length}</p><p className="stat-card__label">Articles loaded</p></div>
-        </div>
-
-        {articles.length > 0 ? (
-          <div className="table-wrap">
-            <table className="ep-table">
-              <thead><tr><th>Title</th><th>Current state</th><th>Revision</th><th>Slug</th><th>Updated</th><th>Action</th></tr></thead>
-              <tbody>
-                {articles.map((article) => {
-                  const version = article.current_version;
-                  const hasPublicVersion = Boolean(article.published_version_id);
-                  return (
-                    <tr key={article.id}>
-                      <td><Link href={`/newsroom/${article.id}`}>{version?.title || "(untitled)"}</Link></td>
-                      <td>
-                        <span className={`ep-state-badge ep-state--${version?.state ?? "unknown"}`}>{version?.state ?? "unknown"}</span>
-                        {hasPublicVersion ? <span className="admin-published-label">Public version</span> : null}
-                      </td>
-                      <td>{article.revision}</td>
-                      <td>{article.slug}</td>
-                      <td>{new Date(article.updated_at).toLocaleDateString("en-NG")}</td>
-                      <td><Link href={`/newsroom/${article.id}`} className={buttonClassName("ghost")}>Open</Link></td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <EmptyState title="No articles yet" description="Create a private draft to begin. Nothing appears publicly until a publisher explicitly publishes it." />
-        )}
-      </div>
-    </div>
+    <PageFrame className="ui-stack">
+      <PageIntro eyebrow="Staff workspace · Editorial" title="Newsroom" description="Save privately, then publish immediately when the final version is ready. Publication requires verified staff access and is recorded in the audit log." actions={<Link href="/newsroom/new" className={buttonClassName("primary")}>Create draft</Link>} />
+      <Panel className="ui-grid ui-grid--3" aria-label="Newsroom counts">
+        <div><p className="ui-number">{drafts}</p><p className="ui-muted">Private drafts</p></div>
+        <div><p className="ui-number">{readyToPublish}</p><p className="ui-muted">Versions ready to publish</p></div>
+        <div><p className="ui-number">{published}</p><p className="ui-muted">Articles with a public version</p></div>
+      </Panel>
+      <section className="ui-stack-sm" aria-labelledby="article-list-heading">
+        <SectionHeading eyebrow={`${articles.length} loaded`} title="Articles" id="article-list-heading" description="Current version and publication state for each article." />
+        <nav className="ui-tabs" aria-label="Filter articles by state">
+          <Link href="/newsroom" aria-current={!state ? "page" : undefined}>All</Link>
+          {states.map((item) => <Link key={item} href={`/newsroom?state=${item}`} aria-current={state === item ? "page" : undefined}>{item[0].toUpperCase() + item.slice(1)}</Link>)}
+        </nav>
+        {articles.length ? <Panel className="ui-table"><table><thead><tr><th scope="col">Article</th><th scope="col">State</th><th scope="col">Revision</th><th scope="col">Slug</th><th scope="col">Updated</th><th scope="col"><span className="sr-only">Action</span></th></tr></thead><tbody>
+          {articles.map((article) => {
+            const version = article.current_version;
+            const hasPublicVersion = Boolean(article.published_version_id);
+            const tone = version?.state === "published" ? "success" : version?.state === "rejected" ? "danger" : version?.state === "approved" ? "success" : version?.state === "review" ? "warning" : "neutral";
+            return <tr key={article.id}><td><Link href={`/newsroom/${article.id}`} className="ui-item-title">{version?.title || "Untitled article"}</Link></td><td><StatusBadge tone={tone}>{version?.state ?? "unknown"}</StatusBadge>{hasPublicVersion ? <span className="ui-meta">Public version</span> : null}</td><td>{article.revision}</td><td><span className="ui-meta">{article.slug}</span></td><td><span className="ui-meta">{new Date(article.updated_at).toLocaleDateString("en-NG")}</span></td><td><Link href={`/newsroom/${article.id}`} className={buttonClassName("secondary")}>Open</Link></td></tr>;
+          })}
+        </tbody></table></Panel> : <EmptyPanel title={state ? `No ${state} articles` : "No articles yet"} description={state ? "No article currently matches this state." : "Create a private draft to begin. Nothing appears publicly until a publisher explicitly publishes it."} actions={!state ? <Link href="/newsroom/new" className={buttonClassName("primary")}>Create draft</Link> : undefined} />}
+      </section>
+    </PageFrame>
   );
 }
