@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { VAPID_PUBLIC_KEY } from "../lib/vapid";
+import { VAPID_PUBLIC_KEY, WEB_PUSH_READY } from "../lib/vapid";
 
 /**
  * Notification opt-in popup.
@@ -15,6 +15,10 @@ export default function NotificationPrompt() {
   const [granted, setGranted] = useState<boolean | null>(null);
 
   useEffect(() => {
+    if (!WEB_PUSH_READY) {
+      setShow(false);
+      return;
+    }
     const granted = localStorage.getItem("epelawa_notification_consent");
     if (granted !== null) {
       setShow(false);
@@ -27,6 +31,10 @@ export default function NotificationPrompt() {
   }, []);
 
   const grant = async () => {
+    if (!WEB_PUSH_READY) {
+      setShow(false);
+      return;
+    }
     try {
       const permission = await Notification.requestPermission();
       const allowed = permission === "granted";

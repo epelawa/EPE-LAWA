@@ -22,8 +22,9 @@ export default function AboutPage() {
         <h2 className="mt-10 mb-3 text-lg font-bold">What EPE LAWA is</h2>
         <p className="mb-6">
           EPE LAWA brings together local news, Itan Ilu Mi community history, the Digital Village Square,
-          map and navigation links, and an Epe business directory and marketplace. Information and
-          listings are published only when approved; availability of individual features may vary.
+          map and navigation, a business directory and marketplace, Historical Sites & Tourism, EPE LAWA
+          Radio, and Who is Who in Epe. Information and listings are published only when approved;
+          availability of individual features may vary. The native mobile app is a separate future phase.
         </p>
 
         <h2 className="mt-10 mb-3 text-lg font-bold">Who runs it</h2>

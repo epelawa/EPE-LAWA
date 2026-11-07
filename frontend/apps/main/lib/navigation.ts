@@ -2,42 +2,37 @@ export type NavItem = {
   label: string;
   href: string;
   hint?: string;
-  /** Rendered in the header bar at 768px and up. Everything else is drawer-only. */
   primary?: boolean;
 };
 
-/**
- * Header navigation.
- *
- * Five destinations inline, two more in the drawer. Nothing here advertises a
- * section that does not exist: the previous list included "Forum" and
- * "Businesses — verified listings", which were not built.
- */
-const headerItems: NavItem[] = [
-  { label: "News", href: "/news", hint: "Reports and features", primary: true },
-  { label: "Who is Who", href: "/who-is-who", hint: "People and public office", primary: true },
-  { label: "Radio", href: "/radio", hint: "The programme on Radio Lagos", primary: true },
-  { label: "About", href: "/about", hint: "What EPE LAWA is", primary: true },
-  { label: "Contact", href: "/contact", hint: "Get in touch", primary: true },
-];
-
-const drawerOnlyItems: NavItem[] = [
-  { label: "Guidelines", href: "/guidelines", hint: "Editorial and community rules" },
-  { label: "Gallery", href: "/gallery", hint: "Photographs, licensed and credited" },
+const items: NavItem[] = [
+  { label: "News", href: "/news", hint: "Trending News", primary: true },
+  { label: "Ìtàn Ilú Mi", href: "/itan-ilu-mi", hint: "My Community History", primary: true },
+  { label: "Forum", href: "/forum", hint: "Chat Forum", primary: true },
+  { label: "Map", href: "/map", hint: "Map & Navigation", primary: true },
+  { label: "Business", href: "/business-directory", hint: "Business Directory & Marketplace", primary: true },
+  { label: "Tourism", href: "/tourism", hint: "Historical Sites & Tourism" },
+  { label: "Radio", href: "/radio", hint: "EPE LAWA Radio" },
+  { label: "Who is Who", href: "/who-is-who", hint: "People and public office holders" },
+  { label: "About", href: "/about", hint: "About EPE LAWA" },
+  { label: "Contact", href: "/contact", hint: "Contact the team" },
 ];
 
 export function mainNavigation(): NavItem[] {
-  return [...headerItems, ...drawerOnlyItems];
+  return items;
 }
 
-export function primaryNavigation(items: NavItem[]): NavItem[] {
-  return items.filter((item) => item.primary);
+export function primaryNavigation(navItems: NavItem[]): NavItem[] {
+  return navItems.filter((item) => item.primary);
 }
 
 export const footerNavigation: NavItem[] = [
-  { label: "About", href: "/about" },
-  { label: "Contact", href: "/contact" },
-  { label: "Guidelines", href: "/guidelines" },
-  { label: "Privacy", href: "/privacy" },
-  { label: "Terms", href: "/terms" },
+  { label: "Trending News", href: "/news" },
+  { label: "Ìtàn Ilú Mi — My Community History", href: "/itan-ilu-mi" },
+  { label: "Chat Forum", href: "/forum" },
+  { label: "Map & Navigation", href: "/map" },
+  { label: "Epe Business Directory & Marketplace", href: "/business-directory" },
+  { label: "Historical Sites & Tourism", href: "/tourism" },
+  { label: "EPE LAWA Radio", href: "/radio" },
+  { label: "Who is Who in Epe", href: "/who-is-who" },
 ];

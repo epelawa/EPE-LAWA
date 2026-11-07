@@ -13,7 +13,7 @@ import { isIndexingAllowed, siteUrl } from "../lib/site";
 import { themeScript } from "../lib/theme";
 
 const description =
-  "News, community history, local discussion, maps and business information for Epe Division.";
+  "News, community history, local discussion, maps, local business, tourism, radio and Who-is-Who for Epe Division.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -54,16 +54,16 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         {/* `components/notification-prompt.tsx` is intentionally NOT mounted.
             It asks for browser notification permission, then registers `/sw.js`
             and POSTs a subscription to `/api/notifications/subscribe` — neither
-            of those exists, and `lib/vapid.ts` holds a key that was never
-            issued. Asking a visitor for a permission we cannot honour is worse
-            than not asking. Re-mount it only once all four exist:
+            exists, and no real VAPID public key is configured. Asking a visitor
+            for a permission we cannot honour is worse than not asking. Re-mount
+            it only once all four exist:
               1. `public/sw.js` — a service worker that handles `push`
               2. `app/api/notifications/subscribe/route.ts` — authenticated,
                  rate-limited, and writes to `push_subscriptions`
               3. a real VAPID key pair, with the private half server-side only
               4. something that actually sends a notification
-            The component file itself is kept, unchanged, so the work is not
-            thrown away. */}
+            The component is guarded by the explicit public push enable flag and
+            remains unmounted until the complete delivery path is available. */}
       </body>
     </html>
   );

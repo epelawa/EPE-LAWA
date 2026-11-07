@@ -7,6 +7,8 @@ import { absoluteUrl } from "../../../lib/site";
 import { publicMediaUrl } from "../../../lib/media";
 import { formatPublishedDate } from "../../../lib/dates";
 import { ArticleBody } from "../../../lib/editorial-body";
+import { CommentThread } from "../comment-thread";
+import { NewsFeatureStatus } from "../../../components/news-feature-status";
 
 /**
  * EPE LAWA News — article page.
@@ -15,12 +17,10 @@ import { ArticleBody } from "../../../lib/editorial-body";
  * security_invoker, so RLS decides which rows and columns are visible; a draft cannot leak here
  * even if the query were wrong.
  *
- * There is no comment section, no newsletter form and no byline the database did not supply.
- * Comments are phase 4 and unbuilt; a form that posts nowhere and quotes attributed to real people
- * are not placeholders, they are false statements. The empty space is the honest state.
  */
 
 type PublishedArticle = {
+  id: string;
   slug: string;
   title: string;
   summary: string | null;
@@ -48,25 +48,30 @@ type ArticleResult =
  * It is not a shared cache: a corrected article is visible on the next request.
  */
 const loadArticle = cache(async (slug: string): Promise<ArticleResult> => {
-  const supabase = await createClient();
+  try {
+    const supabase = await createClient();
 
-  const { data, error } = await supabase
-    .from("published_articles")
-    .select(
-      "slug,title,summary,body,published_at,is_breaking,breaking_until,seo_title,seo_description,og_image_key,author_name,author_slug,category_slug,category_label,tags",
-    )
-    .eq("slug", slug)
-    .maybeSingle();
+    const { data, error } = await supabase
+      .from("published_articles")
+      .select(
+        "id,slug,title,summary,body,published_at,is_breaking,breaking_until,seo_title,seo_description,og_image_key,author_name,author_slug,category_slug,category_label,tags",
+      )
+      .eq("slug", slug)
+      .maybeSingle();
 
-  if (error) {
-    // Never render the driver message: it can name tables and policies.
-    console.error("published_articles read failed", { code: error.code });
+    if (error) {
+      // Never render the driver message: it can name tables and policies.
+      console.error("published_articles read failed", { code: error.code });
+      return { status: "error" };
+    }
+    if (!data) return { status: "missing" };
+
+    // The view's column list is the contract; the cast is the boundary between JSON and this page.
+    return { status: "found", article: data as PublishedArticle };
+  } catch {
+    console.error("published_articles article client unavailable", { reason: "configuration_or_provider" });
     return { status: "error" };
   }
-  if (!data) return { status: "missing" };
-
-  // The view's column list is the contract; the cast is the boundary between JSON and this page.
-  return { status: "found", article: data as PublishedArticle };
 });
 
 export async function generateMetadata({
@@ -109,11 +114,12 @@ export async function generateMetadata({
 }
 
 export default async function ArticlePage({
-  params,
+  params, searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ comments?: string }>;
 }) {
-  const { slug } = await params;
+  const [{ slug }, notice] = await Promise.all([params, searchParams]);
   const result = await loadArticle(slug);
 
   if (result.status === "error") {
@@ -180,6 +186,8 @@ export default async function ArticlePage({
           </div>
         </header>
 
+        <NewsFeatureStatus />
+
         {imageUrl ? (
           <figure className="mb-8">
             {/* The stored key is the only image metadata available on this view; the headline is
@@ -197,7 +205,7 @@ export default async function ArticlePage({
         ) : null}
 
         {article.summary ? (
-          <p className="mb-8 border-l-2 border-[var(--color-gold-500)] pl-4 text-lg font-medium leading-relaxed text-muted-foreground">
+          <p className="mb-8 border-l-2 border-[var(--color-brand-coral)] pl-4 text-lg font-medium leading-relaxed text-muted-foreground">
             {article.summary}
           </p>
         ) : null}
@@ -217,6 +225,7 @@ export default async function ArticlePage({
           </ul>
         ) : null}
 
+        <CommentThread articleId={article.id} slug={article.slug} notice={notice.comments} />
         <section className="mt-12 border-t pt-8" aria-labelledby="share-heading">
           <h2
             id="share-heading"

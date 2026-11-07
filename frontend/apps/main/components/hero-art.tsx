@@ -30,8 +30,8 @@ export default function HeroArt() {
         </defs>
 
         <rect width="640" height="420" rx="16" fill="url(#ep-sky)" />
-        <circle cx="452" cy="132" r="46" fill="var(--color-gold-500)" opacity="0.92" />
-        <circle cx="452" cy="132" r="70" fill="var(--color-gold-500)" opacity="0.12" />
+        <circle cx="452" cy="132" r="46" fill="var(--color-brand-coral)" opacity="0.92" />
+        <circle cx="452" cy="132" r="70" fill="var(--color-brand-coral)" opacity="0.12" />
 
         {/* Far bank */}
         <path d="M0 236h640v10H0z" fill="var(--hero-bank)" opacity="0.55" />
@@ -54,7 +54,7 @@ export default function HeroArt() {
         <rect y="246" width="640" height="174" fill="url(#ep-water)" />
 
         {/* Sun reflection */}
-        <g stroke="var(--color-gold-500)" strokeWidth="3" strokeLinecap="round" opacity="0.5">
+        <g stroke="var(--color-brand-coral)" strokeWidth="3" strokeLinecap="round" opacity="0.5">
           <path d="M420 268h64M410 288h84M424 308h56M416 328h72" />
         </g>
 

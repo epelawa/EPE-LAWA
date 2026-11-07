@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { createClient } from "../../lib/supabase";
+import { createClient, SupabaseConfigurationError } from "../../lib/supabase";
 import { formatPublishedDate } from "../../lib/dates";
 import { NewspaperIcon } from "../../components/icons";
+import { NewsFeatureStatus } from "../../components/news-feature-status";
 
 /**
  * EPE LAWA News — index.
@@ -46,7 +47,31 @@ function isBreakingNow(item: ArticleListItem): boolean {
 }
 
 export default async function NewsPage() {
-  const supabase = await createClient();
+  let supabase: Awaited<ReturnType<typeof createClient>>;
+  try {
+    supabase = await createClient();
+  } catch (error) {
+    if (!(error instanceof SupabaseConfigurationError)) throw error;
+    return (
+      <div className="ep-container py-12">
+        <header className="mb-8">
+          <p className="page-header__eyebrow">News</p>
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">EPE LAWA News</h1>
+        </header>
+        <NewsFeatureStatus />
+        <div className="card p-6">
+          <h2 className="text-lg font-bold">The newsroom did not load</h2>
+          <p className="mt-2 text-muted-foreground">
+            We could not reach the newsroom to fetch today&rsquo;s stories, so nothing is shown
+            rather than a guess. Nothing has changed on your side.
+          </p>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Reload the page, or <Link href="/" className="text-primary underline underline-offset-4">return to the homepage</Link>.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const { data, error } = await supabase
     .from("published_articles")
@@ -66,6 +91,7 @@ export default async function NewsPage() {
           <p className="page-header__eyebrow">News</p>
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">EPE LAWA News</h1>
         </header>
+        <NewsFeatureStatus />
         <div className="card p-6">
           <h2 className="text-lg font-bold">The newsroom did not load</h2>
           <p className="mt-2 text-muted-foreground">
@@ -97,6 +123,7 @@ export default async function NewsPage() {
           named byline, a publication date and a route back to the newsroom for corrections.
         </p>
       </header>
+      <NewsFeatureStatus />
 
       {articles.length === 0 ? (
         <div className="card p-8 text-center">

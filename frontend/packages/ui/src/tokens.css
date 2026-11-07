@@ -1,0 +1,15 @@
+:root {
+  --ep-ui-primary: #da251c;
+  --ep-ui-primary-strong: #b51f18;
+  --ep-ui-coral: #ff4a3d;
+  --ep-ui-navy: #17253a;
+  --ep-ui-sky: #eaf3fb;
+  --ep-ui-ivory: #fcfaf7;
+  --ep-ui-ink: #1c1e21;
+  --ep-ui-muted: #4a4f57;
+  --ep-ui-border: #82888f;
+  --ep-ui-success: #166534;
+  --ep-ui-warning: #8a5a00;
+  --ep-ui-error: #b3261e;
+  --ep-ui-radius: 0.875rem;
+}

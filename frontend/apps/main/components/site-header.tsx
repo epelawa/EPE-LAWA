@@ -3,131 +3,124 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { primaryNavigation, type NavItem } from "../lib/navigation";
+import { ArrowRightIcon } from "./icons";
 import ThemeToggle from "./theme-toggle";
 import { BrandLockup } from "./brand";
-import { primaryNavigation, type NavItem } from "../lib/navigation";
 
 const DRAWER_ID = "site-drawer";
 const DRAWER_TITLE_ID = "site-drawer-title";
-
-const FOCUSABLE =
-  'a[href], button:not([disabled]), input, [tabindex]:not([tabindex="-1"])';
+const FOCUSABLE = 'a[href], button:not([disabled]), input, [tabindex]:not([tabindex="-1"])';
 
 function isCurrentPage(pathname: string, href: string): boolean {
-  if (href === "/") return pathname === "/";
-  return pathname === href || pathname.startsWith(`${href}/`);
+  return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
 }
 
-function useScrolled(threshold = 8): boolean {
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    let frame = 0;
-    const read = () => {
-      frame = 0;
-      setScrolled(window.scrollY > threshold);
-    };
-    const onScroll = () => {
-      if (frame !== 0) return;
-      frame = window.requestAnimationFrame(read);
-    };
-    read();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      if (frame !== 0) window.cancelAnimationFrame(frame);
-    };
-  }, [threshold]);
-
-  return scrolled;
-}
-
-/**
- * Site header.
- *
- * One compact row: brand, five destinations, theme, menu. The drawer holds the
- * same five plus Guidelines and Gallery. There is no search control because
- * there is no `/search` route — a search box that submits nowhere is a dead
- * control, not a feature.
- */
 export default function SiteHeader({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
-  const scrolled = useScrolled();
-
   const [drawerOpen, setDrawerOpen] = useState(false);
-
   const drawerRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
-
+  const focusFrameRef = useRef<number | null>(null);
+  const previousPathnameRef = useRef(pathname);
   const inline = primaryNavigation(items);
-  const closeDrawer = useCallback(() => setDrawerOpen(false), []);
+  const moreItems = items.filter((item) => !item.primary);
+
+  const cancelDrawerFocus = useCallback(() => {
+    if (focusFrameRef.current !== null) {
+      window.cancelAnimationFrame(focusFrameRef.current);
+      focusFrameRef.current = null;
+    }
+  }, []);
+
+  const focusFirstDrawerItem = useCallback(() => {
+    const focusWhenVisible = (attempt = 0) => {
+      const node = drawerRef.current;
+      const root = node?.closest<HTMLElement>(".drawer-root");
+      if (!node || !root || node.inert || root.dataset.open !== "true" || attempt >= 60) return;
+      if (window.getComputedStyle(root).visibility !== "visible") {
+        focusFrameRef.current = window.requestAnimationFrame(() => {
+          focusFrameRef.current = null;
+          focusWhenVisible(attempt + 1);
+        });
+        return;
+      }
+      const first = Array.from(node.querySelectorAll<HTMLElement>(FOCUSABLE)).find(
+        (element) => element.offsetParent !== null,
+      );
+      first?.focus();
+    };
+    focusWhenVisible();
+  }, []);
+
+  const scheduleDrawerFocus = useCallback(() => {
+    cancelDrawerFocus();
+    focusFrameRef.current = window.requestAnimationFrame(() => {
+      focusFrameRef.current = null;
+      focusFirstDrawerItem();
+    });
+  }, [cancelDrawerFocus, focusFirstDrawerItem]);
+
+  const closeDrawer = useCallback(() => {
+    cancelDrawerFocus();
+    setDrawerOpen(false);
+    menuButtonRef.current?.focus();
+  }, [cancelDrawerFocus]);
 
   useEffect(() => {
+    if (previousPathnameRef.current === pathname) return;
+    previousPathnameRef.current = pathname;
+    const wasOpen = drawerRef.current ? !drawerRef.current.inert : false;
     setDrawerOpen(false);
-  }, [pathname]);
+    cancelDrawerFocus();
+    if (wasOpen) menuButtonRef.current?.focus();
+  }, [pathname, cancelDrawerFocus]);
 
   useEffect(() => {
     if (!drawerOpen) return;
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setDrawerOpen(false);
-        menuButtonRef.current?.focus();
+        closeDrawer();
+        return;
       }
-    };
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [drawerOpen]);
-
-  useEffect(() => {
-    if (!drawerOpen) return;
-
-    const previouslyFocused = document.activeElement as HTMLElement | null;
-    const { overflow } = document.body.style;
-    document.body.style.overflow = "hidden";
-
-    const focusFirst = () => {
-      const node = drawerRef.current;
-      if (!node) return;
-      node.querySelector<HTMLElement>(FOCUSABLE)?.focus();
-    };
-    const frame = window.requestAnimationFrame(focusFirst);
-
-    const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Tab") return;
-      const node = drawerRef.current;
-      if (!node) return;
-      const focusable = Array.from(node.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
-        (element) => element.offsetParent !== null,
-      );
-      if (focusable.length === 0) return;
 
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (!event.shiftKey && document.activeElement === last) {
+      const node = drawerRef.current;
+      const focusable = node
+        ? Array.from(node.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
+            (element) => element.offsetParent !== null,
+          )
+        : [];
+      if (!focusable.length) return;
+
+      if (!event.shiftKey && document.activeElement === focusable[focusable.length - 1]) {
         event.preventDefault();
-        first.focus();
-      } else if (event.shiftKey && document.activeElement === first) {
+        focusable[0].focus();
+      } else if (event.shiftKey && document.activeElement === focusable[0]) {
         event.preventDefault();
-        last.focus();
+        focusable[focusable.length - 1].focus();
       }
     };
 
     document.addEventListener("keydown", onKeyDown);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    scheduleDrawerFocus();
+
     return () => {
-      window.cancelAnimationFrame(frame);
       document.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = overflow;
-      previouslyFocused?.focus?.();
+      document.body.style.overflow = previousOverflow;
+      cancelDrawerFocus();
     };
-  }, [drawerOpen]);
+  }, [drawerOpen, closeDrawer, scheduleDrawerFocus, cancelDrawerFocus]);
 
   return (
-    <header className="site-head" data-scrolled={scrolled ? "true" : "false"}>
+    <header className="site-head">
       <div className="ep-container">
         <div className="site-head__inner">
-          <Link className="nav-brand" href="/" aria-label="EPE LAWA — home">
-            <BrandLockup size={30} />
+          <Link className="nav-brand" href="/">
+            <BrandLockup size={32} />
           </Link>
 
           <nav className="site-head__nav" aria-label="Main">
@@ -143,12 +136,40 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
                   </Link>
                 </li>
               ))}
+              {moreItems.length > 0 ? (
+                <li>
+                  <details className="site-head__more">
+                    <summary className="nav-link site-head__more-trigger">
+                      More
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                        <path d="m6 9 6 6 6-6" />
+                      </svg>
+                    </summary>
+                    <ul className="site-head__more-list" aria-label="More sections">
+                      {moreItems.map((item) => (
+                        <li key={item.href}>
+                          <Link
+                            className="nav-link"
+                            href={item.href}
+                            aria-current={isCurrentPage(pathname, item.href) ? "page" : undefined}
+                          >
+                            {item.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                </li>
+              ) : null}
             </ul>
           </nav>
 
           <div className="site-head__actions">
             <ThemeToggle />
-
+            <Link className="header-signin" href="/login">Sign in</Link>
+            <Link className="header-cta" href="/news">
+              Explore <ArrowRightIcon size={16} aria-hidden="true" />
+            </Link>
             <button
               ref={menuButtonRef}
               type="button"
@@ -156,7 +177,13 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
               aria-expanded={drawerOpen}
               aria-controls={DRAWER_ID}
               aria-label={drawerOpen ? "Close menu" : "Open menu"}
-              onClick={() => setDrawerOpen((open) => !open)}
+              onClick={() => {
+                if (drawerOpen) closeDrawer();
+                else {
+                  setDrawerOpen(true);
+                  scheduleDrawerFocus();
+                }
+              }}
             >
               <span className="menu-btn__lines" aria-hidden="true">
                 <span />
@@ -175,7 +202,6 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
           tabIndex={drawerOpen ? 0 : -1}
           onClick={closeDrawer}
         />
-
         <div
           ref={drawerRef}
           id={DRAWER_ID}
@@ -186,35 +212,16 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
           aria-hidden={drawerOpen ? undefined : "true"}
           inert={!drawerOpen}
         >
-          <div className="flex items-center justify-between px-6 py-3 border-b">
-            <p className="drawer-title" id={DRAWER_TITLE_ID}>
-              Menu
-            </p>
-            <button
-              type="button"
-              className="btn-icon"
-              aria-label="Close menu"
-              onClick={closeDrawer}
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18 18 6M6 6l12 12"
-                />
+          <div className="drawer-heading">
+            <p id={DRAWER_TITLE_ID}>Explore EPE LAWA</p>
+            <button type="button" className="btn-icon" aria-label="Close menu" onClick={closeDrawer}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                <path d="m6 6 12 12M18 6 6 18" />
               </svg>
             </button>
           </div>
-
           <nav className="drawer-nav" aria-label="All sections">
-            <ul className="py-2">
+            <ul>
               {items.map((item) => (
                 <li key={item.href}>
                   <Link
@@ -229,10 +236,11 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
               ))}
             </ul>
           </nav>
-
-          <p className="drawer-foot text-xs px-6 py-4 border-t">
-            Epe Division, Lagos State
-          </p>
+          <div className="drawer-account" aria-label="Member account">
+            <Link href="/login">Sign in</Link>
+            <Link href="/auth">Create account</Link>
+          </div>
+          <p className="drawer-foot">Epe Division · Lagos State</p>
         </div>
       </div>
     </header>
