@@ -1,130 +1,237 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "../../lib/supabase";
+import { formatIsoDay } from "../../lib/dates";
+import { publicMediaUrl } from "../../lib/media";
 import { UsersIcon } from "../../components/icons";
 
 /**
- * Who is Who directory index.
+ * Who is Who — directory index.
  *
- * Lists published people with their offices and communities. Honest empty state
- * when no profiles are published yet.
+ * Reads `published_people`, the public read model. The base `people` table only grants a visitor
+ * the columns it intends them to see, and `people_verifications` grants the badge and the date but
+ * not the reviewer or the note. That means the badge below is evidence, not decoration.
+ *
+ * A profile with no office still appears: a person is not their job title.
  */
+
+type PersonListItem = {
+  id: string;
+  slug: string;
+  full_name: string;
+  preferred_name: string | null;
+  community: string | null;
+  is_deceased: boolean;
+  is_verified: boolean;
+  portrait_key: string | null;
+  portrait_alt: string | null;
+};
+
+type OfficeListItem = {
+  person_id: string;
+  title: string;
+  institution: string;
+  term_start: string | null;
+  term_end: string | null;
+  is_current: boolean;
+};
+
+export const metadata: Metadata = {
+  title: "Who is Who",
+  description:
+    "People and public office holders in Epe Division, with a recorded source behind every profile.",
+  alternates: { canonical: "/who-is-who" },
+};
+
+/**
+ * The directory is capped rather than paginated for now, same reasoning as the news index: a page
+ * that silently stops at N with no "load more" must say so, which the footer line below does.
+ */
+const PAGE_SIZE = 60;
+
 export default async function WhoIsWhoPage() {
   const supabase = await createClient();
 
-  const { data: people, error } = await supabase
-    .from("people")
-    .select(`
-      id,
-      slug,
-      full_name,
-      preferred_name,
-      biography,
-      is_deceased,
-      community,
-      people_offices (
-        id,
-        title,
-        institution,
-        term_start,
-        term_end,
-        is_current
-      )
-    `)
-    .eq("status", "published")
-    .is("deleted_at", null)
-    .order("full_name", { ascending: true });
+  const { data, error } = await supabase
+    .from("published_people")
+    .select("id,slug,full_name,preferred_name,community,is_deceased,is_verified,portrait_key,portrait_alt")
+    .order("full_name", { ascending: true })
+    .limit(PAGE_SIZE);
 
   if (error) {
+    console.error("published_people list read failed", { code: error.code });
+
     return (
-      <main className="min-h-screen bg-card text-foreground">
-        <div className="max-w-md mx-auto px-4 py-12 sm:px-6 lg:px-8">
-          <div className="prose">
-            <h1 className="text-2xl font-bold tracking-tight mb-4">Who is Who</h1>
-            <p className="text-[var(--color-error-700)] text-sm mb-6">
-              The directory could not be loaded right now. Nothing has been
-              changed on your side. Try again in a moment.
-            </p>
-            <a href="/" className="text-primary underline underline-offset-4">
-              Return to homepage
-            </a>
-          </div>
+      <div className="ep-container py-12">
+        <header className="mb-8">
+          <p className="page-header__eyebrow">Who is Who</p>
+          <h1 className="text-3xl font-bold tracking-tight">Who is Who</h1>
+        </header>
+        <div className="card p-6">
+          <h2 className="text-lg font-bold">The directory did not load</h2>
+          <p className="mt-2 text-muted-foreground">
+            We could not reach the directory, so nothing is shown rather than a partial list that
+            would read as missing people. Nothing has changed on your side.
+          </p>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Reload the page, or{" "}
+            <Link href="/" className="text-primary underline underline-offset-4">
+              return to the homepage
+            </Link>
+            .
+          </p>
         </div>
-      </main>
+      </div>
     );
   }
 
+  const people = (data ?? []) as PersonListItem[];
+
+  /**
+   * Offices are fetched in one `in` query for the whole page, not one per person. Sixty profiles
+   * at one query each is a sixty-query page: the first reader of the directory would pay for it
+   * and so would the database.
+   */
+  const officesByPerson = new Map<string, OfficeListItem[]>();
+
+  if (people.length > 0) {
+    const { data: offices, error: officesError } = await supabase
+      .from("people_offices")
+      .select("person_id,title,institution,term_start,term_end,is_current")
+      .in(
+        "person_id",
+        people.map((person) => person.id),
+      )
+      .order("is_current", { ascending: false })
+      .order("term_start", { ascending: false, nullsFirst: false });
+
+    if (officesError) {
+      // Losing the offices degrades the card, it does not empty the directory. The profile links
+      // still resolve and each profile loads its own offices, so the reader can still get there.
+      console.error("people_offices list read failed", { code: officesError.code });
+    } else {
+      for (const office of (offices ?? []) as OfficeListItem[]) {
+        const list = officesByPerson.get(office.person_id);
+        if (list) list.push(office);
+        else officesByPerson.set(office.person_id, [office]);
+      }
+    }
+  }
+
   return (
-    <main className="min-h-screen bg-card text-foreground">
-      <div className="max-w-3xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-            Who is Who
-          </p>
-          <h1 className="text-2xl font-bold tracking-tight">Who is Who</h1>
-          <p className="text-muted-foreground mt-2 leading-relaxed">
-            People and public office holders in Epe Division. Every profile includes
-            sources and verification details — nothing is claimed without a record.
+    <div className="ep-container py-12">
+      <header className="mb-10">
+        <p className="page-header__eyebrow">Who is Who</p>
+        <h1 className="text-3xl font-bold tracking-tight">Who is Who</h1>
+        <p className="mt-3 max-w-2xl leading-relaxed text-muted-foreground">
+          People and public office holders in Epe Division. Every profile rests on at least one
+          recorded source; the badge means a member of the editorial team checked that source and
+          recorded when.
+        </p>
+      </header>
+
+      {people.length === 0 ? (
+        <div className="card p-8 text-center">
+          <UsersIcon size={32} className="mx-auto text-muted-foreground" />
+          <h2 className="mt-4 text-lg font-bold">No profiles published yet</h2>
+          <p className="mx-auto mt-2 max-w-md text-muted-foreground">
+            No profile appears here until it has been written, sourced and published. Inventing an
+            entry to fill the page would be worse than the empty page.
           </p>
         </div>
+      ) : (
+        <ul className="grid gap-4 sm:grid-cols-2">
+          {people.map((person) => {
+            const name = person.preferred_name || person.full_name;
+            const portrait = publicMediaUrl(person.portrait_key);
+            const offices = officesByPerson.get(person.id) ?? [];
 
-        {people && people.length > 0 ? (
-          <div className="space-y-4">
-            {people.map((person: any) => (
-              <div key={person.id} className="card p-4">
+            return (
+              <li key={person.id} className="card p-4">
                 <div className="flex items-start gap-3">
                   <div className="flex-shrink-0">
-                    <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center text-muted-foreground">
-                      <UsersIcon size={20} />
-                    </div>
-                  </div>
-                  <div>
-                    <Link
-                      href={`/who-is-who/${person.slug}`}
-                      className="text-foreground font-medium text-lg hover:text-primary"
-                    >
-                      {person.preferred_name || person.full_name}
-                    </Link>
-                    {person.is_deceased && (
-                      <span className="text-xs text-muted-foreground ml-2 italic">
-                        Deceased
-                      </span>
-                    )}
-                    <p className="text-muted-foreground text-sm mt-1">
-                      {person.community ||
-                        "Community not recorded in source documents"}
-                    </p>
-                    {person.people_offices && person.people_offices.length > 0 && (
-                      <div className="mt-2 space-y-1">
-                        {person.people_offices.map((office: any) => (
-                          <span
-                            key={office.id}
-                            className="inline-block mt-1 px-2 py-0.5 rounded-md bg-secondary text-primary text-xs font-medium"
-                          >
-                            {office.title}{office.institution ? `, ${office.institution}` : ""}
-                            {office.is_current ? " · current" : ""}
-                          </span>
-                        ))}
+                    {portrait ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={portrait}
+                        alt={person.portrait_alt || person.full_name}
+                        className="h-14 w-14 rounded-md border object-cover"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    ) : (
+                      <div className="flex h-14 w-14 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                        <UsersIcon size={22} />
                       </div>
                     )}
                   </div>
+
+                  <div className="min-w-0">
+                    <h2 className="text-lg font-semibold leading-snug">
+                      <Link
+                        href={`/who-is-who/${person.slug}`}
+                        className="text-foreground underline-offset-4 hover:text-primary hover:underline"
+                      >
+                        {name}
+                      </Link>
+                    </h2>
+
+                    <p className="mt-0.5 flex flex-wrap items-baseline gap-x-2 text-sm text-muted-foreground">
+                      <span>{person.community || "Community not recorded"}</span>
+                      {person.is_deceased ? (
+                        <>
+                          <span aria-hidden="true">·</span>
+                          <span className="italic">Deceased</span>
+                        </>
+                      ) : null}
+                    </p>
+
+                    {person.is_verified ? (
+                      <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-[var(--color-green-700)]">
+                        Verified
+                      </p>
+                    ) : null}
+
+                    {offices.length > 0 ? (
+                      <ul className="mt-2 flex flex-wrap gap-1.5">
+                        {offices.map((office) => {
+                          const start = formatIsoDay(office.term_start);
+                          const end = formatIsoDay(office.term_end);
+                          const years = office.is_current
+                            ? start
+                              ? `${start} – present`
+                              : "Current"
+                            : start || end
+                              ? `${start ?? "start not recorded"} – ${end ?? "end not recorded"}`
+                              : null;
+
+                          return (
+                            <li
+                              key={`${office.person_id}-${office.title}-${office.term_start ?? "x"}`}
+                              className="rounded-md bg-secondary px-2 py-0.5 text-xs font-medium text-primary"
+                            >
+                              {office.title}
+                              {office.institution ? `, ${office.institution}` : ""}
+                              {years ? ` · ${years}` : ""}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    ) : null}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-lg border bg-card p-8 text-center">
-            <UsersIcon size={32} className="text-muted-foreground" />
-            <h3 className="text-lg font-bold text-foreground mb-2">
-              No profiles published yet
-            </h3>
-            <p className="text-muted-foreground text-sm">
-              The Who is Who directory is being built. No profiles have been published
-              yet — every profile requires at least one recorded source before it can
-              appear here.
-            </p>
-          </div>
-        )}
-      </div>
-    </main>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      {people.length === PAGE_SIZE ? (
+        <p className="mt-8 text-sm text-muted-foreground">
+          Showing the first {PAGE_SIZE} profiles alphabetically. Later profiles are not listed on
+          this page yet.
+        </p>
+      ) : null}
+    </div>
   );
 }

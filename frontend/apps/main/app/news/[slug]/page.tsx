@@ -1,263 +1,274 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import { cache } from "react";
 import { createClient } from "../../../lib/supabase";
 import { absoluteUrl } from "../../../lib/site";
-import CookieBanner from "../../../components/cookie-banner";
-import NotificationPrompt from "../../../components/notification-prompt";
-import {
-  NewspaperIcon,
-  UsersIcon,
-  MessageCircleIcon,
-  ChevronRightIcon,
-} from "../../../components/icons";
+import { publicMediaUrl } from "../../../lib/media";
+import { formatPublishedDate } from "../../../lib/dates";
+import { ArticleBody } from "../../../lib/editorial-body";
 
 /**
  * EPE LAWA News — article page.
  *
- * Premium editorial layout inspired by modern news sites (Guardian, New York Times,
- * Sckooly.app). Large hero image area, elegant typography, author attribution,
- * share buttons (WhatsApp, Facebook, Twitter/X), comment section, related articles,
- * and newsletter signup.
+ * Reads the public read model (`published_articles`), not the base tables. That view is
+ * security_invoker, so RLS decides which rows and columns are visible; a draft cannot leak here
+ * even if the query were wrong.
+ *
+ * There is no comment section, no newsletter form and no byline the database did not supply.
+ * Comments are phase 4 and unbuilt; a form that posts nowhere and quotes attributed to real people
+ * are not placeholders, they are false statements. The empty space is the honest state.
  */
+
+type PublishedArticle = {
+  slug: string;
+  title: string;
+  summary: string | null;
+  body: unknown;
+  published_at: string | null;
+  is_breaking: boolean;
+  breaking_until: string | null;
+  seo_title: string | null;
+  seo_description: string | null;
+  og_image_key: string | null;
+  author_name: string;
+  author_slug: string;
+  category_slug: string;
+  category_label: string;
+  tags: { slug: string; label: string }[] | null;
+};
+
+type ArticleResult =
+  | { status: "found"; article: PublishedArticle }
+  | { status: "missing" }
+  | { status: "error" };
+
+/**
+ * `cache` dedupes the read between generateMetadata and the page render in the same request.
+ * It is not a shared cache: a corrected article is visible on the next request.
+ */
+const loadArticle = cache(async (slug: string): Promise<ArticleResult> => {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("published_articles")
+    .select(
+      "slug,title,summary,body,published_at,is_breaking,breaking_until,seo_title,seo_description,og_image_key,author_name,author_slug,category_slug,category_label,tags",
+    )
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (error) {
+    // Never render the driver message: it can name tables and policies.
+    console.error("published_articles read failed", { code: error.code });
+    return { status: "error" };
+  }
+  if (!data) return { status: "missing" };
+
+  // The view's column list is the contract; the cast is the boundary between JSON and this page.
+  return { status: "found", article: data as PublishedArticle };
+});
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const result = await loadArticle(slug);
+
+  if (result.status !== "found") {
+    // A missing or unreadable article must not be indexed under a generic title.
+    return { title: "Article not found", robots: { index: false, follow: false } };
+  }
+
+  const article = result.article;
+  const title = article.seo_title || article.title;
+  const description = article.seo_description || article.summary || undefined;
+  const image = publicMediaUrl(article.og_image_key);
+
+  return {
+    title,
+    description,
+    alternates: { canonical: `/news/${article.slug}` },
+    openGraph: {
+      type: "article",
+      title,
+      description,
+      url: `/news/${article.slug}`,
+      publishedTime: article.published_at ?? undefined,
+      images: image ? [{ url: image, alt: article.title }] : undefined,
+    },
+    twitter: {
+      card: image ? "summary_large_image" : "summary",
+      title,
+      description,
+      images: image ? [image] : undefined,
+    },
+  };
+}
+
 export default async function ArticlePage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const supabase = await createClient();
+  const result = await loadArticle(slug);
 
-  const { data: article, error } = await supabase
-    .from("articles")
-    .select(`
-      id,
-      slug,
-      title,
-      summary,
-      body,
-      seo_title,
-      seo_description,
-      og_image_key,
-      published_at,
-      created_at,
-      updated_at,
-      author_id,
-      category_id
-    `)
-    .eq("slug", slug)
-    .eq("state", "published")
-    .single();
-
-  if (error || !article) {
+  if (result.status === "error") {
     return (
-      <main className="min-h-screen bg-card text-foreground">
-        <div className="max-w-md mx-auto px-4 py-12 sm:px-6 lg:px-8">
-          <div className="prose text-center">
-            <h2 className="text-2xl font-bold tracking-tight mb-4">Article not found</h2>
-            <p className="text-muted-foreground mb-6">
-              The article you&rsquo;re looking for hasn&rsquo;t been published yet,
-              or the address may be mistyped.
-            </p>
-            <Link href="/news" className="text-primary underline underline-offset-4">
-              Return to news
-            </Link>
-          </div>
-        </div>
-      </main>
+      <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6 lg:px-8">
+        <h1 className="mb-4 text-2xl font-bold tracking-tight">This story did not load</h1>
+        <p className="mb-6 leading-relaxed text-muted-foreground">
+          The newsroom could not be reached, so nothing is shown rather than a guess at the
+          article. Try again in a moment.
+        </p>
+        <Link href="/news" className="btn-ghost">
+          Back to the news index
+        </Link>
+      </div>
     );
   }
 
-  const articleUrl = absoluteUrl(`/news/${slug}`);
-  const ogImage = article.og_image_key
-    ? absoluteUrl(`/api/media/${article.og_image_key}`)
-    : absoluteUrl("/share.png");
+  if (result.status !== "found") notFound();
 
-  const readTime = Math.ceil(
-    (article.body?.length || 0) / 200
-  ) || 3;
+  const article = result.article;
+  const articleUrl = absoluteUrl(`/news/${article.slug}`);
+  const imageUrl = publicMediaUrl(article.og_image_key);
+  const date = formatPublishedDate(article.published_at);
+  const breakingNow =
+    article.is_breaking &&
+    article.breaking_until !== null &&
+    new Date(article.breaking_until).getTime() > Date.now();
+
+  const shareText = `${article.title}\n\n${articleUrl}`;
 
   return (
-    <main className="min-h-screen bg-card text-foreground">
-      <CookieBanner />
-      <NotificationPrompt />
+    <article className="px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-3xl">
+        <nav aria-label="Breadcrumb" className="mb-8 text-sm">
+          <Link href="/news" className="text-primary underline underline-offset-4">
+            News
+          </Link>
+        </nav>
 
-      {/* Hero section */}
-      <section className="relative bg-muted border-b border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          {/* Category */}
-          <div className="flex items-center gap-2 mb-4">
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-secondary text-primary text-xs font-semibold">
-              News
+        <header className="mb-8">
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center rounded-full bg-secondary px-2.5 py-0.5 text-xs font-semibold text-primary">
+              {article.category_label}
             </span>
+            {breakingNow ? (
+              <span className="inline-flex items-center rounded-full bg-[var(--color-warning-100)] px-2.5 py-0.5 text-xs font-semibold text-[var(--color-warning-700)]">
+                Breaking
+              </span>
+            ) : null}
           </div>
 
-          {/* Headline */}
-          <h1 className="text-3xl sm:text-5xl font-bold tracking-tight leading-tight mb-6 text-foreground">
+          <h1 className="mb-4 text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
             {article.title}
           </h1>
 
-          {/* Author bar */}
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-full bg-muted flex-shrink-0 flex items-center justify-center text-muted-foreground">
-              <span className="text-sm font-medium">A</span>
-            </div>
-            <div>
-              <span className="text-sm font-semibold text-foreground">EPE LAWA Editorial</span>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {new Date(article.published_at).toLocaleDateString("en-GB", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                })}
-              </p>
-            </div>
-            <span className="ml-auto text-xs text-muted-foreground">{readTime} min read</span>
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm text-muted-foreground">
+            <span className="font-semibold text-foreground">By {article.author_name}</span>
+            {date ? (
+              <>
+                <span aria-hidden="true">·</span>
+                <time dateTime={article.published_at ?? undefined}>{date}</time>
+              </>
+            ) : null}
           </div>
+        </header>
 
-          {/* Hero image area */}
-          <div className="relative h-64 sm:h-80 lg:h-96 rounded-md overflow-hidden border bg-muted mb-6">
+        {imageUrl ? (
+          <figure className="mb-8">
+            {/* The stored key is the only image metadata available on this view; the headline is
+                the most accurate description we can give a screen reader until media alt text is
+                joined into the read model. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={ogImage}
+              src={imageUrl}
               alt={article.title}
-              className="w-full h-full object-cover"
+              className="w-full rounded-md border object-cover"
               loading="eager"
+              decoding="async"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
-            <div className="absolute bottom-6 left-6 text-white">
-              <p className="text-sm font-semibold">{article.title}</p>
-              <p className="text-sm opacity-90">Featured story</p>
-            </div>
-          </div>
-        </div>
-      </section>
+          </figure>
+        ) : null}
 
-      {/* Article body */}
-      <section className="px-4 py-12 sm:px-6 lg:px-8">
-        <div className="max-w-2xl mx-auto">
-          {/* Summary / Dek */}
-          <p className="text-lg sm:text-xl text-muted-foreground mb-8 font-medium italic leading-relaxed">
-            {article.summary || "No summary available."}
+        {article.summary ? (
+          <p className="mb-8 border-l-2 border-[var(--color-gold-500)] pl-4 text-lg font-medium leading-relaxed text-muted-foreground">
+            {article.summary}
           </p>
+        ) : null}
 
-          {/* Article body */}
-          <div className="prose prose-lg text-foreground max-w-none">
-            {article.body || "<p>Article body not available.</p>"}
-          </div>
+        <ArticleBody body={article.body} />
 
-          {/* Share section */}
-          <div className="mt-12 border-t border pt-8">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">
-              Share this story
-            </h3>
-            <div className="flex items-center gap-4">
-              <button
-                className="flex items-center gap-2 px-4 py-2 rounded-lg border bg-card text-foreground text-sm font-medium hover:bg-muted transition-colors"
-                onClick={() => {
-                  if (navigator.share) {
-                    navigator.share({
-                      title: article.title,
-                      text: article.summary,
-                      url: articleUrl,
-                    });
-                  } else {
-                    navigator.clipboard.writeText(articleUrl);
-                  }
-                }}
+        {article.tags && article.tags.length > 0 ? (
+          <ul className="mt-10 flex flex-wrap gap-2" aria-label="Tags">
+            {article.tags.map((tag) => (
+              <li
+                key={tag.slug}
+                className="rounded-md border px-2 py-1 text-xs font-medium text-muted-foreground"
               >
-                <span className="text-muted-foreground">Share link</span>
-              </button>
+                {tag.label}
+              </li>
+            ))}
+          </ul>
+        ) : null}
+
+        <section className="mt-12 border-t pt-8" aria-labelledby="share-heading">
+          <h2
+            id="share-heading"
+            className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground"
+          >
+            Share this story
+          </h2>
+          <ul className="flex flex-wrap items-center gap-3">
+            <li>
               <a
-                href={`https://wa.me/?text=${encodeURIComponent(
-                  article.title + "\n\n" + articleUrl
-                )}`}
+                href={`https://wa.me/?text=${encodeURIComponent(shareText)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 rounded-lg border-[var(--color-green-700)] bg-[var(--color-green-100)] text-[var(--color-green-700)] text-sm font-medium hover:bg-[var(--color-green-100)] transition-colors"
+                className="btn-ghost"
               >
-                <span className="text-[var(--color-green-700)]">WhatsApp</span>
+                Share on WhatsApp
+                <span className="sr-only"> (opens in a new tab)</span>
               </a>
+            </li>
+            <li>
               <a
-                href={`https://x.com/intent/tweet?text=${encodeURIComponent(
-                  article.title
-                )}&url=${encodeURIComponent(articleUrl)}`}
+                href={`https://x.com/intent/tweet?text=${encodeURIComponent(article.title)}&url=${encodeURIComponent(articleUrl)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 rounded-lg border-input bg-secondary text-primary text-sm font-medium hover:bg-secondary transition-colors"
+                className="btn-ghost"
               >
-                <span className="text-primary">Twitter</span>
+                Share on X
+                <span className="sr-only"> (opens in a new tab)</span>
               </a>
+            </li>
+            <li>
               <a
-                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-                  articleUrl
-                )}`}
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(articleUrl)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 rounded-lg border-input bg-secondary text-primary text-sm font-medium hover:bg-secondary transition-colors"
+                className="btn-ghost"
               >
-                <span className="text-primary">Facebook</span>
+                Share on Facebook
+                <span className="sr-only"> (opens in a new tab)</span>
               </a>
-            </div>
-          </div>
+            </li>
+          </ul>
+        </section>
 
-          {/* Comments section */}
-          <div className="mt-12 border-t border pt-8">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                  Comments
-                </span>
-                <span className="text-sm text-muted-foreground">(2)</span>
-              </div>
-            </div>
-            <div className="space-y-4">
-              <div className="flex gap-3">
-                <div className="w-8 h-8 rounded-full bg-muted flex-shrink-0 flex items-center justify-center text-muted-foreground text-sm">
-                  A
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm text-foreground leading-relaxed">
-                    <span className="font-semibold text-foreground">Adewale Tinubu</span>{" "}
-                    Great article — really important perspective on Epe development.
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">2 hours ago</p>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <div className="w-8 h-8 rounded-full bg-muted flex-shrink-0 flex items-center justify-center text-muted-foreground text-sm">
-                  R
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm text-foreground leading-relaxed">
-                    <span className="font-semibold text-foreground">Abdul Samad Rabiu</span>{" "}
-                    Well said. More coverage like this please.
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">4 hours ago</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Newsletter signup */}
-          <div className="mt-12 rounded-lg bg-slate-900 text-white p-8 sm:p-12">
-            <h2 className="text-xl font-bold mb-4">Stay updated</h2>
-            <p className="text-white/70 mb-6">
-              Subscribe to our newsletter for the latest news from Epe Division,
-              delivered straight to your inbox.
-            </p>
-            <form className="flex flex-col sm:flex-row gap-3">
-              <input
-                type="email"
-                placeholder="Your email address"
-                className="flex-1 px-4 py-3 rounded-lg border-input bg-slate-800 text-white"
-              />
-              <button
-                className="px-6 py-3 bg-primary text-white font-medium rounded-lg hover:opacity-90 transition-colors"
-              >
-                Subscribe
-              </button>
-            </form>
-          </div>
-        </div>
-      </section>
-    </main>
+        <p className="mt-12 border-t pt-8 text-sm text-muted-foreground">
+          Something in this story wrong or missing?{" "}
+          <Link href="/contact" className="text-primary underline underline-offset-4">
+            Tell the newsroom
+          </Link>
+          .
+        </p>
+      </div>
+    </article>
   );
 }

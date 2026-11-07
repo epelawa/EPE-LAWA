@@ -1,69 +1,49 @@
+"use client";
+
+import { useState } from "react";
+
 /**
- * The EPE LAWA mark.
- * Uses the real brand mark (brand-logo.png).
+ * The EPE LAWA lockup.
+ *
+ * The only brand mark in this project is the supplied artwork at
+ * `public/brand-logo.png`. An earlier version drew a fallback mark inline (a
+ * teal circle with a wave) which was invented branding — it has been removed.
+ *
+ * The PNG is dark artwork on a transparent background, so it sits on an ivory
+ * chip: without it the mark disappears in dark mode. Its native size is
+ * 1348×1167, so the width is derived from the height instead of being forced
+ * into a square.
+ *
+ * If the file fails to load, the wordmark text below is the honest fallback.
+ * Nothing is hidden with `display: none`.
  */
 
-type BrandMarkProps = {
-  size?: number;
-  onDark?: boolean;
-};
+const LOGO_WIDTH = 1348;
+const LOGO_HEIGHT = 1167;
 
-export function BrandMark({ size = 34, onDark = false }: BrandMarkProps) {
-  return (
-    <span className="flex items-center gap-2" data-on-dark={onDark ? "true" : undefined}>
-      <img
-        src="/brand-logo.png"
-        alt=""
-        width={size}
-        height={size}
-        decoding="async"
-        className="rounded-lg"
-        aria-hidden="true"
-        onError={(event) => {
-          const target = event.currentTarget as HTMLImageElement;
-          target.style.display = "none";
-        }}
-      />
-      <svg
-        width={size}
-        height={size}
-        viewBox="0 0 40 40"
-        aria-hidden="true"
-        focusable="false"
-        className="hidden"
-        data-on-dark={onDark ? "true" : undefined}
-      >
-        <rect width="40" height="40" rx="11" fill="currentColor" />
-        <circle cx="27.2" cy="12.4" r="3.1" fill="#10b981" />
-        <path
-          d="M7.4 21.4c3.2 0 3.2 3 6.4 3s3.2-3 6.4-3 3.2 3 6.4 3 3.2-3 6.4-3"
-          fill="none"
-          stroke="#ffffff"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-        />
-        <path
-          d="M7.4 28.2c3.2 0 3.2 3 6.4 3s3.2-3 6.4-3 3.2 3 6.4 3 3.2-3 6.4-3"
-          fill="none"
-          stroke="#ffffff"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-          opacity="0.5"
-        />
-      </svg>
-    </span>
-  );
-}
+export function BrandLockup({ size = 32 }: { size?: number }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const markWidth = Math.round((size * LOGO_WIDTH) / LOGO_HEIGHT);
 
-export function BrandLockup({ size = 34, onDark = false }: BrandMarkProps) {
   return (
-    <span className="flex items-center gap-2" data-on-dark={onDark ? "true" : undefined}>
-      <BrandMark size={size} onDark={onDark} />
-      <span className="flex flex-col">
-        <span className="font-bold text-foreground tracking-tight">EPE LAWA</span>
-        <span className="text-[11px] text-muted-foreground uppercase tracking-wider">
-          Epe Division
+    <span className="brand">
+      {imageFailed ? null : (
+        <span className="brand__mark">
+          <img
+            src="/brand-logo.png"
+            alt=""
+            width={markWidth}
+            height={size}
+            decoding="async"
+            aria-hidden="true"
+            onError={() => setImageFailed(true)}
+          />
         </span>
+      )}
+
+      <span className="brand__word">
+        <span className="brand__name">EPE LAWA</span>
+        <span className="brand__place">Epe Division</span>
       </span>
     </span>
   );
