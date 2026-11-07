@@ -19,7 +19,7 @@
 | Staff access and analytics | Partial worktree changes; not fully tested | Verify secure staff session, fresh capability check, real query analytics, unavailable-versus-zero and audit. |
 | Transactional email | Templates/configuration not verified | Test branded templates; sender/provider readiness unconfirmed pending authenticated domain and test delivery. |
 | Builds/tests/Playwright | Current release checks not verified | Run typecheck, builds, tests and full Playwright at required widths; record actual results. |
-| Deployment | Current branch preview unverified | Older public alias and supplied failed build log do not prove current deployment. Production read-only. |
+| Deployment | Old public baseline checked; feature-branch preview unverified | Read-only Playwright on `https://epelawa.vercel.app` showed an older incomplete deployment; see `16-progress-log.md`. Production remained read-only. |
 
 | Historical Sites & Tourism | In scope; implementation/verification status not established by this audit | Verify sourced destinations, approval, public fields, visit facts and map handoff. |
 | EPE LAWA Radio | Public route exists; final full-flow verification outstanding | Verify official stream permission/URL/format/playback, truthful status, schedules/archive and staff capabilities. |
@@ -28,7 +28,7 @@
 
 Verified active staff with `article.publish` may publish directly; a second reviewer is not required. Stale revisions are denied and each transition is audited. Test content remains private in isolated environments. No production test articles, orders or payments.
 
-A supplied Vercel log records an older `main` build at `8885e16` failing from unresolved helper imports and filtered environment variables. Helper modules now exist in the worktree, but a current build/preview remains unverified. No isolated Supabase development branch was created. Email and Paystack providers are unconfirmed.
+A supplied Vercel log records an older `main` build at `8885e16` failing from unresolved helper imports and filtered environment variables. A fresh read-only public-alias baseline still showed missing routes; it does not verify this feature branch. Current Vercel preview status remains unverified. No isolated Supabase development branch was created. Email and Paystack providers are unconfirmed.
 
 ## Next actions
 

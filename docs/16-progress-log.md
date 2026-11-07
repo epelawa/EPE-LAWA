@@ -23,7 +23,7 @@ An active, verified staff member with `article.publish` may publish directly wit
 
 ## Current verification snapshot
 
-No current full Playwright, release-gate, provider delivery, live RLS, or deployment/preview pass is asserted in this log. Re-run the relevant checks and record exact output. No isolated Supabase development branch was created. No production writes are authorized.
+No current full all-eight local/preview release pass, provider delivery, or live RLS pass is asserted in this log. A read-only production baseline is recorded below but does not verify this feature branch. No isolated Supabase development branch was created. No production writes are authorized.
 
 ## Immediate verification priorities
 
@@ -35,3 +35,4 @@ No current full Playwright, release-gate, provider delivery, live RLS, or deploy
 6. Keep email/Paystack-dependent actions unavailable until provider setup and isolated testing are confirmed.
 
 - **2026-11-07 20:43** — Owner reaffirmed web scope: all eight client brief areas 3.1–3.8, plus cross-cutting auth/admin/email/security/privacy/analytics/testing. Only native mobile apps are deferred. Preserve section 5 future enhancements (event ticketing, emergency contacts, scholarship/job board, e-learning, English/Yoruba, AI local assistant) in the complete roadmap. Documentation/public-copy scope correction only; no tests or deployments run.
+- **2026-11-07 21:22** — Read-only Playwright baseline against `https://epelawa.vercel.app` covered all eight module routes at 320/375/768/1024/1440 px and the public auth routes. News, Radio and Who-is-Who returned 200; Itan Ilu Mi, Forum, Map, Business Directory, Tourism and the auth routes returned 404; Radio overflowed at 320/375 px. This is the older production deployment, not the feature branch. No forms were submitted and no production writes occurred; the feature-branch preview remains unverified.

@@ -24,7 +24,7 @@ No credentials, secrets or real personal information in fixtures, logs or commit
 
 ## 5. Git and deployment
 
-This task authorizes documentation/copy changes only. Do not commit, push, merge or otherwise change Git state unless explicitly authorized in the active task. Record deployment/preview status as unverified unless inspected with evidence.
+The active owner-authorized task includes implementation work. Commit each verified phase separately on `feat/full-web-implementation`, push the feature branch and maintain a pull request targeting `main`. Do not push implementation commits directly to `main`; merge only after all relevant verification passes. The repository has no branch protection, so manually honor the PR/test gate. Record deployment/preview status only from inspected evidence.
 
 ## 6. Project architecture
 

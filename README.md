@@ -35,7 +35,7 @@ The public app is `frontend/apps/main`; the staff app is `frontend/apps/admin`.
 
 ## Deployment status
 
-A supplied Vercel log records an older `main` build at `8885e16` failing due to unresolved helper imports and filtered environment variables. The worktree has helper modules, but that is not proof a current build or preview passes. A read-only fetch of the public alias returned older content; current deployment/preview is unverified.
+A supplied Vercel log records an older `main` build at `8885e16` failing due to unresolved helper imports and filtered environment variables. A read-only Playwright baseline on 2026-11-07 against `https://epelawa.vercel.app` found the deployed alias is still an older, incomplete release: News, Radio and Who-is-Who returned 200, while several approved module and auth routes returned 404; Radio overflowed at 320/375 px. This is not the feature branch. The current feature-branch preview remains unverified; no production writes were made.
 
 ## Key documents
 
