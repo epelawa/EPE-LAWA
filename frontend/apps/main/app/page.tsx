@@ -1,8 +1,9 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import DownloadApp from "../components/download-app";
+import { newsUrl } from "../lib/site";
 
-const newsroomUrl = "https://news.epelawa.ng";
+const newsroomUrl = newsUrl;
 
 const modules = [
   {

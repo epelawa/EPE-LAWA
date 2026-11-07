@@ -9,13 +9,13 @@ import { NewspaperIcon } from "../../components/icons";
  */
 export default function NewsPage() {
   return (
-    <main className="min-h-screen bg-white text-slate-900">
+    <div className="min-h-screen bg-card text-foreground">
       <section className="px-4 py-12 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
             <div>
               <h1 className="text-3xl font-bold tracking-tight">EPE LAWA News</h1>
-              <p className="text-slate-600 mt-2">
+              <p className="text-muted-foreground mt-2">
                 Reporting from Epe Division, Lagos State — at home and abroad.
               </p>
             </div>
@@ -25,15 +25,15 @@ export default function NewsPage() {
           </div>
 
           <div className="card p-8 text-center">
-            <NewspaperIcon size={32} className="text-slate-400 mb-4" />
+            <NewspaperIcon size={32} className="text-muted-foreground mb-4" />
             <h2 className="text-xl font-bold mb-2">No stories published yet</h2>
-            <p className="text-slate-600">
+            <p className="text-muted-foreground">
               The newsroom is being built. When stories are published, they'll
               appear here with named sources, dates and correction notices.
             </p>
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

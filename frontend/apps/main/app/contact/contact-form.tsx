@@ -111,9 +111,9 @@ export default function ContactForm() {
       {state.status !== "idle" ? (
         <div ref={resultRef} className="form-result mb-6" tabIndex={-1} role="alert">
           {state.status === "invalid" ? (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-              <h3 className="font-semibold text-red-900 mb-2">Check the highlighted fields</h3>
-              <ul className="form-summary__list list-disc pl-5 text-red-800 text-sm">
+            <div className="rounded-lg border-[var(--color-error-700)] bg-[var(--color-error-100)] p-4">
+              <h3 className="font-semibold text-[var(--color-error-700)] mb-2">Check the highlighted fields</h3>
+              <ul className="form-summary__list list-disc pl-5 text-[var(--color-error-700)] text-sm">
                 {fields.map((field) =>
                   state.errors[field] ? (
                     <li key={field}>
@@ -124,11 +124,11 @@ export default function ContactForm() {
               </ul>
             </div>
           ) : (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-              <h3 className="font-semibold text-red-900 mb-2">
+            <div className="rounded-lg border-[var(--color-error-700)] bg-[var(--color-error-100)] p-4">
+              <h3 className="font-semibold text-[var(--color-error-700)] mb-2">
                 Your message could not be sent
               </h3>
-              <p className="text-red-800 text-sm">
+              <p className="text-[var(--color-error-700)] text-sm">
                 Please try again, or email us directly at{" "}
                 <a href={`mailto:${CONTACT_EMAIL}`} className="underline underline-offset-4">
                   {CONTACT_EMAIL}

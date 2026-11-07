@@ -1,3 +1,5 @@
+import "./globals.css";
+
 export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
@@ -18,7 +20,6 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: { default: "EPE LAWA — The Voice of Epe Division", template: "%s | EPE LAWA" },
   description,
-  other: { "clyvro-verification": "clyvro-verification=bgGvrkMEUkTOaufJIGTtWi-l7mQSZ4dmh-QpuoM4_WM" },
   robots: isIndexingAllowed() ? undefined : { index: false, follow: false },
   alternates: { canonical: "/" },
   openGraph: {

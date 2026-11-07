@@ -4,97 +4,270 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    /* ── Raw brand tokens (docs/05-design-system.md §2) ───────────────────── */
+    --color-teal-900: #073e42;
+    --color-teal-700: #0b5a60; /* Riverine Teal — primary */
+    --color-teal-600: #0f6b72;
+    --color-teal-100: #e3efef;
+
+    --color-green-700: #2e7d32; /* Palm Green — secondary / positive */
+    --color-green-100: #e8f2e8;
+
+    --color-gold-500: #e5a93c; /* Ochre Gold — accent surface only, never ink */
+    --color-gold-100: #fdf3e0;
+
+    --color-charcoal-900: #1c1e21;
+    --color-charcoal-600: #4a4f57;
+    --color-charcoal-300: #b8bcc2; /* decorative dividers only — 1.8:1, fails 3:1 */
+
+    --color-ivory-50: #f9f8f6;
+    --color-white: #ffffff;
+
+    --color-error-700: #b3261e;
+    --color-error-100: #fdecea;
+    --color-warning-700: #8a5a00;
+    --color-warning-100: #fdf1dc;
+
+    /* A divider that must be *perceivable* (input boundary) is 3.58:1 on white.
+       Charcoal-300 is 1.8:1 and is only allowed on decorative rules. */
+    --color-border-strong: #82888f;
+
+    /* ── Space / radius / elevation / motion (§4) ─────────────────────────── */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-12: 48px;
+    --space-16: 64px;
+
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-full: 9999px;
+
+    --shadow-1: 0 1px 2px rgb(28 30 33 / 0.06);
+    --shadow-2: 0 2px 8px rgb(28 30 33 / 0.08);
+
+    --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+    --dur-fast: 120ms;
+    --dur-base: 200ms;
+    --dur-slow: 320ms;
+
+    --touch-min: 44px;
+    --content-max: 1200px;
+    --gutter: 16px;
+
+    /* Font stacks. Plus Jakarta Sans / Inter are NOT bundled yet — no network
+       font request is made, so these fall back to the system stack until the
+       real files are added with next/font. */
+    --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system,
+      "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-body: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+      Roboto, "Helvetica Neue", Arial, sans-serif;
+
+    /* ── Semantic tokens consumed by Tailwind ─────────────────────────────── */
+    --background: 40 20% 97.1%; /* ivory-50 */
+    --foreground: 216 8.2% 12%; /* charcoal-900 */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    --card-foreground: 216 8.2% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.75rem;
+    --popover-foreground: 216 8.2% 12%;
+    --primary: 184.2 79.4% 21%; /* teal-700 */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 40 20% 94%;
+    --secondary-foreground: 216 8.2% 12%;
+    --muted: 40 20% 94%;
+    --muted-foreground: 216.9 8.1% 31.6%; /* charcoal-600, 8.24:1 on white */
+    --accent: 184.2 79.4% 21%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 3.2 71.3% 41%; /* error-700 */
+    --destructive-foreground: 0 0% 100%;
+    --border: 212 6% 86%; /* decorative dividers only */
+    --input: 212.3 5.5% 53.5%; /* 3.58:1 — perceivable control boundary */
+    --ring: 184.2 79.4% 21%; /* teal-700 focus ring: 7.48:1 on ivory */
+    --radius: 0.5rem;
   }
 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.1% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 217.2 91.1% 59.8%;
+  /* lib/theme.ts writes data-theme on <html>. The previous selector was `.dark`,
+     which nothing ever set — the theme toggle changed nothing. */
+  [data-theme="dark"] {
+    --background: 216 10.2% 9.6%; /* #16181b */
+    --foreground: 40 20% 97.1%; /* ivory-50, 17.5:1 */
+    --card: 216 8.2% 12%; /* #1C1E21 */
+    --card-foreground: 40 20% 97.1%;
+    --popover: 216 8.2% 12%;
+    --popover-foreground: 40 20% 97.1%;
+    /* Teal-700 is 2.1:1 on charcoal, so dark mode inverts the button:
+       a teal-100 surface with teal-900 ink (11:1). */
+    --primary: 180 27.3% 91.4%;
+    --primary-foreground: 184.1 80.8% 14.3%;
+    --secondary: 216 8.2% 16%;
+    --secondary-foreground: 40 20% 97.1%;
+    --muted: 216 8.2% 16%;
+    --muted-foreground: 216 8% 74%; /* ~9:1 on #16181b */
+    --accent: 180 27.3% 91.4%;
+    --accent-foreground: 184.1 80.8% 14.3%;
+    --destructive: 3.2 71.3% 62%;
+    --destructive-foreground: 216 10.2% 9.6%;
+    --border: 216 8% 24%;
+    --input: 216 6% 45%; /* perceivable on the dark surface */
+    --ring: 180 27.3% 91.4%; /* 14.21:1 on charcoal */
   }
 
   * {
-    @apply border-border;
+    /* Tailwind preflight sets a border colour on every element; point it at the
+       token so nothing renders the framework default grey. */
+    border-color: hsl(var(--border));
   }
 
   body {
-    @apply bg-background text-foreground;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: var(--font-body);
     font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
-}
 
-@layer base {
-  h1, h2, h3, h4, h5, h6 {
-    @apply tracking-tight;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
+    letter-spacing: -0.015em;
+  }
+
+  /* One visible focus treatment for the whole app. The design system asks for
+     2px teal-700 + 2px offset; nothing may remove it without a replacement. */
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
   }
 }
 
 @layer components {
+  /* Every button carries the 44px touch minimum from the token set, not from
+     padding arithmetic that silently drops below it on small screens. */
+  .btn-primary,
+  .btn-secondary,
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-6 text-sm font-medium transition-colors;
+    min-height: var(--touch-min);
+    border-radius: var(--radius-md);
+  }
+
   .btn-primary {
-    @apply inline-flex items-center justify-center px-6 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-xl shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 active:scale-95 disabled:opacity-50;
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border: 1px solid transparent;
+    transition-duration: var(--dur-fast);
+  }
+
+  .btn-primary:hover {
+    /* brightness works in both themes; a fixed teal hover would jump from
+       teal-100 to teal-600 in dark mode. */
+    filter: brightness(0.94);
+  }
+
+  .btn-primary:active {
+    filter: brightness(0.88);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center px-6 py-2.5 bg-white text-blue-600 border border-blue-200 text-sm font-medium rounded-xl shadow-sm hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 active:scale-95 disabled:opacity-50;
+    background-color: hsl(var(--card));
+    color: hsl(var(--primary));
+    border: 1px solid hsl(var(--input));
+    transition-duration: var(--dur-fast);
+  }
+
+  .btn-secondary:hover {
+    background-color: var(--color-teal-100);
+  }
+
+  .btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center px-4 py-2 text-slate-600 text-sm font-medium rounded-xl hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 active:scale-95;
+    padding-inline: var(--space-4);
+    color: hsl(var(--muted-foreground));
+    background: transparent;
+    border: 1px solid transparent;
+    transition-duration: var(--dur-fast);
+  }
+
+  .btn-ghost:hover {
+    background-color: hsl(var(--muted));
+    color: hsl(var(--foreground));
   }
 
   .btn-icon {
-    @apply p-2 text-slate-600 rounded-xl hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200;
+    @apply inline-flex items-center justify-center text-muted-foreground transition-colors;
+    min-width: var(--touch-min);
+    min-height: var(--touch-min);
+    border-radius: var(--radius-md);
+    transition-duration: var(--dur-fast);
+  }
+
+  .btn-icon:hover {
+    background-color: hsl(var(--muted));
+    color: hsl(var(--foreground));
   }
 
   .nav-link {
-    @apply px-4 py-2 text-sm font-medium rounded-xl transition-colors duration-200;
+    @apply inline-flex items-center text-sm font-medium transition-colors;
+    padding: var(--space-2) var(--space-3);
+    min-height: var(--touch-min);
+    border-radius: var(--radius-md);
+    transition-duration: var(--dur-fast);
+    color: hsl(var(--muted-foreground));
   }
 
+  .nav-link:hover {
+    background-color: hsl(var(--muted));
+    color: hsl(var(--primary));
+  }
+
+  .nav-link[aria-current="page"] {
+    color: hsl(var(--primary));
+    font-weight: 600;
+  }
+
+  /* A card is not interactive, so it does not lift on hover. */
   .card {
-    @apply bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-200;
+    @apply bg-card text-card-foreground border;
+    border-color: hsl(var(--border));
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-1);
   }
 
   .input {
-    @apply w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200;
+    @apply w-full bg-card text-foreground;
+    min-height: var(--touch-min);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid hsl(var(--input));
+    border-radius: var(--radius-sm);
+    transition: border-color var(--dur-fast) var(--ease-out);
+  }
+
+  .input:focus {
+    border-color: hsl(var(--ring));
   }
 
   .label {
-    @apply block text-sm font-medium text-slate-700 mb-1.5;
+    @apply block text-sm font-medium text-foreground;
+    margin-bottom: var(--space-1);
   }
 }
 
@@ -102,61 +275,149 @@
   position: fixed;
   inset: 0;
   z-index: 60;
-  display: none;
+  display: grid;
+  justify-items: end;
+  /* visibility (not display:none) so the panel can transition, and so it is
+     removed from the accessibility tree and the tab order when closed. */
+  visibility: hidden;
+  transition: visibility 0s linear var(--dur-base);
 }
 
 .drawer-root[data-open="true"] {
-  display: grid;
+  visibility: visible;
+  transition-delay: 0s;
 }
 
 .drawer-scrim {
   position: absolute;
   inset: 0;
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(4px);
+  background: hsl(var(--foreground) / 0.45);
+  border: 0;
+  padding: 0;
 }
 
 .drawer {
   position: relative;
   z-index: 61;
-  inset-inline-start: 100%;
-  width: min(280px, 100vw);
-  height: 100vh;
-  background: white;
-  border-right: 1px solid #e2e8f0;
-  box-shadow: -4px 0 20px -10px rgba(0, 0, 0, 0.1);
+  inline-size: min(320px, 100vw);
+  block-size: 100dvh;
+  background: hsl(var(--card));
+  color: hsl(var(--card-foreground));
+  /* A right-hand drawer draws its edge on the left. */
+  border-inline-start: 1px solid hsl(var(--border));
+  box-shadow: var(--shadow-2);
   transform: translateX(100%);
-  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: transform var(--dur-base) var(--ease-out);
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .drawer-root[data-open="true"] .drawer {
   transform: translateX(0);
 }
 
+.drawer-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.drawer-nav {
+  display: block;
+}
+
+.drawer-link {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: var(--touch-min);
+  padding: var(--space-3) var(--space-6);
+  color: hsl(var(--foreground));
+  text-decoration: none;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.drawer-link:hover {
+  background: hsl(var(--muted));
+}
+
+.drawer-link[aria-current="page"] {
+  color: hsl(var(--primary));
+  font-weight: 600;
+}
+
+.drawer-label {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.drawer-hint {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.drawer-soon-title {
+  color: hsl(var(--muted-foreground));
+}
+
+.drawer-soon-item {
+  border-color: hsl(var(--border));
+}
+
+.drawer-soon-label {
+  color: hsl(var(--foreground));
+}
+
+.drawer-soon-detail,
+.drawer-foot {
+  color: hsl(var(--muted-foreground));
+}
+
+.drawer-foot {
+  border-color: hsl(var(--border));
+}
+
 .search-panel {
   position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  width: min(420px, 95vw);
-  border: 1px solid #e2e8f0;
-  border-radius: 1rem;
-  background: white;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  top: calc(100% + var(--space-2));
+  inset-inline-end: var(--space-4);
+  inline-size: min(420px, calc(100vw - 2 * var(--space-4)));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-md);
+  background: hsl(var(--card));
+  box-shadow: var(--shadow-2);
   opacity: 0;
+  visibility: hidden;
   transform: translateY(-8px);
-  transition: opacity 0.2s, transform 0.2s;
+  transition: opacity var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out), visibility 0s linear var(--dur-fast);
   pointer-events: none;
 }
 
 .search-panel[data-open="true"] {
   opacity: 1;
+  visibility: visible;
   transform: translateY(0);
   pointer-events: auto;
+  transition-delay: 0s;
 }
 
 .skip-link {
-  @apply sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-white focus:text-blue-600 focus:ring-2 focus:ring-blue-600 focus:rounded-md;
+  position: absolute;
+  inset-inline-start: var(--space-4);
+  top: var(--space-4);
+  z-index: 50;
+  transform: translateY(-200%);
+  background: hsl(var(--card));
+  color: hsl(var(--primary));
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
 }
 
 .site-main {
@@ -164,38 +425,40 @@
 }
 
 /* ── Landing v4 · modern product/editorial composition ───────────────────── */
+/* The header is sticky, so it needs an opaque surface or page content scrolls
+   visibly underneath it. This class had no base rule at all. */
+.site-header {
+  background: hsl(var(--background));
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.site-header[data-scrolled="true"],
+.site-header.shadow-sm {
+  border-bottom-color: hsl(var(--border));
+  box-shadow: var(--shadow-1);
+}
+
+/* The landing page keeps a fixed light editorial surface. Pin the semantic
+   tokens on <body> so the shared header and footer inherit legible brand
+   values there. The previous rules painted the header #14213d and the footer
+   #000 while the components hardcode slate-900/slate-600 text — 1.1:1 and
+   2.8:1, i.e. effectively invisible. */
 body:has(.landing-v4) {
-  background: #e5e5e5;
-  color: #000000;
-}
-
-body:has(.landing-v4) .site-header {
-  background: #14213d;
-  border-bottom-color: rgb(255 255 255 / 0.14);
-  color: #ffffff;
-}
-
-body:has(.landing-v4) .nav-brand,
-body:has(.landing-v4) .nav-inline__link,
-body:has(.landing-v4) .nav-inline__link:hover,
-body:has(.landing-v4) .ep-icon-btn,
-body:has(.landing-v4) .menu-btn__lines,
-body:has(.landing-v4) .menu-btn__lines span {
-  color: #ffffff;
-}
-
-body:has(.landing-v4) .nav-inline__link:hover {
-  background: rgb(255 255 255 / 0.1);
-}
-
-body:has(.landing-v4) .nav-inline__link[aria-current="page"] {
-  background: #fca311;
-  color: #000000;
-}
-
-body:has(.landing-v4) .site-footer {
-  background: #000000;
-  color: #ffffff;
+  --background: 40 20% 97.1%;
+  --foreground: 216 8.2% 12%;
+  --card: 0 0% 100%;
+  --card-foreground: 216 8.2% 12%;
+  --muted: 40 20% 94%;
+  --muted-foreground: 216.9 8.1% 31.6%;
+  --border: 212 6% 86%;
+  --input: 212.3 5.5% 53.5%;
+  --primary: 184.2 79.4% 21%;
+  --primary-foreground: 0 0% 100%;
+  --ring: 184.2 79.4% 21%;
+  background: var(--color-ivory-50);
+  color: var(--color-charcoal-900);
 }
 
 .landing-v4 {
@@ -821,4 +1084,214 @@ body:has(.landing-v4) .site-footer {
   .landing-v4__steps-heading {
     display: block;
   }
+}
+
+/* ── Layout primitives ───────────────────────────────────────────────────────
+   `.ep-container` is used by the landing page and the admin app but was never
+   defined. Without it the landing page had no max-width and no gutters at any
+   breakpoint: text ran to the viewport edge at 320px and stretched the full
+   window width at 1440px. */
+.ep-container {
+  width: 100%;
+  max-width: var(--content-max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+@media (min-width: 480px) {
+  .ep-container {
+    --gutter: 20px;
+  }
+}
+
+@media (min-width: 768px) {
+  .ep-container {
+    --gutter: 32px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .ep-container {
+    --gutter: 48px;
+  }
+}
+
+/* ── Reveal ─────────────────────────────────────────────────────────────────
+   components/reveal.tsx sets .reveal + data-visible but no rule existed, so the
+   effect never ran. Transform + opacity only, and it settles for good. */
+.reveal {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity var(--dur-base) var(--ease-out),
+    transform var(--dur-base) var(--ease-out);
+}
+
+.reveal[data-visible="true"] {
+  opacity: 1;
+  transform: none;
+}
+
+/* ── Landing corrections ────────────────────────────────────────────────────
+   Three text colours failed WCAG AA against the surfaces they actually sit on.
+   Contrast was computed, not eyeballed. */
+
+/* "The newsroom is live elsewhere" was #fca311 on an #fca311 panel: 1.00:1. */
+.landing-v4__final-cta .landing-v4__eyebrow {
+  color: var(--v4-black);
+}
+
+/* Numerals: 2.02:1 on white and 1.61:1 on grey. Gold is a surface, not ink. */
+.landing-v4__coverage li span,
+.landing-v4__steps-grid article > span {
+  color: var(--color-charcoal-600);
+}
+
+/* The arrow hover turned gold-on-gold on the gold module. */
+.landing-v4__module--gold:hover .landing-v4__module-arrow {
+  color: var(--v4-black);
+}
+
+/* ── Motion preferences ─────────────────────────────────────────────────────
+   The design system requires this and it did not exist anywhere in the file. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+
+  .drawer,
+  .search-panel,
+  .skip-link {
+    transition: none;
+  }
+}
+
+/* ── Mobile menu trigger ────────────────────────────────────────────────────
+   `.menu-btn` had no base rule and the two bars had no positioning, so the
+   trigger rendered as two 2px lines stacked at the same spot. It is the only
+   way into the mobile navigation. */
+.menu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: var(--touch-min);
+  min-block-size: var(--touch-min);
+  border-radius: var(--radius-md);
+  color: hsl(var(--foreground));
+  background: transparent;
+  border: 0;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.menu-btn:hover {
+  background: hsl(var(--muted));
+}
+
+.menu-btn__lines {
+  position: relative;
+  display: inline-block;
+  inline-size: 24px;
+  block-size: 16px;
+}
+
+.menu-btn__lines > span {
+  position: absolute;
+  inset-inline: 0;
+  block-size: 2px;
+  background: currentColor;
+  border-radius: var(--radius-full);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.menu-btn__lines > span:first-child {
+  top: 3px;
+}
+
+.menu-btn__lines > span:last-child {
+  bottom: 3px;
+}
+
+/* ── Contact form ───────────────────────────────────────────────────────────
+   `.field`, `.field__label`, `.field__control`, `.field__hint`, `.field__error`,
+   `.form__actions` and `.form-summary__list` had no rules at all, so the only
+   interactive form on the site rendered as raw browser inputs. */
+.field {
+  margin-bottom: var(--space-6);
+}
+
+.field__label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin-bottom: var(--space-1);
+}
+
+.field__hint {
+  font-size: 0.8125rem;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: var(--space-2);
+}
+
+.field__control {
+  display: block;
+  inline-size: 100%;
+  min-height: var(--touch-min);
+  padding: var(--space-2) var(--space-3);
+  font: inherit;
+  color: hsl(var(--foreground));
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--input));
+  border-radius: var(--radius-sm);
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.field__control:focus {
+  border-color: hsl(var(--ring));
+}
+
+.field__error {
+  margin-top: var(--space-1);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: hsl(var(--destructive));
+}
+
+.form__actions {
+  margin-top: var(--space-6);
+}
+
+.form-summary__list a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ── Page header and brand ──────────────────────────────────────────────── */
+.nav-brand {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min);
+  color: inherit;
+  text-decoration: none;
+}
+
+.page-header__eyebrow {
+  color: hsl(var(--muted-foreground));
+}
+
+.site-footer {
+  color: hsl(var(--foreground));
+}
+
+.site-footer a {
+  text-decoration: none;
 }

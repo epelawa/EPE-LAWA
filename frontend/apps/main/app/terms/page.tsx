@@ -12,11 +12,11 @@ export default function TermsPage() {
   return (
     <div className="max-w-md mx-auto px-4 py-12 sm:px-6 lg:px-8">
       <div className="mb-8">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
           EPE LAWA
         </p>
         <h1 className="text-2xl font-bold tracking-tight">Terms of use</h1>
-        <p className="text-slate-600 mt-2 leading-relaxed">
+        <p className="text-muted-foreground mt-2 leading-relaxed">
           A plain description of what you can expect from this site, and what it expects from you.
         </p>
       </div>
@@ -77,10 +77,10 @@ export default function TermsPage() {
         <h2 className="mt-10 mb-3 text-lg font-bold">Changes to these terms</h2>
         <p className="mb-6">
           Changes will be published on this page. Questions go to{" "}
-          <a href={`mailto:${CONTACT_EMAIL}`} className="text-blue-600 underline underline-offset-4">
+          <a href={`mailto:${CONTACT_EMAIL}`} className="text-primary underline underline-offset-4">
             {CONTACT_EMAIL}
           </a> or through the{" "}
-          <Link href="/contact" className="text-blue-600 underline underline-offset-4">
+          <Link href="/contact" className="text-primary underline underline-offset-4">
             contact page
           </Link>.
         </p>

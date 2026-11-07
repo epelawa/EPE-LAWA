@@ -16,11 +16,11 @@ export default function GuidelinesPage() {
   return (
     <div className="max-w-md mx-auto px-4 py-12 sm:px-6 lg:px-8">
       <div className="mb-8">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
           EPE LAWA
         </p>
         <h1 className="text-2xl font-bold tracking-tight">Community and editorial guidelines</h1>
-        <p className="text-slate-600 mt-2 leading-relaxed">
+        <p className="text-muted-foreground mt-2 leading-relaxed">
           How EPE LAWA reports, what a verified badge claims, and how people are expected to treat
           each other here.
         </p>
@@ -28,7 +28,7 @@ export default function GuidelinesPage() {
 
       <div className="prose">
         <h2 className="mt-8 mb-3 text-lg font-bold">Editorial standards</h2>
-        <ul className="list-disc pl-6 text-slate-600 mb-6 space-y-2">
+        <ul className="list-disc pl-6 text-muted-foreground mb-6 space-y-2">
           <li>Every published story names its sources. An unnamed source is explained to readers.</li>
           <li>
             A claim that has not been checked is written as a claim, not as a fact, and it says who made it.
@@ -46,7 +46,7 @@ export default function GuidelinesPage() {
           checked a recorded source and wrote down what was checked, who checked it, and when.
         </p>
         <p className="mb-6">It does not mean any of the following:</p>
-        <ul className="list-disc pl-6 text-slate-600 mb-6 space-y-2">
+        <ul className="list-disc pl-6 text-muted-foreground mb-6 space-y-2">
           <li>That EPE LAWA endorses the person, their politics or their record.</li>
           <li>That the profile is complete, or that nothing in it will ever change.</li>
           <li>That the person speaks for EPE LAWA.</li>
@@ -61,7 +61,7 @@ export default function GuidelinesPage() {
         <p className="mb-6">
           Disagreement is welcome. The following is not:
         </p>
-        <ul className="list-disc pl-6 text-slate-600 mb-6 space-y-2">
+        <ul className="list-disc pl-6 text-muted-foreground mb-6 space-y-2">
           <li>Threats, harassment, or targeting someone&apos;s family.</li>
           <li>Hate speech about ethnicity, religion, gender, disability or origin.</li>
           <li>Impersonating a person, an office holder or a member of staff.</li>
@@ -87,10 +87,10 @@ export default function GuidelinesPage() {
         <h2 className="mt-10 mb-3 text-lg font-bold">Corrections and reports</h2>
         <p className="mb-6">
           Send a correction or a moderation report to{" "}
-          <a href={`mailto:${CONTACT_EMAIL}`} className="text-blue-600 underline underline-offset-4">
+          <a href={`mailto:${CONTACT_EMAIL}`} className="text-primary underline underline-offset-4">
             {CONTACT_EMAIL}
           </a>, or use the{" "}
-          <Link href="/contact" className="text-blue-600 underline underline-offset-4">
+          <Link href="/contact" className="text-primary underline underline-offset-4">
             contact page
           </Link>. Include the page address and, where relevant, the source. Reports are read by a person.
         </p>

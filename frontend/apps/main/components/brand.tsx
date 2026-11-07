@@ -60,8 +60,8 @@ export function BrandLockup({ size = 34, onDark = false }: BrandMarkProps) {
     <span className="flex items-center gap-2" data-on-dark={onDark ? "true" : undefined}>
       <BrandMark size={size} onDark={onDark} />
       <span className="flex flex-col">
-        <span className="font-bold text-slate-900 tracking-tight">EPE LAWA</span>
-        <span className="text-[11px] text-slate-500 uppercase tracking-wider">
+        <span className="font-bold text-foreground tracking-tight">EPE LAWA</span>
+        <span className="text-[11px] text-muted-foreground uppercase tracking-wider">
           Epe Division
         </span>
       </span>

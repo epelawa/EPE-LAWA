@@ -36,13 +36,13 @@ export default function ThemeToggle() {
   return (
     <button
       type="button"
-      className="p-2 text-slate-600 rounded-xl hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+      className="btn-icon"
       aria-label={ready ? `Switch to ${next} theme` : "Switch theme"}
       title={ready ? `Switch to ${next} theme` : undefined}
       data-ready={ready ? "true" : "false"}
       onClick={() => setTheme(applyTheme(next))}
     >
-      <span className="flex items-center justify-center w-full h-full">
+      <span className="flex items-center justify-center">
         {theme === "light" ? <MoonIcon /> : <SunIcon />}
       </span>
     </button>

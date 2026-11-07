@@ -89,7 +89,7 @@ export default function Connectivity() {
   const message = notice === "offline" ? "You're offline" : notice === "checking" ? "Checking for updates…" : notice === "online" ? "You're now online" : "Couldn't check the connection";
   return <>
     {pullEnabled && pull && (
-      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500 text-white text-sm shadow-lg" aria-hidden="true">
+      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--color-green-700)] text-white text-sm shadow-lg" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><path d="M12 4v14m-5-5 5 5 5-5"/></svg>
         <span>Pull down to refresh</span>
       </div>
@@ -97,9 +97,9 @@ export default function Connectivity() {
     <div role="status" aria-live="polite" aria-atomic="true">
       {notice && (
         <div className={`fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-3 rounded-full shadow-lg border ${
-          notice === "online" ? "bg-emerald-500 text-white border-emerald-400" :
-          notice === "checking" ? "bg-blue-500 text-white border-blue-400" :
-          "bg-slate-900 text-white border-slate-700"
+          notice === "online" ? "bg-[var(--color-green-700)] text-white border-[var(--color-green-700)]" :
+          notice === "checking" ? "bg-primary text-white border-primary" :
+          "bg-foreground text-background border-border"
         }`}>
           <span className="w-5 h-5 rounded-full flex items-center justify-center bg-white/20">
             {notice === "online" ? (

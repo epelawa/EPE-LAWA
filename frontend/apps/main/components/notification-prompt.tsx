@@ -66,23 +66,23 @@ export default function NotificationPrompt() {
   if (!show) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200 shadow-lg">
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border shadow-lg">
       <div className="max-w-3xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="text-sm text-slate-600 leading-relaxed">
+          <div className="text-sm text-muted-foreground leading-relaxed">
             Get notified when new articles and radio programmes are published.
           </div>
           <div className="flex items-center gap-3">
             <button
               type="button"
-              className="text-sm text-white bg-blue-600 px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+              className="text-sm text-white bg-primary px-4 py-2 rounded-md hover:opacity-90 transition-colors"
               onClick={grant}
             >
               Allow notifications
             </button>
             <button
               type="button"
-              className="text-sm text-slate-600 hover:text-blue-600"
+              className="text-sm text-muted-foreground hover:text-primary"
               onClick={deny}
             >
               Maybe later

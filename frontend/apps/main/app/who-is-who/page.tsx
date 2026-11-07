@@ -36,14 +36,15 @@ export default async function WhoIsWhoPage() {
 
   if (error) {
     return (
-      <main className="min-h-screen bg-white text-slate-900">
+      <main className="min-h-screen bg-card text-foreground">
         <div className="max-w-md mx-auto px-4 py-12 sm:px-6 lg:px-8">
           <div className="prose">
-            <h2 className="text-2xl font-bold tracking-tight mb-4">Who is Who</h2>
-            <p className="text-red-800 text-sm mb-6">
-              Unable to load directory. {error.message}
+            <h1 className="text-2xl font-bold tracking-tight mb-4">Who is Who</h1>
+            <p className="text-[var(--color-error-700)] text-sm mb-6">
+              The directory could not be loaded right now. Nothing has been
+              changed on your side. Try again in a moment.
             </p>
-            <a href="/" className="text-blue-600 underline underline-offset-4">
+            <a href="/" className="text-primary underline underline-offset-4">
               Return to homepage
             </a>
           </div>
@@ -53,14 +54,14 @@ export default async function WhoIsWhoPage() {
   }
 
   return (
-    <main className="min-h-screen bg-white text-slate-900">
+    <main className="min-h-screen bg-card text-foreground">
       <div className="max-w-3xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
             Who is Who
           </p>
           <h1 className="text-2xl font-bold tracking-tight">Who is Who</h1>
-          <p className="text-slate-600 mt-2 leading-relaxed">
+          <p className="text-muted-foreground mt-2 leading-relaxed">
             People and public office holders in Epe Division. Every profile includes
             sources and verification details — nothing is claimed without a record.
           </p>
@@ -72,23 +73,23 @@ export default async function WhoIsWhoPage() {
               <div key={person.id} className="card p-4">
                 <div className="flex items-start gap-3">
                   <div className="flex-shrink-0">
-                    <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-600">
+                    <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center text-muted-foreground">
                       <UsersIcon size={20} />
                     </div>
                   </div>
                   <div>
                     <Link
                       href={`/who-is-who/${person.slug}`}
-                      className="text-slate-900 font-medium text-lg hover:text-blue-600"
+                      className="text-foreground font-medium text-lg hover:text-primary"
                     >
                       {person.preferred_name || person.full_name}
                     </Link>
                     {person.is_deceased && (
-                      <span className="text-xs text-slate-400 ml-2 italic">
+                      <span className="text-xs text-muted-foreground ml-2 italic">
                         Deceased
                       </span>
                     )}
-                    <p className="text-slate-600 text-sm mt-1">
+                    <p className="text-muted-foreground text-sm mt-1">
                       {person.community ||
                         "Community not recorded in source documents"}
                     </p>
@@ -97,7 +98,7 @@ export default async function WhoIsWhoPage() {
                         {person.people_offices.map((office: any) => (
                           <span
                             key={office.id}
-                            className="inline-block mt-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-xs font-medium"
+                            className="inline-block mt-1 px-2 py-0.5 rounded-md bg-secondary text-primary text-xs font-medium"
                           >
                             {office.title}{office.institution ? `, ${office.institution}` : ""}
                             {office.is_current ? " · current" : ""}
@@ -111,12 +112,12 @@ export default async function WhoIsWhoPage() {
             ))}
           </div>
         ) : (
-          <div className="rounded-lg border border-slate-200 bg-white p-8 text-center">
-            <UsersIcon size={32} className="text-slate-400" />
-            <h3 className="text-lg font-bold text-slate-900 mb-2">
+          <div className="rounded-lg border bg-card p-8 text-center">
+            <UsersIcon size={32} className="text-muted-foreground" />
+            <h3 className="text-lg font-bold text-foreground mb-2">
               No profiles published yet
             </h3>
-            <p className="text-slate-600 text-sm">
+            <p className="text-muted-foreground text-sm">
               The Who is Who directory is being built. No profiles have been published
               yet — every profile requires at least one recorded source before it can
               appear here.

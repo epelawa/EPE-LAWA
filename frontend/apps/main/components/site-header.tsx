@@ -171,12 +171,11 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
                       </a>
                     ) : (
                       <Link
-                        className={`nav-link ${
-                          isCurrentPage(pathname, item.href)
-                            ? "text-blue-600 font-medium"
-                            : "text-slate-600 hover:text-blue-600"
-                        }`}
+                        className="nav-link"
                         href={item.href}
+                        aria-current={
+                          isCurrentPage(pathname, item.href) ? "page" : undefined
+                        }
                       >
                         {item.label}
                       </Link>
@@ -220,15 +219,9 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
                 aria-label={drawerOpen ? "Close menu" : "Open menu"}
                 onClick={toggleDrawer}
               >
-                <span className="relative inline-block w-6 h-4">
-                  <span
-                    className="w-full h-0.5 bg-slate-900 rounded-full transition-all duration-300 group-hover:bg-blue-600"
-                    aria-hidden="true"
-                  />
-                  <span
-                    className="w-full h-0.5 bg-slate-900 rounded-full transition-all duration-300 group-hover:bg-blue-600"
-                    aria-hidden="true"
-                  />
+                <span className="menu-btn__lines" aria-hidden="true">
+                  <span />
+                  <span />
                 </span>
               </button>
             </div>
@@ -243,7 +236,7 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
             <input
               ref={searchInputRef}
               id="site-search-input"
-              className="flex-1 px-4 py-2 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900"
+              className="input flex-1"
               type="search"
               name="q"
               placeholder="Search news, people, businesses"
@@ -279,7 +272,7 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
             aria-hidden={drawerOpen ? undefined : "true"}
             inert={!drawerOpen}
           >
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+            <div className="flex items-center justify-between px-6 py-4 border-b border">
               <p className="drawer-title" id={DRAWER_TITLE_ID}>
                 Menu
               </p>
@@ -306,8 +299,11 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
                       </a>
                     ) : (
                       <Link
-                        className={`drawer-link ${isCurrentPage(pathname, item.href) ? "bg-blue-50 text-blue-600" : ""}`}
+                        className="drawer-link"
                         href={item.href}
+                        aria-current={
+                          isCurrentPage(pathname, item.href) ? "page" : undefined
+                        }
                       >
                         <span className="drawer-label">{item.label}</span>
                         {item.hint ? <span className="drawer-hint">{item.hint}</span> : null}
@@ -318,21 +314,21 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
               </ul>
             </nav>
 
-            <div className="p-6 border-t border-slate-200">
-              <p className="drawer-soon-title text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
+            <div className="p-6 border-t border">
+              <p className="drawer-soon-title text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
                 Opening soon
               </p>
               <ul className="space-y-2">
                 {upcomingSections.map((section) => (
-                  <li key={section.label} className="drawer-soon-item flex items-center justify-between py-2 border-b border-slate-100 last:border-0 text-sm">
-                    <span className="drawer-soon-label text-slate-900">{section.label}</span>
-                    <span className="drawer-soon-detail text-slate-400">{section.detail}</span>
+                  <li key={section.label} className="drawer-soon-item flex items-center justify-between py-2 border-b border last:border-0 text-sm">
+                    <span className="drawer-soon-label text-foreground">{section.label}</span>
+                    <span className="drawer-soon-detail text-muted-foreground">{section.detail}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
-            <p className="drawer-foot text-xs text-slate-500 px-6 py-4 border-t border-slate-200">
+            <p className="drawer-foot text-xs text-muted-foreground px-6 py-4 border-t border">
               Epe Division, Lagos State
             </p>
           </div>

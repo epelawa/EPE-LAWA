@@ -12,11 +12,11 @@ export default function PrivacyPage() {
   return (
     <div className="max-w-md mx-auto px-4 py-12 sm:px-6 lg:px-8">
       <div className="mb-8">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
           EPE LAWA
         </p>
         <h1 className="text-2xl font-bold tracking-tight">Privacy notice</h1>
-        <p className="text-slate-600 mt-2 leading-relaxed">
+        <p className="text-muted-foreground mt-2 leading-relaxed">
           What this site collects, how it is used and how to ask for deletion.
         </p>
       </div>
@@ -49,7 +49,7 @@ export default function PrivacyPage() {
         <p className="mb-6">
           Under Nigerian data protection law you can ask what is held about you, ask for it to be
           corrected, and ask for it to be deleted. Email{" "}
-          <a href={`mailto:${CONTACT_EMAIL}`} className="text-blue-600 underline underline-offset-4">
+          <a href={`mailto:${CONTACT_EMAIL}`} className="text-primary underline underline-offset-4">
             {CONTACT_EMAIL}
           </a> and a person will answer.
         </p>
@@ -64,7 +64,7 @@ export default function PrivacyPage() {
         <p className="mb-6">
           If this notice changes, the change will be published on this page. Questions about it go
           to the same address as everything else, or through the{" "}
-          <Link href="/contact" className="text-blue-600 underline underline-offset-4">
+          <Link href="/contact" className="text-primary underline underline-offset-4">
             contact page
           </Link>.
         </p>
