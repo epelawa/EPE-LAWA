@@ -1,44 +1,43 @@
 # EPE-LAWA — Design System
 
-**Status:** Active.
-**Scope:** All eight approved web modules and cross-cutting member/staff experiences.
-**Reference:** Sckooly public-site structure, adapted to original EPE-LAWA branding; owner-provided red/coral/navy/ivory direction.
+**Scope:** All eight web modules, account/support pages and staff workflows. Native mobile apps remain deferred.
 
-## Direction
+## A new visual system, not a reskin
 
-Use clear brand/navigation and primary action, a strong hero, concise audience framing, ordered product sections, useful support content, repeated calls to action and a substantial footer. Navigation covers all eight modules: Trending News; It also covers Itan Ilu Mi / My Community History, Chat Forum / Digital Village Square, Map & Navigation, Epe Business Directory & Marketplace, Historical Sites & Tourism, EPE LAWA Radio, and Who is Who in Epe. Do not copy Sckooly’s protected wording, logo or assets. Use original EPE-LAWA content and only licensed/credited imagery. SVG icons only; no emoji. Sponsored content, if present, is unmistakably labelled and supported by real records.
+The owner rejected the former UI and authorised a complete rebuild, including a new palette. The new direction is **Fig & Limestone**: warm off-white, deep fig, pale lilac and a restrained lime accent. Inter provides one consistent interface voice. The homepage is an original split editorial hero followed by clear entry points, the eight-section community index, genuine reporting and a complete footer.
 
-## Color tokens
+[Sckooly](https://sckooly.app/) remains the primary structure reference. [GetQuant](https://getquant.app/) informs restraint, spacing and clear product hierarchy; [JĀSĀB](https://jasab.vercel.app/) informs editorial rhythm and calm navigation. All three were inspected in the browser before designing. Do not copy their content, logos, code or assets. Use the supplied EPE-LAWA brand mark, project-root reference images and original art. The generated lagoon illustration is editorial artwork, not a documentary photograph or evidence about a real location.
 
-| Token | Value | Use |
+## Palette
+
+| Token | Value | Role |
 | --- | --- | --- |
-| Red | `#DA251C` | Primary actions and emphasis after contrast check |
-| Deep red | `#B51F18` | Focus/high-contrast red text |
-| Coral | `#FF4A3D` | Accent; not normal-size text on ivory |
-| Navy | `#17253A` | Headings, dark surfaces and footer |
-| Light blue | `#EAF3FB` | Secondary panels |
-| Warm ivory | `#FCFAF7` | Main light surface |
-| White | `#FFFFFF` | Cards and inputs |
-| Charcoal | `#1C1E21` | Main text |
-| Secondary text | `#4A4F57` | Supporting copy |
+| Limestone | `#FAF9F6` | Main light surface |
+| Fig | `#60436D` | Primary actions and emphasis |
+| Deep fig | `#3F2B49` | Strong emphasis |
+| Lilac | `#EDE7F1` | Secondary panels |
+| Lime | `#DBE8AD` | Restrained accent, with dark text |
+| Ink | `#29242D` | Main text |
+| Muted | `#665F6B` | Supporting text |
+| Border | `#DED9E1` | Decorative separation; controls use stronger borders |
+| White | `#FFFFFF` | Cards and fields |
 
-Use semantic CSS tokens. Color is never the only status indicator. WCAG contrast must be checked for final rendered pairs, including focus, hover and disabled states.
+Use semantic tokens and explicit dark-mode variants. Status always includes text, not color alone. Check rendered contrast, including feedback, hover and focus states.
 
-## Type, layout and interaction
+## Compact, readable typography
 
-Use readable sans-serif typography, 16px minimum body text, article measure around 62–72ch, centered content and mobile gutters. Touch targets are at least 44×44px. Keep radii and shadows restrained; glass surfaces never reduce legibility. Motion is brief and respects `prefers-reduced-motion`. At 320/375/768/1024/1440 CSS px, content must reflow without horizontal overflow.
+Scale the previous display hierarchy to approximately 90%, rather than shrinking the entire document with CSS zoom. The desktop hero is capped at 57.6px instead of 64px; page titles and section roles follow the same compact direction. Retain at least 16px for body text and form controls, 14px for ordinary controls/metadata, and 12px for short labels. Article content remains comfortably measured at about 62–72ch. Native browser zoom stays intact.
 
-## Content and component rules
+## Layout and interaction
 
-- News: published records only; sourced articles, visible corrections; no invented trends or breaking claims.
-- History: provenance- and consent-aware; private contributions remain private until approved.
-- Forum: no fake activity; authenticated participation and reasoned moderation.
-- Map: manual search and safe outbound directions; no default GPS, private address exposure or claim of a Maps API integration.
-- Directory/Marketplace: approved public fields, human-evidenced verification, real prices/stock; payment-dependent actions only after provider gates pass.
-- Tourism: sourced destination content; no invented locations, hours or history.
-- Radio: truthful stream state; no invented programmes or episodes.
-- Who is Who: approved profiles and human-evidenced role verification.
-- Admin: real analytics; query failure is not zero; secure session and capability checks.
-- Every data view distinguishes loading, empty, error and denied states.
+Use a compact floating masthead, complete desktop navigation with a clear More menu, an accessible mobile drawer and a useful footer. Staff navigation exposes each real workflow in the same tab. Cards, lists, filters, detail pages, forms and empty states use shared editorial primitives, not legacy page markup. Layouts reflow at 320, 375, 768, 1024 and 1440 CSS px. Table overflow stays within its own region.
 
-Target WCAG 2.2 AA. Use semantic headings, keyboard access, visible focus, accessible names, associated form errors, reduced motion, zoom/reflow checks and manual assistive-technology review. A successful build alone does not prove accessibility.
+Use SVG icons only; no emoji. Controls have at least 44px target height. Keyboard focus is visible; drawers trap focus, close with Escape/outside taps and close on navigation. Motion is brief and respects reduced-motion preferences. Account forms have meaningful pending, validation, error and unavailable states.
+
+## Truthful content and unchanged security
+
+All eight areas remain in scope: News, History, Forum, Map, Business Directory/Marketplace, Tourism, Radio and Who is Who. Render approved records only. Do not invent articles, activity, reviews, people, prices, counts, map locations or service status. Distinguish loading, unavailable, empty and denied states. Show Coming Soon for provider-dependent features that are not ready.
+
+Keep verified staff sessions, capability gates, form/action contracts, revision guards and private evidence boundaries intact. Map location is requested only after explicit consent and used only to prepare a directions link. Contact drafts are not delivered or stored by the unavailable delivery form; the UI must say so.
+
+Target WCAG 2.2 AA. Automated axe scans and keyboard checks are useful gates, not a claim of complete accessibility certification or assistive-technology coverage. Database-backed publish/member journeys still require a genuinely isolated configured test environment; production data remains read-only.

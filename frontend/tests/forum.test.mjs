@@ -11,7 +11,7 @@ test("Forum routes link only real categories/threads and render honest empty/err
   assert.match(page, /forum\/category\//);
   assert.match(page, /forum\/thread\//);
   assert.match(page, /No forum categories are available/);
-  assert.match(category, /No public threads have been posted/);
+  assert.match(category, /No public threads in this category yet/);
   assert.match(category, /notFound\(\)/);
 });
 
@@ -33,7 +33,7 @@ test("anonymous users are redirected to sign-in before creating or replying", as
   const threadPage = await source("../apps/main/app/forum/thread/[slug]/page.tsx");
   const actions = await source("../apps/main/app/forum/actions.ts");
   assert.match(createPage, /if \(!user\) redirect\("\/login/);
-  assert.match(threadPage, /!user \? <p className="mt-8 card p-5">Sign in to reply/);
+  assert.match(threadPage, /!user \? <Notice[^>]*>Sign in to reply/);
   assert.match(actions, /if \(error \|\| !user\) redirect\(`\/login\?next=/);
 });
 

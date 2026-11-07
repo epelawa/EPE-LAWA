@@ -22,7 +22,7 @@ test('staff History review keeps private evidence visible only in authorized que
   assert.match(page, /maxLength=\{5000\}/);
   assert.match(page, /Edited\/redacted public account \(required to publish\)/);
   assert.match(page, /aria-describedby/);
-  assert.match(page, /missing_public_text[\s\S]*?role="alert"/);
+  assert.match(page, /missing_public_text[\s\S]*?role=\{params\.result === "saved" \? "status" : "alert"\}/);
   assert.match(action, /history_contribution_decide/);
   assert.match(action, /p_contribution_id: id/);
   assert.match(action, /p_decision: decision/);

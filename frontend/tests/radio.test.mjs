@@ -17,10 +17,10 @@ test('public Radio player never embeds the unrelated Radio Lagos stream',async()
 test('public Radio page renders only database-backed programme, schedule and archive records',async()=>{
  const page=await read('frontend/apps/main/app/radio/page.tsx');
  for(const table of ['programmes','radio_schedule','episodes']) assert.match(page,new RegExp(`from\\(["']${table}["']\\)`));
- assert.match(page,/No approved programmes/);
- assert.match(page,/No programme schedule/);
-	 assert.match(page,/No published archive episodes/);
-	 assert.match(page,/Live streaming is not yet available/);
+ assert.match(page,/No programmes published yet/);
+ assert.match(page,/No schedule published yet/);
+	 assert.match(page,/No published episodes available/);
+	 assert.match(page,/<RadioPlayer/);
  assert.doesNotMatch(page,/Radio Lagos|azstream\.elektranbroadcast\.com|puzzofme/);
 });
 

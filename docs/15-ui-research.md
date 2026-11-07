@@ -1,20 +1,13 @@
-# EPE-LAWA — UI Research and Design Direction
+# EPE-LAWA — Reference Notes
 
-**Status:** Reference notes, not completed user research or acceptance testing.
-**Authority:** Owner-provided design direction and `05-design-system.md`.
-**Scope:** All eight approved web modules and cross-cutting member/staff experiences.
+The owner requested a complete UI replacement, not another incremental restyle. These sites were opened and inspected in the browser before the rebuild:
 
-## Primary reference: Sckooly public site
+- [Sckooly](https://sckooly.app/): compact brand/navigation, a confident hero, ordered product sections and a substantial footer. This remains the primary structure reference.
+- [GetQuant](https://getquant.app/): calm spacing, restrained color, concise hierarchy and deliberate feature presentation.
+- [JĀSĀB](https://jasab.vercel.app/): editorial rhythm, consistent navigation and polished, uncluttered content surfaces.
 
-The public-site structure is the reference for clear brand/navigation, hero, ordered product sections, calls to action and substantial footer. It does not establish pixel-level styling, responsive behavior or user preference. Do not reuse Sckooly’s logo, wording, code or assets. Owner-provided red/coral/navy/ivory direction and original EPE-LAWA branding govern the design.
+The adaptation is original EPE-LAWA work: a Fig & Limestone palette, compact Inter typography, a new floating masthead, split editorial hero, complete eight-section index, quieter route layouts and an actual staff-workspace rebuild. No reference-brand copy, logo or visual asset is reused. The supplied project-root images informed the direction, and the supplied EPE-LAWA mark is retained. New lagoon artwork is an original illustration, not a claim about an exact real scene.
 
-## Adaptation rules
+All eight web areas remain discoverable: News, History, Forum, Map, Business Directory/Marketplace, Tourism, Radio and Who is Who. Native mobile remains deferred. Provider-dependent features remain clearly labelled Coming Soon; no invented content or activity is added to fill layouts.
 
-- Make only the eight current areas discoverable: Trending News, Itan Ilu Mi / My Community History, Chat Forum / Digital Village Square, Map & Navigation, and Epe Business Directory & Marketplace.
-- Use original EPE-LAWA copy, clear actions and genuine approved records only.
-- Keep support/footer links accurate. Represent section 5 future enhancements in the full roadmap without presenting them as verified current functionality.
-- Use restrained, readable surfaces, accessible motion and SVG icons.
-- Clearly label genuine sponsored placements; do not fabricate ads or payment evidence.
-- Map UI may describe safe outbound Google Maps search/directions links, not a Maps API/Places integration. Offline maps are optional future work.
-
-The reference and owner images are inspiration, not evidence about local preferences, data rights or Epe facts. This is not a completed competitor audit or usability study. Before release, inspect every in-scope route in Playwright at mobile/tablet/desktop sizes and record accessibility findings. Use only licensed, approved imagery and sourced content.
+Typography follows the owner’s 90% direction while retaining readable body/control sizes. See [the design system](05-design-system.md) for tokens and interaction rules. Inspect every real route at the five target widths and record failures honestly. Anonymous/error-state checks do not substitute for configured database-backed member and staff E2E.
