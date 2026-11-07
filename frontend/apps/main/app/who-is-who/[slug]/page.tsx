@@ -27,6 +27,7 @@ type PublishedPerson = {
   community: string | null;
   community_note: string | null;
   biography: string | null;
+  achievements: string | null;
   is_deceased: boolean;
   is_verified: boolean;
   verified_at: string | null;
@@ -279,6 +280,15 @@ export default async function PersonProfilePage({
             {paragraphs.map((paragraph, index) => (
               <p key={index}>{paragraph}</p>
             ))}
+          </div>
+        </section>
+      ) : null}
+
+      {person.achievements?.trim() ? (
+        <section aria-labelledby="achievements-heading" className="mb-10">
+          <h2 id="achievements-heading" className="mb-4 text-xl font-bold tracking-tight">Achievements and contributions</h2>
+          <div className="space-y-4 leading-relaxed text-foreground">
+            {person.achievements.trim().split(/\n\s*\n/).map((item, index) => <p key={index}>{item.trim()}</p>)}
           </div>
         </section>
       ) : null}

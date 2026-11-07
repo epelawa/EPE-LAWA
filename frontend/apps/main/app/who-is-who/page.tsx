@@ -49,14 +49,28 @@ export const metadata: Metadata = {
  */
 const PAGE_SIZE = 60;
 
-export default async function WhoIsWhoPage() {
+export default async function WhoIsWhoPage({ searchParams }: { searchParams: Promise<{ name?: string; office?: string; community?: string }> }) {
+  const filters = await searchParams;
+  const clean = (value: string | undefined) => (value ?? "").trim().slice(0, 100).replace(/[^\p{L}\p{N} .'’-]/gu, " ");
+  const nameFilter = clean(filters.name);
+  const officeFilter = clean(filters.office);
+  const communityFilter = filters.community ?? "";
   const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from("published_people")
+  let officePersonIds: string[] | null = null;
+  if (officeFilter) {
+    const { data: matchingOffices, error: officeError } = await supabase
+      .from("people_offices").select("person_id")
+      .or(`title.ilike.%${officeFilter}%,institution.ilike.%${officeFilter}%`).limit(500);
+    if (officeError) console.error("people_offices filter failed", { code: officeError.code });
+    officePersonIds = [...new Set((matchingOffices ?? []).map((row) => row.person_id))];
+  }
+  let query = supabase.from("published_people")
     .select("id,slug,full_name,preferred_name,community,is_deceased,is_verified,portrait_key,portrait_alt")
-    .order("full_name", { ascending: true })
-    .limit(PAGE_SIZE);
+    .order("full_name", { ascending: true }).limit(PAGE_SIZE);
+  if (nameFilter) query = query.or(`full_name.ilike.%${nameFilter}%,preferred_name.ilike.%${nameFilter}%`);
+  if (["eko_epe", "ijebu_epe", "other"].includes(communityFilter)) query = query.eq("community", communityFilter);
+  if (officePersonIds) query = officePersonIds.length ? query.in("id", officePersonIds) : query.eq("id", "00000000-0000-0000-0000-000000000000");
+  const { data, error } = await query;
 
   if (error) {
     console.error("published_people list read failed", { code: error.code });
@@ -130,13 +144,18 @@ export default async function WhoIsWhoPage() {
         </p>
       </header>
 
+      <form method="get" action="/who-is-who" className="card mb-6 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Filter people">
+        <label className="grid gap-1 text-sm font-medium">Name<input className="rounded-md border bg-background px-3 py-2" name="name" defaultValue={nameFilter} maxLength={100} /></label>
+        <label className="grid gap-1 text-sm font-medium">Office or institution<input className="rounded-md border bg-background px-3 py-2" name="office" defaultValue={officeFilter} maxLength={100} /></label>
+        <label className="grid gap-1 text-sm font-medium">Community<select className="rounded-md border bg-background px-3 py-2" name="community" defaultValue={communityFilter}><option value="">All communities</option><option value="eko_epe">Eko Epe</option><option value="ijebu_epe">Ijebu Epe</option><option value="other">Other</option></select></label>
+        <div className="flex items-end gap-2"><button className="btn-primary" type="submit">Search</button><Link className="btn-ghost" href="/who-is-who">Clear</Link></div>
+      </form>
       {people.length === 0 ? (
         <div className="card p-8 text-center">
           <UsersIcon size={32} className="mx-auto text-muted-foreground" />
           <h2 className="mt-4 text-lg font-bold">No profiles published yet</h2>
           <p className="mx-auto mt-2 max-w-md text-muted-foreground">
-            No profile appears here until it has been written, sourced and published. Inventing an
-            entry to fill the page would be worse than the empty page.
+            {nameFilter || officeFilter || communityFilter ? "No published profiles match these filters. Try another search." : "No profile appears here until it has been written, sourced and published. Inventing an entry to fill the page would be worse than the empty page."}
           </p>
         </div>
       ) : (
@@ -227,10 +246,7 @@ export default async function WhoIsWhoPage() {
       )}
 
       {people.length === PAGE_SIZE ? (
-        <p className="mt-8 text-sm text-muted-foreground">
-          Showing the first {PAGE_SIZE} profiles alphabetically. Later profiles are not listed on
-          this page yet.
-        </p>
+        <p className="mt-8 text-sm text-muted-foreground">Showing up to {PAGE_SIZE} matching profiles. Refine your filters to narrow results.</p>
       ) : null}
     </div>
   );
