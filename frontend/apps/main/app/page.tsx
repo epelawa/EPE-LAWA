@@ -1,342 +1,41 @@
 import Link from "next/link";
-import { CONTACT_EMAIL } from "../lib/contact";
-import { getLatestStories, getPublishedPeople } from "../lib/home-data";
+import { ArrowRightIcon, ArrowUpRightIcon, NewspaperIcon, BuildingIcon, UsersIcon } from "../components/icons";
+import { EmptyPanel } from "../components/design-system";
+import { formatPublishedDate } from "../lib/dates";
+import { getLatestStories } from "../lib/home-data";
 
-/**
- * EPE LAWA — front page.
- *
- * Editorial order: Lead, Latest, Who is Who, Radio, What we cover, How we work,
- * Contact, Footer.
- *
- * Rules this page holds itself to:
- * - Nothing sends a visitor off-site. The newsroom is `/news` on this host.
- * - Every list has three real states. Empty says nothing has been published;
- *   unavailable says we could not read the data. They never share copy.
- * - No invented people, numbers, schedules, stream URLs or "coming soon".
- * - The radio section never claims a live broadcast, because this page does not
- *   check one.
- */
-
-const COVERAGE: ReadonlyArray<{ term: string; detail: string }> = [
-  {
-    term: "Politics",
-    detail: "Council decisions, public money, and who answers for them.",
-  },
-  {
-    term: "Community",
-    detail: "The people, associations and everyday life of the division.",
-  },
-  {
-    term: "Culture",
-    detail: "Language, festivals, craft and the memory a place keeps.",
-  },
-  {
-    term: "Education",
-    detail: "Schools, teachers and what students in Epe can reach.",
-  },
-  {
-    term: "Business",
-    detail: "Enterprise, markets and the work people do to stay here.",
-  },
-  {
-    term: "Sports",
-    detail: "Local clubs, competitions and the people who carry them.",
-  },
-  {
-    term: "Events",
-    detail: "What is happening, with a date and a place attached.",
-  },
+const modules = [
+  {name:"Trending News",href:"/news",description:"Local reporting. The stories that matter here."},
+  {name:"Ìtàn Ilú Mi",href:"/itan-ilu-mi",description:"Community history, kept with care."},
+  {name:"Chat Forum",href:"/forum",description:"A thoughtful space for local conversation."},
+  {name:"Map & Navigation",href:"/map",description:"Useful places and your next direction."},
+  {name:"Epe Business Directory & Marketplace",href:"/business-directory",description:"Discover the people building local business."},
+  {name:"Historical Sites & Tourism",href:"/tourism",description:"Heritage, places and reasons to explore."},
+  {name:"EPE LAWA Radio",href:"/radio",description:"Programmes, schedules and community voices."},
+  {name:"Who is Who in Epe",href:"/who-is-who",description:"The people and public roles shaping Epe."},
 ];
 
-const COMMITMENTS = ["Named sources", "Dates on every claim", "A public corrections path"];
-
-const COMMUNITY_LABELS: Record<string, string> = {
-  eko_epe: "Eko Epe",
-  ijebu_epe: "Ijebu Epe",
-  other: "Other community",
-};
-
-const dateFormat = new Intl.DateTimeFormat("en-GB", {
-  day: "numeric",
-  month: "long",
-  year: "numeric",
-});
-
-function formatDate(value: string | null): string | null {
-  if (!value) return null;
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return null;
-  return dateFormat.format(parsed);
-}
-
 export default async function Home() {
-  const [stories, people] = await Promise.all([
-    getLatestStories(3),
-    getPublishedPeople(3),
-  ]);
+  const stories = await getLatestStories(3);
+  return <div className="public-home">
+    <section className="home-hero" aria-labelledby="home-title"><div className="ep-container home-hero__grid">
+      <div className="home-hero__copy"><p className="ui-eyebrow">Epe Division, Lagos State</p><h1 id="home-title">The place.<br />The people.<br /><em>Our Epe.</em></h1><p className="home-hero__lede">A shared home for the stories, conversations and everyday discoveries that bring Epe together.</p><div className="ui-actions"><Link href="/news" className="btn-primary">Discover what’s happening <ArrowRightIcon size={17} aria-hidden="true" /></Link><Link href="/itan-ilu-mi" className="ui-text-link">Know our story <ArrowUpRightIcon size={17} aria-hidden="true" /></Link></div><p className="home-hero__note"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M12 21s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg>Rooted in the community. Open to everyone.</p></div>
+      <figure className="home-hero__art"><img src="/epe-lagoon-editorial.webp" alt="Original editorial illustration of canoes and a lagoon-side community" width="1280" height="1600" fetchPriority="high" /><figcaption><span><strong>Life, by the lagoon.</strong>An illustrated community perspective.</span><ArrowUpRightIcon size={20} aria-hidden="true" /></figcaption></figure>
+    </div></section>
+    <div className="ep-container home-topics" aria-label="A platform for community life"><span>Stories worth knowing</span><span>History worth keeping</span><span>Places worth finding</span><span>People worth connecting</span></div>
 
-  return (
-    <div className="home">
-      {/* ── Lead ─────────────────────────────────────────────────────────── */}
-      <section className="home-lead" aria-labelledby="lead-title">
-        <div className="ep-container">
-          <div className="home-lead__inner">
-            <p className="home-label home-lead__label">
-              <span className="home-lead__rule" aria-hidden="true" />
-              Epe Division, Lagos State
-            </p>
+    <section className="ep-container home-section" aria-labelledby="start-title"><div className="home-section__head"><div><p className="ui-eyebrow">Start somewhere familiar</p><h2 id="start-title">Closer to the things<br />that make us, us.</h2></div><p>Catch up on local life, trace the stories before us, or find a business around the corner. There’s more than one way to belong.</p></div><div className="home-features">
+      <Link className="home-feature" href="/news"><span className="home-feature__icon"><NewspaperIcon size={20}/></span><h3>Read the room.</h3><p>News and perspectives from across Epe Division.</p><span className="home-feature__arrow" aria-hidden="true"><ArrowUpRightIcon size={20}/></span></Link>
+      <Link className="home-feature home-feature--soft" href="/itan-ilu-mi"><span className="home-feature__icon"><UsersIcon size={20}/></span><h3>Remember our roots.</h3><p>Explore Ìtàn Ilú Mi—our communities, culture and shared history.</p><span className="home-feature__arrow" aria-hidden="true"><ArrowUpRightIcon size={20}/></span></Link>
+      <Link className="home-feature home-feature--accent" href="/business-directory"><span className="home-feature__icon"><BuildingIcon size={20}/></span><h3>Keep it local.</h3><p>Find businesses, browse products and make useful connections.</p><span className="home-feature__arrow" aria-hidden="true"><ArrowUpRightIcon size={20}/></span></Link>
+    </div></section>
 
-            <h1 className="home-lead__title" id="lead-title">
-              Epe, in full.
-            </h1>
+    <section className="ep-container home-index" aria-labelledby="explore-title"><div className="home-section__head"><div><p className="ui-eyebrow">The community index</p><h2 id="explore-title">All of Epe.<br />A little closer.</h2></div><p>Eight ways into community life. Follow your curiosity, find what you need, and come back for what’s next.</p></div><ol className="home-index__list">{modules.map((item,i)=><li key={item.href}><Link className="home-index__link" href={item.href}><span className="ui-number">{String(i+1).padStart(2,"0")}</span><div><h3>{item.name}</h3><p>{item.description}</p></div><ArrowUpRightIcon size={18} aria-hidden="true" /></Link></li>)}</ol></section>
 
-            <div className="home-lead__aside">
-              <p className="home-lead__lede">
-                EPE LAWA reports on Epe Division: its people, its public
-                decisions and its culture. Named sources, dates on every claim,
-                and a public way to ask for a correction.
-              </p>
-              <div className="home-actions">
-                <Link className="btn-primary" href="/news">
-                  Read the news
-                </Link>
-                <Link className="home-textlink" href="/radio">
-                  Listen to the radio
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+    <section className="ep-container home-section home-news" aria-labelledby="latest-title"><div className="home-news__intro"><p className="ui-eyebrow">From the newsroom</p><h2 id="latest-title">Here’s the latest.</h2><p>Reporting published by EPE LAWA. No filler, just the stories available now.</p><Link className="ui-text-link" href="/news">All news <ArrowRightIcon size={17} aria-hidden="true" /></Link></div><div>{stories.state === "ok" && stories.items.length ? <ul className="ui-list">{stories.items.map(story=><li key={story.slug}><Link className="home-story" href={`/news/${story.slug}`}><span className="ui-meta">{story.category}{story.category && story.publishedAt ? " · " : ""}{formatPublishedDate(story.publishedAt)}</span><h3>{story.title}</h3>{story.summary ? <p>{story.summary}</p> : null}<ArrowUpRightIcon size={18} aria-hidden="true" /></Link></li>)}</ul> : <EmptyPanel title={stories.state === "ok" ? "The next story starts here." : "The newsroom is taking a moment."} description={stories.state === "ok" ? "No stories have been published yet. New reporting will appear here as it is published." : "Stories could not be loaded right now. You can still visit the news page and try again."} actions={<Link href="/news" className="btn-secondary">Visit the newsroom</Link>} />}</div></section>
 
-      {/* ── Latest ───────────────────────────────────────────────────────── */}
-      <section
-        className="home-section"
-        aria-labelledby="latest-title"
-      >
-        <div className="ep-container">
-          <div className="home-section__head">
-            <h2 className="home-section__title" id="latest-title">
-              Latest stories
-            </h2>
-            <Link className="home-textlink" href="/news">
-              All stories
-            </Link>
-          </div>
+    <section className="ep-container home-section home-community" aria-labelledby="community-title"><div className="home-community__poster" aria-hidden="true"><span>Our place. Our voices.</span><p>Good things<br />begin with<br /><em>connection.</em></p><UsersIcon size={42}/></div><div className="home-community__copy"><p className="ui-eyebrow">A place to take part</p><h2 id="community-title">Not just a place to read.<br />A place to belong.</h2><p>Ask a question, add a perspective, share a memory, or put your business on the map. EPE LAWA makes room for the people behind the place.</p><div className="ui-actions"><Link className="btn-primary" href="/forum">Join the conversation <ArrowRightIcon size={17} aria-hidden="true" /></Link><Link className="ui-text-link" href="/guidelines">Our community guidelines</Link></div></div></section>
 
-          {stories.state === "ok" && stories.items.length > 0 ? (
-            <ul className="home-list">
-              {stories.items.map((story) => {
-                const published = formatDate(story.publishedAt);
-                return (
-                  <li className="home-list__item" key={story.slug}>
-                    <Link className="home-row" href={`/news/${story.slug}`}>
-                      <span className="home-row__meta">
-                        {story.category ? <span>{story.category}</span> : null}
-                        {story.category && published ? (
-                          <span className="home-row__sep" aria-hidden="true">
-                            ·
-                          </span>
-                        ) : null}
-                        {published ? <span>{published}</span> : null}
-                      </span>
-                      <div className="home-row__body">
-                        <h3 className="home-row__title">{story.title}</h3>
-                        {story.summary ? (
-                          <p className="home-row__summary">{story.summary}</p>
-                        ) : null}
-                      </div>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          ) : stories.state === "ok" ? (
-            <div className="home-empty">
-              <p className="home-empty__title">No stories have been published yet.</p>
-              <p className="home-empty__body">
-                When the first stories are published they will appear here, each
-                with a byline, a date and a way to request a correction.
-              </p>
-            </div>
-          ) : (
-            <div className="home-empty home-empty--error">
-              <p className="home-empty__title">
-                The latest stories could not be loaded.
-              </p>
-              <p className="home-empty__body">
-                This is a problem on our side, not something you did. The
-                newsroom index is still open.
-              </p>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* ── Who is Who ───────────────────────────────────────────────────── */}
-      <section className="home-section" aria-labelledby="people-title">
-        <div className="ep-container">
-          <div className="home-section__head">
-            <h2 className="home-section__title" id="people-title">
-              Who is Who
-            </h2>
-            <Link className="home-textlink" href="/who-is-who">
-              Open the directory
-            </Link>
-          </div>
-
-          {people.state === "ok" && people.items.length > 0 ? (
-            <ul className="home-people">
-              {people.items.map((person) => {
-                const community = person.community
-                  ? COMMUNITY_LABELS[person.community] ?? null
-                  : null;
-                return (
-                  <li key={person.slug}>
-                    <Link className="home-person" href={`/who-is-who/${person.slug}`}>
-                      <span className="home-person__name">{person.name}</span>
-                      {community ? (
-                        <span className="home-person__meta">{community}</span>
-                      ) : null}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          ) : people.state === "ok" ? (
-            <div className="home-empty">
-              <p className="home-empty__title">No profiles have been published yet.</p>
-              <p className="home-empty__body">
-                A profile appears only after at least one recorded source has
-                been checked, so the directory starts empty.
-              </p>
-            </div>
-          ) : (
-            <div className="home-empty home-empty--error">
-              <p className="home-empty__title">The directory could not be loaded.</p>
-              <p className="home-empty__body">
-                This is a problem on our side. No profile has been changed or
-                removed.
-              </p>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* ── Radio ────────────────────────────────────────────────────────── */}
-      <section className="home-section" aria-labelledby="radio-title">
-        <div className="ep-container">
-          <div className="home-split">
-            <div>
-              <p className="home-label">Radio</p>
-              <h2 className="home-section__title" id="radio-title">
-                Carried on Radio Lagos 107.5 FM.
-              </h2>
-            </div>
-            <div className="home-split__body">
-              <p>
-                The EPE LAWA programme is carried on Radio Lagos 107.5 FM. The
-                web player does not check whether the station is on air, so
-                nothing here is ever labelled as live.
-              </p>
-              <p>
-                Press play on the player page when you are ready. Nothing starts
-                on its own, and no schedule is published until one is confirmed.
-              </p>
-              <div className="home-actions">
-                <Link className="home-textlink" href="/radio">
-                  Open the player
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── What we cover ────────────────────────────────────────────────── */}
-      <section className="home-section" aria-labelledby="coverage-title">
-        <div className="ep-container">
-          <div className="home-section__head">
-            <h2 className="home-section__title" id="coverage-title">
-              What we cover
-            </h2>
-            <p className="home-section__note">
-              Seven areas, reported the same way. Category filtering is not
-              built yet, so these are listed as text rather than links.
-            </p>
-          </div>
-
-          <dl className="home-cover">
-            {COVERAGE.map((item) => (
-              <div className="home-cover__row" key={item.term}>
-                <dt>{item.term}</dt>
-                <dd>{item.detail}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-      </section>
-
-      {/* ── How we work ──────────────────────────────────────────────────── */}
-      <section className="home-section" aria-labelledby="standards-title">
-        <div className="ep-container">
-          <div className="home-split">
-            <div>
-              <p className="home-label">Standards</p>
-              <h2 className="home-section__title" id="standards-title">
-                How we work
-              </h2>
-            </div>
-            <div className="home-split__body">
-              <p>
-                Every story carries a source and a date. When we get something
-                wrong we correct it in place and say what changed, rather than
-                editing quietly. The guidelines are public and they bind the
-                newsroom as much as they bind the comments.
-              </p>
-              <ul className="home-commitments">
-                {COMMITMENTS.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-              <div className="home-actions">
-                <Link className="home-textlink" href="/guidelines">
-                  Read the guidelines
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Contact ──────────────────────────────────────────────────────── */}
-      <section className="home-contact" aria-labelledby="contact-title">
-        <div className="ep-container">
-          <div className="home-split">
-            <div>
-              <p className="home-label">Contact</p>
-              <h2 className="home-section__title" id="contact-title">
-                Talk to the newsroom.
-              </h2>
-            </div>
-            <div className="home-split__body">
-              <p>
-                Story tips, corrections, partnership requests and complaints all
-                reach the same desk. If something here is wrong, tell us and we
-                will look at it.
-              </p>
-              <div className="home-contact__links">
-                <Link className="home-contact__link" href="/contact">
-                  Contact the newsroom
-                </Link>
-                <a className="home-contact__email" href={`mailto:${CONTACT_EMAIL}`}>
-                  {CONTACT_EMAIL}
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
-  );
+    <section className="ep-container home-join" aria-labelledby="join-title"><p className="ui-eyebrow">There’s a place for you here</p><h2 id="join-title">Stay connected.<br />Make it your community.</h2><p>Create a member account to take part in conversations and contribute to the growing story of Epe.</p><div className="ui-actions"><Link className="btn-primary" href="/auth">Become a member <ArrowUpRightIcon size={17} aria-hidden="true" /></Link><Link className="btn-ghost" href="/about">Get to know EPE LAWA</Link></div></section>
+  </div>;
 }

@@ -1,10 +1,11 @@
+import InformationPage from "../../components/information-page";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CONTACT_EMAIL } from "../../lib/contact";
 import { pageMetadata } from "../../lib/metadata";
 
 const description =
-  "Editorial standards, what a verified badge means on EPE LAWA, and the rules for comments and the forum.";
+  "EPE LAWA editorial standards, community history consent, business verification, and Digital Village Square rules.";
 
 export const metadata: Metadata = pageMetadata({
   title: "Guidelines",
@@ -13,88 +14,64 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default function GuidelinesPage() {
-  return (
-    <div className="max-w-md mx-auto px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mb-8">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-          EPE LAWA
-        </p>
-        <h1 className="text-2xl font-bold tracking-tight">Community and editorial guidelines</h1>
-        <p className="text-muted-foreground mt-2 leading-relaxed">
-          How EPE LAWA reports, what a verified badge claims, and how people are expected to treat
-          each other here.
-        </p>
-      </div>
-
-      <div className="prose">
-        <h2 className="mt-8 mb-3 text-lg font-bold">Editorial standards</h2>
-        <ul className="list-disc pl-6 text-muted-foreground mb-6 space-y-2">
-          <li>Every published story names its sources. An unnamed source is explained to readers.</li>
-          <li>
-            A claim that has not been checked is written as a claim, not as a fact, and it says who made it.
-          </li>
-          <li>Corrections are dated and placed at the top of the story they correct.</li>
-          <li>Comment and opinion are labelled as comment and opinion.</li>
-          <li>
-            Paid placement, if it is ever introduced, will be labelled as paid placement. It will not be dressed as reporting.
-          </li>
+  return <InformationPage title="Community and editorial guidelines" description="How we report, share community history, verify business information and treat one another.">
+<h2>Editorial standards</h2>
+        <ul>
+          <li>Published reporting identifies its sources; an unnamed source is explained to readers.</li>
+          <li>A claim that has not been checked is attributed as a claim, not presented as fact.</li>
+          <li>Corrections are dated and made visible with the story they correct.</li>
+          <li>Comment and opinion are labelled as such.</li>
+          <li>Any paid placement, if introduced, is clearly labelled and is not presented as reporting.</li>
         </ul>
 
-        <h2 id="verification" className="mt-8 mb-3 text-lg font-bold">What verification means here</h2>
-        <p className="mb-6">
-          A verified badge next to a name on Who is Who means one thing: a person at EPE LAWA
-          checked a recorded source and wrote down what was checked, who checked it, and when.
+        <h2 id="verification">Business verification</h2>
+        <p>
+          A verification mark on a business listing means an EPE LAWA reviewer recorded what business
+          information was checked, who checked it, and when. It is not an endorsement, guarantee of
+          service quality, or promise that details will never change.
         </p>
-        <p className="mb-6">It does not mean any of the following:</p>
-        <ul className="list-disc pl-6 text-muted-foreground mb-6 space-y-2">
-          <li>That EPE LAWA endorses the person, their politics or their record.</li>
-          <li>That the profile is complete, or that nothing in it will ever change.</li>
-          <li>That the person speaks for EPE LAWA.</li>
-        </ul>
-        <p className="mb-6">
-          No profile is published without at least one recorded source. If you believe a badge is
-          wrong, or that a listed office or term is incorrect, tell us with the source and it will
-          be checked again.
+        <p>
+          If a business detail or verification mark appears wrong, send us the listing address and
+          supporting information so it can be reviewed.
         </p>
 
-        <h2 className="mt-10 mb-3 text-lg font-bold">Comment and forum rules</h2>
-        <p className="mb-6">
-          Disagreement is welcome. The following is not:
+        <h2>Community history contributions</h2>
+        <p>
+          Community history submissions remain private while they are reviewed. Contributors should
+          provide provenance and confirm they have permission to share the information and media.
+          Sensitive family details are not published by default. Corrections and removal requests are
+          reviewed with the record’s context and an audit trail.
         </p>
-        <ul className="list-disc pl-6 text-muted-foreground mb-6 space-y-2">
+
+        <h2>Digital Village Square rules</h2>
+        <p>Disagreement is welcome. The following is not:</p>
+        <ul>
           <li>Threats, harassment, or targeting someone&apos;s family.</li>
           <li>Hate speech about ethnicity, religion, gender, disability or origin.</li>
-          <li>Impersonating a person, an office holder or a member of staff.</li>
-          <li>
-            Publishing someone&apos;s private information, including an address or a phone number.
-          </li>
+          <li>Impersonating another person, business or member of staff.</li>
+          <li>Publishing someone&apos;s private information, including an address or phone number.</li>
           <li>Claims presented as fact that the poster knows are false.</li>
           <li>Spam, scams, or the sale of illegal goods and services.</li>
           <li>Sexual content involving minors, in any form.</li>
         </ul>
 
-        <h2 className="mt-10 mb-3 text-lg font-bold">Moderation</h2>
-        <p className="mb-6">
-          A moderator may hide a post. When they do, the reason is recorded and the action is
-          logged. A hidden post leaves a marker so the replies around it still make sense. Repeated
-          or serious breaches may lead to a posting ban.
+        <h2>Moderation</h2>
+        <p>
+          A moderator may hide or otherwise restrict content under these rules. Actions require a
+          recorded reason and are audited. A hidden post may leave a marker so surrounding discussion
+          remains understandable. Repeated or serious breaches may lead to a posting restriction.
         </p>
-        <p className="mb-6">
-          Moderation is not a way to remove an opinion someone disagrees with. It applies to the
-          rules above.
-        </p>
+        <p>Moderation is not a way to remove an opinion solely because someone disagrees with it.</p>
 
-        <h2 className="mt-10 mb-3 text-lg font-bold">Corrections and reports</h2>
-        <p className="mb-6">
-          Send a correction or a moderation report to{" "}
-          <a href={`mailto:${CONTACT_EMAIL}`} className="text-primary underline underline-offset-4">
+        <h2>Corrections and reports</h2>
+        <p>
+          Send a correction or moderation report to{" "}
+          <a href={`mailto:${CONTACT_EMAIL}`}>
             {CONTACT_EMAIL}
           </a>, or use the{" "}
-          <Link href="/contact" className="text-primary underline underline-offset-4">
+          <Link href="/contact">
             contact page
           </Link>. Include the page address and, where relevant, the source. Reports are read by a person.
         </p>
-      </div>
-    </div>
-  );
+  </InformationPage>;
 }

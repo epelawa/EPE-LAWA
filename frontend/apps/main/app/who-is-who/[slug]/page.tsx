@@ -6,6 +6,7 @@ import { createClient } from "../../../lib/supabase";
 import { formatIsoDay, formatPublishedDate } from "../../../lib/dates";
 import { publicMediaUrl } from "../../../lib/media";
 import { UsersIcon } from "../../../components/icons";
+import { EmptyPanel, PageFrame, PageIntro, SectionHeading, StatusBadge } from "../../../components/design-system";
 
 /**
  * Who is Who — person profile.
@@ -27,6 +28,7 @@ type PublishedPerson = {
   community: string | null;
   community_note: string | null;
   biography: string | null;
+  achievements: string | null;
   is_deceased: boolean;
   is_verified: boolean;
   verified_at: string | null;
@@ -149,16 +151,7 @@ export default async function PersonProfilePage({
 
   if (result.status === "error") {
     return (
-      <div className="ep-container py-12">
-        <h1 className="mb-4 text-2xl font-bold tracking-tight">This profile did not load</h1>
-        <p className="mb-6 max-w-2xl leading-relaxed text-muted-foreground">
-          The directory could not be reached, so nothing is shown rather than a guess at the
-          record. Try again in a moment.
-        </p>
-        <Link href="/who-is-who" className="btn-ghost">
-          Back to the directory
-        </Link>
-      </div>
+      <PageFrame className="ui-stack"><EmptyPanel title="This profile did not load" description="The directory could not be reached, so nothing is shown rather than a guess at the record. Try again in a moment." actions={<Link href="/who-is-who" className="btn-secondary">Back to the directory</Link>} /></PageFrame>
     );
   }
 
@@ -201,14 +194,14 @@ export default async function PersonProfilePage({
     : [];
 
   return (
-    <article className="ep-container py-12">
-      <nav aria-label="Breadcrumb" className="mb-8 text-sm">
-        <Link href="/who-is-who" className="text-primary underline underline-offset-4">
+    <PageFrame className="ui-stack">
+      <nav aria-label="Breadcrumb" className="ui-meta">
+        <Link href="/who-is-who" className="ui-back-link">
           Who is Who
         </Link>
       </nav>
 
-      <header className="mb-10 flex flex-col gap-6 sm:flex-row sm:items-start">
+      <div className="ui-card ui-row items-start">
         <div className="flex-shrink-0">
           {portrait ? (
             <figure className="m-0">
@@ -216,51 +209,51 @@ export default async function PersonProfilePage({
               <img
                 src={portrait}
                 alt={person.portrait_alt || person.full_name}
-                className="h-32 w-32 rounded-md border object-cover"
+                className="h-32 w-32 rounded-2xl border object-cover"
                 loading="eager"
                 decoding="async"
               />
               {person.portrait_credit ? (
-                <figcaption className="mt-2 max-w-[8rem] text-xs text-muted-foreground">
+                <figcaption className="ui-meta mt-2 max-w-32">
                   {person.portrait_credit}
                 </figcaption>
               ) : null}
             </figure>
           ) : (
-            <div className="flex h-32 w-32 items-center justify-center rounded-md bg-muted text-muted-foreground">
+            <div className="flex h-32 w-32 items-center justify-center rounded-2xl bg-secondary text-muted-foreground">
               <UsersIcon size={36} />
             </div>
           )}
         </div>
 
         <div className="min-w-0">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{name}</h1>
+          <PageIntro eyebrow="Who is Who · Epe Division" title={name} />
 
           {person.preferred_name && person.preferred_name !== person.full_name ? (
-            <p className="mt-1 text-sm text-muted-foreground">Full name: {person.full_name}</p>
+            <p className="ui-meta mt-2">Full name: {person.full_name}</p>
           ) : null}
 
-          <p className="mt-2 flex flex-wrap items-baseline gap-x-2 text-sm text-muted-foreground">
+          <p className="ui-meta mt-2">
             {person.community ? <span>{person.community}</span> : null}
             {person.community && person.is_deceased ? <span aria-hidden="true">·</span> : null}
-            {person.is_deceased ? <span className="italic">Deceased</span> : null}
+            {person.is_deceased ? <StatusBadge>Deceased</StatusBadge> : null}
           </p>
 
           {person.community_note ? (
-            <p className="mt-1 text-sm text-muted-foreground">{person.community_note}</p>
+            <p className="ui-muted mt-2">{person.community_note}</p>
           ) : null}
         </div>
-      </header>
+      </div>
 
       {person.is_verified ? (
         <section
           aria-labelledby="verification-heading"
-          className="mb-10 rounded-md border border-[var(--color-green-700)] bg-[var(--color-green-100)] p-4"
+          className="ui-notice ui-notice--success"
         >
-          <h2 id="verification-heading" className="text-base font-bold text-foreground">
+          <h2 id="verification-heading" className="font-semibold">
             Verified profile
           </h2>
-          <p className="mt-1 text-sm leading-relaxed text-[var(--color-green-700)]">
+          <p className="mt-2 leading-relaxed">
             A member of the EPE LAWA editorial team checked this record against the sources listed
             below
             {verifiedOn ? ` and recorded the check on ${verifiedOn}` : ""}. Verification means the
@@ -271,11 +264,9 @@ export default async function PersonProfilePage({
       ) : null}
 
       {paragraphs.length > 0 ? (
-        <section aria-labelledby="biography-heading" className="mb-10">
-          <h2 id="biography-heading" className="mb-4 text-xl font-bold tracking-tight">
-            Biography
-          </h2>
-          <div className="space-y-4 leading-relaxed text-foreground">
+        <section aria-labelledby="biography-heading" className="ui-stack-sm">
+          <SectionHeading id="biography-heading" title="Biography" />
+          <div className="ui-prose">
             {paragraphs.map((paragraph, index) => (
               <p key={index}>{paragraph}</p>
             ))}
@@ -283,37 +274,40 @@ export default async function PersonProfilePage({
         </section>
       ) : null}
 
+      {person.achievements?.trim() ? (
+        <section aria-labelledby="achievements-heading" className="ui-stack-sm">
+          <SectionHeading id="achievements-heading" title="Achievements and contributions" />
+          <div className="ui-prose">
+            {person.achievements.trim().split(/\n\s*\n/).map((item, index) => <p key={index}>{item.trim()}</p>)}
+          </div>
+        </section>
+      ) : null}
+
       {offices.length > 0 ? (
-        <section aria-labelledby="offices-heading" className="mb-10">
-          <h2 id="offices-heading" className="mb-4 text-xl font-bold tracking-tight">
-            Offices held
-          </h2>
-          <ul className="space-y-3">
+        <section aria-labelledby="offices-heading" className="ui-stack-sm">
+          <SectionHeading id="offices-heading" title="Offices held" />
+          <ul className="ui-list ui-stack-sm">
             {offices.map((office) => (
-              <li key={office.id} className="card p-4">
+              <li key={office.id} className="ui-card">
                 <div className="flex flex-wrap items-baseline gap-2">
                   <h3 className="text-base font-semibold">{office.title}</h3>
                   {office.is_current ? (
-                    <span className="rounded bg-[var(--color-green-100)] px-2 py-0.5 text-xs font-semibold text-[var(--color-green-700)]">
-                      Current
-                    </span>
+                    <StatusBadge tone="success">Current</StatusBadge>
                   ) : null}
                 </div>
-                <p className="mt-1 text-sm text-muted-foreground">{office.institution}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{termLabel(office)}</p>
+                <p className="ui-meta mt-2">{office.institution}</p>
+                <p className="ui-meta mt-1">{termLabel(office)}</p>
               </li>
             ))}
           </ul>
         </section>
       ) : null}
 
-      <section aria-labelledby="sources-heading" className="mb-10">
-        <h2 id="sources-heading" className="mb-4 text-xl font-bold tracking-tight">
-          Sources
-        </h2>
+      <section aria-labelledby="sources-heading" className="ui-stack-sm">
+        <SectionHeading id="sources-heading" title="Sources" />
 
         {sources.length > 0 ? (
-          <ul className="space-y-3">
+          <ul className="ui-list ui-stack-sm">
             {sources.map((source) => {
               const recorded = formatPublishedDate(source.recorded_at);
               // `people_sources_url_https` guarantees https, but a link is only rendered when the
@@ -321,9 +315,9 @@ export default async function PersonProfilePage({
               const href = source.url && /^https:\/\//i.test(source.url) ? source.url : null;
 
               return (
-                <li key={source.id} className="card p-4">
-                  <p className="leading-relaxed text-muted-foreground">{source.citation}</p>
-                  <p className="mt-2 flex flex-wrap items-baseline gap-x-2 text-xs text-muted-foreground">
+                <li key={source.id} className="ui-card">
+                  <p className="leading-relaxed">{source.citation}</p>
+                  <p className="ui-meta mt-2">
                     <span className="uppercase tracking-wider">
                       {source.kind.replace(/_/g, " ")}
                     </span>
@@ -339,7 +333,7 @@ export default async function PersonProfilePage({
                       href={href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-2 inline-block text-sm text-primary underline underline-offset-4"
+                      className="ui-text-link mt-2"
                     >
                       Open the source
                       <span className="sr-only"> (opens in a new tab)</span>
@@ -350,20 +344,20 @@ export default async function PersonProfilePage({
             })}
           </ul>
         ) : (
-          <p className="text-muted-foreground">
+          <p className="ui-muted">
             No public source is recorded for this profile yet. Staff-held evidence is not published
             until the person who recorded it marks it public.
           </p>
         )}
       </section>
 
-      <p className="border-t pt-6 text-sm text-muted-foreground">
+      <p className="ui-divider ui-meta">
         Something here wrong or incomplete?{" "}
-        <Link href="/contact" className="text-primary underline underline-offset-4">
+        <Link href="/contact" className="ui-text-link">
           Tell the newsroom
         </Link>
         .
       </p>
-    </article>
+    </PageFrame>
   );
 }

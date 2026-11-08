@@ -1,0 +1,46 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { createClient } from "../../../../lib/supabase";
+import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, StatusBadge } from "../../../../components/design-system";
+import { replyToThread, reportPost, voteInPoll } from "../../actions";
+
+type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ posted?: string; reported?: string; voted?: string; error?: string }> };
+export async function generateMetadata({ params }: Props): Promise<Metadata> { const { slug } = await params; return { title: `Forum thread · ${slug}` }; }
+export default async function ThreadPage({ params, searchParams }: Props) {
+  const [{ slug }, notice] = await Promise.all([params, searchParams]);
+  const supabase = await createClient();
+  const [{ data: { user } }, { data: thread, error }] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.from("forum_threads").select("id,category_id,slug,title,state,created_at").eq("slug", slug).maybeSingle(),
+  ]);
+  if (error) return <PageFrame><Notice role="status" tone="warning">This discussion could not be loaded. Please try again later.</Notice></PageFrame>;
+  if (!thread) notFound();
+  const [{ data: category }, { data: posts, error: postsError }, { data: poll }] = await Promise.all([
+    supabase.from("forum_categories").select("slug,name").eq("id", thread.category_id).maybeSingle(),
+    supabase.from("forum_posts").select("id,author_id,body,state,created_at").eq("thread_id", thread.id).order("created_at").limit(100),
+    supabase.from("forum_polls").select("id,question,closes_at").eq("thread_id", thread.id).maybeSingle(),
+  ]);
+  const [{ data: options }, { data: results }, { data: voterRows }] = poll ? await Promise.all([
+    supabase.from("forum_poll_options").select("id,label,sort_order").eq("poll_id", poll.id).order("sort_order"),
+    supabase.from("forum_poll_results").select("option_id,vote_count").eq("poll_id", poll.id),
+    user ? supabase.from("forum_poll_votes").select("option_id").eq("poll_id", poll.id).eq("voter_id", user.id) : Promise.resolve({ data: [] }),
+  ]) : [{ data: [] }, { data: [] }, { data: [] }];
+  const authors = [...new Set((posts ?? []).map((post) => post.author_id).filter((id): id is string => Boolean(id)))];
+  const { data: profiles } = authors.length ? await supabase.from("profiles").select("user_id,handle,display_name,is_verified,verified_at,deleted_at").in("user_id", authors) : { data: [] };
+  const profileById = new Map((profiles ?? []).map((profile) => [profile.user_id, profile]));
+  const counts = new Map((results ?? []).map((row) => [row.option_id, row.vote_count]));
+  const totalVotes = [...counts.values()].reduce((sum, count) => sum + count, 0);
+  const hasVoted = Boolean(voterRows?.length);
+  const canReply = user !== null && thread.state === "open";
+  const pollOpen = thread.state === "open" && (!poll?.closes_at || new Date(poll.closes_at).getTime() > Date.now());
+  const signIn = `/login?next=${encodeURIComponent(`/forum/thread/${slug}`)}`;
+  return <PageFrame className="ui-stack">
+    <nav className="ui-back-link" aria-label="Breadcrumb"><Link href="/forum">Forum</Link>{category ? <><span aria-hidden="true"> / </span><Link href={`/forum/category/${encodeURIComponent(category.slug)}`}>{category.name}</Link></> : null}</nav>
+    <PageIntro eyebrow="Community discussion" title={thread.title} description={thread.state === "locked" ? "This discussion is locked." : "Join the conversation."} meta={<span>{thread.state === "locked" ? <StatusBadge tone="warning">Locked</StatusBadge> : <StatusBadge tone="success">Open discussion</StatusBadge>}</span>} />
+    <div className="ui-stack-sm" aria-live="polite">{notice.posted ? <Notice role="status" tone="success">Your reply was posted.</Notice> : null}{notice.reported ? <Notice role="status" tone="success">Your report was submitted for moderator review.</Notice> : null}{notice.voted ? <Notice role="status" tone="success">Your vote was recorded.</Notice> : null}{notice.error ? <Notice role="alert" tone="danger">{notice.error}</Notice> : null}</div>
+    {poll ? <Panel className="ui-card ui-stack-sm" aria-labelledby="poll-question"><div><p className="ui-eyebrow">Community poll</p><h2 id="poll-question">{poll.question}</h2><p className="ui-meta">{totalVotes} {totalVotes === 1 ? "vote" : "votes"} · totals only; ballots are private</p></div>{pollOpen && user && !hasVoted ? <form action={voteInPoll} className="ui-stack-sm"><input type="hidden" name="poll_id" value={poll.id} /><input type="hidden" name="thread_slug" value={thread.slug} /><fieldset className="ui-stack-sm"><legend className="sr-only">Choose one answer</legend>{(options ?? []).map((option) => <label key={option.id} className="ui-item ui-row"><input type="radio" name="option_id" value={option.id} required />{option.label}</label>)}</fieldset><button className="btn-primary" type="submit">Submit vote</button></form> : null}{pollOpen && !user ? <p><Link className="ui-text-link" href={signIn}>Sign in to vote</Link></p> : null}{(!pollOpen || hasVoted) ? <ul className="ui-list ui-stack-sm" aria-label="Poll results">{(options ?? []).map((option) => { const count = counts.get(option.id) ?? 0; const percent = totalVotes ? Math.round(count * 100 / totalVotes) : 0; return <li className="ui-subtle ui-stack-sm" key={option.id}><div className="ui-row"><span>{option.label}{voterRows?.some((row) => row.option_id === option.id) ? " — your choice" : ""}</span><span className="ui-number">{count} ({percent}%)</span></div></li>; })}</ul> : null}{!pollOpen ? <p className="ui-muted">Voting is closed.</p> : null}</Panel> : null}
+    <section className="ui-stack-sm" aria-labelledby="posts-heading"><div className="ui-section-heading"><div><p className="ui-eyebrow">Discussion</p><h2 id="posts-heading">Posts</h2></div></div>{postsError ? <Notice role="status" tone="warning">Posts could not be loaded. Please try again later.</Notice> : !posts?.length ? <EmptyPanel title="No visible posts" description="There are no posts available to show in this discussion." /> : <ol className="ui-list ui-stack-sm">{posts.map((post, index) => { const profile = post.author_id ? profileById.get(post.author_id) : null; const verified = profile?.is_verified && profile.verified_at && new Date(profile.verified_at).getTime() <= Date.now() && !profile.deleted_at; return <li className="ui-panel ui-card ui-stack-sm" key={post.id}><p className="ui-meta"><strong>{profile && !profile.deleted_at ? profile.display_name : "Community member"}</strong>{profile && !profile.deleted_at ? <span>@{profile.handle}</span> : null}{verified ? <StatusBadge tone="success">Verified profile</StatusBadge> : null}<span>Post {index + 1}</span><time dateTime={post.created_at}>{new Date(post.created_at).toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" })}</time></p>{post.state === "deleted" ? <p className="ui-muted"><em>This post was removed.</em></p> : <p className="ui-prose" style={{ whiteSpace: "pre-wrap" }}>{post.body}</p>}{user && post.state === "visible" ? <details className="ui-divider"><summary className="ui-back-link">Report this post</summary><form action={reportPost} className="ui-stack-sm"><input type="hidden" name="post_id" value={post.id} /><input type="hidden" name="thread_slug" value={thread.slug} /><div className="ui-field"><label className="label" htmlFor={`reason-${post.id}`}>Reason</label><select className="input" id={`reason-${post.id}`} name="reason" required><option value="">Choose a reason</option><option value="spam">Spam</option><option value="harassment">Harassment</option><option value="hate">Hate</option><option value="misinformation">Misinformation</option><option value="privacy">Privacy concern</option><option value="other">Other</option></select></div><div className="ui-field"><label className="label" htmlFor={`note-${post.id}`}>Note (optional)</label><textarea className="input" id={`note-${post.id}`} name="note" maxLength={1000} rows={3} /></div><button className="btn-secondary" type="submit">Submit report</button></form></details> : null}</li>; })}</ol>}</section>
+    {canReply ? <section className="ui-stack-sm"><h2>Reply</h2><form action={replyToThread} className="ui-panel ui-card ui-stack-sm"><input type="hidden" name="thread_id" value={thread.id} /><input type="hidden" name="thread_slug" value={thread.slug} /><div className="ui-field"><label className="label" htmlFor="reply-body">Your reply</label><textarea className="input" id="reply-body" name="body" required maxLength={20000} rows={6} /></div><button className="btn-primary" type="submit">Post reply</button></form></section> : !user ? <Notice tone="neutral">Sign in to reply or report a post. <Link className="ui-text-link" href={signIn}>Sign in</Link></Notice> : null}
+  </PageFrame>;
+}

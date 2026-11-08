@@ -1,63 +1,98 @@
-import Link from "next/link";
 import RadioPlayer from "../../components/radio-player";
 import { RadioIcon } from "../../components/icons";
+import { EmptyPanel, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "../../components/design-system";
+import { createClient } from "../../lib/supabase";
 
-/**
- * Radio page.
- *
- * The player is the only live thing here. The schedule and archive render honest empty
- * states — nothing is published yet, and nothing is invented to fill the gap.
- */
-export default function RadioPage() {
+export const dynamic = "force-dynamic";
+
+export default async function RadioPage() {
+  let programmes: Array<{ id: string; name: string; description: string | null }> = [];
+  let slots: Array<{ id: string; day_of_week: number; starts_at: string; ends_at: string; note: string | null; programmes: Array<{ name: string }> }> = [];
+  let episodes: Array<{ id: string; title: string; description: string | null; aired_on: string | null; external_url: string | null; programmes: Array<{ name: string }> }> = [];
+  let unavailable = false;
+  try {
+    const db = await createClient();
+    const [p, s, e] = await Promise.all([
+      db.from("programmes").select("id,name,description").eq("is_active", true).order("name").limit(100),
+      db.from("radio_schedule").select("id,day_of_week,starts_at,ends_at,note,programmes(name)").order("day_of_week").order("starts_at").limit(200),
+      db.from("episodes").select("id,title,description,aired_on,external_url,programmes(name)").not("published_at", "is", null).order("published_at", { ascending: false }).limit(50),
+    ]);
+    if (p.error || s.error || e.error) unavailable = true;
+    else { programmes = p.data ?? []; slots = s.data ?? []; episodes = e.data ?? []; }
+  } catch { unavailable = true; }
+
   return (
-    <div className="max-w-md mx-auto px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mb-8">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-          Radio Lagos 107.5 FM
-        </p>
-        <h1 className="text-2xl font-bold tracking-tight">Radio Lagos 107.5 FM</h1>
-        <p className="text-muted-foreground mt-2 leading-relaxed">
-          The EPE LAWA programme on Radio Lagos. Press Play to listen. Nothing starts
-          automatically, and nothing claims to be live unless it has actually been verified.
-        </p>
-      </div>
-
+    <PageFrame className="ui-stack">
+      <PageIntro
+        eyebrow="Community radio"
+        title="EPE LAWA Radio"
+        description="A home for community voices, programmes and conversations. Browse approved programme information, the schedule and published archive episodes."
+        meta={<StatusBadge tone="warning">Live stream not yet available</StatusBadge>}
+      />
       <RadioPlayer />
+      {unavailable ? (
+        <EmptyPanel
+          title="Programme information is temporarily unavailable"
+          description="Please try again later. The live stream has not been verified and no live status is claimed."
+          icon={<RadioIcon size={22} />}
+        />
+      ) : (
+        <div className="ui-stack">
+          <Panel>
+            <SectionHeading eyebrow="On air and in the community" title="Programmes" />
+            {programmes.length ? (
+              <ul className="ui-list ui-stack-sm">
+                {programmes.map((programme) => (
+                  <li className="ui-item" key={programme.id}>
+                    <h3 className="ui-item-title">{programme.name}</h3>
+                    {programme.description ? <p className="ui-muted">{programme.description}</p> : null}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <EmptyPanel title="No programmes published yet" description="Approved programme information will appear here when it is available." />
+            )}
+          </Panel>
 
-      <div className="rounded-lg border bg-card p-6 mt-8">
-        <h2 className="text-lg font-bold text-foreground mb-2">Schedule</h2>
-        <p className="text-muted-foreground text-sm mb-4">What is on and when, published by the newsroom.</p>
-        <div className="flex items-center justify-center h-32 bg-muted rounded-lg">
-          <RadioIcon size={32} className="text-muted-foreground" />
+          <Panel>
+            <SectionHeading eyebrow="Weekly listings" title="Schedule" />
+            {slots.length ? (
+              <ul className="ui-list">
+                {slots.map((slot) => (
+                  <li className="ui-item ui-row" key={slot.id}>
+                    <span className="ui-number">{["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][slot.day_of_week]}</span>
+                    <div className="ui-stack-sm">
+                      <h3 className="ui-item-title">{slot.programmes[0]?.name}</h3>
+                      <p className="ui-meta"><span>{slot.starts_at.slice(0, 5)}–{slot.ends_at.slice(0, 5)}</span>{slot.note ? <span>{slot.note}</span> : null}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <EmptyPanel title="No schedule published yet" description="There are no programme times to show at the moment." />
+            )}
+          </Panel>
+
+          <Panel>
+            <SectionHeading eyebrow="Listen again" title="Archive" description="Published episodes from the EPE LAWA Radio community." />
+            {episodes.length ? (
+              <ul className="ui-list">
+                {episodes.map((episode) => (
+                  <li className="ui-item ui-stack-sm" key={episode.id}>
+                    <h3 className="ui-item-title">{episode.title}</h3>
+                    <p className="ui-meta"><span>{episode.programmes[0]?.name}</span>{episode.aired_on ? <span>{episode.aired_on}</span> : null}</p>
+                    {episode.description ? <p className="ui-muted">{episode.description}</p> : null}
+                    {episode.external_url ? <audio className="mt-2 w-full" controls preload="none" src={episode.external_url}>Audio playback is not supported by this browser.</audio> : null}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <EmptyPanel title="No published episodes available" description="When archive episodes are published, you will be able to find them here." />
+            )}
+          </Panel>
         </div>
-        <p className="mt-2 text-sm font-medium text-muted-foreground">
-          No programme schedule has been published yet.
-        </p>
-      </div>
-
-      <div className="rounded-lg border bg-card p-6 mt-6">
-        <h2 className="text-lg font-bold text-foreground mb-2">Archive</h2>
-        <p className="text-muted-foreground text-sm mb-4">Past programmes, available on demand.</p>
-        <div className="flex items-center justify-center h-32 bg-muted rounded-lg">
-          <RadioIcon size={32} className="text-muted-foreground" />
-        </div>
-        <p className="mt-2 text-sm font-medium text-muted-foreground">
-          No past programmes are available yet.
-        </p>
-      </div>
-
-      <div className="mt-8 rounded-lg border bg-card p-6">
-        <p className="text-muted-foreground text-sm leading-relaxed">
-          Audio plays directly from the broadcaster&rsquo;s stream. EPE LAWA does not relay or
-          store the audio, and the stream URL comes from the{" "}
-          <Link href="https://fm.puzzofme.com" target="_blank" rel="noopener">
-            Naija Radio API catalogue
-          </Link>
-          . Live status is not yet independently verified, so the player does not show a
-          &ldquo;LIVE&rdquo; indicator. It will only appear once a status check has actually
-          confirmed the stream is on air.
-        </p>
-      </div>
-    </div>
+      )}
+      <p className="ui-meta" role="status"><RadioIcon size={16} aria-hidden="true" />Stream availability is not verified; no live status is claimed.</p>
+    </PageFrame>
   );
 }

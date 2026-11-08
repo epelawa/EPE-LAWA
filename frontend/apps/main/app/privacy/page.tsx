@@ -2,73 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CONTACT_EMAIL } from "../../lib/contact";
 import { pageMetadata } from "../../lib/metadata";
-
-const description =
-  "What EPE LAWA collects, why, who processes it, how long it is kept and how to ask for deletion.";
-
-export const metadata: Metadata = pageMetadata({ title: "Privacy", description, path: "/privacy" });
-
+import InformationPage from "../../components/information-page";
+export const metadata: Metadata = pageMetadata({ title: "Privacy", description: "How EPE LAWA handles account, contribution and service information, and how to ask for a correction or deletion.", path: "/privacy" });
 export default function PrivacyPage() {
-  return (
-    <div className="max-w-md mx-auto px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mb-8">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-          EPE LAWA
-        </p>
-        <h1 className="text-2xl font-bold tracking-tight">Privacy notice</h1>
-        <p className="text-muted-foreground mt-2 leading-relaxed">
-          What this site collects, how it is used and how to ask for deletion.
-        </p>
-      </div>
-
-      <div className="prose">
-        <h2 className="mt-8 mb-3 text-lg font-bold">What is collected</h2>
-        <p className="mb-6">
-          Only what you choose to give us through the contact form: your name, email address and
-          message text. Nothing else is collected from visitors.
-        </p>
-
-        <h2 className="mt-10 mb-3 text-lg font-bold">How it is used</h2>
-        <p className="mb-6">
-          Your email address and message are used only to reply to you. They are not sold, shared
-          with third parties, or used for marketing.
-        </p>
-
-        <h2 className="mt-10 mb-3 text-lg font-bold">Cookies and tracking</h2>
-        <p className="mb-6">
-          No cookies are set today. There is no analytics tool, no advertising pixel and no social
-          tracking script on this site.
-        </p>
-
-        <h2 className="mt-10 mb-3 text-lg font-bold">How long it is kept</h2>
-        <p className="mb-6">
-          Messages sent through the contact form are kept only as long as needed to reply to them.
-        </p>
-
-        <h2 className="mt-10 mb-3 text-lg font-bold">Asking about your data, or deleting it</h2>
-        <p className="mb-6">
-          Under Nigerian data protection law you can ask what is held about you, ask for it to be
-          corrected, and ask for it to be deleted. Email{" "}
-          <a href={`mailto:${CONTACT_EMAIL}`} className="text-primary underline underline-offset-4">
-            {CONTACT_EMAIL}
-          </a> and a person will answer.
-        </p>
-
-        <h2 className="mt-10 mb-3 text-lg font-bold">Children</h2>
-        <p className="mb-6">
-          This site is not directed at children under 13. We do not knowingly collect personal
-          information from children.
-        </p>
-
-        <h2 className="mt-10 mb-3 text-lg font-bold">Changes</h2>
-        <p className="mb-6">
-          If this notice changes, the change will be published on this page. Questions about it go
-          to the same address as everything else, or through the{" "}
-          <Link href="/contact" className="text-primary underline underline-offset-4">
-            contact page
-          </Link>.
-        </p>
-      </div>
-    </div>
-  );
+  return <InformationPage title="Privacy notice" description="What you share, what stays private, and how to ask about your information.">
+    <h2>Reading the public site</h2><p>You can browse public pages without a member account. Your theme choice and the dismissal of the storage notice are saved in your browser. No optional analytics tool, advertising pixel or social tracking script is enabled.</p>
+    <h2>Member accounts and session cookies</h2><p>Creating an account uses your email address, password, display name and handle. Authentication is handled by Supabase. Signing in uses essential session cookies so the site can recognise your session. Your password is not published.</p><p>Your display name, handle and the content you choose to post may be visible in community areas. Do not put sensitive personal information in a public profile, comment or forum post.</p>
+    <h2>Contributions and private information</h2><p>History, tourism and business contributions are reviewed before publication. Private source notes, consent evidence and staff review information are not intended for public display. History publication uses a separately reviewed public account rather than automatically publishing private submissions.</p><p>Marketplace order requests may include contact and fulfilment information. Those details are restricted to the relevant members and authorised staff. Online payment is not currently connected.</p>
+    <h2>Maps and external services</h2><p>Location access is optional. The map asks for permission before using your device location. Opening directions takes you to Google Maps, where that service’s own privacy terms apply.</p><p>The platform uses hosting and database/authentication providers to operate the service. These providers may process technical information needed to serve pages, secure accounts and investigate failures.</p>
+    <h2>Contacting the team</h2><p>Email messages are used to handle your request. The website’s contact-form delivery is not connected yet; checking a draft does not deliver or store that message. Use <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> to contact the team.</p>
+    <h2>Retention, corrections and deletion</h2><p>Information is kept for the purpose it was provided, subject to account, moderation, security and record-keeping needs. There is no fixed retention period published yet. Ask the team what is held about you, request a correction, or request deletion at <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. Include the relevant page or account handle, not your password.</p>
+    <h2>Children</h2><p>This site is not directed at children under 13. If you believe a child’s personal information has been shared here, contact the team so it can be reviewed.</p>
+    <h2>Changes and questions</h2><p>Changes to this notice will be published on this page. Questions and privacy requests can also start from the <Link href="/contact">contact page</Link>.</p>
+  </InformationPage>;
 }

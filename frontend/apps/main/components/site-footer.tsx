@@ -2,38 +2,6 @@ import Link from "next/link";
 import { footerNavigation } from "../lib/navigation";
 import { BrandLockup } from "./brand";
 
-/**
- * Site footer.
- *
- * A hairline and a lot of air. The previous version was a filled grey slab,
- * which made every page end in a box.
- */
 export default function SiteFooter() {
-  return (
-    <footer className="site-footer">
-      <div className="ep-container">
-        <div className="site-footer__top">
-          <Link className="nav-brand" href="/" aria-label="EPE LAWA — home">
-            <BrandLockup size={28} />
-          </Link>
-
-          <nav aria-label="Footer">
-            <ul>
-              {footerNavigation.map((item) => (
-                <li key={item.href}>
-                  <Link className="nav-link" href={item.href}>
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        </div>
-
-        <p className="site-footer__note">
-          © {new Date().getFullYear()} EPE LAWA. Epe Division, Lagos State.
-        </p>
-      </div>
-    </footer>
-  );
+  return <footer className="site-footer"><div className="ep-container"><div className="footer-top"><div className="footer-identity"><Link className="nav-brand" href="/"><BrandLockup size={32}/></Link><p>A shared home for the place, the people, and everything that connects us.</p><span>Epe Division · Lagos State, Nigeria</span></div><div className="footer-columns"><div><h2>Find your way</h2><nav aria-label="Footer navigation"><ul>{footerNavigation.map(item=><li key={item.href}><Link href={item.href}>{item.label}</Link></li>)}</ul></nav></div><div><h2>The essentials</h2><nav aria-label="Information and policies"><ul><li><Link href="/about">About EPE LAWA</Link></li><li><Link href="/contact">Contact the team</Link></li><li><Link href="/guidelines">Community guidelines</Link></li><li><Link href="/privacy">Privacy notice</Link></li><li><Link href="/terms">Terms of use</Link></li><li><Link href="/login">Member sign in</Link></li><li><Link href="/auth">Create an account</Link></li></ul></nav></div></div></div><div className="footer-bottom"><span>© {new Date().getFullYear()} EPE LAWA</span><span>Rooted in Epe. Open to everyone.</span><Link href="/contact">Have something to share?</Link></div></div></footer>;
 }

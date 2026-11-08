@@ -1,0 +1,23 @@
+:root {
+  --ep-ui-midnight: #0A1023;
+  --ep-ui-navy: #17264A;
+  --ep-ui-royal-steel: #294B91;
+  --ep-ui-cobalt: #477FE0;
+  --ep-ui-ice-blue: #A7C5F5;
+  --ep-ui-cloud: #F1F4FA;
+  --ep-ui-silver: #A6B2C5;
+  --ep-ui-border-brand: #293650;
+  --ep-ui-primary: var(--ep-ui-cobalt);
+  --ep-ui-primary-strong: var(--ep-ui-royal-steel);
+  --ep-ui-secondary: #E7EDF8;
+  --ep-ui-lilac: var(--ep-ui-secondary);
+  --ep-ui-limestone: var(--ep-ui-cloud);
+  --ep-ui-ink: var(--ep-ui-midnight);
+  --ep-ui-muted: #40516F;
+  --ep-ui-border: #D8E0EC;
+  --ep-ui-accent: var(--ep-ui-ice-blue);
+  --ep-ui-success: #247044;
+  --ep-ui-warning: #8A5A00;
+  --ep-ui-error: #AD302B;
+  --ep-ui-radius: 1.1rem;
+}

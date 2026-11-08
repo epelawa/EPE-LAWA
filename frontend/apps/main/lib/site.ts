@@ -47,12 +47,14 @@ export function absoluteUrl(pathname: string): string {
  *
  * 1. `ALLOW_INDEXING` is an explicit override — "true" forces indexing on, "false" forces
  *    it off.
- * 2. With no override, the site is indexable only when the configured origin is the
- *    production host.
+ * 2. Vercel Preview deployments are never indexable by default, even if they inherit the
+ *    production canonical URL.
+ * 3. With no override, the site is indexable only when the configured origin is production.
  */
 export function isIndexingAllowed(): boolean {
   const explicit = process.env.ALLOW_INDEXING;
   if (explicit === "true") return true;
   if (explicit === "false") return false;
+  if (process.env.VERCEL_ENV === "preview") return false;
   return PRODUCTION_HOSTS.includes(new URL(siteUrl).hostname);
 }

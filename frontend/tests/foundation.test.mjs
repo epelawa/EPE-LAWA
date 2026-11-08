@@ -22,7 +22,8 @@ async function startApp(app) {
   const port = await freePort();
   const cwd = path.join(root, 'frontend/apps', app);
   const next = path.join(cwd, 'node_modules/next/dist/bin/next');
-  const child = spawn(process.execPath, [next, 'start', '--hostname', '127.0.0.1', '--port', String(port)], {
+  const nodeExecutable = process.env.EPE_TEST_NODE_BINARY || process.execPath;
+  const child = spawn(nodeExecutable, [next, 'start', '--hostname', '127.0.0.1', '--port', String(port)], {
     cwd,
     env: { ...process.env, NEXT_TELEMETRY_DISABLED: '1' },
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -76,7 +77,19 @@ test('main has honest indexable metadata, working public links and security head
     const response = await fetch(base);
     assert.equal(response.status, 200);
     const html = await response.text();
-    assert.match(html, /not connected yet/i);
+    for (const module of [
+      /Trending News/,
+      /Ìtàn Ilú Mi|Itan Ilu Mi/,
+      /Chat Forum/,
+      /Map &amp; Navigation|Map & Navigation/,
+      /Epe Business Directory &amp; Marketplace|Epe Business Directory & Marketplace/,
+      /Historical Sites &amp; Tourism|Historical Sites & Tourism/,
+      /EPE LAWA Radio/,
+      /Who is Who in Epe/,
+    ]) assert.match(html, module, `homepage module ${module}`);
+    for (const href of ['/news', '/itan-ilu-mi', '/forum', '/map', '/business-directory', '/tourism', '/radio', '/who-is-who']) {
+      assert.match(html, new RegExp(`href="${href}"`), `homepage route ${href}`);
+    }
     assert.doesNotMatch(html, /<meta name="robots" content="[^"]*noindex/i);
     assert.match(html, /<meta name="description" content="[^"]+"/);
     assert.match(html, /<link rel="canonical" href="https:\/\/epelawa\.ng\/?"/);
@@ -93,7 +106,7 @@ test('main has honest indexable metadata, working public links and security head
     assert.doesNotMatch(aboutHtml, /clyvro-verification/, 'unverified third-party verification tag must not ship');
     assert.match(aboutHtml, /<link rel="canonical" href="https:\/\/epelawa\.ng\/about"/);
     assert.match(aboutHtml, /href="\/"/);
-    assert.match(aboutHtml, /not connected yet/i);
+    assert.match(aboutHtml, /Editorial staff details will appear here once confirmed/i);
     const missing = await fetch(base + '/not-a-real-page');
     assert.equal(missing.status, 404);
     assert.match(await missing.text(), /Page not found/);
@@ -106,6 +119,9 @@ test('main has honest indexable metadata, working public links and security head
     assert.match(xml, /<urlset/);
     assert.match(xml, /<loc>https:\/\/epelawa\.ng\/<\/loc>/);
     assert.match(xml, /<loc>https:\/\/epelawa\.ng\/about<\/loc>/);
+    for (const path of ['/news', '/itan-ilu-mi', '/forum', '/map', '/business-directory', '/tourism', '/radio', '/who-is-who']) {
+      assert.ok(xml.includes(`<loc>https://epelawa.ng${path}</loc>`), `${path} must be indexed as a public module landing page`);
+    }
     for (const [path, width, height] of [['/icon.png', 192, 192], ['/apple-touch-icon.png', 180, 180], ['/share.png', 1200, 630]]) {
       const image = await fetch(base + path);
       assert.equal(image.status, 200, path);
@@ -140,13 +156,13 @@ test('main has honest indexable metadata, working public links and security head
   });
 });
 
-test('news remains honest, noindex and uses the custom 404', async () => {
-  await withApp('news', async (base) => {
-    const response = await fetch(base);
+test('main news route reports unavailable data honestly and retains the custom 404', async () => {
+  await withApp('main', async (base) => {
+    const response = await fetch(base + '/news');
     assert.equal(response.status, 200);
     const html = await response.text();
-    assert.match(html, /not connected yet/i);
-    assert.match(html, /noindex, nofollow/i);
+    assert.match(html, /The newsroom did not load|No stories published yet/i);
+    assert.match(html, /Reporting from Epe Division/);
     assert.match(html, /<meta name="description"/);
     assert.match(html, /<link rel="icon"/);
     assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
@@ -157,16 +173,23 @@ test('news remains honest, noindex and uses the custom 404', async () => {
   });
 });
 
-test('admin dashboard renders with real counts and security headers', async () => {
+test('admin dashboard is protected and login is noindex with security headers', async () => {
   await withApp('admin', async (base) => {
-    const response = await fetch(base + '/');
-    assert.equal(response.status, 200, '/ should return 200');
-    assert.equal(response.headers.get('cache-control'), 'no-store');
+    const response = await fetch(base + '/', { redirect: 'manual' });
+    assert.ok([302, 307, 308].includes(response.status), 'anonymous dashboard access must redirect');
+    assert.match(response.headers.get('location') || '', /\/login/);
+    assert.match(response.headers.get('cache-control') || '', /no-store/);
     assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
     assert.equal(response.headers.get('x-frame-options'), 'DENY');
-    const html = await response.text();
-    assert.match(html, /Dashboard/i);
-    assert.match(html, /Quick actions/i);
-    assert.match(html, /Create draft/i);
+
+    const login = await fetch(base + '/login');
+    assert.equal(login.status, 200);
+    assert.match(login.headers.get('cache-control') || '', /no-store/);
+    const html = await login.text();
+    assert.match(html, /Staff sign in|Admin sign in|Sign in/i);
+    assert.match(html, /name="email"/i);
+    assert.match(html, /name="password"/i);
+    assert.match(html, /noindex,?\s*nofollow/i);
+    assert.doesNotMatch(html, /Create draft|Quick actions/i);
   });
 });

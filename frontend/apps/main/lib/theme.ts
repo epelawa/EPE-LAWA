@@ -14,7 +14,7 @@ export const THEME_STORAGE_KEY = "epelawa-theme";
 export type ThemeChoice = "light" | "dark" | "system";
 
 /** Runs before paint. Keep it dependency-free and defensive — localStorage can throw. */
-export const themeScript = `(function(){try{var k="${THEME_STORAGE_KEY}";var s=localStorage.getItem(k);var d=window.matchMedia("(prefers-color-scheme: dark)").matches;var t=s==="light"||s==="dark"?s:(d?"dark":"light");document.documentElement.dataset.theme=t;document.documentElement.style.colorScheme=t;}catch(e){}})();`;
+export const themeScript = `(function(){document.documentElement.classList.add("js-enabled");try{var k="${THEME_STORAGE_KEY}";var s=localStorage.getItem(k);var d=window.matchMedia("(prefers-color-scheme: dark)").matches;var t=s==="light"||s==="dark"?s:(d?"dark":"light");document.documentElement.dataset.theme=t;document.documentElement.style.colorScheme=t;}catch(e){}})();`;
 
 export function readStoredTheme(): ThemeChoice {
   if (typeof window === "undefined") return "system";

@@ -4,14 +4,16 @@ import { useEffect, useState } from "react";
 import { applyTheme, readStoredTheme, resolveTheme, type ThemeChoice } from "../lib/theme";
 
 const SunIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <circle cx="12" cy="12" r="3.5" />
+    <path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42" />
   </svg>
 );
 
 const MoonIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path d="M20.6 15.1A8.7 8.7 0 0 1 8.9 3.4 8.8 8.8 0 1 0 20.6 15.1Z" />
+    <path d="m16.8 4.4.5 1.2 1.3.5-1.3.5-.5 1.2-.5-1.2-1.2-.5 1.2-.5.5-1.2Z" />
   </svg>
 );
 
@@ -32,18 +34,21 @@ export default function ThemeToggle() {
   }, []);
 
   const next: ThemeChoice = theme === "dark" ? "light" : "dark";
-
   return (
     <button
       type="button"
-      className="btn-icon"
+      className="theme-control"
       aria-label={ready ? `Switch to ${next} theme` : "Switch theme"}
       title={ready ? `Switch to ${next} theme` : undefined}
+      aria-pressed={theme === "dark"}
+      data-theme={theme}
       data-ready={ready ? "true" : "false"}
       onClick={() => setTheme(applyTheme(next))}
     >
-      <span className="flex items-center justify-center">
-        {theme === "light" ? <MoonIcon /> : <SunIcon />}
+      <span className="theme-control__track" aria-hidden="true">
+        <span className="theme-control__symbol theme-control__symbol--sun"><SunIcon /></span>
+        <span className="theme-control__symbol theme-control__symbol--moon"><MoonIcon /></span>
+        <span className="theme-control__thumb">{theme === "light" ? <SunIcon /> : <MoonIcon />}</span>
       </span>
     </button>
   );

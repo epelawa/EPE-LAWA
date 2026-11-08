@@ -6,9 +6,9 @@ import Link from "next/link";
 /**
  * Storage notice.
  *
- * The previous copy said "we use cookies" while /privacy says no cookies are set.
- * Both cannot be true. This site sets no cookies — it stores three preferences in
- * localStorage — so the notice says that instead.
+ * Preferences use localStorage; authenticated member sessions use essential
+ * cookies. Optional analytics and advertising tracking are not enabled.
+ * This notice describes storage rather than asking for unnecessary consent.
  *
  * Not a modal: it must not trap focus or block the page, and "Got it" is enough
  * because nothing is being consented to that could be refused.
@@ -61,17 +61,18 @@ export default function CookieBanner() {
   return (
     <div
       ref={bannerRef}
-      className="fixed bottom-0 left-0 right-0 z-40 border-t bg-card shadow-lg"
+      className="storage-notice"
       role="region"
       aria-label="Storage notice"
     >
-      <div className="mx-auto max-w-3xl px-4 py-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="max-w-prose text-sm leading-relaxed text-muted-foreground">
-            This site does not set cookies. It stores your theme choice and this
-            answer in your browser, and nothing is shared with anyone.
+      <p className="storage-notice__title">Your browser, your preferences.</p>
+      <div>
+        <div>
+          <div className="storage-notice__copy">
+            Your theme and this choice stay in your browser. Signing in uses
+            essential session cookies. No optional analytics or advertising tracking is enabled.
           </div>
-          <div className="flex items-center gap-2">
+          <div className="ui-actions">
             <button type="button" className="btn-primary" onClick={accept}>
               Got it
             </button>

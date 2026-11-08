@@ -1,40 +1,16 @@
 # EPE LAWA
 
-**The Voice of Epe Division.** A community, news, cultural and commerce platform for Epe Division,
-Lagos State, Nigeria — editorial, forum, radio, business directory and marketplace in one place.
+**The Voice of Epe Division.** A community, news, heritage, discussion and commerce platform for Epe Division, Lagos State, Nigeria.
 
-**Start here → [`docs/00-master-plan.md`](docs/00-master-plan.md).** It is the authority on scope and
-phase order. Everything else supports it.
+## Current release scope
 
----
+The current web release includes all eight client-approved web areas (sections 3.1–3.8): Trending News; Itan Ilu Mi / My Community History; Chat Forum / Digital Village Square; Map & Navigation; Epe Business Directory & Marketplace; Historical Sites & Tourism; EPE LAWA Radio; and Who is Who in Epe. Cross-cutting requirements include member signup/verification/login/recovery, secure staff sessions/capabilities, admin analytics, news publishing, branded transactional email templates, audit, privacy, accessibility and full Playwright testing. See [the master plan](docs/00-master-plan.md) and [product requirements](docs/01-product-requirements.md).
 
-## Status
-
-**Phase 1 — public shell, in progress.**
-
-The planning baseline has been re-written for the five-module build and the old website-only scope is
-archived. Three Next.js application shells exist and build. The staff-access foundation migration is
-applied to the Supabase project. Nothing is connected to real data yet: the admin returns `503` by
-design, and the public pages state honestly that content is not connected.
-
-No demo data, no seeded records, no invented metrics. Every list route ships with a real empty state
-until real records exist.
-
-| Item | State |
-| --- | --- |
-| Docs | Re-baselined and current |
-| Toolchain (`typecheck`, `build`, `test`) | Green — 28/28 tests |
-| Public shell | In progress |
-| News engine | Not started |
-| Radio | Blocked on the stream URL (B1) |
-| Providers (Cloud Run, GCS, Resend, Paystack) | Not configured |
-| Native app (React Native + Expo) | Deferred by decision |
-
----
+A route or database object existing does not prove a feature is complete or in current scope. Historical schema inventory is not a release claim.
 
 ## Local setup
 
-Requires Node.js 22 and pnpm 10.
+Requires Node.js 22 and pnpm 10. Copy `.env.example` to local environment files and use isolated credentials for testing. Without required configuration, the app must fail closed and show an honest unavailable state.
 
 ```sh
 pnpm install --frozen-lockfile
@@ -43,75 +19,51 @@ pnpm build
 pnpm test
 ```
 
-`pnpm test` spawns the built apps against real HTTP responses, so **run `pnpm build` first**. The
-in-memory PGlite RLS simulation in the suite is a fast local check — it is **not** proof that RLS
-works against real Supabase.
+Run `pnpm build` before `pnpm test` if the test suite starts built apps. PGlite schema/RLS checks are local simulations, not proof against live Supabase. Test content is private in isolated environments; production remains read-only.
 
-Run one app:
+The public app is `frontend/apps/main`; the staff app is `frontend/apps/admin`.
 
-```sh
-pnpm --filter @epelawa/main dev     # also @epelawa/news, @epelawa/admin
-```
+## Safety and release gates
 
-Each binds `0.0.0.0` on port 3000 — use different ports when running more than one. The admin responds
-`503` with `no-store` and `noindex` until authentication and authorisation are real. That is deliberate;
-do not remove it to make a demo work.
+- Use approved public records only; never seed fake content or engagement.
+- Test articles remain private. Direct publish is allowed for an active verified staff member with `article.publish`; a second reviewer is not required. Stale revisions are rejected and transitions audited.
+- Maps currently builds safe outbound Google Maps search/directions URLs only. There is no configured Maps API key or verified Places/geocoding integration; offline maps are optional future work.
+- Marketplace payment actions must remain unavailable until provider setup and private sandbox testing are evidenced. No production orders/payments in tests.
+- Staff actions require a verified staff session and current capability; no service-role key in a browser bundle.
+- Branded email templates do not prove delivery readiness. Email sender authentication and Paystack operation are unconfirmed.
+- Sponsored placement, if enabled, requires a real, date-bounded record and clear sponsor label.
 
-No provider credentials are needed to build or run the shells.
+## Deployment status
 
-### Build note
+A supplied Vercel log records an older `main` build at `8885e16` failing due to unresolved helper imports and filtered environment variables. A read-only Playwright baseline on 2026-11-07 against `https://epelawa.vercel.app` found the deployed alias is still an older, incomplete release: News, Radio and Who-is-Who returned 200, while several approved module and auth routes returned 404; Radio overflowed at 320/375 px. This is not the feature branch. The current feature-branch preview remains unverified; no production writes were made.
 
-Both `next build` and the test runner are configured for portability rather than speed:
+## Key documents
 
-- Builds use `next build --webpack`. Turbopack cannot read the symlinks pnpm creates on some
-  filesystems, which breaks the build outright there.
-- Tests run through `tsx`. Some Node 22 builds are shipped without experimental TypeScript stripping,
-  so `node --experimental-strip-types` fails on files that import `.ts` modules.
-
-Both are documented in [`docs/13-tech-stack.md`](docs/13-tech-stack.md).
-
----
-
-## Documentation
-
-| # | Document |
+| Document | Purpose |
 | --- | --- |
-| 00 | [Master plan](docs/00-master-plan.md) — scope, phases, blockers |
-| 01 | [Product requirements](docs/01-product-requirements.md) |
-| 02 | [User journeys](docs/02-user-journeys.md) |
-| 03 | [Sitemap and information architecture](docs/03-sitemap.md) |
-| 04 | [Page specifications](docs/04-page-specifications.md) |
-| 05 | [Design system](docs/05-design-system.md) |
-| 06 | [System architecture](docs/06-system-architecture.md) |
-| 07 | [Database schema](docs/07-database-schema.md) |
-| 08 | [Permissions and security](docs/08-permissions-security.md) |
-| 09 | [API contracts](docs/09-api-contracts.md) |
-| 10 | [Integrations and deployment](docs/10-integrations.md) |
-| 11 | [Testing and acceptance](docs/11-testing-acceptance.md) |
-| 12 | [Development roadmap](docs/12-development-roadmap.md) |
-| 13 | [Tech stack](docs/13-tech-stack.md) |
-| 14 | [Implementation tracker](docs/14-tracker.md) |
-| 15 | [UI research register](docs/15-ui-research.md) |
-
-Superseded documents are kept in [`docs/archive/`](docs/archive/) with a banner explaining why.
-
----
+| [00 — Master plan](docs/00-master-plan.md) | Scope, design direction and release evidence |
+| [01 — Product requirements](docs/01-product-requirements.md) | Full requirements for all eight web areas and section 5 roadmap enhancements |
+| [04 — Page specifications](docs/04-page-specifications.md) | Current public/staff page requirements |
+| [05 — Design system](docs/05-design-system.md) | Palette, interaction and accessibility |
+| [08 — Security](docs/08-permissions-security.md) | Roles, access, privacy and moderation |
+| [11 — Testing](docs/11-testing-acceptance.md) | Acceptance and verification status |
+| [12 — Roadmap](docs/12-development-roadmap.md) | Current implementation workstreams |
+| [14 — Tracker](docs/14-tracker.md) | Evidence, status and blockers |
+| [15 — UI research](docs/15-ui-research.md) | Reference sources and limitations |
+| [16 — Progress log](docs/16-progress-log.md) | Timestamped evidence and decisions |
 
 ## Repository layout
 
+```text
+frontend/apps/main/              Public EPE-LAWA web app
+frontend/apps/admin/             Staff/admin workspace
+frontend/packages/ui/            Shared browser-safe UI components
+frontend/tests/                  HTTP, unit and integration tests
+backend/supabase/migrations/     Reviewed SQL — schema source of truth
+backend/tests/                   Schema and policy tests
+docs/                            Requirements, architecture and operations
 ```
-frontend/apps/{main,news,admin}   three Next.js applications
-frontend/packages/                shared browser-safe UI and contracts
-frontend/tests/                   HTTP, unit and integration tests
-backend/packages/                 auth, editorial, http-security, data access
-backend/supabase/migrations/      reviewed SQL — the schema source of truth
-docs/                             planning, architecture, operations
-```
 
----
+## Contributing and release
 
-## Contributing
-
-Read [`AGENTS.md`](AGENTS.md) first. It carries the definition of done: `typecheck`, `build` and
-`test` must pass, responsive and accessible states must exist, then commit and push. One logical
-change per commit. Never commit a red tree.
+Read `AGENTS.md` and `docs/00-master-plan.md` first. Do not claim tests, integrations or deployment gates passed unless actually verified. Production checks are read-only. Do not commit or push unless the active task explicitly authorizes it.

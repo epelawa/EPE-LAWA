@@ -1,52 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { pageMetadata } from "../../lib/metadata";
-
-const description =
-  "What EPE LAWA is, who runs it, where it broadcasts and how it is funded.";
-
-export const metadata: Metadata = pageMetadata({ title: "About", description, path: "/about" });
-
+import { PageFrame, PageIntro, Panel, SectionHeading, TextLink } from "../../components/design-system";
+export const metadata: Metadata = pageMetadata({title:"About",description:"About EPE LAWA, a shared web home for news, history, conversation, discovery and local life in Epe Division.",path:"/about"});
 export default function AboutPage() {
-  return (
-    <div className="max-w-md mx-auto px-4 py-12 sm:px-6 lg:px-8">
-      <div className="prose">
-        <p className="page-header__eyebrow text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-          About EPE LAWA
-        </p>
-        <h1 className="text-2xl font-bold tracking-tight mb-4">About EPE LAWA</h1>
-        <p className="text-muted-foreground mb-6 leading-relaxed">
-          A community, news and broadcasting platform for Epe Division, Lagos State.
-        </p>
-
-        <h2 className="mt-10 mb-3 text-lg font-bold">What EPE LAWA is</h2>
-        <p className="mb-6">
-          EPE LAWA is a place for reporting, public information about people and public office
-          holders, radio, community conversation and local businesses in Epe Division.
-        </p>
-
-        <h2 className="mt-10 mb-3 text-lg font-bold">Who runs it</h2>
-        <p className="mb-6">
-          EPE LAWA is run by its founding team. Editorial staff details will appear here once
-          confirmed.
-        </p>
-
-        <h2 className="mt-10 mb-3 text-lg font-bold">Contact</h2>
-        <p className="mb-4">
-          Write to{" "}
-          <a href="mailto:info.epelawa@gmail.com" className="text-primary underline underline-offset-4">
-            info.epelawa@gmail.com
-          </a>, or use the{" "}
-          <Link href="/contact" className="text-primary underline underline-offset-4">
-            contact page
-          </Link>. Corrections and privacy requests go to the same address.
-        </p>
-        <p>
-          <Link href="/" className="text-primary underline underline-offset-4">
-            Return to the homepage
-          </Link>
-        </p>
-      </div>
-    </div>
-  );
+  return <PageFrame><PageIntro eyebrow="About EPE LAWA" title="Our place. A shared perspective." description="A web platform for people in Epe Division, Lagos State, and everyone connected to the community."/><div className="ui-split"><Panel><div className="ui-prose"><h2>A home for local life.</h2><p>EPE LAWA brings together local news, Ìtàn Ilú Mi community history, the Digital Village Square, map and navigation, a business directory and marketplace, Historical Sites & Tourism, EPE LAWA Radio, and Who is Who in Epe.</p><p>It is a place to find useful information, contribute carefully sourced knowledge, and connect with the people behind the community.</p><h2>Built with care.</h2><p>Information and listings appear when they are approved. Unavailable services are labelled clearly, and private contributions stay private while they are reviewed. The native mobile app remains a separate future phase.</p><h2>The people behind it.</h2><p>EPE LAWA is run by its founding team. Editorial staff details will appear here once confirmed.</p></div><TextLink href="/contact">Talk to the team</TextLink></Panel><aside className="ui-sidebar"><Panel className="ui-subtle"><SectionHeading title="Good community information starts with trust."/><div className="ui-stack-sm"><p className="ui-muted">Clear sources. Thoughtful discussion. Respect for private information.</p><TextLink href="/guidelines">Read our guidelines</TextLink><TextLink href="/privacy">How your data is handled</TextLink></div></Panel><Panel><h2>Have a correction?</h2><p className="ui-muted">Send the page address and supporting information to <a href="mailto:info.epelawa@gmail.com">info.epelawa@gmail.com</a>.</p><Link className="ui-text-link" href="/contact">Contact EPE LAWA</Link></Panel></aside></div></PageFrame>;
 }

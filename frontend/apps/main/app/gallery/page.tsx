@@ -1,41 +1,5 @@
 import Link from "next/link";
 import { ImageIcon } from "../../components/icons";
-
-/**
- * Gallery page.
- *
- * A place for photographs from across Epe Division. Nothing is published yet, so this
- * renders an honest empty state rather than invented imagery.
- */
-export default function GalleryPage() {
-  return (
-    <div className="max-w-md mx-auto px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mb-8">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-          Gallery
-        </p>
-        <h1 className="text-2xl font-bold tracking-tight">Gallery</h1>
-        <p className="text-muted-foreground mt-2 max-w-sm leading-relaxed">
-          Photographs from across Epe Division. Nothing appears here until it has been
-          licensed, sourced and credited.
-        </p>
-      </div>
-
-      <div className="rounded-lg border bg-card p-6">
-        <div className="flex items-center justify-center h-64 bg-muted rounded-lg">
-          <ImageIcon size={32} className="text-muted-foreground" />
-        </div>
-        <p className="mt-4 text-sm font-medium text-muted-foreground">
-          No photographs have been published yet.
-        </p>
-      </div>
-
-      <div className="mt-8 rounded-lg border bg-card p-6">
-        <p className="text-muted-foreground text-sm leading-relaxed">
-          Every photograph in this gallery will carry a credit and a source. Until EPE LAWA
-          has licensed imagery of Epe Division, this page stays empty.
-        </p>
-      </div>
-    </div>
-  );
-}
+import { PageFrame, PageIntro, EmptyPanel, StatusBadge } from "../../components/design-system";
+export const metadata = { title: "Gallery" };
+export default function GalleryPage() { return <PageFrame><PageIntro eyebrow="The visual archive" title="Epe, through a local lens." description="Photographs from across Epe Division, with a credit and a source for every image." meta={<StatusBadge tone="warning">Coming Soon</StatusBadge>}/><EmptyPanel icon={<ImageIcon size={24}/>} title="The archive is being assembled." description="No photographs have been published yet. Images will appear only after they have been licensed, sourced and credited." actions={<Link href="/tourism" className="btn-secondary">Explore places in Epe</Link>}/></PageFrame>; }

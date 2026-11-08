@@ -1,32 +1,49 @@
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
+export class SupabaseConfigurationError extends Error {
+  constructor() {
+    super("Public Supabase configuration is missing or invalid.");
+    this.name = "SupabaseConfigurationError";
+  }
+}
+
+function publicConfig(): { url: string; key: string } {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_ANON_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) throw new SupabaseConfigurationError();
+
+  try {
+    const parsed = new URL(url);
+    const isLocalHttp = process.env.NODE_ENV !== "production" && parsed.hostname === "localhost";
+    if (parsed.protocol !== "https:" && !isLocalHttp) throw new Error("invalid protocol");
+    if (parsed.username || parsed.password) throw new Error("invalid credentials");
+  } catch {
+    throw new SupabaseConfigurationError();
+  }
+
+  return { url, key };
+}
+
+/** Server client for user-scoped requests. Public pages still rely on database RLS. */
 export async function createClient() {
+  const { url, key } = publicConfig();
   const cookieStore = await cookies();
 
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-        set(name: string, value: string, options: CookieOptions) {
-          try {
-            cookieStore.set(name, value, options);
-          } catch {
-            // `set` may be called outside a request in some contexts.
-          }
-        },
-        remove(name: string, options: CookieOptions) {
-          try {
-            cookieStore.set(name, "", options);
-          } catch {
-            // Ignore.
-          }
-        },
+  return createServerClient(url, key, {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
       },
-    }
-  );
+      setAll(values) {
+        try {
+          for (const { name, value, options } of values) {
+            cookieStore.set(name, value, options);
+          }
+        } catch {
+          // Server Components cannot always write refreshed cookies; request reads remain safe.
+        }
+      },
+    },
+  });
 }

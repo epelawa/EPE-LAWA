@@ -42,7 +42,7 @@ const SUPABASE_SURFACE = `
   create role anon nologin;
   create role authenticated nologin;
   create schema auth;
-  create table auth.users (id uuid primary key);
+  create table auth.users (id uuid primary key, email_confirmed_at timestamptz);
   create function auth.uid() returns uuid language sql stable
     as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
   grant usage on schema public, auth to anon, authenticated;
@@ -102,8 +102,9 @@ for (const file of files) {
 /** Run fn as a given member (authenticated + jwt sub), or as anon when uid is null. */
 async function as(uid, fn) {
   await db.exec('reset role');
+  await db.query("select set_config('request.jwt.claim.sub', $1, false)", [uid ?? '']);
   if (uid) {
-    await db.query("select set_config('request.jwt.claim.sub', $1, false)", [uid]);
+    // The JWT subject was set above; clear it explicitly for anonymous assertions.
   }
   await db.exec(uid ? 'set role authenticated' : 'set role anon');
   try {
@@ -127,6 +128,8 @@ async function fails(sql) {
 
 const asFails = (uid, sql) => as(uid, () => fails(sql));
 
+
+
 // --------------------------------------------------------------------------- fixtures
 
 const U = {
@@ -135,10 +138,14 @@ const U = {
   publisher: '33333333-3333-4333-8333-333333333333',
   m1: '44444444-4444-4444-8444-444444444444',
   m2: '55555555-5555-4555-8555-555555555555',
+  unverified: '66666666-6666-4666-8666-666666666666',
 };
 
-for (const id of Object.values(U)) {
-  await db.query('insert into auth.users (id) values ($1)', [id]);
+for (const [name, id] of Object.entries(U)) {
+  await db.query('insert into auth.users (id, email_confirmed_at) values ($1, $2)', [
+    id,
+    name === 'unverified' ? null : new Date().toISOString(),
+  ]);
 }
 
 // Staff accounts are provisioned out of band in production. The test creates them directly as the
@@ -147,7 +154,8 @@ await db.exec(`
   insert into public.staff_profiles (user_id, is_active) values
     ('${U.editor}', true),
     ('${U.journalist2}', true),
-    ('${U.publisher}', true);
+    ('${U.publisher}', true),
+    ('${U.unverified}', true);
 
   insert into public.staff_capability_grants (user_id, capability) values
     ('${U.editor}', 'article.create'),
@@ -155,10 +163,14 @@ await db.exec(`
     ('${U.journalist2}', 'article.create'),
     ('${U.publisher}', 'article.review'),
     ('${U.publisher}', 'article.publish'),
+    ('${U.unverified}', 'article.publish'),
     ('${U.publisher}', 'business.review'),
     ('${U.publisher}', 'audit.read'),
     ('${U.publisher}', 'moderation.review'),
     ('${U.publisher}', 'order.manage');
+
+  insert into public.staff_capability_grants (user_id, capability) values
+    ('${U.publisher}', 'history.review');
 
   insert into public.profiles (user_id, handle, display_name) values
     ('${U.m1}', 'member_one', 'Member One'),
@@ -199,6 +211,81 @@ async function newPublishedArticle(title) {
   await as(U.publisher, () => db.query('select public.article_publish($1, $2)', [id, r]));
   return id;
 }
+
+test('History publishing requires approved copy, preserves private evidence, and rejects stale decisions', async () => {
+  const privateAccount = 'Private family account containing details not approved for publication.';
+  const sourceText = 'Private interview transcript held with the contributor only.';
+  const consentText = 'I consent to review but sensitive family details must remain private.';
+  const rightsText = 'Permission is limited to staff review and must not be published.';
+  const inserted = await rows(`
+    insert into public.history_contributions
+      (contributor_id,title,account,source_description,source_url,consent_version,consent_text,
+       community,category,family_name,lineage_description,rights_description)
+    values ($1,'Family account',$2,$3,'https://example.org/private-source','history-intake-v2',$4,
+       'Community','family-lineage','Private Family','Private lineage context',$5)
+    returning id
+  `, [U.m1, privateAccount, sourceText, consentText, rightsText]);
+  const id = inserted[0].id;
+  const missingText = await asFails(U.publisher, `select public.history_contribution_decide('${id}','published',null,null,null,null,null)`);
+  assert.match(missingText ?? '', /approved_public_account_required/);
+  assert.equal((await rows('select id from public.history_records')).length, 0);
+
+  const approvedText = 'Edited and redacted account with all sensitive family details removed.';
+  const approvedCitation = 'Approved public citation, distinct from the private submitted source.';
+  const approvedUrl = 'https://public.example.org/archive/item-7';
+  await as(U.publisher, () => db.query('select public.history_contribution_decide($1,$2,$3,$4,$5,$6,$7)', [id, 'published', approvedText, null, '   ', approvedCitation, approvedUrl]));
+  const publicRows = await as(null, () => rows('select id,title,account,category,family_name,lineage_description,community from public.history_records'));
+  assert.equal(publicRows.length, 1);
+  assert.equal(publicRows[0].account, approvedText);
+  assert.notEqual(publicRows[0].account, privateAccount);
+  assert.equal(publicRows[0].category, 'family-lineage');
+  assert.equal(publicRows[0].family_name, null);
+  assert.equal(publicRows[0].lineage_description, null);
+  assert.equal(publicRows[0].community, 'Community');
+  const sources = await as(null, () => rows('select citation,source_url from public.history_record_sources'));
+  assert.equal(sources.length, 1);
+  assert.equal(sources[0].citation, approvedCitation);
+  assert.equal(sources[0].source_url, approvedUrl);
+  assert.notEqual(sources[0].citation, sourceText);
+  assert.notEqual(sources[0].source_url, 'https://example.org/private-source');
+  assert.doesNotMatch(JSON.stringify([...publicRows, ...sources]), /Private interview transcript|private-source|sensitive family details must remain private|Permission is limited/i);
+  const decisionAudit = (await rows("select action,metadata->>'decision' as decision,metadata->>'record_id' as record_id from public.audit_events where action='history.contribution_decide' and resource_id=$1", [id]))[0];
+  assert.equal(decisionAudit.action, 'history.contribution_decide');
+  assert.equal(decisionAudit.decision, 'published');
+  assert.equal(decisionAudit.record_id, publicRows[0].id);
+  const anonymousPrivateRead = await as(null, () => fails('select id from public.history_contributions'));
+  assert.match(anonymousPrivateRead ?? '', /permission denied/);
+  const privateRow = (await as(U.publisher, () => rows(
+    'select account,source_description,consent_text,rights_description from public.history_contributions where id=$1', [id],
+  )))[0];
+  assert.equal(privateRow.account, privateAccount);
+  assert.equal(privateRow.source_description, sourceText);
+  assert.equal(privateRow.consent_text, consentText);
+  assert.equal(privateRow.rights_description, rightsText);
+
+  const repeated = await asFails(U.publisher, `select public.history_contribution_decide('${id}','published','${approvedText}',null,null,'Approved citation',null)`);
+  assert.match(repeated ?? '', /history_contribution_already_reviewed/);
+  const revision = await rows(`
+    insert into public.history_contributions
+      (contributor_id,title,account,source_description,consent_version,consent_text,rights_description)
+    values ($1,'Revision request','A private account with sufficient words for review.',
+      'Private source details','history-intake-v2','Contributor consent text long enough for validation.',
+      'Rights restricted to staff review.') returning id
+  `, [U.m2]);
+  await as(U.publisher, () => db.query("select public.history_contribution_decide($1,'needs_revision',null,null,null,null,null)", [revision[0].id]));
+  assert.equal((await rows("select count(*)::int as n from public.history_records where title='Revision request'"))[0].n, 0);
+  const explicitlyApproved = await rows(`
+    insert into public.history_contributions
+      (contributor_id,title,account,source_description,consent_version,consent_text,community,category,family_name,lineage_description,rights_description)
+    values ($1,'Approved family account','Private account that is not public by default.','Private source','history-intake-v2','Consent text for staff review.','Community','family-lineage','Private House','Private lineage details','Rights reviewed by staff.') returning id
+  `, [U.m2]);
+  await as(U.publisher, () => db.query('select public.history_contribution_decide($1,$2,$3,$4,$5,$6,$7)', [explicitlyApproved[0].id, 'published', approvedText, 'Approved House', 'Approved lineage text', approvedCitation, null]));
+  const approvedFields = (await as(null, () => rows("select family_name,lineage_description from public.history_records where title='Approved family account'")))[0];
+  assert.equal(approvedFields.family_name, 'Approved House');
+  assert.equal(approvedFields.lineage_description, 'Approved lineage text');
+  assert.equal((await rows("select count(*)::int as n from pg_proc where proname='history_contribution_decide' and pg_get_function_identity_arguments(oid)='p_contribution_id uuid, p_decision text, p_public_account text, p_public_family_name text, p_public_lineage_description text, p_public_citation text, p_public_source_url text'"))[0].n, 1);
+  assert.equal((await rows("select count(*)::int as n from pg_proc where proname='history_contribution_decide' and pronargs <> 7"))[0].n, 0);
+});
 
 // --------------------------------------------------------------------------- structure
 test('every public table has row level security enabled', async () => {
@@ -366,10 +453,131 @@ test('a draft article is invisible to anon and to other journalists, but visible
     'unpublish must take effect immediately');
 });
 
-test('an approved article snapshot cannot be edited or deleted', async () => {
+test('a verified publisher can publish a private draft directly and corrections stay versioned', async () => {
+  const categoryId = (await rows("select id from public.categories where slug = 'politics'"))[0].id;
+  const authorId = (await rows("select id from public.authors where slug = 'test-byline'"))[0].id;
+  const firstBody = { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Private test-only article body.' }] }] };
+  const articleId = await as(U.editor, async () => (await rows(
+    'select public.article_create($1, null, $2::jsonb, $3, $4, null, null, null) as id',
+    ['Private direct-publish regression', JSON.stringify(firstBody), authorId, categoryId],
+  ))[0].id);
+
+  const currentRevision = async () =>
+    (await rows('select revision from public.articles where id = $1', [articleId]))[0].revision;
+  const initialRevision = await currentRevision();
+  const unprivileged = await asFails(U.editor, `select public.article_publish('${articleId}', ${initialRevision})`);
+  assert.match(unprivileged ?? '', /capability_required/, 'article.create alone cannot publish');
+  const unverified = await asFails(U.unverified, `select public.article_publish('${articleId}', ${initialRevision})`);
+  assert.match(unverified ?? '', /capability_required/, 'an unverified staff email cannot publish');
+  assert.equal((await as(U.unverified, () => rows("select public.has_capability('article.publish') as allowed")))[0].allowed, false);
+
+  await as(U.publisher, () => db.query('select public.article_publish($1, $2)', [articleId, initialRevision]));
+  const firstVersion = (await rows(
+    'select v.id, v.state, v.title from public.articles a join public.article_versions v on v.id = a.published_version_id where a.id = $1',
+    [articleId],
+  ))[0];
+  assert.equal(firstVersion.state, 'published', 'direct publication freezes the draft as a published snapshot');
+  assert.equal((await as(null, () => rows('select title from public.published_articles where id = $1', [articleId])))[0].title,
+    'Private direct-publish regression', 'only the explicit publish transition makes the article public');
+
+  const frozen = await fails(`update public.article_versions set title = 'Silently changed' where id = '${firstVersion.id}'`);
+  assert.match(frozen ?? '', /published_version_immutable/, 'published snapshots cannot be edited in place');
+
+  const correctionBody = { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Private corrected test-only body.' }] }] };
+  const revisionBeforeCorrection = await currentRevision();
+  await as(U.editor, () => db.query(
+    'select public.article_revise($1, $2, $3, null, $4::jsonb, $5, $6, null, null, null)',
+    [articleId, revisionBeforeCorrection, 'Private correction draft', JSON.stringify(correctionBody), authorId, categoryId],
+  ));
+  assert.equal((await as(null, () => rows('select title from public.published_articles where id = $1', [articleId])))[0].title,
+    'Private direct-publish regression', 'the original published version remains public until correction is published');
+
+  const revisionBeforeCorrectionPublish = await currentRevision();
+  await as(U.publisher, () => db.query('select public.article_publish($1, $2)', [articleId, revisionBeforeCorrectionPublish]));
+  assert.equal((await as(null, () => rows('select title from public.published_articles where id = $1', [articleId])))[0].title,
+    'Private correction draft', 'the direct correction publish atomically changes the public pointer');
+  const publishAudit = await rows(
+    "select metadata->>'publication_mode' as mode from public.audit_events where action = 'article.publish' and resource_id = $1 order by id",
+    [articleId],
+  );
+  assert.deepEqual(publishAudit.map(({ mode }) => mode), ['direct', 'direct'], 'both direct publication actions are audited');
+
+  await db.query(
+    "insert into public.staff_capability_grants (user_id, capability) values ($1, 'article.unpublish') on conflict (user_id, capability) do nothing",
+    [U.publisher],
+  );
+  const finalRevision = await currentRevision();
+  await as(U.publisher, () => db.query('select public.article_unpublish($1, $2)', [articleId, finalRevision]));
+  assert.equal((await as(null, () => rows('select id from public.published_articles where id = $1', [articleId]))).length, 0,
+    'the private test article is removed from the public read model after the isolated workflow');
+});
+
+test('a private draft update saves submitted values, uses revision CAS, and reopens review as a private draft', async () => {
+  const categoryId = (await rows("select id from public.categories where slug = 'politics'"))[0].id;
+  const authorId = (await rows("select id from public.authors where slug = 'test-byline'"))[0].id;
+  const articleId = await as(U.editor, async () => (await rows(
+    `select public.article_create($1, null, '{"type":"doc","content":[]}'::jsonb, $2, $3, null, null, null) as id`,
+    ['Private draft before update', authorId, categoryId],
+  ))[0].id);
+
+  const denied = await asFails(U.journalist2, `select public.article_draft_update(
+    '${articleId}', 1, 'Not my draft', null, '{"type":"doc"}'::jsonb,
+    '${authorId}', '${categoryId}', null, null, null
+  )`);
+  assert.match(denied ?? '', /not_article_owner/, 'another writer cannot edit a private draft');
+
+  const updatedRevision = await as(U.editor, async () => (await rows(
+    `select public.article_draft_update($1, 1, $2, $3, $4::jsonb, $5, $6, null, null, null) as revision`,
+    [articleId, 'Private draft after update', 'A saved summary', JSON.stringify({ type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Saved private body' }] }] }), authorId, categoryId],
+  ))[0].revision);
+  assert.equal(updatedRevision, 2, 'saving updates the revision atomically');
+
+  const content = (await rows(
+    `select v.title, v.summary, v.body->'content'->0->'content'->0->>'text' as body_text
+     from public.articles a join public.article_versions v on v.id = a.current_version_id where a.id = $1`,
+    [articleId],
+  ))[0];
+  assert.deepEqual(content, {
+    title: 'Private draft after update',
+    summary: 'A saved summary',
+    body_text: 'Saved private body',
+  }, 'the editor must persist the values the user submitted');
+
+  const stale = await asFails(U.editor, `select public.article_draft_update(
+    '${articleId}', 1, 'Stale overwrite', null, '{"type":"doc"}'::jsonb,
+    '${authorId}', '${categoryId}', null, null, null
+  )`);
+  assert.match(stale ?? '', /revision_conflict/, 'a stale editor cannot overwrite a newer save');
+
+  await as(U.editor, () => db.query('select public.article_submit($1, $2)', [articleId, updatedRevision]));
+  const submitted = (await rows(
+    `select a.revision, v.state from public.articles a join public.article_versions v on v.id = a.current_version_id where a.id = $1`,
+    [articleId],
+  ))[0];
+  assert.deepEqual(submitted, { revision: 3, state: 'review' }, 'the updated draft is submitted for review');
+  assert.equal((await as(null, () => rows('select id from public.published_articles'))).length, 0,
+    'submission remains private until the separate review and publish transitions');
+
+  const reopenedRevision = await as(U.editor, async () => (await rows(
+    `select public.article_draft_update($1, 3, $2, null, '{"type":"doc"}'::jsonb, $3, $4, null, null, null) as revision`,
+    [articleId, 'Reopened private draft', authorId, categoryId],
+  ))[0].revision);
+  assert.equal(reopenedRevision, 4, 'editing an unapproved submission advances the revision');
+  assert.deepEqual((await rows(
+    `select a.revision, v.state from public.articles a join public.article_versions v on v.id = a.current_version_id where a.id = $1`,
+    [articleId],
+  ))[0], { revision: 4, state: 'draft' }, 'an edited submission returns to a private draft without requiring a reviewer');
+  assert.equal((await as(null, () => rows('select id from public.published_articles'))).length, 0,
+    'reopened draft remains private');
+
+  const audit = await rows("select action from public.audit_events where resource_id = $1 order by id", [articleId]);
+  assert.ok(audit.some((event) => event.action === 'article.draft_update'), 'draft updates are recorded in the audit ledger');
+});
+
+test('a published article snapshot cannot be edited or deleted', async () => {
   const version = (await rows("select id from public.article_versions limit 1"))[0].id;
   const edited = await fails(`update public.article_versions set title = 'changed' where id = '${version}'`);
-  assert.match(edited ?? '', /approved_version_immutable/, 'approved text must be immutable');
+  assert.match(edited ?? '', /approved_version_immutable|published_version_immutable/, 'published text must be immutable');
 
   const deleted = await fails(`delete from public.article_versions where id = '${version}'`);
   assert.match(deleted ?? '', /immutable/, 'version history must not be deletable');
@@ -440,6 +648,40 @@ test('a person cannot be published without a source, and a badge cannot cite ano
   assert.match(reviewer ?? '', /permission denied/, 'the reviewer identity must stay private');
   const note = await asFails(null, 'select note from public.people_verifications');
   assert.match(note ?? '', /permission denied/, 'the verification note must stay private');
+});
+
+test('achievements persist through profile creation, staff reload, and public publication', async () => {
+  const achievement = 'Documented local history and community contributions.';
+  const personId = await as(U.editor, async () => {
+    const result = await rows(
+      `select public.people_create_with_achievements(
+         $1, $2, $3, null, $4, false, null, null, null, $5
+       ) as id`,
+      ['Achievement Keeper', 'Keeper', 'eko_epe', 'A sourced biography is pending review.', achievement],
+    );
+    return result[0].id;
+  });
+
+  const reloaded = (await as(U.editor, () =>
+    rows('select full_name, achievements, revision, status from public.people where id = $1', [personId]),
+  ))[0];
+  assert.equal(reloaded.full_name, 'Achievement Keeper');
+  assert.equal(reloaded.achievements, achievement, 'staff reload must retain the submitted achievements');
+  assert.equal(reloaded.revision, 1, 'creation stores the profile and achievements in one initial revision');
+  assert.equal(reloaded.status, 'draft', 'a new profile remains private until sourced and reviewed');
+
+  await db.query(
+    "insert into public.people_sources (person_id, kind, citation) values ($1, 'publication', 'Local history publication, 2025')",
+    [personId],
+  );
+  await as(U.editor, () => db.query(
+    'select public.people_set_status($1, $2, $3)', [personId, 'published', reloaded.revision],
+  ));
+
+  const publicProfile = (await as(null, () =>
+    rows('select full_name, achievements from public.published_people where id = $1', [personId]),
+  ))[0];
+  assert.equal(publicProfile.achievements, achievement, 'the published read model must retain the same value');
 });
 
 // --------------------------------------------------------------------------- members

@@ -28,7 +28,7 @@ test('password sign-in stages cookies until identity and active admin grant are 
     }
     if (path === '/auth/v1/logout') return new Response(null, { status: 204 });
     assert.equal(req.headers.get('authorization'), 'Bearer fake-access');
-    if (path === '/auth/v1/user') return scenario === 'user-error' ? Response.json({ error: 'unavailable' }, { status: 503 }) : Response.json({ id: scenario === 'mismatch' ? 'staff-b' : 'staff-a', aud: 'authenticated' });
+    if (path === '/auth/v1/user') return scenario === 'user-error' ? Response.json({ error: 'unavailable' }, { status: 503 }) : Response.json({ id: scenario === 'mismatch' ? 'staff-b' : 'staff-a', aud: 'authenticated', email_confirmed_at: scenario === 'unverified' ? null : '2026-01-01T00:00:00Z' });
     if (path === '/rest/v1/staff_profiles') return scenario === 'profile-error' ? Response.json({ error: 'unavailable' }, { status: 503 }) : Response.json([{ user_id: 'staff-a', is_active: scenario !== 'inactive' }]);
     if (path === '/rest/v1/staff_capability_grants') return scenario === 'grant-error' ? Response.json({ error: 'unavailable' }, { status: 503 }) : Response.json(scenario === 'revoked' ? [] : [{ user_id: 'staff-a', capability: 'admin.access' }]);
     throw new Error('unexpected path ' + path);
@@ -50,19 +50,19 @@ test('password sign-in stages cookies until identity and active admin grant are 
       }
     }
     assert.ok(result.writes.some(({ cookies }) => cookies.some(({ name }) => name === cookieName)));
-    for (const mode of ['invalid', 'offline', 'inactive', 'revoked', 'mismatch', 'user-error', 'profile-error', 'grant-error']) {
+    for (const mode of ['invalid', 'offline', 'inactive', 'revoked', 'mismatch', 'unverified', 'user-error', 'profile-error', 'grant-error']) {
       scenario = mode; calls.length = 0;
       const denied = store();
       assert.deepEqual(await signInAdminWithPassword(input.email, input.password, denied), { allowed: false }, mode);
       assert.equal(denied.writes.length, 0, mode);
-      if (['inactive', 'revoked', 'mismatch', 'user-error', 'profile-error', 'grant-error'].includes(mode)) assert.ok(calls.includes('/auth/v1/logout'), mode);
+      if (['inactive', 'revoked', 'mismatch', 'unverified', 'user-error', 'profile-error', 'grant-error'].includes(mode)) assert.ok(calls.includes('/auth/v1/logout'), mode);
     }
     scenario = 'active'; calls.length = 0;
     const broken = store(); broken.setAll = () => { throw new Error('write failed'); };
     assert.deepEqual(await signInAdminWithPassword(input.email, input.password, broken), { allowed: false });
     assert.ok(calls.includes('/auth/v1/logout'));
     calls.length = 0;
-    for (const [email, password] of [[null, 'x'], ['bad', 'x'], ['a@b', ''], ['a@b', 'x'.repeat(1025)], ['a b@c', 'x']]) {
+    for (const [email, password] of [[null, 'x'], ['bad', 'x'], ['a@b', ''], ['a@b', 'x'.repeat(1025)], ['a b@c', 'x'], ['x'.repeat(250) + '@a.com', 'x'], ['a@b.com', 'x'.repeat(1025)]]) {
       assert.deepEqual(await signInAdminWithPassword(email, password, store()), { allowed: false });
     }
     assert.equal(calls.length, 0);

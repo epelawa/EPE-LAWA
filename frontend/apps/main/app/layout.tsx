@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
 import Script from "next/script";
+import { Inter } from "next/font/google";
 import Connectivity from "./connectivity";
 import SiteHeader from "../components/site-header";
 import SiteFooter from "../components/site-footer";
@@ -11,9 +12,10 @@ import CookieBanner from "../components/cookie-banner";
 import { mainNavigation } from "../lib/navigation";
 import { isIndexingAllowed, siteUrl } from "../lib/site";
 import { themeScript } from "../lib/theme";
+import SiteMotion from "../components/site-motion";
 
 const description =
-  "What EPE LAWA is, who runs it, where it broadcasts and how it is funded.";
+  "News, community history, local discussion, maps, local business, tourism, radio and Who-is-Who for Epe Division.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -34,12 +36,14 @@ export const metadata: Metadata = {
 };
 
 const navigation = mainNavigation();
+const uiFont = Inter({ subsets: ["latin"], display: "swap", variable: "--font-ui-face" });
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className="font-sans">
+    <html lang="en" className={uiFont.variable}>
       <body>
         <Script strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <SiteMotion />
         <a className="skip-link" href="#main">
           Skip to content
         </a>
@@ -54,16 +58,16 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         {/* `components/notification-prompt.tsx` is intentionally NOT mounted.
             It asks for browser notification permission, then registers `/sw.js`
             and POSTs a subscription to `/api/notifications/subscribe` — neither
-            of those exists, and `lib/vapid.ts` holds a key that was never
-            issued. Asking a visitor for a permission we cannot honour is worse
-            than not asking. Re-mount it only once all four exist:
+            exists, and no real VAPID public key is configured. Asking a visitor
+            for a permission we cannot honour is worse than not asking. Re-mount
+            it only once all four exist:
               1. `public/sw.js` — a service worker that handles `push`
               2. `app/api/notifications/subscribe/route.ts` — authenticated,
                  rate-limited, and writes to `push_subscriptions`
               3. a real VAPID key pair, with the private half server-side only
               4. something that actually sends a notification
-            The component file itself is kept, unchanged, so the work is not
-            thrown away. */}
+            The component is guarded by the explicit public push enable flag and
+            remains unmounted until the complete delivery path is available. */}
       </body>
     </html>
   );

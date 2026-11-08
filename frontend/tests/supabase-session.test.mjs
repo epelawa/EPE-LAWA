@@ -29,7 +29,7 @@ test('server session gate verifies Auth before checking current RLS grants and f
     if (scenario === 'offline') throw new Error('offline');
     if (path === '/auth/v1/user' && scenario === 'invalid') return new Response('{}', { status: 401, headers: { 'content-type': 'application/json' } });
     let data;
-    if (path === '/auth/v1/user') data = { id: 'staff-a', aud: 'authenticated' };
+    if (path === '/auth/v1/user') data = { id: 'staff-a', aud: 'authenticated', email_confirmed_at: scenario === 'unverified' ? null : '2026-01-01T00:00:00Z' };
     else if (path === '/rest/v1/staff_profiles') data = [{ user_id: 'staff-a', is_active: scenario !== 'inactive' }];
     else if (path === '/rest/v1/staff_capability_grants') data = scenario === 'revoked' ? [] : [{ user_id: 'staff-a', capability: 'admin.access' }];
     else throw new Error(`Unexpected request: ${path}`);
@@ -41,27 +41,36 @@ test('server session gate verifies Auth before checking current RLS grants and f
     assert.deepEqual(calls, ['/auth/v1/user', '/rest/v1/staff_profiles', '/rest/v1/staff_capability_grants']);
     for (const [mode, expected] of [
       ['invalid', ['/auth/v1/user']],
+      ['unverified', ['/auth/v1/user']],
       ['inactive', ['/auth/v1/user', '/rest/v1/staff_profiles']],
       ['revoked', ['/auth/v1/user', '/rest/v1/staff_profiles', '/rest/v1/staff_capability_grants']],
       ['offline', ['/auth/v1/user']],
     ]) {
       scenario = mode; calls.length = 0;
-      assert.deepEqual(await getAdminAccessForSession(cookieStore([sessionCookie()])), { allowed: false }, mode);
+      assert.deepEqual(await getAdminAccessForSession(cookieStore([sessionCookie()])), { allowed: false, userId: null }, mode);
       assert.deepEqual(calls, expected, mode);
     }
     scenario = 'active'; calls.length = 0;
-    assert.deepEqual(await getAdminAccessForSession(cookieStore()), { allowed: false }, 'missing session');
+    assert.deepEqual(await getAdminAccessForSession(cookieStore()), { allowed: false, userId: null }, 'missing session');
     assert.ok(!calls.includes('/rest/v1/staff_profiles'));
     calls.length = 0;
-    assert.deepEqual(await getAdminAccessForSession(cookieStore([{ name: cookieName, value: 'not-a-session' }])), { allowed: false }, 'malformed session');
+    for (const value of [
+      'not-a-session',
+      'base64-' + Buffer.from(JSON.stringify({ user: { id: 'staff-a' } })).toString('base64url'),
+      'base64-' + Buffer.from(JSON.stringify({ access_token: 5, user: { id: 'staff-a' } })).toString('base64url'),
+      'base64-' + Buffer.from(JSON.stringify({ access_token: 'token', user: null })).toString('base64url'),
+      'base64-' + Buffer.from(JSON.stringify([])).toString('base64url'),
+    ]) {
+      assert.deepEqual(await getAdminAccessForSession(cookieStore([{ name: cookieName, value }])), { allowed: false, userId: null }, 'malformed session payload');
+    }
     assert.ok(!calls.includes('/rest/v1/staff_profiles'));
     calls.length = 0;
     process.env.SUPABASE_PUBLISHABLE_KEY = 'sb_secret_no';
-    assert.deepEqual(await getAdminAccessForSession(cookieStore([sessionCookie()])), { allowed: false });
+    assert.deepEqual(await getAdminAccessForSession(cookieStore([sessionCookie()])), { allowed: false, userId: null });
     assert.equal(calls.length, 0);
     process.env.SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_test_only';
     process.env.SUPABASE_URL = 'http://unit.example.invalid';
-    assert.deepEqual(await getAdminAccessForSession(cookieStore([sessionCookie()])), { allowed: false });
+    assert.deepEqual(await getAdminAccessForSession(cookieStore([sessionCookie()])), { allowed: false, userId: null });
     assert.equal(calls.length, 0);
   } finally {
     globalThis.fetch = oldFetch;
@@ -84,7 +93,7 @@ test('refreshed session cookies retain host-only security flags and no-store hea
     assert.equal(req.cache, 'no-store');
     if (path === '/auth/v1/token') return Response.json({ access_token: 'refreshed-token', refresh_token: 'refreshed-refresh', token_type: 'bearer', expires_in: 3600, user: { id: 'staff-a', aud: 'authenticated' } });
     assert.equal(req.headers.get('authorization'), 'Bearer refreshed-token');
-    if (path === '/auth/v1/user') return Response.json({ id: 'staff-a', aud: 'authenticated' });
+    if (path === '/auth/v1/user') return Response.json({ id: 'staff-a', aud: 'authenticated', email_confirmed_at: '2026-01-01T00:00:00Z' });
     if (path === '/rest/v1/staff_profiles') return Response.json([{ user_id: 'staff-a', is_active: true }]);
     if (path === '/rest/v1/staff_capability_grants') return Response.json([{ user_id: 'staff-a', capability: 'admin.access' }]);
     throw new Error(`Unexpected request: ${path}`);
@@ -107,7 +116,7 @@ test('refreshed session cookies retain host-only security flags and no-store hea
     }
     const brokenStore = cookieStore([sessionCookie(Math.floor(Date.now() / 1000) - 10)]);
     brokenStore.setAll = () => { throw new Error('response unavailable'); };
-    assert.deepEqual(await getAdminAccessForSession(brokenStore), { allowed: false });
+    assert.deepEqual(await getAdminAccessForSession(brokenStore), { allowed: false, userId: null });
   } finally {
     globalThis.fetch = oldFetch;
     if (oldUrl === undefined) delete process.env.SUPABASE_URL; else process.env.SUPABASE_URL = oldUrl;
@@ -133,7 +142,7 @@ test('read-only route adapter returns refreshed cookies and denies without rende
     assert.equal(req.cache, 'no-store');
     if (path === '/auth/v1/token') return Response.json({ access_token: largeSession ? 'x'.repeat(10000) : 'refreshed-token', refresh_token: 'refreshed-refresh', token_type: 'bearer', expires_in: 3600, user: { id: 'staff-a', aud: 'authenticated' } });
     assert.equal(req.headers.get('authorization'), 'Bearer ' + (largeSession ? 'x'.repeat(10000) : 'refreshed-token'));
-    if (path === '/auth/v1/user') return Response.json({ id: 'staff-a', aud: 'authenticated' });
+    if (path === '/auth/v1/user') return Response.json({ id: 'staff-a', aud: 'authenticated', email_confirmed_at: '2026-01-01T00:00:00Z' });
     if (path === '/rest/v1/staff_profiles') return Response.json([{ user_id: 'staff-a', is_active: true }]);
     if (path === '/rest/v1/staff_capability_grants') return Response.json(revoked ? [] : [{ user_id: 'staff-a', capability: 'admin.access' }]);
     throw new Error(`Unexpected request: ${path}`);

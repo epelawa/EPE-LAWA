@@ -123,8 +123,8 @@ export default function DownloadApp({ className = "" }: { className?: string }) 
               <em> Add to Home Screen</em>.
             </p>
             <p className="text-xs text-muted-foreground">
-              On Android, the website already works in Chrome. Nothing is missing — the native app is for
-              notifications and offline reading on a weak connection.
+              The website already works in Chrome. Offline article reading and web push notifications are
+              not active yet; both are marked Coming Soon in the News section.
             </p>
           </div>
 
