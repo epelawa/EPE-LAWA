@@ -21,7 +21,7 @@ import { useState } from "react";
 const LOGO_WIDTH = 1348;
 const LOGO_HEIGHT = 1167;
 
-export function BrandLockup({ size = 32 }: { size?: number }) {
+export function BrandLockup({ size = 32, showPlace = true }: { size?: number; showPlace?: boolean }) {
   const [imageFailed, setImageFailed] = useState(false);
   const markWidth = Math.round((size * LOGO_WIDTH) / LOGO_HEIGHT);
 
@@ -44,7 +44,7 @@ export function BrandLockup({ size = 32 }: { size?: number }) {
 
       <span className="brand__word">
         <span className="brand__name">EPE LAWA</span>
-        <span className="brand__place">Epe Division</span>
+        {showPlace ? <span className="brand__place">Epe Division</span> : null}
       </span>
     </span>
   );

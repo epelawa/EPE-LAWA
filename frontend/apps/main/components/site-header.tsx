@@ -31,6 +31,19 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
   }, [pathname]);
 
   useEffect(() => {
+    if (!drawerOpen) return;
+    const onOutsideDrawer = (event: PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+      if (drawerRef.current?.contains(target) || menuButtonRef.current?.contains(target)) return;
+      setDrawerOpen(false);
+      menuButtonRef.current?.focus();
+    };
+    document.addEventListener("pointerdown", onOutsideDrawer);
+    return () => document.removeEventListener("pointerdown", onOutsideDrawer);
+  }, [drawerOpen]);
+
+  useEffect(() => {
     const onOutside = (event: PointerEvent) => {
       if (moreRef.current?.open && !moreRef.current.contains(event.target as Node)) moreRef.current.open = false;
     };
@@ -71,7 +84,7 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
 
   return <header className="site-head">
     <div className="masthead-bar">
-      <Link className="nav-brand" href="/"><BrandLockup size={30} /></Link>
+      <Link className="nav-brand" href="/"><BrandLockup size={30} showPlace={false} /></Link>
       <nav className="site-head__nav" aria-label="Main">
         <ul className="nav-items">
           {inline.map(item => <li key={item.href}><Link className="nav-link" href={item.href} aria-current={current(pathname,item.href) ? "page" : undefined}>{item.label}</Link></li>)}
