@@ -45,3 +45,9 @@ No current full all-eight local/preview release pass, provider delivery, or live
 
 - **2026-11-07 20:43** — Owner reaffirmed web scope: all eight client brief areas 3.1–3.8, plus cross-cutting auth/admin/email/security/privacy/analytics/testing. Only native mobile apps are deferred. Preserve section 5 future enhancements (event ticketing, emergency contacts, scholarship/job board, e-learning, English/Yoruba, AI local assistant) in the complete roadmap. Documentation/public-copy scope correction only; no tests or deployments run.
 - **2026-11-07 21:22** — Read-only Playwright baseline against `https://epelawa.vercel.app` covered all eight module routes at 320/375/768/1024/1440 px and the public auth routes. News, Radio and Who-is-Who returned 200; Itan Ilu Mi, Forum, Map, Business Directory, Tourism and the auth routes returned 404; Radio overflowed at 320/375 px. This is the older production deployment, not the feature branch. No forms were submitted and no production writes occurred; the feature-branch preview remains unverified.
+
+### 2026-11-08 — Urgent official-logo hero patch (PR #17)
+
+- The owner prioritized the supplied EPE LAWA logo in the homepage hero. This isolated patch replaces the editorial artwork with the existing official logo in an uncropped responsive white panel, without shipping unfinished account/News/admin/module changes.
+- Node 22.23.4/pnpm 10.34.9 `pnpm typecheck`, both app production builds, and the complete test suite passed: 120 passed, zero failed, one skipped. The old illustration-only regression assertion now protects the requested official-logo behavior.
+- Production-build Playwright checks at 320/375/768/1024/1440 CSS px confirmed HTTP 200, the correct 1348×1167 logo, `object-fit: contain`, and no horizontal overflow. No production writes were made. Production deployment is checked separately after the PR gate; local checks alone do not prove the public alias updated.
