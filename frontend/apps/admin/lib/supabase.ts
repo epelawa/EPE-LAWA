@@ -4,11 +4,7 @@
  */
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
-import { getAdminAccessForSession } from "./supabase-access";
-
-const ADMIN_COOKIE = "__Host-epelawa-admin";
-
-type SessionCookie = { access_token?: unknown };
+import { getAdminAccessForSession, readAdminSessionFromCookies } from "./supabase-access";
 
 export async function createClient() {
   const cookieStore = await cookies();
@@ -24,18 +20,10 @@ export async function createClient() {
     },
   });
   if (!access.allowed || !access.userId) throw new Error("Unauthorized");
-  const value = cookieStore.get(ADMIN_COOKIE)?.value;
-  if (!value) throw new Error("Unauthorized");
-  let session: SessionCookie;
-  try {
-    const encoded = value.startsWith("base64-") ? value.slice(7) : value;
-    session = JSON.parse(Buffer.from(encoded, "base64url").toString("utf8")) as SessionCookie;
-  } catch {
-    throw new Error("Unauthorized");
-  }
-  if (typeof session.access_token !== "string" || !session.access_token) {
-    throw new Error("Unauthorized");
-  }
+  const session = readAdminSessionFromCookies(
+    cookieStore.getAll().map(({ name, value }) => ({ name, value })),
+  );
+  if (!session?.access_token) throw new Error("Unauthorized");
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_PUBLISHABLE_KEY;
   if (!url || !key?.startsWith("sb_publishable_")) {

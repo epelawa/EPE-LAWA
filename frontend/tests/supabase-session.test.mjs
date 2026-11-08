@@ -1,11 +1,24 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { getAdminAccessForSession } from '../apps/admin/lib/supabase-access.ts';
+import { readFileSync } from 'node:fs';
+import { getAdminAccessForSession, readAdminSessionFromCookies } from '../apps/admin/lib/supabase-access.ts';
 
 const cookieName = '__Host-epelawa-admin';
 function sessionCookie(expiresAt = Math.floor(Date.now() / 1000) + 3600) {
   const value = { access_token: 'test-access-token', refresh_token: 'test-refresh-token', token_type: 'bearer', expires_at: expiresAt, expires_in: 3600, user: { id: 'staff-a' } };
   return { name: cookieName, value: 'base64-' + Buffer.from(JSON.stringify(value)).toString('base64url') };
+}
+
+function chunkedSessionCookies(value, chunkSize = 4000) {
+  const encoded = Buffer.from(JSON.stringify(value)).toString('base64url');
+  const parts = [];
+  for (let offset = 0; offset < encoded.length; offset += chunkSize) {
+    parts.push(encoded.slice(offset, offset + chunkSize));
+  }
+  return parts.map((part, index) => ({
+    name: index === 0 ? cookieName : `${cookieName}.${index}`,
+    value: part,
+  }));
 }
 
 function cookieStore(cookies = []) {
@@ -79,6 +92,60 @@ test('server session gate verifies Auth before checking current RLS grants and f
   }
 });
 
+test('large session chunks are reassembled; gaps and duplicate chunks fail closed', async () => {
+  const oldFetch = globalThis.fetch;
+  const oldUrl = process.env.SUPABASE_URL;
+  const oldKey = process.env.SUPABASE_PUBLISHABLE_KEY;
+  process.env.SUPABASE_URL = 'https://unit.example.invalid';
+  process.env.SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_test_only';
+  const longToken = 'x'.repeat(10000);
+  const largeCookies = chunkedSessionCookies({
+    access_token: longToken,
+    refresh_token: 'test-refresh-token',
+    expires_at: Math.floor(Date.now() / 1000) + 3600,
+    user: { id: 'staff-a' },
+  });
+  const calls = [];
+  globalThis.fetch = async (input, init) => {
+    const req = new Request(input, init);
+    const path = new URL(req.url).pathname;
+    calls.push(path);
+    assert.equal(req.headers.get('authorization'), `Bearer ${longToken}`);
+    if (path === '/auth/v1/user') return Response.json({ id: 'staff-a', email_confirmed_at: '2026-01-01T00:00:00Z' });
+    if (path === '/rest/v1/staff_profiles') return Response.json([{ user_id: 'staff-a', is_active: true }]);
+    if (path === '/rest/v1/staff_capability_grants') return Response.json([{ user_id: 'staff-a', capability: 'admin.access' }]);
+    throw new Error(`Unexpected request: ${path}`);
+  };
+  try {
+    assert.ok(largeCookies.length > 1);
+    assert.equal(readAdminSessionFromCookies(largeCookies)?.access_token, longToken);
+    assert.deepEqual(await getAdminAccessForSession(cookieStore(largeCookies)), { allowed: true, userId: 'staff-a' });
+    assert.deepEqual(calls, ['/auth/v1/user', '/rest/v1/staff_profiles', '/rest/v1/staff_capability_grants']);
+
+    calls.length = 0;
+    const missingFirstChunk = largeCookies.filter((cookie) => cookie.name !== `${cookieName}.1`);
+    assert.equal(readAdminSessionFromCookies(missingFirstChunk), null);
+    assert.deepEqual(await getAdminAccessForSession(cookieStore(missingFirstChunk)), { allowed: false, userId: null });
+    assert.deepEqual(calls, [], 'a missing chunk is rejected before any provider request');
+
+    const duplicateChunk = [...largeCookies, { ...largeCookies[1] }];
+    assert.equal(readAdminSessionFromCookies(duplicateChunk), null);
+    assert.deepEqual(await getAdminAccessForSession(cookieStore(duplicateChunk)), { allowed: false, userId: null });
+    assert.deepEqual(calls, [], 'duplicate chunk names are rejected before any provider request');
+  } finally {
+    globalThis.fetch = oldFetch;
+    if (oldUrl === undefined) delete process.env.SUPABASE_URL; else process.env.SUPABASE_URL = oldUrl;
+    if (oldKey === undefined) delete process.env.SUPABASE_PUBLISHABLE_KEY; else process.env.SUPABASE_PUBLISHABLE_KEY = oldKey;
+  }
+});
+
+test('staff Supabase client uses the shared chunk-aware session parser', () => {
+  const source = readFileSync(new URL('../apps/admin/lib/supabase.ts', import.meta.url), 'utf8');
+  assert.match(source, /readAdminSessionFromCookies/);
+  assert.match(source, /cookieStore\.getAll\(\)\.map/);
+  assert.doesNotMatch(source, /cookieStore\.get\("__Host-epelawa-admin"\)/);
+});
+
 test('refreshed session cookies retain host-only security flags and no-store headers', async () => {
   const oldFetch = globalThis.fetch;
   const oldUrl = process.env.SUPABASE_URL;
@@ -117,6 +184,47 @@ test('refreshed session cookies retain host-only security flags and no-store hea
     const brokenStore = cookieStore([sessionCookie(Math.floor(Date.now() / 1000) - 10)]);
     brokenStore.setAll = () => { throw new Error('response unavailable'); };
     assert.deepEqual(await getAdminAccessForSession(brokenStore), { allowed: false, userId: null });
+  } finally {
+    globalThis.fetch = oldFetch;
+    if (oldUrl === undefined) delete process.env.SUPABASE_URL; else process.env.SUPABASE_URL = oldUrl;
+    if (oldKey === undefined) delete process.env.SUPABASE_PUBLISHABLE_KEY; else process.env.SUPABASE_PUBLISHABLE_KEY = oldKey;
+  }
+});
+
+test('refresh expires stale numbered chunks when the new session fits in fewer cookies', async () => {
+  const oldFetch = globalThis.fetch;
+  const oldUrl = process.env.SUPABASE_URL;
+  const oldKey = process.env.SUPABASE_PUBLISHABLE_KEY;
+  process.env.SUPABASE_URL = 'https://unit.example.invalid';
+  process.env.SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_test_only';
+  const staleCookies = chunkedSessionCookies({
+    access_token: 'expired-' + 'x'.repeat(10000),
+    refresh_token: 'test-refresh-token',
+    expires_at: Math.floor(Date.now() / 1000) - 10,
+    user: { id: 'staff-a' },
+  });
+  const writes = [];
+  const store = {
+    getAll: () => staleCookies,
+    setAll: (set, headers) => writes.push({ set, headers }),
+  };
+  globalThis.fetch = async (input, init) => {
+    const req = new Request(input, init);
+    const path = new URL(req.url).pathname;
+    if (path === '/auth/v1/token') return Response.json({ access_token: 'refreshed-token', refresh_token: 'refreshed-refresh', token_type: 'bearer', expires_in: 3600, user: { id: 'staff-a' } });
+    assert.equal(req.headers.get('authorization'), 'Bearer refreshed-token');
+    if (path === '/auth/v1/user') return Response.json({ id: 'staff-a', email_confirmed_at: '2026-01-01T00:00:00Z' });
+    if (path === '/rest/v1/staff_profiles') return Response.json([{ user_id: 'staff-a', is_active: true }]);
+    if (path === '/rest/v1/staff_capability_grants') return Response.json([{ user_id: 'staff-a', capability: 'admin.access' }]);
+    throw new Error(`Unexpected request: ${path}`);
+  };
+  try {
+    assert.ok(staleCookies.length > 2);
+    assert.deepEqual(await getAdminAccessForSession(store), { allowed: true, userId: 'staff-a' });
+    assert.equal(writes.length, 1);
+    const written = writes[0].set;
+    const cleared = written.filter((cookie) => cookie.options.maxAge === 0).map((cookie) => cookie.name);
+    assert.deepEqual(cleared.sort(), staleCookies.slice(1).map((cookie) => cookie.name).sort());
   } finally {
     globalThis.fetch = oldFetch;
     if (oldUrl === undefined) delete process.env.SUPABASE_URL; else process.env.SUPABASE_URL = oldUrl;

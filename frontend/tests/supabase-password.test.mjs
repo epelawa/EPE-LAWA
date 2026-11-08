@@ -4,9 +4,9 @@ import { signInAdminWithPassword } from '../apps/admin/lib/supabase-access.ts';
 
 const cookieName = '__Host-epelawa-admin';
 const input = { email: 'staff@example.invalid', password: 'test-only password' };
-function store() {
+function store(existingCookies = []) {
   const writes = [];
-  return { writes, getAll: () => [], setAll: (cookies, headers) => writes.push({ cookies, headers }) };
+  return { writes, getAll: () => existingCookies, setAll: (cookies, headers) => writes.push({ cookies, headers }) };
 }
 
 test('password sign-in stages cookies until identity and active admin grant are verified', async () => {
@@ -14,6 +14,7 @@ test('password sign-in stages cookies until identity and active admin grant are 
   process.env.SUPABASE_URL = 'https://unit.example.invalid';
   process.env.SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_test_only';
   let scenario = 'active';
+  let largeSession = false;
   const calls = [];
   globalThis.fetch = async (input, init) => {
     const req = new Request(input, init), url = new URL(req.url), path = url.pathname;
@@ -24,10 +25,10 @@ test('password sign-in stages cookies until identity and active admin grant are 
       assert.deepEqual(await req.json(), { email: 'staff@example.invalid', password: 'test-only password', gotrue_meta_security: {} });
       if (scenario === 'invalid') return Response.json({ error: 'invalid_grant' }, { status: 400 });
       if (scenario === 'offline') throw new Error('provider offline');
-      return Response.json({ access_token: 'fake-access', refresh_token: 'fake-refresh', token_type: 'bearer', expires_in: 3600, user: { id: 'staff-a', aud: 'authenticated' } });
+      return Response.json({ access_token: largeSession ? 'x'.repeat(10000) : 'fake-access', refresh_token: 'fake-refresh', token_type: 'bearer', expires_in: 3600, user: { id: 'staff-a', aud: 'authenticated' } });
     }
     if (path === '/auth/v1/logout') return new Response(null, { status: 204 });
-    assert.equal(req.headers.get('authorization'), 'Bearer fake-access');
+    assert.equal(req.headers.get('authorization'), `Bearer ${largeSession ? 'x'.repeat(10000) : 'fake-access'}`);
     if (path === '/auth/v1/user') return scenario === 'user-error' ? Response.json({ error: 'unavailable' }, { status: 503 }) : Response.json({ id: scenario === 'mismatch' ? 'staff-b' : 'staff-a', aud: 'authenticated', email_confirmed_at: scenario === 'unverified' ? null : '2026-01-01T00:00:00Z' });
     if (path === '/rest/v1/staff_profiles') return scenario === 'profile-error' ? Response.json({ error: 'unavailable' }, { status: 503 }) : Response.json([{ user_id: 'staff-a', is_active: scenario !== 'inactive' }]);
     if (path === '/rest/v1/staff_capability_grants') return scenario === 'grant-error' ? Response.json({ error: 'unavailable' }, { status: 503 }) : Response.json(scenario === 'revoked' ? [] : [{ user_id: 'staff-a', capability: 'admin.access' }]);
@@ -50,6 +51,24 @@ test('password sign-in stages cookies until identity and active admin grant are 
       }
     }
     assert.ok(result.writes.some(({ cookies }) => cookies.some(({ name }) => name === cookieName)));
+
+    largeSession = true; calls.length = 0;
+    const large = store();
+    assert.deepEqual(await signInAdminWithPassword(input.email, input.password, large), { allowed: true });
+    const largeCookies = large.writes.flatMap(({ cookies }) => cookies).filter(({ options }) => options.maxAge > 0);
+    assert.ok(largeCookies.some(({ name }) => name === `${cookieName}.1`), 'large login sessions are split into numbered cookies');
+    for (const cookie of largeCookies) {
+      assert.equal(cookie.options.secure, true);
+      assert.equal(cookie.options.httpOnly, true);
+      assert.equal(cookie.options.sameSite, 'lax');
+      assert.equal(cookie.options.path, '/');
+      assert.equal(cookie.options.domain, undefined);
+    }
+    largeSession = false; calls.length = 0;
+    const stale = store([{ name: `${cookieName}.1`, value: 'old chunk' }]);
+    assert.deepEqual(await signInAdminWithPassword(input.email, input.password, stale), { allowed: true });
+    assert.ok(stale.writes.flatMap(({ cookies }) => cookies).some(({ name, options }) => name === `${cookieName}.1` && options.maxAge === 0), 'small login sessions expire old numbered chunks');
+
     for (const mode of ['invalid', 'offline', 'inactive', 'revoked', 'mismatch', 'unverified', 'user-error', 'profile-error', 'grant-error']) {
       scenario = mode; calls.length = 0;
       const denied = store();
@@ -85,7 +104,13 @@ test('unwired logout clears only host-only admin cookies and reports provider fa
   process.env.SUPABASE_URL = 'https://unit.example.invalid';
   process.env.SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_test_only';
   const value = { access_token: 'fake-access', refresh_token: 'fake-refresh', token_type: 'bearer', expires_at: Math.floor(Date.now() / 1000) + 3600, expires_in: 3600, user: { id: 'staff-a' } };
-  const cookies = [{ name: cookieName, value: 'base64-' + Buffer.from(JSON.stringify(value)).toString('base64url') }, { name: cookieName + '.0', value: 'old' }, { name: 'unrelated', value: 'keep' }];
+  const encodedSession = Buffer.from(JSON.stringify(value)).toString('base64url');
+  const cookies = [
+    { name: cookieName, value: encodedSession.slice(0, 40) },
+    { name: cookieName + '.1', value: encodedSession.slice(40, 80) },
+    { name: cookieName + '.2', value: encodedSession.slice(80) },
+    { name: 'unrelated', value: 'keep' },
+  ];
   let fail = false, calls = 0;
   globalThis.fetch = async (input, init) => {
     const req = new Request(input, init);
@@ -102,7 +127,7 @@ test('unwired logout clears only host-only admin cookies and reports provider fa
     assert.deepEqual(await signOutAdminSession(saved), { revoked: true, cookiesCleared: true });
     assert.equal(calls, 1);
     assert.match(saved.writes[0].headers['Cache-Control'], /no-store/);
-    assert.deepEqual(saved.writes[0].items.map(c => c.name).sort(), [cookieName, cookieName + '.0'].sort());
+    assert.deepEqual(saved.writes[0].items.map(c => c.name).sort(), [cookieName, cookieName + '.1', cookieName + '.2'].sort());
     for (const c of saved.writes[0].items) assert.deepEqual(c.options, { path: '/', httpOnly: true, secure: true, sameSite: 'lax', maxAge: 0 });
     fail = true;
     const offline = makeStore();
