@@ -1,0 +1,39 @@
+.masthead-bar { gap: 14px; }
+.masthead-actions { flex-shrink: 0; gap: 3px; }
+.header-signin { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding-inline: 8px; font-size: 12px; }
+.header-cta { font-size: 12px; padding-inline: 15px; }
+.theme-control { flex-basis: 58px; width: 58px; min-width: 58px; }
+.theme-control__track { width: 50px; }
+.theme-control[data-theme="dark"] .theme-control__thumb { transform: translateX(20px); }
+.drawer { width: min(300px, calc(100vw - 32px)); padding: 20px; overflow: hidden; border-radius: 22px 0 0 22px; }
+.drawer-heading { flex: 0 0 auto; padding-bottom: 12px; gap: 8px; }
+.drawer-heading p { font-size: 13px; line-height: 1.5; }
+.drawer-nav { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; margin: 10px -5px; padding-inline: 5px; scrollbar-width: thin; }
+.drawer-link { min-height: 44px; padding: 8px 9px; gap: 1px; border-radius: 10px; }
+.drawer-label { font-size: 13px; line-height: 1.4; font-weight: 550; }
+.drawer-hint { font-size: 11px; line-height: 1.4; }
+.drawer-account { flex: 0 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding-top: 12px; margin-top: 8px; }
+.drawer-account > a { width: 100%; padding: 10px 7px; font-size: 12px; text-align: center; }
+.drawer-account svg { display: none; }
+.drawer-foot { flex: 0 0 auto; margin-top: 12px; font-size: 11px; line-height: 1.5; }
+@media (max-width: 600px) {
+  .masthead-bar { gap: 5px; padding: 7px 6px 7px 12px; }
+  .brand { gap: 6px; }
+  .brand__name { font-size: 12px; letter-spacing: .035em; }
+  .brand__mark { padding: 3px; }
+  .masthead-actions { gap: 0; }
+  .header-signin { font-size: 12px; padding-inline: 6px; }
+  .theme-control { flex-basis: 44px; width: 44px; min-width: 44px; }
+  .theme-control__track { width: 38px; height: 26px; }
+  .theme-control__symbol { top: 5px; width: 12px; height: 12px; }
+  .theme-control__symbol--sun { left: 4px; }
+  .theme-control__symbol--moon { right: 4px; }
+  .theme-control__thumb { width: 20px; height: 20px; }
+  .theme-control[data-theme="dark"] .theme-control__thumb { transform: translateX(12px); }
+  .drawer { padding: 16px; }
+}
+@media (max-height: 600px) {
+  .drawer-hint,.drawer-foot { display: none; }
+  .drawer-heading { padding-bottom: 6px; }
+  .drawer-nav { margin-block: 6px; }
+}

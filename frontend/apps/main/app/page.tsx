@@ -3,6 +3,7 @@ import { ArrowRightIcon, ArrowUpRightIcon, NewspaperIcon, BuildingIcon, UsersIco
 import { EmptyPanel } from "../components/design-system";
 import { formatPublishedDate } from "../lib/dates";
 import { getLatestStories } from "../lib/home-data";
+import "./hero-logo.css";
 
 const modules = [
   {name:"Trending News",href:"/news",description:"Local reporting. The stories that matter here."},
@@ -20,7 +21,7 @@ export default async function Home() {
   return <div className="public-home">
     <section className="home-hero" aria-labelledby="home-title"><div className="ep-container home-hero__grid">
       <div className="home-hero__copy"><p className="ui-eyebrow">Epe Division, Lagos State</p><h1 id="home-title">The place.<br />The people.<br /><em>Our Epe.</em></h1><p className="home-hero__lede">A shared home for the stories, conversations and everyday discoveries that bring Epe together.</p><div className="ui-actions"><Link href="/news" className="btn-primary">Discover what’s happening <ArrowRightIcon size={17} aria-hidden="true" /></Link><Link href="/itan-ilu-mi" className="ui-text-link">Know our story <ArrowUpRightIcon size={17} aria-hidden="true" /></Link></div><p className="home-hero__note"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M12 21s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg>Rooted in the community. Open to everyone.</p></div>
-      <figure className="home-hero__art"><img src="/epe-lagoon-editorial.webp" alt="Original editorial illustration of canoes and a lagoon-side community" width="1280" height="1600" fetchPriority="high" /><figcaption><span><strong>Life, by the lagoon.</strong>An illustrated community perspective.</span><ArrowUpRightIcon size={20} aria-hidden="true" /></figcaption></figure>
+      <figure className="home-hero__art home-hero__art--logo"><img src="/brand-logo.png" alt="EPE LAWA — The Voice of Epe Division" width="1348" height="1167" fetchPriority="high" /><figcaption><span><strong>Our place. Our identity.</strong>The voice of Epe Division.</span><ArrowUpRightIcon size={20} aria-hidden="true" /></figcaption></figure>
     </div></section>
     <div className="ep-container home-topics" aria-label="A platform for community life"><span>Stories worth knowing</span><span>History worth keeping</span><span>Places worth finding</span><span>People worth connecting</span></div>
 

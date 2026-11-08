@@ -7,6 +7,7 @@ import { primaryNavigation, type NavItem } from "../lib/navigation";
 import { ArrowRightIcon, ArrowUpRightIcon } from "./icons";
 import ThemeToggle from "./theme-toggle";
 import { BrandLockup } from "./brand";
+import "./navigation-refinement.css";
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input, [tabindex]:not([tabindex="-1"])';
 const current = (path: string, href: string) => href === "/" ? path === "/" : path === href || path.startsWith(`${href}/`);
