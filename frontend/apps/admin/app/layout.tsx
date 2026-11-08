@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import "@fontsource-variable/plus-jakarta-sans";
 import Script from "next/script";
 import "@epelawa/ui/tokens.css";
 import "@epelawa/ui/ui.css";
@@ -10,12 +10,6 @@ import { mainNavigation } from "../lib/navigation";
 import { siteUrl } from "../lib/site";
 import { themeScript } from "../lib/theme";
 import SiteMotion from "../components/site-motion";
-
-const bodyFont = Inter({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-body-face",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -28,7 +22,7 @@ const navigation = mainNavigation();
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={bodyFont.variable}>
+    <html lang="en">
       <body>
         <Script strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeScript }} />
         <SiteMotion />

@@ -44,7 +44,7 @@
     --ui-warning-soft: #fbf1d9;
     --ui-danger: #a73545;
     --ui-danger-soft: #fae9ed;
-    --font-body: var(--font-ui-face, "Inter"), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-ui-face: "Plus Jakarta Sans Variable"; --font-body: var(--font-ui-face), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
     --font-display: var(--font-body);
     /* 90% of the previous display/title roles, with readable body/control floors. */
     --text-display: clamp(2.025rem, 4.8vw, 3.6rem);
@@ -269,7 +269,7 @@
 .home-hero__grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(32px,5vw,72px); align-items: center; }
 .home-hero__copy { padding-block: 24px; }
 .home-hero h1 { margin: 24px 0; font-weight: 550; font-size: var(--text-display); line-height: 1.07; letter-spacing: -.055em; }
-.home-hero h1 em { font-family: Georgia,"Times New Roman",serif; font-weight: 400; color: hsl(var(--primary)); letter-spacing: -.06em; }
+.home-hero h1 em { font-family: var(--font-display); font-weight: 400; color: hsl(var(--primary)); letter-spacing: -.06em; }
 .home-hero__lede { max-width: 40ch; color: hsl(var(--muted-foreground)); font-size: 16px; line-height: 1.75; }
 .home-hero .ui-actions { margin-top: 30px; }
 .home-hero__note { display: flex; align-items: center; gap: 10px; margin-top: 40px; padding-top: 22px; border-top: 1px solid hsl(var(--border)); font-size: 12px; color: hsl(var(--muted-foreground)); }
@@ -314,7 +314,7 @@
 .home-community { display: grid; grid-template-columns: .8fr 1.2fr; gap: 72px; align-items: center; padding-top: 0; }
 .home-community__poster { padding: 40px; min-height: 320px; display: flex; flex-direction: column; justify-content: space-between; border-radius: 24px; background: hsl(var(--secondary)); }
 .home-community__poster > span { font-size: 12px; text-transform: uppercase; letter-spacing: .12em; color: hsl(var(--link)); }
-.home-community__poster p { font-family: Georgia,"Times New Roman",serif; font-size: clamp(2rem,4vw,3rem); line-height: 1.15; letter-spacing: -.045em; }
+.home-community__poster p { font-family: var(--font-display); font-size: clamp(2rem,4vw,3rem); line-height: 1.15; letter-spacing: -.045em; }
 .home-community__poster svg { align-self: flex-end; color: hsl(var(--primary)); }
 .home-community__copy h2 { font-size: clamp(1.75rem,3vw,2.7rem); font-weight: 500; margin: 16px 0 22px; }
 .home-community__copy > p { color: hsl(var(--muted-foreground)); }
