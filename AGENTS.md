@@ -32,7 +32,7 @@ Public app: `frontend/apps/main`; staff app: `frontend/apps/admin`; shared UI: `
 
 ## 7. Design direction
 
-Use Sckooly’s public-site structure as reference, with original EPE-LAWA branding and owner-provided red `#DA251C`, coral `#FF4A3D`, navy `#17253A`, light blue `#EAF3FB`, warm ivory `#FCFAF7`, white and charcoal direction. Do not copy assets. Use restrained surfaces, SVG icons (no emoji), visible focus, accessible contrast, 44×44px touch targets and reduced motion. Clearly label any genuine sponsored placement.
+Use Sckooly’s public-site structure as reference, with original EPE-LAWA branding and the owner-approved cobalt palette: Midnight `#0A1023`, Navy `#17264A`, Royal Steel `#294B91`, Cobalt `#477FE0`, Ice Blue `#A7C5F5`, Cloud `#F1F4FA`, Silver `#A6B2C5` and Border `#293650`. Palette reference is color-only; never reuse its copy, logos or product language. Use Midnight text on cobalt actions, Royal Steel for small links on light surfaces, and keep Ice Blue/Silver support text on dark surfaces. Preserve semantic success/warning/danger colors only for actual statuses. Do not copy assets. Use restrained surfaces, SVG icons (no emoji), visible focus, accessible contrast, 44×44px touch targets and reduced motion. Clearly label any genuine sponsored placement.
 
 ## 8. Documentation
 

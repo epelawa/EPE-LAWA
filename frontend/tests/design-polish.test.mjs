@@ -28,3 +28,27 @@ test("editorial dot decorations are gone and footer links stay split on mobile",
   assert.doesNotMatch(css, /\.ui-eyebrow::before|\.home-topics span::before/);
   assert.match(css, /\.footer-columns \{ grid-template-columns: repeat\(2,minmax\(0,1fr\)\); gap: 16px;/);
 });
+
+test("owner-approved cobalt palette is consistent across light/dark apps and shared UI", () => {
+  const main = read("frontend/apps/main/app/globals.css");
+  const admin = read("frontend/apps/admin/app/globals.css");
+  const shared = read("frontend/packages/ui/src/tokens.css");
+  const sharedCss = read("frontend/packages/ui/src/ui.css");
+  const statusPage = read("frontend/apps/main/app/status/[code]/route.ts");
+  const palette = ["#0A1023", "#17264A", "#294B91", "#477FE0", "#A7C5F5", "#F1F4FA", "#A6B2C5", "#293650"];
+
+  for (const color of palette) {
+    assert.ok(main.includes(color), `public app is missing ${color}`);
+    assert.ok(admin.includes(color), `staff app is missing ${color}`);
+    assert.ok(shared.includes(color), `shared tokens are missing ${color}`);
+    assert.ok(statusPage.includes(color), `status page is missing ${color}`);
+  }
+  assert.match(main, /--primary: 218\.04 71\.16% 57\.84%;[\s\S]*?--primary-foreground: 225\.6 55\.56% 8\.82%;/);
+  assert.match(main, /--link: 216\.92 79\.59% 80\.78%/);
+  assert.match(admin, /--link: 220\.38 55\.91% 36\.47%/);
+  assert.match(sharedCss, /var\(--primary-foreground,225\.6 55\.56% 8\.82%\)/);
+  assert.match(main, /--ui-success: #26614a/);
+  assert.match(main, /--ui-warning: #805d18/);
+  assert.match(main, /--ui-danger: #a73545/);
+  assert.doesNotMatch(main + admin + statusPage, /#(?:60436d|3f2b49|faf9f6|29242d|dbe8ad|c8c1cc|504955|6e6873|e4dee8)\b/i);
+});

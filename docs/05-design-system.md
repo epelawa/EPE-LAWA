@@ -4,7 +4,7 @@
 
 ## A new visual system, not a reskin
 
-The owner rejected the former UI and authorised a complete rebuild, including a new palette. The new direction is **Fig & Limestone**: warm off-white, deep fig, pale lilac and a restrained lime accent. Inter provides one consistent interface voice. The homepage is an original split editorial hero followed by clear entry points, the eight-section community index, genuine reporting and a complete footer.
+The owner superseded the earlier Fig & Limestone palette with EPE-LAWA’s cobalt system. Use the colors below with original EPE-LAWA branding; the palette reference contributes colors only, never its copy, logos or product language. Inter provides one consistent interface voice. The homepage is an original split editorial hero followed by clear entry points, the eight-section community index, genuine reporting and a complete footer.
 
 [Sckooly](https://sckooly.app/) remains the primary structure reference. [GetQuant](https://getquant.app/) informs restraint, spacing and clear product hierarchy; [JĀSĀB](https://jasab.vercel.app/) informs editorial rhythm and calm navigation. All three were inspected in the browser before designing. Do not copy their content, logos, code or assets. Use the supplied EPE-LAWA brand mark, project-root reference images and original art. The generated lagoon illustration is editorial artwork, not a documentary photograph or evidence about a real location.
 
@@ -12,17 +12,16 @@ The owner rejected the former UI and authorised a complete rebuild, including a 
 
 | Token | Value | Role |
 | --- | --- | --- |
-| Limestone | `#FAF9F6` | Main light surface |
-| Fig | `#60436D` | Primary actions and emphasis |
-| Deep fig | `#3F2B49` | Strong emphasis |
-| Lilac | `#EDE7F1` | Secondary panels |
-| Lime | `#DBE8AD` | Restrained accent, with dark text |
-| Ink | `#29242D` | Main text |
-| Muted | `#665F6B` | Supporting text |
-| Border | `#DED9E1` | Decorative separation; controls use stronger borders |
-| White | `#FFFFFF` | Cards and fields |
+| Midnight | `#0A1023` | Dark canvas and high-contrast text on cobalt actions |
+| Navy | `#17264A` | Dark cards and editorial panels |
+| Royal Steel | `#294B91` | Readable links and secondary emphasis on light surfaces |
+| Cobalt | `#477FE0` | Primary actions and active navigation |
+| Ice Blue | `#A7C5F5` | Restrained dark-surface links, focus and accents |
+| Cloud | `#F1F4FA` | Main light canvas and near-white surfaces |
+| Silver | `#A6B2C5` | Supporting copy on dark navy surfaces |
+| Border | `#293650` | Dark-theme separators; light separators use a pale tint |
 
-Use semantic tokens and explicit dark-mode variants. Status always includes text, not color alone. Check rendered contrast, including feedback, hover and focus states.
+Use semantic tokens and explicit dark-mode variants. Light mode uses Cloud backgrounds, Midnight text, near-white cards, cobalt controls with Midnight labels, and Royal Steel for small links. Dark mode uses Midnight backgrounds, Navy cards, Cloud text, cobalt controls with Midnight labels, Ice Blue for restrained links/focus, and Silver for supporting copy. Use a pale derived border on light surfaces and stronger input outlines. Cobalt with white text is only 3.9:1; Midnight on cobalt is 4.84:1. Avoid Ice Blue or Silver as small text on Cloud. Success, warning and danger colors remain reserved for real statuses, which must also include text. Check rendered contrast, including hover and focus states.
 
 ## Compact, readable typography
 

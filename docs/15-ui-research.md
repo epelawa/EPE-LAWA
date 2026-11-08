@@ -6,7 +6,7 @@ The owner requested a complete UI replacement, not another incremental restyle. 
 - [GetQuant](https://getquant.app/): calm spacing, restrained color, concise hierarchy and deliberate feature presentation.
 - [JĀSĀB](https://jasab.vercel.app/): editorial rhythm, consistent navigation and polished, uncluttered content surfaces.
 
-The adaptation is original EPE-LAWA work: a Fig & Limestone palette, compact Inter typography, a new floating masthead, split editorial hero, complete eight-section index, quieter route layouts and an actual staff-workspace rebuild. No reference-brand copy, logo or visual asset is reused. The supplied project-root images informed the direction, and the supplied EPE-LAWA mark is retained. New lagoon artwork is an original illustration, not a claim about an exact real scene.
+The adaptation is original EPE-LAWA work: the latest owner-approved cobalt palette supersedes the earlier Fig & Limestone choice; compact Inter typography, a new floating masthead, split editorial hero, complete eight-section index, quieter route layouts and an actual staff-workspace rebuild remain. The palette reference contributes colors only; no reference-brand copy, logo or visual asset is reused. The supplied project-root images informed the direction, and the supplied EPE-LAWA mark is retained. New lagoon artwork is an original illustration, not a claim about an exact real scene.
 
 All eight web areas remain discoverable: News, History, Forum, Map, Business Directory/Marketplace, Tourism, Radio and Who is Who. Native mobile remains deferred. Provider-dependent features remain clearly labelled Coming Soon; no invented content or activity is added to fill layouts.
 

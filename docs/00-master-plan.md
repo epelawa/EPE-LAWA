@@ -2,7 +2,7 @@
 
 **Status:** Active; scope reaffirmed 2026-11-07.
 **Authority:** `docs/01-product-requirements.md` and client brief sections 3.1–3.8.
-**Design direction:** Sckooly public-site structure, adapted to original EPE-LAWA branding and owner-approved Fig & Limestone direction, compact 90% typography and a full from-scratch UI rebuild informed by Sckooly, GetQuant and JĀSĀB.
+**Design direction:** Sckooly public-site structure, adapted to original EPE-LAWA branding and the latest owner-approved cobalt palette, compact 90% typography and a full from-scratch UI rebuild informed by Sckooly, GetQuant and JĀSĀB.
 
 ## Product and current release
 
