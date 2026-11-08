@@ -11,6 +11,7 @@ import {
   RESTORED_DISMISS_MS,
   SLOW_THRESHOLD_MS,
 } from "../lib/connectivity";
+import "./notice-refinement.css";
 
 /**
  * Connection and system notices.
@@ -33,12 +34,12 @@ type Notice = "slow" | "offline" | "restored" | "unavailable" | "retrying";
 
 type Reason = "initial" | "online" | "manual" | "pull" | "retry" | "visible";
 
-const COPY: Record<Notice, string> = {
-  slow: "Slow connection. Content may take a moment.",
-  offline: "You're offline. Showing what's already loaded.",
-  restored: "Back online.",
-  unavailable: "EPE LAWA is not responding. Retrying\u2026",
-  retrying: "Reconnecting\u2026",
+const COPY: Record<Notice, { title: string; detail: string }> = {
+  slow: { title: "Slow connection", detail: "New content may take a moment." },
+  offline: { title: "You’re offline", detail: "What’s already loaded stays visible." },
+  restored: { title: "Back online", detail: "The connection is working again." },
+  unavailable: { title: "Service unavailable", detail: "We’ll retry in a moment." },
+  retrying: { title: "Reconnecting…", detail: "Checking the connection." },
 };
 
 /** Offline and unavailable are worth interrupting for. The rest are not. */
@@ -389,7 +390,8 @@ function Toast({
 }) {
   return (
     <div className="toast">
-      <p className="toast__text">{COPY[notice]}</p>
+      <svg className="toast__symbol" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4.9 9a11 11 0 0 1 14.2 0M8 12.1a6.6 6.6 0 0 1 8 0M10.7 15.2a2.5 2.5 0 0 1 2.6 0"/><circle cx="12" cy="18" r=".7"/>{notice === "offline" || notice === "unavailable" ? <path d="m3 3 18 18"/> : null}</svg>
+      <div className="toast__copy"><strong className="toast__title">{COPY[notice].title}</strong><p className="toast__text">{COPY[notice].detail}</p></div>
 
       {RETRYABLE.has(notice) ? (
         <button className="toast__action" type="button" onClick={onRetry}>

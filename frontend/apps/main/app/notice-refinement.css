@@ -1,0 +1,14 @@
+.toast-region { left: 12px; right: 12px; bottom: calc(var(--storage-notice-height, 0px) + 20px); }
+.toast-region .toast { align-items: center; gap: 8px; width: min(360px, 100%); max-width: 100%; margin-inline: 0; padding: 8px 8px 8px 12px; border-radius: 8px; box-shadow: 0 6px 18px -6px rgb(10 16 35 / .18); }
+.toast__symbol { flex: 0 0 16px; color: var(--palette-ice-blue); }
+.toast__copy { flex: 1 1 auto; min-width: 0; }
+.toast .toast__title { display: block; margin: 0; font-size: 13px; line-height: 1.375; font-weight: 600; color: var(--palette-cloud); }
+.toast .toast__text { margin: 2px 0 0; font-size: 11px; line-height: 1.4; color: var(--palette-ice-blue); }
+.toast .toast__action { padding-inline: 4px; font-size: 11px; }
+.toast .toast__action,.toast .toast__close { min-height: 44px; min-width: 44px; border-radius: 6px; }
+.toast .toast__close svg { width: 14px; height: 14px; }
+body .storage-notice { left: 12px; bottom: 12px; width: min(360px, calc(100% - 24px)); padding: 12px; border-radius: 10px; box-shadow: 0 6px 18px -6px rgb(10 16 35 / .18); }
+body .storage-notice__title { margin-bottom: 4px; font-size: 13px; line-height: 1.375; }
+body .storage-notice__copy { font-size: 11px; line-height: 1.5; }
+body .storage-notice .ui-actions { margin-top: 8px; gap: 6px; }
+body .storage-notice .btn-primary,body .storage-notice .btn-ghost { min-height: 44px; padding: 8px 12px; font-size: 11px; }
