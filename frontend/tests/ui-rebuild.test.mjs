@@ -14,8 +14,8 @@ test('every public page has rebuilt editorial or account markup, not the old nar
 test('new design scales display roles to 90 percent and retains readable body/control floors',()=>{
   const css=read('frontend/apps/main/app/globals.css');assert.match(css,/--text-display: clamp\(2\.025rem, 4\.8vw, 3\.6rem\)/);assert.match(css,/--text-title: clamp\(1\.25rem, 2\.4vw, 1\.575rem\)/);assert.match(css,/font-size: 16px/);assert.match(css,/min-height: 44px/);assert.match(css,/prefers-reduced-motion/);assert.doesNotMatch(css,/#(?:da251c|ff4a3d|17253a)\b/i);assert.match(css,/\[data-theme="dark"\]/);
 });
-test('new hero is original optimized art and the old hero component is not mounted',()=>{
-  const source=read('frontend/apps/main/app/page.tsx');assert.match(source,/epe-lagoon-editorial\.webp/);assert.doesNotMatch(source,/HeroArt|hero-art|sckooly|jasab|getquant/i);const bytes=fs.statSync(path.join(root,'frontend/apps/main/public/epe-lagoon-editorial.webp')).size;assert.ok(bytes<500000);assert.match(read('frontend/apps/main/components/brand.tsx'),/style=\{\{ width: markWidth, height: size \}\}/);
+test('hero uses the supplied official logo without cropping or invented artwork',()=>{
+  const source=read('frontend/apps/main/app/page.tsx');assert.match(source,/src="\/brand-logo\.png"/);assert.match(source,/home-hero__art--logo/);assert.doesNotMatch(source,/epe-lagoon-editorial|HeroArt|hero-art|sckooly|jasab|getquant/i);assert.match(read('frontend/apps/main/app/hero-logo.css'),/object-fit: contain/);assert.match(read('frontend/apps/main/components/brand.tsx'),/style=\{\{ width: markWidth, height: size \}\}/);
 });
 test('storage and contact UI disclose actual session and delivery behavior',()=>{
   assert.match(read('frontend/apps/main/components/cookie-banner.tsx'),/essential session cookies/);const privacy=read('frontend/apps/main/app/privacy/page.tsx');assert.match(privacy,/Supabase/);assert.match(privacy,/session cookies/);const contact=read('frontend/apps/main/app/contact/page.tsx');assert.match(contact,/Coming Soon/);assert.match(contact,/does not send or store/);
