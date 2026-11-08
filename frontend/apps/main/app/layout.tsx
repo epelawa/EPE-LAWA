@@ -13,6 +13,7 @@ import { mainNavigation } from "../lib/navigation";
 import { isIndexingAllowed, siteUrl } from "../lib/site";
 import { themeScript } from "../lib/theme";
 import SiteMotion from "../components/site-motion";
+import AuthCallbackErrorRouter from "../components/auth-callback-error-router";
 
 const description =
   "News, community history, local discussion, maps, local business, tourism, radio and Who-is-Who for Epe Division.";
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" className={uiFont.variable}>
       <body>
         <Script strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <AuthCallbackErrorRouter />
         <SiteMotion />
         <a className="skip-link" href="#main">
           Skip to content
