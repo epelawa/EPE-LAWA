@@ -1,7 +1,32 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { ArrowUpRightIcon } from "./icons";
+import FocusedPageControls from "./focused-page-controls";
 
-export default function AccountShell({ eyebrow, title, description, children }: { eyebrow: string; title: string; description: string; children: ReactNode }) {
-  return <section className="auth-page"><aside className="auth-story"><p className="ui-eyebrow">A shared home for Epe</p><div><p className="auth-story__title">A little closer.<br /><em>A lot more connected.</em></p><p className="auth-story__copy">Local stories, shared knowledge, and conversations with the people who make this place home.</p></div><Link className="ui-text-link" href="/about">Get to know EPE LAWA <ArrowUpRightIcon size={16} aria-hidden="true" /></Link></aside><div className="auth-card"><p className="ui-eyebrow">{eyebrow}</p><h1>{title}</h1><p className="auth-description">{description}</p>{children}</div></section>;
+export default function AccountShell({
+  eyebrow,
+  title,
+  description,
+  children,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="auth-page" aria-labelledby="auth-title">
+      <div className="auth-card">
+        <FocusedPageControls />
+        <header className="auth-card__heading">
+          <p className="ui-eyebrow">{eyebrow}</p>
+          <h1 id="auth-title">{title}</h1>
+          <p className="auth-description">{description}</p>
+        </header>
+        <div className="auth-card__content">{children}</div>
+        <p className="auth-home">
+          <Link href="/">Back to EPE LAWA</Link>
+        </p>
+      </div>
+    </section>
+  );
 }

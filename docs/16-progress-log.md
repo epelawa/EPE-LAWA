@@ -72,3 +72,20 @@ No current full all-eight local/preview release pass, provider delivery, or live
 - Node 22.23.4/pnpm 10.34.9 typecheck passed (5/5 tasks); both production app builds passed (2/2 Turbo tasks; local dummy Supabase URL/key only); the full suite reported **129 tests: 128 passed, 0 failed, 1 documented PGlite skip**. The new focused font/license checks passed **2/2**.
 - A loopback-only Chromium smoke checked the public homepage at 1440px, public sign-in at 375px, and staff sign-in at 1440px and 375px. All four returned HTTP 200, computed the same Plus Jakarta Sans family, passed `document.fonts.check`, loaded local WOFF2 assets, and made zero non-loopback requests. Both apps served their full OFL file with HTTP 200 (4,534 bytes). Four interim screenshots are at `/workspace/epe-lawa-release-screenshots/phase2-plus-jakarta/`.
 - These captures verify typography/loading only; they are not final design acceptance. In the inspected base, public sign-in and staff sign-in still show shared footers, so the owner's focused auth/admin chrome and broader page redesign remain open for separate verified steps. No production Auth settings, migrations, database data, or deployment were changed.
+
+
+### 2026-11-08 18:56 WAT — PR #19 merged; production font check
+
+- PR #19 (`feat/plus-jakarta-sans-web`) was merged to `main` at `bca28d59422736fd46e75aa532cfc76ffe3823e` after the exact-commit Vercel preview reached READY. The post-merge production deployment also reached READY; a read-only check of `https://epelawa.vercel.app/` confirmed the served CSS and same-origin Plus Jakarta Sans font assets. No Supabase settings, migrations, or production data were changed.
+
+### 2026-11-08 19:00 WAT — PR #20 auth-shell work started
+
+- The isolated branch `feat/auth-shell-chrome` starts from merged `main` at `bca28d59422736fd46e75aa532cfc76ffe3823e`. Scope is presentation only: centered, branded sign-in/sign-up/recovery screens; focused callback/error chrome; and route-scoped removal of public header/footer. Auth actions, Supabase configuration, migrations, and production data remain untouched.
+
+### 2026-11-08 19:17 WAT — PR #20 local verification
+
+- Replaced the two-column account presentation with a centered responsive member card and shared brand/theme controls. Auth, callback issue, 404, and runtime-error screens hide public navigation/footer while retaining theme controls and recovery actions. The informational storage notice remains visible with its privacy link but now flows after content on focused routes; real connectivity notices also flow rather than covering form controls. Public-page notice behavior is unchanged.
+- Node 22.23.4/pnpm 10.34.9 workspace typecheck passed (5/5 tasks); both web app builds completed (main rebuilt and admin build reused its cache); focused auth/callback/member/notices tests passed **10/10**. The full suite reported **132 tests: 131 passed, 0 failed, 1 documented PGlite skip**.
+- Local production-build Chromium checks covered seven auth/recovery/404 routes at 1440px desktop and 375px mobile: **14/14** route/viewport checks passed. All had expected status/headings, no public chrome, local font ready, no horizontal overflow, no external hosts, and no page errors. The manual theme default/persistence check passed. The privacy notice was `position: static` and did not intersect the content panel on all 14 checks. Eleven fresh screenshots are in `/workspace/epe-lawa-release-screenshots/phase3-auth-shell-final/`.
+- These are local UI/code checks only. No production Supabase settings, migrations, or data were changed; hosted email delivery was not tested.
+- Independent read-only review found no auth/security regression. It noted that the nonblocking storage notice may be below the initial viewport on tall focused screens; this is an intentional tradeoff to keep the notice in document flow rather than covering inputs. The signup form retains its own Privacy link.

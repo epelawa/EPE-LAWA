@@ -12,3 +12,31 @@ body .storage-notice__title { margin-bottom: 4px; font-size: 13px; line-height: 
 body .storage-notice__copy { font-size: 11px; line-height: 1.5; }
 body .storage-notice .ui-actions { margin-top: 8px; gap: 6px; }
 body .storage-notice .btn-primary,body .storage-notice .btn-ghost { min-height: 44px; padding: 8px 12px; font-size: 11px; }
+
+/* These notices are informative, not consent gates: keep focused flows unobstructed. */
+body:has(.auth-page) .storage-notice,
+body:has(.auth-link-issue) .storage-notice,
+body:has(.focused-error-shell) .storage-notice {
+  position: static;
+  inset: auto;
+  z-index: auto;
+  width: min(480px, calc(100% - 32px));
+  margin: 16px auto 24px;
+}
+
+body:has(.auth-page) .toast-region:empty,
+body:has(.auth-link-issue) .toast-region:empty,
+body:has(.focused-error-shell) .toast-region:empty {
+  display: none;
+}
+
+body:has(.auth-page) .toast-region:not(:empty),
+body:has(.auth-link-issue) .toast-region:not(:empty),
+body:has(.focused-error-shell) .toast-region:not(:empty) {
+  position: static;
+  inset: auto;
+  z-index: auto;
+  width: min(480px, calc(100% - 32px));
+  margin: 0 auto 12px;
+  pointer-events: auto;
+}
