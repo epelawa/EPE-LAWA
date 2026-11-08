@@ -137,6 +137,18 @@
 
 /* Layout and reusable editorial language. */
 .site-main { flex: 1; width: 100%; }
+body:has(.auth-page) .site-head,
+body:has(.auth-page) .site-footer,
+body:has(.auth-link-issue) .site-head,
+body:has(.auth-link-issue) .site-footer,
+body:has(.focused-error-shell) .site-head,
+body:has(.focused-error-shell) .site-footer { display: none !important; }
+body:has(.auth-page) .site-main,
+body:has(.focused-error-shell) .site-main { display: grid; min-height: 100dvh; place-items: center; }
+.focused-page-controls { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.focused-page-controls__brand { display: inline-flex; min-height: 44px; align-items: center; text-decoration: none; }
+.focused-page-controls .theme-control { flex: 0 0 auto; }
+.focused-error-shell .focused-page-controls { margin-bottom: 28px; }
 .ep-container,.ui-page { width: min(var(--content-max), calc(100% - var(--gutter) * 2)); margin-inline: auto; }
 .ui-page { padding-block: 48px 88px; }
 .ui-page > * + * { margin-top: 28px; }
