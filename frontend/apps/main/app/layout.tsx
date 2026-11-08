@@ -12,6 +12,7 @@ import CookieBanner from "../components/cookie-banner";
 import { mainNavigation } from "../lib/navigation";
 import { isIndexingAllowed, siteUrl } from "../lib/site";
 import { themeScript } from "../lib/theme";
+import SiteMotion from "../components/site-motion";
 
 const description =
   "News, community history, local discussion, maps, local business, tourism, radio and Who-is-Who for Epe Division.";
@@ -42,6 +43,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" className={uiFont.variable}>
       <body>
         <Script strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <SiteMotion />
         <a className="skip-link" href="#main">
           Skip to content
         </a>

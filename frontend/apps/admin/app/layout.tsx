@@ -9,6 +9,7 @@ import SiteFooter from "../components/site-footer";
 import { mainNavigation } from "../lib/navigation";
 import { siteUrl } from "../lib/site";
 import { themeScript } from "../lib/theme";
+import SiteMotion from "../components/site-motion";
 
 const bodyFont = Inter({
   subsets: ["latin"],
@@ -30,6 +31,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" className={bodyFont.variable}>
       <body>
         <Script strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <SiteMotion />
         <a className="skip-link" href="#skip-target">Skip to content</a>
         <SiteHeader items={navigation} />
         <main className="site-main" id="skip-target" tabIndex={-1} aria-label="Admin workspace content">{children}</main>

@@ -25,6 +25,15 @@ An active, verified staff member with `article.publish` may publish directly wit
 
 No current full all-eight local/preview release pass, provider delivery, or live RLS pass is asserted in this log. A read-only production baseline is recorded below but does not verify this feature branch. No isolated Supabase development branch was created. No production writes are authorized.
 
+### 2026-11-08 — Cobalt and motion polish, local evidence
+
+- The appearance switch, half-width mobile drawer with outside-close behavior, concise navbar lockup, dot-free editorial labels and two-column footer are implemented. The custom Tidegate motif covers initial loading and route fallbacks; scroll sections blur/lift into view with reduced-motion fallbacks.
+- Node 22.23.4: both app TypeScript checks and optimized production builds passed. The complete frontend/backend suite reported **121 tests: 120 passed, 0 failed, 1 skipped**. The skipped case is the documented PostgreSQL exclusion-constraint case unsupported by PGlite.
+- A local Playwright run checked 21 public pages and staff login at 320/375/768/1024/1440px. Theme switching, measured drawer widths (150/177.5/215px), outside-click closure, two footer columns, scroll-transition completion and no horizontal overflow passed; no browser page errors were reported. Initial preloading was observed at every width. Nine anonymous staff routes retained HTTP redirects to login. Reduced motion and a nonblocking preloader without JavaScript were checked.
+- The attempted staff root loading boundary was removed after it changed the auth redirect into a streamed response; `foundation.test.mjs` now passes with the protected-route fallback retained. No protected data was exposed by the fallback.
+- Changed-source credential/payload scanning and an independent read-only review found no credential material, concrete prompt-injection/exfiltration payload, or obvious remaining security regression.
+- These are local UI and automated test results, not a full live-data release pass. Missing local Supabase configuration prevents real member/data workflows; unavailable/error states were not counted as successful authenticated flows. Hosted preview access protection and unavailable GitHub individual check-run permissions remain separate gates. No merge or production deployment was performed.
+
 ## Immediate verification priorities
 
 1. Verify all eight in-scope routes and member authentication journeys.
