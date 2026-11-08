@@ -5,14 +5,13 @@
  * Every canonical URL, sitemap entry, cookie-free CORS header and Open Graph URL reads from
  * here.
  */
-
-const FALLBACK_SITE_URL = "https://epelawa.ng";
+const FALLBACK_SITE_URL = "https://epelawa.vercel.app";
 
 /** Newsroom host. Kept beside the main origin so one file decides every public host. */
 const FALLBACK_NEWS_URL = "https://news.epelawa.ng";
 
 /** Hosts that are safe to index. A preview or staging host is not in this list. */
-const PRODUCTION_HOSTS = ["epelawa.ng", "www.epelawa.ng"];
+const PRODUCTION_HOSTS = ["epelawa.ng", "www.epelawa.ng", "epelawa.vercel.app"];
 
 function parseAbsoluteUrl(value: string | undefined): URL | null {
   if (!value) return null;

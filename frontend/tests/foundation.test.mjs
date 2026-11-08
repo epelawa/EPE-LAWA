@@ -72,7 +72,7 @@ test('main has honest indexable metadata, working public links and security head
       assert.equal(response.headers.get('permissions-policy'), 'camera=(), microphone=(), geolocation=()', path);
       assert.match(response.headers.get('content-security-policy-report-only') || '', /frame-ancestors 'none'/, path);
       assert.equal(response.headers.get('content-security-policy'), null, 'CSP is report-only');
-      assert.equal(response.headers.get('access-control-allow-origin'), 'https://epelawa.ng', path);
+      assert.equal(response.headers.get('access-control-allow-origin'), 'https://epelawa.vercel.app', path);
     }
     const response = await fetch(base);
     assert.equal(response.status, 200);
@@ -92,11 +92,11 @@ test('main has honest indexable metadata, working public links and security head
     }
     assert.doesNotMatch(html, /<meta name="robots" content="[^"]*noindex/i);
     assert.match(html, /<meta name="description" content="[^"]+"/);
-    assert.match(html, /<link rel="canonical" href="https:\/\/epelawa\.ng\/?"/);
+    assert.match(html, /<link rel="canonical" href="https:\/\/epelawa\.vercel\.app\/?"/);
     assert.doesNotMatch(html, /clyvro-verification/, 'unverified third-party verification tag must not ship');
     assert.match(html, /<meta property="og:title"/);
     assert.match(html, /<meta property="og:description"/);
-    assert.match(html, /<meta property="og:image" content="https:\/\/epelawa\.ng\/share\.png"/);
+    assert.match(html, /<meta property="og:image" content="https:\/\/epelawa\.vercel\.app\/share\.png"/);
     assert.match(html, /<meta name="twitter:card" content="summary_large_image"/);
     assert.match(html, /<link rel="icon"/);
     assert.match(html, /href="\/about"/);
@@ -104,7 +104,7 @@ test('main has honest indexable metadata, working public links and security head
     assert.equal(about.status, 200);
     const aboutHtml = await about.text();
     assert.doesNotMatch(aboutHtml, /clyvro-verification/, 'unverified third-party verification tag must not ship');
-    assert.match(aboutHtml, /<link rel="canonical" href="https:\/\/epelawa\.ng\/about"/);
+    assert.match(aboutHtml, /<link rel="canonical" href="https:\/\/epelawa\.vercel\.app\/about"/);
     assert.match(aboutHtml, /href="\/"/);
     assert.match(aboutHtml, /Editorial staff details will appear here once confirmed/i);
     const missing = await fetch(base + '/not-a-real-page');
@@ -112,15 +112,30 @@ test('main has honest indexable metadata, working public links and security head
     assert.match(await missing.text(), /Page not found/);
     const robots = await fetch(base + '/robots.txt');
     assert.equal(robots.status, 200);
-    assert.match(await robots.text(), /Sitemap: https:\/\/epelawa\.ng\/sitemap\.xml/i);
+    assert.match(await robots.text(), /Sitemap: https:\/\/epelawa\.vercel\.app\/sitemap\.xml/i);
     const sitemap = await fetch(base + '/sitemap.xml');
     assert.equal(sitemap.status, 200);
     const xml = await sitemap.text();
     assert.match(xml, /<urlset/);
-    assert.match(xml, /<loc>https:\/\/epelawa\.ng\/<\/loc>/);
-    assert.match(xml, /<loc>https:\/\/epelawa\.ng\/about<\/loc>/);
+    assert.match(xml, /<loc>https:\/\/epelawa\.vercel\.app\/<\/loc>/);
+    assert.match(xml, /<loc>https:\/\/epelawa\.vercel\.app\/about<\/loc>/);
     for (const path of ['/news', '/itan-ilu-mi', '/forum', '/map', '/business-directory', '/tourism', '/radio', '/who-is-who']) {
-      assert.ok(xml.includes(`<loc>https://epelawa.ng${path}</loc>`), `${path} must be indexed as a public module landing page`);
+      assert.ok(xml.includes(`<loc>https://epelawa.vercel.app${path}</loc>`), `${path} must be indexed as a public module landing page`);
+    }
+    const expiredCallback = await fetch(`${base}/auth/callback?error=access_denied&error_code=otp_expired&error_description=Email%20link%20is%20invalid%20or%20has%20expired`, { redirect: 'manual' });
+    assert.equal(expiredCallback.status, 307);
+    const expiredLocation = new URL(expiredCallback.headers.get('location'), base);
+    assert.equal(expiredLocation.pathname, '/auth/link-expired');
+    assert.equal(expiredLocation.search, '', 'raw provider error parameters must be removed');
+    for (const [path, heading] of [['/auth/link-expired', /That email link has expired/], ['/auth/link-problem', /We couldn’t verify that email link/]]) {
+      const issueResponse = await fetch(base + path);
+      assert.equal(issueResponse.status, 200, path);
+      const issueHtml = await issueResponse.text();
+      assert.match(issueHtml, heading, path);
+      assert.match(issueHtml, /Request a fresh verification email/, path);
+      assert.match(issueHtml, /Request a password reset/, path);
+      assert.match(issueHtml, /Return to sign in/, path);
+      assert.doesNotMatch(issueHtml, /otp_expired|access_denied|error_description|Email link is invalid or has expired/i, path);
     }
     for (const [path, width, height] of [['/icon.png', 192, 192], ['/apple-touch-icon.png', 180, 180], ['/share.png', 1200, 630]]) {
       const image = await fetch(base + path);
