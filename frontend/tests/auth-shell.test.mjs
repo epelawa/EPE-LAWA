@@ -6,24 +6,33 @@ const app = new URL("../apps/main/app/", import.meta.url);
 const components = new URL("../apps/main/components/", import.meta.url);
 const read = (base, path) => readFile(new URL(path, base), "utf8");
 
-test("account routes share a centered branded shell, theme control, and no public navigation chrome", async () => {
-  const [shell, controls, styles, globalStyles] = await Promise.all([
+test("member auth routes use a centered branded shell without manual theme controls", async () => {
+  const [shell, controls, styles, globalStyles, rootLayout] = await Promise.all([
     read(components, "account-shell.tsx"),
     read(components, "focused-page-controls.tsx"),
     read(app, "auth/auth.css"),
     read(app, "globals.css"),
+    read(app, "layout.tsx"),
   ]);
 
   assert.match(shell, /className="auth-page"/);
   assert.match(shell, /className="auth-card"/);
-  assert.match(shell, /<FocusedPageControls\s*\/>/);
+  assert.match(shell, /<FocusedPageControls showThemeToggle=\{showThemeToggle\}/);
+  assert.match(shell, /showThemeToggle\?: boolean/);
   assert.match(controls, /BrandLockup size=\{32\} showPlace=\{false\}/);
-  assert.match(controls, /<ThemeToggle\s*\/>/);
-  assert.match(shell, /aria-labelledby="auth-title"/);
+  assert.match(controls, /showThemeToggle \? <ThemeToggle \/> : null/);
   assert.match(styles, /\.auth-page\s*\{[^}]*place-items:\s*center/s);
-  assert.match(styles, /\.auth-card\s*\{[^}]*max-width:\s*480px/s);
+  assert.match(styles, /var\(--storage-notice-height,\s*148px\)/);
+  assert.match(styles, /auth-step-actions\[data-enhanced="false"\] \.auth-step-back/);
+  assert.match(styles, /auth-step-actions\[data-enhanced="true"\]\[data-step="1"\] \.auth-step-back/);
+  assert.match(styles, /auth-step-actions\[data-enhanced="true"\]\[data-total="4"\]\[data-step="3"\] \.auth-step-continue/);
+  assert.match(styles, /@media \(max-height: 600px\)/);
+  assert.match(styles, /\.auth-footnote-links a\s*\{[^}]*min-height:\s*44px/s);
+  assert.doesNotMatch(shell, /className="auth-home"/);
   assert.match(globalStyles, /body:has\(\.auth-page\) \.site-head/);
   assert.match(globalStyles, /body:has\(\.auth-page\) \.site-footer/);
+  assert.match(rootLayout, /themeScript/);
+  assert.match(rootLayout, /strategy="beforeInteractive"/);
 
   for (const route of [
     "login/page.tsx",
@@ -34,10 +43,13 @@ test("account routes share a centered branded shell, theme control, and no publi
   ]) {
     const source = await read(app, route);
     assert.match(source, /<AccountShell\b/, `${route} should use the shared auth shell`);
+    if (route !== "auth/complete/page.tsx") {
+      assert.match(source, /showThemeToggle=\{false\}/, `${route} should hide the manual toggle`);
+    }
   }
 });
 
-test("callback issue, 404, and runtime error screens retain shared controls and hide public chrome", async () => {
+test("callback issue, 404, and runtime error screens keep shared controls and hide public chrome", async () => {
   const [globalStyles, errorPage, notFound, linkIssue, controls] = await Promise.all([
     read(app, "globals.css"),
     read(app, "error.tsx"),
@@ -56,21 +68,27 @@ test("callback issue, 404, and runtime error screens retain shared controls and 
   assert.match(notFound, /<FocusedPageControls\s*\/>/);
   assert.match(linkIssue, /className="auth-link-issue"/);
   assert.match(linkIssue, /<FocusedPageControls\s*\/>/);
-  assert.match(controls, /<ThemeToggle\s*\/>/);
+  assert.match(controls, /showThemeToggle \? <ThemeToggle \/> : null/);
 });
 
-test("storage and connectivity notices do not overlay focused auth or error actions", async () => {
-  const [styles, banner] = await Promise.all([
+test("storage notice stays pinned on forms but reserves space and never blocks focused error actions", async () => {
+  const [styles, authStyles, banner] = await Promise.all([
     read(app, "notice-refinement.css"),
+    read(app, "auth/auth.css"),
     read(components, "cookie-banner.tsx"),
   ]);
 
+  assert.match(styles, /body:has\(\.auth-page\) \.storage-notice\s*\{[^}]*position:\s*fixed/s);
+  assert.match(authStyles, /padding:.*var\(--storage-notice-height,\s*148px\)/s);
+  assert.match(styles, /body:has\(\.auth-link-issue\).*position:\s*static/s);
+  assert.match(styles, /body:has\(\.focused-error-shell\).*position:\s*static/s);
   for (const routeClass of ["auth-page", "auth-link-issue", "focused-error-shell"]) {
-    assert.ok(styles.includes(`body:has(.${routeClass}) .storage-notice`));
     assert.ok(styles.includes(`body:has(.${routeClass}) .toast-region:empty`));
     assert.ok(styles.includes(`body:has(.${routeClass}) .toast-region:not(:empty)`));
   }
-  assert.match(styles, /position:\s*static/);
-  assert.match(banner, /Your theme and this choice stay in your browser/);
-  assert.match(banner, /Privacy notice/);
+  assert.match(banner, /role="region"/);
+  assert.match(banner, /ResizeObserver/);
+  assert.match(banner, /--storage-notice-height/);
+  assert.match(banner, /epelawa_cookie_consent/);
+  assert.doesNotMatch(banner, /role="dialog"/);
 });
