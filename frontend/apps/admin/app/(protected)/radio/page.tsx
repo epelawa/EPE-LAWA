@@ -20,11 +20,32 @@ export default async function RadioAdminPage({ searchParams }: { searchParams: P
   const db = await createClient();
   const { data: allowed, error: capabilityError } = await db.rpc("has_capability", { p_capability: "radio.manage" });
   if (capabilityError || allowed !== true) return <PageFrame className="ui-stack"><PageIntro eyebrow="Staff workspace" title="Radio authoring" description="Manage approved radio programming."/><Notice tone="danger" role="alert">The radio.manage capability is required. No records are shown.</Notice></PageFrame>;
-  const [{ data: programmes, error }, { data: episodes }, { data: schedules }] = await Promise.all([
+  const [
+    { data: programmes, error: programmesError },
+    { data: episodes, error: episodesError },
+    { data: schedules, error: schedulesError },
+  ] = await Promise.all([
     db.from("programmes").select("id,name,description,publication_status,revision").order("updated_at", { ascending: false }).limit(100),
     db.from("episodes").select("id,programme_id,title,slug,description,aired_on,external_url,publication_status,published_at,revision").order("updated_at", { ascending: false }).limit(100),
     db.from("radio_schedule").select("id,programme_id,day_of_week,starts_at,ends_at,note,publication_status,revision").order("day_of_week").order("starts_at").limit(200),
   ]);
+  const error = programmesError;
+  const failedSections = [
+    programmesError ? "programme catalogue" : null,
+    schedulesError ? "broadcast schedule" : null,
+    episodesError ? "episode catalogue" : null,
+  ].filter((section): section is string => section !== null);
+  if (failedSections.length > 0) {
+    return (
+      <PageFrame className="ui-stack">
+        <PageIntro eyebrow="Staff workspace · Radio" title="Radio programme & episode editor" description="Create and maintain approved programming, episodes and the weekly schedule." />
+        {message ? <Notice tone={message.role === "alert" ? "danger" : "success"} role={message.role} aria-live={message.role === "alert" ? "assertive" : "polite"}>{message.text}</Notice> : null}
+        <Notice tone="danger" role="alert" aria-live="assertive">
+          Radio records could not be loaded: {failedSections.join(", ")}. No empty catalogue is inferred and no editing forms are shown. Reload the page to try again.
+        </Notice>
+      </PageFrame>
+    );
+  }
   const options = (_selected: string) => (programmes ?? []).map(p => <option key={p.id} value={p.id}>{p.name}</option>);
   const statusOptions = (_value: string) => statuses.map(s => <option key={s} value={s}>{s}</option>);
   const labelClass = `${field} label`;
