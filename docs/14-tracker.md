@@ -1,6 +1,6 @@
 # EPE-LAWA — Implementation Tracker
 
-**Last updated:** 2026-11-07.
+**Last updated:** 2026-11-09.
 **Scope:** First eight client-approved web sections plus cross-cutting auth, staff access, analytics, publishing, email templates, audit, privacy, accessibility and Playwright.
 **Progress log:** `16-progress-log.md`.
 
@@ -11,15 +11,15 @@
 | Area | Status | Evidence / next gate |
 | --- | --- | --- |
 | Trending News | Partial implementation in worktree | Verify published-only read, private preview, direct authorized publish, stale revision denial and audit in isolated tests. |
-| Itan Ilu Mi / My Community History | Initial route/code exists in worktree; workflow unverified | Verify consent, provenance, private submissions, review and correction/takedown behavior. |
+| Itan Ilu Mi / My Community History | Initial workflow partial; correction/removal explicitly marked Coming Soon in open PR #30 | Focused public/staff History tests 11/11; full suite 140 passed, 0 failed, 1 documented skip. No persistent correction intake or published-record edit/withdraw path was established. Local screenshots are in `pr30-history-correction-coming-soon/`. Next gate: reconcile migrations and design a durable, audited correction path before enabling intake. |
 | Chat Forum / Digital Village Square | Existing schema/initial code; member flows unverified | Verify authenticated participation, reports, reasoned moderation, rate limits and audit. |
 | Map & Navigation | Manual/outbound URL behavior in worktree | Current code generates safe Google Maps search/directions URLs only. No Maps API/Places/geocoding integration is configured or verified; offline maps optional future work. |
 | Epe Business Directory & Marketplace | Existing schema/routes; complete workflows unverified | Verify approved listing, recorded human review, privacy and isolated order/payment gates. Paystack not confirmed operational. |
 | Member auth and recovery | Not verified for release | Test signup, verification, login/logout, recovery, session security and enumeration resistance. |
 | Staff access and analytics | Partial worktree changes; not fully tested | Verify secure staff session, fresh capability check, real query analytics, unavailable-versus-zero and audit. |
 | Transactional email | Templates/configuration not verified | Test branded templates; sender/provider readiness unconfirmed pending authenticated domain and test delivery. |
-| Builds/tests/Playwright | Current release checks not verified | Run typecheck, builds, tests and full Playwright at required widths; record actual results. |
-| Deployment | Old public baseline checked; feature-branch preview unverified | Read-only Playwright on `https://epelawa.vercel.app` showed an older incomplete deployment; see `16-progress-log.md`. Production remained read-only. |
+| Builds/tests/Playwright | Local workspace gates pass for PR #30; complete release Playwright remains outstanding | Node 22.23.4/pnpm 10.34.9 typecheck 5/5, builds 2/2, full tests 140 passed / 0 failed / 1 documented PGlite skip. This does not prove every authenticated module flow. |
+| Deployment | PR #30 open; exact preview is READY but SSO-protected | Preview `epe-lawa-9z8ff7wun-epe-lawa.vercel.app` matches head `ce96a1e`; HTTP request redirects to Vercel SSO. PR summary is CLEAN; individual GitHub check details are inaccessible through the CLI connector. No merge or production database changes. |
 
 | Historical Sites & Tourism | In scope; implementation/verification status not established by this audit | Verify sourced destinations, approval, public fields, visit facts and map handoff. |
 | EPE LAWA Radio | Public route exists; final full-flow verification outstanding | Verify official stream permission/URL/format/playback, truthful status, schedules/archive and staff capabilities. |
