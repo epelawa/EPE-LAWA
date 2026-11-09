@@ -1,6 +1,6 @@
 # EPE-LAWA — Implementation Tracker
 
-**Last updated:** 2026-11-09 11:32 WAT.
+**Last updated:** 2026-11-09 11:35 WAT.
 **Scope:** All eight client-approved web sections plus identity, staff access, analytics, publishing, email templates, audit, privacy, accessibility and Playwright.
 **Progress log:** `16-progress-log.md`.
 
@@ -11,7 +11,7 @@
 | Area | Status | Evidence / next gate |
 | --- | --- | --- |
 | Foundation and same-origin staff routing | Merged baseline; hosted route work previously verified | PR #22 adds `/admin/*` on `https://epelawa.vercel.app/` with server-side session/capability checks and host-only `__Host` cookies. Keep this boundary; validate any new action independently. |
-| Member auth visuals and flows | Auth reference redesign ready for PR #24; not live | PR #23 staged forms are merged/deployed. Current local branch retains those flows and adds the `266649.jpg` composition, accessible password toggles and disabled Google Coming Soon state. Check preview before merge. |
+| Member auth visuals and flows | PR #24 open; not live | PR #23 staged forms are merged/deployed. PR #24 (`https://github.com/epelawa/EPE-LAWA/pull/24`) adapts the `266649.jpg` composition, adds accessible password toggles and disabled Google Coming Soon state. Its hosted preview is pending CLI verification. |
 | Member dashboard and account settings | Remaining | Dashboard/account route and interaction completeness still needs an explicit route/feature audit; do not imply a complete account center based on auth screens alone. |
 | Trending News | Partial; production workflow blocked by schema drift | Published-only routes and private draft/publish policy have local tests. Verify the newsroom create/edit/publish actions against reconciled schema and isolated data. News reference image `253590.jpg` is unavailable; follow the written design direction without claiming an exact image match. |
 | Itan Ilu Mi / My Community History | Partial; final end-to-end workflow remains | Private contribution, consent/provenance, review and approved-publication rules have local/schema tests. Verify the full staff review lifecycle after migration reconciliation. |
@@ -26,7 +26,7 @@
 | Local build/test/auth viewport gate | Passed for current auth branch | Node 22.23.4/pnpm 10.34.9: typecheck **5/5**, builds **2/2**, full suite **139: 138 pass, 0 fail, 1 documented skip**. Auth Playwright: **20 route/viewport checks + 9 interaction checks** at 320/375/768/1024/1440px; no overflow, notice overlap, external requests or browser errors. |
 | Screenshots | Captured from local production build | `/workspace/epe-lawa-release-screenshots/phase6-auth-reference-final/` includes auth screens at the required widths and a password-step state. They are local preview, not hosted/live screenshots. |
 | Production migrations/schema | Blocked pending local reconciliation | Read-only CLI audit found duplicate version `20261107213000`, remote ledger/name conflicts, helper/RLS drift and stack-specific semantic risks. No migration has been applied. The owner authorized application only after corrections and complete safe review. |
-| Hosted preview/merge for auth redesign | Pending | Open PR #24 via CLI, check its exact Vercel deployment with CLI, inspect GitHub checks via the authenticated wrapper and merge normally only when healthy. Do not use browser login. |
+| Hosted preview/merge for PR #24 | Pending | Inspect the exact latest Vercel deployment with CLI and GitHub status via the authenticated wrapper. Merge normally only if preview and required checks are healthy. Do not use browser login. |
 
 ## Cross-cutting release rules
 
@@ -34,8 +34,7 @@ Only the verified owner's identity may receive primary-admin access; do not put 
 
 ## Next actions
 
-1. Commit and open the focused auth redesign as PR #24, including fresh docs and screenshot paths.
-2. Verify the exact hosted preview/check status through CLI; merge only if it is healthy.
-3. Reapply the separated newsroom create-gate change on a new branch and verify it as its own PR.
-4. Finish the nine-stack migration corrections, including duplicate version/ledger reconciliation, then run complete local schema/tests and an explicit CLI dry-run before any owner-authorized production migration.
-5. Continue one independently tested PR at a time through the eight modules and attach truthful local/hosted screenshots for each visual step.
+1. Verify the exact PR #24 preview and check state through CLI; merge only if it is healthy.
+2. Reapply the separated newsroom create-gate change on a new branch and verify it as its own PR.
+3. Finish the nine-stack migration corrections, including duplicate version/ledger reconciliation, then run complete local schema/tests and an explicit CLI dry-run before any owner-authorized production migration.
+4. Continue one independently tested PR at a time through the eight modules and attach truthful local/hosted screenshots for each visual step.

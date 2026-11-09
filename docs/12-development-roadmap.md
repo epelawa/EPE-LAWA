@@ -42,3 +42,8 @@ These are future roadmap items, not a reason to omit them or imply they are alre
 ## Known blockers and release rules
 
 Production Supabase currently has remote migration-ledger/name conflicts and schema drift found by read-only CLI inspection. No migration, auth-setting or unrelated production-data writes have been made in this batch. Reconcile the migration files and data/authorization semantics locally, run local schema/tests and CLI dry-run/ledger review, then apply only the owner-authorized migration plan. Do not claim a hosted preview, production build or provider-delivery success for a branch until it has been checked.
+
+
+### 2026-11-09 11:35 WAT — PR #24 opened
+
+PR #24 is open at https://github.com/epelawa/EPE-LAWA/pull/24 on `feat/auth-reference-redesign`. Its initial implementation commit is `5a6ca448f941992a37cdcae006c16bd09a7f2453`; this branch also has a follow-up documentation update in progress. The Vercel preview and hosted checks have not yet been inspected. Continue through the authenticated GitHub CLI wrapper and read-only Vercel CLI only; do not browser-login or merge until the exact latest preview/check state is healthy.
