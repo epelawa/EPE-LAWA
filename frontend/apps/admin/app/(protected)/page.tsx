@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "../../lib/supabase";
+import { adminHref } from "../../lib/admin-path";
 import { PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "@epelawa/ui";
 
 type MetricState = { value: number | null; note: string | null };
@@ -39,12 +40,12 @@ export default async function DashboardPage() {
         <div className="ui-row" style={{justifyContent:"space-between",alignItems:"baseline"}}><span className="ui-eyebrow">Current queue</span><StatusBadge tone={item.value === null ? "warning" : "neutral"}>{item.value === null ? "Unavailable" : "Verified count"}</StatusBadge></div>
         <p className="ui-number" style={{margin:0,fontSize:"1.75rem",fontWeight:700}}>{displayMetric(item)}</p>
         <h2 className="ui-item-title" style={{margin:0,fontSize:"1rem"}}>{label}</h2><p className="ui-muted" style={{margin:0}}>{item.note || detail}</p>
-        {item.value !== null ? <Link href={href} className="ui-text-link">Open workspace</Link> : null}
+        {item.value !== null ? <Link href={adminHref(href)} className="ui-text-link">Open workspace</Link> : null}
       </Panel>)}
     </section>
     <section className="ui-stack" style={{marginTop:32}}><SectionHeading eyebrow="Editorial" title="Newsroom actions" /><Panel>
       <p className="ui-prose">Create and save a private draft, then publish the current version directly when ready. The database checks verified staff access, article.publish permission and the current revision, and records each publication in the audit log.</p>
-      <div className="ui-actions"><Link href="/newsroom/new" className="btn-primary">Create draft</Link><Link href="/newsroom" className="btn-secondary">Open newsroom</Link></div>
+      <div className="ui-actions"><Link href={adminHref("/newsroom/new")} className="btn-primary">Create draft</Link><Link href={adminHref("/newsroom")} className="btn-secondary">Open newsroom</Link></div>
     </Panel></section>
     <p className="admin-dashboard-note" style={{marginTop:24}}>Counts are requested from the database on each private dashboard view. Personal member details, delivery addresses, payment data and private reports are not shown here.</p>
   </PageFrame>;

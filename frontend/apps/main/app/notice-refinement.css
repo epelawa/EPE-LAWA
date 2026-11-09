@@ -40,3 +40,25 @@ body:has(.focused-error-shell) .toast-region:not(:empty) {
   margin: 0 auto 12px;
   pointer-events: auto;
 }
+
+/* Staff tools are private pages too; notices must stay visible without covering controls. */
+body:has(.admin-shell) .storage-notice {
+  position: static;
+  inset: auto;
+  z-index: auto;
+  width: min(480px, calc(100% - 32px));
+  margin: 16px auto 24px;
+}
+
+body:has(.admin-shell) .toast-region:empty {
+  display: none;
+}
+
+body:has(.admin-shell) .toast-region:not(:empty) {
+  position: static;
+  inset: auto;
+  z-index: auto;
+  width: min(480px, calc(100% - 32px));
+  margin: 0 auto 12px;
+  pointer-events: auto;
+}

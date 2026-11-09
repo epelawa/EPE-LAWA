@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "../../../lib/supabase";
+import { adminHref } from "../../../lib/admin-path";
 
 const val = (form: FormData, key: string) => {
   const value = form.get(key);
@@ -12,9 +13,9 @@ const val = (form: FormData, key: string) => {
 const uuid = (value: string) => /^[0-9a-f-]{36}$/i.test(value);
 
 function finish(error?: string): never {
-  revalidatePath("/people");
+  revalidatePath(adminHref("/people"));
   revalidatePath("/who-is-who");
-  redirect(`/people${error ? `?error=${encodeURIComponent(error)}` : "?updated=1"}`);
+  redirect(adminHref(`/people${error ? `?error=${encodeURIComponent(error)}` : "?updated=1"}`));
 }
 
 export async function savePerson(form: FormData): Promise<void> {

@@ -7,9 +7,6 @@
  */
 const FALLBACK_SITE_URL = "https://epelawa.vercel.app";
 
-/** Newsroom host. Kept beside the main origin so one file decides every public host. */
-const FALLBACK_NEWS_URL = "https://news.epelawa.ng";
-
 /** Hosts that are safe to index. A preview or staging host is not in this list. */
 const PRODUCTION_HOSTS = ["epelawa.ng", "www.epelawa.ng", "epelawa.vercel.app"];
 
@@ -25,16 +22,12 @@ function parseAbsoluteUrl(value: string | undefined): URL | null {
 }
 
 const configuredSite = parseAbsoluteUrl(process.env.NEXT_PUBLIC_SITE_URL);
-const configuredNews = parseAbsoluteUrl(process.env.NEXT_PUBLIC_NEWS_URL);
 
-/** Origin without a trailing slash, e.g. `https://epelawa.ng`. */
+/** Canonical origin without a trailing slash, e.g. `https://epelawa.vercel.app`. */
 export const siteUrl: string = configuredSite ? configuredSite.origin : FALLBACK_SITE_URL;
 
-/**
- * Newsroom origin without a trailing slash. `NEXT_PUBLIC_NEWS_URL` was documented in
- * `.env.example` but nothing read it, so the value in Vercel had no effect until now.
- */
-export const newsUrl: string = configuredNews ? configuredNews.origin : FALLBACK_NEWS_URL;
+/** Compatibility alias: News routes share the canonical host and live under `/news`. */
+export const newsUrl: string = siteUrl;
 
 /** Absolute URL for a path, e.g. `absoluteUrl("/about")`. */
 export function absoluteUrl(pathname: string): string {

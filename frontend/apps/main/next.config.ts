@@ -4,6 +4,7 @@ import { siteUrl } from "./lib/site";
 const nextConfig: NextConfig = {
   // @epelawa/ui ships TypeScript source so the apps compile one copy of it.
   transpilePackages: ["@epelawa/ui"],
+  env: { NEXT_PUBLIC_ADMIN_BASE_PATH: "/admin" },
   allowedDevOrigins: ["*.e2b.app"],
   async headers() {
     return [{

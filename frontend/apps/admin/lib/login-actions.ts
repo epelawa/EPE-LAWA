@@ -2,6 +2,7 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { safeAdminNextPath } from "./admin-path";
 import { signInAdminWithPassword } from "./supabase-access";
 
 export type LoginState = { error?: string };
@@ -28,5 +29,6 @@ export async function signInAdmin(_previous: LoginState, formData: FormData): Pr
     },
   });
   if (!result.allowed) return { error: "Sign-in failed. Check your details or contact an administrator." };
-  redirect("/");
+
+  redirect(safeAdminNextPath(formData.get("next")));
 }

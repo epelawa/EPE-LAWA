@@ -1,5 +1,5 @@
-const FALLBACK_SITE_URL = "https://admin.epelawa.ng";
-const PRODUCTION_HOSTS = ["admin.epelawa.ng", "www.admin.epelawa.ng"];
+const FALLBACK_SITE_URL = "https://epelawa.vercel.app";
+const PRODUCTION_HOSTS = ["epelawa.vercel.app"];
 
 function parseAbsoluteUrl(value: string | undefined): URL | null {
   if (!value) return null;

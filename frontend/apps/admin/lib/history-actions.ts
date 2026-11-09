@@ -1,8 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { redirect as nextRedirect } from "next/navigation";
 import { createClient } from "./supabase";
+import { adminHref } from "./admin-path";
+
+function staffRedirect(path: string): never {
+  nextRedirect(adminHref(path));
+}
 
 export async function decideHistoryContribution(formData: FormData): Promise<void> {
   const id = formData.get("contributionId");
@@ -14,13 +19,13 @@ export async function decideHistoryContribution(formData: FormData): Promise<voi
   const publicSourceUrl = formData.get("publicSourceUrl");
   if (typeof id !== "string" || !/^[0-9a-f-]{36}$/i.test(id) ||
       !["needs_revision", "rejected", "published"].includes(String(decision))) {
-    redirect("/itan-ilu-mi/review?result=invalid");
+    staffRedirect("/itan-ilu-mi/review?result=invalid");
   }
   if (decision === "published" && (typeof publicAccount !== "string" || publicAccount.trim().length < 20 || publicAccount.trim().length > 20000)) {
-    redirect("/itan-ilu-mi/review?result=missing_public_text");
+    staffRedirect("/itan-ilu-mi/review?result=missing_public_text");
   }
   if (decision === "published" && (typeof publicCitation !== "string" || publicCitation.trim().length < 3 || publicCitation.trim().length > 1000)) {
-    redirect("/itan-ilu-mi/review?result=missing_public_text");
+    staffRedirect("/itan-ilu-mi/review?result=missing_public_text");
   }
   if ((publicFamilyName !== null && typeof publicFamilyName !== "string") ||
       (typeof publicFamilyName === "string" && publicFamilyName.trim().length > 180) ||
@@ -31,7 +36,7 @@ export async function decideHistoryContribution(formData: FormData): Promise<voi
       (publicSourceUrl !== null && typeof publicSourceUrl !== "string") ||
       (typeof publicSourceUrl === "string" && publicSourceUrl.trim().length > 1000) ||
       (typeof publicSourceUrl === "string" && publicSourceUrl.trim() !== "" && !/^https:\/\//i.test(publicSourceUrl.trim()))) {
-    redirect("/itan-ilu-mi/review?result=invalid");
+    staffRedirect("/itan-ilu-mi/review?result=invalid");
   }
 
   let resultError = false;
@@ -39,7 +44,7 @@ export async function decideHistoryContribution(formData: FormData): Promise<voi
     const supabase = await createClient();
     const capability = await supabase.rpc("has_capability", { p_capability: "history.review" });
     if (capability.error || capability.data !== true) {
-      redirect("/itan-ilu-mi/review?result=denied");
+      staffRedirect("/itan-ilu-mi/review?result=denied");
     }
     const { error } = await supabase.rpc("history_contribution_decide", {
       p_contribution_id: id,
@@ -58,7 +63,7 @@ export async function decideHistoryContribution(formData: FormData): Promise<voi
     console.error("history decision unavailable");
   }
 
-  revalidatePath("/itan-ilu-mi/review");
+  revalidatePath(adminHref("/itan-ilu-mi/review"));
   revalidatePath("/itan-ilu-mi");
-  redirect(`/itan-ilu-mi/review?result=${resultError ? "stale" : "saved"}`);
+  staffRedirect(`/itan-ilu-mi/review?result=${resultError ? "stale" : "saved"}`);
 }
