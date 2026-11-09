@@ -21,9 +21,9 @@
 | Member auth and recovery | Not verified for release | Test signup, verification, login/logout, recovery, session security and enumeration resistance. |
 | Staff access and analytics | Partial worktree changes; not fully tested | Verify secure staff session, fresh capability check, real query analytics, unavailable-versus-zero and audit. |
 | Transactional email | Templates/configuration not verified | Test branded templates; sender/provider readiness unconfirmed pending authenticated domain and test delivery. |
-| Public contact and correction intake | Intentionally unavailable; privacy fix prepared on `fix/public-contact-privacy` | Removed the non-delivering public form/action and private mailbox link. Contact is **not operational**: no safe persistent message destination is configured. About, Guidelines, Privacy, Terms and `security.txt` disclose this; do not claim messages are received or stored. |
+| Public contact and correction intake | Intentionally unavailable; PR #28 open for review | Removed the non-delivering public form/action and private mailbox link. Contact is **not operational**: no safe persistent message destination is configured. About, Contact, Guidelines, Privacy, Terms and `security.txt` disclose this; the security file has no `Contact:` field while no report destination exists. |
 | Builds/tests/local route checks | Focused local gates passed for this privacy change; full release suite remains outstanding | Node 22.23.4/pnpm 10.34.9: typecheck 5/5; forced app builds 2/2; full suite 139 tests (138 passed, 0 failed, 1 documented PGlite skip). Six route checks returned HTTP 200; five rendered pages contain no primary-admin email/mailto, and Contact has no form. Full all-eight Playwright/accessibility release pass remains outstanding. |
-| Deployment | Feature-branch preview pending | Check the exact PR commit with the Vercel CLI; production Supabase and user data remain read-only. |
+| Deployment | Vercel CLI reported preview READY for code commit `03e843b`; PR #28 remains open | Deployment `epe-lawa-4wgt8y7ij-epe-lawa.vercel.app` is protected by SSO (HTTP 302), so hosted visuals were not reviewed. GitHub check rollup/check-run/status APIs return 403 for this integration; do not claim the individual checks passed. Production Supabase and user data remain read-only. |
 
 ## Cross-cutting release rules
 
@@ -38,7 +38,7 @@ The contact status page does not receive or store messages. Keep request intake 
 
 ## Known status
 
-A supplied Vercel log documents an older `main` build failure at `8885e16` from unresolved helper imports and Turbo-filtered environment variables. Helpers now exist in the worktree, but a current hosted preview is not thereby proven. The public alias returned older site content and does not verify this branch. No isolated Supabase development branch was created. Email sender authentication and Paystack setup remain unconfirmed. The map page does not use a configured Google Maps API, Places or geocoding integration.
+A supplied Vercel log documents an older `main` build failure at `8885e16` from unresolved helper imports and Turbo-filtered environment variables. Helpers now exist in the worktree; PR #28's code commit preview was verified READY with the Vercel CLI, but the hosted page redirects to SSO and GitHub check details are unavailable to this integration. The public production alias is not used as proof of this branch. No isolated Supabase development branch was created. Email sender authentication and Paystack setup remain unconfirmed. The map page does not use a configured Google Maps API, Places or geocoding integration.
 
 ## Next actions
 

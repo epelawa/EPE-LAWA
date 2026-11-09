@@ -150,3 +150,10 @@ Visually inspected local full-page production-mode captures at mobile (375×812 
 - Terms: `375x812-fullpage-terms.png`, `1440x900-fullpage-terms.png`.
 
 Visual review found two separate follow-ups: the shared footer brand lockup still shows “EPE DIVISION,” and the fixed preference notice overlaps some lower-page copy until dismissed. They are not included in this contact-privacy change. Production Supabase settings, migrations, user data and deployments were not changed. The exact Vercel preview and PR status remain pending.
+
+
+### 2026-11-09 13:31 WAT — PR #28 opened; exact code-commit preview checked
+
+PR #28 is OPEN for owner review at https://github.com/epelawa/EPE-LAWA/pull/28. The initial code commit is `03e843b51263ac29e7bf2ff447106633cd4d21fa`; author and committer are both `EPE LAWA <info.epelawa@gmail.com>`. The PR summary reports `UNSTABLE`, and no merge was attempted.
+
+Read-only Vercel CLI `list` metadata matched the exact SHA, PR 28 and branch `fix/public-contact-privacy`; `vercel inspect` confirmed deployment `dpl_5gRwUKWmq5NxdqtNye7VdUy7mi83` is **READY** at `https://epe-lawa-4wgt8y7ij-epe-lawa.vercel.app`. A direct HTTP request to its homepage returned **302** to Vercel SSO, so no hosted visual review was possible. The mobile/desktop local screenshots listed above are the visual evidence. GitHub CLI GraphQL status-rollup and REST check-run/commit-status calls returned **403 Resource not accessible by integration**, so individual GitHub checks are not certified as passing. This deployment result is for code commit `03e843b`; a later documentation-only head must be checked separately. Production Supabase, migrations, settings and user content remain unchanged.
