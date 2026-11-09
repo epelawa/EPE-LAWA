@@ -19,6 +19,9 @@ function sessionCookieName(index: number | undefined): string {
   return index === undefined ? ADMIN_COOKIE : `${ADMIN_COOKIE}.${index}`;
 }
 
+const SESSION_COOKIE_CHUNK_SIZE = 4000;
+const MAX_SESSION_COOKIE_CHUNKS = 8;
+
 type CookieLike = {
   name: string;
   value: string;
@@ -30,7 +33,7 @@ type CookieStoreLike = {
   setAll: (cookies: CookieLike[], headers: Record<string, string>) => void;
 };
 
-type SessionValue = {
+export type AdminSessionValue = {
   access_token: string;
   refresh_token?: string;
   token_type?: string;
@@ -39,30 +42,104 @@ type SessionValue = {
   user?: { id: string; aud?: string };
 };
 
-function parseSession(value: string | undefined): SessionValue | null {
+function parseSession(value: string | undefined): AdminSessionValue | null {
   if (!value) return null;
   try {
     const encoded = value.startsWith("base64-") ? value.slice("base64-".length) : value;
     if (!encoded || !/^[A-Za-z0-9_-]+$/.test(encoded)) return null;
     const parsed: unknown = JSON.parse(Buffer.from(encoded, "base64url").toString("utf8"));
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
-    const candidate = parsed as Partial<SessionValue>;
+    const candidate = parsed as Partial<AdminSessionValue>;
     if (typeof candidate.access_token !== "string" || !candidate.access_token) return null;
     if (candidate.user !== undefined &&
         (!candidate.user || typeof candidate.user !== "object" || Array.isArray(candidate.user) ||
          typeof candidate.user.id !== "string")) return null;
-    return candidate as SessionValue;
+    return candidate as AdminSessionValue;
   } catch {
     return null;
   }
 }
 
-function serializeSession(value: SessionValue): string {
+function serializeSession(value: AdminSessionValue): string {
   return Buffer.from(JSON.stringify(value)).toString("base64url");
+}
+
+/** Read the host-only session cookie, joining numbered chunks when needed. */
+export function readAdminSessionFromCookies(
+  cookies: readonly { name: string; value: string }[],
+): AdminSessionValue | null {
+  const baseCookies = cookies.filter((cookie) => cookie.name === ADMIN_COOKIE);
+  if (baseCookies.length !== 1) return null;
+
+  const baseValue = baseCookies[0]?.value;
+  if (!baseValue) return null;
+
+  // A valid base cookie is complete; ignore and let the next write clean stale chunks.
+  const baseSession = parseSession(baseValue);
+  if (baseSession) return baseSession;
+
+  const prefix = `${ADMIN_COOKIE}.`;
+  const chunks = new Map<number, string>();
+  for (const cookie of cookies) {
+    if (!cookie.name.startsWith(prefix)) continue;
+    const suffix = cookie.name.slice(prefix.length);
+    if (!/^[1-9]\d*$/.test(suffix)) return null;
+    const index = Number(suffix);
+    if (!Number.isSafeInteger(index) || index >= MAX_SESSION_COOKIE_CHUNKS || chunks.has(index)) {
+      return null;
+    }
+    chunks.set(index, cookie.value);
+  }
+
+  if (chunks.size === 0) return null;
+  const lastIndex = Math.max(...chunks.keys());
+  if (chunks.size !== lastIndex) return null;
+
+  const value = [baseValue];
+  for (let index = 1; index <= lastIndex; index += 1) {
+    const chunk = chunks.get(index);
+    if (chunk === undefined) return null;
+    value.push(chunk);
+  }
+  return parseSession(value.join(""));
 }
 
 function cookieOptions(secure: boolean): Record<string, unknown> {
   return { path: "/", httpOnly: true, secure, sameSite: "lax" as const };
+}
+
+function sessionCookieEntries(
+  value: string,
+  maxAge: number,
+  secure: boolean,
+  existingCookies: readonly CookieLike[],
+): CookieLike[] | null {
+  if (!value) return null;
+  const chunks: string[] = [];
+  for (let offset = 0; offset < value.length; offset += SESSION_COOKIE_CHUNK_SIZE) {
+    chunks.push(value.slice(offset, offset + SESSION_COOKIE_CHUNK_SIZE));
+  }
+  if (chunks.length === 0 || chunks.length > MAX_SESSION_COOKIE_CHUNKS) return null;
+
+  const entries = chunks.map((chunk, index) => ({
+    name: sessionCookieName(index === 0 ? undefined : index),
+    value: chunk,
+    options: { ...cookieOptions(secure), maxAge },
+  }));
+  const activeNames = new Set(entries.map((entry) => entry.name));
+  const staleNames = new Set(
+    existingCookies
+      .map((cookie) => cookie.name)
+      .filter((name) => name.startsWith(`${ADMIN_COOKIE}.`) && !activeNames.has(name)),
+  );
+  for (const name of staleNames) {
+    entries.push({
+      name,
+      value: "",
+      options: { ...cookieOptions(secure), maxAge: 0 },
+    });
+  }
+  return entries;
 }
 
 /**
@@ -145,7 +222,7 @@ export async function signInAdminWithPassword(
   }
   if (!url || !key) return { allowed: false };
 
-  let session: SessionValue | null = null;
+  let session: AdminSessionValue | null = null;
   try {
     const tokenResp = await fetch(`${url}/auth/v1/token?grant_type=password`, {
       cache: "no-store",
@@ -154,7 +231,7 @@ export async function signInAdminWithPassword(
       body: JSON.stringify({ email: normalizedEmail, password, gotrue_meta_security: {} }),
     });
     if (!tokenResp.ok) return { allowed: false };
-    session = (await tokenResp.json()) as SessionValue;
+    session = (await tokenResp.json()) as AdminSessionValue;
     const sessionUserId = session.user?.id;
     const accessToken = session.access_token;
     if (typeof accessToken !== "string" || !accessToken || typeof sessionUserId !== "string" || !sessionUserId) return { allowed: false };
@@ -244,15 +321,10 @@ export async function signInAdminWithPassword(
       expires_at: expiresAt,
     });
 
-    const cookies: CookieLike[] = [];
     const maxAge = Math.max(expiresAt - Math.floor(Date.now() / 1000), 0);
-    cookies.push({
-      name: ADMIN_COOKIE,
-      value,
-      options: { ...cookieOptions(secure), maxAge },
-    });
-
-    cookieStore.setAll(cookies, { "Cache-Control": "no-store" });
+    const cookieEntries = sessionCookieEntries(value, maxAge, secure, cookieStore.getAll());
+    if (!cookieEntries) throw new Error("Admin session cookie payload is too large");
+    cookieStore.setAll(cookieEntries, { "Cache-Control": "no-store" });
     return { allowed: true };
   } catch {
     // On any failure, attempt logout to clear partial state.
@@ -287,14 +359,7 @@ export async function signOutAdminSession(
     c.name === ADMIN_COOKIE || c.name.startsWith(`${ADMIN_COOKIE}.`),
   );
 
-  let accessToken: string | undefined;
-  for (const c of adminCookies) {
-    const session = parseSession(c.value);
-    if (session?.access_token) {
-      accessToken = session.access_token;
-      break;
-    }
-  }
+  const accessToken = readAdminSessionFromCookies(cookies)?.access_token;
 
   let revoked = false;
   if (accessToken && isPublishableKey(key) && isSecureUrl(url) && url && key) {
@@ -344,10 +409,7 @@ export async function getAdminAccessForSession(
   if (!url || !key) return { allowed: false, userId: null };
 
   const cookies = cookieStore.getAll();
-  const adminCookie = cookies.find((c) => c.name === ADMIN_COOKIE);
-  if (!adminCookie) return { allowed: false, userId: null };
-
-  const session = parseSession(adminCookie.value);
+  const session = readAdminSessionFromCookies(cookies);
   if (!session?.access_token || !session.user?.id) {
     return { allowed: false, userId: null };
   }
@@ -356,7 +418,7 @@ export async function getAdminAccessForSession(
   const expired =
     session.expires_at !== undefined && session.expires_at <= Math.floor(Date.now() / 1000);
 
-  let refreshedSession: SessionValue | null = null;
+  let refreshedSession: AdminSessionValue | null = null;
 
   // If expired, refresh the token.
   if (expired && session.refresh_token) {
@@ -368,7 +430,7 @@ export async function getAdminAccessForSession(
         body: JSON.stringify({ refresh_token: session.refresh_token }),
       });
       if (refreshResp.ok) {
-        refreshedSession = (await refreshResp.json()) as SessionValue;
+        refreshedSession = (await refreshResp.json()) as AdminSessionValue;
         if (typeof refreshedSession.access_token !== "string" || !refreshedSession.access_token) {
           return { allowed: false, userId: null };
         }
@@ -435,28 +497,8 @@ export async function getAdminAccessForSession(
       });
       const maxAge = Math.max(expiresAt - Math.floor(Date.now() / 1000), 0);
 
-      // Chunk large sessions across multiple cookies.
-      const chunkSize = 4000;
-      const valueStr = value;
-      const chunks: string[] = [];
-      for (let i = 0; i < valueStr.length; i += chunkSize) {
-        chunks.push(valueStr.slice(i, i + chunkSize));
-      }
-
-      const setCookies: CookieLike[] = [];
-      setCookies.push({
-        name: ADMIN_COOKIE,
-        value: chunks[0] ?? "",
-        options: { ...cookieOptions(secure), maxAge },
-      });
-      for (let i = 1; i < chunks.length; i++) {
-        setCookies.push({
-          name: sessionCookieName(i),
-          value: chunks[i],
-          options: { ...cookieOptions(secure), maxAge },
-        });
-      }
-
+      const setCookies = sessionCookieEntries(value, maxAge, secure, cookieStore.getAll());
+      if (!setCookies) return { allowed: false, userId: null };
       cookieStore.setAll(setCookies, { "Cache-Control": "no-store" });
     } catch {
       return { allowed: false, userId: null };
