@@ -33,3 +33,15 @@ Do not mark any gate complete without evidence. No commit, push or merge is impl
 ## Known status
 
 A supplied Vercel log documents an older `main` build failure at `8885e16` from unresolved helper imports and Turbo-filtered environment variables. Helpers now exist in the worktree, but a current build and preview have not thereby been proven. The public alias returned older site content and does not verify this branch. No isolated Supabase development branch was created. Email sender authentication and Paystack setup remain unconfirmed. The map page does not use a configured Google Maps API, Places or geocoding integration.
+
+
+### 2026-11-09 11:45 WAT — Independent newsroom gate tested locally
+
+Current checkout is `fix/newsroom-create-access`, based on `origin/main` at `cf7c8f0`. The independent RLS-scoped newsroom create-gate change is restored from the stash and remains local/unpushed while PR #24 check access is unresolved. Focused gate tests passed **2/2**; workspace typecheck **5/5**, builds **2/2**, suite **141 tests: 140 pass, 0 fail, 1 documented skip**. No production Supabase writes.
+
+A five-width unauthenticated route check resolves `/admin/newsroom/new` to `/admin/login?next=%2Fadmin%2Fnewsroom%2Fnew` at 320/375/768/1024/1440px, with safe return path, no horizontal overflow, no external requests and no page errors. The staff login itself still has vertical overflow at every tested height; the storage notice falls below the viewport, and at 320×568 the sign-in card’s lower controls are clipped. Screenshots are local-only in `/workspace/epe-lawa-release-screenshots/phase7-admin-gate-local/`. Track this as a separate future layout fix, not part of the newsroom permission-gate change.
+
+PR #24 remains open; its current head `2be5d84` has a READY Vercel preview at `https://epe-lawa-37s0p3yom-epe-lawa.vercel.app`, but unauthenticated access redirects to Vercel SSO and GitHub status endpoints return 403. Do not merge or attempt browser login; continue independent local work.
+
+
+PR #24’s isolated auth-reference branch gate result was recovered from its completed CLI run: `pnpm typecheck` and production `pnpm build` completed successfully; the full test suite reported **139 total, 138 passed, 0 failed, 1 documented skip**. This is distinct from the current newsroom-gate branch’s 141-test run. Hosted GitHub check visibility remains blocked by 403; no merge was made.
