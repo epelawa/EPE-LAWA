@@ -14,7 +14,7 @@ function evaluateIndexing(extraEnv = {}) {
     encoding: 'utf8',
     env: {
       ...process.env,
-      NEXT_PUBLIC_SITE_URL: 'https://epelawa.ng',
+      NEXT_PUBLIC_SITE_URL: 'https://epelawa.vercel.app',
       NODE_ENV: 'production',
       VERCEL_ENV: 'preview',
       ALLOW_INDEXING: '',
@@ -27,6 +27,24 @@ function evaluateIndexing(extraEnv = {}) {
 
 test('Vercel preview stays noindex even when it inherits the production canonical URL', () => {
   assert.equal(evaluateIndexing(), 'false');
+});
+
+test('News uses the canonical site origin even if a legacy separate-host variable is present', () => {
+  const result = spawnSync(process.execPath, [
+    '--experimental-strip-types',
+    '--input-type=module',
+    '-e',
+    `import { newsUrl, siteUrl } from ${JSON.stringify(siteModule)}; process.stdout.write(siteUrl + '\\n' + newsUrl);`,
+  ], {
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      NEXT_PUBLIC_SITE_URL: 'https://epelawa.vercel.app',
+      NEXT_PUBLIC_NEWS_URL: 'https://news.epelawa.ng',
+    },
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(result.stdout.trim().split('\n'), ['https://epelawa.vercel.app', 'https://epelawa.vercel.app']);
 });
 
 test('explicit indexing override remains intentional and takes precedence over preview guard', () => {
