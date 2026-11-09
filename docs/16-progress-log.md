@@ -177,3 +177,10 @@ No current full all-eight local/preview release pass, provider delivery, or live
 - Final local production-mode Chromium fixtures: 320×568 clean/error, 375×568 error, 320×640 error and a 320×480 scroll-fallback geometry exercise. At 320×568 and 375×568 there is no page overflow or card/submit/switch overlap with the fixed storage notice; 320×640 remains centered. The error text was injected locally for screenshotting; no sign-in credentials were submitted. Captures are at `/workspace/epe-lawa-release-screenshots/pr29-staff-login-shortheight/`.
 - Commit `96c49dad75ede630b6c7737856ac4c536d3636dd` has author and committer `EPE LAWA <info.epelawa@gmail.com>`. PR #29 (https://github.com/epelawa/EPE-LAWA/pull/29) is OPEN, based on `feat/auth-reference-redesign` (PR #24). The PR summary reports `UNSTABLE`; exact deployment/check details remain subject to the read-only CLI inspection. No merge was performed.
 - No production Supabase settings, schema, migrations, content, user data or provider settings were changed. The local screenshots are not hosted-preview evidence.
+
+
+### 2026-11-09 14:08 WAT — PR #29 hosted CLI status
+
+- Authenticated GitHub CLI confirms PR #29 is OPEN and CLEAN at head `108d69a94a0103ed5069543e22c96bd26485314e`, based on `feat/auth-reference-redesign`. `gh pr view` with status-rollup and `gh pr checks 29` both return GraphQL `Resource not accessible by integration`; required check details are not visible, so no merge was attempted.
+- Read-only Vercel CLI confirms that exact SHA is READY at https://epe-lawa-pz9vljcno-epe-lawa.vercel.app (branch alias https://epe-lawa-git-fix-staff-login-short-height-epe-lawa.vercel.app). A HEAD request to `/admin/login` returns HTTP 302 to Vercel SSO. No browser login was attempted; hosted visual review remains unavailable.
+- No Vercel configuration or production Supabase settings/data were changed. This status applies to SHA `108d69a`; a later docs-only commit requires a new exact-head preview check.

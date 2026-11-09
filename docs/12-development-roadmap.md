@@ -61,3 +61,10 @@ PR #29 is open at https://github.com/epelawa/EPE-LAWA/pull/29 on `fix/staff-logi
 Final Node 22.23.4/pnpm 10.34.9 gates: workspace typecheck **5/5 tasks**, both production builds **2/2 tasks**, and full suite **138 tests: 137 passed, 0 failed, 1 documented PGlite skip**. Local production-mode Chromium captures cover 320×568 clean/error, 375×568 error, 320×640 error and a 320×480 fallback exercise. At 320×568 and 375×568 the card, submit button and staff links sit above the fixed notice with no document overflow; all measured submit/switch actions remain 44px high. At 320×640 the error form is centered. The injected error copy is a local visual fixture; no credentials were submitted.
 
 Screenshot artifacts: `/workspace/epe-lawa-release-screenshots/pr29-staff-login-shortheight/after-clean-320x568.png`, `after-error-320x568.png`, `after-error-375x568.png`, `after-error-320x640.png`, and `after-error-fallback-320x480.png`. These are local captures, not Vercel or production screenshots. Exact-head Vercel deployment and GitHub check visibility are still to be inspected with CLI; do not claim hosted review or merge. No production Supabase settings, schema, migrations, content, or account data were changed.
+
+
+### 2026-11-09 14:08 WAT — PR #29 hosted CLI status
+
+Authenticated GitHub CLI confirms PR #29 remains OPEN on `fix/staff-login-short-height`, based on `feat/auth-reference-redesign`, at head `108d69a94a0103ed5069543e22c96bd26485314e`; the summary is CLEAN. The PR checks/status-rollup requests return GraphQL `Resource not accessible by integration`, so required CI results cannot be independently confirmed. Leave the PR open.
+
+Read-only Vercel CLI confirms the exact head is READY in preview at https://epe-lawa-pz9vljcno-epe-lawa.vercel.app (alias https://epe-lawa-git-fix-staff-login-short-height-epe-lawa.vercel.app). A request to `/admin/login` returns HTTP 302 to Vercel SSO, so hosted visual review is blocked without browser login; the local production-build screenshots remain the visual evidence. No production Supabase settings or data changed. Any later docs-only commit changes the PR head and needs a fresh CLI preview check.
