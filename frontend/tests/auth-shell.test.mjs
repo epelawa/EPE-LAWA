@@ -115,10 +115,11 @@ test("callback issue, 404, and runtime error screens keep shared controls and hi
 });
 
 test("storage notice stays pinned on forms but reserves space and never blocks focused error actions", async () => {
-  const [styles, authStyles, banner] = await Promise.all([
+  const [styles, authStyles, banner, staffForm] = await Promise.all([
     read(app, "notice-refinement.css"),
     read(app, "auth/auth.css"),
     read(components, "cookie-banner.tsx"),
+    read(components, "admin-login-form.tsx"),
   ]);
 
   assert.match(styles, /body:has\(\.auth-page\) \.storage-notice\s*\{[^}]*position:\s*fixed/s);
@@ -133,6 +134,11 @@ test("storage notice stays pinned on forms but reserves space and never blocks f
   assert.match(banner, /ResizeObserver/);
   assert.match(banner, /--storage-notice-height/);
   assert.match(banner, /Theme stays on this device\. Sign-in uses essential cookies; optional tracking is off\./);
+  assert.match(authStyles, /\.auth-page:has\(\.admin-login__form \.auth-error\)\s*\{[^}]*overflow-y:\s*auto/s);
+  assert.match(authStyles, /\.auth-page:has\(\.admin-login__form \.auth-error\) \.auth-art__description\s*\{[^}]*display:\s*none/s);
+  assert.match(authStyles, /\.auth-page:has\(\.admin-login__form \.auth-error\) \.auth-feedback\s*\{[^}]*padding:\s*4px 8px/s);
+  assert.match(staffForm, /page\.scrollHeight > page\.clientHeight/);
+  assert.match(staffForm, /page\.scrollTop = page\.scrollHeight/);
   assert.match(banner, /epelawa_cookie_consent/);
   assert.doesNotMatch(banner, /role="dialog"/);
 });
