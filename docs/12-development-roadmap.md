@@ -52,3 +52,12 @@ PR #24 is open at https://github.com/epelawa/EPE-LAWA/pull/24 on `feat/auth-refe
 ### 2026-11-09 11:38 WAT — PR #24 preview and check-access result
 
 Vercel CLI confirmed deployment `epe-lawa-h90vmkk31-epe-lawa.vercel.app` READY for exact head `3e143f6ed9e514c24c52b8a1be74d19cd0b5e7ea`. An unauthenticated HTTP request redirects to Vercel SSO, so the protected preview was not opened or presented as reviewed; the local-production screenshots remain the honest visual evidence. GitHub `pr checks`, REST commit status and deployment listing all return HTTP 403 for this connector. PR #24 is OPEN and MERGEABLE, but required-check state cannot be confirmed; **do not merge**. Continue the separate local newsroom permission fix without browser login or production Supabase writes.
+
+
+### 2026-11-09 14:05 WAT — PR #29 staff-login short-height layout
+
+PR #29 is open at https://github.com/epelawa/EPE-LAWA/pull/29 on `fix/staff-login-short-height`, stacked on PR #24’s `feat/auth-reference-redesign` base. It contains only the staff-login error-state layout, the conditional scroll fallback, and its focused regression coverage. Keep the PR open for review.
+
+Final Node 22.23.4/pnpm 10.34.9 gates: workspace typecheck **5/5 tasks**, both production builds **2/2 tasks**, and full suite **138 tests: 137 passed, 0 failed, 1 documented PGlite skip**. Local production-mode Chromium captures cover 320×568 clean/error, 375×568 error, 320×640 error and a 320×480 fallback exercise. At 320×568 and 375×568 the card, submit button and staff links sit above the fixed notice with no document overflow; all measured submit/switch actions remain 44px high. At 320×640 the error form is centered. The injected error copy is a local visual fixture; no credentials were submitted.
+
+Screenshot artifacts: `/workspace/epe-lawa-release-screenshots/pr29-staff-login-shortheight/after-clean-320x568.png`, `after-error-320x568.png`, `after-error-375x568.png`, `after-error-320x640.png`, and `after-error-fallback-320x480.png`. These are local captures, not Vercel or production screenshots. Exact-head Vercel deployment and GitHub check visibility are still to be inspected with CLI; do not claim hosted review or merge. No production Supabase settings, schema, migrations, content, or account data were changed.

@@ -1,6 +1,6 @@
 # EPE-LAWA — Implementation Tracker
 
-**Last updated:** 2026-11-09 12:28 WAT.
+**Last updated:** 2026-11-09 14:05 WAT.
 **Scope:** All eight client-approved web sections plus identity, staff access, analytics, publishing, email templates, audit, privacy, accessibility and Playwright.
 **Progress log:** `16-progress-log.md`.
 
@@ -12,6 +12,7 @@
 | --- | --- | --- |
 | Foundation and same-origin staff routing | Merged baseline; hosted route work previously verified | PR #22 adds `/admin/*` on `https://epelawa.vercel.app/` with server-side session/capability checks and host-only `__Host` cookies. Keep this boundary; validate any new action independently. |
 | Member auth visuals and flows | PR #24 open; local gates pass; exact current head still needs hosted verification | PR #23 staged signup/member flows are merged/deployed. PR #24 adapts the `266649.jpg` composition, uses a single-screen member login, retains staged signup, adds accessible password toggles, and keeps Google visible but disabled/Coming Soon at every checked size. Final local gate: 5/5 typechecks, 2/2 builds, 137 passed/0 failed/1 documented skip; 30 route/viewport checks. Earlier preview access redirected to SSO and GitHub check endpoints returned 403; do not merge unless the exact current head’s preview and required status are confirmed through CLI. |
+| Staff login on short mobile screens | PR #29 open; local gates pass; exact hosted preview/check state pending | PR #29 (https://github.com/epelawa/EPE-LAWA/pull/29), stacked on PR #24, compacts only short-height staff sign-in errors and conditionally scrolls if controls would otherwise be clipped. Local 320×568 and 375×568 error fixtures have no card/notice overlap or page overflow; 44px actions remain. 320×640 is centered; 320×480 exercises the scroll fallback. Screenshots are in `/workspace/epe-lawa-release-screenshots/pr29-staff-login-shortheight/`. |
 | Member dashboard and account settings | Remaining | Dashboard/account route and interaction completeness still needs an explicit route/feature audit; do not imply a complete account center based on auth screens alone. |
 | Trending News | Partial; production workflow blocked by schema drift | Published-only routes and private draft/publish policy have local tests. Verify the newsroom create/edit/publish actions against reconciled schema and isolated data. News reference image `253590.jpg` is unavailable; follow the written design direction without claiming an exact image match. |
 | Itan Ilu Mi / My Community History | Partial; final end-to-end workflow remains | Private contribution, consent/provenance, review and approved-publication rules have local/schema tests. Verify the full staff review lifecycle after migration reconciliation. |
