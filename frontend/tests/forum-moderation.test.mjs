@@ -25,6 +25,17 @@ test('resolution accepts only supported actions and requires a reason; mutations
   assert.match(migration, /reason_required/);
 });
 
+test('resolution action redirects after the RPC catch so a committed report is not shown as failed', () => {
+  const handler = action.slice(action.indexOf('export async function resolveForumReport'));
+  const catchPosition = handler.indexOf('  } catch {');
+  const redirectPosition = handler.lastIndexOf('redirect(');
+  assert.ok(catchPosition >= 0);
+  assert.ok(redirectPosition > catchPosition);
+  assert.equal([...handler.matchAll(/\bredirect\(/g)].length, 1);
+  assert.match(handler, /saved = !error;/);
+  assert.match(handler, /const result = saved \? "saved" : "failed";/);
+});
+
 test('staff UI omits reporter identifiers and uses the secure resolution RPC', () => {
   assert.doesNotMatch(page, /reporter_id|reporter_email|author_email|email/);
   assert.match(page, /\.eq\("state", "open"\)/);
