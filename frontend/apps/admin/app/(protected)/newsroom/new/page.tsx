@@ -3,6 +3,7 @@ import Link from "next/link";
 import { buttonClassName, EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading } from "@epelawa/ui";
 import { createClient } from "../../../../lib/supabase";
 import { createArticle } from "../../../../lib/actions";
+import { adminHref } from "../../../../lib/admin-path";
 
 export const metadata: Metadata = {
   title: "Create article draft",
@@ -30,10 +31,10 @@ export default async function NewArticlePage({
 
   return (
     <PageFrame className="ui-stack">
-      <PageIntro eyebrow="Newsroom · New draft" title="Create article draft" description="Drafts stay private until an authorized publisher chooses Publish. Every publication is checked by the database and recorded in the audit log." actions={<Link href="/newsroom" className={buttonClassName("secondary")}>Back to newsroom</Link>} />
+      <PageIntro eyebrow="Newsroom · New draft" title="Create article draft" description="Drafts stay private until an authorized publisher chooses Publish. Every publication is checked by the database and recorded in the audit log." actions={<Link href={adminHref("/newsroom")} className={buttonClassName("secondary")}>Back to newsroom</Link>} />
       {params.error ? <Notice tone="danger" role="alert">{params.error === "invalid" ? "Add a title, body, byline and category, then try again." : "The draft could not be created. Check your access and try again."}</Notice> : null}
       {!canCreate || referencesFailed || categories.length === 0 || authors.length === 0 ? (
-        <EmptyPanel title={!canCreate ? "Article creation access required" : "Newsroom setup is incomplete"} description={!canCreate ? "This staff account does not have the article.create capability." : referencesFailed ? "Categories and bylines could not be verified. No article was created." : "Add at least one active category and one byline before creating an article."} actions={<Link href="/newsroom" className={buttonClassName("secondary")}>Back to newsroom</Link>} />
+        <EmptyPanel title={!canCreate ? "Article creation access required" : "Newsroom setup is incomplete"} description={!canCreate ? "This staff account does not have the article.create capability." : referencesFailed ? "Categories and bylines could not be verified. No article was created." : "Add at least one active category and one byline before creating an article."} actions={<Link href={adminHref("/newsroom")} className={buttonClassName("secondary")}>Back to newsroom</Link>} />
       ) : (
         <Panel>
           <SectionHeading eyebrow="Private until published" title="Article details" description="Complete the required editorial fields. You can refine the draft later." />
@@ -49,7 +50,7 @@ export default async function NewArticlePage({
               <div className="ui-field"><label className="label" htmlFor="seoTitle">Search title (optional)</label><input id="seoTitle" name="seoTitle" className="input" maxLength={70} /></div>
               <div className="ui-field"><label className="label" htmlFor="seoDescription">Search description (optional)</label><input id="seoDescription" name="seoDescription" className="input" maxLength={200} /></div>
             </div>
-            <div className="ui-actions"><Link href="/newsroom" className={buttonClassName("ghost")}>Cancel</Link><button className={buttonClassName("primary")} type="submit">Create private draft</button></div>
+            <div className="ui-actions"><Link href={adminHref("/newsroom")} className={buttonClassName("ghost")}>Cancel</Link><button className={buttonClassName("primary")} type="submit">Create private draft</button></div>
           </form>
         </Panel>
       )}

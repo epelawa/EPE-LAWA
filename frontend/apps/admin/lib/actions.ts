@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "./supabase";
+import { adminHref } from "./admin-path";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -81,7 +82,7 @@ function queryErrorCode(error: unknown): string {
 }
 
 function fail(path: string): never {
-  redirect(path);
+  redirect(adminHref(path));
 }
 
 export async function createArticle(formData: FormData): Promise<void> {
@@ -120,8 +121,8 @@ export async function createArticle(formData: FormData): Promise<void> {
   }
 
   if (!articleId) fail("/newsroom/new?error=1");
-  revalidatePath("/newsroom");
-  redirect(`/newsroom/${articleId}?created=1`);
+  revalidatePath(adminHref("/newsroom"));
+  redirect(adminHref(`/newsroom/${articleId}?created=1`));
 }
 
 export async function saveDraft(formData: FormData): Promise<void> {
@@ -153,9 +154,9 @@ export async function saveDraft(formData: FormData): Promise<void> {
     console.error("article draft save failed", { code: errorCode });
     fail(`/newsroom/${fields.articleId}?error=save`);
   }
-  revalidatePath(`/newsroom/${fields.articleId}`);
-  revalidatePath("/newsroom");
-  redirect(`/newsroom/${fields.articleId}?saved=1`);
+  revalidatePath(adminHref(`/newsroom/${fields.articleId}`));
+  revalidatePath(adminHref("/newsroom"));
+  redirect(adminHref(`/newsroom/${fields.articleId}?saved=1`));
 }
 
 export async function reviseArticle(formData: FormData): Promise<void> {
@@ -185,9 +186,9 @@ export async function reviseArticle(formData: FormData): Promise<void> {
     console.error("article revision failed", { code: errorCode });
     fail(`/newsroom/${fields.articleId}?error=revise`);
   }
-  revalidatePath(`/newsroom/${fields.articleId}`);
-  revalidatePath("/newsroom");
-  redirect(`/newsroom/${fields.articleId}?revised=1`);
+  revalidatePath(adminHref(`/newsroom/${fields.articleId}`));
+  revalidatePath(adminHref("/newsroom"));
+  redirect(adminHref(`/newsroom/${fields.articleId}?revised=1`));
 }
 
 export async function publishArticle(formData: FormData): Promise<void> {
@@ -222,9 +223,9 @@ async function articleTransition(
     console.error(`article ${outcome} transition failed`, { code: errorCode });
     fail(`/newsroom/${articleId}?error=${outcome}`);
   }
-  revalidatePath(`/newsroom/${articleId}`);
-  revalidatePath("/newsroom");
+  revalidatePath(adminHref(`/newsroom/${articleId}`));
+  revalidatePath(adminHref("/newsroom"));
   revalidatePath("/news");
   revalidatePath("/");
-  redirect(`/newsroom/${articleId}?${outcome}=1`);
+  redirect(adminHref(`/newsroom/${articleId}?${outcome}=1`));
 }

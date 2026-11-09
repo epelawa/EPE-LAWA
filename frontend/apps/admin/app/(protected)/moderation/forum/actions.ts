@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { adminHref } from "../../../../lib/admin-path";
 import { createClient } from "../../../../lib/supabase";
 
 const allowed = new Set(["hide", "restore", "dismiss"]);
@@ -21,10 +22,10 @@ export async function resolveForumReport(formData: FormData) {
       p_action: action,
       p_reason: reason.trim(),
     });
-    if (error) redirect("/moderation/forum?result=failed");
-    revalidatePath("/moderation/forum");
-    redirect("/moderation/forum?result=saved");
+    if (error) redirect(adminHref("/moderation/forum?result=failed"));
+    revalidatePath(adminHref("/moderation/forum"));
+    redirect(adminHref("/moderation/forum?result=saved"));
   } catch {
-    redirect("/moderation/forum?result=failed");
+    redirect(adminHref("/moderation/forum?result=failed"));
   }
 }

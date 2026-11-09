@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { buttonClassName, EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "@epelawa/ui";
 import { createClient } from "../../../../lib/supabase";
 import { publishArticle, reviseArticle, saveDraft, unpublishArticle } from "../../../../lib/actions";
+import { adminHref } from "../../../../lib/admin-path";
 
 export const metadata: Metadata = { title: "Article workflow", robots: { index: false, follow: false } };
 
@@ -105,7 +106,7 @@ export default async function EditArticlePage({
 
   return (
     <PageFrame className="ui-stack">
-      <PageIntro eyebrow={`Newsroom · Revision ${article.revision}`} title={version.title} description={<>Current version: <StatusBadge tone={version.state === "published" ? "success" : version.state === "rejected" ? "danger" : version.state === "review" ? "warning" : "neutral"}>{version.state}</StatusBadge>. {currentVersionIsPublic ? "This version is public." : olderVersionRemainsPublic ? "The previously published version remains live; this current version is private." : "No version of this article is public yet."}</>} actions={<Link href="/newsroom" className={buttonClassName("secondary")}>Back to newsroom</Link>} meta={<><span>Revision {article.revision}</span><span>Slug: {article.slug}</span></>} />
+      <PageIntro eyebrow={`Newsroom · Revision ${article.revision}`} title={version.title} description={<>Current version: <StatusBadge tone={version.state === "published" ? "success" : version.state === "rejected" ? "danger" : version.state === "review" ? "warning" : "neutral"}>{version.state}</StatusBadge>. {currentVersionIsPublic ? "This version is public." : olderVersionRemainsPublic ? "The previously published version remains live; this current version is private." : "No version of this article is public yet."}</>} actions={<Link href={adminHref("/newsroom")} className={buttonClassName("secondary")}>Back to newsroom</Link>} meta={<><span>Revision {article.revision}</span><span>Slug: {article.slug}</span></>} />
       <StatusMessage query={query} />
       {article.published_version_id ? <Notice tone="neutral"><Link href={`/news/${article.slug}`} className="ui-text-link">Open public article</Link>{article.published_at ? <span className="ui-meta">Published {new Date(article.published_at).toLocaleDateString("en-NG")}</span> : null}</Notice> : null}
 

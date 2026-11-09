@@ -1,0 +1,380 @@
+body:has(.admin-shell) .site-head,
+body:has(.admin-shell) .site-footer {
+  display: none !important;
+}
+
+body:has(.admin-shell) .site-main,
+body:has(.admin-shell):has(.focused-error-shell) .site-main {
+  display: flex;
+  flex: 1;
+  width: 100%;
+  min-height: 100dvh;
+  flex-direction: column;
+  padding: 0;
+  place-items: initial;
+}
+
+.admin-shell {
+  display: flex;
+  width: 100%;
+  min-height: 100dvh;
+  flex: 1;
+  flex-direction: column;
+}
+
+.admin-shell__content {
+  width: 100%;
+  flex: 1;
+  padding-block: 28px 72px;
+}
+
+.admin-shell .admin-masthead {
+  position: sticky;
+  top: 12px;
+  z-index: 40;
+  width: min(1240px, calc(100% - 32px));
+  margin: 12px auto 0;
+  padding: 12px 18px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 24px;
+  background: hsl(var(--card) / .97);
+  box-shadow: 0 5px 24px rgb(10 16 35 / .035);
+}
+
+.admin-shell .admin-masthead__bar {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 20px;
+}
+
+.admin-shell .nav-brand {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  color: inherit;
+  text-decoration: none;
+}
+
+.admin-shell .brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-shell .brand-mark {
+  display: inline-flex;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--palette-cloud);
+}
+
+.admin-shell .brand-mark__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 3px;
+  object-fit: contain;
+}
+
+.admin-shell .brand-lockup__text {
+  display: grid;
+  gap: 2px;
+  line-height: 1.2;
+}
+
+.admin-shell .brand-lockup__name {
+  color: hsl(var(--foreground));
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  white-space: nowrap;
+}
+
+.admin-shell .brand-lockup__tagline {
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.admin-shell .admin-masthead__label {
+  padding-left: 20px;
+  border-left: 1px solid hsl(var(--border));
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+}
+
+.admin-shell .admin-masthead__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.admin-shell .admin-public-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  color: hsl(var(--link));
+  font-size: 13px;
+}
+
+.admin-shell .ep-button {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 11px 20px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.admin-shell .ep-button--primary {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+.admin-shell .ep-button--secondary {
+  border-color: hsl(var(--input));
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+}
+
+.admin-shell .ep-button--ghost {
+  color: hsl(var(--foreground));
+}
+
+.admin-shell .ep-button--primary:hover {
+  transform: translateY(-1px);
+  filter: brightness(.94);
+}
+
+.admin-shell .ep-button--secondary:hover,
+.admin-shell .ep-button--ghost:hover {
+  background: hsl(var(--secondary));
+}
+
+.admin-shell .ep-button:disabled {
+  cursor: not-allowed;
+  opacity: .55;
+}
+
+.admin-shell .ep-icon-btn {
+  display: inline-flex;
+  width: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  flex: 0 0 44px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  color: hsl(var(--foreground));
+}
+
+.admin-shell .ep-icon-btn:hover {
+  background: hsl(var(--secondary));
+}
+
+.admin-shell .theme-toggle {
+  position: relative;
+}
+
+.admin-shell .theme-toggle__icon {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.admin-shell .theme-toggle__icon[data-active="true"] {
+  opacity: 1;
+}
+
+.admin-shell .admin-nav {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid hsl(var(--border));
+}
+
+.admin-shell .admin-nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-shell .admin-nav a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  padding: 10px 13px;
+  border-radius: 999px;
+  color: hsl(var(--muted-foreground));
+  font-size: 13px;
+  transition: color 200ms ease, background-color 200ms ease;
+}
+
+.admin-shell .admin-nav a:hover,
+.admin-shell .admin-drawer-links a:hover {
+  background: hsl(var(--secondary));
+  color: hsl(var(--link));
+}
+
+.admin-shell .admin-nav a[aria-current="page"],
+.admin-shell .admin-drawer-links a[aria-current="page"] {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+.admin-shell .admin-menu-button {
+  display: none;
+}
+
+.admin-shell .drawer-root {
+  position: fixed;
+  z-index: 80;
+  display: none;
+  inset: 0;
+}
+
+.admin-shell .drawer-root[data-open="true"] {
+  display: block;
+}
+
+.admin-shell .drawer-scrim {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: rgb(10 16 35 / .48);
+  backdrop-filter: blur(3px);
+  inset: 0;
+}
+
+.admin-shell .drawer {
+  position: absolute;
+  width: min(400px, calc(100% - 24px));
+  padding: 24px;
+  overflow-y: auto;
+  border: 1px solid hsl(var(--border));
+  border-radius: 24px;
+  background: hsl(var(--card));
+  inset: 12px 12px 12px auto;
+}
+
+.admin-shell .drawer__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.admin-shell .drawer__head h2 {
+  font-size: 18px;
+}
+
+.admin-shell .admin-drawer-links {
+  display: grid;
+  gap: 4px;
+  margin: 16px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-shell .admin-drawer-links a {
+  display: flex;
+  min-height: 55px;
+  flex-direction: column;
+  padding: 10px 12px;
+  border-radius: 12px;
+  transition: color 200ms ease, background-color 200ms ease;
+}
+
+.admin-shell .admin-drawer-links span {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.admin-shell .admin-drawer-links small,
+.admin-shell .drawer__foot {
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+}
+
+.admin-shell .admin-drawer-links a[aria-current="page"] small {
+  color: hsl(var(--primary-foreground));
+}
+
+.admin-shell .admin-login {
+  width: min(560px, calc(100% - 48px));
+  margin-inline: auto;
+}
+
+.admin-shell .admin-login__panel,
+.admin-shell .admin-login__form {
+  display: grid;
+  gap: 24px;
+}
+
+.admin-shell .admin-dashboard-note {
+  color: hsl(var(--muted-foreground));
+  font-size: 14px;
+}
+
+@media (max-width: 1024px) {
+  .admin-shell .admin-nav { display: none; }
+  .admin-shell .admin-menu-button { display: inline-flex; }
+}
+
+@media (max-width: 760px) {
+  .admin-shell__content { padding-block: 24px 56px; }
+  .admin-shell .admin-masthead__label { display: none; }
+  .admin-shell .ui-page { width: calc(100% - 32px); }
+  .admin-shell .ui-page-intro { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .admin-shell .ui-grid--2,
+  .admin-shell .ui-grid--3,
+  .admin-shell .ui-form-grid,
+  .admin-shell .ui-split { grid-template-columns: 1fr; }
+  .admin-shell .ui-grid > *,
+  .admin-shell .ui-form-grid > * { grid-column: auto !important; }
+}
+
+@media (max-width: 440px) {
+  .admin-shell .admin-masthead { top: 8px; margin-top: 8px; padding: 8px 10px; border-radius: 20px; }
+  .admin-shell .admin-masthead__bar { gap: 8px; }
+  .admin-shell .admin-masthead__actions { gap: 0; }
+  .admin-shell .admin-public-link { display: none; }
+  .admin-shell .admin-login { width: calc(100% - 32px); }
+  .admin-shell .drawer { padding: 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-shell *,
+  .admin-shell *::before,
+  .admin-shell *::after {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}

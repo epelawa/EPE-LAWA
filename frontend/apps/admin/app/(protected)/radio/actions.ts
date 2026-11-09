@@ -1,6 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { adminHref } from "../../../lib/admin-path";
 import { createClient } from "../../../lib/supabase";
 
 const text = (f: FormData, key: string, max: number) => String(f.get(key) ?? "").trim().slice(0, max);
@@ -32,9 +33,9 @@ async function save(db: Awaited<ReturnType<typeof createClient>>, resource: stri
     if (error.code === "42501" || message.includes("denied") || message.includes("capability")) throw new Error("denied");
     throw new Error("save");
   }
-  revalidatePath("/radio");
+  revalidatePath(adminHref("/radio"));
 }
-function outcome(code: string): never { redirect(`/radio?radio=${encodeURIComponent(code)}`); }
+function outcome(code: string): never { redirect(adminHref(`/radio?radio=${encodeURIComponent(code)}`)); }
 async function run(work: () => Promise<void>) {
   try { await work(); }
   catch (error) {

@@ -47,7 +47,7 @@ test("admin navigation links resolve to existing app routes", () => {
     assert.ok(actualRoutes.has(href), `expected staff route ${href}`);
     assert.ok(registeredHrefs.includes(href), `expected navigation to ${href}`);
   }
-  assert.match(headerSource, /<Link[\s\S]*?href=\{item\.href\}/, "internal navigation should use Next Link");
+  assert.match(headerSource, /staffHref\(item\.href,\s*basePath\)/, "staff links should stay in the configured same-origin namespace");
   assert.match(footerSource, /<Link[\s\S]*?href=\{item\.href\}/, "footer navigation should use Next Link");
 });
 

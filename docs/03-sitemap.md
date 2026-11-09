@@ -6,19 +6,17 @@ everything else is planned and must not be linked.
 
 ---
 
-## 1. Three hosts
+## 1. Current deployment
 
-| Host | Purpose | Session |
+| Origin | Purpose | Session |
 | --- | --- | --- |
-| `epelawa.ng` | The platform: landing, Who is Who, radio, forum, businesses, marketplace, member area | Member cookie |
-| `news.epelawa.ng` | The publication: articles, categories, authors, search | Member identity via the main host, no separate login |
-| `admin.epelawa.ng` | Staff and moderator operations | Staff cookie only |
+| `https://epelawa.vercel.app/` | Public platform, News, member flows, and staff workspace | Member session; separate host-only staff cookie |
 
-Cross-host links use absolute canonical URLs. The three do not share a cookie.
+The current canonical production origin is `https://epelawa.vercel.app/`. The owner approved staff routes on this same origin at `/admin/*`; the staff session remains isolated in its Secure, HttpOnly, SameSite=Lax, Path=/ `__Host` cookie with no `Domain`. The older `epelawa.ng`, `news.epelawa.ng`, and `admin.epelawa.ng` host split is superseded and must not be implemented without a new owner decision.
 
 ---
 
-## 2. `epelawa.ng` — public platform
+## 2. `https://epelawa.vercel.app/` — public platform
 
 ```
 /                                   LIVE   landing: purpose, five sections, honest state
@@ -28,7 +26,7 @@ Cross-host links use absolute canonical URLs. The three do not share a cookie.
 /terms                                     terms of use
 /guidelines                                community guidelines (forum rules)
 
-/news                               LINK   → news.epelawa.ng (canonical redirect, not a copy)
+/news                               BUILT  public News list; articles use `/news/[slug]`
 
 /who-is-who                                directory index, search + filter by office/community
 /who-is-who/[slug]                         person profile: biography, offices, sources, badge
@@ -71,7 +69,7 @@ Cross-host links use absolute canonical URLs. The three do not share a cookie.
 
 ---
 
-## 3. `news.epelawa.ng` — publication
+## 3. `/news` — public publication
 
 ```
 /                                   masthead, lead story, latest, categories
@@ -80,55 +78,64 @@ Cross-host links use absolute canonical URLs. The three do not share a cookie.
 /author/[slug]                      author profile + their published work
 /tag/[slug]                         tag feed
 /search                             published-only search
-/article/[slug]                     article, canonical, corrections, related
+/news/[slug]                        article, canonical, corrections, related
 /about                              about the newsroom, editorial standards, corrections policy
 /contact                            → main host contact
 /videos                             curated video records
 ```
 
-**No login on this host.** "Sign in to comment" links to `epelawa.ng/login?next=<canonical article>`.
-The comment thread on an article is rendered on the news host but authenticated against the member
-session on the main host via a server-to-server check — or, more simply, comments live on the news
-host with the member cookie scoped to `.epelawa.ng` minus the admin host. **Decision required before
-Phase 5.** The second option is simpler and is the working assumption.
+News is public on the canonical platform origin; articles use `/news/[slug]`. "Sign in to comment"
+must return through the same-origin member login with a safe `/news/[slug]` next path. There is no
+separate News host or cross-host member-session requirement in the current deployment.
 
 ---
 
-## 4. `admin.epelawa.ng` — staff
+## 4. `/admin/*` — staff on the same origin
 
 ```
-/login                              staff sign in
-/                                   dashboard: real counts, real queues
-/newsroom                           all articles
-/newsroom/new                       create draft
-/newsroom/[id]                      edit + preview + version history
-/newsroom/review                    review queue (editor)
-/newsroom/publish                   approved queue (publisher)
-/newsroom/categories                categories
-/newsroom/tags                      tags
-/newsroom/authors                   author records
+/admin/login                         staff sign in (BUILT)
+/admin                               dashboard: real counts, real queues (BUILT)
+/admin/newsroom                      all articles (BUILT)
+/admin/newsroom/new                  create draft (BUILT)
+/admin/newsroom/[id]                 edit + preview + version history (BUILT)
+/admin/itan-ilu-mi/review             community-history review queue (BUILT)
+/admin/moderation/forum               forum moderation queue (BUILT)
+/admin/business-review                business submissions and verification (BUILT)
+/admin/business-review/moderation     business moderation (BUILT)
+/admin/orders                         order queue (BUILT)
+/admin/people                         Who-is-Who records (BUILT)
+/admin/radio                          stream config and programmes (BUILT)
+/admin/tourism                        tourism review queue (BUILT)
 
-/media                              media library
-/media/upload                       authorised upload
+/admin/newsroom/review                review queue (editor)
+/admin/newsroom/publish               approved queue (publisher)
+/admin/newsroom/categories            categories
+/admin/newsroom/tags                  tags
+/admin/newsroom/authors               author records
 
-/people                             Who is Who records
-/people/new                         create
-/people/[id]                        edit, sources, verification
+/admin/media                         media library
+/admin/media/upload                  authorised upload
 
-/radio                              stream config, status, programmes
-/radio/schedule                     schedule editor
-/radio/episodes                     episode management
+/admin/people/new                    create
+/admin/people/[id]                   edit, sources, verification
 
-/moderation                         open reports (comments + forum)
-/moderation/actions                 moderation history
-/forum                              forum categories
-/businesses                         business submissions + verification
-/shop/orders                        order queue
-/shop/products                      product moderation
+/admin/radio/schedule                schedule editor
+/admin/radio/episodes                episode management
 
-/staff                              staff accounts and capability grants
-/audit                              audit log
+/admin/moderation                    open reports (comments + forum)
+/admin/moderation/actions            moderation history
+/admin/forum                         forum categories
+/admin/businesses                   business submissions + verification
+/admin/shop/orders                  order queue
+/admin/shop/products                product moderation
+
+/admin/staff                         staff accounts and capability grants
+/admin/audit                         audit log
 ```
+
+Only routes marked **BUILT** are currently mounted. Other staff destinations remain planned and
+must not be linked until implemented. Protected pages and server actions enforce staff sessions and
+capabilities; hiding navigation items is not an authorization boundary.
 
 ---
 
@@ -144,7 +151,7 @@ Rules for the header:
 
 **News header:** sections (Politics, Sports, Culture, Education, Business, Community) · Latest · Search · Videos.
 
-**Admin sidebar:** Dashboard · Newsroom · Media · People · Radio · Moderation · Businesses · Orders · Staff · Audit. Sections collapse when the capability is absent — but the route still refuses, because the sidebar is not the boundary.
+**Admin navigation:** `/admin` · `/admin/newsroom` · `/admin/itan-ilu-mi/review` · `/admin/moderation/forum` · `/admin/business-review` · `/admin/business-review/moderation` · `/admin/orders` · `/admin/tourism` · `/admin/radio` · `/admin/people`. Sections collapse when the capability is absent — but the route still refuses, because navigation is not the boundary.
 
 **Footer (public):** About · Contact · Guidelines · Privacy · Terms · WhatsApp · social links that actually exist.
 
@@ -152,7 +159,7 @@ Rules for the header:
 
 ## 6. URL and linking rules
 
-1. **Canonical once.** An article lives at `news.epelawa.ng/article/[slug]` and nowhere else. The main site shows a headline and links out; it never renders a second copy.
+1. **Canonical once.** An article lives at `/news/[slug]` on the canonical `https://epelawa.vercel.app/` origin and nowhere else. The News list links internally to that route; there is no separate News host or duplicate copy.
 2. **Slugs are reserved forever.** A published slug never gets reused after archive, or an old shared link silently shows different content.
 3. **Slugs are lowercase, hyphenated, ASCII.** Diacritics transliterated in the slug, preserved in the title.
 4. **No query-string pagination** for public content — use path segments where possible, cursor params where not.
@@ -167,7 +174,7 @@ Rules for the header:
 | Route | Indexable | Structured data |
 | --- | --- | --- |
 | `/` | yes | `Organization` |
-| `/article/[slug]` | yes | `NewsArticle` with `datePublished`, `dateModified`, `author`, `publisher` |
+| `/news/[slug]` | yes | `NewsArticle` with `datePublished`, `dateModified`, `author`, `publisher` |
 | `/category`, `/author`, `/tag` | yes | `CollectionPage` |
 | `/who-is-who/[slug]` | yes | `Person` |
 | `/business/[slug]` | yes | `LocalBusiness` |
@@ -175,7 +182,7 @@ Rules for the header:
 | `/forum/*` | yes, `nofollow` on outbound | `DiscussionForumPosting` |
 | `/members/*` | no | — |
 | `/cart`, `/checkout`, `/orders`, `/settings` | no | — |
-| admin host | no, `noindex` + `Disallow: /` | — |
+| `/admin/*` | no, `noindex` + `Disallow: /admin` | — |
 
 ---
 
@@ -184,5 +191,5 @@ Rules for the header:
 - Every route in this document either resolves or does not appear in navigation.
 - No route is reachable only by guessing a slug.
 - Every list route has an empty state that a real empty database would show.
-- Every auth-gated route redirects to `/login?next=` and returns to the exact page after sign in.
+- Member routes return through `/login?next=`; staff routes return through `/admin/login?next=` after server-side authorization.
 - Every 404 is a designed 404, not a stack trace.
