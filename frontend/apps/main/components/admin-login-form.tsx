@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { signInAdmin, type LoginState } from "../../admin/lib/login-actions";
 
 const initialState: LoginState = {};
@@ -38,6 +38,15 @@ function StaffPasswordField() {
 
 export default function AdminLoginForm({ nextPath }: { nextPath: string }) {
   const [state, action, pending] = useActionState(signInAdmin, initialState);
+
+  useEffect(() => {
+    if (!state.error) return;
+    const frame = window.requestAnimationFrame(() => {
+      const page = document.querySelector<HTMLElement>(".auth-page");
+      if (page && page.scrollHeight > page.clientHeight) page.scrollTop = page.scrollHeight;
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [state]);
 
   return (
     <form action={action} className="auth-form admin-login__form" aria-busy={pending}>

@@ -116,18 +116,19 @@ test("callback issue, 404, and runtime error screens keep shared controls and hi
 });
 
 test("storage notice is homepage-only and leaves auth screens unobstructed", async () => {
-  const [styles, authStyles, banner, layout, home] = await Promise.all([
+  const [styles, authStyles, banner, layout, home, staffForm] = await Promise.all([
     read(app, "notice-refinement.css"),
     read(app, "auth/auth.css"),
     read(components, "cookie-banner.tsx"),
     read(app, "layout.tsx"),
     read(app, "page.tsx"),
+    read(components, "admin-login-form.tsx"),
   ]);
 
-  assert.match(styles, /body:has\(\.public-home\) \.storage-notice\s*\{[^}]*position:\s*fixed/s);
-  assert.match(styles, /body:not\(:has\(\.public-home\)\) \.storage-notice\s*\{[^}]*display:\s*none/s);
+  assert.match(styles, /body:has\(.public-home\) \.storage-notice\s*\{[^}]*position:\s*fixed/s);
+  assert.match(styles, /body:not\(:has\(.public-home\)\) \.storage-notice\s*\{[^}]*display:\s*none/s);
   assert.match(styles, /@media \(max-width: 340px\) and \(max-height: 640px\)/);
-  assert.match(styles, /body:has\(\.public-home \.storage-notice\) \.home-hero \.ui-actions \{ margin-top: 16px; gap: 8px; \}/);
+  assert.match(styles, /body:has\(.public-home \.storage-notice\) \.home-hero \.ui-actions \{ margin-top: 16px; gap: 8px; \}/);
   assert.doesNotMatch(styles, /body:has\(\.(?:auth-page|auth-link-issue|focused-error-shell|admin-shell)\) \.storage-notice/);
   assert.match(authStyles, /padding-bottom:\s*calc\(var\(--storage-notice-height,\s*0px\)/s);
   assert.doesNotMatch(layout, /CookieBanner/);
@@ -139,6 +140,11 @@ test("storage notice is homepage-only and leaves auth screens unobstructed", asy
   assert.match(banner, /role="region"/);
   assert.match(banner, /ResizeObserver/);
   assert.match(banner, /--storage-notice-height/);
+  assert.match(authStyles, /\.auth-page:has\(\.admin-login__form \.auth-error\)\s*\{[^}]*overflow-y:\s*auto/s);
+  assert.match(authStyles, /\.auth-page:has\(\.admin-login__form \.auth-error\) \.auth-art__description\s*\{[^}]*display:\s*none/s);
+  assert.match(authStyles, /\.auth-page:has\(\.admin-login__form \.auth-error\) \.auth-feedback\s*\{[^}]*padding:\s*4px 8px/s);
+  assert.match(staffForm, /page\.scrollHeight > page\.clientHeight/);
+  assert.match(staffForm, /page\.scrollTop = page\.scrollHeight/);
   assert.match(banner, /Theme stays on this device\. Sign-in uses essential cookies; optional tracking is off\./);
   assert.match(banner, /epelawa_cookie_consent/);
   assert.match(banner, /window\.removeEventListener\("resize", apply\);\s*root\.style\.setProperty\("--storage-notice-height", "0px"\)/);
