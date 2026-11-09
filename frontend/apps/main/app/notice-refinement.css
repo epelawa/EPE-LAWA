@@ -68,3 +68,24 @@ body:has(.admin-shell) .toast-region:not(:empty) {
   margin: 0 auto 12px;
   pointer-events: auto;
 }
+
+/* Same-origin staff login shares the member auth shell, including its pinned notice. */
+body:has(.admin-shell .auth-page) .storage-notice {
+  position: fixed;
+  inset: auto max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  z-index: 45;
+  width: auto;
+  max-width: 360px;
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  margin: 0;
+}
+body:has(.admin-shell .auth-page) .toast-region:empty { display: none; }
+body:has(.admin-shell .auth-page) .toast-region:not(:empty) {
+  position: fixed;
+  inset: auto 12px calc(var(--storage-notice-height, 0px) + 20px);
+  z-index: 50;
+  width: min(360px, calc(100% - 24px));
+  margin: 0;
+  pointer-events: auto;
+}

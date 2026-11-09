@@ -1,16 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import {
-  isPullRefreshEnabled,
-  isPullRefreshGesture,
-  nextProbeDelay,
-  probeConnection,
-  PROBE_TIMEOUT_MS,
-  RESTORED_DISMISS_MS,
-  SLOW_THRESHOLD_MS,
-} from "../lib/connectivity";
+import { useRouter } from "next/navigation";
+import { nextProbeDelay, probeConnection, PROBE_TIMEOUT_MS, RESTORED_DISMISS_MS, SLOW_THRESHOLD_MS } from "../lib/connectivity";
 import "./notice-refinement.css";
 
 /**
@@ -32,7 +24,7 @@ import "./notice-refinement.css";
 
 type Notice = "slow" | "offline" | "restored" | "unavailable" | "retrying";
 
-type Reason = "initial" | "online" | "manual" | "pull" | "retry" | "visible";
+type Reason = "initial" | "online" | "manual" | "retry" | "visible";
 
 const COPY: Record<Notice, { title: string; detail: string }> = {
   slow: { title: "Slow connection", detail: "New content may take a moment." },
@@ -56,11 +48,8 @@ const MIN_PROBE_INTERVAL_MS = 30000;
 
 export default function Connectivity() {
   const router = useRouter();
-  const pathname = usePathname();
-  const pullEnabled = isPullRefreshEnabled(pathname);
 
   const [notice, setNotice] = useState<Notice | null>(null);
-  const [pull, setPull] = useState(false);
 
   const requestId = useRef(0);
   const attempts = useRef(0);
@@ -126,7 +115,7 @@ export default function Connectivity() {
         return;
       }
 
-      if (reason === "manual" || reason === "pull") show("retrying");
+      if (reason === "manual") show("retrying");
 
       const result = await probeConnection(
         browserOnline,
@@ -165,9 +154,9 @@ export default function Connectivity() {
           show(null);
         }
 
-        // Pull-to-refresh always re-renders. A recovery refetches so the page
-        // is not left showing a stale offline rendering.
-        if (recovered || reason === "pull") router.refresh();
+        // A recovered connection refetches so the page is not left showing a
+        // stale offline rendering.
+        if (recovered) router.refresh();
         return;
       }
 
@@ -255,77 +244,6 @@ export default function Connectivity() {
     return () => document.removeEventListener("visibilitychange", onVisibilityChange);
   }, []);
 
-  useEffect(() => {
-    if (!pullEnabled) return;
-
-    let startX = 0;
-    let startY = 0;
-    let deltaX = 0;
-    let deltaY = 0;
-    let tracking = false;
-    let pulling = false;
-
-    const start = (event: TouchEvent) => {
-      if (
-        event.touches.length !== 1 ||
-        window.scrollY > 1 ||
-        !(event.target instanceof Element) ||
-        event.target.closest("a,button,input,textarea,select,[contenteditable='true']")
-      ) {
-        return;
-      }
-      // Do not hijack a scroll container.
-      for (let node = event.target.parentElement; node && node !== document.body; node = node.parentElement) {
-        const overflow = getComputedStyle(node).overflowY;
-        if (/(auto|scroll)/.test(overflow) && node.scrollHeight > node.clientHeight) return;
-      }
-      startX = event.touches[0].clientX;
-      startY = event.touches[0].clientY;
-      deltaX = 0;
-      deltaY = 0;
-      tracking = true;
-      pulling = false;
-    };
-
-    const move = (event: TouchEvent) => {
-      if (!tracking || event.touches.length !== 1 || window.scrollY > 1) return;
-      deltaX = event.touches[0].clientX - startX;
-      deltaY = event.touches[0].clientY - startY;
-      if (deltaY > 15 && deltaY > Math.abs(deltaX) * 1.5) {
-        pulling = true;
-        if (event.cancelable) event.preventDefault();
-        setPull(true);
-      }
-    };
-
-    const end = () => {
-      const shouldRefresh = tracking && pulling && isPullRefreshGesture(deltaX, deltaY);
-      tracking = false;
-      pulling = false;
-      setPull(false);
-      if (shouldRefresh) void runProbeRef.current("pull");
-    };
-
-    const cancel = () => {
-      tracking = false;
-      pulling = false;
-      setPull(false);
-    };
-
-    window.addEventListener("touchstart", start, { passive: true });
-    window.addEventListener("touchmove", move, { passive: false });
-    window.addEventListener("touchend", end, { passive: true });
-    window.addEventListener("touchcancel", cancel, { passive: true });
-
-    return () => {
-      window.removeEventListener("touchstart", start);
-      window.removeEventListener("touchmove", move);
-      window.removeEventListener("touchend", end);
-      window.removeEventListener("touchcancel", cancel);
-      setPull(false);
-    };
-  }, [pullEnabled]);
-
   const dismiss = useCallback(() => {
     if (notice !== null) dismissed.current = notice;
     clearDismiss();
@@ -341,26 +259,6 @@ export default function Connectivity() {
 
   return (
     <>
-      {pullEnabled && pull ? (
-        <div className="pull-cue" aria-hidden="true">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M12 5v14" />
-            <path d="m5 12 7 7 7-7" />
-          </svg>
-          Release to refresh
-        </div>
-      ) : null}
-
       {/* Two live regions, one message. aria-live cannot be changed reliably
           after mount, so the polite and assertive cases get their own region
           and only one of them ever holds content. */}

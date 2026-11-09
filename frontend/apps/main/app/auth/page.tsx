@@ -9,7 +9,7 @@ export default function RegisterPage() {
     <AccountShell
       eyebrow="EPE LAWA members"
       title="Create an account"
-      description="Join the EPE LAWA community and make your member profile."
+      description="Join the EPE LAWA community."
       showThemeToggle={false}
     >
       <SignUpForm />

@@ -1,9 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import {
   probeConnection,
-  isPullRefreshEnabled,
-  isPullRefreshGesture,
   nextProbeDelay,
 } from '../apps/main/lib/connectivity.ts';
 
@@ -62,17 +61,14 @@ test('retry backoff grows, caps at 60s, and jitters by ±20%', () => {
   assert.equal(nextProbeDelay(0, () => 1), 4800, '+20%');
 });
 
-test('pull refresh requires a deliberate mostly vertical downward gesture', () => {
-  assert.equal(isPullRefreshGesture(0, 80), true);
-  assert.equal(isPullRefreshGesture(5, 79), false);
-  assert.equal(isPullRefreshGesture(70, 90), false);
-  assert.equal(isPullRefreshGesture(0, -100), false);
-});
-
-test('custom pull refresh is disabled on the landing page and unknown paths', () => {
-  assert.equal(isPullRefreshEnabled('/'), false);
-  assert.equal(isPullRefreshEnabled(null), false);
-  assert.equal(isPullRefreshEnabled(''), false);
-  assert.equal(isPullRefreshEnabled('/about'), true);
-  assert.equal(isPullRefreshEnabled('/status/404'), true);
+test('custom pull-to-refresh code and cue are absent from the public app', async () => {
+  const component = await readFile(new URL('../apps/main/app/connectivity.tsx', import.meta.url), 'utf8');
+  const styles = await readFile(new URL('../apps/main/app/globals.css', import.meta.url), 'utf8');
+  const staffStyles = await readFile(new URL('../apps/admin/app/globals.css', import.meta.url), 'utf8');
+  assert.doesNotMatch(component, /touchstart|touchmove|pull-cue|isPullRefresh|reason === "pull"/i);
+  assert.doesNotMatch(styles, /\.pull-cue/);
+  assert.match(styles, /html\s*\{\s*overscroll-behavior-y:\s*none;/);
+  assert.match(staffStyles, /html\s*\{\s*overscroll-behavior-y:\s*none;/);
+  assert.doesNotMatch(styles, /body\s*\{[^}]*overflow(?:-y)?:\s*hidden/s);
+  assert.doesNotMatch(staffStyles, /body\s*\{[^}]*overflow(?:-y)?:\s*hidden/s);
 });

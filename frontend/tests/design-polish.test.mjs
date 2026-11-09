@@ -11,13 +11,21 @@ test("navbar has a distinct theme switch, concise brand lockup, and outside-clos
   const theme = read("frontend/apps/main/components/theme-toggle.tsx");
   const header = read("frontend/apps/main/components/site-header.tsx");
   const brand = read("frontend/apps/main/components/brand.tsx");
+  const staffBrand = read("frontend/apps/admin/components/brand.tsx");
+  const footer = read("frontend/apps/main/components/site-footer.tsx");
+  const home = read("frontend/apps/main/app/page.tsx");
   const css = read("frontend/apps/main/app/globals.css");
 
   assert.match(theme, /className="theme-control"/);
   assert.match(theme, /aria-pressed=\{theme === "dark"\}/);
   assert.match(theme, /theme-control__thumb/);
-  assert.match(header, /<BrandLockup size=\{30\} showPlace=\{false\} \/>/);
-  assert.match(brand, /showPlace\s*\?\s*<span className="brand__place">Epe Division<\/span> : null/);
+  assert.match(header, /<BrandLockup size=\{30\} \/>/);
+  assert.doesNotMatch(header + brand + staffBrand + footer, /Epe Division|brand__place|brand-lockup__tagline|showPlace/);
+  const heroArt = home.match(/<figure className="home-hero__art home-hero__art--logo">[\s\S]*?<\/figure>/)?.[0] ?? "";
+  assert.ok(heroArt, "homepage logo hero exists");
+  assert.match(heroArt, /alt="EPE LAWA official logo"/);
+  assert.doesNotMatch(heroArt, /Epe Division|The voice of Epe Division/i);
+  assert.match(header, /A shared home for everyone\./);
   assert.match(header, /addEventListener\("pointerdown", onOutsideDrawer\)/);
   assert.match(css, /width: min\(215px,max\(150px,calc\(50vw - 10px\)\)\)/);
   assert.match(css, /\.drawer-account \{ flex-direction: column;/);

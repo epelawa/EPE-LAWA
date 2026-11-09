@@ -10,7 +10,7 @@ export default function ForgotPasswordPage() {
     <AccountShell
       eyebrow="Account recovery"
       title="Reset your password"
-      description="Enter your account email to request a secure reset link."
+      description="Enter your email to request a reset link."
       showThemeToggle={false}
     >
       <ResetForm />

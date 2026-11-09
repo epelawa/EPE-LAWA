@@ -20,7 +20,7 @@ test("member auth uses the public Supabase client and validates profile/session 
   assert.match(callback, /startsWith\("\/\/"\)/);
 });
 
-test("auth forms use guided steps, progressive enhancement, visible labels, and accessible feedback", async () => {
+test("signup remains guided while member sign-in is one accessible screen", async () => {
   const forms = await readFile(new URL("auth/auth-forms.tsx", root), "utf8");
   const actions = await readFile(new URL("auth/actions.ts", root), "utf8");
   const resend = await readFile(new URL("auth/resend-verification-form.tsx", root), "utf8");
@@ -28,9 +28,16 @@ test("auth forms use guided steps, progressive enhancement, visible labels, and 
   const loginPage = await readFile(new URL("login/page.tsx", root), "utf8");
   const recoveryPage = await readFile(new URL("forgot-password/page.tsx", root), "utf8");
   const newPasswordPage = await readFile(new URL("auth/new-password/page.tsx", root), "utf8");
+  const signIn = forms.match(/export function SignInForm\(\) \{[\s\S]*?\n\}/)?.[0] ?? "";
 
-  assert.match(forms, /useAuthSteps\(2\)/);
   assert.match(forms, /useAuthSteps\(4\)/);
+  assert.doesNotMatch(forms, /useAuthSteps\(2\)/);
+  assert.ok(signIn, "a single public sign-in component exists");
+  assert.doesNotMatch(signIn, /useAuthSteps|StepProgress|StepActions|auth-step/);
+  assert.match(signIn, /id="login-email"/);
+  assert.match(signIn, /id="login-password"/);
+  assert.match(signIn, /<GoogleSignInUnavailable \/>/);
+  assert.match(signIn, /className="auth-submit" type="submit"/);
   assert.match(forms, /data-total=\{total\}/);
   assert.match(forms, /data-enhanced=\{flow\.enhanced\}/);
   assert.match(forms, /onSubmit=\{flow\.onSubmit\}/);

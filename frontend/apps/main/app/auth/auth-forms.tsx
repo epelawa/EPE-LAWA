@@ -209,29 +209,20 @@ export function SignUpForm() {
 
 export function SignInForm() {
   const [state, action, pending] = useActionState(signIn, initial);
-  const flow = useAuthSteps(2);
-
   return (
-    <form ref={flow.formRef} action={action} onSubmit={flow.onSubmit} className="auth-form auth-form--stepped" data-enhanced={flow.enhanced} data-step={flow.step} aria-busy={pending}>
-      {!flow.enhanced || flow.step === 1 ? <GoogleSignInUnavailable /> : null}
-      {flow.enhanced ? <StepProgress step={flow.step} total={2} label={flow.step === 1 ? "Email address" : "Password"} /> : null}
-      <fieldset className="auth-step" data-step="1" hidden={flow.enhanced && flow.step !== 1}>
-        <legend className="auth-visually-hidden">Step 1 of 2: email address</legend>
-        <div className="auth-field">
-          <label htmlFor="login-email">Email address</label>
-          <input id="login-email" name="email" type="email" autoComplete="email" placeholder="name@example.com" maxLength={254} required={!flow.enhanced || flow.step === 1} aria-describedby="login-email-help" />
-          <small id="login-email-help">Use the email on your member account.</small>
-        </div>
-      </fieldset>
-      <fieldset className="auth-step" data-step="2" hidden={flow.enhanced && flow.step !== 2}>
-        <legend className="auth-visually-hidden">Step 2 of 2: password</legend>
-        <div className="auth-field">
-          <label htmlFor="login-password">Password</label>
-          <PasswordField id="login-password" name="password" autoComplete="current-password" placeholder="Enter your password" maxLength={128} required={!flow.enhanced || flow.step === 2} />
-        </div>
-      </fieldset>
+    <form action={action} className="auth-form" aria-busy={pending}>
+      <GoogleSignInUnavailable />
+      <div className="auth-field">
+        <label htmlFor="login-email">Email address</label>
+        <input id="login-email" name="email" type="email" autoComplete="email" placeholder="name@example.com" maxLength={254} required aria-describedby="login-email-help" />
+        <small id="login-email-help">Use the email on your member account.</small>
+      </div>
+      <div className="auth-field">
+        <label htmlFor="login-password">Password</label>
+        <PasswordField id="login-password" name="password" autoComplete="current-password" placeholder="Enter your password" maxLength={128} required />
+      </div>
       <Feedback state={state} />
-      <StepActions enhanced={flow.enhanced} step={flow.step} total={2} pending={pending} submitLabel="Sign in" pendingLabel="Signing in…" onNext={flow.next} onBack={flow.back} />
+      <button className="auth-submit" type="submit" disabled={pending}>{pending ? "Signing in…" : "Sign in"}</button>
     </form>
   );
 }

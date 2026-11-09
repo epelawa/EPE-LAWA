@@ -30,6 +30,12 @@ test("each staff section is mounted at the chosen same-origin /admin path", () =
   for (const [route, wrapper] of routes) {
     assert.ok(existsSync(resolve(root, wrapper)), `${route} wrapper exists`);
     const source = read(wrapper);
+    if (route === "/admin/login") {
+      assert.match(source, /<AccountShell\b/, "same-origin staff login uses the shared public auth shell");
+      assert.match(source, /safeAdminNextPath\(nextValue\)/, "return hint is sanitized before it reaches the form");
+      assert.match(source, /<AdminLoginForm nextPath=\{nextPath\}/);
+      continue;
+    }
     assert.match(source, /export \{ default \} from/, `${route} reuses its existing page`);
     const importPath = source.match(/from\s+["']([^"']+)["']/)?.[1];
     assert.ok(importPath, `${route} has an explicit source page`);

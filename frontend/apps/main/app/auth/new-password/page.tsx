@@ -9,7 +9,7 @@ export default function NewPasswordPage() {
     <AccountShell
       eyebrow="Account recovery"
       title="Choose a new password"
-      description="Use a valid recovery link to secure your account again."
+      description="Set a new password for your account."
       showThemeToggle={false}
     >
       <NewPasswordForm />

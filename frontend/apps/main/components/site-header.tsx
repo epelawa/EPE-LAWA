@@ -85,7 +85,7 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
 
   return <header className="site-head">
     <div className="masthead-bar">
-      <Link className="nav-brand" href="/"><BrandLockup size={30} showPlace={false} /></Link>
+      <Link className="nav-brand" href="/"><BrandLockup size={30} /></Link>
       <nav className="site-head__nav" aria-label="Main">
         <ul className="nav-items">
           {inline.map(item => <li key={item.href}><Link className="nav-link" href={item.href} aria-current={current(pathname,item.href) ? "page" : undefined}>{item.label}</Link></li>)}
@@ -99,7 +99,7 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
       <div ref={drawerRef} id="site-drawer" className="drawer" role="dialog" aria-modal="true" aria-labelledby="site-drawer-title" inert={!drawerOpen}>
         <div className="drawer-heading"><p id="site-drawer-title">Find your place in Epe.</p><button className="btn-icon" type="button" aria-label="Close menu" onClick={closeDrawer}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg></button></div>
         <nav className="drawer-nav" aria-label="All sections"><ul>{items.map(item => <li key={item.href}><Link className="drawer-link" href={item.href} aria-current={current(pathname,item.href) ? "page" : undefined}><span className="drawer-label">{item.label}</span>{item.hint ? <span className="drawer-hint">{item.hint}</span> : null}</Link></li>)}</ul></nav>
-        <div className="drawer-account" aria-label="Member account"><Link className="btn-primary" href="/auth">Create account <ArrowUpRightIcon size={15} aria-hidden="true" /></Link><Link className="btn-secondary" href="/login">Sign in</Link></div><p className="drawer-foot">Epe Division, Lagos State · A shared home.</p>
+        <div className="drawer-account" aria-label="Member account"><Link className="btn-primary" href="/auth">Create account <ArrowUpRightIcon size={15} aria-hidden="true" /></Link><Link className="btn-secondary" href="/login">Sign in</Link></div><p className="drawer-foot">A shared home for everyone.</p>
       </div>
     </div>
   </header>;

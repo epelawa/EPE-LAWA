@@ -3,7 +3,9 @@ import "./globals.css";
 
 export const dynamic = "force-dynamic";
 
-import type { Metadata } from "next";
+export const viewport: Viewport = { themeColor: "#F1F4FA" };
+
+import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import Connectivity from "./connectivity";
 import SiteHeader from "../components/site-header";
