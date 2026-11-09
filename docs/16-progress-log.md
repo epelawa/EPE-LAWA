@@ -152,3 +152,9 @@ No current full all-eight local/preview release pass, provider delivery, or live
 - Created PR #24 from `feat/auth-reference-redesign` to `main`: https://github.com/epelawa/EPE-LAWA/pull/24. Initial implementation commit `5a6ca448f941992a37cdcae006c16bd09a7f2453` has author and committer `epelawa <info.epelawa@gmail.com>`. A documentation follow-up is being added to the same PR to record its open state and current handoff.
 - Local gates remain the current evidence: typecheck **5/5**, builds **2/2**, tests **139: 138 pass, 0 fail, 1 documented skip**; Playwright **20 auth route/viewport checks + 9 interactions**, with no overflow, notice overlap, external calls or page errors. Screenshots remain local production-build captures in `/workspace/epe-lawa-release-screenshots/phase6-auth-reference-final/`.
 - The exact latest Vercel preview and GitHub required-check state have not yet been verified; do not merge until the authenticated CLI reports a healthy preview and no known failed/pending required checks. No browser login or production Supabase changes.
+
+
+### 2026-11-09 11:38 WAT — PR #24 hosted status
+
+- Authenticated Vercel CLI found deployment `epe-lawa-h90vmkk31-epe-lawa.vercel.app` READY for exact head `3e143f6ed9e514c24c52b8a1be74d19cd0b5e7ea` (`feat/auth-reference-redesign`). An unauthenticated `curl` to `/login` redirected to Vercel SSO; no browser login or hosted-page screenshot was attempted. The local-production screenshots remain the visual evidence.
+- GitHub CLI `pr view` confirms #24 OPEN and MERGEABLE at that head. However, `gh pr checks`, REST commit status and REST deployments endpoints each return HTTP 403 `Resource not accessible by integration`. Required-check state is therefore not confirmed; **do not merge** until it can be verified through authorized CLI access. Continue independent local work; production Supabase remains untouched.

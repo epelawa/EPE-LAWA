@@ -47,3 +47,8 @@ Production Supabase currently has remote migration-ledger/name conflicts and sch
 ### 2026-11-09 11:35 WAT — PR #24 opened
 
 PR #24 is open at https://github.com/epelawa/EPE-LAWA/pull/24 on `feat/auth-reference-redesign`. Its initial implementation commit is `5a6ca448f941992a37cdcae006c16bd09a7f2453`; this branch also has a follow-up documentation update in progress. The Vercel preview and hosted checks have not yet been inspected. Continue through the authenticated GitHub CLI wrapper and read-only Vercel CLI only; do not browser-login or merge until the exact latest preview/check state is healthy.
+
+
+### 2026-11-09 11:38 WAT — PR #24 preview and check-access result
+
+Vercel CLI confirmed deployment `epe-lawa-h90vmkk31-epe-lawa.vercel.app` READY for exact head `3e143f6ed9e514c24c52b8a1be74d19cd0b5e7ea`. An unauthenticated HTTP request redirects to Vercel SSO, so the protected preview was not opened or presented as reviewed; the local-production screenshots remain the honest visual evidence. GitHub `pr checks`, REST commit status and deployment listing all return HTTP 403 for this connector. PR #24 is OPEN and MERGEABLE, but required-check state cannot be confirmed; **do not merge**. Continue the separate local newsroom permission fix without browser login or production Supabase writes.
