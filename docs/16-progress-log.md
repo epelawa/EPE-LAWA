@@ -133,3 +133,20 @@ No current full all-eight local/preview release pass, provider delivery, or live
 - The local production-build Playwright matrix passed **21 states**: 20 route/viewport combinations for sign-in, signup, recovery and new-password at **320/375/768/1024/1440px**, plus the 320px pre-hydration sign-in state. Keyboard step focus/validation, reduced motion, saved dark-theme persistence, local font loading, the fixed notice and no-footer/no-toggle auth shell were checked. No overflow, notice overlap, external requests or browser page errors were found. **37 matrix screenshots** were saved, plus a fresh-context **375px default-light** screenshot, under `/workspace/epe-lawa-release-screenshots/phase5-auth-polish-final/`.
 - A scripts-disabled browser remains on the app-wide streamed `app/loading.tsx` fallback, with route content held in a hidden segment; this existing Next.js streaming limitation means no-JavaScript auth interaction is **not claimed** by this PR. The separate auth-flow review found no material issue.
 - This UI step made no production Auth, email-provider, schema, migration or user-content changes. Hosted email delivery remains untested; preview verification and PR merge are still pending.
+
+
+### 2026-11-09 13:24 WAT — Public contact/privacy intake, local verification (PR pending)
+
+The isolated branch is `fix/public-contact-privacy`, based on `cf7c8f0`. The public form, server action and mailbox constant were removed because the handler did not deliver or persist messages; About, Contact, Guidelines, Privacy, Terms and `/.well-known/security.txt` now make the unavailable intake status explicit without exposing the private primary-admin email. Contact is **not operational**: no safe persistent destination exists, and the page states that messages are not sent or stored. No test messages or visitor details were submitted.
+
+Node 22.23.4/pnpm 10.34.9 workspace typecheck passed **5/5 tasks**. Forced production builds passed **2/2 app tasks** using `https://epelawa.vercel.app` as the canonical site origin and only synthetic `.invalid` Supabase URLs/dummy keys. The full suite passed **139 tests: 138 passed, 0 failed, 1 documented PGlite skip**. A first test run used a loopback site origin and failed the canonical-origin assertion; the corrected forced rebuild and rerun passed. Integration checks returned HTTP 200 for About, Contact, Guidelines, Privacy, Terms and `/.well-known/security.txt`; rendered-page checks found no private admin address or `mailto:` link, and Contact has no form. These checks cover this focused privacy change, not the complete eight-module release or full Playwright matrix.
+
+Visually inspected local full-page production-mode captures at mobile (375×812 viewport) and desktop (1440×900 viewport). Files are under `/workspace/epe-lawa-release-screenshots/pr28-public-contact-privacy/`:
+
+- Contact: `375x812-fullpage-contact.png`, `1440x900-fullpage-contact.png`.
+- About: `375x812-fullpage-about.png`, `1440x900-fullpage-about.png`.
+- Guidelines: `375x812-fullpage-guidelines.png`, `1440x900-fullpage-guidelines.png`.
+- Privacy: `375x812-fullpage-privacy.png`, `1440x900-fullpage-privacy.png`.
+- Terms: `375x812-fullpage-terms.png`, `1440x900-fullpage-terms.png`.
+
+Visual review found two separate follow-ups: the shared footer brand lockup still shows “EPE DIVISION,” and the fixed preference notice overlaps some lower-page copy until dismissed. They are not included in this contact-privacy change. Production Supabase settings, migrations, user data and deployments were not changed. The exact Vercel preview and PR status remain pending.

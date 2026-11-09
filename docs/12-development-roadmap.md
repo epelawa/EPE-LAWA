@@ -33,3 +33,11 @@ Do not mark any gate complete without evidence. No commit, push or merge is impl
 ## Known status
 
 A supplied Vercel log documents an older `main` build failure at `8885e16` from unresolved helper imports and Turbo-filtered environment variables. Helpers now exist in the worktree, but a current build and preview have not thereby been proven. The public alias returned older site content and does not verify this branch. No isolated Supabase development branch was created. Email sender authentication and Paystack setup remain unconfirmed. The map page does not use a configured Google Maps API, Places or geocoding integration.
+
+
+## 2026-11-09 — Public contact/privacy intake (local evidence; PR pending)
+
+- The non-delivering contact form/action and public primary-admin mailbox link have been removed. About, Contact, Guidelines, Privacy, Terms and `/.well-known/security.txt` now avoid exposing that address. Contact is **not operational**: there is no safe persistent message destination, and no message is sent or stored. Keep intake disabled until a real route is configured and tested.
+- Node 22.23.4/pnpm 10.34.9: workspace typecheck passed **5/5 tasks**; forced production app builds passed **2/2 tasks**; full suite passed **139 tests: 138 passed, 0 failed, 1 documented PGlite skip**. The initial suite used a loopback canonical site URL and failed that origin assertion; after rebuilding with the canonical `https://epelawa.vercel.app` origin and synthetic `.invalid` Supabase endpoints, the full suite passed. No production Supabase settings, migrations or user content were changed.
+- Six local route checks returned HTTP 200. The five rendered public pages showed no private primary-admin email or `mailto:` link, and Contact rendered no form. Full-page mobile and desktop screenshots are recorded in `docs/16-progress-log.md` under `/workspace/epe-lawa-release-screenshots/pr28-public-contact-privacy/`.
+- The Vercel preview for this branch is not yet verified. Separate visual follow-ups remain: the shared footer logo lockup still shows “EPE DIVISION,” and the fixed preference notice overlaps some lower-page copy while visible; neither is included in this privacy step.
