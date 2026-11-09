@@ -33,3 +33,11 @@ Do not mark any gate complete without evidence. No commit, push or merge is impl
 ## Known status
 
 A supplied Vercel log documents an older `main` build failure at `8885e16` from unresolved helper imports and Turbo-filtered environment variables. Helpers now exist in the worktree, but a current build and preview have not thereby been proven. The public alias returned older site content and does not verify this branch. No isolated Supabase development branch was created. Email sender authentication and Paystack setup remain unconfirmed. The map page does not use a configured Google Maps API, Places or geocoding integration.
+
+
+### 2026-11-09 verification addendum
+
+- The supplied Vercel failure at `8885e16` is historical. `frontend/apps/main/lib/dates.ts` and `frontend/apps/main/lib/media.ts` exist; the current local mainline build succeeded in the full Node 22.23.4/pnpm 10.34.9 gate on `fix/forum-report-redirect` (base `cf7c8f0`). This does not establish preview access or production deployment.
+- PR #24 and PR #25 remain open. PR #24's exact commit preview is Vercel `READY`, but `/login` redirects to Vercel SSO; GitHub status-check details return 403. PR #25 remains unmerged; no production draft-creation success is claimed.
+- PR #26 (`fix/forum-report-redirect`) is open at code commit `f4af888`; its Vercel deployment is `READY`, but the staff route redirects to SSO and GitHub status-check details return 403. Keep all PRs open; do not merge on unavailable check evidence.
+- Production Supabase remains read-only while migration-ledger/schema/capability drift is unresolved. No production settings, migrations, or data were changed.
