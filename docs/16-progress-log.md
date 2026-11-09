@@ -23,7 +23,7 @@ An active, verified staff member with `article.publish` may publish directly wit
 
 ## Current verification snapshot
 
-No current full all-eight local/preview release pass, provider delivery, or live RLS pass is asserted in this log. A read-only production baseline is recorded below but does not verify this feature branch. No isolated Supabase development branch was created. No production writes are authorized.
+No current full all-eight local/preview release pass, provider delivery, or live RLS pass is asserted in this log. A read-only production baseline is recorded below but does not verify this feature branch. No isolated Supabase development branch was created. Production migrations, schema, hosted email settings, and user-content writes remain unauthorized while migration reconciliation is pending; any separately owner-authorized staff-access changes are kept only in the private audit record.
 
 ### 2026-11-08 — Cobalt and motion polish, local evidence
 
@@ -123,3 +123,13 @@ No current full all-eight local/preview release pass, provider delivery, or live
 - Fresh screenshots: `/workspace/epe-lawa-release-screenshots/phase4-admin-shell-rebased/desktop-admin-login.png`, `mobile-320-admin-login.png`, `mobile-375-admin-login.png`, `desktop-admin-404.png`, and `mobile-admin-404.png`.
 - A local anonymous newsroom probe logged an `Unauthorized` denial from the placeholder backend while the browser completed the staff-login redirect; no production data or credentials were used. One earlier test attempt had `ALLOW_INDEXING=false`, which intentionally made the homepage fixture noindex; the full gates were rerun with the correct synthetic production-indexing flag and passed as recorded above. PR creation, hosted preview verification and production deployment remain pending.
 - Independent read-only review found no material route-authentication or unsafe-redirect blocker; focused same-origin and site-indexing tests passed **6/6**.
+
+
+### 2026-11-09 10:45 WAT — Member auth form polish, final local verification (PR #23 pending)
+
+- Reworked member signup into four validated single-field steps and member sign-in into a compact two-step flow, preserving the existing server actions, safe redirects and non-enumerating recovery response. Added accessible progress/focus behavior, concise labels and placeholders, and compact mobile action/link rows. Auth cards omit the manual theme toggle while the saved preference remains active; public footer chrome stays hidden.
+- The storage notice is pinned on focused auth forms with measured reserved space, safe storage-error handling and zero reserved height after dismissal. At 320px the form remains above the notice; interactive touch targets remain at least 44px.
+- Node 22.23.4/pnpm 10.34.9 verification: workspace typecheck **5/5 tasks**, both production builds **2/2 tasks**, and the full suite **139 tests: 138 passed, 0 failed, 1 documented PGlite skip**. Builds/tests used only synthetic `.invalid` Supabase endpoints and dummy public keys.
+- The local production-build Playwright matrix passed **21 states**: 20 route/viewport combinations for sign-in, signup, recovery and new-password at **320/375/768/1024/1440px**, plus the 320px pre-hydration sign-in state. Keyboard step focus/validation, reduced motion, saved dark-theme persistence, local font loading, the fixed notice and no-footer/no-toggle auth shell were checked. No overflow, notice overlap, external requests or browser page errors were found. **37 matrix screenshots** were saved, plus a fresh-context **375px default-light** screenshot, under `/workspace/epe-lawa-release-screenshots/phase5-auth-polish-final/`.
+- A scripts-disabled browser remains on the app-wide streamed `app/loading.tsx` fallback, with route content held in a hidden segment; this existing Next.js streaming limitation means no-JavaScript auth interaction is **not claimed** by this PR. The separate auth-flow review found no material issue.
+- This UI step made no production Auth, email-provider, schema, migration or user-content changes. Hosted email delivery remains untested; preview verification and PR merge are still pending.

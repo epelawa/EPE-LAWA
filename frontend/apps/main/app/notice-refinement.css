@@ -7,14 +7,26 @@
 .toast .toast__action { padding-inline: 4px; font-size: 11px; }
 .toast .toast__action,.toast .toast__close { min-height: 44px; min-width: 44px; border-radius: 6px; }
 .toast .toast__close svg { width: 14px; height: 14px; }
-body .storage-notice { left: 12px; bottom: 12px; width: min(360px, calc(100% - 24px)); padding: 12px; border-radius: 10px; box-shadow: 0 6px 18px -6px rgb(10 16 35 / .18); }
+
+body .storage-notice { left: 12px; right: auto; bottom: 12px; width: min(360px, calc(100% - 24px)); padding: 12px; border-radius: 10px; box-shadow: 0 6px 18px -6px rgb(10 16 35 / .18); }
 body .storage-notice__title { margin-bottom: 4px; font-size: 13px; line-height: 1.375; }
 body .storage-notice__copy { font-size: 11px; line-height: 1.5; }
 body .storage-notice .ui-actions { margin-top: 8px; gap: 6px; }
 body .storage-notice .btn-primary,body .storage-notice .btn-ghost { min-height: 44px; padding: 8px 12px; font-size: 11px; }
 
-/* These notices are informative, not consent gates: keep focused flows unobstructed. */
-body:has(.auth-page) .storage-notice,
+/* The auth card reserves this fixed, non-modal notice's measured height. */
+body:has(.auth-page) .storage-notice {
+  position: fixed;
+  inset: auto max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  z-index: 45;
+  width: auto;
+  max-width: 360px;
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  margin: 0;
+}
+
+/* Link and error screens remain flow-based so their recovery controls stay unobstructed. */
 body:has(.auth-link-issue) .storage-notice,
 body:has(.focused-error-shell) .storage-notice {
   position: static;
@@ -26,9 +38,7 @@ body:has(.focused-error-shell) .storage-notice {
 
 body:has(.auth-page) .toast-region:empty,
 body:has(.auth-link-issue) .toast-region:empty,
-body:has(.focused-error-shell) .toast-region:empty {
-  display: none;
-}
+body:has(.focused-error-shell) .toast-region:empty { display: none; }
 
 body:has(.auth-page) .toast-region:not(:empty),
 body:has(.auth-link-issue) .toast-region:not(:empty),
@@ -49,11 +59,7 @@ body:has(.admin-shell) .storage-notice {
   width: min(480px, calc(100% - 32px));
   margin: 16px auto 24px;
 }
-
-body:has(.admin-shell) .toast-region:empty {
-  display: none;
-}
-
+body:has(.admin-shell) .toast-region:empty { display: none; }
 body:has(.admin-shell) .toast-region:not(:empty) {
   position: static;
   inset: auto;
