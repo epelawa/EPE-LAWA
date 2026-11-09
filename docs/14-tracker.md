@@ -11,7 +11,7 @@
 | Area | Status | Evidence / next gate |
 | --- | --- | --- |
 | Trending News | Partial implementation in worktree | Verify published-only read, private preview, direct authorized publish, stale revision denial and audit in isolated tests. |
-| Itan Ilu Mi / My Community History | Initial route/code exists in worktree; workflow unverified | Verify consent, provenance, private submissions, review and correction/takedown behavior. |
+| Itan Ilu Mi / My Community History | Initial route/code exists; workflow remains unverified | A read-only audit found no correction/removal intake for published records. The contact form explicitly does not send or store drafts, and production schema writes remain blocked pending migration reconciliation. Do not imply correction requests are accepted. |
 | Chat Forum / Digital Village Square | Existing schema/initial code; member flows unverified | Verify authenticated participation, reports, reasoned moderation, rate limits and audit. |
 | Map & Navigation | Manual/outbound URL behavior in worktree | Current code generates safe Google Maps search/directions URLs only. No Maps API/Places/geocoding integration is configured or verified; offline maps optional future work. |
 | Epe Business Directory & Marketplace | Existing schema/routes; complete workflows unverified | Verify approved listing, recorded human review, privacy and isolated order/payment gates. Paystack not confirmed operational. |
@@ -22,7 +22,7 @@
 | Deployment | Old public baseline checked; feature-branch preview unverified | Read-only Playwright on `https://epelawa.vercel.app` showed an older incomplete deployment; see `16-progress-log.md`. Production remained read-only. |
 
 | Historical Sites & Tourism | In scope; implementation/verification status not established by this audit | Verify sourced destinations, approval, public fields, visit facts and map handoff. |
-| EPE LAWA Radio | Public route exists; final full-flow verification outstanding | Verify official stream permission/URL/format/playback, truthful status, schedules/archive and staff capabilities. |
+| EPE LAWA Radio | Admin read-error state implemented in PR #27; local production-mode preview confirms alert with no editor forms. Full data/provider/playback workflow remains unverified | Local screenshots: `/workspace/epe-lawa-release-screenshots/pr27-radio-error-local/375x812-radio-read-failure-local.png` and `/workspace/epe-lawa-release-screenshots/pr27-radio-error-local/1440x900-radio-read-failure-local.png`. Verify official stream permission/URL/format/playback, schedules/archive and staff capabilities. |
 | Who is Who in Epe | Public route exists; final full-flow verification outstanding | Verify approved profiles, human role checks, privacy, correction/removal and staff flow. |
 ## Cross-cutting release rules
 
