@@ -31,6 +31,14 @@ export function adminHref(path: string): string {
   return staffHref(path, ADMIN_BASE_PATH);
 }
 
+export function adminLoginHref(loginPath: string, routeHint: unknown, basePath = ADMIN_BASE_PATH): string {
+  if (basePath !== "/admin" || typeof routeHint !== "string") return loginPath;
+
+  const nextPath = safeAdminNextPath(routeHint);
+  const separator = loginPath.includes("?") ? "&" : "?";
+  return `${loginPath}${separator}next=${encodeURIComponent(nextPath)}`;
+}
+
 /**
  * Validate an untrusted login return hint. It can select a destination only
  * after the normal verified staff sign-in succeeds; it grants no access.

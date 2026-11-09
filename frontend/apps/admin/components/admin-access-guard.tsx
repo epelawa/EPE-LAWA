@@ -1,5 +1,6 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { adminLoginHref } from "../lib/admin-path";
 import { getAdminAccessForSession } from "../lib/supabase-access";
 
 export async function AdminAccessGuard({
@@ -7,6 +8,7 @@ export async function AdminAccessGuard({
   loginPath,
 }: Readonly<{ children: React.ReactNode; loginPath: string }>) {
   const cookieStore = await cookies();
+  const requestHeaders = await headers();
   const access = await getAdminAccessForSession({
     getAll: () => cookieStore.getAll().map(({ name, value }) => ({ name, value })),
     setAll: (entries) => {
@@ -23,6 +25,8 @@ export async function AdminAccessGuard({
     },
   });
 
-  if (!access.allowed || !access.userId) redirect(loginPath);
+  if (!access.allowed || !access.userId) {
+    redirect(adminLoginHref(loginPath, requestHeaders.get("x-epe-lawa-admin-route")));
+  }
   return children;
 }

@@ -5,7 +5,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 process.env.NEXT_PUBLIC_ADMIN_BASE_PATH = "/admin";
-const { ADMIN_BASE_PATH, adminHref, safeAdminNextPath, staffHref } = await import("../apps/admin/lib/admin-path.ts");
+const { ADMIN_BASE_PATH, adminHref, adminLoginHref, safeAdminNextPath, staffHref } = await import("../apps/admin/lib/admin-path.ts");
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const read = (path) => readFileSync(resolve(root, path), "utf8");
@@ -39,6 +39,10 @@ test("each staff section is mounted at the chosen same-origin /admin path", () =
   const shell = read("frontend/apps/main/app/admin/layout.tsx");
   assert.match(shell, /basePath="\/admin"/);
   assert.match(shell, /index: false/);
+  const proxy = read("frontend/apps/main/proxy.ts");
+  assert.match(proxy, /requestHeaders\.set\("x-epe-lawa-admin-route", request\.nextUrl\.pathname\)/);
+  assert.match(proxy, /matcher:\s*\["\/admin\/:path\*"\]/);
+  assert.doesNotMatch(proxy, /request\.nextUrl\.search/, "return hints exclude query parameters");
   const catchAll = read("frontend/apps/main/app/admin/[...unknown]/page.tsx");
   assert.match(catchAll, /notFound\(\)/);
   assert.match(read("frontend/apps/main/app/admin/not-found.tsx"), /admin\/app\/not-found/);
@@ -59,8 +63,11 @@ test("every protected same-origin staff route uses the existing server-side gate
   const layout = read("frontend/apps/main/app/admin/(protected)/layout.tsx");
   const guard = read("frontend/apps/admin/components/admin-access-guard.tsx");
   assert.match(layout, /AdminAccessGuard loginPath="\/admin\/login"/);
+  assert.match(guard, /await headers\(\)/);
+  assert.match(guard, /adminLoginHref\(loginPath, requestHeaders\.get\("x-epe-lawa-admin-route"\)\)/);
   assert.match(guard, /getAdminAccessForSession/);
-  assert.match(guard, /if \(!access\.allowed \|\| !access\.userId\) redirect\(loginPath\)/);
+  assert.match(guard, /if \(!access\.allowed \|\| !access\.userId\)/);
+  assert.match(guard, /redirect\(adminLoginHref/);
   assert.match(guard, /httpOnly: true/);
   assert.match(guard, /secure: true/);
   assert.match(guard, /sameSite: "lax"/);
@@ -76,6 +83,9 @@ test("every protected same-origin staff route uses the existing server-side gate
 test("staff login return hints are relative, same-origin, and cannot select login or grant access", () => {
   assert.equal(safeAdminNextPath("/admin/newsroom?state=draft"), "/admin/newsroom?state=draft");
   assert.equal(safeAdminNextPath("/admin"), "/admin");
+  assert.equal(adminLoginHref("/admin/login", "/admin/newsroom"), "/admin/login?next=%2Fadmin%2Fnewsroom");
+  assert.equal(adminLoginHref("/admin/login", "https://outside.example/admin"), "/admin/login?next=%2Fadmin");
+  assert.equal(adminLoginHref("/login", "/newsroom", ""), "/login", "standalone staff app ignores the main-app route header");
   for (const value of [
     "https://outside.example/admin",
     "//outside.example/admin",
