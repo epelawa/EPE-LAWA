@@ -4,7 +4,7 @@
 
 ## A new visual system, not a reskin
 
-The owner superseded the earlier Fig & Limestone palette with EPE-LAWA’s cobalt system. Use the colors below with original EPE-LAWA branding; the palette reference contributes colors only, never its copy, logos or product language. Inter provides one consistent interface voice. The homepage is an original split editorial hero followed by clear entry points, the eight-section community index, genuine reporting and a complete footer.
+The owner superseded the earlier Fig & Limestone palette with EPE-LAWA’s cobalt system. Use the colors below with original EPE-LAWA branding; the palette reference contributes colors only, never its copy, logos or product language. The interface uses locally bundled Plus Jakarta Sans under the SIL Open Font License as a legally usable, close alternative to Codec Pro; it is not the commercial Codec Pro font. The homepage uses the supplied official logo in its hero, followed by clear entry points, the eight-section community index, genuine reporting and a complete footer.
 
 [Sckooly](https://sckooly.app/) remains the primary structure reference. [GetQuant](https://getquant.app/) informs restraint, spacing and clear product hierarchy; [JĀSĀB](https://jasab.vercel.app/) informs editorial rhythm and calm navigation. All three were inspected in the browser before designing. Do not copy their content, logos, code or assets. Use the supplied EPE-LAWA brand mark, project-root reference images and original art. The generated lagoon illustration is editorial artwork, not a documentary photograph or evidence about a real location.
 
@@ -25,7 +25,13 @@ Use semantic tokens and explicit dark-mode variants. Light mode uses Cloud backg
 
 ## Compact, readable typography
 
-Scale the previous display hierarchy to approximately 90%, rather than shrinking the entire document with CSS zoom. The desktop hero is capped at 57.6px instead of 64px; page titles and section roles follow the same compact direction. Retain at least 16px for body text and form controls, 14px for ordinary controls/metadata, and 12px for short labels. Article content remains comfortably measured at about 62–72ch. Native browser zoom stays intact.
+Scale the previous display hierarchy to approximately 90%, rather than shrinking the entire document with CSS zoom. Keep the desktop hero close to the confirmed 56px/61.6px GetQuant reference and policy body text at 16px/26px. Retain at least 16px for ordinary body text and form controls, 14px for ordinary controls/metadata, and 12px for short labels. Article content remains comfortably measured at about 62–72ch. Native browser zoom stays intact; never describe Plus Jakarta Sans as Codec Pro.
+
+## Account and authentication screens
+
+Use the owner-provided `266649.jpg` as a composition reference only: a soft textured light canvas, cobalt abstract art panel with the EPE-LAWA mark and heading, an overlapping rounded white form card, compact pill fields, clear password visibility control, strong rounded action, legal links and an account-switch link. Replace all source-brand wording with original EPE-LAWA copy and retain the approved cobalt palette. Keep Google sign-in disabled and labeled Coming Soon until its provider is configured. Preserve validation, step order, callback/recovery actions and Supabase-backed server actions.
+
+Focused auth cards, the member dashboard, staff screens and error screens omit the public footer; focused auth also omits the manual theme switch while preserving saved theme preference. At 320/375px and short viewport heights, cards fit without page scroll and the fixed storage notice remains visible without intersecting form controls. The line-grid texture is light-mode only; dark mode remains a saved user preference.
 
 ## Layout and interaction
 

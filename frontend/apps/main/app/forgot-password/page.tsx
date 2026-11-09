@@ -9,12 +9,15 @@ export default function ForgotPasswordPage() {
   return (
     <AccountShell
       eyebrow="Account recovery"
-      title="Reset your password."
-      description="Enter your account email to request a reset link."
+      title="Reset your password"
+      description="Enter your account email to request a secure reset link."
       showThemeToggle={false}
     >
       <ResetForm />
-      <p className="auth-footnote">Remembered your password? <Link href="/login">Sign in</Link></p>
+      <nav className="auth-switch" aria-label="Account options">
+        <span>Remembered your password?</span>
+        <Link href="/login">Sign in</Link>
+      </nav>
     </AccountShell>
   );
 }

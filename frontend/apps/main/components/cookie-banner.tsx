@@ -72,7 +72,7 @@ export default function CookieBanner() {
     <div ref={bannerRef} className="storage-notice" role="region" aria-label="Storage notice">
       <p className="storage-notice__title">Your browser, your preferences.</p>
       <div className="storage-notice__copy">
-        Theme choice stays on this device. Sign-in uses essential session cookies; optional tracking is off.
+        Theme stays on this device. Sign-in uses essential cookies; optional tracking is off.
       </div>
       <div className="ui-actions">
         <button type="button" className="btn-primary" onClick={accept}>Got it</button>

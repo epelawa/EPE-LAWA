@@ -16,8 +16,11 @@ test("member auth routes use a centered branded shell without manual theme contr
   ]);
 
   assert.match(shell, /className="auth-page"/);
+  assert.match(shell, /className="auth-frame"/);
+  assert.match(shell, /className="auth-art"/);
   assert.match(shell, /className="auth-card"/);
   assert.match(shell, /<FocusedPageControls showThemeToggle=\{showThemeToggle\}/);
+  assert.match(shell, /showThemeToggle = false/);
   assert.match(shell, /showThemeToggle\?: boolean/);
   assert.match(controls, /BrandLockup size=\{32\} showPlace=\{false\}/);
   assert.match(controls, /showThemeToggle \? <ThemeToggle \/> : null/);
@@ -26,8 +29,18 @@ test("member auth routes use a centered branded shell without manual theme contr
   assert.match(styles, /auth-step-actions\[data-enhanced="false"\] \.auth-step-back/);
   assert.match(styles, /auth-step-actions\[data-enhanced="true"\]\[data-step="1"\] \.auth-step-back/);
   assert.match(styles, /auth-step-actions\[data-enhanced="true"\]\[data-total="4"\]\[data-step="3"\] \.auth-step-continue/);
+  assert.match(styles, /\.auth-art::before/);
+  assert.match(styles, /\.auth-card\s*\{[^}]*margin:\s*-42px/s);
+  assert.match(styles, /\.auth-field input\s*\{[^}]*border-radius:\s*999px/s);
+  assert.match(styles, /\.auth-password-toggle\s*\{[^}]*min-height:\s*46px/s);
+  assert.match(styles, /\.auth-provider__button:disabled/);
   assert.match(styles, /@media \(max-height: 600px\)/);
+  assert.match(styles, /@media \(max-height: 560px\)/);
+  assert.match(styles, /@media \(max-width: 360px\) and \(max-height: 620px\)/);
+  assert.match(styles, /\.auth-step-continue \{ background: var\(--palette-cobalt\); color: var\(--palette-midnight\); \}/);
+  assert.match(styles, /min\(var\(--storage-notice-height, 148px\), 124px\)/);
   assert.match(styles, /\.auth-footnote-links a\s*\{[^}]*min-height:\s*44px/s);
+  assert.match(styles, /\.auth-switch a\s*\{[^}]*min-height:\s*44px/s);
   assert.doesNotMatch(shell, /className="auth-home"/);
   assert.match(globalStyles, /body:has\(\.auth-page\) \.site-head/);
   assert.match(globalStyles, /body:has\(\.auth-page\) \.site-footer/);
@@ -89,6 +102,7 @@ test("storage notice stays pinned on forms but reserves space and never blocks f
   assert.match(banner, /role="region"/);
   assert.match(banner, /ResizeObserver/);
   assert.match(banner, /--storage-notice-height/);
+  assert.match(banner, /Theme stays on this device\. Sign-in uses essential cookies; optional tracking is off\./);
   assert.match(banner, /epelawa_cookie_consent/);
   assert.doesNotMatch(banner, /role="dialog"/);
 });

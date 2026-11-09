@@ -8,12 +8,16 @@ export default function NewPasswordPage() {
   return (
     <AccountShell
       eyebrow="Account recovery"
-      title="A fresh start."
-      description="Use a valid recovery link to choose a new password."
+      title="Choose a new password"
+      description="Use a valid recovery link to secure your account again."
       showThemeToggle={false}
     >
       <NewPasswordForm />
-      <p className="auth-footnote">Link expired? <Link href="/forgot-password">Request another</Link></p>
+      <nav className="auth-switch" aria-label="Password recovery options">
+        <span>Link expired?</span>
+        <Link href="/forgot-password">Request another</Link>
+      </nav>
+      <p className="auth-secondary-link"><Link href="/login">Return to sign in</Link></p>
     </AccountShell>
   );
 }

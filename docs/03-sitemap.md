@@ -1,8 +1,7 @@
 # EPE LAWA — Sitemap and Information Architecture
 
 **Document:** 03
-**Status:** Active. Routes marked **LIVE** exist; **BUILT** means implemented in the current phase;
-everything else is planned and must not be linked.
+**Status:** Active. **MOUNTED** means a route exists in the current source/build, not that its hosted deployment or end-to-end workflow is verified. **LIVE** requires a current production check. Planned routes are listed separately and must not be presented as ready.
 
 ---
 
@@ -19,129 +18,83 @@ The current canonical production origin is `https://epelawa.vercel.app/`. The ow
 ## 2. `https://epelawa.vercel.app/` — public platform
 
 ```
-/                                   LIVE   landing: purpose, five sections, honest state
-/about                                     what EPE LAWA is, who runs it, contact
-/contact                                   form + WhatsApp
-/privacy                                   privacy notice
-/terms                                     terms of use
-/guidelines                                community guidelines (forum rules)
+/                                   MOUNTED  landing with official EPE-LAWA logo and section links
+/about                              MOUNTED  project information
+/contact                            MOUNTED  truthful contact state
+/gallery                            MOUNTED  public gallery
+/guidelines                         MOUNTED  community rules
+/privacy                            MOUNTED  privacy notice
+/terms                              MOUNTED  terms of use
 
-/news                               BUILT  public News list; articles use `/news/[slug]`
+/news                               MOUNTED  public News list
+/news/[slug]                        MOUNTED  public article detail
+/itan-ilu-mi                        MOUNTED  community history archive
+/tourism                            MOUNTED  approved tourism records
+/tourism/[slug]                     MOUNTED  public destination detail
+/map                                MOUNTED  manual map search and safe external directions
+/business-directory                 MOUNTED  approved business directory
+/business-directory/[slug]          MOUNTED  public business detail
+/business-directory/submit           MOUNTED  member submission flow
+/business-directory/orders           MOUNTED  member order view
+/forum                              MOUNTED  forum index
+/forum/category/[slug]              MOUNTED  category thread list
+/forum/thread/[slug]                MOUNTED  thread and replies
+/forum/new                          MOUNTED  authenticated new-thread flow
+/who-is-who                         MOUNTED  public people directory
+/who-is-who/[slug]                  MOUNTED  public person detail
+/radio                              MOUNTED  truthful stream/schedule/archive states
 
-/who-is-who                                directory index, search + filter by office/community
-/who-is-who/[slug]                         person profile: biography, offices, sources, badge
+/login                              MOUNTED  member sign in
+/auth                               MOUNTED  member signup
+/forgot-password                    MOUNTED  request a password reset
+/auth/new-password                  MOUNTED  set a new password
+/auth/callback                      MOUNTED  Auth callback route handler
+/auth/complete                      MOUNTED  branded verification completion
+/auth/link-expired                  MOUNTED  expired-link recovery
+/auth/link-problem                  MOUNTED  generic callback problem
+/status/[code]                      MOUNTED  designed status/error route; not navigation
 
-/radio                                     player, LIVE status, schedule
-/radio/schedule                            full weekly schedule
-/radio/archive                             episode list
-/radio/archive/[slug]                      episode detail + playback
-
-/forum                                     category index
-/forum/[category]                          thread list
-/forum/t/[slug]                            thread + replies
-/forum/t/[slug]/new                        new reply (auth)
-/forum/new                                 new thread (auth)
-
-/business                                  directory index, filters
-/business/[slug]                           business profile, hours, contact, reviews
-/business/[slug]/review                    write a review (auth)
-/business/new                              submit a business (auth)
-/business/mine                             owner's listings (auth)
-
-/shop                                      product browse across businesses
-/shop/[business]/[product]                 product detail
-/cart                                      cart (auth)
-/checkout                                  checkout (auth)
-/orders                                    order history (auth)
-/orders/[id]                               order detail (auth)
-
-/members/[handle]                          public member profile: posts, comments
-/login                                     sign in
-/signup                                    register
-/verify                                    email verification landing
-/reset                                     request reset
-/reset/[token]                             set new password
-
-/settings                                  member settings (auth)
-/settings/notifications                    notification preferences (auth)
-/settings/account                          delete account (auth)
+/llms.txt                           MOUNTED  machine-readable site summary
+/robots.txt                         MOUNTED  crawler rules
+/sitemap.xml                        MOUNTED  public sitemap
 ```
+
+The member dashboard/account-center route and account settings are not in the current build output. Finalize the canonical route and implement the account workflow before linking it or marking it complete.
 
 ---
 
 ## 3. `/news` — public publication
 
-```
-/                                   masthead, lead story, latest, categories
-/latest                             reverse-chronological, paginated
-/category/[slug]                    category feed
-/author/[slug]                      author profile + their published work
-/tag/[slug]                         tag feed
-/search                             published-only search
-/news/[slug]                        article, canonical, corrections, related
-/about                              about the newsroom, editorial standards, corrections policy
-/contact                            → main host contact
-/videos                             curated video records
-```
-
-News is public on the canonical platform origin; articles use `/news/[slug]`. "Sign in to comment"
-must return through the same-origin member login with a safe `/news/[slug]` next path. There is no
-separate News host or cross-host member-session requirement in the current deployment.
+News is public on the canonical platform origin at `/news` and `/news/[slug]`. Do not link separate category, author, tag, search or video routes unless they are mounted. Articles remain free to read. Commenting and liking require sign-in and an in-context prompt with a validated same-origin return path; drafts and private previews are never exposed to public lists, search, metadata or sitemaps. Empty and unavailable states must remain distinct.
 
 ---
 
 ## 4. `/admin/*` — staff on the same origin
 
 ```
-/admin/login                         staff sign in (BUILT)
-/admin                               dashboard: real counts, real queues (BUILT)
-/admin/newsroom                      all articles (BUILT)
-/admin/newsroom/new                  create draft (BUILT)
-/admin/newsroom/[id]                 edit + preview + version history (BUILT)
-/admin/itan-ilu-mi/review             community-history review queue (BUILT)
-/admin/moderation/forum               forum moderation queue (BUILT)
-/admin/business-review                business submissions and verification (BUILT)
-/admin/business-review/moderation     business moderation (BUILT)
-/admin/orders                         order queue (BUILT)
-/admin/people                         Who-is-Who records (BUILT)
-/admin/radio                          stream config and programmes (BUILT)
-/admin/tourism                        tourism review queue (BUILT)
-
-/admin/newsroom/review                review queue (editor)
-/admin/newsroom/publish               approved queue (publisher)
-/admin/newsroom/categories            categories
-/admin/newsroom/tags                  tags
-/admin/newsroom/authors               author records
-
-/admin/media                         media library
-/admin/media/upload                  authorised upload
-
-/admin/people/new                    create
-/admin/people/[id]                   edit, sources, verification
-
-/admin/radio/schedule                schedule editor
-/admin/radio/episodes                episode management
-
-/admin/moderation                    open reports (comments + forum)
-/admin/moderation/actions            moderation history
-/admin/forum                         forum categories
-/admin/businesses                   business submissions + verification
-/admin/shop/orders                  order queue
-/admin/shop/products                product moderation
-
-/admin/staff                         staff accounts and capability grants
-/admin/audit                         audit log
+/admin/login                         MOUNTED  staff sign-in
+/admin                               MOUNTED  protected dashboard
+/admin/newsroom                      MOUNTED  newsroom list
+/admin/newsroom/new                  MOUNTED  draft creation gate/form
+/admin/newsroom/[id]                 MOUNTED  article editor
+/admin/itan-ilu-mi/review             MOUNTED  History review
+/admin/moderation/forum               MOUNTED  Forum moderation
+/admin/business-review                MOUNTED  business review queue
+/admin/business-review/moderation     MOUNTED  business moderation
+/admin/orders                         MOUNTED  order queue
+/admin/people                         MOUNTED  Who-is-Who administration
+/admin/radio                          MOUNTED  Radio administration
+/admin/tourism                        MOUNTED  Tourism review queue
+/admin/[...unknown]                  MOUNTED  designed unknown-route response
 ```
 
-Only routes marked **BUILT** are currently mounted. Other staff destinations remain planned and
-must not be linked until implemented. Protected pages and server actions enforce staff sessions and
-capabilities; hiding navigation items is not an authorization boundary.
+The main app serves staff at same-origin `/admin/*`; staff sessions remain Secure, HttpOnly, SameSite=Lax host-only `__Host` cookies with no `Domain`. Every protected page/action checks the verified session and capability server-side; return-path hints never grant access. A mounted page is not proof that its end-to-end workflow is safe to operate: production schema drift and migration conflicts remain under review, and other unlisted admin destinations are not available.
 
 ---
 
 ## 5. Navigation
 
-**Main header (public):** News · Who is Who · Radio · Forum · Businesses · Shop — then Sign in / account.
+**Main header (public):** Link only to mounted destinations. The current product scope includes News, History, Forum, Map, Business Directory, Tourism, Radio and Who is Who, followed by member sign-in/account actions.
 
 Rules for the header:
 
@@ -149,9 +102,9 @@ Rules for the header:
 - On mobile, the menu is a disclosure with a labelled trigger, `aria-expanded`, and escape to close.
 - The current section is marked with `aria-current="page"`, not just colour.
 
-**News header:** sections (Politics, Sports, Culture, Education, Business, Community) · Latest · Search · Videos.
+**News header:** Do not imply separate categories, search or video pages until those routes are mounted.
 
-**Admin navigation:** `/admin` · `/admin/newsroom` · `/admin/itan-ilu-mi/review` · `/admin/moderation/forum` · `/admin/business-review` · `/admin/business-review/moderation` · `/admin/orders` · `/admin/tourism` · `/admin/radio` · `/admin/people`. Sections collapse when the capability is absent — but the route still refuses, because navigation is not the boundary.
+**Admin navigation:** `/admin` · `/admin/newsroom` · `/admin/itan-ilu-mi/review` · `/admin/moderation/forum` · `/admin/business-review` · `/admin/business-review/moderation` · `/admin/orders` · `/admin/tourism` · `/admin/radio` · `/admin/people`. Navigation may be capability-filtered, but the route and action must still refuse unauthorized sessions.
 
 **Footer (public):** About · Contact · Guidelines · Privacy · Terms · WhatsApp · social links that actually exist.
 
@@ -174,14 +127,15 @@ Rules for the header:
 | Route | Indexable | Structured data |
 | --- | --- | --- |
 | `/` | yes | `Organization` |
-| `/news/[slug]` | yes | `NewsArticle` with `datePublished`, `dateModified`, `author`, `publisher` |
-| `/category`, `/author`, `/tag` | yes | `CollectionPage` |
-| `/who-is-who/[slug]` | yes | `Person` |
-| `/business/[slug]` | yes | `LocalBusiness` |
-| `/shop/[business]/[product]` | yes | `Product` with `offers` |
-| `/forum/*` | yes, `nofollow` on outbound | `DiscussionForumPosting` |
-| `/members/*` | no | — |
-| `/cart`, `/checkout`, `/orders`, `/settings` | no | — |
+| `/news` | yes | Collection metadata only for published content |
+| `/news/[slug]` | yes | `NewsArticle` only for a published article |
+| `/who-is-who/[slug]` | conditional | `Person` only for approved public records |
+| `/business-directory/[slug]` | conditional | LocalBusiness only for approved public listings |
+| `/tourism/[slug]` | conditional | Only sourced, approved destination data |
+| `/forum/*` | conditional | Public discussions only; no private/member details |
+| `/login`, `/auth`, `/forgot-password`, `/auth/*` | no | — |
+| `/business-directory/orders` | no | — |
+| `/status/*` | no | — |
 | `/admin/*` | no, `noindex` + `Disallow: /admin` | — |
 
 ---
