@@ -1,0 +1,136 @@
+{
+  "routes": [
+    {
+      "path": "/"
+    },
+    {
+      "path": "/about"
+    },
+    {
+      "path": "/admin"
+    },
+    {
+      "path": "/auth"
+    },
+    {
+      "path": "/business-directory"
+    },
+    {
+      "path": "/contact"
+    },
+    {
+      "path": "/forgot-password"
+    },
+    {
+      "path": "/forum"
+    },
+    {
+      "path": "/gallery"
+    },
+    {
+      "path": "/guidelines"
+    },
+    {
+      "path": "/itan-ilu-mi"
+    },
+    {
+      "path": "/login"
+    },
+    {
+      "path": "/map"
+    },
+    {
+      "path": "/news"
+    },
+    {
+      "path": "/privacy"
+    },
+    {
+      "path": "/radio"
+    },
+    {
+      "path": "/terms"
+    },
+    {
+      "path": "/tourism"
+    },
+    {
+      "path": "/who-is-who"
+    },
+    {
+      "path": "/admin/business-review"
+    },
+    {
+      "path": "/admin/login"
+    },
+    {
+      "path": "/admin/newsroom"
+    },
+    {
+      "path": "/admin/orders"
+    },
+    {
+      "path": "/admin/people"
+    },
+    {
+      "path": "/admin/radio"
+    },
+    {
+      "path": "/admin/tourism"
+    },
+    {
+      "path": "/auth/complete"
+    },
+    {
+      "path": "/auth/link-expired"
+    },
+    {
+      "path": "/auth/link-problem"
+    },
+    {
+      "path": "/auth/new-password"
+    },
+    {
+      "path": "/business-directory/:slug"
+    },
+    {
+      "path": "/business-directory/orders"
+    },
+    {
+      "path": "/business-directory/submit"
+    },
+    {
+      "path": "/forum/new"
+    },
+    {
+      "path": "/news/:slug"
+    },
+    {
+      "path": "/tourism/:slug"
+    },
+    {
+      "path": "/who-is-who/:slug"
+    },
+    {
+      "path": "/admin/business-review/moderation"
+    },
+    {
+      "path": "/admin/itan-ilu-mi/review"
+    },
+    {
+      "path": "/admin/moderation/forum"
+    },
+    {
+      "path": "/admin/newsroom/:id"
+    },
+    {
+      "path": "/admin/newsroom/new"
+    },
+    {
+      "path": "/forum/category/:slug"
+    },
+    {
+      "path": "/forum/thread/:slug"
+    }
+  ]
+}
