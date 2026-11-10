@@ -1,6 +1,6 @@
 # EPE-LAWA — Implementation Tracker
 
-**Last checked:** 2026-11-10 11:42 WAT.
+**Last checked:** 2026-11-10 11:47 WAT.
 
 **Production code baseline:** `main` at `6a48e5f02d210fef29c471daac9992e1e4693039` (PR #30 squash merge).
 **Scope:** The eight client-approved web modules plus cross-cutting member auth, staff access, publishing, privacy, accessibility, email and audit. Native mobile remains out of scope.
@@ -9,10 +9,10 @@ A route existing, a preview building, or a button being visible is not proof tha
 
 ## Release snapshot
 
-- GitHub CLI confirmed PR #30 is **MERGED** and the latest open PR is **#31**. PRs #24, #26–#29 and #31 are open; #25 is merged. The current instruction is to open review PRs and keep them open—do not merge them.
-- The current unpushed candidate branch is `feat/web-module-workflows`; it is being prepared as the next review PR. Do not claim it has a hosted preview until it is pushed and Vercel CLI verifies the exact deployment status.
-- Previous `gh pr checks` calls for existing PRs returned `Resource not accessible by integration`; individual hosted CI results remain unverified. Do not infer CI success from local builds or preview state.
-- No production page-content review or fresh production route audit was performed in this pass. The screenshots in the new evidence folder are local production-build captures backed only by a loopback synthetic Supabase stub.
+- GitHub CLI confirms PR #30 is **MERGED** and PR #32 is now the latest open review. PRs #24, #26–#29, #31 and #32 are open; #25 and #30 are merged. The current instruction is to open review PRs and keep them open—do not merge.
+- PR #32 is open at `facfbf84e76e09d814268efc6100dda456235bd6`. Vercel CLI confirms its exact deployment is **READY**; the preview redirects HTTP 302 to Vercel SSO, so hosted page content is not inspected.
+- GitHub reports PR #32 `mergeStateStatus=UNSTABLE`; `gh pr checks 32` returns `Resource not accessible by integration`, so individual hosted checks remain unverified. Keep the PR open.
+- No production page-content review or fresh production route audit was performed in this pass. Screenshots in the evidence folder are local production-build captures backed only by a loopback synthetic Supabase stub.
 - No production Supabase schema, migration ledger, settings, account roles, or user data were changed. Production remains read-only while migration drift is unresolved.
 
 ## Review PRs — snapshot before PR #30 merge (09:16 WAT)
@@ -99,3 +99,14 @@ GitHub CLI confirms PR #30 is merged and PR #31 is the latest open review. Open 
 **Exact local evidence:** Node 22.23.4 / pnpm 10.34.9; full suite 158 total, 157 passed, 0 failed, 1 known PGlite skip (the exclusion constraints are not exercised because the test DB uses a text domain in place of `citext` and lacks `btree_gist`); typecheck 5/5; production builds 2/2. The offline download was clicked in headless Chromium at 375px; the downloaded HTML contained the synthetic test story text and no script/image embeds. All 31 local screenshot captures at 320px, 375px and 1440px reported no horizontal overflow. Screenshot evidence and details are in `docs/screenshots/pr32-web-module-workflows/`.
 
 The configured `pnpm audit:ui` and `pnpm audit:security` commands were attempted but could not run because `package.json` points at missing `scripts/audit/run.mjs`; `scripts/` contains only `dev.sh`. This is an audit-tooling limitation, not a passing audit. Production Supabase remained read-only. Next: commit and push this candidate, open its review PR, verify its exact hosted deployment/check state using CLI only, then continue the next independent safe web gap without merging.
+
+
+## 2026-11-10 11:48 WAT — PR #32 exact review status
+
+PR #32, `https://github.com/epelawa/EPE-LAWA/pull/32`, is **OPEN** on `feat/web-module-workflows` at `facfbf84e76e09d814268efc6100dda456235bd6`. The commit author and committer are `EPE LAWA <info.epelawa@gmail.com>`. GitHub reports `mergeStateStatus=UNSTABLE`; the authenticated CLI's `gh pr checks 32` fails with `Resource not accessible by integration`, so individual hosted checks are unknown. No merge was attempted.
+
+Vercel CLI read-only listing confirms the deployment `epe-lawa-e7rljfqcr-epe-lawa.vercel.app` is **READY** for the exact PR #32 SHA and GitHub PR id 32. An HTTP header check returns 302 to Vercel SSO; no hosted page content was reviewed. The preview is therefore a deployment-status confirmation, not visual review evidence.
+
+Latest local verification remains: tests 158 total / 157 passed / 0 failed / 1 known PGlite exclusion-constraint skip; typecheck 5/5; builds 2/2; 31 local screenshot captures with no horizontal overflow; browser download of the local synthetic News article passed. The configured UI/security audit commands remain unrun because their target `scripts/audit/run.mjs` is absent. Production Supabase remains read-only.
+
+**Resume:** keep PR #32 open, continue independently with the next safe web-module gap, and check CLI state before acting. Do not merge or write production data; report the inaccessible GitHub status details and SSO-protected preview clearly.

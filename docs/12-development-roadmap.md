@@ -80,3 +80,8 @@ PR #25's local merge-forward now includes the original newsroom-gate commit `09a
 **Verification:** Node 22.23.4 / pnpm 10.34.9; 158 local tests (157 passed, 0 failed, 1 known PGlite exclusion-constraint skip); typecheck 5/5; both production builds 2/2. Headless Chromium verified a 375px offline-copy download from an explicitly synthetic, loopback-only article fixture. All 31 local screenshots at 320px, 375px and 1440px had no horizontal overflow. All evidence is under `docs/screenshots/pr32-web-module-workflows/` and is not hosted-preview evidence.
 
 The repository's configured `pnpm audit:ui` and `pnpm audit:security` scripts remain blocked because `scripts/audit/run.mjs` is missing from this branch; do not mark either audit passed. The latest CLI snapshot found PR #31 as the latest existing open review (PR #30 merged). The current owner instruction is to open the next review PR and keep it open, then continue with the next independent safe web gap. Verify the exact hosted preview via CLI only; do not merge. Resume from branch `feat/web-module-workflows` and check current GitHub state before acting.
+
+
+## 2026-11-10 11:48 WAT — PR #32 opened for review
+
+PR #32 is open at `facfbf84e76e09d814268efc6100dda456235bd6`; its exact Vercel deployment is READY, but the preview redirects to SSO, so hosted page content could not be inspected. GitHub reports `UNSTABLE`, and `gh pr checks 32` is blocked by `Resource not accessible by integration`; no merge was attempted. Keep the PR open, continue the next independent safe web gap, and leave production Supabase read-only.

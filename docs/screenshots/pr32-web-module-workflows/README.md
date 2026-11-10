@@ -51,3 +51,8 @@ All 31 captures completed with **no horizontal overflow** at 320px, 375px or 144
 Pinned runtime: Node 22.23.4 and pnpm 10.34.9. Final local gates: full suite 158 total, 157 passed, 0 failed, 1 known PGlite skip (the two exclusion constraints are not exercised because the test database replaces `citext` with a text domain and lacks `btree_gist`); workspace typecheck 5/5 tasks; both web builds 2/2. Manual source checks found no “Coming Soon” labels in app source and no protected admin email in the served app source/static metadata.
 
 `pnpm audit:ui` and `pnpm audit:security` could not run: `package.json` points to `scripts/audit/run.mjs`, which is absent from this branch (the only tracked file in `scripts/` is `dev.sh`). This is recorded as a tooling limitation, not a passing audit.
+
+
+## Review status
+
+PR #32 is open at `facfbf84e76e09d814268efc6100dda456235bd6`. Vercel CLI confirms the exact deployment is READY, but the URL redirects HTTP 302 to Vercel SSO; these images remain local evidence only. GitHub reports `UNSTABLE`, and individual checks are inaccessible through the CLI integration. The PR is intentionally left open for review.
