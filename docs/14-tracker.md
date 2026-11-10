@@ -1,6 +1,6 @@
 # EPE-LAWA — Implementation Tracker
 
-**Last checked:** 2026-11-10 10:28 WAT.
+**Last checked:** 2026-11-10 10:33 WAT.
 
 **Production code baseline:** `main` at `0bd1fd1eac09fa5905dc6f4437723fd209124fa8` (PR #25 merge; includes PR #30).
 **Scope:** The eight client-approved web modules plus cross-cutting member auth, staff access, publishing, privacy, accessibility, email and audit. Native mobile remains out of scope.
@@ -9,7 +9,7 @@ A route existing, a preview building, or a button being visible is not proof tha
 
 ## Release snapshot
 
-- The newest existing PR is **#30**; PRs #25 and #30 are merged. PRs #24, #26, #27, #28 and #29 remain open. The latest owner direction is to keep review PRs open and continue implementation; do not merge them.
+- PR #31 is now the newest PR and is OPEN; PR #25 and #30 are merged. PRs #24, #26, #27, #28 and #29 also remain open. The latest owner direction is to keep review PRs open and continue implementation; do not merge them.
 - `gh pr checks` has returned `Resource not accessible by integration` for current PRs, so individual hosted CI results are **unverified**. Do not infer passing checks from a preview build; keep PRs open for review.
 - Vercel status must be refreshed for each exact pushed head. Previews redirect to Vercel SSO (HTTP 302), so hosted content cannot be inspected; a READY deployment is not proof of passing hosted CI or a correct page.
 - `https://epelawa.vercel.app` responded HTTP 200 for `/`, `/news`, `/itan-ilu-mi`, `/forum`, `/map`, `/business-directory`, `/tourism`, `/radio`, `/who-is-who`, `/auth`, and `/admin/login`. This proves route responses only, not correct content, authorization, data access, or complete workflows.
@@ -66,7 +66,7 @@ The read-only CLI audit findings and safe reconciliation sequence are recorded i
 
 ## Next actions
 
-1. Open the tested homepage-only notice branch as a separate review PR, include the local-labelled screenshots, and verify its exact Vercel deployment after push; leave the PR open.
+1. Recheck PR #31's exact Vercel preview after its current BUILDING state resolves; keep it open for review and do not claim hosted content while SSO-protected.
 2. Keep PRs #24 and #26–#29 open for review. Continue with the remaining web-feature audit; fix safe, independently verifiable behavior and keep provider/schema-blocked features honestly unavailable.
 3. Prepare one consolidated follow-up feature PR for the remaining agreed web scope only after its changes, synthetic tests, route/auth/security checks and screenshots are complete. Native mobile remains deferred.
 4. Refresh stale PR documentation and record hosted-check limitations without treating Vercel READY as proof of passing hosted CI.
@@ -98,3 +98,16 @@ PR #25's committed local merge-forward combines original head `09a2470d50e0eff6f
 - **Provider/schema blockers remain:** production migration-ledger/schema drift is unresolved and production remains read-only. Do not claim durable History correction intake, waitlist persistence, production publishing, role provisioning, Google OAuth, email delivery, Maps API, or Radio playback until the relevant schema/provider/rights checks are actually satisfied. Continue the requested feature audit and implement safe functionality; use honest unavailable states only for genuine blockers.
 
 **Next:** commit/push this focused notice change and open it for review; verify its exact Vercel deployment through CLI and leave the PR open. Then continue the remaining web-feature audit toward one consolidated feature PR, with local synthetic tests and screenshots. No native app work or production database writes.
+
+
+## PR #31 — 2026-11-10 10:33 WAT
+
+- **Review:** [#31 — Keep the storage notice homepage-only](https://github.com/epelawa/EPE-LAWA/pull/31), OPEN, head `31e853997d7c424ad9ea3c2fa2288180c6167322`, base `main`. GitHub reports `UNSTABLE`; individual check details return an integration 403. Leave open; no merge attempted.
+- **Vercel:** Exact branch alias `https://epe-lawa-3f8qy7842-epe-lawa.vercel.app` is BUILDING; build record reports READY. Hosted page content is not verified and no hosted screenshot is claimed. Recheck after status-doc push.
+- **Local verification:** Exact source commit passed Node 22.23.4/pnpm 10.34.9 typecheck 5/5, builds 2/2, tests 142 passed / 0 failed / 1 documented PGlite skip. Responsive Playwright and local-only screenshots are recorded in the 10:28 entries above.
+- **Current worktree:** The PR-specific URL/deployment addendum is being added as a documentation-only commit; rerun final gates, push normally, and refresh the preview and GitHub summary. Production Supabase remains read-only. Continue the remaining feature audit after this PR status is recorded.
+
+
+## PR #31 status refresh — 2026-11-10 10:35 WAT
+
+The authenticated GitHub CLI now reports PR #31 OPEN and CLEAN at source head `31e853997d7c424ad9ea3c2fa2288180c6167322`. Individual check details remain inaccessible (403). The exact Vercel deployment `https://epe-lawa-3f8qy7842-epe-lawa.vercel.app` is READY; its branch alias returns HTTP 302 to Vercel SSO, so no hosted content has been reviewed. Keep the PR open. This status-doc refresh will create a new commit and deployment; recheck its gates and hosted state after push.

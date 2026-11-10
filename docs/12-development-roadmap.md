@@ -84,3 +84,15 @@ Local-only screenshot evidence (not hosted or a Vercel preview):
 - `/workspace/epe-lawa-release-screenshots/pr31-homepage-only-cookie/local-privacy-375x812-no-notice.png`
 
 Next: commit and push the tested notice work as its own review PR, inspect its exact Vercel preview with CLI, and keep the PR open. Then audit the remaining web scope for incomplete or “Coming Soon” flows, implementing safe functionality without fake success states. Durable History corrections, live waitlist persistence, production publishing and role changes remain blocked pending safe schema reconciliation; Google OAuth, email delivery, Maps and Radio depend on real provider/configuration or rights verification. Production Supabase settings, schema, migration ledger, roles and data remain read-only. Native mobile remains deferred.
+
+
+## 2026-11-10 10:33 WAT — PR #31 opened (review only)
+
+The homepage-only notice is now PR #31: https://github.com/epelawa/EPE-LAWA/pull/31, head `31e853997d7c424ad9ea3c2fa2288180c6167322`, base `main`, state OPEN. GitHub currently reports `mergeStateStatus=UNSTABLE`; `gh pr checks` returns “Resource not accessible by integration,” so hosted check details are unverified. Vercel CLI found exact branch deployment `https://epe-lawa-3f8qy7842-epe-lawa.vercel.app`, currently BUILDING (its build record is READY); no hosted page content or screenshot has been checked. Keep the PR open, do not merge, and refresh Vercel/GitHub after the docs-only status update is pushed.
+
+The committed source tree passed exact-head gates on Node 22.23.4/pnpm 10.34.9: typecheck 5/5, builds 2/2, tests 142 passed / 0 failed / 1 documented PGlite skip; local Playwright checked homepage at 320×568, 375×812 and 1440×900 plus public `/privacy`, auth, news navigation and admin-login absence. Local-only screenshots are listed in the preceding 10:28 snapshot. No production database or settings were changed. The new exact-PR addendum is currently a local documentation update; final source and docs gates will be rerun before pushing it.
+
+
+## 2026-11-10 10:35 WAT — PR #31 hosted-status refresh
+
+The exact PR #31 head `31e853997d7c424ad9ea3c2fa2288180c6167322` now has a Vercel CLI deployment READY at `https://epe-lawa-3f8qy7842-epe-lawa.vercel.app`; the branch alias responds HTTP 302 to Vercel SSO, so hosted content remains unreviewed. Authenticated GitHub CLI reports PR #31 OPEN and CLEAN; individual `gh pr checks` detail access remains 403. Leave open for owner review. A documentation-only refresh is being prepared so the PR handoff records the exact current state; after that push, rerun local gates and refresh the new deployment state.

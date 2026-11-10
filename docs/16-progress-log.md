@@ -207,3 +207,13 @@ Local-only screenshots (not hosted):
 - `/workspace/epe-lawa-release-screenshots/pr31-homepage-only-cookie/local-privacy-375x812-no-notice.png`
 
 Current GitHub CLI state: PRs #25 and #30 are MERGED; exact main is `0bd1fd1eac09fa5905dc6f4437723fd209124fa8`. Open PRs #24 (DIRTY), #26 (CLEAN), #27 (CLEAN), #28 (CLEAN), #29 (UNKNOWN). Latest existing PR is #30. `gh pr checks` details remain inaccessible; no merge was attempted. The cookie branch has not yet been committed or pushed, so it has no PR or hosted preview. Production Supabase remained read-only; no schema, migration, role, auth setting, or user data changed.
+
+
+### 2026-11-10 10:33 WAT — PR #31 opened and hosted status checked
+
+Authenticated GitHub CLI created review PR https://github.com/epelawa/EPE-LAWA/pull/31, title “Keep the storage notice homepage-only,” branch `fix/homepage-only-cookie-notice`, exact source head `31e853997d7c424ad9ea3c2fa2288180c6167322`, base `main`. PR state is OPEN and `mergeStateStatus=UNSTABLE`; `gh pr checks` returned “Resource not accessible by integration.” No merge was attempted. Vercel CLI inspected deployment `https://epe-lawa-3f8qy7842-epe-lawa.vercel.app`: deployment state BUILDING, build record READY. No hosted page/screenshot was viewed; local screenshot paths remain explicitly labelled local in the preceding entry. The source commit’s exact-head gates pass 5/5 typecheck tasks, 2/2 builds, 142 passed / 0 failed / 1 documented PGlite skip. The PR-specific status-doc update is local and pending a final gates/push/preview refresh. No production Supabase changes were made.
+
+
+### 2026-11-10 10:35 WAT — PR #31 preview and GitHub refresh
+
+Authenticated GitHub CLI reports PR #31 OPEN and CLEAN at source head `31e853997d7c424ad9ea3c2fa2288180c6167322`, URL https://github.com/epelawa/EPE-LAWA/pull/31. The `gh pr checks` endpoint still returns an integration 403, so hosted check details are unknown. Vercel CLI reports exact preview `https://epe-lawa-3f8qy7842-epe-lawa.vercel.app` READY; the branch alias responds HTTP 302 to Vercel SSO. No hosted page content or screenshot was reviewed. Leave PR open. The current status-document refresh is local and must be tested, pushed normally and followed by a fresh preview/GitHub check.
