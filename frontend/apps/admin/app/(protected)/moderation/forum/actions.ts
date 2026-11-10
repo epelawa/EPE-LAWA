@@ -15,6 +15,8 @@ export async function resolveForumReport(formData: FormData) {
       typeof reason !== "string" || reason.trim().length < 5 || reason.trim().length > 1000) {
     return;
   }
+
+  let saved = false;
   try {
     const supabase = await createClient();
     const { error } = await supabase.rpc("forum_report_resolve", {
@@ -22,10 +24,12 @@ export async function resolveForumReport(formData: FormData) {
       p_action: action,
       p_reason: reason.trim(),
     });
-    if (error) redirect(adminHref("/moderation/forum?result=failed"));
-    revalidatePath(adminHref("/moderation/forum"));
-    redirect(adminHref("/moderation/forum?result=saved"));
+    saved = !error;
   } catch {
-    redirect(adminHref("/moderation/forum?result=failed"));
+    saved = false;
   }
+
+  if (saved) revalidatePath(adminHref("/moderation/forum"));
+  const result = saved ? "saved" : "failed";
+  redirect(adminHref(`/moderation/forum?result=${result}`));
 }

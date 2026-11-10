@@ -1,18 +1,19 @@
 # EPE-LAWA — Implementation Tracker
 
-**Last checked:** 2026-11-10 10:01 WAT.
+**Last checked:** 2026-11-10 12:09 WAT.
 
-**Production code baseline:** `main` at `6a48e5f02d210fef29c471daac9992e1e4693039` (PR #30 squash merge).
+**Production code baseline:** `main` at `9b895366e93a68c5912b0c837c00ff4947ad0785` (PR #26 squash merge; includes #25 and #30).
 **Scope:** The eight client-approved web modules plus cross-cutting member auth, staff access, publishing, privacy, accessibility, email and audit. Native mobile remains out of scope.
 
 A route existing, a preview building, or a button being visible is not proof that a complete workflow works. Mark a capability complete only with named current evidence.
 
 ## Release snapshot
 
-- The newest PR number is **#30**, now merged; the latest open PR is **#29**. PR #24–#29 remain open. The corrected Nov 10 instruction is to merge verified PRs normally in dependency order and test updated `main` after each; never bypass branch protection.
-- `gh pr checks` has returned `Resource not accessible by integration` for the current PRs, so individual hosted CI results are **unverified**. Refresh each PR's actual state before merging; do not infer passing checks from a preview build.
-- Vercel CLI reports recent deployments on the PR branch aliases as **READY**. Preview pages redirect to Vercel SSO (HTTP 302), so hosted page content cannot be inspected. The CLI JSON does not expose a deployment commit SHA; exact preview-to-HEAD matching is unverified except for PR #30, which was previously matched by the read-only audit.
-- `https://epelawa.vercel.app` responded HTTP 200 for `/`, `/news`, `/itan-ilu-mi`, `/forum`, `/map`, `/business-directory`, `/tourism`, `/radio`, `/who-is-who`, `/auth`, and `/admin/login`. This proves route responses only, not correct content, authorization, data access, or complete workflows.
+- PRs #25, #30 and #26 are merged; the latest open PR is **#32**. Open PRs: #24, #27, #28, #29, #31 and #32. The owner requests normal merges for all remaining PRs; never bypass branch protection.
+- After PR #26 merged, `main` is `9b895366e93a68c5912b0c837c00ff4947ad0785`. Its Vercel Production deployment is **READY**. The production origin `https://epelawa.vercel.app` returned HTTP 200 for `/`, `/itan-ilu-mi`, `/news` and `/contact`.
+- The live `/itan-ilu-mi` page still displays the “Coming Soon” correction badge from PR #30. PR #32 removes that label but remains open, so the change is not live yet.
+- Vercel CLI mapped pre-sync PR previews to exact head SHAs and reported **READY**. Synced branches need fresh exact-head deployment checks; previews behind Vercel SSO return HTTP 302, so hosted content is not reviewed.
+- `gh pr checks` and GitHub REST check/status endpoints return 403 to this CLI integration. Current merge states after main advanced: #24 UNKNOWN, #27 DIRTY, #28 UNKNOWN, #29 DIRTY (stacked on #24), #31 UNKNOWN, #32 UNKNOWN. Use normal merge attempts only; GitHub must enforce its requirements.
 - No production Supabase schema, migration ledger, settings, account roles, or user data were changed. Production remains read-only while migration drift is unresolved.
 
 ## Review PRs — snapshot before PR #30 merge (09:16 WAT)
@@ -66,11 +67,11 @@ The read-only CLI audit findings and safe reconciliation sequence are recorded i
 
 ## Next actions
 
-1. Commit and push the tested PR #24 merge-from-main resolution without force, refresh the preview and GitHub mergeability, then attempt a normal CLI merge only if clean; test updated `main` after it merges.
-2. After #24 merges, retarget PR #29 to `main`, rerun the exact-head gates, then merge normally if healthy; test updated `main` again. Refresh and resolve any main conflicts in PRs #25–#28 before merging them independently.
-3. Add useful local screenshots for functional-only PRs #25/#26 where a changed state can be shown without sign-in or production data; otherwise document why no screenshot applies.
-4. After current PRs are resolved, finish the homepage-only notice and remaining safe web functionality in one comprehensive feature PR, with full synthetic Playwright, accessibility, route, auth, staff authorization and responsive gates.
-5. Build a read-only migration reconciliation plan and obtain a disposable schema rehearsal path; production remains read-only.
+1. Complete the PR #27 merge-forward, retain its local desktop and mobile screenshots, run exact gates, push without force, refresh the exact preview and GitHub state, then attempt a normal merge only if GitHub accepts.
+2. Sync PR #28 and PR #31 to latest `main`; resolve only the conflicts needed to preserve current documentation, refresh screenshot evidence, rerun exact local gates, and merge normally one at a time; verify production after each.
+3. Sync PR #24, rerun exact checks and merge normally only if healthy; after it merges retarget PR #29 to `main`, retest, and merge normally.
+4. Sync PR #32 after the above; resolve public-page/auth/documentation overlap, verify affected routes locally, refresh screenshots and full gates, then merge only through normal branch protection.
+5. Keep production Supabase read-only until migration drift has a safe backup and rehearsed reconciliation plan; native mobile remains deferred.
 
 
 ## Current status — 2026-11-10 09:38 WAT (supersedes the 09:30 snapshot)
@@ -104,22 +105,9 @@ PR #25's committed local merge-forward combines original head `09a2470d50e0eff6f
 PR #26 merge-forward commit `43772f73adc65f1f791dafd660e77080b0747db0` includes latest main parent `0bd1fd1eac09fa5905dc6f4437723fd209124fa8`. Exact-head verification passes on Node 22.23.4/pnpm 10.34.9: typecheck 5/5, builds 2/2, 144 tests total / 143 passed / 0 failed / 1 documented skip; `git diff --check` is clean. This commit is local and not yet pushed. Push normally, then inspect its new preview and current PR status before deciding on merge. PR #24 remains open because its post-main mergeability is UNKNOWN; no branch protection bypass is permitted.
 
 
-## PR #27 current checkpoint — 2026-11-10 09:57 WAT
+## Current status — 2026-11-10 12:10 WAT
 
-PR #27 original head `e241c2d5a5cb92711fd2703f66c79a3205430a14` passed 5/5 typechecks, 2/2 builds and 139 passed / 0 failed / 1 documented skip. Its local merge-forward with main `0bd1fd1eac09fa5905dc6f4437723fd209124fa8` has no unresolved conflicts; the combined candidate passed 5/5 typechecks, 2/2 builds, 144 total tests (143 passed / 0 failed / 1 documented skip). A first typecheck attempt was blocked by stale generated `.next` references to a removed screenshot-only route; clearing only that unused generated admin directory resolved it, and the full suite was rerun successfully. Candidate remains uncommitted/unpushed; exact-head gates will run again after docs are included.
-
-PR #27's remote head remains old, and GitHub reports UNKNOWN / UNKNOWN; individual check details return 403. The existing preview cannot validate the updated tree. PR #26's pushed preview is READY, but its merge state is UNSTABLE; PR #24 is UNKNOWN after main advanced. PR #25 is merged at `0bd1fd1eac09fa5905dc6f4437723fd209124fa8`, with exact main tests passing and the production deployment READY. Preserve the existing PR #27 local UI screenshot archive; PR #25/#26 are functional-only and have no visual screenshot claim. No production Supabase writes were made.
-
-
-## PR #27 exact merge-commit checkpoint — 2026-11-10 09:58 WAT
-
-PR #27 merge-forward commit `a05061a22e67f7d537223ebd3851ec67a121103e` has original head `e241c2d5a5cb92711fd2703f66c79a3205430a14` and updated main parent `0bd1fd1eac09fa5905dc6f4437723fd209124fa8`. Exact-head gates pass on Node 22.23.4/pnpm 10.34.9: typecheck 5/5, builds 2/2, tests 144 total / 143 passed / 0 failed / 1 documented skip; `git diff --check` is clean. The commit is local and not pushed. Existing screenshots: `/workspace/epe-lawa-release-screenshots/pr27-radio-error-local/1440x900-radio-read-failure-local.png` and `375x812-radio-read-failure-local.png`.
-
-After including the status docs, rerun exact-head gates, push without force, and refresh preview/status. PR #27 is still OPEN on its old remote head with GitHub mergeability UNKNOWN; do not merge until the new preview is READY and the normal CLI reports a clean healthy state. PR #26 is READY-preview / UNSTABLE, PR #24 is UNKNOWN, and PR #25 is merged normally. Production remains read-only.
-
-
-## PR #27 final branch checkpoint — 2026-11-10 10:01 WAT
-
-Final local branch head `e6186c3c90fc9179d1995b0e1718e292d38b44f0` (source merge commit `a05061a22e67f7d537223ebd3851ec67a121103e`, main parent `0bd1fd1eac09fa5905dc6f4437723fd209124fa8`) passed exact branch gates on Node 22.23.4/pnpm 10.34.9: typecheck 5/5, builds 2/2, 144 tests / 143 passed / 0 failed / 1 documented skip. The full log history is preserved and checked. Screenshots: `/workspace/epe-lawa-release-screenshots/pr27-radio-error-local/1440x900-radio-read-failure-local.png` and `/workspace/epe-lawa-release-screenshots/pr27-radio-error-local/375x812-radio-read-failure-local.png`.
-
-The final branch head is not pushed yet. After the normal push, verify the fresh preview and GitHub status; do not merge while status is UNKNOWN or checks are inaccessible. PR #26's preview is READY but merge state is UNSTABLE; PR #24 is UNKNOWN; PR #25 is merged. Production Supabase remains read-only.
+- PR #26 is merged normally at `9b895366e93a68c5912b0c837c00ff4947ad0785`. Vercel Production for that SHA is READY. The live History route still shows PR #30’s “Coming Soon” correction badge; PR #32 is still open.
+- PR #27 remains open at old remote head `4fbc82da2924f8cf521588a5816b57818d3a0148`. GitHub’s normal merge was blocked by conflicts in the three release documents after #26 merged. Its local merge-forward candidate resolves only those docs against current main; source changes merged cleanly. Exact gates pass: Node 22.23.4/pnpm 10.34.9, typecheck 5/5, builds 2/2, 145 tests (144 passed, 0 failed, 1 documented PGlite skip). Local screenshots are now included under `docs/screenshots/pr27-radio-admin-read-errors/`. The candidate is not committed or pushed yet; it needs a fresh exact-head preview before any normal merge attempt.
+- Other open PR states after main advanced: #24 UNKNOWN, #28 UNKNOWN, #29 DIRTY and dependent on #24, #31 UNKNOWN, #32 UNKNOWN. Individual GitHub check details still return 403. Do not bypass branch protection.
+- Production Supabase remains read-only while duplicate migration versions and schema drift are unresolved. No production data, auth settings or roles were changed.
