@@ -101,3 +101,10 @@ PR #27 was merged normally by the authenticated GitHub CLI (no branch-protection
 PR #28 remains open at its old remote head `c3132dd456d238ae4dbc64f94348406277ad65c1`. Its local merge-forward includes current main and resolves only the three conflicting release documents to main. Ten prior local synthetic screenshots (mobile/desktop for Contact, About, Guidelines, Privacy and Terms) are now tracked under `docs/screenshots/pr28-public-contact-privacy/`; the README identifies these as local, pre-PR31/32 captures. The exact current working-tree candidate passes typecheck **5/5**, builds **2/2**, and **145 tests: 144 passed, 0 failed, 1 documented skip**; `git diff --check` is clean. It still needs a merge-forward commit, normal non-force push and fresh exact-head Vercel check. The current owner instruction is to leave PRs open for review; do not merge.
 
 Production Supabase schema, migrations, authentication settings, roles and user content remain untouched. GitHub’s individual check APIs still return 403; no hosted CI pass is claimed.
+
+
+## 2026-11-10 12:25 WAT — PR #28 pushed for review
+
+PR #28’s main-sync commit `f422f418f8a4f0487a25c72d590be58d8bcfadcc` was pushed normally to its existing branch. It includes the latest main parent `1d41bfae8afa63f9c0558053f3a44368b65ce816`, refreshed docs and ten local screenshot captures. Exact-head local gates pass: typecheck 5/5, builds 2/2, tests 145 total (144 passed, 0 failed, 1 documented PGlite skip). GitHub reports PR #28 OPEN and CLEAN. Vercel reports the exact commit preview READY at `https://epe-lawa-oq13nm1fe-epe-lawa.vercel.app`; direct requests return HTTP 302 to SSO, so hosted content was not visually reviewed.
+
+The PR description links the local screenshots and accurately notes that the images predate PR #31/#32. Per the owner’s current instruction, leave PR #28 open for review; do not merge. The next work is to sync and verify PR #31, then continue the auth pair and PR #32. Production Supabase remains read-only; native mobile remains deferred.
