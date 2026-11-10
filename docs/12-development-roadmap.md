@@ -69,3 +69,17 @@ Next: commit and push the tested PR #25 main-sync without force; refresh its Ver
 ## 2026-11-10 09:40 WAT — PR #25 exact-head checkpoint
 
 PR #25's local merge-forward now includes the original newsroom-gate commit `09a2470d50e0eff6ff3ee98a54568799478475f0` and updated-main parent `6a48e5f02d210fef29c471daac9992e1e4693039`. Exact local gates pass with Node 22.23.4/pnpm 10.34.9: 5/5 typechecks, 2/2 builds and 142 passed / 0 failed / 1 documented PGlite skip. It is committed locally but not yet pushed; after the non-force push, verify a new Vercel deployment and GitHub mergeability. The previous PR #25 preview is from Nov 9 and does not cover this tree. GitHub status details remain inaccessible. PR #24 remains open while GitHub reports UNSTABLE despite its local gates and READY preview; do not merge until status is clean.
+
+
+## 2026-11-10 09:49 WAT — Post-PR #25 merge and PR #26 checkpoint
+
+PR #25 was normally squash-merged to `main` as `0bd1fd1eac09fa5905dc6f4437723fd209124fa8`. Exact updated-main verification on Node 22.23.4/pnpm 10.34.9 passed 5/5 typechecks, 2/2 builds and 142 passed / 0 failed / 1 documented PGlite skip. The post-merge Vercel Production deployment `epe-lawa-13fhfmmoz-epe-lawa.vercel.app` is READY, and `https://epelawa.vercel.app/` returns HTTP 200; this confirms deployment and route response only, not full feature behavior.
+
+PR #26 original head `c8d0cbae86a421c4eae2c70d1c600a231990338f` passed 5/5 typechecks, 2/2 builds and 139 passed / 0 failed / 1 documented skip. Its local merge-forward now uses latest main parent `0bd1fd1eac09fa5905dc6f4437723fd209124fa8`; only the three status documents conflicted, while code merged automatically. The combined candidate passed `git diff --check`, has zero unresolved paths, and passed 5/5 typechecks, 2/2 builds, and 143 passed / 0 failed / 1 documented skip. It is still an uncommitted local merge candidate; after this status update, rerun exact-head gates, commit, and push without force. GitHub currently reports UNKNOWN and the old Vercel preview is SSO-protected; a fresh deployment/status check is required after push.
+
+PR #24 remains OPEN at `7ac8afada2a6d05738f9ee0e8b2dbfdabf8c3747`. After main advanced, GitHub now reports `mergeable=UNKNOWN` / `mergeStateStatus=UNKNOWN`; individual checks still return 403. Do not merge until its branch is updated with latest main, exact gates pass, and GitHub returns a healthy clean state. PR #29 remains dependent on #24. Production Supabase stays read-only during migration reconciliation.
+
+
+## 2026-11-10 09:51 WAT — PR #26 exact merge-commit verification
+
+PR #26 merge-forward commit `43772f73adc65f1f791dafd660e77080b0747db0` has PR #26 original head `c8d0cbae86a421c4eae2c70d1c600a231990338f` as first parent and latest main `0bd1fd1eac09fa5905dc6f4437723fd209124fa8` as second parent. Exact-head Node 22.23.4/pnpm 10.34.9 gates pass: 5/5 typechecks, 2/2 builds, 144 tests total (143 passed, 0 failed, 1 documented PGlite skip), with `git diff --check` clean. The branch remains local and unpushed; push through the authenticated CLI without force, then verify the new Vercel deployment and GitHub mergeability. Old preview readiness does not cover this commit. Do not merge unless the current PR state is clean/healthy; retest main after any merge.
