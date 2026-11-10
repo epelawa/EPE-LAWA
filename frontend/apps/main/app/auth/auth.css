@@ -155,7 +155,7 @@ body:has(.auth-link-issue) .site-main {
 }
 
 @media (max-height: 680px) {
-  .auth-page { padding-top: max(8px, env(safe-area-inset-top)); padding-bottom: calc(var(--storage-notice-height, 148px) + max(10px, env(safe-area-inset-bottom)) + 10px); }
+  .auth-page { padding-top: max(8px, env(safe-area-inset-top)); padding-bottom: calc(var(--storage-notice-height, 0px) + max(10px, env(safe-area-inset-bottom)) + 10px); }
   .auth-card { padding-block: 12px; }
   .auth-card > .focused-page-controls { margin-bottom: 6px; }
   .auth-card__content { margin-top: 8px; }

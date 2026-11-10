@@ -69,3 +69,18 @@ Next: commit and push the tested PR #25 main-sync without force; refresh its Ver
 ## 2026-11-10 09:40 WAT — PR #25 exact-head checkpoint
 
 PR #25's local merge-forward now includes the original newsroom-gate commit `09a2470d50e0eff6ff3ee98a54568799478475f0` and updated-main parent `6a48e5f02d210fef29c471daac9992e1e4693039`. Exact local gates pass with Node 22.23.4/pnpm 10.34.9: 5/5 typechecks, 2/2 builds and 142 passed / 0 failed / 1 documented PGlite skip. It is committed locally but not yet pushed; after the non-force push, verify a new Vercel deployment and GitHub mergeability. The previous PR #25 preview is from Nov 9 and does not cover this tree. GitHub status details remain inaccessible. PR #24 remains open while GitHub reports UNSTABLE despite its local gates and READY preview; do not merge until status is clean.
+
+
+## 2026-11-10 10:28 WAT — Current release snapshot (supersedes 09:40 status)
+
+Production code is `main` at `0bd1fd1eac09fa5905dc6f4437723fd209124fa8`, which includes PR #30 (`6a48e5f02d210fef29c471daac9992e1e4693039`) and PR #25 (merge commit `0bd1fd1eac09fa5905dc6f4437723fd209124fa8`). GitHub CLI confirms #25 and #30 are MERGED. The latest existing PR is #30; open PRs are #24 (DIRTY), #26 (CLEAN), #27 (CLEAN), #28 (CLEAN), and #29 (UNKNOWN). Individual `gh pr checks` details remain inaccessible (403). Follow the latest owner instruction: keep review PRs open, continue independently, and do not merge.
+
+The homepage-only storage notice is implemented locally on branch `fix/homepage-only-cookie-notice` from current main; it is not pushed and has no PR or hosted preview yet. It is mounted only inside the homepage, floats at the lower-left there, persists dismissal, and clears its measured spacer on dismissal/navigation. A short-screen rule preserves the homepage CTA at 320×568. Exact local gates on Node 22.23.4/pnpm 10.34.9 pass: workspace typecheck 5/5, builds 2/2, and full tests 142 passed / 0 failed / 1 documented PGlite skip. Playwright checked 320×568, 375×812, and 1440×900; there is no horizontal overflow, the 320×568 and other tested hero controls are clear of the notice, action targets are at least 44px, dismissal persists after reload, and client navigation to `/news` removes the notice. `/auth`, `/privacy`, and `/admin/login` render without it; the tested public routes returned HTTP 200 and browser errors were absent.
+
+Local-only screenshot evidence (not hosted or a Vercel preview):
+- `/workspace/epe-lawa-release-screenshots/pr31-homepage-only-cookie/local-home-320x568.png`
+- `/workspace/epe-lawa-release-screenshots/pr31-homepage-only-cookie/local-home-375x812.png`
+- `/workspace/epe-lawa-release-screenshots/pr31-homepage-only-cookie/local-home-1440x900.png`
+- `/workspace/epe-lawa-release-screenshots/pr31-homepage-only-cookie/local-privacy-375x812-no-notice.png`
+
+Next: commit and push the tested notice work as its own review PR, inspect its exact Vercel preview with CLI, and keep the PR open. Then audit the remaining web scope for incomplete or “Coming Soon” flows, implementing safe functionality without fake success states. Durable History corrections, live waitlist persistence, production publishing and role changes remain blocked pending safe schema reconciliation; Google OAuth, email delivery, Maps and Radio depend on real provider/configuration or rights verification. Production Supabase settings, schema, migration ledger, roles and data remain read-only. Native mobile remains deferred.

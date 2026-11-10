@@ -192,3 +192,18 @@ The PR #24 merge-forward candidate (main parent `6a48e5f02d210fef29c471daac9992e
 ### 2026-11-10 09:40 WAT — PR #25 committed merge-forward exact-head gates
 
 After resolving docs-only conflicts and committing the merge-forward of PR #25 with updated main, exact local verification on Node 22.23.4/pnpm 10.34.9 passed typecheck **5/5 tasks**, both builds **2/2**, and the full suite **143 tests: 142 passed, 0 failed, 1 documented PGlite skip**. The merge commit has PR #25 as first parent and main `6a48e5f02d210fef29c471daac9992e1e4693039` as second parent; author and committer are `EPE LAWA <info.epelawa@gmail.com>`. `git diff --check` is clean. This tree is locally committed but not pushed; after the documentation-only status entry is included, rerun exact-head gates, push without force, and confirm the new preview and GitHub status. The newsroom authorization fix remains synthetic/local evidence only; production content and Supabase were untouched.
+
+
+### 2026-11-10 10:29 WAT — Homepage-only floating notice local verification (pre-PR)
+
+Branch `fix/homepage-only-cookie-notice` was fast-forwarded to current `main` `0bd1fd1eac09fa5905dc6f4437723fd209124fa8`; its existing uncommitted patch was safely stashed and reapplied without conflicts. The notice is mounted only in the homepage component, remains a non-modal fixed card there, persists dismissal, and clears `--storage-notice-height` on dismissal/unmount. A targeted short-screen rule compacts the card and hero at 320×568; the primary hero action is not covered.
+
+Final local verification on Node 22.23.4/pnpm 10.34.9: `pnpm typecheck` passed 5/5 tasks, `pnpm build` passed both builds (2/2), `pnpm test` reported 142 passed / 0 failed / 1 documented PGlite skip (143 total), and `git diff --check` passed. Local Playwright on the built app checked 320×568, 375×812 and 1440×900: one fixed notice only on `/`, no horizontal overflow, no hero-CTA overlap, 44px action targets, and zero page errors. Dismissal persisted through reload and reset its spacer; client navigation to `/news` unmounted the notice. `/auth`, `/privacy`, and `/admin/login` had zero notice elements; `/auth` and `/privacy` returned HTTP 200.
+
+Local-only screenshots (not hosted):
+- `/workspace/epe-lawa-release-screenshots/pr31-homepage-only-cookie/local-home-320x568.png`
+- `/workspace/epe-lawa-release-screenshots/pr31-homepage-only-cookie/local-home-375x812.png`
+- `/workspace/epe-lawa-release-screenshots/pr31-homepage-only-cookie/local-home-1440x900.png`
+- `/workspace/epe-lawa-release-screenshots/pr31-homepage-only-cookie/local-privacy-375x812-no-notice.png`
+
+Current GitHub CLI state: PRs #25 and #30 are MERGED; exact main is `0bd1fd1eac09fa5905dc6f4437723fd209124fa8`. Open PRs #24 (DIRTY), #26 (CLEAN), #27 (CLEAN), #28 (CLEAN), #29 (UNKNOWN). Latest existing PR is #30. `gh pr checks` details remain inaccessible; no merge was attempted. The cookie branch has not yet been committed or pushed, so it has no PR or hosted preview. Production Supabase remained read-only; no schema, migration, role, auth setting, or user data changed.

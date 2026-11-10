@@ -1,17 +1,17 @@
 # EPE-LAWA — Implementation Tracker
 
-**Last checked:** 2026-11-10 09:40 WAT.
+**Last checked:** 2026-11-10 10:28 WAT.
 
-**Production code baseline:** `main` at `6a48e5f02d210fef29c471daac9992e1e4693039` (PR #30 squash merge).
+**Production code baseline:** `main` at `0bd1fd1eac09fa5905dc6f4437723fd209124fa8` (PR #25 merge; includes PR #30).
 **Scope:** The eight client-approved web modules plus cross-cutting member auth, staff access, publishing, privacy, accessibility, email and audit. Native mobile remains out of scope.
 
 A route existing, a preview building, or a button being visible is not proof that a complete workflow works. Mark a capability complete only with named current evidence.
 
 ## Release snapshot
 
-- The newest PR number is **#30**, now merged; the latest open PR is **#29**. PR #24–#29 remain open. The corrected Nov 10 instruction is to merge verified PRs normally in dependency order and test updated `main` after each; never bypass branch protection.
-- `gh pr checks` has returned `Resource not accessible by integration` for the current PRs, so individual hosted CI results are **unverified**. Refresh each PR's actual state before merging; do not infer passing checks from a preview build.
-- Vercel CLI reports recent deployments on the PR branch aliases as **READY**. Preview pages redirect to Vercel SSO (HTTP 302), so hosted page content cannot be inspected. The CLI JSON does not expose a deployment commit SHA; exact preview-to-HEAD matching is unverified except for PR #30, which was previously matched by the read-only audit.
+- The newest existing PR is **#30**; PRs #25 and #30 are merged. PRs #24, #26, #27, #28 and #29 remain open. The latest owner direction is to keep review PRs open and continue implementation; do not merge them.
+- `gh pr checks` has returned `Resource not accessible by integration` for current PRs, so individual hosted CI results are **unverified**. Do not infer passing checks from a preview build; keep PRs open for review.
+- Vercel status must be refreshed for each exact pushed head. Previews redirect to Vercel SSO (HTTP 302), so hosted content cannot be inspected; a READY deployment is not proof of passing hosted CI or a correct page.
 - `https://epelawa.vercel.app` responded HTTP 200 for `/`, `/news`, `/itan-ilu-mi`, `/forum`, `/map`, `/business-directory`, `/tourism`, `/radio`, `/who-is-who`, `/auth`, and `/admin/login`. This proves route responses only, not correct content, authorization, data access, or complete workflows.
 - No production Supabase schema, migration ledger, settings, account roles, or user data were changed. Production remains read-only while migration drift is unresolved.
 
@@ -52,11 +52,11 @@ PR #29 depends on PR #24's auth redesign. Before this merge pass, all seven PRs 
 ## Cross-cutting status and blockers
 
 - **Auth and admin:** PR #24 and dependent PR #29 are open. Google sign-in must remain disabled until provider configuration is genuinely available. Only the approved verified identity may receive primary-admin capability; production role provisioning has not been performed or verified in this snapshot. No auth/email setting changes are authorized while production is read-only.
-- **Cookie/preferences notice:** The separate worktree `fix/homepage-only-cookie-notice` has local edits moving the notice to a fixed, floating, homepage-only position. No PR is open yet and no screenshot has been captured for this in-progress change. Its full local gates should be rerun on the final diff before opening a focused PR.
+- **Cookie/preferences notice:** The local `fix/homepage-only-cookie-notice` implementation mounts the fixed notice only on `/`, preserves dismissal, clears its spacer on route changes, and tightens the 320×568 hero to keep its CTA visible. Exact local gates and Playwright checks passed; local-only screenshots are recorded in the current 10:28 status below. No hosted deployment is claimed.
 - **Email:** Branded UI/template code does not prove delivery. Supabase SMTP/provider status and authenticated sender delivery have not been verified; do not promise that verification mail works end-to-end.
 - **Persistence and providers:** No safe live waitlist persistence path was established. Do not show success for a submission that will be lost. Payment, map, media/stream and other provider-dependent flows stay unavailable until configured and verified.
 - **Typography and visual system:** Use the legally available font fallback; no Codec Pro license was supplied. Keep the approved cobalt palette, light default, persisted manual dark mode, reduced-motion/accessibility requirements, and no public exposure of private admin contact details.
-- **Screenshots:** Existing local artifacts are in the paths in the PR table; PR #25/#26 do not yet have a PR-specific capture. Local screenshots are not hosted-preview evidence. PR #24's auth captures predate the requested homepage-only cookie relocation and should not be used to claim that the current notice placement is fixed.
+- **Screenshots:** Existing local artifacts are in the PR table. The homepage-notice archive contains local-labelled mobile/desktop homepage screenshots and a public privacy-page screenshot showing the notice absent. Local images are not hosted-preview evidence.
 
 ## Production schema and migration safety
 
@@ -66,11 +66,11 @@ The read-only CLI audit findings and safe reconciliation sequence are recorded i
 
 ## Next actions
 
-1. Commit and push the tested PR #24 merge-from-main resolution without force, refresh the preview and GitHub mergeability, then attempt a normal CLI merge only if clean; test updated `main` after it merges.
-2. After #24 merges, retarget PR #29 to `main`, rerun the exact-head gates, then merge normally if healthy; test updated `main` again. Refresh and resolve any main conflicts in PRs #25–#28 before merging them independently.
-3. Add useful local screenshots for functional-only PRs #25/#26 where a changed state can be shown without sign-in or production data; otherwise document why no screenshot applies.
-4. After current PRs are resolved, finish the homepage-only notice and remaining safe web functionality in one comprehensive feature PR, with full synthetic Playwright, accessibility, route, auth, staff authorization and responsive gates.
-5. Build a read-only migration reconciliation plan and obtain a disposable schema rehearsal path; production remains read-only.
+1. Open the tested homepage-only notice branch as a separate review PR, include the local-labelled screenshots, and verify its exact Vercel deployment after push; leave the PR open.
+2. Keep PRs #24 and #26–#29 open for review. Continue with the remaining web-feature audit; fix safe, independently verifiable behavior and keep provider/schema-blocked features honestly unavailable.
+3. Prepare one consolidated follow-up feature PR for the remaining agreed web scope only after its changes, synthetic tests, route/auth/security checks and screenshots are complete. Native mobile remains deferred.
+4. Refresh stale PR documentation and record hosted-check limitations without treating Vercel READY as proof of passing hosted CI.
+5. Produce a read-only migration reconciliation plan and obtain a disposable schema rehearsal path; production remains read-only.
 
 
 ## Current status — 2026-11-10 09:38 WAT (supersedes the 09:30 snapshot)
@@ -87,3 +87,14 @@ The read-only CLI audit findings and safe reconciliation sequence are recorded i
 ## PR #25 main-sync checkpoint — 2026-11-10 09:40 WAT
 
 PR #25's committed local merge-forward combines original head `09a2470d50e0eff6ff3ee98a54568799478475f0` with main parent `6a48e5f02d210fef29c471daac9992e1e4693039`. Exact-head local gates pass: typecheck 5/5, builds 2/2, tests 142 passed / 0 failed / 1 documented skip. The commit is not yet pushed; its previous Vercel alias is a Nov 9 build, and GitHub state remains UNKNOWN. Push without force and refresh both before any merge. PR #24 is pushed at `7ac8afada2a6d05738f9ee0e8b2dbfdabf8c3747` but remains open with `mergeStateStatus=UNSTABLE`; keep it open until clean. No production Supabase writes were made.
+
+
+## Current state — 2026-11-10 10:28 WAT (supersedes earlier snapshots)
+
+- **Main baseline:** `0bd1fd1eac09fa5905dc6f4437723fd209124fa8`. PR #25 and PR #30 are merged. Latest existing PR: #30. Open review PRs: #24 (head `7ac8afada2a6d05738f9ee0e8b2dbfdabf8c3747`, DIRTY), #26 (`dc39b581b7e920bc905cc81de83d77e38188d4cd`, CLEAN), #27 (`4fbc82da2924f8cf521588a5816b57818d3a0148`, CLEAN), #28 (`c3132dd456d238ae4dbc64f94348406277ad65c1`, CLEAN), and #29 (`373d92febbd7e3f193ff10b0a251a6e414bf2a49`, UNKNOWN). GitHub CLI check-detail endpoints remain inaccessible; do not infer CI status or merge any review PR.
+- **Homepage notice:** local changes on `fix/homepage-only-cookie-notice`, based on `main` at `0bd1fd1eac09fa5905dc6f4437723fd209124fa8`. Before opening the new PR, exact local gates passed on Node 22.23.4/pnpm 10.34.9: 5/5 typecheck tasks, 2/2 builds, 142 passed / 0 failed / 1 documented PGlite skip. `git diff --check` passed.
+- **Browser QA:** local Playwright tested 320×568, 375×812 and 1440×900. Notice is present and fixed only on `/`; no horizontal overflow; it does not cover the hero controls (including the short 320×568 layout); both action targets are at least 44px. Dismissal persists after reload and clears the CSS height; client navigation to `/news` removes the component and resets the spacer. `/auth`, `/privacy`, and `/admin/login` render without it; no browser page errors were observed.
+- **Screenshots — local-only, not hosted:** `/workspace/epe-lawa-release-screenshots/pr31-homepage-only-cookie/local-home-320x568.png`, `local-home-375x812.png`, `local-home-1440x900.png`, and `local-privacy-375x812-no-notice.png`. Supporting local route captures and JSON are also in the same directory. These do not claim a hosted preview.
+- **Provider/schema blockers remain:** production migration-ledger/schema drift is unresolved and production remains read-only. Do not claim durable History correction intake, waitlist persistence, production publishing, role provisioning, Google OAuth, email delivery, Maps API, or Radio playback until the relevant schema/provider/rights checks are actually satisfied. Continue the requested feature audit and implement safe functionality; use honest unavailable states only for genuine blockers.
+
+**Next:** commit/push this focused notice change and open it for review; verify its exact Vercel deployment through CLI and leave the PR open. Then continue the remaining web-feature audit toward one consolidated feature PR, with local synthetic tests and screenshots. No native app work or production database writes.
