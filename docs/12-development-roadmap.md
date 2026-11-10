@@ -83,3 +83,12 @@ PR #24 remains OPEN at `7ac8afada2a6d05738f9ee0e8b2dbfdabf8c3747`. After main ad
 ## 2026-11-10 09:51 WAT — PR #26 exact merge-commit verification
 
 PR #26 merge-forward commit `43772f73adc65f1f791dafd660e77080b0747db0` has PR #26 original head `c8d0cbae86a421c4eae2c70d1c600a231990338f` as first parent and latest main `0bd1fd1eac09fa5905dc6f4437723fd209124fa8` as second parent. Exact-head Node 22.23.4/pnpm 10.34.9 gates pass: 5/5 typechecks, 2/2 builds, 144 tests total (143 passed, 0 failed, 1 documented PGlite skip), with `git diff --check` clean. The branch remains local and unpushed; push through the authenticated CLI without force, then verify the new Vercel deployment and GitHub mergeability. Old preview readiness does not cover this commit. Do not merge unless the current PR state is clean/healthy; retest main after any merge.
+
+
+## 2026-11-10 12:10 WAT — PR #26 merged; PR #27 sync candidate
+
+PR #26 was merged normally with the repository’s squash strategy. Current `main` is `9b895366e93a68c5912b0c837c00ff4947ad0785`; the matching Vercel Production deployment is **READY**. Production route checks returned HTTP 200 for `/`, `/itan-ilu-mi`, `/news` and `/contact`. The live History page still displays PR #30’s “Coming Soon” correction badge; PR #32 remains open and has not changed production.
+
+PR #27’s normal merge attempt was blocked by conflicts in `docs/12-development-roadmap.md`, `docs/14-tracker.md` and `docs/16-progress-log.md` after #26 advanced `main`. Its Radio source and focused test merged without conflict. A local merge-forward candidate resolves the three files from the current `main`, refreshes the tracker/roadmap, and includes local desktop/mobile screenshots at `docs/screenshots/pr27-radio-admin-read-errors/`. Exact local gates on Node 22.23.4/pnpm 10.34.9 pass: typecheck **5/5**, builds **2/2**, tests **145 total: 144 passed, 0 failed, 1 documented PGlite skip**. The candidate has not yet been committed or pushed; the existing PR head/preview do not validate it.
+
+Next: commit with the required EPE LAWA identity, push without force, inspect a fresh exact-SHA preview and current GitHub state, then use only a normal merge if GitHub allows. PR #28 and #31 should be synced before merging, then #24 and dependent #29, with PR #32 last due to overlapping public-page/auth/documentation changes. GitHub check detail endpoints remain 403; no branch-protection bypass is permitted. Production Supabase remains read-only until migration drift is safely reconciled; native mobile remains deferred.
