@@ -21,7 +21,18 @@ test('public Radio page renders only database-backed programme, schedule and arc
  assert.match(page,/No schedule published yet/);
 	 assert.match(page,/No published episodes available/);
 	 assert.match(page,/<RadioPlayer/);
- assert.doesNotMatch(page,/Radio Lagos|azstream\.elektranbroadcast\.com|puzzofme/);
+	 assert.doesNotMatch(page,/Radio Lagos|azstream\.elektranbroadcast\.com|puzzofme/);
+});
+
+test('Radio admin distinguishes failed data reads from empty catalogues',async()=>{
+ const page=await read('frontend/apps/admin/app/(protected)/radio/page.tsx');
+ for(const section of ['programmes','episodes','schedules']) assert.match(page,new RegExp(`error: ${section}Error`));
+ assert.match(page,/failedSections\.length > 0/);
+ assert.ok(page.indexOf('if (failedSections.length > 0)') < page.indexOf('const programmeForm'));
+ assert.match(page,/Radio records could not be loaded/);
+ assert.match(page,/No empty catalogue is inferred and no editing forms are shown/);
+ assert.match(page,/No schedule slots/);
+ assert.match(page,/No episodes/);
 });
 
 test('Radio writes use one verified-capability RPC instead of direct PostgREST writes',async()=>{

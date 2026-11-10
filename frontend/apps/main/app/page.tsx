@@ -4,6 +4,7 @@ import { EmptyPanel } from "../components/design-system";
 import { formatPublishedDate } from "../lib/dates";
 import { getLatestStories } from "../lib/home-data";
 import "./hero-logo.css";
+import CookieBanner from "../components/cookie-banner";
 
 const modules = [
   {name:"Trending News",href:"/news",description:"Local reporting. The stories that matter here."},
@@ -38,5 +39,6 @@ export default async function Home() {
     <section className="ep-container home-section home-community" aria-labelledby="community-title"><div className="home-community__poster" aria-hidden="true"><span>Our place. Our voices.</span><p>Good things<br />begin with<br /><em>connection.</em></p><UsersIcon size={42}/></div><div className="home-community__copy"><p className="ui-eyebrow">A place to take part</p><h2 id="community-title">Not just a place to read.<br />A place to belong.</h2><p>Ask a question, add a perspective, share a memory, or put your business on the map. EPE LAWA makes room for the people behind the place.</p><div className="ui-actions"><Link className="btn-primary" href="/forum">Join the conversation <ArrowRightIcon size={17} aria-hidden="true" /></Link><Link className="ui-text-link" href="/guidelines">Our community guidelines</Link></div></div></section>
 
     <section className="ep-container home-join" aria-labelledby="join-title"><p className="ui-eyebrow">There’s a place for you here</p><h2 id="join-title">Stay connected.<br />Make it your community.</h2><p>Create a member account to take part in conversations and contribute to the growing story of Epe.</p><div className="ui-actions"><Link className="btn-primary" href="/auth">Become a member <ArrowUpRightIcon size={17} aria-hidden="true" /></Link><Link className="btn-ghost" href="/about">Get to know EPE LAWA</Link></div></section>
+    <CookieBanner />
   </div>;
 }

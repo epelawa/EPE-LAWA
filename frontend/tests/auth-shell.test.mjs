@@ -28,7 +28,8 @@ test("member auth routes use a centered branded shell without manual theme contr
   assert.doesNotMatch(brand, /showPlace|Epe Division|brand__place/);
   assert.match(controls, /showThemeToggle \? <ThemeToggle \/> : null/);
   assert.match(styles, /\.auth-page\s*\{[^}]*place-items:\s*center/s);
-  assert.match(styles, /var\(--storage-notice-height,\s*148px\)/);
+  assert.match(styles, /var\(--storage-notice-height,\s*0px\)/);
+  assert.doesNotMatch(styles, /var\(--storage-notice-height,\s*148px\)/);
   assert.match(styles, /auth-step-actions\[data-enhanced="false"\] \.auth-step-back/);
   assert.match(styles, /auth-step-actions\[data-enhanced="true"\]\[data-step="1"\] \.auth-step-back/);
   assert.match(styles, /auth-step-actions\[data-enhanced="true"\]\[data-total="4"\]\[data-step="3"\] \.auth-step-continue/);
@@ -43,7 +44,7 @@ test("member auth routes use a centered branded shell without manual theme contr
   assert.match(styles, /@media \(max-width: 360px\) and \(max-height: 680px\)/);
   assert.match(styles, /\.auth-card\s*\{\s*margin-top:\s*-6px;[^}]*padding:\s*4px 10px/s);
   assert.match(styles, /\.auth-step-continue \{ background: var\(--palette-cobalt\); color: var\(--palette-midnight\); \}/);
-  assert.match(styles, /min\(var\(--storage-notice-height, 148px\), 124px\)/);
+  assert.match(styles, /min\(var\(--storage-notice-height, 0px\), 124px\)/);
   assert.match(styles, /\.auth-footnote-links a\s*\{[^}]*min-height:\s*44px/s);
   assert.match(styles, /\.auth-switch a\s*\{[^}]*min-height:\s*44px/s);
   assert.match(styles, /\.auth-secondary-link a\s*\{[^}]*min-height:\s*44px/s);
@@ -89,7 +90,7 @@ test("member auth routes use a centered branded shell without manual theme contr
   assert.match(staffForm, /aria-pressed=\{visible\}/);
   assert.match(adminStyles, /body:has\(\.admin-shell \.auth-page\) \.admin-masthead/);
   assert.match(adminStyles, /@media \(max-width: 480px\) and \(max-height: 680px\)/);
-  assert.match(notices, /body:has\(\.admin-shell \.auth-page\) \.storage-notice\s*\{[^}]*position:\s*fixed/s);
+  assert.doesNotMatch(notices, /body:has\(\.admin-shell \.auth-page\) \.storage-notice/);
 });
 
 test("callback issue, 404, and runtime error screens keep shared controls and hide public chrome", async () => {
@@ -114,17 +115,23 @@ test("callback issue, 404, and runtime error screens keep shared controls and hi
   assert.match(controls, /showThemeToggle \? <ThemeToggle \/> : null/);
 });
 
-test("storage notice stays pinned on forms but reserves space and never blocks focused error actions", async () => {
-  const [styles, authStyles, banner] = await Promise.all([
+test("storage notice is homepage-only and leaves auth screens unobstructed", async () => {
+  const [styles, authStyles, banner, layout, home] = await Promise.all([
     read(app, "notice-refinement.css"),
     read(app, "auth/auth.css"),
     read(components, "cookie-banner.tsx"),
+    read(app, "layout.tsx"),
+    read(app, "page.tsx"),
   ]);
 
-  assert.match(styles, /body:has\(\.auth-page\) \.storage-notice\s*\{[^}]*position:\s*fixed/s);
-  assert.match(authStyles, /padding:.*var\(--storage-notice-height,\s*148px\)/s);
-  assert.match(styles, /body:has\(\.auth-link-issue\).*position:\s*static/s);
-  assert.match(styles, /body:has\(\.focused-error-shell\).*position:\s*static/s);
+  assert.match(styles, /body:has\(\.public-home\) \.storage-notice\s*\{[^}]*position:\s*fixed/s);
+  assert.match(styles, /body:not\(:has\(\.public-home\)\) \.storage-notice\s*\{[^}]*display:\s*none/s);
+  assert.match(styles, /@media \(max-width: 340px\) and \(max-height: 640px\)/);
+  assert.match(styles, /body:has\(\.public-home \.storage-notice\) \.home-hero \.ui-actions \{ margin-top: 16px; gap: 8px; \}/);
+  assert.doesNotMatch(styles, /body:has\(\.(?:auth-page|auth-link-issue|focused-error-shell|admin-shell)\) \.storage-notice/);
+  assert.match(authStyles, /padding-bottom:\s*calc\(var\(--storage-notice-height,\s*0px\)/s);
+  assert.doesNotMatch(layout, /CookieBanner/);
+  assert.match(home, /CookieBanner/);
   for (const routeClass of ["auth-page", "auth-link-issue", "focused-error-shell"]) {
     assert.ok(styles.includes(`body:has(.${routeClass}) .toast-region:empty`));
     assert.ok(styles.includes(`body:has(.${routeClass}) .toast-region:not(:empty)`));
@@ -134,5 +141,6 @@ test("storage notice stays pinned on forms but reserves space and never blocks f
   assert.match(banner, /--storage-notice-height/);
   assert.match(banner, /Theme stays on this device\. Sign-in uses essential cookies; optional tracking is off\./);
   assert.match(banner, /epelawa_cookie_consent/);
+  assert.match(banner, /window\.removeEventListener\("resize", apply\);\s*root\.style\.setProperty\("--storage-notice-height", "0px"\)/);
   assert.doesNotMatch(banner, /role="dialog"/);
 });
