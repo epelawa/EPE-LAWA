@@ -45,6 +45,12 @@ export default async function HistoryReviewPage({ searchParams }: { searchParams
         meta={<StatusBadge tone="neutral">History review</StatusBadge>}
       />
       {notice ? <Notice tone={notice.tone} role={params.result === "saved" ? "status" : "alert"}>{notice.text}</Notice> : null}
+      <Notice tone="warning" role="note">
+        <div className="ui-stack-sm">
+          <div className="ui-row"><StatusBadge tone="warning">Coming Soon</StatusBadge><strong>Published-record corrections and removals</strong></div>
+          <p>This queue accepts new contributions only. It cannot receive correction/removal reports or edit or withdraw a published record. A safe, persisted correction workflow is not available yet; do not process such requests here.</p>
+        </div>
+      </Notice>
       {!permitted ? (
         <EmptyPanel title="Review access required" description="This staff account does not have the history.review capability." />
       ) : failed ? (

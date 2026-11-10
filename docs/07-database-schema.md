@@ -1,9 +1,7 @@
 # EPE LAWA — Database Schema
 
 **Document:** 07
-**Status:** Design. The only migration applied to any environment is
-`20261102133703_staff_access_foundation`. Everything below is proposed and requires review before it
-becomes a migration.
+**Status:** Design. The schema below is proposed and is not a description of the current production schema. A read-only CLI audit on 2026-11-09 found seven versions in the production migration ledger, while catalog probes found drift from the local migration definitions. See §15. Do not infer the live schema from the ledger or apply migrations before reconciliation.
 **Authority:** `00-master-plan.md`. Companion: `08-permissions-security.md`.
 
 ---
@@ -506,3 +504,15 @@ someone else's content.
 | 10 | `notifications_and_audit_hardening` | 9 |
 
 Each migration ships with: the SQL, an RLS policy set, a negative test, and a line in the tracker.
+
+## 15. Production schema audit (read-only, 2026-11-09)
+
+The Supabase CLI read-only audit targeted production project `igqmybuiovaxqmrteebd`. No production schema, migration ledger, Auth settings, account role or user data was changed.
+
+- The remote ledger has seven recorded versions: `20261102133703`, `20261102190001`, `20261102190002`, `20261102190003`, `20261102190004`, `20261102190005`, and `20261102200006`. Local inventory contains 29 migration files; 22 later local files are unrecorded remotely.
+- Two different local files share the version `20261107213000`: `20261107213000_news_comment_workflow.sql` and `20261107213000_people_achievements.sql`. That version is absent from the remote ledger; neither file should be treated as applied.
+- Pending migrations `20261102200007_member_identity.sql`, `20261102200008_comments.sql`, `20261102200010_forum.sql`, `20261102200011_business_directory.sql`, and `20261102200012_marketplace_and_payments.sql` call `has_capability(text)`, which the production catalog probe did not find. Any helper repair must be planned before those dependencies are applied.
+- The scoped read-only catalog probe did not find `has_capability(text)`, `current_staff_is_active()`, `people.achievements`, `published_people`, `comments`, or `comment_report_resolve`. It found `require_capability(text)` and `staff_capability_grants`, but production `require_capability(text)` is not SECURITY DEFINER, is volatile, has no pinned search path, and is executable by PUBLIC/anon/authenticated; its definition/grants differ from the local migration.
+- A full remote schema dump/diff and verified backup were not produced: the Supabase CLI dump path requires Docker/Podman, neither is available here, and native `pg_dump`/`psql` are absent. Out-of-band objects or drift beyond the scoped probes are therefore not ruled out. This section records the actionable findings; the scoped catalog probes do not replace a full schema dump or backup.
+
+**Safe reconciliation order:** (1) keep production read-only; (2) resolve duplicate local migration versions on a feature branch without rewriting the remote ledger; (3) obtain a complete backup and verify restore using a disposable project/branch; (4) compare the full remote schema, migration ledger and every local SQL file; (5) document forward-only, dependency-ordered fixes for helper functions, security settings, policies and missing objects; (6) rehearse all migrations and negative/RLS tests on the disposable target; and (7) only after explicit owner authorization, schedule any production change with rollback/restore gates. Never run a bulk `db push`, mark migrations applied solely to silence conflicts, or infer that a ledger row proves its schema objects exist.
