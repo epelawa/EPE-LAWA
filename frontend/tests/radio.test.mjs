@@ -9,8 +9,9 @@ const read=(p)=>readFile(path.join(root,p),'utf8');
 test('public Radio player never embeds the unrelated Radio Lagos stream',async()=>{
  const player=await read('frontend/apps/main/components/radio-player.tsx');
  assert.match(player,/EPE LAWA Radio/);
-	 assert.match(player,/not yet available/i);
-	 assert.match(player,/Coming Soon/);
+	 assert.match(player,/Live streaming is unavailable/i);
+	 assert.match(player,/embedding permission/);
+	 assert.doesNotMatch(player,/Coming\s+Soon/i);
  assert.doesNotMatch(player,/Radio Lagos|azstream\.elektranbroadcast\.com|puzzofme/);
 });
 

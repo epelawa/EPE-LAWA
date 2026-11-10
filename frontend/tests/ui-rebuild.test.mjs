@@ -24,7 +24,7 @@ test('storage notice is homepage-only and contact/policy pages disclose unavaila
   for(const file of ['frontend/apps/main/app/about/page.tsx','frontend/apps/main/app/contact/page.tsx','frontend/apps/main/app/guidelines/page.tsx','frontend/apps/main/app/privacy/page.tsx','frontend/apps/main/app/terms/page.tsx','frontend/apps/main/public/.well-known/security.txt'])assert.doesNotMatch(read(file),/info\.epelawa@gmail\.com|mailto:/i,file);
 });
 test('map location remains explicit and its security policy allows only self on the map route',()=>{
-  const map=read('frontend/apps/main/app/map/map-search.tsx');assert.match(map,/onClick=\{requestLocation\}/);assert.match(map,/getCurrentPosition/);assert.match(map,/not stored by EPE LAWA/);const config=read('frontend/apps/main/next.config.ts');assert.match(config,/source: "\/map"/);assert.match(config,/geolocation=\(self\)/);assert.match(config,/geolocation=\(\)/);
+  const map=read('frontend/apps/main/app/map/map-search.tsx');assert.match(map,/onClick=\{requestLocation\}/);assert.match(map,/getCurrentPosition/);assert.match(map,/EPE LAWA does not store/);const config=read('frontend/apps/main/next.config.ts');assert.match(config,/source: "\/map"/);assert.match(config,/geolocation=\(self\)/);assert.match(config,/geolocation=\(\)/);
 });
 test('every admin page has actual rebuilt markup and complete workflow navigation',()=>{
   for(const file of files('frontend/apps/admin/app').filter(f=>f.endsWith('/page.tsx')))assert.match(read(file),/PageIntro/,file);

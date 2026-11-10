@@ -47,8 +47,8 @@ export default async function HistoryReviewPage({ searchParams }: { searchParams
       {notice ? <Notice tone={notice.tone} role={params.result === "saved" ? "status" : "alert"}>{notice.text}</Notice> : null}
       <Notice tone="warning" role="note">
         <div className="ui-stack-sm">
-          <div className="ui-row"><StatusBadge tone="warning">Coming Soon</StatusBadge><strong>Published-record corrections and removals</strong></div>
-          <p>This queue accepts new contributions only. It cannot receive correction/removal reports or edit or withdraw a published record. A safe, persisted correction workflow is not available yet; do not process such requests here.</p>
+          <div className="ui-row"><StatusBadge tone="warning">Unavailable</StatusBadge><strong>Published-record corrections and removals</strong></div>
+          <p>This queue accepts new contributions only. It cannot receive correction/removal reports or edit or withdraw a published record. No safe, persisted correction workflow is available; do not process such requests here.</p>
         </div>
       </Notice>
       {!permitted ? (

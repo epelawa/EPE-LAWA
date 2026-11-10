@@ -53,8 +53,8 @@ export default async function ItanIluMiPage({ searchParams }: { searchParams: Pr
 
     <Notice tone="warning" role="note">
       <div className="ui-stack-sm">
-        <div className="ui-row"><StatusBadge tone="warning">Coming Soon</StatusBadge><strong>Correction requests for published records</strong></div>
-        <p>A secure online correction and removal request path is not configured yet. The contribution form is for new accounts only and cannot change a published record; please do not enter correction details as a new contribution.</p>
+        <div className="ui-row"><StatusBadge tone="warning">Unavailable</StatusBadge><strong>Correction requests for published records</strong></div>
+        <p>A secure online correction and removal request path is not configured. The contribution form accepts new accounts only and cannot change a published record; do not enter correction details as a new contribution. No private public-contact channel is currently available.</p>
       </div>
     </Notice>
 

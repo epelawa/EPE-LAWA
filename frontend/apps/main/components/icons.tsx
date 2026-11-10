@@ -75,6 +75,19 @@ export const ArrowRightIcon = ({ size = 18, className, "aria-hidden": ariaHidden
   </svg>
 );
 
+export const FilterIcon = ({ size = 18, className }: { size?: number; className?: string }) => (
+  <svg aria-hidden="true" className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 5h16l-6.2 7.1v5.8L10.2 20v-7.9L4 5Z" />
+  </svg>
+);
+
+export const SearchIcon = ({ size = 18, className }: { size?: number; className?: string }) => (
+  <svg aria-hidden="true" className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="10.8" cy="10.8" r="6.6" />
+    <path d="m16 16 4.5 4.5" />
+  </svg>
+);
+
 export const ArrowUpRightIcon = ({ size = 18, className, "aria-hidden": ariaHidden }: ArrowIconProps) => (
   <svg aria-hidden={normalizeAriaHidden(ariaHidden)} className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M7 17 17 7" />

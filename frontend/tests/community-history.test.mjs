@@ -51,9 +51,11 @@ test('history contribution action authenticates, validates consent, and persists
 
 test('published-history correction and removal requests are explicitly Coming Soon, not a fake submission path', async () => {
   const page = await readFile(pagePath, 'utf8');
-  assert.match(page, /<StatusBadge tone="warning">Coming Soon<\/StatusBadge>/);
-  assert.match(page, /secure online correction and removal request path is not configured yet/i);
-  assert.match(page, /contribution form is for new accounts only/i);
-  assert.match(page, /please do not enter correction details as a new contribution/i);
+  assert.match(page, /<StatusBadge tone="warning">Unavailable<\/StatusBadge>/);
+  assert.match(page, /secure online correction and removal request path is not configured/i);
+  assert.match(page, /contribution form accepts new accounts only/i);
+  assert.match(page, /do not enter correction details as a new contribution/i);
+  assert.match(page, /No private public-contact channel is currently available/i);
+  assert.doesNotMatch(page, /Coming\s+Soon/i);
   assert.doesNotMatch(page, /Your correction request was received/i);
 });

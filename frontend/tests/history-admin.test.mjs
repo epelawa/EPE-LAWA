@@ -63,11 +63,12 @@ test('History publication accepts only explicit approved text and keeps private 
 });
 
 
-test('staff History queue labels published-record correction and removal workflow Coming Soon', async () => {
+test('staff History queue clearly blocks unavailable published-record corrections and removals', async () => {
   const page = await readFile(pagePath, 'utf8');
-  assert.match(page, /<StatusBadge tone="warning">Coming Soon<\/StatusBadge>/);
+  assert.match(page, /<StatusBadge tone="warning">Unavailable<\/StatusBadge>/);
   assert.match(page, /Published-record corrections and removals/);
   assert.match(page, /This queue accepts new contributions only/);
   assert.match(page, /cannot receive correction\/removal reports or edit or withdraw a published record/);
-  assert.match(page, /safe, persisted correction workflow is not available yet/);
+  assert.match(page, /No safe, persisted correction workflow is available/);
+  assert.doesNotMatch(page, /Coming\s+Soon/i);
 });
