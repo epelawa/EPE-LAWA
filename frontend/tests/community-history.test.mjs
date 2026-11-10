@@ -47,3 +47,13 @@ test('history contribution action authenticates, validates consent, and persists
   assert.doesNotMatch(action, /from\("history_records"\)/);
   assert.doesNotMatch(action, /SERVICE_ROLE|service_role/i);
 });
+
+
+test('published-history correction and removal requests are explicitly Coming Soon, not a fake submission path', async () => {
+  const page = await readFile(pagePath, 'utf8');
+  assert.match(page, /<StatusBadge tone="warning">Coming Soon<\/StatusBadge>/);
+  assert.match(page, /secure online correction and removal request path is not configured yet/i);
+  assert.match(page, /contribution form is for new accounts only/i);
+  assert.match(page, /please do not enter correction details as a new contribution/i);
+  assert.doesNotMatch(page, /Your correction request was received/i);
+});
