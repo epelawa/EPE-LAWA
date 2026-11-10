@@ -1,6 +1,6 @@
 # EPE-LAWA — Implementation Tracker
 
-**Last checked:** 2026-11-10 09:56 WAT.
+**Last checked:** 2026-11-10 09:58 WAT.
 
 **Production code baseline:** `main` at `6a48e5f02d210fef29c471daac9992e1e4693039` (PR #30 squash merge).
 **Scope:** The eight client-approved web modules plus cross-cutting member auth, staff access, publishing, privacy, accessibility, email and audit. Native mobile remains out of scope.
@@ -109,3 +109,10 @@ PR #26 merge-forward commit `43772f73adc65f1f791dafd660e77080b0747db0` includes 
 PR #27 original head `e241c2d5a5cb92711fd2703f66c79a3205430a14` passed 5/5 typechecks, 2/2 builds and 139 passed / 0 failed / 1 documented skip. Its local merge-forward with main `0bd1fd1eac09fa5905dc6f4437723fd209124fa8` has no unresolved conflicts; the combined candidate passed 5/5 typechecks, 2/2 builds, 144 total tests (143 passed / 0 failed / 1 documented skip). A first typecheck attempt was blocked by stale generated `.next` references to a removed screenshot-only route; clearing only that unused generated admin directory resolved it, and the full suite was rerun successfully. Candidate remains uncommitted/unpushed; exact-head gates will run again after docs are included.
 
 PR #27's remote head remains old, and GitHub reports UNKNOWN / UNKNOWN; individual check details return 403. The existing preview cannot validate the updated tree. PR #26's pushed preview is READY, but its merge state is UNSTABLE; PR #24 is UNKNOWN after main advanced. PR #25 is merged at `0bd1fd1eac09fa5905dc6f4437723fd209124fa8`, with exact main tests passing and the production deployment READY. Preserve the existing PR #27 local UI screenshot archive; PR #25/#26 are functional-only and have no visual screenshot claim. No production Supabase writes were made.
+
+
+## PR #27 exact merge-commit checkpoint — 2026-11-10 09:58 WAT
+
+PR #27 merge-forward commit `a05061a22e67f7d537223ebd3851ec67a121103e` has original head `e241c2d5a5cb92711fd2703f66c79a3205430a14` and updated main parent `0bd1fd1eac09fa5905dc6f4437723fd209124fa8`. Exact-head gates pass on Node 22.23.4/pnpm 10.34.9: typecheck 5/5, builds 2/2, tests 144 total / 143 passed / 0 failed / 1 documented skip; `git diff --check` is clean. The commit is local and not pushed. Existing screenshots: `/workspace/epe-lawa-release-screenshots/pr27-radio-error-local/1440x900-radio-read-failure-local.png` and `375x812-radio-read-failure-local.png`.
+
+After including the status docs, rerun exact-head gates, push without force, and refresh preview/status. PR #27 is still OPEN on its old remote head with GitHub mergeability UNKNOWN; do not merge until the new preview is READY and the normal CLI reports a clean healthy state. PR #26 is READY-preview / UNSTABLE, PR #24 is UNKNOWN, and PR #25 is merged normally. Production remains read-only.
