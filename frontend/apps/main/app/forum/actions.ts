@@ -10,7 +10,7 @@ const text = (data: FormData, key: string) => {
 };
 
 function fail(message: string): never {
-  redirect(`/forum?error=${encodeURIComponent(message)}`);
+  redirect(`/forum?forum_error=${encodeURIComponent(message)}`);
 }
 
 async function memberClient(next = "/forum") {
@@ -50,10 +50,10 @@ export async function voteInPoll(data: FormData) {
   const { supabase } = await memberClient(next);
   const pollId = text(data, "poll_id");
   const optionId = text(data, "option_id");
-  if (!slug || !pollId || !optionId) redirect(`${next}?error=${encodeURIComponent("Choose one poll option.")}`);
+  if (!slug || !pollId || !optionId) redirect(`${next}?forum_error=${encodeURIComponent("Choose one poll option.")}`);
   const { error } = await supabase.rpc("forum_vote", { p_poll_id: pollId, p_option_id: optionId });
   revalidatePath(next);
-  if (error) redirect(`${next}?error=${encodeURIComponent(error.message.includes("already_voted") ? "You have already voted in this poll." : "Your vote could not be recorded. The poll may be closed or your membership may be inactive.")}`);
+  if (error) redirect(`${next}?forum_error=${encodeURIComponent(error.message.includes("already_voted") ? "You have already voted in this poll." : "Your vote could not be recorded. The poll may be closed or your membership may be inactive.")}`);
   redirect(`${next}?voted=1`);
 }
 
@@ -80,7 +80,7 @@ export async function reportPost(data: FormData) {
   const { error } = await supabase.from("forum_reports").insert({ post_id: postId, reporter_id: user.id, reason, note: note || null });
   if (error) {
     const message = error.code === "23505" ? "You have already reported this post." : "The report could not be submitted. Active member access is required.";
-    redirect(`/forum/thread/${encodeURIComponent(slug)}?error=${encodeURIComponent(message)}`);
+    redirect(`/forum/thread/${encodeURIComponent(slug)}?forum_error=${encodeURIComponent(message)}`);
   }
   revalidatePath(`/forum/thread/${slug}`);
   redirect(`/forum/thread/${encodeURIComponent(slug)}?reported=1`);
