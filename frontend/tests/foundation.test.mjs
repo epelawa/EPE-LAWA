@@ -150,8 +150,21 @@ test('main has honest indexable metadata, working public links and security head
     assert.equal(security.status, 200);
     assert.match(security.headers.get('content-type'), /text\/plain/);
     const securityText = await security.text();
-    assert.match(securityText, /Contact: mailto:info\.epelawa@gmail\.com/);
+    assert.match(securityText, /This file is informational only and does not accept reports\./i);
+    assert.doesNotMatch(securityText, /^Contact:/m);
+    assert.doesNotMatch(securityText, /mailto:|info\.epelawa@gmail\.com/i);
     assert.match(securityText, /Expires: 2027-05-02T00:00:00Z/);
+    for (const route of ['/about', '/contact', '/guidelines', '/privacy', '/terms']) {
+      const response = await fetch(base + route);
+      assert.equal(response.status, 200, route);
+      const html = await response.text();
+      assert.doesNotMatch(html, /info\.epelawa@gmail\.com|mailto:/i, route);
+      if (route === '/contact') {
+        assert.match(html, /Coming Soon/);
+        assert.match(html, /nothing is sent or stored/i);
+        assert.doesNotMatch(html, /<form\b/i);
+      }
+    }
     for (const code of [200, 400, 401, 403, 404, 429, 500, 503, 599]) {
       const statusPage = await fetch(base + '/status/' + code);
       assert.equal(statusPage.status, code, String(code));

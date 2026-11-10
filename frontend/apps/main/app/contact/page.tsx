@@ -1,9 +1,37 @@
 import type { Metadata } from "next";
-import { CONTACT_EMAIL } from "../../lib/contact";
+import Link from "next/link";
 import { pageMetadata } from "../../lib/metadata";
 import { PageFrame, PageIntro, Panel, SectionHeading, StatusBadge, Notice } from "../../components/design-system";
-import ContactForm from "./contact-form";
-export const metadata: Metadata = pageMetadata({ title: "Contact", description: "How to reach EPE LAWA.", path: "/contact" });
+
+export const metadata: Metadata = pageMetadata({
+  title: "Contact",
+  description: "Current availability of EPE LAWA contact and report intake.",
+  path: "/contact",
+});
+
 export default function ContactPage() {
-  return <PageFrame><PageIntro eyebrow="Let’s talk" title="A good place to start." description="Questions, corrections, community stories or privacy requests—here’s how to reach the EPE LAWA team."/><div className="ui-split"><Panel><SectionHeading title="Write to the team" description="Email is the available contact channel."/><a className="btn-primary" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a><hr className="ui-divider"/><div className="ui-row"><h2>Message form</h2><StatusBadge tone="warning">Coming Soon</StatusBadge></div><Notice tone="warning">Form delivery is not connected yet. The form below can check a draft, but it does not send or store your message. Please email us to get in touch.</Notice><ContactForm/></Panel><aside className="ui-sidebar"><Panel><h2>Help us help you.</h2><div className="ui-prose"><p>For a correction, include the page address and the detail that needs checking.</p><p>For a privacy request, explain which record you mean. Do not send passwords, payment details or sensitive documents.</p><p>For a community story, tell us where it comes from and how we can follow up.</p></div></Panel></aside></div></PageFrame>;
+  return (
+    <PageFrame className="ui-stack">
+      <PageIntro
+        eyebrow="Contact"
+        title="Contact intake is coming soon."
+        description="A private, reliable channel for receiving messages has not been configured yet."
+        meta={<StatusBadge tone="warning">Coming Soon</StatusBadge>}
+      />
+      <Panel className="ui-stack">
+        <SectionHeading
+          title="No message is received"
+          description="Email delivery and secure message storage are not connected."
+        />
+        <Notice tone="warning">
+          Do not submit personal or sensitive information here. This page does not accept messages; nothing is sent or stored.
+        </Notice>
+        <p className="ui-muted">Correction, privacy, safety and general enquiries cannot currently be received through this site. This page will be updated when a secure channel is available.</p>
+        <div className="ui-actions">
+          <Link className="ui-text-link" href="/privacy">Read the privacy notice</Link>
+          <Link className="ui-text-link" href="/guidelines">Read the community guidelines</Link>
+        </div>
+      </Panel>
+    </PageFrame>
+  );
 }
