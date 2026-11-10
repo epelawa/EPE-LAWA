@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 /**
- * Storage notice.
+ * Homepage-only storage notice.
  *
  * Preferences use localStorage; authenticated member sessions use essential
  * cookies. Optional analytics and advertising tracking are not enabled.
@@ -13,8 +13,8 @@ import Link from "next/link";
  * Not a modal: it must not trap focus or block the page, and "Got it" is enough
  * because nothing is being consented to that could be refused.
  *
- * It publishes its measured height as `--storage-notice-height` so focused auth
- * layouts can reserve space above it and connectivity toasts can avoid it.
+ * Its measured height lets homepage connectivity toasts sit above the floating
+ * card. It is cleared on dismissal and when leaving the homepage.
  */
 export default function CookieBanner() {
   const [show, setShow] = useState(true);
@@ -53,6 +53,7 @@ export default function CookieBanner() {
     return () => {
       observer?.disconnect();
       window.removeEventListener("resize", apply);
+      root.style.setProperty("--storage-notice-height", "0px");
     };
   }, [show]);
 

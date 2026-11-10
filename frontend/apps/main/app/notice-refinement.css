@@ -8,34 +8,40 @@
 .toast .toast__action,.toast .toast__close { min-height: 44px; min-width: 44px; border-radius: 6px; }
 .toast .toast__close svg { width: 14px; height: 14px; }
 
-body .storage-notice { left: 12px; right: auto; bottom: 12px; width: min(360px, calc(100% - 24px)); padding: 12px; border-radius: 10px; box-shadow: 0 6px 18px -6px rgb(10 16 35 / .18); }
-body .storage-notice__title { margin-bottom: 4px; font-size: 13px; line-height: 1.375; }
-body .storage-notice__copy { font-size: 11px; line-height: 1.5; }
-body .storage-notice .ui-actions { margin-top: 8px; gap: 6px; }
-body .storage-notice .btn-primary,body .storage-notice .btn-ghost { min-height: 44px; padding: 8px 12px; font-size: 11px; }
-
-/* The auth card reserves this fixed, non-modal notice's measured height. */
-body:has(.auth-page) .storage-notice {
+/* The storage notice is a compact, non-modal homepage card only. */
+body:not(:has(.public-home)) .storage-notice { display: none !important; }
+body:has(.public-home) .storage-notice {
   position: fixed;
-  inset: auto max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  inset: auto auto max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
   z-index: 45;
-  width: auto;
-  max-width: 360px;
+  width: min(360px, calc(100% - 24px));
   max-height: calc(100dvh - 24px);
   overflow-y: auto;
   margin: 0;
+  padding: 12px;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px -6px rgb(10 16 35 / .18);
+}
+body:has(.public-home .storage-notice) .public-home { padding-bottom: calc(var(--storage-notice-height, 0px) + 16px); }
+body:has(.public-home) .storage-notice__title { margin-bottom: 4px; font-size: 13px; line-height: 1.375; }
+body:has(.public-home) .storage-notice__copy { font-size: 11px; line-height: 1.5; }
+body:has(.public-home) .storage-notice .ui-actions { margin-top: 8px; gap: 6px; }
+body:has(.public-home) .storage-notice .btn-primary,body:has(.public-home) .storage-notice .btn-ghost { min-height: 44px; padding: 8px 12px; font-size: 11px; }
+
+@media (max-width: 340px) and (max-height: 640px) {
+  body:has(.public-home) .storage-notice { padding: 8px; }
+  body:has(.public-home) .storage-notice__title { margin-bottom: 2px; font-size: 12px; line-height: 1.25; }
+  body:has(.public-home) .storage-notice__copy { font-size: 10px; line-height: 1.25; }
+  body:has(.public-home) .storage-notice .ui-actions { margin-top: 4px; }
+  body:has(.public-home .storage-notice) .home-hero { padding-top: 16px; padding-bottom: 24px; }
+  body:has(.public-home .storage-notice) .home-hero__copy { padding-block: 0; }
+  body:has(.public-home .storage-notice) .home-hero h1 { margin-block: 12px; font-size: clamp(1.8rem, 8.6vw, 2.1rem); line-height: 1.02; }
+  body:has(.public-home .storage-notice) .home-hero__lede { font-size: 14px; line-height: 1.4; }
+  body:has(.public-home .storage-notice) .home-hero .ui-actions { margin-top: 16px; gap: 8px; }
+  body:has(.public-home .storage-notice) .home-hero__note { display: none; }
 }
 
-/* Link and error screens remain flow-based so their recovery controls stay unobstructed. */
-body:has(.auth-link-issue) .storage-notice,
-body:has(.focused-error-shell) .storage-notice {
-  position: static;
-  inset: auto;
-  z-index: auto;
-  width: min(480px, calc(100% - 32px));
-  margin: 16px auto 24px;
-}
-
+/* Keep transient messages from covering auth and staff controls. */
 body:has(.auth-page) .toast-region:empty,
 body:has(.auth-link-issue) .toast-region:empty,
 body:has(.focused-error-shell) .toast-region:empty { display: none; }
@@ -51,14 +57,6 @@ body:has(.focused-error-shell) .toast-region:not(:empty) {
   pointer-events: auto;
 }
 
-/* Staff tools are private pages too; notices must stay visible without covering controls. */
-body:has(.admin-shell) .storage-notice {
-  position: static;
-  inset: auto;
-  z-index: auto;
-  width: min(480px, calc(100% - 32px));
-  margin: 16px auto 24px;
-}
 body:has(.admin-shell) .toast-region:empty { display: none; }
 body:has(.admin-shell) .toast-region:not(:empty) {
   position: static;

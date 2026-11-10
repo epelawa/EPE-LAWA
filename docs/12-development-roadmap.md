@@ -108,3 +108,10 @@ Production Supabase schema, migrations, authentication settings, roles and user 
 PR #28’s main-sync commit `f422f418f8a4f0487a25c72d590be58d8bcfadcc` was pushed normally to its existing branch. It includes the latest main parent `1d41bfae8afa63f9c0558053f3a44368b65ce816`, refreshed docs and ten local screenshot captures. Exact-head local gates pass: typecheck 5/5, builds 2/2, tests 145 total (144 passed, 0 failed, 1 documented PGlite skip). GitHub reports PR #28 OPEN and CLEAN. Vercel reports the exact commit preview READY at `https://epe-lawa-oq13nm1fe-epe-lawa.vercel.app`; direct requests return HTTP 302 to SSO, so hosted content was not visually reviewed.
 
 The PR description links the local screenshots and accurately notes that the images predate PR #31/#32. Per the owner’s current instruction, leave PR #28 open for review; do not merge. The next work is to sync and verify PR #31, then continue the auth pair and PR #32. Production Supabase remains read-only; native mobile remains deferred.
+
+
+## 2026-11-10 12:44 WAT — PR #31 homepage-only storage notice
+
+The storage/preferences notice is mounted on the homepage only, floats at a 12px bottom inset, remains dismissible and non-modal, and is hidden on News and Contact. Local production-build Chromium checks at 320×568, 375×812 and 1440×900 verified placement; News/Contact checks at 320px/375px found no notice, and no horizontal overflow was detected at 320px or 375px. Six screenshots and a capture README are tracked under `docs/screenshots/pr31-homepage-only-notice/`.
+
+Node 22.23.4/pnpm 10.34.9 exact local gates pass typecheck 5/5, builds 2/2, and 144 tests passed with 0 failures and 1 documented PGlite skip. The optional CI audit is unavailable because its configured runner `scripts/audit/run.mjs` is missing. The sync candidate is based on current `main` at `5f131ab50e6f0fbd4bc02b4e64a3b5e9956c82a8`; push and exact Vercel preview verification remain pending. Keep PR #31 open for review. No production Supabase changes or native-app work were performed.
