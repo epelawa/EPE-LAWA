@@ -1,6 +1,6 @@
 # EPE-LAWA — Implementation Tracker
 
-**Last checked:** 2026-11-10 09:58 WAT.
+**Last checked:** 2026-11-10 10:01 WAT.
 
 **Production code baseline:** `main` at `6a48e5f02d210fef29c471daac9992e1e4693039` (PR #30 squash merge).
 **Scope:** The eight client-approved web modules plus cross-cutting member auth, staff access, publishing, privacy, accessibility, email and audit. Native mobile remains out of scope.
@@ -116,3 +116,10 @@ PR #27's remote head remains old, and GitHub reports UNKNOWN / UNKNOWN; individu
 PR #27 merge-forward commit `a05061a22e67f7d537223ebd3851ec67a121103e` has original head `e241c2d5a5cb92711fd2703f66c79a3205430a14` and updated main parent `0bd1fd1eac09fa5905dc6f4437723fd209124fa8`. Exact-head gates pass on Node 22.23.4/pnpm 10.34.9: typecheck 5/5, builds 2/2, tests 144 total / 143 passed / 0 failed / 1 documented skip; `git diff --check` is clean. The commit is local and not pushed. Existing screenshots: `/workspace/epe-lawa-release-screenshots/pr27-radio-error-local/1440x900-radio-read-failure-local.png` and `375x812-radio-read-failure-local.png`.
 
 After including the status docs, rerun exact-head gates, push without force, and refresh preview/status. PR #27 is still OPEN on its old remote head with GitHub mergeability UNKNOWN; do not merge until the new preview is READY and the normal CLI reports a clean healthy state. PR #26 is READY-preview / UNSTABLE, PR #24 is UNKNOWN, and PR #25 is merged normally. Production remains read-only.
+
+
+## PR #27 final branch checkpoint — 2026-11-10 10:01 WAT
+
+Final local branch head `e6186c3c90fc9179d1995b0e1718e292d38b44f0` (source merge commit `a05061a22e67f7d537223ebd3851ec67a121103e`, main parent `0bd1fd1eac09fa5905dc6f4437723fd209124fa8`) passed exact branch gates on Node 22.23.4/pnpm 10.34.9: typecheck 5/5, builds 2/2, 144 tests / 143 passed / 0 failed / 1 documented skip. The full log history is preserved and checked. Screenshots: `/workspace/epe-lawa-release-screenshots/pr27-radio-error-local/1440x900-radio-read-failure-local.png` and `/workspace/epe-lawa-release-screenshots/pr27-radio-error-local/375x812-radio-read-failure-local.png`.
+
+The final branch head is not pushed yet. After the normal push, verify the fresh preview and GitHub status; do not merge while status is UNKNOWN or checks are inaccessible. PR #26's preview is READY but merge state is UNSTABLE; PR #24 is UNKNOWN; PR #25 is merged. Production Supabase remains read-only.
