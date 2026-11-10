@@ -1,40 +1,73 @@
 # EPE-LAWA — Implementation Tracker
 
-**Last updated:** 2026-11-09 12:28 WAT.
-**Scope:** All eight client-approved web sections plus identity, staff access, analytics, publishing, email templates, audit, privacy, accessibility and Playwright.
-**Progress log:** `16-progress-log.md`.
+**Last checked:** 2026-11-10 09:30 WAT.
 
-`Done` requires named evidence. A route/schema or a successful local build is not proof that a production workflow is complete. Native mobile apps alone are deferred.
+**Production code baseline:** `main` at `6a48e5f02d210fef29c471daac9992e1e4693039` (PR #30 squash merge).
+**Scope:** The eight client-approved web modules plus cross-cutting member auth, staff access, publishing, privacy, accessibility, email and audit. Native mobile remains out of scope.
 
-## Release work and status
+A route existing, a preview building, or a button being visible is not proof that a complete workflow works. Mark a capability complete only with named current evidence.
 
-| Area | Status | Evidence / next gate |
+## Release snapshot
+
+- The newest PR number is **#30**, now merged; the latest open PR is **#29**. PR #24–#29 remain open. The corrected Nov 10 instruction is to merge verified PRs normally in dependency order and test updated `main` after each; never bypass branch protection.
+- `gh pr checks` has returned `Resource not accessible by integration` for the current PRs, so individual hosted CI results are **unverified**. Refresh each PR's actual state before merging; do not infer passing checks from a preview build.
+- Vercel CLI reports recent deployments on the PR branch aliases as **READY**. Preview pages redirect to Vercel SSO (HTTP 302), so hosted page content cannot be inspected. The CLI JSON does not expose a deployment commit SHA; exact preview-to-HEAD matching is unverified except for PR #30, which was previously matched by the read-only audit.
+- `https://epelawa.vercel.app` responded HTTP 200 for `/`, `/news`, `/itan-ilu-mi`, `/forum`, `/map`, `/business-directory`, `/tourism`, `/radio`, `/who-is-who`, `/auth`, and `/admin/login`. This proves route responses only, not correct content, authorization, data access, or complete workflows.
+- No production Supabase schema, migration ledger, settings, account roles, or user data were changed. Production remains read-only while migration drift is unresolved.
+
+## Review PRs — snapshot before PR #30 merge (09:16 WAT)
+
+| PR | Branch / head | Change | State and hosted status | Screenshot evidence |
+| --- | --- | --- | --- | --- |
+| [#24](https://github.com/epelawa/EPE-LAWA/pull/24) | `feat/auth-reference-redesign` / `01a2ea4a8fbe` | Member/staff auth forms restyled to the supplied reference | OPEN, mergeable; branch preview READY, SSO-protected; individual checks inaccessible | `/workspace/epe-lawa-release-screenshots/pr24-auth-pull-refresh/` |
+| [#25](https://github.com/epelawa/EPE-LAWA/pull/25) | `fix/newsroom-create-access` / `09a2470d50e0` | Newsroom `article.create` access gate | OPEN, mergeable; branch preview READY, SSO-protected; individual checks inaccessible | No PR-specific capture found; change is functional-only. Add a useful local UI-state capture if one is available without sign-in or production data. |
+| [#26](https://github.com/epelawa/EPE-LAWA/pull/26) | `fix/forum-report-redirect` / `c8d0cbae86a4` | Forum moderation/report redirect handling | OPEN, mergeable; branch preview READY, SSO-protected; individual checks inaccessible | No PR-specific capture found; change is functional-only. Add a useful local UI-state capture if one is available without sign-in or production data. |
+| [#27](https://github.com/epelawa/EPE-LAWA/pull/27) | `fix/radio-admin-read-errors` / `e241c2d5a5cb` | Distinguish Radio admin read failures from empty states | OPEN, mergeable; branch preview READY, SSO-protected; individual checks inaccessible | `/workspace/epe-lawa-release-screenshots/pr27-radio-error-local/` |
+| [#28](https://github.com/epelawa/EPE-LAWA/pull/28) | `fix/public-contact-privacy` / `d3d8bc66eb8f` | Remove nonfunctional public contact intake and avoid exposing private contact metadata | OPEN, mergeable; branch preview READY, SSO-protected; individual checks inaccessible | `/workspace/epe-lawa-release-screenshots/pr28-public-contact-privacy/` |
+| [#29](https://github.com/epelawa/EPE-LAWA/pull/29) | `fix/staff-login-short-height` / `373d92febbd7`; based on #24 | Fix short-height staff sign-in layout | OPEN, mergeable; branch preview READY, SSO-protected; individual checks inaccessible | `/workspace/epe-lawa-release-screenshots/pr29-staff-login-shortheight/` |
+| [#30](https://github.com/epelawa/EPE-LAWA/pull/30) | `fix/community-history-correction` (current PR head is available from the GitHub CLI) | Disclose that published History corrections/removals are not yet supported | OPEN, mergeable; branch deployment READY; exact SHA is not exposed by the current Vercel CLI JSON; hosted content SSO-protected | `/workspace/epe-lawa-release-screenshots/pr30-history-correction-coming-soon/` |
+
+PR #29 depends on PR #24's auth redesign. Before this merge pass, all seven PRs were open. PR #30's code commit `ce96a1e` previously passed focused History tests 11/11. Fresh Node 22.23.4/pnpm 10.34.9 verification with the updated docs present passed 5/5 typechecks, 2/2 builds and the full suite (140 passed, 0 failed, 1 documented PGlite skip). The subsequent changes are documentation-only; these local results do not claim hosted CI passed.
+
+## Current post-merge status — 2026-11-10 09:30 WAT
+
+- PR #30 was merged normally via the authenticated GitHub CLI as `6a48e5f02d210fef29c471daac9992e1e4693039`; no bypass flag was used. The exact merged `main` tree passed 5/5 typecheck tasks, 2/2 build tasks and 140 tests (0 failures, 1 documented PGlite skip).
+- PR #24 original head `01a2ea4a8fbe111f669f2b9c39b7222c7db8b14b` passed 5/5 typecheck tasks, 2/2 builds and 137 tests (0 failures, 1 documented skip). After PR #30 merged, GitHub marked it CONFLICTING because only the three status documents overlapped. The local merge selected the newer main documents; auth source changes merged without conflict. The merge-forward tree, whose main parent is `6a48e5f02d210fef29c471daac9992e1e4693039`, passes exact-tree checks: 5/5 typechecks, 2/2 builds and 139 tests (0 failures, 1 documented skip). It is locally committed but not yet pushed; refresh its preview and GitHub mergeability after the non-force push before attempting a normal merge.
+- PR #29 exact head `373d92febbd7e3f193ff10b0a251a6e414bf2a49` passed 5/5 typecheck tasks, 2/2 builds and 137 tests (0 failures, 1 documented skip). It is stacked on PR #24; after #24 merges, retarget #29 to `main` and verify the updated diff before its own normal merge.
+- The PR #24 branch alias was READY before the main update but redirects to Vercel SSO (HTTP 302); no hosted page content was reviewed. The new merged-main combination has no verified preview yet. GitHub check details remain inaccessible; no production Supabase writes were made.
+
+## Eight web modules
+
+| Module | Current status | Safe next step / blocker |
 | --- | --- | --- |
-| Foundation and same-origin staff routing | Merged baseline; hosted route work previously verified | PR #22 adds `/admin/*` on `https://epelawa.vercel.app/` with server-side session/capability checks and host-only `__Host` cookies. Keep this boundary; validate any new action independently. |
-| Member auth visuals and flows | PR #24 open; local gates pass; exact current head still needs hosted verification | PR #23 staged signup/member flows are merged/deployed. PR #24 adapts the `266649.jpg` composition, uses a single-screen member login, retains staged signup, adds accessible password toggles, and keeps Google visible but disabled/Coming Soon at every checked size. Final local gate: 5/5 typechecks, 2/2 builds, 137 passed/0 failed/1 documented skip; 30 route/viewport checks. Earlier preview access redirected to SSO and GitHub check endpoints returned 403; do not merge unless the exact current head’s preview and required status are confirmed through CLI. |
-| Member dashboard and account settings | Remaining | Dashboard/account route and interaction completeness still needs an explicit route/feature audit; do not imply a complete account center based on auth screens alone. |
-| Trending News | Partial; production workflow blocked by schema drift | Published-only routes and private draft/publish policy have local tests. Verify the newsroom create/edit/publish actions against reconciled schema and isolated data. News reference image `253590.jpg` is unavailable; follow the written design direction without claiming an exact image match. |
-| Itan Ilu Mi / My Community History | Partial; final end-to-end workflow remains | Private contribution, consent/provenance, review and approved-publication rules have local/schema tests. Verify the full staff review lifecycle after migration reconciliation. |
-| Chat Forum / Digital Village Square | Partial; final end-to-end workflow remains | Member thread/reply/report and moderation policy checks exist. Verify RLS/production schema compatibility, rate limiting and moderation outcomes after reconciliation. |
-| Map & Navigation | Manual handoff implemented; API integration unavailable | The web map uses safe outbound Google Maps search/directions links and explicit opt-in device location. No configured Maps API/Places/geocoding integration or offline map is claimed. |
-| Epe Business Directory & Marketplace | Partial; payment remains unavailable | Listings, review, order privacy and audited database paths have local/schema tests. Verify staff moderation and current production schema; do not enable payments without provider sandbox evidence. |
-| Historical Sites & Tourism | Partial; no invented content | Routes/actions enforce approved-record and rights/provenance rules; local tests cover privacy and truthful empty states. Confirm production schema after reconciliation; no destinations are seeded. |
-| EPE LAWA Radio | Partial; official stream unverified | Player and management routes use database-backed records and honest unavailable states. Do not label the stream live or expose its URL until permission/playback are verified. |
-| Who is Who in Epe | Partial; final data/staff workflow remains | Public-field/privacy and capability-gated staff paths have local tests. Verify approved profiles and correction flow after migration reconciliation. |
-| Newsroom create permission gate | PR #25 open; production draft creation unproved | PR #25 (`https://github.com/epelawa/EPE-LAWA/pull/25`) adds an RLS-scoped current-user active-grant display gate and distinct unavailable state; the server RPC remains the write-time boundary. Production draft creation remains unproved until schema drift is reconciled. |
-| Transactional email / OTP | UI templates and branded callback paths exist; delivery unverified | Supabase Auth remains the identity/session authority. Keep native Supabase delivery unless a verified Resend setup exists; confirm authenticated sender and real test delivery before claiming email works. Google OAuth stays disabled until configured. |
-| Local build/test/auth viewport gate | Passed for current auth worktree | Node 22.23.4/pnpm 10.34.9: typecheck **5/5**, builds **2/2**, full suite **138: 137 pass, 0 fail, 1 documented PGlite skip**. Playwright: **30 auth/staff route/viewport checks** at 320×568, 320×640, 375×812, 768×1024, 1024×768 and 1440×900. Four interaction groups cover login/password toggle, four-stage signup, saved dark theme/theme-color, and mobile overscroll plus normal scrolling. No overflow, notice overlap, external requests or page errors. |
-| Screenshots | Captured from local production build | Fourteen final captures are in `/workspace/epe-lawa-release-screenshots/pr24-auth-pull-refresh/`, including 320×568/640 member and staff screens, 375px signup/password step, dark theme and 1440px desktop. They are local screenshots, not hosted/live preview captures. |
-| Production migrations/schema | Blocked pending local reconciliation | Read-only CLI audit found duplicate version `20261107213000`, remote ledger/name conflicts, helper/RLS drift and stack-specific semantic risks. No migration has been applied. The owner authorized application only after corrections and complete safe review. |
-| Hosted preview/merge for PR #24 | Merge held pending latest-head checks | The PR remains OPEN. An earlier exact preview was READY but redirected to SSO; GitHub GraphQL/REST status endpoints returned 403. The current locally verified changes must be pushed and the exact new head rechecked through CLI; do not merge unless preview access/health and required-check state are confirmed. |
+| Trending News | Reader and staff UI exist; PR #25 repairs the `article.create` gate. Full published-only reads, private preview, direct authorized publish, stale-revision denial and audit are not proven against production. | Keep drafts private; complete isolated authorization/publishing tests after schema reconciliation. Never publish synthetic or unapproved stories. |
+| Itan Ilu Mi / Community History | PR #30 adds an honest **Coming Soon** disclosure for corrections/removal. This is not a correction workflow; the existing queue is for new contributions only. | Do not accept correction submissions that would be lost. Design durable, audited intake and edit/withdraw actions only after safe persistence is available. |
+| Chat Forum / Digital Village Square | PR #26 fixes redirect handling. Authenticated participation, reporting, moderation, rate limits and audit are not verified end-to-end. | Reconcile missing database objects/helpers first; test member and moderator permissions with isolated data. |
+| Map & Navigation | Current functionality constructs safe external Google Maps search/directions URLs. No Maps API, Places, geocoding or offline map integration is configured or verified. | Keep the external handoff honest; do not claim live maps/geocoding or ask for private location by default. |
+| Business Directory & Marketplace | Routes/schema/UI are not proof of complete listing review, product/order handling or payment. Paystack is not confirmed operational. | Keep payments unavailable until provider sandbox and production-safe persistence/authorization are verified. |
+| Historical Sites & Tourism | Public route responds, but sourced and approved destination data and full visit flows are not established by this audit. | Use only sourced, owner-approved records; retain honest empty/error states. |
+| EPE LAWA Radio | PR #27 distinguishes admin query errors from empty data; stream rights, URL/format, actual playback, status, schedule and archive remain unverified. | Confirm stream rights and endpoint before enabling a player or claiming LIVE. |
+| Who is Who in Epe | Public route responds, but verified profiles, provenance, correction/removal and staff workflow are not established. | Do not publish invented profiles or roles; verify human review and privacy rules against a reconciled schema. |
 
-## Cross-cutting release rules
+## Cross-cutting status and blockers
 
-Only the verified owner's identity may receive primary-admin access; do not put that address on public pages or metadata. All other signups remain regular members. Same-origin return hints never authorize staff access. Public/test content remains private until expressly approved. The canonical origin is `https://epelawa.vercel.app/`. Never report a feature, provider, hosted preview, migration or test as complete without the corresponding evidence.
+- **Auth and admin:** PR #24 and dependent PR #29 are open. Google sign-in must remain disabled until provider configuration is genuinely available. Only the approved verified identity may receive primary-admin capability; production role provisioning has not been performed or verified in this snapshot. No auth/email setting changes are authorized while production is read-only.
+- **Cookie/preferences notice:** The separate worktree `fix/homepage-only-cookie-notice` has local edits moving the notice to a fixed, floating, homepage-only position. No PR is open yet and no screenshot has been captured for this in-progress change. Its full local gates should be rerun on the final diff before opening a focused PR.
+- **Email:** Branded UI/template code does not prove delivery. Supabase SMTP/provider status and authenticated sender delivery have not been verified; do not promise that verification mail works end-to-end.
+- **Persistence and providers:** No safe live waitlist persistence path was established. Do not show success for a submission that will be lost. Payment, map, media/stream and other provider-dependent flows stay unavailable until configured and verified.
+- **Typography and visual system:** Use the legally available font fallback; no Codec Pro license was supplied. Keep the approved cobalt palette, light default, persisted manual dark mode, reduced-motion/accessibility requirements, and no public exposure of private admin contact details.
+- **Screenshots:** Existing local artifacts are in the paths in the PR table; PR #25/#26 do not yet have a PR-specific capture. Local screenshots are not hosted-preview evidence. PR #24's auth captures predate the requested homepage-only cookie relocation and should not be used to claim that the current notice placement is fixed.
+
+## Production schema and migration safety
+
+The read-only CLI audit findings and safe reconciliation sequence are recorded in `docs/07-database-schema.md`. Production records seven migration versions while 22 later local files are unrecorded; local migration inventory has 29 files and two files share version `20261107213000`. Several pending migrations call `has_capability`, which is absent remotely. Production's `require_capability(text)` definition/security/grants differ from the local migration; key objects such as `comments`, `published_people`, and `people.achievements` are absent in the scoped catalog probe. A full dump/schema diff and verified backup were not possible because Docker/Podman and native `pg_dump`/`psql` are unavailable. Ledger state alone is not proof of schema state.
+
+**Do not apply, repair, fake, or reconcile the production migration ledger.** First obtain a safe full backup and a reliable schema comparison path; resolve duplicate local versions in a branch; establish dependency/order and helper/grant corrections; rehearse forward-only migrations and restore on a disposable project/branch; and require explicit owner authorization before any production write.
 
 ## Next actions
 
-1. Push the final tested auth changes to PR #24 through CLI and recheck its exact preview/check state; do not use browser login or merge without confirmed required-check health.
-2. Keep newsroom create-gate PR #25 separate and open; do not claim production draft creation while schema drift remains.
-3. Finish the nine-stack migration corrections, including duplicate version/ledger reconciliation, then run complete local schema/tests and an explicit CLI dry-run before any owner-authorized production migration.
-4. Continue one independently tested PR at a time through the eight modules and attach truthful local/hosted screenshots for each visual step.
+1. Commit and push the tested PR #24 merge-from-main resolution without force, refresh the preview and GitHub mergeability, then attempt a normal CLI merge only if clean; test updated `main` after it merges.
+2. After #24 merges, retarget PR #29 to `main`, rerun the exact-head gates, then merge normally if healthy; test updated `main` again. Refresh and resolve any main conflicts in PRs #25–#28 before merging them independently.
+3. Add useful local screenshots for functional-only PRs #25/#26 where a changed state can be shown without sign-in or production data; otherwise document why no screenshot applies.
+4. After current PRs are resolved, finish the homepage-only notice and remaining safe web functionality in one comprehensive feature PR, with full synthetic Playwright, accessibility, route, auth, staff authorization and responsive gates.
+5. Build a read-only migration reconciliation plan and obtain a disposable schema rehearsal path; production remains read-only.
