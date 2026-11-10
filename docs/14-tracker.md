@@ -1,19 +1,19 @@
 # EPE-LAWA — Implementation Tracker
 
-**Last checked:** 2026-11-10 12:09 WAT.
+**Last checked:** 2026-11-10 12:25 WAT.
 
-**Production code baseline:** `main` at `9b895366e93a68c5912b0c837c00ff4947ad0785` (PR #26 squash merge; includes #25 and #30).
+**Production code baseline:** `main` at `1d41bfae8afa63f9c0558053f3a44368b65ce816` (PR #27 squash merge; includes #25, #26 and #30).
 **Scope:** The eight client-approved web modules plus cross-cutting member auth, staff access, publishing, privacy, accessibility, email and audit. Native mobile remains out of scope.
 
 A route existing, a preview building, or a button being visible is not proof that a complete workflow works. Mark a capability complete only with named current evidence.
 
 ## Release snapshot
 
-- PRs #25, #30 and #26 are merged; the latest open PR is **#32**. Open PRs: #24, #27, #28, #29, #31 and #32. The owner requests normal merges for all remaining PRs; never bypass branch protection.
-- After PR #26 merged, `main` is `9b895366e93a68c5912b0c837c00ff4947ad0785`. Its Vercel Production deployment is **READY**. The production origin `https://epelawa.vercel.app` returned HTTP 200 for `/`, `/itan-ilu-mi`, `/news` and `/contact`.
+- PRs #25, #30, #26 and #27 are merged; the latest open PR is **#32**. Open PRs: #24, #28, #29, #31 and #32. The owner’s current instruction is to keep remaining PRs open for review and continue work; do not merge another PR unless that instruction changes. Never bypass branch protection.
+- After PR #27 merged, `main` is `1d41bfae8afa63f9c0558053f3a44368b65ce816`. Its Vercel Production deployment is **READY** at `https://epe-lawa-4a9o3yrt5-epe-lawa.vercel.app`. Production checks returned HTTP 200 for `/radio`, `/admin/radio`, `/admin/login` and `/itan-ilu-mi`; unauthenticated `/admin/radio` streams a safe redirect to `/admin/login?next=%2Fadmin%2Fradio`.
 - The live `/itan-ilu-mi` page still displays the “Coming Soon” correction badge from PR #30. PR #32 removes that label but remains open, so the change is not live yet.
 - Vercel CLI mapped pre-sync PR previews to exact head SHAs and reported **READY**. Synced branches need fresh exact-head deployment checks; previews behind Vercel SSO return HTTP 302, so hosted content is not reviewed.
-- `gh pr checks` and GitHub REST check/status endpoints return 403 to this CLI integration. Current merge states after main advanced: #24 UNKNOWN, #27 DIRTY, #28 UNKNOWN, #29 DIRTY (stacked on #24), #31 UNKNOWN, #32 UNKNOWN. Use normal merge attempts only; GitHub must enforce its requirements.
+- `gh pr checks` and GitHub REST check/status endpoints return 403 to this CLI integration. Current states: #24 UNKNOWN, #28 CLEAN (open; exact preview READY), #29 DIRTY (stacked on #24), #31 UNKNOWN, #32 UNKNOWN. The owner’s latest instruction is to keep remaining PRs open for review; do not merge.
 - No production Supabase schema, migration ledger, settings, account roles, or user data were changed. Production remains read-only while migration drift is unresolved.
 
 ## Review PRs — snapshot before PR #30 merge (09:16 WAT)
@@ -53,11 +53,11 @@ PR #29 depends on PR #24's auth redesign. Before this merge pass, all seven PRs 
 ## Cross-cutting status and blockers
 
 - **Auth and admin:** PR #24 and dependent PR #29 are open. Google sign-in must remain disabled until provider configuration is genuinely available. Only the approved verified identity may receive primary-admin capability; production role provisioning has not been performed or verified in this snapshot. No auth/email setting changes are authorized while production is read-only.
-- **Cookie/preferences notice:** The separate worktree `fix/homepage-only-cookie-notice` has local edits moving the notice to a fixed, floating, homepage-only position. No PR is open yet and no screenshot has been captured for this in-progress change. Its full local gates should be rerun on the final diff before opening a focused PR.
+- **Cookie/preferences notice:** PR #31 (`fix/homepage-only-cookie-notice`) is open. It moves the notice to a fixed, floating, homepage-only position. Sync it to current `main`, refresh screenshots and rerun exact local gates before a normal merge attempt.
 - **Email:** Branded UI/template code does not prove delivery. Supabase SMTP/provider status and authenticated sender delivery have not been verified; do not promise that verification mail works end-to-end.
 - **Persistence and providers:** No safe live waitlist persistence path was established. Do not show success for a submission that will be lost. Payment, map, media/stream and other provider-dependent flows stay unavailable until configured and verified.
 - **Typography and visual system:** Use the legally available font fallback; no Codec Pro license was supplied. Keep the approved cobalt palette, light default, persisted manual dark mode, reduced-motion/accessibility requirements, and no public exposure of private admin contact details.
-- **Screenshots:** Existing local artifacts are in the paths in the PR table; PR #25/#26 do not yet have a PR-specific capture. Local screenshots are not hosted-preview evidence. PR #24's auth captures predate the requested homepage-only cookie relocation and should not be used to claim that the current notice placement is fixed.
+- **Screenshots:** PR #27’s local desktop/mobile images are tracked under `docs/screenshots/pr27-radio-admin-read-errors/`. PR #28’s 10 local desktop/mobile full-page captures are tracked under `docs/screenshots/pr28-public-contact-privacy/`; they predate PR #31 and still show the all-page preference banner. Local screenshots are not hosted-preview evidence.
 
 ## Production schema and migration safety
 
@@ -67,10 +67,10 @@ The read-only CLI audit findings and safe reconciliation sequence are recorded i
 
 ## Next actions
 
-1. Complete the PR #27 merge-forward, retain its local desktop and mobile screenshots, run exact gates, push without force, refresh the exact preview and GitHub state, then attempt a normal merge only if GitHub accepts.
-2. Sync PR #28 and PR #31 to latest `main`; resolve only the conflicts needed to preserve current documentation, refresh screenshot evidence, rerun exact local gates, and merge normally one at a time; verify production after each.
-3. Sync PR #24, rerun exact checks and merge normally only if healthy; after it merges retarget PR #29 to `main`, retest, and merge normally.
-4. Sync PR #32 after the above; resolve public-page/auth/documentation overlap, verify affected routes locally, refresh screenshots and full gates, then merge only through normal branch protection.
+1. Sync PR #31 to current `main`, verify homepage-only cookie placement at narrow/mobile and desktop widths, refresh screenshots and gates, push the review update and leave it open.
+2. Sync PR #24 to latest `main` and retest; keep it open for review. Afterward retarget dependent PR #29 from #24 to `main`, retest and leave it open too.
+3. Sync PR #32 after PR #31 and the auth pair, refresh all module screenshots and rerun full local gates; publish the verified changes for review without merging.
+4. Continue the remaining safe module audit as separate tested review PRs; distinguish real provider/schema blockers from implementable web features and never claim incomplete flows work.
 5. Keep production Supabase read-only until migration drift has a safe backup and rehearsed reconciliation plan; native mobile remains deferred.
 
 
@@ -111,3 +111,17 @@ PR #26 merge-forward commit `43772f73adc65f1f791dafd660e77080b0747db0` includes 
 - PR #27 remains open at old remote head `4fbc82da2924f8cf521588a5816b57818d3a0148`. GitHub’s normal merge was blocked by conflicts in the three release documents after #26 merged. Its local merge-forward candidate resolves only those docs against current main; source changes merged cleanly. Exact gates pass: Node 22.23.4/pnpm 10.34.9, typecheck 5/5, builds 2/2, 145 tests (144 passed, 0 failed, 1 documented PGlite skip). Local screenshots are now included under `docs/screenshots/pr27-radio-admin-read-errors/`. The candidate is not committed or pushed yet; it needs a fresh exact-head preview before any normal merge attempt.
 - Other open PR states after main advanced: #24 UNKNOWN, #28 UNKNOWN, #29 DIRTY and dependent on #24, #31 UNKNOWN, #32 UNKNOWN. Individual GitHub check details still return 403. Do not bypass branch protection.
 - Production Supabase remains read-only while duplicate migration versions and schema drift are unresolved. No production data, auth settings or roles were changed.
+
+
+## Current status — 2026-11-10 12:21 WAT
+
+PR #27 is merged normally; the current `main` SHA is `1d41bfae8afa63f9c0558053f3a44368b65ce816`. Vercel Production for that SHA is READY. Post-merge local verification on Node 22.23.4/pnpm 10.34.9 passed typecheck 5/5, builds 2/2, and 145 tests (144 passed, 0 failed, 1 documented PGlite skip). Production `/radio`, `/admin/radio`, `/admin/login` and `/itan-ilu-mi` returned HTTP 200. The unauthenticated `/admin/radio` response streams a safe meta-refresh to `/admin/login?next=%2Fadmin%2Fradio`; no staff editor content was exposed. The live History page still contains the old “Coming Soon” correction badge; PR #32 remains open.
+
+PR #28 is still open at remote head `c3132dd456d238ae4dbc64f94348406277ad65c1`. A local sync worktree now includes current `main`; only the three release documents conflicted, and those were resolved to current main. The PR #27 main changes merged automatically. PR #28’s 10 local synthetic full-page screenshots (mobile and desktop for Contact, About, Guidelines, Privacy and Terms) are tracked under `docs/screenshots/pr28-public-contact-privacy/`; they predate PR #31/32 and are explicitly labeled local. This candidate is not yet committed, pushed or re-tested. Finish the exact gates and update PR #28 for review; do not merge. Other open PRs #24, #29, #31 and #32 remain open; GitHub check details return 403 and mergeability is UNKNOWN or DIRTY. Production Supabase remains read-only.
+
+
+## Current status — 2026-11-10 12:25 WAT (PR #28 updated)
+
+PR #27 is merged normally; current `main` is `1d41bfae8afa63f9c0558053f3a44368b65ce816`, and its Vercel Production deployment is READY. Exact post-merge gates passed 5/5 typechecks, 2/2 builds, 144 passed / 0 failed / 1 documented skip. Production `/admin/radio` gives unauthenticated visitors a streamed sign-in handoff to `/admin/login?next=%2Fadmin%2Fradio`; no staff editor content was returned.
+
+PR #28 is OPEN at exact head `f422f418f8a4f0487a25c72d590be58d8bcfadcc`; GitHub reports CLEAN. Its exact Vercel preview is READY at `https://epe-lawa-oq13nm1fe-epe-lawa.vercel.app`, but direct requests return 302 to Vercel SSO, so hosted visual content is not reviewed. Exact head gates passed 5/5 typechecks, 2/2 builds, 144 passed / 0 failed / 1 documented skip. Ten local screenshot captures are tracked in `docs/screenshots/pr28-public-contact-privacy/`; they predate PR #31/#32. The PR body now includes current verification and screenshot links. Leave it open for owner review. Remaining PRs #24, #29, #31 and #32 are also open. No production Supabase writes were made.

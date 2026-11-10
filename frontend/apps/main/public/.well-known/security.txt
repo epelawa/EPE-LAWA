@@ -1,3 +1,4 @@
-Contact: mailto:info.epelawa@gmail.com
+# EPE LAWA has not configured a security-report intake channel.
+# This file is informational only and does not accept reports.
 Expires: 2027-05-02T00:00:00Z
 Preferred-Languages: en
