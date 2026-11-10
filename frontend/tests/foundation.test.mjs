@@ -150,7 +150,8 @@ test('main has honest indexable metadata, working public links and security head
     assert.equal(security.status, 200);
     assert.match(security.headers.get('content-type'), /text\/plain/);
     const securityText = await security.text();
-    assert.match(securityText, /Contact: mailto:info\.epelawa@gmail\.com/);
+    assert.match(securityText, /Contact: https:\/\/epelawa\.vercel\.app\/contact/);
+    assert.doesNotMatch(securityText, /mailto:|info\.epelawa@gmail\.com/i);
     assert.match(securityText, /Expires: 2027-05-02T00:00:00Z/);
     for (const code of [200, 400, 401, 403, 404, 429, 500, 503, 599]) {
       const statusPage = await fetch(base + '/status/' + code);

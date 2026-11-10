@@ -1,7 +1,6 @@
 import InformationPage from "../../components/information-page";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CONTACT_EMAIL } from "../../lib/contact";
 import { pageMetadata } from "../../lib/metadata";
 
 const description =
@@ -20,7 +19,7 @@ export default function TermsPage() {
 
         <h2>What this site offers today</h2>
         <p>
-          The web platform covers news, community history, the forum, maps, local businesses and marketplace requests, tourism, radio, and Who is Who. Individual services that need a provider or further configuration are labelled Coming Soon. The native mobile app is deferred.
+          The web platform includes news, community history, the forum, maps, local businesses and marketplace requests, tourism, radio, and Who is Who. Availability depends on published content and verified provider configuration; unavailable services are labelled clearly rather than simulated. The native mobile app is deferred.
         </p>
 
         <h2>Accuracy</h2>
@@ -40,8 +39,9 @@ export default function TermsPage() {
 
         <h2>Anything you send us</h2>
         <p>
-          Messages sent through the contact form are used only to reply to you. They are not stored
-          for marketing or shared with third parties.
+          No public contact address or connected message-submission service is currently configured.
+          Nothing entered on the Contact page is sent or recorded, and the site does not accept
+          private requests through that page at this time.
         </p>
 
         <h2>Availability</h2>
@@ -64,13 +64,9 @@ export default function TermsPage() {
 
         <h2>Changes to these terms</h2>
         <p>
-          Changes will be published on this page. Questions go to{" "}
-          <a href={`mailto:${CONTACT_EMAIL}`}>
-            {CONTACT_EMAIL}
-          </a> or through the{" "}
-          <Link href="/contact">
-            contact page
-          </Link>.
+          Changes will be published on this page. The{" "}
+          <Link href="/contact">Contact page</Link> reports whether a public submission channel is
+          available; currently, no channel is configured.
         </p>
   </InformationPage>;
 }

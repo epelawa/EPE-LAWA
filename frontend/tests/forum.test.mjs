@@ -63,3 +63,17 @@ test("thread authors are sourced from real profiles; no public-office claim is i
   assert.match(thread, /profile\.deleted_at/);
   assert.doesNotMatch(thread, /public office|office verified/i);
 });
+
+test("forum create/reply failures are allow-listed and shown on their redirect route", async () => {
+  const page = await source("../apps/main/app/forum/page.tsx");
+  const actions = await source("../apps/main/app/forum/actions.ts");
+  const thread = await source("../apps/main/app/forum/thread/[slug]/page.tsx");
+  assert.match(actions, /redirect\(`\/forum\?forum_error=\$\{encodeURIComponent\(message\)\}`\)/);
+  assert.doesNotMatch(actions, /\?error=/);
+  assert.match(page, /searchParams: Promise<SearchParams>/);
+  assert.match(page, /params\.forum_error/);
+  assert.match(page, /safeErrors\.has\(requestedError\)/);
+  assert.match(page, /<Notice role="alert" tone="danger">\{actionError\}<\/Notice>/);
+  assert.match(thread, /forum_error\?: string/);
+  assert.doesNotMatch(page, /<Notice[^>]*>\{params\.error\}/);
+});

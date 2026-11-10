@@ -28,3 +28,26 @@ test('business map read model contains only published listing fields and is boun
   assert.match(page, /\.limit\(100\)/);
   assert.doesNotMatch(page, /places\.googleapis|maps\.googleapis|NEXT_PUBLIC_.*MAP|GOOGLE_MAPS_API_KEY/);
 });
+
+test('a selected published business becomes the directions destination', () => {
+  assert.match(ui, /selectedBusinessSlug/);
+  assert.match(ui, /aria-pressed=\{selected\}/);
+  assert.match(ui, /setSelectedBusinessSlug\(business\.slug\)/);
+  assert.match(ui, /mapsDirectionsUrl\(selectedDestination, location \?\? undefined\)/);
+  assert.match(ui, /Get directions to \$\{selectedBusiness\.name\}/);
+  assert.match(ui, /setSelectedBusinessSlug\(null\)/);
+});
+
+test('business query errors are distinct from true no-match results', () => {
+  assert.match(page, /let businessError = false/);
+  assert.match(page, /businessError = true/);
+  assert.match(page, /businesses=\{businesses\} businessError=\{businessError\}/);
+  assert.match(ui, /Local business data unavailable/);
+  assert.match(ui, /manual street and landmark search/);
+});
+
+test('location disclosure says Google receives coordinates only when an external link is opened', () => {
+  assert.match(ui, /Google receives it only if you open that link/);
+  assert.match(ui, /Google receives those coordinates/);
+  assert.match(ui, /EPE LAWA does not store them/);
+});

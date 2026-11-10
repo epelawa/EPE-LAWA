@@ -1,9 +1,21 @@
 import type { Metadata } from "next";
-import { CONTACT_EMAIL } from "../../lib/contact";
+import Link from "next/link";
 import { pageMetadata } from "../../lib/metadata";
-import { PageFrame, PageIntro, Panel, SectionHeading, StatusBadge, Notice } from "../../components/design-system";
-import ContactForm from "./contact-form";
-export const metadata: Metadata = pageMetadata({ title: "Contact", description: "How to reach EPE LAWA.", path: "/contact" });
+import { Notice, PageFrame, PageIntro, Panel } from "../../components/design-system";
+
+export const metadata: Metadata = pageMetadata({ title: "Contact", description: "Contact-channel availability for EPE LAWA.", path: "/contact" });
+
 export default function ContactPage() {
-  return <PageFrame><PageIntro eyebrow="Let’s talk" title="A good place to start." description="Questions, corrections, community stories or privacy requests—here’s how to reach the EPE LAWA team."/><div className="ui-split"><Panel><SectionHeading title="Write to the team" description="Email is the available contact channel."/><a className="btn-primary" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a><hr className="ui-divider"/><div className="ui-row"><h2>Message form</h2><StatusBadge tone="warning">Coming Soon</StatusBadge></div><Notice tone="warning">Form delivery is not connected yet. The form below can check a draft, but it does not send or store your message. Please email us to get in touch.</Notice><ContactForm/></Panel><aside className="ui-sidebar"><Panel><h2>Help us help you.</h2><div className="ui-prose"><p>For a correction, include the page address and the detail that needs checking.</p><p>For a privacy request, explain which record you mean. Do not send passwords, payment details or sensitive documents.</p><p>For a community story, tell us where it comes from and how we can follow up.</p></div></Panel></aside></div></PageFrame>;
+  return <PageFrame className="ui-stack">
+    <PageIntro eyebrow="Contact" title="A public contact channel is not configured." description="EPE LAWA does not currently publish a contact address or operate a connected message-submission service." />
+    <Notice tone="warning" role="status">Message delivery is unavailable. This page does not send or record a request.</Notice>
+    <Panel className="ui-stack-sm">
+      <h2>Protect your information</h2>
+      <p className="ui-muted">Do not share passwords, payment details or sensitive documents in public comments or forum posts. A secure public contact channel must be configured before the site can receive private requests.</p>
+      <div className="ui-actions">
+        <Link className="btn-secondary" href="/privacy">Review the privacy notice</Link>
+        <Link className="btn-ghost" href="/guidelines">Read community guidelines</Link>
+      </div>
+    </Panel>
+  </PageFrame>;
 }

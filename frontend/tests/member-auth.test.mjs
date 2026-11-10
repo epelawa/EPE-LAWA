@@ -39,7 +39,8 @@ test("auth forms use guided steps, progressive enhancement, visible labels, and 
   assert.match(forms, /placeholder="your_handle"/);
   assert.match(forms, /placeholder="At least 10 characters"/);
   assert.match(forms, /Google sign-in/);
-  assert.match(forms, /Coming Soon/);
+  assert.match(forms, /Unavailable until configured/);
+  assert.doesNotMatch(forms, /Coming\s+Soon/i);
   assert.match(actions, /If an account exists for that address/);
 
   assert.match(resend, /htmlFor="verification-email"/);

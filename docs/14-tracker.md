@@ -1,6 +1,6 @@
 # EPE-LAWA — Implementation Tracker
 
-**Last checked:** 2026-11-10 09:40 WAT.
+**Last checked:** 2026-11-10 11:42 WAT.
 
 **Production code baseline:** `main` at `6a48e5f02d210fef29c471daac9992e1e4693039` (PR #30 squash merge).
 **Scope:** The eight client-approved web modules plus cross-cutting member auth, staff access, publishing, privacy, accessibility, email and audit. Native mobile remains out of scope.
@@ -9,10 +9,10 @@ A route existing, a preview building, or a button being visible is not proof tha
 
 ## Release snapshot
 
-- The newest PR number is **#30**, now merged; the latest open PR is **#29**. PR #24–#29 remain open. The corrected Nov 10 instruction is to merge verified PRs normally in dependency order and test updated `main` after each; never bypass branch protection.
-- `gh pr checks` has returned `Resource not accessible by integration` for the current PRs, so individual hosted CI results are **unverified**. Refresh each PR's actual state before merging; do not infer passing checks from a preview build.
-- Vercel CLI reports recent deployments on the PR branch aliases as **READY**. Preview pages redirect to Vercel SSO (HTTP 302), so hosted page content cannot be inspected. The CLI JSON does not expose a deployment commit SHA; exact preview-to-HEAD matching is unverified except for PR #30, which was previously matched by the read-only audit.
-- `https://epelawa.vercel.app` responded HTTP 200 for `/`, `/news`, `/itan-ilu-mi`, `/forum`, `/map`, `/business-directory`, `/tourism`, `/radio`, `/who-is-who`, `/auth`, and `/admin/login`. This proves route responses only, not correct content, authorization, data access, or complete workflows.
+- GitHub CLI confirmed PR #30 is **MERGED** and the latest open PR is **#31**. PRs #24, #26–#29 and #31 are open; #25 is merged. The current instruction is to open review PRs and keep them open—do not merge them.
+- The current unpushed candidate branch is `feat/web-module-workflows`; it is being prepared as the next review PR. Do not claim it has a hosted preview until it is pushed and Vercel CLI verifies the exact deployment status.
+- Previous `gh pr checks` calls for existing PRs returned `Resource not accessible by integration`; individual hosted CI results remain unverified. Do not infer CI success from local builds or preview state.
+- No production page-content review or fresh production route audit was performed in this pass. The screenshots in the new evidence folder are local production-build captures backed only by a loopback synthetic Supabase stub.
 - No production Supabase schema, migration ledger, settings, account roles, or user data were changed. Production remains read-only while migration drift is unresolved.
 
 ## Review PRs — snapshot before PR #30 merge (09:16 WAT)
@@ -66,11 +66,10 @@ The read-only CLI audit findings and safe reconciliation sequence are recorded i
 
 ## Next actions
 
-1. Commit and push the tested PR #24 merge-from-main resolution without force, refresh the preview and GitHub mergeability, then attempt a normal CLI merge only if clean; test updated `main` after it merges.
-2. After #24 merges, retarget PR #29 to `main`, rerun the exact-head gates, then merge normally if healthy; test updated `main` again. Refresh and resolve any main conflicts in PRs #25–#28 before merging them independently.
-3. Add useful local screenshots for functional-only PRs #25/#26 where a changed state can be shown without sign-in or production data; otherwise document why no screenshot applies.
-4. After current PRs are resolved, finish the homepage-only notice and remaining safe web functionality in one comprehensive feature PR, with full synthetic Playwright, accessibility, route, auth, staff authorization and responsive gates.
-5. Build a read-only migration reconciliation plan and obtain a disposable schema rehearsal path; production remains read-only.
+1. Commit/push the verified `feat/web-module-workflows` candidate, open its review PR with the local screenshot evidence, and leave it open.
+2. Check the exact new PR state and Vercel deployment through CLI only; report any inaccessible hosted checks honestly. Continue with independent web improvements without merging PRs.
+3. Keep provider- or schema-dependent features visibly unavailable until a verified provider or safe persistence path exists; do not publish synthetic content.
+4. Maintain production Supabase read-only status until an owner-approved migration reconciliation and disposable rehearsal path are available.
 
 
 ## Current status — 2026-11-10 09:38 WAT (supersedes the 09:30 snapshot)
@@ -87,3 +86,16 @@ The read-only CLI audit findings and safe reconciliation sequence are recorded i
 ## PR #25 main-sync checkpoint — 2026-11-10 09:40 WAT
 
 PR #25's committed local merge-forward combines original head `09a2470d50e0eff6ff3ee98a54568799478475f0` with main parent `6a48e5f02d210fef29c471daac9992e1e4693039`. Exact-head local gates pass: typecheck 5/5, builds 2/2, tests 142 passed / 0 failed / 1 documented skip. The commit is not yet pushed; its previous Vercel alias is a Nov 9 build, and GitHub state remains UNKNOWN. Push without force and refresh both before any merge. PR #24 is pushed at `7ac8afada2a6d05738f9ee0e8b2dbfdabf8c3747` but remains open with `mergeStateStatus=UNSTABLE`; keep it open until clean. No production Supabase writes were made.
+
+
+## 2026-11-10 11:42 WAT — Web module workflow candidate
+
+GitHub CLI confirms PR #30 is merged and PR #31 is the latest open review. Open PRs at this check: #24, #26, #27, #28, #29 and #31; #25 and #30 are merged. The working branch is `feat/web-module-workflows`, not yet pushed as a new PR. The next expected number is #32, subject to GitHub’s assignment. Per the latest owner instruction, create review PRs and leave them open; do not merge.
+
+**Completed on this branch:** Map direction selection and privacy/error states; namespaced Forum and Business action errors; truthful Business order/review feedback; published-only News search and bounded pagination; safe, text-only offline HTML downloads for published stories; approved-only Tourism search and pagination; Who-is-Who pagination; shared accessible SVG filter panels; removal of the protected admin email from all served app source/public metadata; removal of the nonfunctional contact draft form; accurate unavailable states for contact, History corrections/removals, Google OAuth, push notifications, Radio, Gallery imagery and the deferred native app. There are no “Coming Soon” labels in the web app source. No fake content was written to production.
+
+**Still blocked, and intentionally not presented as working:** production History corrections/removals and other write flows that depend on the unresolved Supabase schema/migration drift; an approved public private-message/contact route; live verification email delivery; Google OAuth; push delivery; Radio stream rights/URL/format; licensed and credited Gallery photographs; and any native mobile app or Play Store listing. No provider credentials or safe production persistence were available in this pass.
+
+**Exact local evidence:** Node 22.23.4 / pnpm 10.34.9; full suite 158 total, 157 passed, 0 failed, 1 known PGlite skip (the exclusion constraints are not exercised because the test DB uses a text domain in place of `citext` and lacks `btree_gist`); typecheck 5/5; production builds 2/2. The offline download was clicked in headless Chromium at 375px; the downloaded HTML contained the synthetic test story text and no script/image embeds. All 31 local screenshot captures at 320px, 375px and 1440px reported no horizontal overflow. Screenshot evidence and details are in `docs/screenshots/pr32-web-module-workflows/`.
+
+The configured `pnpm audit:ui` and `pnpm audit:security` commands were attempted but could not run because `package.json` points at missing `scripts/audit/run.mjs`; `scripts/` contains only `dev.sh`. This is an audit-tooling limitation, not a passing audit. Production Supabase remained read-only. Next: commit and push this candidate, open its review PR, verify its exact hosted deployment/check state using CLI only, then continue the next independent safe web gap without merging.

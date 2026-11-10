@@ -1,7 +1,6 @@
 import InformationPage from "../../components/information-page";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CONTACT_EMAIL } from "../../lib/contact";
 import { pageMetadata } from "../../lib/metadata";
 
 const description =
@@ -65,13 +64,10 @@ export default function GuidelinesPage() {
 
         <h2>Corrections and reports</h2>
         <p>
-          Send a correction or moderation report to{" "}
-          <a href={`mailto:${CONTACT_EMAIL}`}>
-            {CONTACT_EMAIL}
-          </a>, or use the{" "}
-          <Link href="/contact">
-            contact page
-          </Link>. Include the page address and, where relevant, the source. Reports are read by a person.
+          A private correction or moderation-report channel is not currently connected. The{" "}
+          <Link href="/contact">Contact page</Link> shows the current limitation. Do not post sensitive
+          details in public; include a page address and source only when an approved private route is
+          available.
         </p>
   </InformationPage>;
 }

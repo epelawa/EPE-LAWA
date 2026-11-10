@@ -1,3 +1,3 @@
-Contact: mailto:info.epelawa@gmail.com
+Contact: https://epelawa.vercel.app/contact
 Expires: 2027-05-02T00:00:00Z
 Preferred-Languages: en

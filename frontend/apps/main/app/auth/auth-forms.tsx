@@ -122,7 +122,7 @@ function StepActions({
 }
 
 function GoogleSignInUnavailable() {
-  return <p className="auth-provider-note">Google sign-in <span className="auth-coming-soon">Coming Soon</span></p>;
+  return <p className="auth-provider-note"><span>Google sign-in</span><span className="auth-provider-status" role="status">Unavailable until configured</span></p>;
 }
 
 export function SignUpForm() {

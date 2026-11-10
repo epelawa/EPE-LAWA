@@ -83,9 +83,9 @@ export default function DownloadApp({ className = "" }: { className?: string }) 
         onClick={() => setOpen(true)}
       >
         <DownloadIcon size={18} />
-        <span className="ml-2">Download on Google Play</span>
+        <span className="ml-2">Android app status</span>
         <span className="ml-2 px-2 py-0.5 rounded text-[10px] font-semibold bg-muted text-muted-foreground">
-          Coming soon
+          Not on Play Store
         </span>
       </button>
 
@@ -99,7 +99,7 @@ export default function DownloadApp({ className = "" }: { className?: string }) 
         <div className="fixed top-1/2 left-1/2 z-50 w-full max-w-md transform -translate-x-1/2 -translate-y-1/2 bg-card rounded-md shadow-2xl p-6 sm:p-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-foreground" id={titleId}>
-              The Android app is in development
+              No Android app is available
             </h2>
             <button
               ref={closeRef}
@@ -114,17 +114,17 @@ export default function DownloadApp({ className = "" }: { className?: string }) 
 
           <div className="mb-6">
             <p className="text-muted-foreground mb-3">
-              EPE LAWA for Android is being built as a real native application. It will be released on
-              Google Play once it is ready. There is no download link yet, and we will not publish one
-              before the build actually exists.
+              EPE LAWA currently has no downloadable Android app or Google Play listing. The native
+              mobile app is deferred; this website is the available web experience.
             </p>
             <p className="text-sm text-muted-foreground mb-3">
               <strong>On iPhone and iPad today:</strong> open this site in Safari, tap Share, then tap
               <em> Add to Home Screen</em>.
             </p>
             <p className="text-xs text-muted-foreground">
-              The website already works in Chrome. Offline article reading and web push notifications are
-              not active yet; both are marked Coming Soon in the News section.
+              Published news stories can be downloaded as text-only offline copies from their article
+              pages. Push notifications and live radio are unavailable until verified providers are
+              configured.
             </p>
           </div>
 

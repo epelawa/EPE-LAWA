@@ -8,22 +8,31 @@ async function text(path) {
   return readFile(new URL(path, root), 'utf8');
 }
 
-test('offline reading and web push are clearly Coming Soon, not claimed as ready', async () => {
-  const [status, news, article, download, downloadButton] = await Promise.all([
+test('published News articles can be downloaded as safe offline HTML copies', async () => {
+  const [status, news, article, download, downloadButton, exporter] = await Promise.all([
     text('components/news-feature-status.tsx'),
     text('app/news/page.tsx'),
     text('app/news/[slug]/page.tsx'),
-    text('components/download-app.tsx'),
+    text('components/offline-article-download.tsx'),
     text('components/download-app-button.tsx'),
+    text('lib/offline-article-copy.mjs'),
   ]);
 
-  assert.match(status, /Coming Soon/);
-  assert.match(status, /Offline article reading/);
-  assert.match(status, /Opt-in push notifications/);
+  assert.match(status, /Available on article pages/);
+  assert.match(status, /Push notifications are unavailable/i);
+  assert.match(status, /will not request notification permission/i);
   assert.match(news, /NewsFeatureStatus/);
-  assert.match(article, /NewsFeatureStatus/);
-  assert.doesNotMatch(download + downloadButton, /Nothing is missing/i);
-  assert.match(download + downloadButton, /not active yet/i);
+  assert.doesNotMatch(article, /NewsFeatureStatus/);
+  assert.match(article, /OfflineArticleDownload/);
+  assert.match(article, /data-offline-article-body/);
+  assert.match(download, /innerText/);
+  assert.match(download, /URL\.createObjectURL/);
+  assert.match(download, /aria-live="polite"/);
+  assert.match(exporter, /escapeHtml/);
+  assert.match(exporter, /text only/);
+  assert.doesNotMatch(exporter, /<script/i);
+  assert.match(downloadButton, /Not on Play Store/);
+  assert.doesNotMatch(status + downloadButton, /Coming\s+Soon/i);
 });
 
 test('unconfigured web push never asks permission and contains no fabricated VAPID key', async () => {

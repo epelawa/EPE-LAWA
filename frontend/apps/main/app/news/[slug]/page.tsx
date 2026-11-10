@@ -8,7 +8,7 @@ import { publicMediaUrl } from "../../../lib/media";
 import { formatPublishedDate } from "../../../lib/dates";
 import { ArticleBody } from "../../../lib/editorial-body";
 import { CommentThread } from "../comment-thread";
-import { NewsFeatureStatus } from "../../../components/news-feature-status";
+import OfflineArticleDownload from "../../../components/offline-article-download";
 import { PageFrame, StatusBadge } from "../../../components/design-system";
 
 type PublishedArticle = { id: string; slug: string; title: string; summary: string | null; body: unknown; published_at: string | null; is_breaking: boolean; breaking_until: string | null; seo_title: string | null; seo_description: string | null; og_image_key: string | null; author_name: string; author_slug: string; category_slug: string; category_label: string; tags: { slug: string; label: string }[] | null };
@@ -23,10 +23,10 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
   return <PageFrame className="ui-stack">
     <article className="ui-stack"><nav aria-label="Breadcrumb" className="ui-meta"><Link href="/news" className="ui-back-link">Newsroom</Link><span aria-hidden="true">/</span><span>{article.category_label}</span></nav>
       <header className="ui-stack-sm"><div className="ui-row"><StatusBadge>{article.category_label}</StatusBadge>{breakingNow ? <StatusBadge tone="warning">Breaking</StatusBadge> : null}</div><h1 className="max-w-4xl text-4xl font-semibold leading-tight tracking-tight">{article.title}</h1><div className="ui-meta"><span className="font-medium text-foreground">By {article.author_name}</span>{date ? <><span aria-hidden="true">·</span><time dateTime={article.published_at ?? undefined}>{date}</time></> : null}</div></header>
-      <NewsFeatureStatus/>
+      <OfflineArticleDownload article={{ slug: article.slug, title: article.title, summary: article.summary, publishedAt: article.published_at, author: article.author_name, category: article.category_label, sourceUrl: articleUrl }} />
       {imageUrl ? <figure className="ui-cover overflow-hidden rounded-2xl border"><img src={imageUrl} alt={article.title} className="h-full w-full object-cover" loading="eager" decoding="async"/></figure> : null}
       {article.summary ? <p className="ui-subtle rounded-xl border-l-2 p-5 text-lg font-medium leading-relaxed">{article.summary}</p> : null}
-      <div className="ui-prose"><ArticleBody body={article.body}/></div>
+      <div className="ui-prose" data-offline-article-body><ArticleBody body={article.body}/></div>
       {article.tags && article.tags.length > 0 ? <ul className="ui-row" aria-label="Tags">{article.tags.map(tag => <li key={tag.slug} className="ui-tag">{tag.label}</li>)}</ul> : null}
       <CommentThread articleId={article.id} slug={article.slug} notice={notice.comments}/>
       <section className="ui-stack-sm ui-divider pt-7" aria-labelledby="share-heading"><div><p className="ui-eyebrow">Pass it along</p><h2 id="share-heading">Share this story</h2></div><ul className="ui-actions"><li><a href={`https://wa.me/?text=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer" className="btn-secondary">Share on WhatsApp<span className="sr-only"> (opens in a new tab)</span></a></li><li><a href={`https://x.com/intent/tweet?text=${encodeURIComponent(article.title)}&url=${encodeURIComponent(articleUrl)}`} target="_blank" rel="noopener noreferrer" className="btn-secondary">Share on X<span className="sr-only"> (opens in a new tab)</span></a></li><li><a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(articleUrl)}`} target="_blank" rel="noopener noreferrer" className="btn-secondary">Share on Facebook<span className="sr-only"> (opens in a new tab)</span></a></li></ul></section>
