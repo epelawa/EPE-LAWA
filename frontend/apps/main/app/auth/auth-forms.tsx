@@ -121,8 +121,42 @@ function StepActions({
   );
 }
 
+type PasswordFieldProps = {
+  id: string;
+  name: string;
+  autoComplete: string;
+  placeholder: string;
+  minLength?: number;
+  maxLength: number;
+  required: boolean;
+  describedBy?: string;
+};
+
+function PasswordField({ id, name, autoComplete, placeholder, minLength, maxLength, required, describedBy }: PasswordFieldProps) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <div className="auth-password-control">
+      <input id={id} name={name} type={visible ? "text" : "password"} autoComplete={autoComplete} placeholder={placeholder} minLength={minLength} maxLength={maxLength} required={required} aria-describedby={describedBy} />
+      <button className="auth-password-toggle" type="button" aria-label={visible ? "Hide password" : "Show password"} aria-pressed={visible} aria-controls={id} onClick={() => setVisible((current) => !current)}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M2.2 12s3.4-6.6 9.8-6.6 9.8 6.6 9.8 6.6-3.4 6.6-9.8 6.6S2.2 12 2.2 12Z" />
+          {visible ? <path d="m4 4 16 16M10.6 10.6a2 2 0 0 0 2.8 2.8" /> : <circle cx="12" cy="12" r="2.7" />}
+        </svg>
+      </button>
+    </div>
+  );
+}
+
 function GoogleSignInUnavailable() {
-  return <p className="auth-provider-note">Google sign-in <span className="auth-coming-soon">Coming Soon</span></p>;
+  return (
+    <div className="auth-provider">
+      <button className="auth-provider__button" type="button" disabled aria-disabled="true" aria-label="Google sign-in, Coming Soon">
+        <span>Continue with Google</span>
+        <span className="auth-coming-soon">Coming Soon</span>
+      </button>
+      <p className="auth-divider" aria-hidden="true"><span>or</span></p>
+    </div>
+  );
 }
 
 export function SignUpForm() {
@@ -134,6 +168,7 @@ export function SignUpForm() {
 
   return (
     <form ref={flow.formRef} action={action} onSubmit={flow.onSubmit} className="auth-form auth-form--stepped" data-enhanced={flow.enhanced} data-step={flow.step} aria-busy={pending}>
+      {!flow.enhanced || flow.step === 1 ? <GoogleSignInUnavailable /> : null}
       {flow.enhanced ? <StepProgress step={flow.step} total={4} label={["Your name", "Choose a handle", "Email address", "Password"][flow.step - 1] ?? "Your name"} /> : null}
       <fieldset className="auth-step" data-step="1" hidden={flow.enhanced && flow.step !== 1}>
         <legend className="auth-visually-hidden">Step 1 of 4: your name</legend>
@@ -162,42 +197,32 @@ export function SignUpForm() {
         <legend className="auth-visually-hidden">Step 4 of 4: password</legend>
         <div className="auth-field">
           <label htmlFor="signup-password">Password</label>
-          <input id="signup-password" name="password" type="password" autoComplete="new-password" placeholder="At least 10 characters" minLength={10} maxLength={128} required={!flow.enhanced || flow.step === 4} aria-describedby="password-help" />
+          <PasswordField id="signup-password" name="password" autoComplete="new-password" placeholder="At least 10 characters" minLength={10} maxLength={128} required={!flow.enhanced || flow.step === 4} describedBy="password-help" />
           <small id="password-help">Use at least 10 characters.</small>
         </div>
       </fieldset>
       <Feedback state={state} />
       <StepActions enhanced={flow.enhanced} step={flow.step} total={4} pending={pending} submitLabel="Create account" pendingLabel="Creating account…" onNext={flow.next} onBack={flow.back} />
-      {!flow.enhanced || flow.step === 4 ? <GoogleSignInUnavailable /> : null}
     </form>
   );
 }
 
 export function SignInForm() {
   const [state, action, pending] = useActionState(signIn, initial);
-  const flow = useAuthSteps(2);
-
   return (
-    <form ref={flow.formRef} action={action} onSubmit={flow.onSubmit} className="auth-form auth-form--stepped" data-enhanced={flow.enhanced} data-step={flow.step} aria-busy={pending}>
-      {flow.enhanced ? <StepProgress step={flow.step} total={2} label={flow.step === 1 ? "Email address" : "Password"} /> : null}
-      <fieldset className="auth-step" data-step="1" hidden={flow.enhanced && flow.step !== 1}>
-        <legend className="auth-visually-hidden">Step 1 of 2: email address</legend>
-        <div className="auth-field">
-          <label htmlFor="login-email">Email address</label>
-          <input id="login-email" name="email" type="email" autoComplete="email" placeholder="name@example.com" maxLength={254} required={!flow.enhanced || flow.step === 1} aria-describedby="login-email-help" />
-          <small id="login-email-help">Use the email on your member account.</small>
-        </div>
-      </fieldset>
-      <fieldset className="auth-step" data-step="2" hidden={flow.enhanced && flow.step !== 2}>
-        <legend className="auth-visually-hidden">Step 2 of 2: password</legend>
-        <div className="auth-field">
-          <label htmlFor="login-password">Password</label>
-          <input id="login-password" name="password" type="password" autoComplete="current-password" placeholder="Enter your password" maxLength={128} required={!flow.enhanced || flow.step === 2} />
-        </div>
-      </fieldset>
+    <form action={action} className="auth-form" aria-busy={pending}>
+      <GoogleSignInUnavailable />
+      <div className="auth-field">
+        <label htmlFor="login-email">Email address</label>
+        <input id="login-email" name="email" type="email" autoComplete="email" placeholder="name@example.com" maxLength={254} required aria-describedby="login-email-help" />
+        <small id="login-email-help">Use the email on your member account.</small>
+      </div>
+      <div className="auth-field">
+        <label htmlFor="login-password">Password</label>
+        <PasswordField id="login-password" name="password" autoComplete="current-password" placeholder="Enter your password" maxLength={128} required />
+      </div>
       <Feedback state={state} />
-      <StepActions enhanced={flow.enhanced} step={flow.step} total={2} pending={pending} submitLabel="Sign in" pendingLabel="Signing in…" onNext={flow.next} onBack={flow.back} />
-      {!flow.enhanced || flow.step === 2 ? <GoogleSignInUnavailable /> : null}
+      <button className="auth-submit" type="submit" disabled={pending}>{pending ? "Signing in…" : "Sign in"}</button>
     </form>
   );
 }
@@ -228,7 +253,7 @@ export function NewPasswordForm() {
     <form action={action} className="auth-form" aria-busy={pending}>
       <div className="auth-field">
         <label htmlFor="new-password">New password</label>
-        <input id="new-password" name="password" type="password" autoComplete="new-password" placeholder="At least 10 characters" minLength={10} maxLength={128} required aria-describedby="new-password-help" />
+        <PasswordField id="new-password" name="password" autoComplete="new-password" placeholder="At least 10 characters" minLength={10} maxLength={128} required describedBy="new-password-help" />
         <small id="new-password-help">Use at least 10 characters and avoid reusing another password.</small>
       </div>
       <Feedback state={state} />

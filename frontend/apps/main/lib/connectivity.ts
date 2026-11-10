@@ -97,12 +97,3 @@ export function nextProbeDelay(attempt: number, random: () => number = Math.rand
   const jittered = raw * (0.8 + random() * 0.4);
   return Math.round(Math.min(cap, jittered));
 }
-
-export function isPullRefreshGesture(deltaX: number, deltaY: number): boolean {
-  return deltaY >= 80 && deltaY > Math.abs(deltaX) * 1.5;
-}
-
-/** The owner removed the custom gesture from the landing page only. */
-export function isPullRefreshEnabled(pathname: string | null): boolean {
-  return pathname !== null && pathname.startsWith("/") && pathname !== "/";
-}

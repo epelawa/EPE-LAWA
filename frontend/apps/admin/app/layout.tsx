@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "@fontsource-variable/plus-jakarta-sans";
 import Script from "next/script";
 import "@epelawa/ui/tokens.css";
@@ -17,6 +17,8 @@ export const metadata: Metadata = {
   description: "Staff and moderator dashboard for EPE LAWA.",
   robots: { index: false, follow: false },
 };
+
+export const viewport: Viewport = { themeColor: "#F1F4FA" };
 
 const navigation = mainNavigation();
 

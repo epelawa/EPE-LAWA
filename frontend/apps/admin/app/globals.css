@@ -89,7 +89,6 @@
 .brand-mark__img { width:34px; height:34px; object-fit:contain; border-radius:8px; background:var(--palette-cloud); padding:3px; }
 .brand-lockup__text { display:grid; gap:2px; line-height:1.2; }
 .brand-lockup__name { font-size:14px; font-weight:700; letter-spacing:.04em; }
-.brand-lockup__tagline { color:hsl(var(--muted-foreground)); font-size:12px; }
 .admin-masthead__label { font-size:12px; color:hsl(var(--muted-foreground)); padding-left:20px; border-left:1px solid hsl(var(--border)); }
 .admin-masthead__actions { margin-left:auto; display:flex; align-items:center; gap:8px; }
 .admin-public-link { display:inline-flex; gap:8px; align-items:center; min-height:44px; font-size:13px; color:hsl(var(--link)); }
@@ -151,3 +150,6 @@ html.has-scroll-reveal .site-main [data-scroll-reveal="visible"] { opacity:1; fi
   .tidegate-spinner__outer,.tidegate-spinner__inner,.tidegate-spinner__keel,.site-preloader { animation:none!important; transition:none!important; }
   html.has-scroll-reveal .site-main [data-scroll-reveal="pending"],html.has-scroll-reveal .site-main [data-scroll-reveal="visible"] { opacity:1; filter:none; transform:none; transition:none; will-change:auto; }
 }
+
+/* Prevent browser pull-to-refresh at the page boundary without disabling normal document scrolling. */
+html { overscroll-behavior-y: none; }

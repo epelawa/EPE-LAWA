@@ -20,13 +20,24 @@ test("member auth uses the public Supabase client and validates profile/session 
   assert.match(callback, /startsWith\("\/\/"\)/);
 });
 
-test("auth forms use guided steps, progressive enhancement, visible labels, and accessible feedback", async () => {
+test("signup remains guided while member sign-in is one accessible screen", async () => {
   const forms = await readFile(new URL("auth/auth-forms.tsx", root), "utf8");
   const actions = await readFile(new URL("auth/actions.ts", root), "utf8");
   const resend = await readFile(new URL("auth/resend-verification-form.tsx", root), "utf8");
+  const signupPage = await readFile(new URL("auth/page.tsx", root), "utf8");
+  const loginPage = await readFile(new URL("login/page.tsx", root), "utf8");
+  const recoveryPage = await readFile(new URL("forgot-password/page.tsx", root), "utf8");
+  const newPasswordPage = await readFile(new URL("auth/new-password/page.tsx", root), "utf8");
+  const signIn = forms.match(/export function SignInForm\(\) \{[\s\S]*?\n\}/)?.[0] ?? "";
 
-  assert.match(forms, /useAuthSteps\(2\)/);
   assert.match(forms, /useAuthSteps\(4\)/);
+  assert.doesNotMatch(forms, /useAuthSteps\(2\)/);
+  assert.ok(signIn, "a single public sign-in component exists");
+  assert.doesNotMatch(signIn, /useAuthSteps|StepProgress|StepActions|auth-step/);
+  assert.match(signIn, /id="login-email"/);
+  assert.match(signIn, /id="login-password"/);
+  assert.match(signIn, /<GoogleSignInUnavailable \/>/);
+  assert.match(signIn, /className="auth-submit" type="submit"/);
   assert.match(forms, /data-total=\{total\}/);
   assert.match(forms, /data-enhanced=\{flow\.enhanced\}/);
   assert.match(forms, /onSubmit=\{flow\.onSubmit\}/);
@@ -40,7 +51,21 @@ test("auth forms use guided steps, progressive enhancement, visible labels, and 
   assert.match(forms, /placeholder="At least 10 characters"/);
   assert.match(forms, /Google sign-in/);
   assert.match(forms, /Coming Soon/);
+  assert.match(forms, /type=\{visible \? "text" : "password"\}/);
+  assert.match(forms, /aria-label=\{visible \? "Hide password" : "Show password"\}/);
+  assert.match(forms, /aria-pressed=\{visible\}/);
+  assert.match(forms, /aria-controls=\{id\}/);
+  assert.match(forms, /className="auth-provider__button" type="button" disabled aria-disabled="true"/);
+  assert.match(forms, /!flow\.enhanced \|\| flow\.step === 1 \? <GoogleSignInUnavailable \/>/);
   assert.match(actions, /If an account exists for that address/);
+  assert.match(signupPage, /href="\/terms"/);
+  assert.match(signupPage, /href="\/privacy"/);
+  assert.match(signupPage, /href="\/login"/);
+  assert.match(loginPage, /href="\/auth"/);
+  assert.match(loginPage, /href="\/forgot-password"/);
+  assert.match(recoveryPage, /href="\/login"/);
+  assert.match(newPasswordPage, /href="\/forgot-password"/);
+  assert.match(newPasswordPage, /href="\/login"/);
 
   assert.match(resend, /htmlFor="verification-email"/);
   assert.match(resend, /placeholder="name@example\.com"/);

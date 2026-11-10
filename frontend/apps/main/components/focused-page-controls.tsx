@@ -8,7 +8,7 @@ export default function FocusedPageControls({ showThemeToggle = true }: { showTh
   return (
     <div className="focused-page-controls">
       <Link className="focused-page-controls__brand" href="/" aria-label="EPE LAWA home">
-        <BrandLockup size={32} showPlace={false} />
+        <BrandLockup size={32} />
       </Link>
       {showThemeToggle ? <ThemeToggle /> : null}
     </div>

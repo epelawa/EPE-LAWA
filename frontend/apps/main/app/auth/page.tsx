@@ -8,15 +8,17 @@ export default function RegisterPage() {
   return (
     <AccountShell
       eyebrow="EPE LAWA members"
-      title="Join EPE LAWA."
-      description="Create your EPE LAWA member account."
+      title="Create an account"
+      description="Join the EPE LAWA community."
       showThemeToggle={false}
     >
       <SignUpForm />
-      <nav className="auth-footnote-links" aria-label="Account and community links">
+      <p className="auth-legal">
+        By creating an account, you agree to our <Link href="/privacy">Privacy notice</Link> and <Link href="/terms">Terms of use</Link>.
+      </p>
+      <nav className="auth-switch" aria-label="Account options">
+        <span>Already have an account?</span>
         <Link href="/login">Sign in</Link>
-        <Link href="/guidelines">Guidelines</Link>
-        <Link href="/privacy">Privacy</Link>
       </nav>
     </AccountShell>
   );

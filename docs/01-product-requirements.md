@@ -110,6 +110,14 @@ Provide a searchable directory of public-interest people and community leaders u
 - The newsroom supports private drafts, revision-aware publishing and an audit trail. Direct publishing by verified, authorized staff does not require a second reviewer.
 - Branded verification and recovery email templates must use an authenticated sender domain before delivery is described as operational.
 - No production test articles, orders or payments. Any requested public test article requires prior approval of its exact payload; ordinary publishing tests use private isolated data.
+- The canonical public origin is `https://epelawa.vercel.app/`; staff routes live at same-origin `/admin/*` and retain host-only `__Host` cookies plus server-side session/capability checks. A return-path hint is never authorization.
+- Only the owner's verified identity may receive primary-admin access; every other signup remains a regular member, and the owner's address must not appear on public pages or metadata.
+- Supabase Auth manages identities and sessions. Use branded verification, OTP, callback, expired-link and failure screens; use Supabase Auth's native email delivery unless a verified Resend configuration is already available. Do not claim delivery until a real authenticated-sender test succeeds.
+- Keep Google OAuth disabled until configured. If enabled later, admit only an existing verified EPE-LAWA account; do not create a new account or admin role from a Google identity.
+- News remains free to read. Commenting and liking require sign-in and show an in-context prompt with a validated same-origin `next` destination.
+- Auth screens use the owner-provided `266649.jpg` composition reference adapted to the approved cobalt palette, with centered compact forms, legal links, password visibility, no public footer or manual theme switch, and no vertical scroll or storage-notice overlap at 320px and above. The member dashboard and News use responsive bottom navigation; focused account, admin and error screens omit the public footer.
+- Use the official logo in the homepage hero; any image carousel must use licensed/credited Epe imagery and respect reduced motion, save-data and slow-network preferences. The Get app modal must state real store availability. Never report a waitlist success unless a verified persistent storage route saves the submission.
+- Date the Terms and Privacy pages. Public emails and internal account addresses are excluded from public page content and metadata.
 
 ## 11. Non-functional requirements
 

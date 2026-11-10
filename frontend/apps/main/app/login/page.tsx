@@ -9,14 +9,15 @@ export default function LoginPage() {
   return (
     <AccountShell
       eyebrow="Member sign in"
-      title="Welcome back."
-      description="Sign in to your EPE LAWA account."
+      title="Welcome back"
+      description="Access your EPE LAWA member account."
       showThemeToggle={false}
     >
       <SignInForm />
-      <nav className="auth-footnote-links" aria-label="Account links">
-        <Link href="/forgot-password">Forgot password?</Link>
+      <nav className="auth-switch auth-switch--member" aria-label="Account options">
+        <span>New to EPE LAWA?</span>
         <Link href="/auth">Create an account</Link>
+        <Link href="/forgot-password">Forgot password?</Link>
       </nav>
     </AccountShell>
   );
