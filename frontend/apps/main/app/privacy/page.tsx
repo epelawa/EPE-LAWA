@@ -12,6 +12,7 @@ export const metadata: Metadata = pageMetadata({
 export default function PrivacyPage() {
   return (
     <InformationPage title="Privacy notice" description="What you share, what stays private, and which request channels are currently available.">
+      <p className="legal-date"><strong>Last updated:</strong> 12 November 2026</p>
       <h2>Reading the public site</h2>
       <p>You can browse public pages without a member account. Your theme choice and the dismissal of the storage notice are saved in your browser. No optional analytics tool, advertising pixel or social tracking script is enabled.</p>
 

@@ -11,6 +11,7 @@ export const metadata: Metadata = pageMetadata({ title: "Terms", description, pa
 export default function TermsPage() {
   return (
     <InformationPage title="Terms of use" description="What you can expect from EPE LAWA, and what the community expects from you.">
+      <p className="legal-date"><strong>Last updated:</strong> 12 November 2026</p>
       <h2>Using this site</h2>
       <p>
         You can read, quote and link to anything public here. You may not attack the site, try to
