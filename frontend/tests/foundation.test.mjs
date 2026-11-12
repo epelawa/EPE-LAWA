@@ -1,11 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { spawn } from 'node:child_process';
 import { createServer } from 'node:net';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+const readProjectFile = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'utf8');
 
 async function freePort() {
   const server = createServer();
@@ -182,6 +184,27 @@ test('main has honest indexable metadata, working public links and security head
     assert.equal(logoBytes.readUInt32BE(16), 1348);
     assert.equal(logoBytes.readUInt32BE(20), 1167);
   });
+});
+
+test('homepage hero carousel is capped, accessible, and resource-aware', async () => {
+  const source = await readProjectFile('frontend/apps/main/components/hero-carousel.tsx');
+  const page = await readProjectFile('frontend/apps/main/app/page.tsx');
+  assert.match(page, /<HeroCarousel\s*\/>/);
+  assert.match(source, /MAX_HERO_SLIDES\s*=\s*10/);
+  assert.match(source, /HERO_SLIDES\.slice\(0, MAX_HERO_SLIDES\)/);
+  assert.match(source, /aria-roledescription="carousel"/);
+  assert.match(source, /aria-label="EPE LAWA hero imagery"/);
+  assert.match(source, /aria-label="Previous hero image"/);
+  assert.match(source, /aria-label="Next hero image"/);
+  assert.match(source, /ArrowRight/);
+  assert.match(source, /onTouchStart/);
+  assert.match(source, /onTouchEnd/);
+  assert.match(source, /prefers-reduced-motion/);
+  assert.match(source, /saveData/);
+  assert.match(source, /slow-2g/);
+  assert.match(source, /loading=\{index === 0 \? "eager" : "lazy"\}/);
+  assert.match(source, /src: "\/brand-logo\.png"/);
+  assert.doesNotMatch(source, /epe-lagoon-editorial|unsplash|pexels|placeholder/i);
 });
 
 test('main news route reports unavailable data honestly and retains the custom 404', async () => {

@@ -26,3 +26,77 @@
   .home-hero__art--logo { min-height: 340px; padding: 30px 28px 96px; border-radius: 24px; }
   .home-hero__art--logo img { height: auto; max-height: 250px; }
 }
+
+.home-hero__carousel {
+  position: relative;
+  outline: none;
+  touch-action: pan-y;
+}
+.home-hero__carousel:focus-visible {
+  box-shadow: 0 0 0 4px hsl(var(--palette-cobalt) / .35);
+}
+.home-hero__carousel-stage {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 460px;
+}
+.home-hero__carousel-stage img {
+  display: block;
+  width: min(100%, 410px);
+  height: auto;
+  max-height: 350px;
+  object-fit: contain;
+}
+.home-hero__carousel-controls {
+  position: absolute;
+  right: 24px;
+  bottom: 68px;
+  display: flex;
+  gap: 8px;
+}
+.home-hero__carousel-control,
+.home-hero__carousel-dots button {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid hsl(var(--border));
+  border-radius: 999px;
+  background: hsl(var(--palette-cloud));
+  color: hsl(var(--palette-midnight));
+}
+.home-hero__carousel-control:focus-visible,
+.home-hero__carousel-dots button:focus-visible {
+  outline: 3px solid hsl(var(--palette-cobalt) / .5);
+  outline-offset: 2px;
+}
+.home-hero__carousel-dots {
+  position: absolute;
+  left: 24px;
+  bottom: 68px;
+  display: flex;
+  gap: 8px;
+}
+.home-hero__carousel-dots button {
+  min-width: 12px;
+  width: 12px;
+  min-height: 12px;
+  height: 12px;
+  padding: 0;
+  border-color: hsl(var(--palette-midnight) / .35);
+}
+.home-hero__carousel-dots button.is-active { background: hsl(var(--palette-cobalt)); }
+@media (max-width: 800px) {
+  .home-hero__carousel-stage { min-height: 370px; }
+  .home-hero__carousel-stage img { max-height: 280px; }
+}
+@media (max-width: 600px) {
+  .home-hero__carousel-stage { min-height: 340px; }
+  .home-hero__carousel-stage img { max-height: 250px; }
+  .home-hero__carousel-controls { right: 20px; bottom: 62px; }
+  .home-hero__carousel-dots { left: 20px; bottom: 62px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-hero__carousel-stage img { transition: none; }
+}
