@@ -1,141 +1,161 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import heroImages from "../lib/hero-images.json";
+import { MapPinIcon } from "./icons";
 
+type ImageVariant = { src: string; width: number };
+type ImageFormat = { small: ImageVariant; large: ImageVariant };
 export type HeroSlide = {
-  src: string;
+  slug: string;
   alt: string;
   label: string;
-  credit?: string;
+  author: string;
+  license: string;
+  source: string;
+  licenseUrl: string;
   width: number;
   height: number;
+  avif: ImageFormat;
+  webp: ImageFormat;
+  fallbackSrc: string;
 };
 
-/** Keep this list to locally stored, licensed/credited Epe imagery only. */
-export const HERO_SLIDES: readonly HeroSlide[] = [
-  {
-    src: "/hero/01-epe-epe-jpg.jpg",
-    alt: "Epe landmark sign with fish sculpture",
-    label: "Our place. Our identity.",
-    credit: "Topsescode · CC BY-SA 4.0 · Wikimedia Commons",
-    width: 1600,
-    height: 1600,
-  },
-  {
-    src: "/hero/02-epe-epe-town-jpg.jpg",
-    alt: "Street scene in Epe town",
-    label: "The town in motion.",
-    credit: "Rae frank1 · CC BY-SA 4.0 · Wikimedia Commons",
-    width: 1600,
-    height: 1200,
-  },
-  {
-    src: "/hero/03-epe-fish-monoment-in-epe-lagos-nigeria-3-jpg.jpg",
-    alt: "Fish monument in Epe, Lagos",
-    label: "A symbol of Epe.",
-    credit: "Koutchika Lihouenou Gaspard · CC BY-SA 4.0 · Wikimedia Commons",
-    width: 1600,
-    height: 1067,
-  },
-  {
-    src: "/hero/04-epe-iberekodo-beach-epe-lagos-jpg.jpg",
-    alt: "Iberekodo Beach in Epe, Lagos",
-    label: "Along the water.",
-    credit: "Tarikhaldun · CC BY-SA 4.0 · Wikimedia Commons",
-    width: 1600,
-    height: 899,
-  },
-  {
-    src: "/hero/05-epe-aiyetoro-market-at-epe-jpg.jpg",
-    alt: "Aiyetoro market at Epe",
-    label: "Markets and livelihoods.",
-    credit: "Joseph Sly1015 · CC BY-SA 4.0 · Wikimedia Commons",
-    width: 1600,
-    height: 2133,
-  },
-  {
-    src: "/hero/06-epe-an-onions-display-at-ayetoro-epe-market-jpg.jpg",
-    alt: "Onions display at Ayetoro-Epe market",
-    label: "Everyday enterprise.",
-    credit: "Edriiic · CC BY-SA 4.0 · Wikimedia Commons",
-    width: 1600,
-    height: 2133,
-  },
-  {
-    src: "/hero/07-epe-boy-building-a-canoe-jpg.jpg",
-    alt: "Canoe building in Epe",
-    label: "Knowledge carried forward.",
-    credit: "Oluphisayo · CC BY-SA 4.0 · Wikimedia Commons",
-    width: 1600,
-    height: 900,
-  },
-  {
-    src: "/hero/08-epe-a-woman-cutting-fish-jpg.jpg",
-    alt: "A woman preparing fish in Epe",
-    label: "Work by the water.",
-    credit: "Keyz abdulsalaam · CC0 · Wikimedia Commons",
-    width: 1600,
-    height: 2133,
-  },
-  {
-    src: "/hero/09-epe-adesowon-junior-and-senior-grammar-school-ilara-epe-jpg.jpg",
-    alt: "Adesowon Junior and Senior Grammar School in Ilara-Epe",
-    label: "Learning in the division.",
-    credit: "Addjimedu · CC0 · Wikimedia Commons",
-    width: 1600,
-    height: 696,
-  },
-  {
-    src: "/hero/10-epe-augustine-university-ilara-epe-entrance-jpg.jpg",
-    alt: "Augustine University Ilara-Epe entrance",
-    label: "A future being built.",
-    credit: "Ourlibrary · CC0 · Wikimedia Commons",
-    width: 1600,
-    height: 1200,
-  },
-];
+/** Kept local, sourced, and capped so future additions do not cause bulk requests. */
+export const HERO_SLIDES = heroImages as unknown as readonly HeroSlide[];
+const MAX_HERO_SLIDES = 60;
+const slides = HERO_SLIDES.slice(0, MAX_HERO_SLIDES);
+const IMAGE_SIZES = "(max-width: 600px) calc(100vw - 40px), (max-width: 800px) 46vw, 560px";
 
-const MAX_HERO_SLIDES = 10;
+type NetworkConnection = EventTarget & { saveData?: boolean; effectiveType?: string };
+
+function getNetworkConnection(): NetworkConnection | undefined {
+  if (typeof navigator === "undefined") return undefined;
+  return (navigator as Navigator & { connection?: NetworkConnection }).connection;
+}
 
 function isConstrainedConnection() {
-  if (typeof navigator === "undefined") return false;
-  const connection = (navigator as Navigator & {
-    connection?: { saveData?: boolean; effectiveType?: string };
-  }).connection;
+  const connection = getNetworkConnection();
   return Boolean(connection?.saveData || connection?.effectiveType === "slow-2g" || connection?.effectiveType === "2g");
 }
 
+function uniqueVariants(format: ImageFormat): ImageVariant[] {
+  const bySource = new Map<string, ImageVariant>();
+  for (const variant of [format.small, format.large]) bySource.set(variant.src, variant);
+  return [...bySource.values()].sort((a, b) => a.width - b.width);
+}
+
+function responsiveSrcSet(format: ImageFormat) {
+  return uniqueVariants(format).map((variant) => `${variant.src} ${variant.width}w`).join(", ");
+}
+
+function closestVariant(format: ImageFormat, width: number) {
+  return uniqueVariants(format).reduce((best, variant) =>
+    Math.abs(variant.width - width) < Math.abs(best.width - width) ? variant : best,
+  );
+}
+
 export default function HeroCarousel() {
-  const slides = HERO_SLIDES.slice(0, MAX_HERO_SLIDES);
   const [index, setIndex] = useState(0);
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const [automaticMotionDisabled, setAutomaticMotionDisabled] = useState(true);
+  const [isPaused, setIsPaused] = useState(false);
+  const [loadedIndex, setLoadedIndex] = useState(-1);
+  const [activeCurrentSrc, setActiveCurrentSrc] = useState("");
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => setReducedMotion(media.matches || isConstrainedConnection());
+    const connection = getNetworkConnection();
+    const update = () => setAutomaticMotionDisabled(media.matches || isConstrainedConnection());
     update();
     media.addEventListener?.("change", update);
-    return () => media.removeEventListener?.("change", update);
+    connection?.addEventListener?.("change", update);
+    return () => {
+      media.removeEventListener?.("change", update);
+      connection?.removeEventListener?.("change", update);
+    };
   }, []);
 
   useEffect(() => {
-    if (slides.length < 2 || reducedMotion) return;
+    if (slides.length < 2 || automaticMotionDisabled || isPaused) return;
     const timer = window.setInterval(() => setIndex((current) => (current + 1) % slides.length), 6500);
     return () => window.clearInterval(timer);
-  }, [reducedMotion, slides.length]);
+  }, [automaticMotionDisabled, isPaused]);
+
+  useEffect(() => {
+    if (automaticMotionDisabled || loadedIndex !== index || !activeCurrentSrc || slides.length < 2) return;
+    const connection = getNetworkConnection();
+    const count = connection?.effectiveType === "3g" ? 1 : 2;
+    const match = activeCurrentSrc.match(/-(\d+)\.(avif|webp)(?:\?.*)?$/i);
+    const preferredWidth = match ? Number(match[1]) : 1280;
+    const formatName = match?.[2]?.toLowerCase() === "avif" ? "avif" : "webp";
+
+    for (let offset = 1; offset <= count; offset += 1) {
+      const nextSlide = slides[(index + offset) % slides.length];
+      const format = nextSlide[formatName];
+      const image = new window.Image();
+      image.decoding = "async";
+      image.fetchPriority = "low";
+      image.src = closestVariant(format, preferredWidth).src;
+    }
+  }, [automaticMotionDisabled, loadedIndex, index, activeCurrentSrc]);
 
   if (!slides.length) return null;
   const slide = slides[index] ?? slides[0];
 
   return (
-    <figure
-      className="home-hero__art home-hero__art--logo home-hero__carousel"
-      aria-roledescription="carousel"
-      aria-label="EPE LAWA hero imagery"
-    >
-      <div className="home-hero__carousel-stage" aria-live={reducedMotion ? "polite" : "off"}>
-        <img key={slide.src} src={slide.src} alt={slide.alt} width={slide.width} height={slide.height} fetchPriority={index === 0 ? "high" : "auto"} loading={index === 0 ? "eager" : "lazy"} />
+    <div className="home-hero__media">
+      <figure
+        className="home-hero__art home-hero__art--logo home-hero__carousel"
+        aria-roledescription="carousel"
+        aria-label="Epe photo gallery"
+      >
+        <div className="home-hero__carousel-stage" aria-live="off">
+          <picture>
+            <source type="image/avif" srcSet={responsiveSrcSet(slide.avif)} sizes={IMAGE_SIZES} />
+            <img
+              key={slide.slug}
+              src={slide.fallbackSrc}
+              srcSet={responsiveSrcSet(slide.webp)}
+              sizes={IMAGE_SIZES}
+              alt={slide.alt}
+              width={slide.width}
+              height={slide.height}
+              fetchPriority={index === 0 ? "high" : "auto"}
+              loading="eager"
+              decoding="async"
+              onLoad={(event) => {
+                setActiveCurrentSrc(event.currentTarget.currentSrc);
+                setLoadedIndex(index);
+              }}
+            />
+          </picture>
+        </div>
+        {!automaticMotionDisabled ? (
+          <button
+            className="home-hero__carousel-pause"
+            type="button"
+            aria-label={isPaused ? "Resume photo rotation" : "Pause photo rotation"}
+            aria-pressed={isPaused}
+            onClick={() => setIsPaused((paused) => !paused)}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              {isPaused ? <path d="m8 5 11 7-11 7V5Z" /> : <><path d="M8 5h3v14H8z" /><path d="M15 5h3v14h-3z" /></>}
+            </svg>
+          </button>
+        ) : null}
+      </figure>
+      <div className="home-hero__details">
+        <p className="home-hero__location">
+          <span className="home-hero__location-mark"><MapPinIcon size={18} /></span>
+          <span>Epe · Lagos State</span>
+        </p>
+        <div className="home-hero__caption" aria-live="off" aria-atomic="true">
+          <p key={slide.slug} className="home-hero__slide-label">{slide.label}</p>
+          <small className="home-hero__photo-credit">
+            Photo by {slide.author} · {slide.license} · <a href={slide.source}>Source</a> · <a href={slide.licenseUrl}>License</a>
+          </small>
+        </div>
       </div>
-    </figure>
+    </div>
   );
 }

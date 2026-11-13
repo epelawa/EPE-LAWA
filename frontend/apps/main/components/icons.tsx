@@ -88,6 +88,14 @@ export const SearchIcon = ({ size = 18, className }: { size?: number; className?
   </svg>
 );
 
+export const MapPinIcon = ({ size = 20, className }: { size?: number; className?: string }) => (
+  <svg aria-hidden="true" className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 10c0 5.1-8 11-8 11S4 15.1 4 10a8 8 0 1 1 16 0Z" />
+    <circle cx="12" cy="10" r="3.2" fill="currentColor" />
+    <circle cx="12" cy="10" r="1.15" fill="var(--palette-cloud)" stroke="none" />
+  </svg>
+);
+
 export const ArrowUpRightIcon = ({ size = 18, className, "aria-hidden": ariaHidden }: ArrowIconProps) => (
   <svg aria-hidden={normalizeAriaHidden(ariaHidden)} className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M7 17 17 7" />

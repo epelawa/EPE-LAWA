@@ -3,6 +3,7 @@ import { ArrowRightIcon, ArrowUpRightIcon, NewspaperIcon, BuildingIcon, UsersIco
 import { EmptyPanel } from "../components/design-system";
 import { formatPublishedDate } from "../lib/dates";
 import { getLatestStories } from "../lib/home-data";
+import { BrandLockup } from "../components/brand";
 import "./hero-logo.css";
 import CookieBanner from "../components/cookie-banner";
 import HeroCarousel from "../components/hero-carousel";
@@ -22,7 +23,7 @@ export default async function Home() {
   const stories = await getLatestStories(3);
   return <div className="public-home">
     <section className="home-hero" aria-labelledby="home-title"><div className="ep-container home-hero__grid">
-      <div className="home-hero__copy"><p className="ui-eyebrow">Epe · Lagos State</p><h1 id="home-title">The place.<br />The people.<br /><em>Our Epe.</em></h1><p className="home-hero__lede">A shared home for the stories, conversations and everyday discoveries that bring Epe together.</p><div className="ui-actions"><Link href="/news" className="btn-primary">Discover what’s happening <ArrowRightIcon size={17} aria-hidden="true" /></Link><Link href="/itan-ilu-mi" className="ui-text-link">Know our story <ArrowUpRightIcon size={17} aria-hidden="true" /></Link></div><p className="home-hero__note"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M12 21s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg>Rooted in the community. Open to everyone.</p></div>
+      <div className="home-hero__copy"><div className="home-hero__brand"><BrandLockup size={36} /></div><h1 id="home-title">The place.<br />The people.<br /><em>Our Epe.</em></h1><p className="home-hero__lede">A shared home for the stories, conversations and everyday discoveries that bring Epe together.</p><div className="ui-actions"><Link href="/news" className="btn-primary">Discover what’s happening <ArrowRightIcon size={17} aria-hidden="true" /></Link><Link href="/itan-ilu-mi" className="ui-text-link">Know our story <ArrowUpRightIcon size={17} aria-hidden="true" /></Link></div><p className="home-hero__note"><UsersIcon size={20} aria-hidden="true" />Rooted in the community. Open to everyone.</p></div>
       <HeroCarousel />
     </div></section>
     <div className="ep-container home-topics" aria-label="A platform for community life"><span>Stories worth knowing</span><span>History worth keeping</span><span>Places worth finding</span><span>People worth connecting</span></div>
