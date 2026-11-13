@@ -6,6 +6,9 @@
 .theme-control__track { width: 50px; }
 .theme-control[data-theme="dark"] .theme-control__thumb { transform: translateX(20px); }
 .drawer { width: min(300px, calc(100vw - 32px)); padding: 20px; overflow: hidden; border-radius: 22px 0 0 22px; }
+.drawer-appearance { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 7px 10px; margin: 8px 0 4px; border: 1px solid hsl(var(--border)); border-radius: 12px; background: hsl(var(--secondary) / .45); }
+.drawer-appearance__label { font-size: 13px; line-height: 1.4; font-weight: 600; color: hsl(var(--foreground)); }
+.drawer-appearance .theme-control { flex: 0 0 58px; width: 58px; min-width: 58px; }
 .drawer-heading { flex: 0 0 auto; padding-bottom: 12px; gap: 8px; }
 .drawer-heading p { font-size: 13px; line-height: 1.5; }
 .drawer-nav { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; margin: 10px -5px; padding-inline: 5px; scrollbar-width: thin; }

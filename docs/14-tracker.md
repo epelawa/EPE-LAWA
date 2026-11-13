@@ -1,20 +1,20 @@
 # EPE-LAWA — Implementation Tracker
 
-**Last checked:** 2026-11-10 13:13 WAT.
+**Last checked:** 2026-11-13 21:42 WAT.
 
-**Production code baseline:** `main` at `2446eca26f96f567d5b79e188b7d3a54498fcc20` (PR #31 merge; includes PRs #25–#28 and #30).
+**Production code baseline:** `main` at `9066e56d1c64b9882f8d01d297d06eac7f2177f8` (PR #44 merge; includes the 52-photo homepage gallery).
 **Scope:** The eight client-approved web modules plus cross-cutting member auth, staff access, publishing, privacy, accessibility, email and audit. Native mobile remains out of scope.
 
 A route existing, a preview building, or a button being visible is not proof that a complete workflow works. Mark a capability complete only with named current evidence.
 
-## Release snapshot
+## Current release snapshot — 2026-11-13 21:42 WAT
 
-- PRs #25–#28, #30 and #31 are merged; remaining open PRs are #24, #29 and #32. Continue exact-head verification and attempt normal merges when the owner-approved changes are healthy; never bypass branch protection.
-- After PR #31 merged, `main` is `2446eca26f96f567d5b79e188b7d3a54498fcc20`. Vercel Production is **READY** as deployment `dpl_5P6FAg4wDYQTxwivF3xXSJikaNMW`; `https://epelawa.vercel.app` resolves to it. The Production-only `NEXT_PUBLIC_SITE_URL` now equals `https://epelawa.vercel.app`; homepage, sitemap and robots return HTTP 200, the homepage canonical uses that host, all 14 sitemap entries use it, and `robots.txt` names its sitemap.
-- The live `/itan-ilu-mi` page still displays the “Coming Soon” correction badge from PR #30. PR #32 removes that label but remains open, so the change is not live yet.
-- Vercel CLI mapped pre-sync PR previews to exact head SHAs and reported **READY**. Synced branches need fresh exact-head deployment checks; previews behind Vercel SSO return HTTP 302, so hosted content is not reviewed.
-- `gh pr checks` and GitHub REST check/status endpoints return 403 to this CLI integration. Before pushing the tested PR #24 sync commit, GitHub reported that PR #24 was DIRTY/CONFLICTING; PR #29 is stacked on #24. Refresh mergeability and exact preview state after push; do not claim inaccessible hosted checks passed.
-- No production Supabase schema, migration ledger, settings, account roles, or user data were changed. Production remains read-only while migration drift is unresolved.
+- PR #44 is **MERGED** normally. Current `main` is `9066e56d1c64b9882f8d01d297d06eac7f2177f8`; Vercel Production deployment `dpl_7wUy2nxbqD2UmHfNec9yfa8rzhuZ` is **READY / PROMOTED** from that exact SHA. The canonical homepage returned HTTP 200, and its HTML contains the post-image hero location label “Epe · Lagos State”.
+- At refresh time there were no open PRs. The homepage system-theme change is locally verified on `feat/homepage-system-theme` but is not yet a PR/merge. Open a focused PR after the screenshot, QA and full owner checklist are in the branch; attempt only a normal merge if exact-head checks and GitHub state are healthy.
+- The preserved `feat/full-web-implementation-release` worktree is rebased onto current `main` and still has staged/untracked changes for OTP verification, route/docs updates, form copy/validation, staff error screens and tourism photographs. None of that is on `main`; review and split safely before merging.
+- The uncommitted News-reference worktree `/workspace/EPE-LAWA-news` is still based on pre-PR-44 SHA `2ab88be1b8ee644e9237ff732af545f1d4976cb9`. Rebase it onto current `main` before exact gates or PR creation.
+- The full owner-requested Done/In-progress/Blocked recap is [`docs/17-owner-requirements-checklist.md`](17-owner-requirements-checklist.md). Theme screenshots and local verification are in `docs/screenshots/pr45-system-theme/`.
+- Production Supabase schema, migration ledger, settings, roles and user data remain untouched. Historical migration drift remains a blocker; no hosted Supabase, mail delivery or provider workflow is claimed as tested.
 
 ## Review PRs — snapshot before PR #30 merge (09:16 WAT)
 

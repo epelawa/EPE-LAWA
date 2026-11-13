@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { nextProbeDelay, probeConnection, PROBE_TIMEOUT_MS, RESTORED_DISMISS_MS, SLOW_THRESHOLD_MS } from "../lib/connectivity";
+import { hasSeenSystemThemeNotice, markSystemThemeNoticeSeen, readStoredTheme, resolveTheme, THEME_PREFERENCE_CHANGED_EVENT } from "../lib/theme";
 import "./notice-refinement.css";
 
 /**
@@ -45,16 +46,24 @@ const PROBE_PATH = "/status/200";
 
 /** Do not probe again this soon after the last one, whatever wakes us up. */
 const MIN_PROBE_INTERVAL_MS = 30000;
+const HIDDEN_THEME_MENU_PREFIXES = ["/auth", "/login", "/forgot-password", "/admin"];
+
+function isThemeNoticeHidden(pathname: string): boolean {
+  return HIDDEN_THEME_MENU_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+}
 
 export default function Connectivity() {
   const router = useRouter();
+  const pathname = usePathname();
 
   const [notice, setNotice] = useState<Notice | null>(null);
+  const [systemThemeNotice, setSystemThemeNotice] = useState<"light" | "dark" | null>(null);
 
   const requestId = useRef(0);
   const attempts = useRef(0);
   const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dismissTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const systemThemeNoticeConsidered = useRef(false);
   const dismissed = useRef<Notice | null>(null);
   const wasDegraded = useRef(false);
   const lastProbeAt = useRef(0);
@@ -192,6 +201,30 @@ export default function Connectivity() {
     runProbeRef.current = runProbe;
   }, [runProbe]);
 
+  // Announce the system choice once, on a route where the public Appearance
+  // control can be found. A focused auth/staff page keeps its clean shell.
+  useEffect(() => {
+    if (systemThemeNoticeConsidered.current || isThemeNoticeHidden(pathname)) return;
+    systemThemeNoticeConsidered.current = true;
+    if (readStoredTheme() !== "system" || hasSeenSystemThemeNotice()) return;
+    setSystemThemeNotice(resolveTheme("system"));
+  }, [pathname]);
+
+  useEffect(() => {
+    const onThemePreferenceChanged = () => {
+      systemThemeNoticeConsidered.current = true;
+      markSystemThemeNoticeSeen();
+      setSystemThemeNotice(null);
+    };
+    window.addEventListener(THEME_PREFERENCE_CHANGED_EVENT, onThemePreferenceChanged);
+    return () => window.removeEventListener(THEME_PREFERENCE_CHANGED_EVENT, onThemePreferenceChanged);
+  }, []);
+
+  useEffect(() => {
+    if (systemThemeNotice === null || notice !== null || isThemeNoticeHidden(pathname)) return;
+    markSystemThemeNoticeSeen();
+  }, [systemThemeNotice, notice, pathname]);
+
   useEffect(() => {
     mounted.current = true;
 
@@ -250,12 +283,18 @@ export default function Connectivity() {
     setNotice(null);
   }, [clearDismiss, notice]);
 
+  const dismissSystemThemeNotice = useCallback(() => {
+    markSystemThemeNoticeSeen();
+    setSystemThemeNotice(null);
+  }, []);
+
   const retry = useCallback(() => {
     void runProbeRef.current("manual");
   }, []);
 
   const polite = notice !== null && !ASSERTIVE.has(notice) ? notice : null;
   const assertive = notice !== null && ASSERTIVE.has(notice) ? notice : null;
+  const showSystemThemeNotice = systemThemeNotice !== null && notice === null && !isThemeNoticeHidden(pathname);
 
   return (
     <>
@@ -265,6 +304,8 @@ export default function Connectivity() {
       <div className="toast-region" role="status" aria-live="polite" aria-atomic="true">
         {polite ? (
           <Toast key={polite} notice={polite} onRetry={retry} onDismiss={dismiss} />
+        ) : showSystemThemeNotice && systemThemeNotice ? (
+          <ThemeToast theme={systemThemeNotice} onDismiss={dismissSystemThemeNotice} />
         ) : null}
       </div>
 
@@ -274,6 +315,23 @@ export default function Connectivity() {
         ) : null}
       </div>
     </>
+  );
+}
+
+function ThemeToast({ theme, onDismiss }: { theme: "light" | "dark"; onDismiss: () => void }) {
+  return (
+    <div className="toast theme-toast">
+      <svg className="toast__symbol" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        {theme === "dark" ? <path d="M20.6 15.1A8.7 8.7 0 0 1 8.9 3.4 8.8 8.8 0 1 0 20.6 15.1Z" /> : <><circle cx="12" cy="12" r="3.5" /><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42" /></>}
+      </svg>
+      <div className="toast__copy">
+        <strong className="toast__title">Device theme applied</strong>
+        <p className="toast__text">We detected {theme} mode on your device and matched it.</p>
+      </div>
+      <button className="toast__close" type="button" aria-label="Dismiss appearance notice" onClick={onDismiss}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 18 18 6M6 6l12 12" /></svg>
+      </button>
+    </div>
   );
 }
 
