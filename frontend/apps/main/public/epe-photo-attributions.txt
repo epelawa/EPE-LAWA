@@ -1,0 +1,17 @@
+EPE-LAWA Tourism photo references — attribution and license
+
+These are licensed photo references, not verified destination listings. They do not establish public access, amenities, safety, opening hours, prices, or current conditions.
+
+1) Wikimedia Commons file title: “Iberekodo Beach, Epe, Lagos”
+Photographer: Tarikhaldun
+Source: https://commons.wikimedia.org/wiki/File:Iberekodo_Beach,_Epe,_Lagos.jpg
+License: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+License text: https://creativecommons.org/licenses/by-sa/4.0/
+
+2) Wikimedia Commons file title: “Through Epe Mangrove”
+Photographer: Dotun55 (Adedotun Ajibade)
+Source: https://commons.wikimedia.org/wiki/File:Through_Epe_Mangrove.jpg
+License: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+License text: https://creativecommons.org/licenses/by-sa/4.0/
+
+The original JPEG source files are included unchanged. The public page uses Next.js responsive image optimization, which resizes and re-encodes delivery renditions without cropping; the image content is not otherwise edited. Attribute the original authors and distribute any adapted rendition under CC BY-SA 4.0.
