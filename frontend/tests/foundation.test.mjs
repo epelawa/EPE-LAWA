@@ -203,9 +203,12 @@ test('homepage hero carousel is capped, accessible, and resource-aware', async (
   assert.match(source, /saveData/);
   assert.match(source, /slow-2g/);
   assert.match(source, /loading=\{index === 0 \? "eager" : "lazy"\}/);
-  assert.match(source, /src: "\/brand-logo\.png"/);
-  assert.match(source, /src: "\/epe-lagoon-editorial\.webp"/);
-  assert.match(source, /Editorial illustration · EPE LAWA/);
+  const localSlides = [...source.matchAll(/src: "(\/hero\/[^\"]+)"/g)].map((match) => match[1]);
+  assert.equal(localSlides.length, 10);
+  assert.equal(new Set(localSlides).size, 10);
+  const credits = await readProjectFile('docs/hero-image-sources.md');
+  for (const asset of localSlides) assert.match(credits, new RegExp(asset.replaceAll('/', '\\/')));
+  assert.match(source, /Wikimedia Commons/);
   assert.doesNotMatch(source, /unsplash|pexels|placeholder/i);
 });
 
