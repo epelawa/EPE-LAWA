@@ -14,8 +14,27 @@ test('every public page has rebuilt editorial or account markup, not the old nar
 test('new design scales display roles to 90 percent and retains readable body/control floors',()=>{
   const css=read('frontend/apps/main/app/globals.css');assert.match(css,/--text-display: clamp\(2\.025rem, 4\.8vw, 3\.6rem\)/);assert.match(css,/--text-title: clamp\(1\.25rem, 2\.4vw, 1\.575rem\)/);assert.match(css,/font-size: 16px/);assert.match(css,/min-height: 44px/);assert.match(css,/prefers-reduced-motion/);assert.doesNotMatch(css,/#(?:da251c|ff4a3d|17253a)\b/i);assert.match(css,/\[data-theme="dark"\]/);
 });
-test('hero uses ten attributed Epe images without invented artwork',()=>{
-  const source=read('frontend/apps/main/app/page.tsx');const carousel=read('frontend/apps/main/components/hero-carousel.tsx');const credits=read('docs/hero-image-sources.md');const heroCss=read('frontend/apps/main/app/hero-logo.css');assert.match(source,/<HeroCarousel\s*\/>/);assert.equal((carousel.match(/src: "\/hero\//g)||[]).length,10);assert.match(carousel,/Wikimedia Commons/);assert.match(credits,/CC BY-SA 4\.0|CC0/);assert.match(carousel,/home-hero__art--logo/);assert.doesNotMatch(source+carousel,/HeroArt|hero-art|sckooly|jasab|getquant|unsplash|pexels/i);assert.match(heroCss,/aspect-ratio: 1/);assert.match(heroCss,/object-fit: cover/);assert.match(heroCss,/padding: 0/);assert.match(read('frontend/apps/main/components/brand.tsx'),/style=\{\{ width: markWidth, height: size \}\}/);
+test('homepage hero uses a 52-photo sourced Epe gallery without invented artwork',()=>{
+  const source=read('frontend/apps/main/app/page.tsx');
+  const carousel=read('frontend/apps/main/components/hero-carousel.tsx');
+  const credits=read('docs/hero-image-sources.md');
+  const heroCss=read('frontend/apps/main/app/hero-logo.css');
+  const manifest=JSON.parse(read('frontend/apps/main/lib/hero-images.json'));
+  assert.match(source,/<HeroCarousel\s*\/>/);
+  assert.equal(manifest.length,52);
+  assert.equal(new Set(manifest.map(slide=>slide.source)).size,52);
+  assert.match(source,/home-hero__brand.*BrandLockup/);
+  assert.match(carousel,/HERO_SLIDES = heroImages/);
+  assert.match(carousel,/Photo by \{slide\.author\}/);
+  assert.match(credits,/CC BY-SA 4\.0|CC0 1\.0/);
+  assert.match(carousel,/home-hero__art--logo/);
+  assert.match(carousel,/Epe · Lagos State/);
+  assert.ok(carousel.indexOf('className="home-hero__location"')>carousel.indexOf('</figure>'));
+  assert.doesNotMatch(source+carousel,/HeroArt|hero-art|sckooly|jasab|getquant|unsplash|pexels/i);
+  assert.match(heroCss,/aspect-ratio: 1/);
+  assert.match(heroCss,/object-fit: cover/);
+  assert.match(heroCss,/padding: 0/);
+  assert.match(read('frontend/apps/main/components/brand.tsx'),/style=\{\{ width: markWidth, height: size \}\}/);
 });
 test('storage notice is homepage-only and contact/policy pages disclose unavailable intake without exposing the private mailbox',()=>{
   const banner=read('frontend/apps/main/components/cookie-banner.tsx');assert.match(banner,/Sign-in uses essential cookies; optional tracking is off/);assert.match(banner,/window\.removeEventListener\("resize", apply\);\s*root\.style\.setProperty\("--storage-notice-height", "0px"\)/);

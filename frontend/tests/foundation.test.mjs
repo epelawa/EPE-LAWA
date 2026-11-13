@@ -186,26 +186,75 @@ test('main has honest indexable metadata, working public links and security head
   });
 });
 
-test('homepage hero carousel is capped, accessible, and resource-aware', async () => {
+test('homepage hero gallery is sourced, responsive, eager and resource-aware', async () => {
   const source = await readProjectFile('frontend/apps/main/components/hero-carousel.tsx');
   const page = await readProjectFile('frontend/apps/main/app/page.tsx');
+  const icons = await readProjectFile('frontend/apps/main/components/icons.tsx');
+  const styles = await readProjectFile('frontend/apps/main/app/hero-logo.css');
+  const credits = await readProjectFile('docs/hero-image-sources.md');
+  const manifest = JSON.parse(await readProjectFile('frontend/apps/main/lib/hero-images.json'));
   assert.match(page, /<HeroCarousel\s*\/>/);
-  assert.match(source, /MAX_HERO_SLIDES\s*=\s*10/);
+  assert.match(page, /home-hero__brand"><BrandLockup size=\{36\} \/>/);
+  assert.match(page, /import \{ BrandLockup \} from "\.\.\/components\/brand"/);
+  assert.match(source, /MAX_HERO_SLIDES\s*=\s*60/);
   assert.match(source, /HERO_SLIDES\.slice\(0, MAX_HERO_SLIDES\)/);
   assert.match(source, /aria-roledescription="carousel"/);
-  assert.match(source, /aria-label="EPE LAWA hero imagery"/);
-  assert.doesNotMatch(source, /Previous hero image|Next hero image|home-hero__carousel-dots|<figcaption/);
-  assert.match(source, /key=\{slide\.src\}/);
+  assert.match(source, /aria-label="Epe photo gallery"/);
+  assert.match(source, /window\.setInterval\(\(\) => setIndex\(\(current\) => \(current \+ 1\) % slides\.length\), 6500\)/, 'the gallery must rotate automatically without a click');
+  assert.match(source, /aria-pressed=\{isPaused\}/);
+  assert.match(source, /Pause photo rotation/);
+  assert.match(source, /key=\{slide\.slug\}/);
   assert.match(source, /prefers-reduced-motion/);
   assert.match(source, /saveData/);
   assert.match(source, /slow-2g/);
-  assert.match(source, /loading=\{index === 0 \? "eager" : "lazy"\}/);
-  const localSlides = [...source.matchAll(/src: "(\/hero\/[^\"]+)"/g)].map((match) => match[1]);
-  assert.equal(localSlides.length, 10);
-  assert.equal(new Set(localSlides).size, 10);
-  const credits = await readProjectFile('docs/hero-image-sources.md');
-  for (const asset of localSlides) assert.match(credits, new RegExp(asset.replaceAll('/', '\\/')));
-  assert.match(source, /Wikimedia Commons/);
+  assert.match(source, /effectiveType === "3g"/);
+  assert.match(source, /loading="eager"/);
+  assert.doesNotMatch(source, /loading="lazy"/);
+  assert.match(source, /fetchPriority=\{index === 0 \? "high" : "auto"\}/);
+  assert.match(source, /new window\.Image\(\)/);
+  assert.match(source, /image\.fetchPriority = "low"/);
+  assert.match(source, /type="image\/avif"/);
+  assert.match(source, /srcSet=\{responsiveSrcSet\(slide\.webp\)\}/);
+  assert.match(source, /MapPinIcon/);
+  assert.match(icons, /export const MapPinIcon/);
+  assert.match(styles, /home-hero__carousel-pause/);
+  assert.match(styles, /width: 44px/);
+  assert.match(styles, /home-hero__brand/);
+  assert.match(styles, /prefers-reduced-motion/);
+  assert.equal(manifest.length, 52);
+  assert.equal(new Set(manifest.map((slide) => slide.slug)).size, 52);
+  assert.equal(new Set(manifest.map((slide) => slide.source)).size, 52);
+  assert.match(source, /<p className="home-hero__location">/);
+  assert.match(source, /Epe · Lagos State/);
+  assert.ok(source.indexOf('className="home-hero__location"') > source.indexOf('</figure>'), 'the exact location label follows the hero image');
+  assert.match(source, /Photo by \{slide\.author\}/);
+  assert.match(source, /\{slide\.license\}/);
+  assert.match(source, /<a href=\{slide\.source\}>Source<\/a>/);
+  assert.match(source, /<a href=\{slide\.licenseUrl\}>License<\/a>/);
+
+  const documentedSources = [...credits.matchAll(/- Source: \[[^\]]+\]\((https:\/\/commons\.wikimedia\.org\/wiki\/[^)]+)\)/g)].map((match) => match[1]).sort();
+  assert.deepEqual(manifest.map((slide) => slide.source).sort(), documentedSources);
+  const localFiles = new Set();
+  for (const slide of manifest) {
+    assert.match(slide.slug, /^\d{2}-epe-/);
+    assert.ok(['CC0 1.0', 'CC BY-SA 4.0'].includes(slide.license), slide.license);
+    assert.match(slide.licenseUrl, /^https:\/\/creativecommons\.org\//);
+    assert.ok(credits.includes(`[${slide.license}](${slide.licenseUrl})`), `missing license for ${slide.slug}`);
+    assert.ok(credits.includes(`(${slide.source})`), `missing source for ${slide.slug}`);
+    for (const format of ['avif', 'webp']) {
+      for (const size of ['small', 'large']) {
+        const variant = slide[format][size];
+        assert.match(variant.src, new RegExp(`\\.${format}$`));
+        assert.ok([640, 1280].includes(variant.width), `${slide.slug} ${format} width`);
+        assert.equal(Number(variant.src.match(/-(\d+)\.(?:avif|webp)$/)?.[1]), variant.width, `${slide.slug} filename width`);
+        const localPath = path.join(root, 'frontend/apps/main/public', variant.src.replace(/^\//, ''));
+        assert.ok(fs.existsSync(localPath), `missing optimized image: ${localPath}`);
+        localFiles.add(localPath);
+      }
+    }
+  }
+  assert.equal(localFiles.size, 206);
+  assert.doesNotMatch(page, /ui-eyebrow">Epe · Lagos State/);
   assert.doesNotMatch(source, /unsplash|pexels|placeholder/i);
 });
 

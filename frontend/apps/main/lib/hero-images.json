@@ -1,0 +1,1666 @@
+[
+  {
+    "slug": "01-epe-epe-jpg",
+    "alt": "Epe landmark sign with fish sculpture",
+    "label": "Our place. Our identity.",
+    "author": "Topsescode",
+    "license": "CC BY-SA 4.0",
+    "source": "https://commons.wikimedia.org/wiki/File%3AEpe.jpg",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "width": 640,
+    "height": 640,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/01-epe-epe-jpg-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/01-epe-epe-jpg-640.avif",
+        "width": 640
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/01-epe-epe-jpg-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/01-epe-epe-jpg-640.webp",
+        "width": 640
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/01-epe-epe-jpg-640.webp"
+  },
+  {
+    "slug": "02-epe-epe-town-jpg",
+    "alt": "Street scene in Epe town",
+    "label": "The town in motion.",
+    "author": "Rae frank1",
+    "license": "CC BY-SA 4.0",
+    "source": "https://commons.wikimedia.org/wiki/File%3AEpe_town.jpg",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "width": 1920,
+    "height": 1440,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/02-epe-epe-town-jpg-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/02-epe-epe-town-jpg-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/02-epe-epe-town-jpg-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/02-epe-epe-town-jpg-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/02-epe-epe-town-jpg-1280.webp"
+  },
+  {
+    "slug": "03-epe-fish-monument-in-epe-lagos-nigeria-3-jpg",
+    "alt": "Fish monument in Epe, Lagos",
+    "label": "A symbol of Epe.",
+    "author": "Koutchika Lihouenou Gaspard",
+    "license": "CC BY-SA 4.0",
+    "source": "https://commons.wikimedia.org/wiki/File%3AFish_Monument_in_Epe%2C_Lagos._Nigeria_%283%29.jpg",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "width": 1920,
+    "height": 1280,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/03-epe-fish-monument-in-epe-lagos-nigeria-3-jpg-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/03-epe-fish-monument-in-epe-lagos-nigeria-3-jpg-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/03-epe-fish-monument-in-epe-lagos-nigeria-3-jpg-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/03-epe-fish-monument-in-epe-lagos-nigeria-3-jpg-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/03-epe-fish-monument-in-epe-lagos-nigeria-3-jpg-1280.webp"
+  },
+  {
+    "slug": "04-epe-iberekodo-beach-epe-lagos-jpg",
+    "alt": "Iberekodo Beach in Epe, Lagos",
+    "label": "Along the water.",
+    "author": "Tarikhaldun",
+    "license": "CC BY-SA 4.0",
+    "source": "https://commons.wikimedia.org/wiki/File%3AIberekodo_Beach%2C_Epe%2C_Lagos.jpg",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "width": 1920,
+    "height": 1079,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/04-epe-iberekodo-beach-epe-lagos-jpg-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/04-epe-iberekodo-beach-epe-lagos-jpg-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/04-epe-iberekodo-beach-epe-lagos-jpg-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/04-epe-iberekodo-beach-epe-lagos-jpg-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/04-epe-iberekodo-beach-epe-lagos-jpg-1280.webp"
+  },
+  {
+    "slug": "05-epe-aiyetoro-market-at-epe-jpg",
+    "alt": "Aiyetoro market at Epe",
+    "label": "Markets and livelihoods.",
+    "author": "Joseph Sly1015",
+    "license": "CC BY-SA 4.0",
+    "source": "https://commons.wikimedia.org/wiki/File%3AAiyetoro_market_at_Epe.jpg",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "width": 1920,
+    "height": 2560,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/05-epe-aiyetoro-market-at-epe-jpg-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/05-epe-aiyetoro-market-at-epe-jpg-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/05-epe-aiyetoro-market-at-epe-jpg-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/05-epe-aiyetoro-market-at-epe-jpg-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/05-epe-aiyetoro-market-at-epe-jpg-1280.webp"
+  },
+  {
+    "slug": "06-epe-an-onions-display-at-ayetoro-epe-market-jpg",
+    "alt": "Onions display at Ayetoro-Epe market",
+    "label": "Everyday enterprise.",
+    "author": "Edriiic",
+    "license": "CC BY-SA 4.0",
+    "source": "https://commons.wikimedia.org/wiki/File%3AAn_onions_display_at_Ayetoro-Epe_market.jpg",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "width": 1920,
+    "height": 2560,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/06-epe-an-onions-display-at-ayetoro-epe-market-jpg-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/06-epe-an-onions-display-at-ayetoro-epe-market-jpg-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/06-epe-an-onions-display-at-ayetoro-epe-market-jpg-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/06-epe-an-onions-display-at-ayetoro-epe-market-jpg-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/06-epe-an-onions-display-at-ayetoro-epe-market-jpg-1280.webp"
+  },
+  {
+    "slug": "07-epe-boy-building-a-canoe-jpg",
+    "alt": "Canoe building in Epe",
+    "label": "Knowledge carried forward.",
+    "author": "Oluphisayo",
+    "license": "CC BY-SA 4.0",
+    "source": "https://commons.wikimedia.org/wiki/File%3ABoy_building_a_canoe.jpg",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "width": 1920,
+    "height": 1080,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/07-epe-boy-building-a-canoe-jpg-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/07-epe-boy-building-a-canoe-jpg-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/07-epe-boy-building-a-canoe-jpg-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/07-epe-boy-building-a-canoe-jpg-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/07-epe-boy-building-a-canoe-jpg-1280.webp"
+  },
+  {
+    "slug": "08-epe-a-woman-cutting-fish-jpg",
+    "alt": "A woman preparing fish in Epe",
+    "label": "Work by the water.",
+    "author": "Keyz abdulsalaam",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File%3AA_woman_cutting_fish.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 2560,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/08-epe-a-woman-cutting-fish-jpg-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/08-epe-a-woman-cutting-fish-jpg-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/08-epe-a-woman-cutting-fish-jpg-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/08-epe-a-woman-cutting-fish-jpg-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/08-epe-a-woman-cutting-fish-jpg-1280.webp"
+  },
+  {
+    "slug": "09-epe-adesowon-junior-and-senior-grammar-school-ilara-epe-jpg",
+    "alt": "Adesowon Junior and Senior Grammar School in Ilara-Epe",
+    "label": "Learning in the division.",
+    "author": "Addjimedu",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File%3AADESOWON_JUNIOR_AND_SENIOR_GRAMMAR_SCHOOL_ILARA-EPE.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 835,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/09-epe-adesowon-junior-and-senior-grammar-school-ilara-epe-jpg-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/09-epe-adesowon-junior-and-senior-grammar-school-ilara-epe-jpg-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/09-epe-adesowon-junior-and-senior-grammar-school-ilara-epe-jpg-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/09-epe-adesowon-junior-and-senior-grammar-school-ilara-epe-jpg-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/09-epe-adesowon-junior-and-senior-grammar-school-ilara-epe-jpg-1280.webp"
+  },
+  {
+    "slug": "10-epe-augustine-university-ilara-epe-entrance-jpg",
+    "alt": "Augustine University Ilara-Epe entrance",
+    "label": "A future being built.",
+    "author": "Ourlibrary",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File%3AAugustine_University%2C_Ilara_Epe_Entrance.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 1440,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/10-epe-augustine-university-ilara-epe-entrance-jpg-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/10-epe-augustine-university-ilara-epe-entrance-jpg-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/10-epe-augustine-university-ilara-epe-entrance-jpg-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/10-epe-augustine-university-ilara-epe-entrance-jpg-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/10-epe-augustine-university-ilara-epe-entrance-jpg-1280.webp"
+  },
+  {
+    "slug": "11-epe-all-saints-anglican-church-mojoda",
+    "alt": "All Saints Anglican Church in Mojoda, Epe",
+    "label": "All Saints Anglican Church in Mojoda, Epe",
+    "author": "Addjimedu",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:ALL_SAINTS_ANGLICAN_CHURCH,_MOJODA.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 901,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/11-epe-all-saints-anglican-church-mojoda-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/11-epe-all-saints-anglican-church-mojoda-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/11-epe-all-saints-anglican-church-mojoda-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/11-epe-all-saints-anglican-church-mojoda-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/11-epe-all-saints-anglican-church-mojoda-1280.webp"
+  },
+  {
+    "slug": "12-epe-epe-ijebu-ode-toll-gate",
+    "alt": "Epe–Ijebu Ode toll gate",
+    "label": "Epe–Ijebu Ode toll gate",
+    "author": "Addjimedu",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Epe_-_Ijebu_Ode_Toll_Gate.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 893,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/12-epe-epe-ijebu-ode-toll-gate-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/12-epe-epe-ijebu-ode-toll-gate-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/12-epe-epe-ijebu-ode-toll-gate-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/12-epe-epe-ijebu-ode-toll-gate-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/12-epe-epe-ijebu-ode-toll-gate-1280.webp"
+  },
+  {
+    "slug": "13-epe-epe-market-lagos-state",
+    "alt": "Market scene in Epe, Lagos State",
+    "label": "Market scene in Epe, Lagos State",
+    "author": "Louiell1",
+    "license": "CC BY-SA 4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Epe_market,_Lagos_state.jpg",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "width": 1920,
+    "height": 1080,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/13-epe-epe-market-lagos-state-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/13-epe-epe-market-lagos-state-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/13-epe-epe-market-lagos-state-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/13-epe-epe-market-lagos-state-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/13-epe-epe-market-lagos-state-1280.webp"
+  },
+  {
+    "slug": "14-epe-epe-bridge",
+    "alt": "Epe Bridge",
+    "label": "Epe Bridge",
+    "author": "HardeybookolaH",
+    "license": "CC BY-SA 4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Epe_Bridge.jpg",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "width": 1920,
+    "height": 2560,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/14-epe-epe-bridge-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/14-epe-epe-bridge-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/14-epe-epe-bridge-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/14-epe-epe-bridge-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/14-epe-epe-bridge-1280.webp"
+  },
+  {
+    "slug": "15-epe-ike-oluwa-mosque-odoyangunshi-epe",
+    "alt": "Ike Oluwa Mosque in Odoyangunshi, Epe",
+    "label": "Ike Oluwa Mosque in Odoyangunshi, Epe",
+    "author": "Addjimedu",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:IKE_OLUWA_MOSQUE_ODOYANGUNSHI,_EPE.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1617,
+    "height": 1127,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/15-epe-ike-oluwa-mosque-odoyangunshi-epe-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/15-epe-ike-oluwa-mosque-odoyangunshi-epe-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/15-epe-ike-oluwa-mosque-odoyangunshi-epe-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/15-epe-ike-oluwa-mosque-odoyangunshi-epe-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/15-epe-ike-oluwa-mosque-odoyangunshi-epe-1280.webp"
+  },
+  {
+    "slug": "16-epe-green-farm-augustine-university-ilara-epe-lagos",
+    "alt": "Green Farm at Augustine University, Ilara-Epe",
+    "label": "Green Farm at Augustine University, Ilara-Epe",
+    "author": "Addjimedu",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Green_Farm,_Augustine_University,_Ilara_Epe,_Lagos.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 1510,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/16-epe-green-farm-augustine-university-ilara-epe-lagos-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/16-epe-green-farm-augustine-university-ilara-epe-lagos-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/16-epe-green-farm-augustine-university-ilara-epe-lagos-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/16-epe-green-farm-augustine-university-ilara-epe-lagos-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/16-epe-green-farm-augustine-university-ilara-epe-lagos-1280.webp"
+  },
+  {
+    "slug": "17-epe-catholic-church-ibonwon",
+    "alt": "Catholic Church in Ibonwon, Epe",
+    "label": "Catholic Church in Ibonwon, Epe",
+    "author": "Ourlib",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Catholic_Church,_Ibonwon.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 1502,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/17-epe-catholic-church-ibonwon-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/17-epe-catholic-church-ibonwon-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/17-epe-catholic-church-ibonwon-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/17-epe-catholic-church-ibonwon-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/17-epe-catholic-church-ibonwon-1280.webp"
+  },
+  {
+    "slug": "18-epe-epe-road-directions",
+    "alt": "Road directions sign in Epe",
+    "label": "Road directions sign in Epe",
+    "author": "HardeybookolaH",
+    "license": "CC BY-SA 4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Epe_road_directions.jpg",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "width": 1920,
+    "height": 1440,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/18-epe-epe-road-directions-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/18-epe-epe-road-directions-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/18-epe-epe-road-directions-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/18-epe-epe-road-directions-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/18-epe-epe-road-directions-1280.webp"
+  },
+  {
+    "slug": "19-epe-fresh-tomatoes-and-onions-in-epe-market",
+    "alt": "Fresh produce at Epe market",
+    "label": "Fresh produce at Epe market",
+    "author": "Joseph Sly1015",
+    "license": "CC BY-SA 4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Fresh_tomatoes_and_Onions_in_Epe_market.jpg",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "width": 1920,
+    "height": 2560,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/19-epe-fresh-tomatoes-and-onions-in-epe-market-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/19-epe-fresh-tomatoes-and-onions-in-epe-market-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/19-epe-fresh-tomatoes-and-onions-in-epe-market-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/19-epe-fresh-tomatoes-and-onions-in-epe-market-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/19-epe-fresh-tomatoes-and-onions-in-epe-market-1280.webp"
+  },
+  {
+    "slug": "20-epe-lagos-state-university-of-education-epe-campus",
+    "alt": "Lagos State University of Education, Epe campus",
+    "label": "Lagos State University of Education, Epe campus",
+    "author": "Addjimedu",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Lagos_State_University_of_Education,_Epe_Campus.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 845,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/20-epe-lagos-state-university-of-education-epe-campus-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/20-epe-lagos-state-university-of-education-epe-campus-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/20-epe-lagos-state-university-of-education-epe-campus-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/20-epe-lagos-state-university-of-education-epe-campus-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/20-epe-lagos-state-university-of-education-epe-campus-1280.webp"
+  },
+  {
+    "slug": "21-epe-epe-river",
+    "alt": "Epe River",
+    "label": "Epe River",
+    "author": "HardeybookolaH",
+    "license": "CC BY-SA 4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Epe_river.jpg",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "width": 1920,
+    "height": 2560,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/21-epe-epe-river-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/21-epe-epe-river-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/21-epe-epe-river-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/21-epe-epe-river-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/21-epe-epe-river-1280.webp"
+  },
+  {
+    "slug": "22-epe-adodo-car-wash-ibonwon",
+    "alt": "Adodo Car Wash in Ibonwon, Epe",
+    "label": "Adodo Car Wash in Ibonwon, Epe",
+    "author": "Ourlib",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Adodo_Car_Wash,_Ibonwon.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 904,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/22-epe-adodo-car-wash-ibonwon-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/22-epe-adodo-car-wash-ibonwon-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/22-epe-adodo-car-wash-ibonwon-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/22-epe-adodo-car-wash-ibonwon-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/22-epe-adodo-car-wash-ibonwon-1280.webp"
+  },
+  {
+    "slug": "23-epe-epe-maternity-hospital",
+    "alt": "Epe Maternity Hospital",
+    "label": "Epe Maternity Hospital",
+    "author": "Ourlibrary",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:EPE_MATERNITY_HOSPITAL.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 2560,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/23-epe-epe-maternity-hospital-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/23-epe-epe-maternity-hospital-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/23-epe-epe-maternity-hospital-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/23-epe-epe-maternity-hospital-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/23-epe-epe-maternity-hospital-1280.webp"
+  },
+  {
+    "slug": "24-epe-drive-in-roundabout-augustine-university-epe",
+    "alt": "Drive-in roundabout at Augustine University, Epe",
+    "label": "Drive-in roundabout at Augustine University, Epe",
+    "author": "Ourlibrary",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:DRIVE-IN_ROUNDABOUT,_AUGUSTINE_UNIVERSITY,_EPE.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 2560,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/24-epe-drive-in-roundabout-augustine-university-epe-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/24-epe-drive-in-roundabout-augustine-university-epe-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/24-epe-drive-in-roundabout-augustine-university-epe-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/24-epe-drive-in-roundabout-augustine-university-epe-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/24-epe-drive-in-roundabout-augustine-university-epe-1280.webp"
+  },
+  {
+    "slug": "25-epe-adodo-hall-and-event-center-mojoda",
+    "alt": "Adodo Hall and Event Center in Mojoda, Epe",
+    "label": "Adodo Hall and Event Center in Mojoda, Epe",
+    "author": "Ourlib",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Adodo_Hall_and_Event_Center,_Mojoda.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 930,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/25-epe-adodo-hall-and-event-center-mojoda-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/25-epe-adodo-hall-and-event-center-mojoda-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/25-epe-adodo-hall-and-event-center-mojoda-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/25-epe-adodo-hall-and-event-center-mojoda-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/25-epe-adodo-hall-and-event-center-mojoda-1280.webp"
+  },
+  {
+    "slug": "26-epe-epe-waters",
+    "alt": "Waters around Epe",
+    "label": "Waters around Epe",
+    "author": "HardeybookolaH",
+    "license": "CC BY-SA 4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Epe_waters.jpg",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "width": 1920,
+    "height": 2560,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/26-epe-epe-waters-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/26-epe-epe-waters-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/26-epe-epe-waters-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/26-epe-epe-waters-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/26-epe-epe-waters-1280.webp"
+  },
+  {
+    "slug": "27-epe-augustine-university-ilara-epe-basketball-court",
+    "alt": "Basketball court at Augustine University, Ilara-Epe",
+    "label": "Basketball court at Augustine University, Ilara-Epe",
+    "author": "Ourlibrary",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:AUGUSTINE_UNIVERSITY,_ILARA_EPE,_BASKETBALL_COURT.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 1440,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/27-epe-augustine-university-ilara-epe-basketball-court-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/27-epe-augustine-university-ilara-epe-basketball-court-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/27-epe-augustine-university-ilara-epe-basketball-court-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/27-epe-augustine-university-ilara-epe-basketball-court-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/27-epe-augustine-university-ilara-epe-basketball-court-1280.webp"
+  },
+  {
+    "slug": "28-epe-central-moque-mojoda",
+    "alt": "Central mosque in Mojoda, Epe",
+    "label": "Central mosque in Mojoda, Epe",
+    "author": "Ourlib",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Central_Moque,_Mojoda.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 1177,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/28-epe-central-moque-mojoda-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/28-epe-central-moque-mojoda-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/28-epe-central-moque-mojoda-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/28-epe-central-moque-mojoda-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/28-epe-central-moque-mojoda-1280.webp"
+  },
+  {
+    "slug": "29-epe-federal-government-public-water-project-mojoda-epe",
+    "alt": "Public water project in Mojoda, Epe",
+    "label": "Public water project in Mojoda, Epe",
+    "author": "Addjimedu",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:FEDERAL_GOVERNMENT_PUBLIC_WATER_PROJECT,_MOJODA,_EPE.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1477,
+    "height": 2529,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/29-epe-federal-government-public-water-project-mojoda-epe-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/29-epe-federal-government-public-water-project-mojoda-epe-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/29-epe-federal-government-public-water-project-mojoda-epe-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/29-epe-federal-government-public-water-project-mojoda-epe-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/29-epe-federal-government-public-water-project-mojoda-epe-1280.webp"
+  },
+  {
+    "slug": "30-epe-emergency-van-at-general-hospital",
+    "alt": "Emergency van at a general hospital in Epe",
+    "label": "Emergency van at a general hospital in Epe",
+    "author": "Edriiic",
+    "license": "CC BY-SA 4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Emergency_van_at_general_hospital.jpg",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "width": 1920,
+    "height": 2560,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/30-epe-emergency-van-at-general-hospital-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/30-epe-emergency-van-at-general-hospital-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/30-epe-emergency-van-at-general-hospital-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/30-epe-emergency-van-at-general-hospital-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/30-epe-emergency-van-at-general-hospital-1280.webp"
+  },
+  {
+    "slug": "31-epe-ajogun-hotel-mojoda",
+    "alt": "Ajogun Hotel in Mojoda, Epe",
+    "label": "Ajogun Hotel in Mojoda, Epe",
+    "author": "Ourlib",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Ajogun_Hotel,_Mojoda.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 963,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/31-epe-ajogun-hotel-mojoda-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/31-epe-ajogun-hotel-mojoda-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/31-epe-ajogun-hotel-mojoda-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/31-epe-ajogun-hotel-mojoda-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/31-epe-ajogun-hotel-mojoda-1280.webp"
+  },
+  {
+    "slug": "32-epe-iragunshi-central-mosque-epe",
+    "alt": "Iragunshi Central Mosque, Epe",
+    "label": "Iragunshi Central Mosque, Epe",
+    "author": "Addjimedu",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:IRAGUNSHI_CENTRAL_MOSQUE,_EPE.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 1104,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/32-epe-iragunshi-central-mosque-epe-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/32-epe-iragunshi-central-mosque-epe-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/32-epe-iragunshi-central-mosque-epe-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/32-epe-iragunshi-central-mosque-epe-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/32-epe-iragunshi-central-mosque-epe-1280.webp"
+  },
+  {
+    "slug": "33-epe-local-government-primary-school-igboye-epe",
+    "alt": "Local Government Primary School in Igboye, Epe",
+    "label": "Local Government Primary School in Igboye, Epe",
+    "author": "Addjimedu",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:LOCAL_GOVERNMENT_PRIMARY_SCHOOL,_IGBOYE,_EPE.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 978,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/33-epe-local-government-primary-school-igboye-epe-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/33-epe-local-government-primary-school-igboye-epe-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/33-epe-local-government-primary-school-igboye-epe-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/33-epe-local-government-primary-school-igboye-epe-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/33-epe-local-government-primary-school-igboye-epe-1280.webp"
+  },
+  {
+    "slug": "34-epe-fuel-city-filling-station-mojoda",
+    "alt": "Fuel City Filling Station in Mojoda, Epe",
+    "label": "Fuel City Filling Station in Mojoda, Epe",
+    "author": "Ourlib",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Fuel_City_Filling_Station,_Mojoda.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 823,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/34-epe-fuel-city-filling-station-mojoda-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/34-epe-fuel-city-filling-station-mojoda-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/34-epe-fuel-city-filling-station-mojoda-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/34-epe-fuel-city-filling-station-mojoda-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/34-epe-fuel-city-filling-station-mojoda-1280.webp"
+  },
+  {
+    "slug": "35-epe-health-center-augustine-university-ilara-epe",
+    "alt": "Health centre at Augustine University, Ilara-Epe",
+    "label": "Health centre at Augustine University, Ilara-Epe",
+    "author": "Addjimedu",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Health_Center,_Augustine_University,_Ilara-Epe.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 1201,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/35-epe-health-center-augustine-university-ilara-epe-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/35-epe-health-center-augustine-university-ilara-epe-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/35-epe-health-center-augustine-university-ilara-epe-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/35-epe-health-center-augustine-university-ilara-epe-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/35-epe-health-center-augustine-university-ilara-epe-1280.webp"
+  },
+  {
+    "slug": "36-epe-gut-fm-mojoda",
+    "alt": "GUT FM radio station in Mojoda, Epe",
+    "label": "GUT FM radio station in Mojoda, Epe",
+    "author": "Ourlib",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:GUT_FM,_MOJODA.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 1565,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/36-epe-gut-fm-mojoda-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/36-epe-gut-fm-mojoda-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/36-epe-gut-fm-mojoda-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/36-epe-gut-fm-mojoda-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/36-epe-gut-fm-mojoda-1280.webp"
+  },
+  {
+    "slug": "37-epe-divine-tabernacle-igboye-epe",
+    "alt": "Divine Tabernacle in Igboye, Epe",
+    "label": "Divine Tabernacle in Igboye, Epe",
+    "author": "Addjimedu",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:DIVINE_TABERNACLE,_IGBOYE,_EPE.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 792,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/37-epe-divine-tabernacle-igboye-epe-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/37-epe-divine-tabernacle-igboye-epe-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/37-epe-divine-tabernacle-igboye-epe-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/37-epe-divine-tabernacle-igboye-epe-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/37-epe-divine-tabernacle-igboye-epe-1280.webp"
+  },
+  {
+    "slug": "38-epe-general-hospital-epe-walkway",
+    "alt": "Walkway at Epe General Hospital",
+    "label": "Walkway at Epe General Hospital",
+    "author": "Edriiic",
+    "license": "CC BY-SA 4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:General_hospital_Epe_walkway.jpg",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "width": 1920,
+    "height": 2560,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/38-epe-general-hospital-epe-walkway-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/38-epe-general-hospital-epe-walkway-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/38-epe-general-hospital-epe-walkway-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/38-epe-general-hospital-epe-walkway-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/38-epe-general-hospital-epe-walkway-1280.webp"
+  },
+  {
+    "slug": "39-epe-molola-fashion-designer-and-trading-materials-mojoda",
+    "alt": "Molola Fashion Designer and Trading Materials in Mojoda, Epe",
+    "label": "Molola Fashion Designer and Trading Materials in Mojoda, Epe",
+    "author": "Ourlib",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Molola_Fashion_Designer_and_Trading_Materials,_Mojoda.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1429,
+    "height": 1029,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/39-epe-molola-fashion-designer-and-trading-materials-mojoda-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/39-epe-molola-fashion-designer-and-trading-materials-mojoda-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/39-epe-molola-fashion-designer-and-trading-materials-mojoda-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/39-epe-molola-fashion-designer-and-trading-materials-mojoda-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/39-epe-molola-fashion-designer-and-trading-materials-mojoda-1280.webp"
+  },
+  {
+    "slug": "40-epe-augustine-university-ilara-epe-engineering-building",
+    "alt": "Engineering building at Augustine University, Ilara-Epe",
+    "label": "Engineering building at Augustine University, Ilara-Epe",
+    "author": "Ourlibrary",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:AUGUSTINE_UNIVERSITY_ILARA_EPE,_ENGINEERING_BUILDING.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 1440,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/40-epe-augustine-university-ilara-epe-engineering-building-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/40-epe-augustine-university-ilara-epe-engineering-building-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/40-epe-augustine-university-ilara-epe-engineering-building-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/40-epe-augustine-university-ilara-epe-engineering-building-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/40-epe-augustine-university-ilara-epe-engineering-building-1280.webp"
+  },
+  {
+    "slug": "41-epe-lagos-state-fire-station-epe-fire-station",
+    "alt": "Lagos State Fire Station in Epe",
+    "label": "Lagos State Fire Station in Epe",
+    "author": "Ourlibrary",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:LAGOS_STATE_FIRE_STATION,_EPE_FIRE_STATION.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 2560,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/41-epe-lagos-state-fire-station-epe-fire-station-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/41-epe-lagos-state-fire-station-epe-fire-station-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/41-epe-lagos-state-fire-station-epe-fire-station-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/41-epe-lagos-state-fire-station-epe-fire-station-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/41-epe-lagos-state-fire-station-epe-fire-station-1280.webp"
+  },
+  {
+    "slug": "42-epe-okemagba-central-mosque-mojoda-epe",
+    "alt": "Okemagba Central Mosque in Mojoda-Epe",
+    "label": "Okemagba Central Mosque in Mojoda-Epe",
+    "author": "Ourlib",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Okemagba_Central_Mosque,_Mojoda-Epe.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 1151,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/42-epe-okemagba-central-mosque-mojoda-epe-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/42-epe-okemagba-central-mosque-mojoda-epe-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/42-epe-okemagba-central-mosque-mojoda-epe-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/42-epe-okemagba-central-mosque-mojoda-epe-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/42-epe-okemagba-central-mosque-mojoda-epe-1280.webp"
+  },
+  {
+    "slug": "43-epe-water-transportation-in-epe-town",
+    "alt": "Water transportation in Epe town",
+    "label": "Water transportation in Epe town",
+    "author": "Rae frank1",
+    "license": "CC BY-SA 4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Water_transportation_in_epe_town.jpg",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "width": 1920,
+    "height": 1468,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/43-epe-water-transportation-in-epe-town-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/43-epe-water-transportation-in-epe-town-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/43-epe-water-transportation-in-epe-town-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/43-epe-water-transportation-in-epe-town-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/43-epe-water-transportation-in-epe-town-1280.webp"
+  },
+  {
+    "slug": "44-epe-assumption-hall-augustine-university-ilara-epe",
+    "alt": "Assumption Hall at Augustine University, Ilara-Epe",
+    "label": "Assumption Hall at Augustine University, Ilara-Epe",
+    "author": "Addjimedu",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Assumption_Hall,_Augustine_University,_Ilara-Epe.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 1523,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/44-epe-assumption-hall-augustine-university-ilara-epe-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/44-epe-assumption-hall-augustine-university-ilara-epe-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/44-epe-assumption-hall-augustine-university-ilara-epe-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/44-epe-assumption-hall-augustine-university-ilara-epe-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/44-epe-assumption-hall-augustine-university-ilara-epe-1280.webp"
+  },
+  {
+    "slug": "45-epe-solar-bar-iragunshi-epe-lagos-state",
+    "alt": "Solar Bar in Iragunshi, Epe",
+    "label": "Solar Bar in Iragunshi, Epe",
+    "author": "Addjimedu",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:SOLAR_BAR,_IRAGUNSHI,_EPE,_LAGOS_STATE.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 1440,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/45-epe-solar-bar-iragunshi-epe-lagos-state-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/45-epe-solar-bar-iragunshi-epe-lagos-state-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/45-epe-solar-bar-iragunshi-epe-lagos-state-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/45-epe-solar-bar-iragunshi-epe-lagos-state-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/45-epe-solar-bar-iragunshi-epe-lagos-state-1280.webp"
+  },
+  {
+    "slug": "46-epe-augustine-university-ilara-epe-chapel",
+    "alt": "Chapel at Augustine University, Ilara-Epe",
+    "label": "Chapel at Augustine University, Ilara-Epe",
+    "author": "Ourlibrary",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:AUGUSTINE_UNIVERSITY,_ILARA_EPE,_CHAPEL.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 1440,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/46-epe-augustine-university-ilara-epe-chapel-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/46-epe-augustine-university-ilara-epe-chapel-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/46-epe-augustine-university-ilara-epe-chapel-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/46-epe-augustine-university-ilara-epe-chapel-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/46-epe-augustine-university-ilara-epe-chapel-1280.webp"
+  },
+  {
+    "slug": "47-epe-multipurpose-hall-augustine-university-ilara-epe",
+    "alt": "Multipurpose Hall at Augustine University, Ilara-Epe",
+    "label": "Multipurpose Hall at Augustine University, Ilara-Epe",
+    "author": "Addjimedu",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Multipurpose_Hall,_Augustine_University,_Ilara-Epe.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 1060,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/47-epe-multipurpose-hall-augustine-university-ilara-epe-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/47-epe-multipurpose-hall-augustine-university-ilara-epe-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/47-epe-multipurpose-hall-augustine-university-ilara-epe-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/47-epe-multipurpose-hall-augustine-university-ilara-epe-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/47-epe-multipurpose-hall-augustine-university-ilara-epe-1280.webp"
+  },
+  {
+    "slug": "48-epe-heavy-duty-on-epe-briidge",
+    "alt": "Heavy-duty traffic on Epe Bridge",
+    "label": "Heavy-duty traffic on Epe Bridge",
+    "author": "HardeybookolaH",
+    "license": "CC BY-SA 4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Heavy_duty_on_Epe_briidge.jpg",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "width": 1920,
+    "height": 2560,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/48-epe-heavy-duty-on-epe-briidge-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/48-epe-heavy-duty-on-epe-briidge-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/48-epe-heavy-duty-on-epe-briidge-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/48-epe-heavy-duty-on-epe-briidge-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/48-epe-heavy-duty-on-epe-briidge-1280.webp"
+  },
+  {
+    "slug": "49-epe-augustine-university-ilara-epe-faculty-of-law-building",
+    "alt": "Faculty of Law building at Augustine University, Ilara-Epe",
+    "label": "Faculty of Law building at Augustine University, Ilara-Epe",
+    "author": "Ourlibrary",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:AUGUSTINE_UNIVERSITY_ILARA_EPE,_FACULTY_OF_LAW_BUILDING.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 1440,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/49-epe-augustine-university-ilara-epe-faculty-of-law-building-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/49-epe-augustine-university-ilara-epe-faculty-of-law-building-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/49-epe-augustine-university-ilara-epe-faculty-of-law-building-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/49-epe-augustine-university-ilara-epe-faculty-of-law-building-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/49-epe-augustine-university-ilara-epe-faculty-of-law-building-1280.webp"
+  },
+  {
+    "slug": "50-epe-augustine-university-ilara-epe-green-house",
+    "alt": "Greenhouse at Augustine University, Ilara-Epe",
+    "label": "Greenhouse at Augustine University, Ilara-Epe",
+    "author": "Ourlibrary",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:AUGUSTINE_UNIVERSITY_ILARA_EPE,_GREEN_HOUSE.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 2342,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/50-epe-augustine-university-ilara-epe-green-house-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/50-epe-augustine-university-ilara-epe-green-house-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/50-epe-augustine-university-ilara-epe-green-house-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/50-epe-augustine-university-ilara-epe-green-house-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/50-epe-augustine-university-ilara-epe-green-house-1280.webp"
+  },
+  {
+    "slug": "51-epe-sir-michael-otedola-housing-estate-iragunshi-epe",
+    "alt": "Sir Michael Otedola Housing Estate in Iragunshi, Epe",
+    "label": "Sir Michael Otedola Housing Estate in Iragunshi, Epe",
+    "author": "Addjimedu",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:SIR_MICHAEL_OTEDOLA_HOUSING_ESTATE,_IRAGUNSHI,_EPE.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 721,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/51-epe-sir-michael-otedola-housing-estate-iragunshi-epe-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/51-epe-sir-michael-otedola-housing-estate-iragunshi-epe-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/51-epe-sir-michael-otedola-housing-estate-iragunshi-epe-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/51-epe-sir-michael-otedola-housing-estate-iragunshi-epe-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/51-epe-sir-michael-otedola-housing-estate-iragunshi-epe-1280.webp"
+  },
+  {
+    "slug": "52-epe-yaba-college-of-technology-epe-campus",
+    "alt": "Yaba College of Technology, Epe campus",
+    "label": "Yaba College of Technology, Epe campus",
+    "author": "Addjimedu",
+    "license": "CC0 1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:YABA_COLLEGE_OF_TECHNOLOGY,_EPE_CAMPUS.jpg",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "width": 1920,
+    "height": 1238,
+    "avif": {
+      "small": {
+        "src": "/hero/optimized/avif/52-epe-yaba-college-of-technology-epe-campus-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/avif/52-epe-yaba-college-of-technology-epe-campus-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/hero/optimized/webp/52-epe-yaba-college-of-technology-epe-campus-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/hero/optimized/webp/52-epe-yaba-college-of-technology-epe-campus-1280.webp",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/hero/optimized/webp/52-epe-yaba-college-of-technology-epe-campus-1280.webp"
+  }
+]
