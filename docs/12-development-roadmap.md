@@ -160,3 +160,12 @@ Cross-cutting status: the member auth reference layout passes local 320px, 375px
 ## 2026-11-13 23:56 WAT — Tourism photo-reference candidate
 
 A local candidate on `feat/tourism-photo-gallery`, based on `main` `203d7ca`, adds two credited CC BY-SA 4.0 photo references with responsive uncropped image delivery. The gallery is clearly not an approved destination set. Local typecheck, production build, tests and the 320/375/768/1024/1440 Playwright matrix passed; screenshot evidence and exact limitations are documented in [`the Tourism handoff`](handoffs/2026-11-13-tourism-photo-reference.md) and [`the capture README`](screenshots/tourism-photo-gallery/2026-11-13/README.md). The candidate is not yet a PR or deployment. Approved destination content, verified visit details and isolated production-schema workflow tests remain pending/blocked. PR #47's separate docs sync remains open with hosted status unavailable; do not merge either PR without healthy exact-head checks.
+
+
+## 2026-11-14 00:12 WAT — Tourism PR #49 and release baseline
+
+- Remote `main` is `203d7cae923a50dff7633a7ced8e77324bfcc06b`. PR #46 (News redesign) and PR #48 (branded OTP verification) are merged. Vercel's Production alias `epelawa.vercel.app` resolves to deployment `dpl_52yiTmDzdZwjPiXW357TeSwhNfAN` with `READY`/`production` metadata; this was a control-plane check only, not a page or production-data fetch.
+- Tourism PR #49 is open at exact head `4a0964241e41644ee76980ecb889b93b13067097`, based on current remote `main`. Vercel preview deployment `dpl_2KciNaxD2j58RqtLLvvPiJeLv3Zv` is `READY` for that head by metadata; the preview page was not opened or inspected.
+- GitHub reports PRs #47 and #49 as `MERGEABLE`, but both PR check-rollup and combined commit-status calls return HTTP 403 `Resource not accessible by integration`. Neither PR may be merged until exact-head required checks are verifiably healthy.
+- The preserved `feat/full-web-implementation-release` worktree is at `203d7ca` with 15 local modified/untracked paths; its local `main` ref is stale at `9066e56`. Continue from the verified remote base, preserve the changes and review independent fixes as separate PRs. Keep production Supabase read-only until schema reconciliation/backup verification.
+- The 00:12 PR #49 status above refers to feature head `4a0964241e41644ee76980ecb889b93b13067097`; a documentation-only status-sync commit is being prepared and will advance the branch. Recheck GitHub required checks and Vercel metadata for the new exact head before considering any merge.

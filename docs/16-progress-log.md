@@ -274,3 +274,12 @@ The local `feat/tourism-photo-gallery` candidate is based on current code `main`
 ### 2026-11-14 00:00 WAT — Tourism exact-tree gates refreshed
 
 On Node 22.23.4/pnpm 10.34.9, the Tourism candidate passed `pnpm typecheck` (**5/5 tasks**), `pnpm build` (**2/2 tasks**) and `pnpm test` (**185 total: 184 passed, 0 failed, 1 documented PGlite/PostgreSQL-constraint skip**). Build/test used only local dummy Supabase configuration (`https://epe-tourism-fixture.invalid`); no production endpoint or data was contacted. `git diff --check` passed. Temporary dependency symlinks were removed after verification.
+
+
+### 2026-11-14 00:12 WAT — Tourism PR #49 opened; release state refreshed
+
+- Authenticated GitHub CLI confirms remote `main` remains `203d7cae923a50dff7633a7ced8e77324bfcc06b`; PR #46 (News redesign) and #48 (branded email OTP) are merged. Vercel Production alias metadata is `READY`/`production` at deployment `dpl_52yiTmDzdZwjPiXW357TeSwhNfAN`; no application page or production records were fetched in this refresh.
+- [PR #49](https://github.com/epelawa/EPE-LAWA/pull/49) is open at head `4a0964241e41644ee76980ecb889b93b13067097`. Vercel preview `dpl_2KciNaxD2j58RqtLLvvPiJeLv3Zv` is `READY` for the exact head by metadata. The preview page was not opened or inspected.
+- GitHub reports #49 as `MERGEABLE`, but `gh pr checks`, the PR check-rollup query and the commit combined-status API return HTTP 403 `Resource not accessible by integration`; PR #47's check rollup is also inaccessible. No merge was attempted. Wait until required exact-head checks can be verified healthy before any normal squash merge.
+- In `/workspace/EPE-LAWA`, preserved work remains uncommitted on `feat/full-web-implementation-release` at `203d7ca` (15 changed paths); its local `main` ref is stale at `9066e56`. Preserve and review those changes independently, one fix per PR.
+- This 00:12 status snapshot refers to feature head `4a0964241e41644ee76980ecb889b93b13067097`; the documentation-only status-sync commit being prepared will advance PR #49's head. Recheck the new exact head's required checks and Vercel metadata before considering any merge.
