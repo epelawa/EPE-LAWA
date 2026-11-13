@@ -164,3 +164,10 @@ Cross-cutting status: the member auth reference layout passes local 320px, 375px
 - PR [#50](https://github.com/epelawa/EPE-LAWA/pull/50) was open and `MERGEABLE` at code-only head `58148a120212cd3efa6d91a131d891ef1af36638` when checked. The GitHub CLI could not read status checks: `Resource not accessible by integration (node.statusCheckRollup.nodes.0.commit.statusCheckRollup)`. Checks are unknown, not failed. A documentation-only follow-up will advance the PR head; refresh exact-head checks before any merge.
 - Production Supabase was not contacted or written. Schema/migration drift and official stream/playback verification remain blocked. The hosted preview was not inspected; the screenshots are local empty-state QA only.
 - **Resume:** refresh PR #50 status after its documentation follow-up, and merge only through the normal squash path when exact-head required checks are visible and healthy. Keep production database work read-only until schema reconciliation and backup verification are complete.
+
+
+## 2026-11-14 00:41 WAT — Read-only Supabase reconciliation
+
+A read-only Supabase connector comparison found 7 live migration-ledger entries versus 29 local migration files (22 absent from the live ledger). Version `20261102200006` is named `editorial_transitions` live but `staff_transitions` locally; local version `20261107213000` is duplicated by `news_comment_workflow` and `people_achievements`. The 21 live public tables do not include Forum, Business/Marketplace, Community History or Tourism; live `programmes` and `episodes` also lack `publication_status`. PR #50 would therefore fail closed to the Radio unavailable state on the current schema if deployed before reconciliation. Only schema/ledger metadata and aggregate counts were read; no row contents or writes were used.
+
+No backup/restore test was performed: the branch listing showed only a no-data `main` branch, and there is no confirmed isolated restore target. Do not run migrations or create a cost-bearing branch until the duplicate version/name mismatch is resolved and an approved backup/restore path is proven. The hosted preview and Production UI were not inspected.
