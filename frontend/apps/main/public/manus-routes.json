@@ -91,6 +91,9 @@
       "path": "/auth/new-password"
     },
     {
+      "path": "/auth/verify"
+    },
+    {
       "path": "/business-directory/:slug"
     },
     {
