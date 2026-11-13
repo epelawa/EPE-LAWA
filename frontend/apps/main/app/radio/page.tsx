@@ -16,9 +16,9 @@ export default async function RadioPage() {
   try {
     const db = await createClient();
     const [p, s, e] = await Promise.all([
-      db.from("programmes").select("id,name,description").eq("is_active", true).order("name").limit(100),
-      db.from("radio_schedule").select("id,day_of_week,starts_at,ends_at,note,programmes(name)").order("day_of_week").order("starts_at").limit(200),
-      db.from("episodes").select("id,title,description,aired_on,external_url,programmes(name)").not("published_at", "is", null).order("published_at", { ascending: false }).limit(50),
+      db.from("programmes").select("id,name,description").eq("publication_status", "published").eq("is_active", true).order("name").limit(100),
+      db.from("radio_schedule").select("id,day_of_week,starts_at,ends_at,note,programmes!inner(name)").eq("publication_status", "published").eq("programmes.publication_status", "published").eq("programmes.is_active", true).order("day_of_week").order("starts_at").limit(200),
+      db.from("episodes").select("id,title,description,aired_on,external_url,programmes!inner(name)").eq("publication_status", "published").eq("programmes.publication_status", "published").eq("programmes.is_active", true).not("published_at", "is", null).order("published_at", { ascending: false }).limit(50),
     ]);
     if (p.error || s.error || e.error) unavailable = true;
     else { programmes = p.data ?? []; slots = s.data ?? []; episodes = e.data ?? []; }

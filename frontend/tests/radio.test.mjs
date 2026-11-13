@@ -22,7 +22,24 @@ test('public Radio page renders only database-backed programme, schedule and arc
  assert.match(page,/No schedule published yet/);
 	 assert.match(page,/No published episodes available/);
 	 assert.match(page,/<RadioPlayer/);
-	 assert.doesNotMatch(page,/Radio Lagos|azstream\.elektranbroadcast\.com|puzzofme/);
+		 assert.doesNotMatch(page,/Radio Lagos|azstream\.elektranbroadcast\.com|puzzofme/);
+});
+
+test('public Radio reads only published records under published active programmes',async()=>{
+ const page=await read('frontend/apps/main/app/radio/page.tsx');
+ const queryFor=(table)=>page.split('\n').find(line=>line.includes(`from("${table}")`))??'';
+ const programmes=queryFor('programmes');
+ const schedule=queryFor('radio_schedule');
+ const episodes=queryFor('episodes');
+ assert.match(programmes,/\.eq\("publication_status", "published"\)/);
+ assert.match(programmes,/\.eq\("is_active", true\)/);
+ for(const query of [schedule,episodes]){
+  assert.match(query,/programmes!inner\(name\)/);
+  assert.match(query,/\.eq\("publication_status", "published"\)/);
+  assert.match(query,/\.eq\("programmes\.publication_status", "published"\)/);
+  assert.match(query,/\.eq\("programmes\.is_active", true\)/);
+ }
+ assert.match(episodes,/\.not\("published_at", "is", null\)/);
 });
 
 test('Radio admin distinguishes failed data reads from empty catalogues',async()=>{
