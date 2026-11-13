@@ -3,10 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const root = new URL('../apps/main/', import.meta.url);
-
-async function text(path) {
-  return readFile(new URL(path, root), 'utf8');
-}
+async function text(path) { return readFile(new URL(path, root), 'utf8'); }
 
 test('published News articles can be downloaded as safe offline HTML copies', async () => {
   const [status, news, article, download, downloadButton, exporter] = await Promise.all([
@@ -17,7 +14,6 @@ test('published News articles can be downloaded as safe offline HTML copies', as
     text('components/download-app-button.tsx'),
     text('lib/offline-article-copy.mjs'),
   ]);
-
   assert.match(status, /Available on article pages/);
   assert.match(status, /Push notifications are unavailable/i);
   assert.match(status, /will not request notification permission/i);
@@ -35,13 +31,47 @@ test('published News articles can be downloaded as safe offline HTML copies', as
   assert.doesNotMatch(status + downloadButton, /Coming\s+Soon/i);
 });
 
+test('article body comes only from the RLS-visible current published version, not a missing view column', async () => {
+  const [article, migration] = await Promise.all([
+    text('app/news/[slug]/page.tsx'),
+    readFile(new URL('../../../backend/supabase/migrations/20261102190002_editorial_core.sql', root), 'utf8'),
+  ]);
+  assert.match(article, /from\("published_articles"\)/);
+  assert.match(article, /from\("article_versions"\)\.select\("body"\)/);
+  assert.match(article, /\.eq\("article_id", article\.id\)/);
+  assert.doesNotMatch(article, /published_articles"\)\.select\([^)]*body/);
+  assert.match(migration, /using\s*\([\s\S]*?a\.published_version_id\s*=\s*article_versions\.id/);
+});
+
+test('News metadata, share actions and related cards use the canonical slug route', async () => {
+  const [article, share, urls, readingTime] = await Promise.all([
+    text('app/news/[slug]/page.tsx'),
+    text('components/article-share-actions.tsx'),
+    text('lib/news-urls.ts'),
+    text('lib/news-reading-time.ts'),
+  ]);
+  assert.match(article, /canonical: articleUrl/);
+  assert.match(article, /url: articleUrl/);
+  assert.match(article, /publicNewsArticleUrl\(article\.slug\)/);
+  assert.match(article, /newsArticlePath\(item\.slug\)/);
+  assert.match(article, /ArticleShareActions title=\{article\.title\} url=\{articleUrl\}/);
+  assert.match(article, /estimateReadMinutes\(body\)/);
+  assert.match(article, /Related stories/);
+  assert.match(urls, /encodeURIComponent\(slug\)/);
+  assert.match(urls, /absoluteUrl\(newsArticlePath\(slug\)\)/);
+  assert.match(share, /navigator\.share\(\{ title, url \}\)/);
+  assert.match(share, /navigator\.clipboard\?\.writeText/);
+  assert.match(share, /navigator\.clipboard\.writeText\(url\)/);
+  assert.match(share, /Public article URL/);
+  assert.doesNotMatch(article, /view_count|views_total|article\.id\}\s*\}\s*<\/a>/i);
+});
+
 test('unconfigured web push never asks permission and contains no fabricated VAPID key', async () => {
   const [vapid, prompt, layout] = await Promise.all([
     text('lib/vapid.ts'),
     text('components/notification-prompt.tsx'),
     text('app/layout.tsx'),
   ]);
-
   assert.match(vapid, /NEXT_PUBLIC_VAPID_PUBLIC_KEY/);
   assert.match(vapid, /NEXT_PUBLIC_WEB_PUSH_ENABLED/);
   assert.doesNotMatch(vapid, /BGp7Y1q7/);

@@ -1,19 +1,19 @@
 # EPE-LAWA — Implementation Tracker
 
-**Last checked:** 2026-11-13 21:42 WAT.
+**Last checked:** 2026-11-13 22:20 WAT.
 
-**Production code baseline:** `main` at `9066e56d1c64b9882f8d01d297d06eac7f2177f8` (PR #44 merge; includes the 52-photo homepage gallery).
+**Production code baseline:** `main` at `d39acdd703321822d470ebc93c33243786c5f037` (PR #45 merge; includes PR #44’s 52-photo homepage gallery and PR #45’s system-following theme menu).
 **Scope:** The eight client-approved web modules plus cross-cutting member auth, staff access, publishing, privacy, accessibility, email and audit. Native mobile remains out of scope.
 
 A route existing, a preview building, or a button being visible is not proof that a complete workflow works. Mark a capability complete only with named current evidence.
 
-## Current release snapshot — 2026-11-13 21:42 WAT
+## Current release snapshot — 2026-11-13 22:20 WAT
 
-- PR #44 is **MERGED** normally. Current `main` is `9066e56d1c64b9882f8d01d297d06eac7f2177f8`; Vercel Production deployment `dpl_7wUy2nxbqD2UmHfNec9yfa8rzhuZ` is **READY / PROMOTED** from that exact SHA. The canonical homepage returned HTTP 200, and its HTML contains the post-image hero location label “Epe · Lagos State”.
-- At refresh time there were no open PRs. The homepage system-theme change is locally verified on `feat/homepage-system-theme` but is not yet a PR/merge. Open a focused PR after the screenshot, QA and full owner checklist are in the branch; attempt only a normal merge if exact-head checks and GitHub state are healthy.
-- The preserved `feat/full-web-implementation-release` worktree is rebased onto current `main` and still has staged/untracked changes for OTP verification, route/docs updates, form copy/validation, staff error screens and tourism photographs. None of that is on `main`; review and split safely before merging.
-- The uncommitted News-reference worktree `/workspace/EPE-LAWA-news` is still based on pre-PR-44 SHA `2ab88be1b8ee644e9237ff732af545f1d4976cb9`. Rebase it onto current `main` before exact gates or PR creation.
-- The full owner-requested Done/In-progress/Blocked recap is [`docs/17-owner-requirements-checklist.md`](17-owner-requirements-checklist.md). Theme screenshots and local verification are in `docs/screenshots/pr45-system-theme/`.
+- PRs #44 and #45 are **MERGED** normally. Current `main` is `d39acdd703321822d470ebc93c33243786c5f037`; Vercel Production deployment `dpl_HQPPJWFHfLTftzMoAWiXfcceC7b2` is **READY** from that exact SHA. The owner-requested “Epe · Lagos State” post-hero location line remains in the homepage baseline.
+- PR #45’s system-theme drawer change is merged; its responsive QA and capture notes remain in `docs/screenshots/pr45-system-theme/`.
+- The preserved `feat/full-web-implementation-release` worktree remains rebased onto current `main` with staged/untracked OTP verification, route/docs updates, form copy/validation, staff error screens and tourism photographs. None of that work is included in the separate News candidate.
+- `/workspace/EPE-LAWA-news` is now based on current `main` and has passed local workspace gates plus production-mode Playwright for the News listing/article at 320/375/768/1024/1440 CSS px. It is still uncommitted/unmerged; PR creation and hosted status are pending.
+- The live News route was checked read-only and still shows the legacy honest empty state. The candidate’s screenshots use synthetic, loopback-only fixtures; no News content was written to Production. Details and captures: `docs/screenshots/news-reference-layout/2026-11-13/README.md`.
 - Production Supabase schema, migration ledger, settings, roles and user data remain untouched. Historical migration drift remains a blocker; no hosted Supabase, mail delivery or provider workflow is claimed as tested.
 
 ## Review PRs — snapshot before PR #30 merge (09:16 WAT)
@@ -145,3 +145,8 @@ The local `feat/auth-reference-redesign` tree now includes the PR #31 merge on `
 Nine local production-build captures cover `/login`, `/auth`, and `/forgot-password` at 320×568, 375×812, and 1440×900. All nine checks passed for visible auth/card/heading, card bounds, no horizontal or vertical overflow, and no homepage-only notice on auth routes. The Google option is visibly disabled and labelled “Coming Soon”; this is UI evidence, not proof that OAuth or transactional email delivery is configured. Captures and setup notes: `docs/screenshots/pr24-auth-reference/`.
 
 At this snapshot the local sync is verified but has not yet been committed or pushed. The remote PR still reports its old head as DIRTY/CONFLICTING; GitHub status-check details are inaccessible (403). Do not treat the old preview as evidence for this sync. Next: commit with the requested author/committer identity, push normally, verify the exact new Vercel preview and refreshed GitHub mergeability, then attempt only a normal merge if healthy. PR #29 remains dependent on PR #24; PR #32 remains open for the module-workflow sync. Production Supabase schema, migrations, Auth settings, roles and user data remain untouched.
+
+
+## 2026-11-13 22:20 WAT — News responsive candidate evidence
+
+The separate News branch passed workspace typecheck (**5/5 tasks**), production builds (**2/2 app builds**), and the full test suite (**175 passed, 0 failed, 1 documented PGlite/PostgreSQL-constraint skip**). Production-mode Chromium Playwright covered both `/news` and `/news/<slug>` at **320/375/768/1024/1440 CSS px**; it checked zero horizontal overflow, visible headings and controls, search/category state, canonical metadata and a real clipboard write of the canonical slug URL. There were zero page errors, console errors or external requests. Ten local fixture screenshots and the verification notes are in [`docs/screenshots/news-reference-layout/2026-11-13/README.md`](screenshots/news-reference-layout/2026-11-13/README.md). Synthetic story data stayed inside a localhost HTTPS mock and is clearly labelled; the production News page remains the legacy empty state. Commit/push and a separate PR are the next actions; there is no hosted CI or News deployment claim yet.
