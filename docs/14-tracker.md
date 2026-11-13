@@ -1,19 +1,19 @@
 # EPE-LAWA — Implementation Tracker
 
-**Last checked:** 2026-11-13 22:20 WAT.
+**Last checked:** 2026-11-13 22:33 WAT.
 
-**Production code baseline:** `main` at `d39acdd703321822d470ebc93c33243786c5f037` (PR #45 merge; includes PR #44’s 52-photo homepage gallery and PR #45’s system-following theme menu).
+**Production code baseline:** `main` at `16ad8e70448b4b48e35759a4cf0c2317f1d6b3f5` (PR #46 merge; includes PR #44’s 52-photo homepage gallery and PR #45’s system-following theme menu).
 **Scope:** The eight client-approved web modules plus cross-cutting member auth, staff access, publishing, privacy, accessibility, email and audit. Native mobile remains out of scope.
 
 A route existing, a preview building, or a button being visible is not proof that a complete workflow works. Mark a capability complete only with named current evidence.
 
-## Current release snapshot — 2026-11-13 22:20 WAT
+## Current release snapshot — 2026-11-13 22:33 WAT
 
-- PRs #44 and #45 are **MERGED** normally. Current `main` is `d39acdd703321822d470ebc93c33243786c5f037`; Vercel Production deployment `dpl_HQPPJWFHfLTftzMoAWiXfcceC7b2` is **READY** from that exact SHA. The owner-requested “Epe · Lagos State” post-hero location line remains in the homepage baseline.
+- PRs #44, #45 and #46 are **MERGED** normally. Current `main` is `16ad8e70448b4b48e35759a4cf0c2317f1d6b3f5`; Vercel Production deployment `dpl_DMtx6FdvxM4VsXiqVbvDWJdcj3aZ` is **READY / PROMOTED** from that exact SHA. A fresh read-only fetch of [the canonical News page](https://epelawa.vercel.app/news) confirms the redesigned `Latest News` page and honest empty state. The owner-requested “Epe · Lagos State” post-hero line remains in the homepage baseline.
 - PR #45’s system-theme drawer change is merged; its responsive QA and capture notes remain in `docs/screenshots/pr45-system-theme/`.
-- The preserved `feat/full-web-implementation-release` worktree remains rebased onto current `main` with staged/untracked OTP verification, route/docs updates, form copy/validation, staff error screens and tourism photographs. None of that work is included in the separate News candidate.
-- `/workspace/EPE-LAWA-news` is now based on current `main` and has passed local workspace gates plus production-mode Playwright for the News listing/article at 320/375/768/1024/1440 CSS px. It is still uncommitted/unmerged; PR creation and hosted status are pending.
-- The live News route was checked read-only and still shows the legacy honest empty state. The candidate’s screenshots use synthetic, loopback-only fixtures; no News content was written to Production. Details and captures: `docs/screenshots/news-reference-layout/2026-11-13/README.md`.
+- The preserved `feat/full-web-implementation-release` worktree has been rebased onto current `main` `16ad8e7`. Its staged/untracked OTP verification, route/docs updates, form copy/validation, staff error screens and tourism photographs remain preserved and unmerged.
+- PR #46’s News redesign is on Production. Local workspace gates and production-mode Playwright covered the News listing/article at 320/375/768/1024/1440 CSS px; ten screenshots use clearly labelled synthetic, loopback-only fixtures. No synthetic story was written to Production. Evidence: `docs/screenshots/news-reference-layout/2026-11-13/README.md`.
+- The canonical newsroom currently has no published stories, so no real article was available for live route/RLS verification. The Vercel PR/immutable deployment URLs require SSO and were not visually inspected; the public production alias was fetched successfully. GitHub individual check endpoints are inaccessible (403), though PR #46 reported `CLEAN`/`MERGEABLE` at normal merge time.
 - Production Supabase schema, migration ledger, settings, roles and user data remain untouched. Historical migration drift remains a blocker; no hosted Supabase, mail delivery or provider workflow is claimed as tested.
 
 ## Review PRs — snapshot before PR #30 merge (09:16 WAT)
