@@ -194,11 +194,8 @@ test('homepage hero carousel is capped, accessible, and resource-aware', async (
   assert.match(source, /HERO_SLIDES\.slice\(0, MAX_HERO_SLIDES\)/);
   assert.match(source, /aria-roledescription="carousel"/);
   assert.match(source, /aria-label="EPE LAWA hero imagery"/);
-  assert.match(source, /aria-label="Previous hero image"/);
-  assert.match(source, /aria-label="Next hero image"/);
-  assert.match(source, /ArrowRight/);
-  assert.match(source, /onTouchStart/);
-  assert.match(source, /onTouchEnd/);
+  assert.doesNotMatch(source, /Previous hero image|Next hero image|home-hero__carousel-dots|<figcaption/);
+  assert.match(source, /key=\{slide\.src\}/);
   assert.match(source, /prefers-reduced-motion/);
   assert.match(source, /saveData/);
   assert.match(source, /slow-2g/);

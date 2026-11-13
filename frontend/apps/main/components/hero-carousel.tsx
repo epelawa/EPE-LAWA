@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { ArrowRightIcon, ArrowUpRightIcon } from "./icons";
+import { useEffect, useState } from "react";
 
 export type HeroSlide = {
   src: string;
@@ -110,7 +109,6 @@ export default function HeroCarousel() {
   const slides = HERO_SLIDES.slice(0, MAX_HERO_SLIDES);
   const [index, setIndex] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(false);
-  const touchStart = useRef<number | null>(null);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -128,44 +126,16 @@ export default function HeroCarousel() {
 
   if (!slides.length) return null;
   const slide = slides[index] ?? slides[0];
-  const move = (delta: number) => setIndex((current) => (current + delta + slides.length) % slides.length);
 
   return (
     <figure
       className="home-hero__art home-hero__art--logo home-hero__carousel"
       aria-roledescription="carousel"
       aria-label="EPE LAWA hero imagery"
-      onTouchStart={(event) => { touchStart.current = event.changedTouches[0]?.clientX ?? null; }}
-      onTouchEnd={(event) => {
-        if (touchStart.current === null || slides.length < 2) return;
-        const distance = (event.changedTouches[0]?.clientX ?? touchStart.current) - touchStart.current;
-        if (Math.abs(distance) > 48) move(distance < 0 ? 1 : -1);
-        touchStart.current = null;
-      }}
-      onKeyDown={(event) => {
-        if (slides.length < 2) return;
-        if (event.key === "ArrowLeft") { event.preventDefault(); move(-1); }
-        if (event.key === "ArrowRight") { event.preventDefault(); move(1); }
-      }}
-      tabIndex={slides.length > 1 ? 0 : undefined}
     >
       <div className="home-hero__carousel-stage" aria-live={reducedMotion ? "polite" : "off"}>
-        <img src={slide.src} alt={slide.alt} width={slide.width} height={slide.height} fetchPriority={index === 0 ? "high" : "auto"} loading={index === 0 ? "eager" : "lazy"} />
+        <img key={slide.src} src={slide.src} alt={slide.alt} width={slide.width} height={slide.height} fetchPriority={index === 0 ? "high" : "auto"} loading={index === 0 ? "eager" : "lazy"} />
       </div>
-      <figcaption>
-        <span><strong>{slide.label}</strong>{slide.credit ? <small>{slide.credit}</small> : null}</span>
-        <ArrowUpRightIcon size={20} aria-hidden="true" />
-      </figcaption>
-      {slides.length > 1 ? <>
-        <div className="home-hero__carousel-controls">
-          <button type="button" className="home-hero__carousel-control" onClick={() => move(-1)} aria-label="Previous hero image"><ArrowRightIcon size={18} className="rotate-180" aria-hidden="true" /></button>
-          <span aria-live="polite" className="sr-only">Slide {index + 1} of {slides.length}: {slide.label}</span>
-          <button type="button" className="home-hero__carousel-control" onClick={() => move(1)} aria-label="Next hero image"><ArrowRightIcon size={18} aria-hidden="true" /></button>
-        </div>
-        <div className="home-hero__carousel-dots" role="tablist" aria-label="Choose hero image">
-          {slides.map((item, itemIndex) => <button key={item.src} type="button" role="tab" aria-selected={itemIndex === index} aria-label={`Show hero image ${itemIndex + 1}: ${item.label}`} className={itemIndex === index ? "is-active" : ""} onClick={() => setIndex(itemIndex)} />)}
-        </div>
-      </> : null}
     </figure>
   );
 }
