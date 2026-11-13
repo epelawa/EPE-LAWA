@@ -15,7 +15,7 @@ export default function ResendVerificationForm() {
         <small id="verification-email-help">Use the address you entered when signing up.</small>
       </div>
       {state.status !== "idle" ? <p className={`auth-feedback ${state.status === "error" ? "auth-error" : "auth-notice"}`} role={state.status === "error" ? "alert" : "status"}>{state.message}</p> : null}
-      <button className="auth-submit" type="submit" disabled={pending}>{pending ? "Requesting link…" : "Request a fresh verification email"}</button>
+      <button className="auth-submit" type="submit" disabled={pending}>{pending ? "Requesting email…" : "Request a fresh verification email"}</button>
     </form>
   );
 }

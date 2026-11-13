@@ -3,8 +3,9 @@
 import { redirect } from "next/navigation";
 import { createClient } from "../../lib/supabase";
 import { siteUrl } from "../../lib/site";
+import { handleResendSignupVerification, handleVerifyEmailOtp, type AuthState } from "../../lib/auth-otp";
 
-export type AuthState = { status: "idle" | "error" | "notice"; message: string };
+export type { AuthState } from "../../lib/auth-otp";
 const genericError = "We couldn’t complete that request. Check your details and try again.";
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 function field(data: FormData, key: string): string {
@@ -36,7 +37,7 @@ export async function signUp(_state: AuthState, data: FormData): Promise<AuthSta
       },
     });
     if (error) return { status: "error", message: genericError };
-    return { status: "notice", message: "Your account request was received. If email verification is enabled, verify your address using the message from EPE LAWA before signing in. Email delivery depends on your Supabase SMTP configuration." };
+    return { status: "notice", message: "Your account request was received. If email verification is required, use the code or secure link in the EPE LAWA confirmation email before signing in. Delivery depends on this project’s configured email provider." };
   } catch { return { status: "error", message: genericError }; }
 }
 
@@ -63,24 +64,12 @@ export async function requestPasswordReset(_state: AuthState, data: FormData): P
     await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: authCallbackUrl("/auth/new-password"),
     });
-    return { status: "notice", message: "If an account exists for that address, password-reset instructions will be sent. Delivery requires working SMTP configuration." };
+    return { status: "notice", message: "If an account exists for that address, password-reset instructions may be sent. Delivery depends on this project’s configured email provider." };
   } catch { return { status: "error", message: genericError }; }
 }
 
 export async function resendSignupVerification(_state: AuthState, data: FormData): Promise<AuthState> {
-  const email = field(data, "email").toLowerCase();
-  if (!validEmail(email)) return { status: "error", message: "Enter a valid email address." };
-  try {
-    const supabase = await createClient();
-    await supabase.auth.resend({
-      type: "signup",
-      email,
-      options: { emailRedirectTo: authCallbackUrl("/auth/complete") },
-    });
-    return { status: "notice", message: "If an account is awaiting verification, Supabase Auth may send a fresh email. Delivery depends on this project’s email configuration." };
-  } catch {
-    return { status: "error", message: "We couldn’t request a fresh link right now. Try again later." };
-  }
+  return handleResendSignupVerification(data, createClient, authCallbackUrl("/auth/complete"));
 }
 
 export async function updatePassword(_state: AuthState, data: FormData): Promise<AuthState> {
@@ -97,6 +86,12 @@ export async function updatePassword(_state: AuthState, data: FormData): Promise
     if (error && typeof error === "object" && "digest" in error) throw error;
     return { status: "error", message: genericError };
   }
+}
+
+export async function verifyEmailOtp(_state: AuthState, data: FormData): Promise<AuthState> {
+  const outcome = await handleVerifyEmailOtp(data, createClient, authCallbackUrl("/auth/complete"));
+  if ("redirectTo" in outcome) redirect(outcome.redirectTo);
+  return outcome;
 }
 
 export async function signOut() {
