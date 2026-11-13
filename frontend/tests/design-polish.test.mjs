@@ -23,8 +23,8 @@ test("navbar has a distinct theme switch, concise brand lockup, and outside-clos
   assert.match(header, /<BrandLockup size=\{30\} \/>/);
   assert.doesNotMatch(header + brand + staffBrand + footer, /Epe Division|brand__place|brand-lockup__tagline|showPlace/);
   assert.match(home, /<HeroCarousel\s*\/>/, "homepage logo hero exists");
-  assert.match(heroCarousel, /src: "\/brand-logo\.png"/);
-  assert.match(heroCarousel, /alt: "EPE LAWA official logo"/);
+  assert.equal((heroCarousel.match(/src: "\/hero\//g) || []).length, 10);
+  assert.match(heroCarousel, /Wikimedia Commons/);
   assert.doesNotMatch(heroCarousel, /Epe Division|The voice of Epe Division/i);
   assert.match(header, /A shared home for everyone\./);
   assert.match(header, /addEventListener\("pointerdown", onOutsideDrawer\)/);
