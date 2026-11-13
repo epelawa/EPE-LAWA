@@ -1,8 +1,8 @@
 # Member email verification and recovery — release handoff
 
-**Checkpoint:** 2026-11-13 22:58 WAT
+**Checkpoint:** 2026-11-13 23:01 WAT
 **Branch:** `feat/member-email-otp`, based on merged `main` `16ad8e70448b4b48e35759a4cf0c2317f1d6b3f5` (News PR #46).
-**State:** Exact-tree local gates passed; PR not yet opened, merged or deployed. The preserved full-web worktree at `/workspace/EPE-LAWA` remains untouched by this focused branch.
+**State:** [PR #48](https://github.com/epelawa/EPE-LAWA/pull/48) is open, not merged or deployed. Its initial Auth head is `ab985e2f4dc02a83598042294548802bcc6dd860`. GitHub reports `MERGEABLE` but `UNSTABLE`; the check query returns 403. The exact Vercel preview is `READY` at [this URL](https://epe-lawa-ursid10e4-epe-lawa.vercel.app/auth/verify), but fetching it shows the Vercel login page, so its UI was not inspected. The preserved full-web worktree at `/workspace/EPE-LAWA` remains untouched by this focused branch.
 
 ## Done in this candidate
 
@@ -22,7 +22,7 @@
 
 ## Pending and blocked
 
-- **Pending:** Open a focused PR, refresh exact-head GitHub/Vercel state, and merge only through the normal path after a healthy gate. Re-run checks on the resulting `main` and verify the exact Production deployment.
+- **Pending:** PR #48 is open. Refresh the latest exact-head GitHub/Vercel state and merge only through the normal path after a healthy gate; do not bypass the branch gate while GitHub reports `UNSTABLE` or status details are unavailable. Re-run checks on the resulting `main` and verify the exact Production deployment.
 - **Blocked:** No authenticated-sender email test has been run. A read-only Supabase Auth config inspection on 2026-11-13 found `mailer_otp_length=8`, `mailer_otp_exp=3600` seconds, `rate_limit_email_sent=2`, `rate_limit_otp=30`, `rate_limit_verify=30`, `mailer_autoconfirm=false`, `security_sb_forwarded_for_enabled=false`, and no custom SMTP host. Supabase documents a low-volume limit for its built-in email provider; sender-domain authentication and SPF/DKIM/DMARC are not evidenced. See [Supabase Auth rate limits](https://supabase.com/docs/guides/auth/rate-limits) and [email templates](https://supabase.com/docs/guides/auth/auth-email-templates).
 - **Security follow-up:** The current server-side Supabase client uses the public project key and does not forward a trusted per-user IP. With forwarded-for disabled, IP-based limits may aggregate at the hosting egress. The current remote limits are recorded, but do not prove adequate production abuse controls for the expected 1,000–5,000 daily users. Review safe, low-cost login/form throttling and abuse tracing before launch.
 - **Provider/configuration hold:** The local template is not evidence that the hosted Supabase template has been updated. Do not claim email delivery, edit production Auth settings, or send a real email until a safely isolated recipient test and the required owner approval are in place. Production schema/Auth/provider settings and user data were not changed during this work.
@@ -30,7 +30,7 @@
 
 ## Resume here
 
-1. Finish this focused OTP PR with the normal review gate; preserve the untouched `feat/full-web-implementation-release` worktree and split any other completed fix into its own PR.
+1. Refresh PR #48's latest exact-head status and wait for a healthy normal review gate; preserve the untouched `feat/full-web-implementation-release` worktree and split any other completed fix into its own PR.
 2. After merge, run the exact-tree checks again and inspect the exact `main`/Production deployment. If GitHub check details remain inaccessible, do not claim hosted CI is healthy or bypass the merge gate.
 3. Only after owner-approved, isolated email delivery is available, verify both the OTP code and callback link end to end; confirm the deployed email template and authenticated sender separately from this repository change.
 4. Continue the eight-module gap sequence in the owner checklist. Priority unresolved items include News offline caching/staff revision history, History correction/takedown, Forum write throttling, owner product management, and Who-is-Who correction/removal; provider- or content-dependent Maps, Tourism, Radio, payment and profile work must remain honestly unavailable until verified.
