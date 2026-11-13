@@ -2,11 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "../../lib/supabase";
 import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading } from "../../components/design-system";
+import { pageMetadata } from "../../lib/metadata";
 
 type Category = { id: string; slug: string; name: string; description: string | null; rules: string | null };
 type Thread = { id: string; category_id: string; slug: string; title: string; post_count: number; last_activity_at: string | null };
 
 type SearchParams = { forum_error?: string | string[] };
+
+export const metadata: Metadata = pageMetadata({ title: "Forum", description: "A moderated space for Epe community discussions, questions and replies.", path: "/forum" });
 
 export default async function ForumPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const params = await searchParams;
