@@ -1,7 +1,8 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState, type FormEvent } from "react";
-import { requestPasswordReset, signIn, signUp, updatePassword, type AuthState } from "./actions";
+import Link from "next/link";
+import { requestPasswordReset, signIn, signUp, updatePassword, verifyEmailOtp, type AuthState } from "./actions";
 
 const initial: AuthState = { status: "idle", message: "" };
 
@@ -163,7 +164,12 @@ export function SignUpForm() {
   const [state, action, pending] = useActionState(signUp, initial);
   const flow = useAuthSteps(4);
   if (state.status === "notice") {
-    return <ConfirmationPanel title="Account request received" message={state.message} progress="Next step · Email verification" />;
+    return (
+      <>
+        <ConfirmationPanel title="Account request received" message={state.message} progress="Next step · Email verification" />
+        <p className="auth-footnote">Your verification email includes a one-time code and a secure link. <Link href="/auth/verify">Enter the code here</Link>, or open the link to continue.</p>
+      </>
+    );
   }
 
   return (
@@ -258,6 +264,28 @@ export function NewPasswordForm() {
       </div>
       <Feedback state={state} />
       <button className="auth-submit" type="submit" disabled={pending}>{pending ? "Updating…" : "Update password"}</button>
+    </form>
+  );
+}
+
+export function VerificationForm() {
+  const [state, action, pending] = useActionState(verifyEmailOtp, initial);
+  return (
+    <form action={action} className="auth-form" aria-busy={pending}>
+      <div className="auth-field">
+        <label htmlFor="verify-email">Email address</label>
+        <input id="verify-email" name="email" type="email" autoComplete="email" maxLength={254} required />
+      </div>
+      <div className="auth-field">
+        <label htmlFor="verify-token">Verification code</label>
+        <input id="verify-token" name="token" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6,8}" maxLength={8} required aria-describedby="verify-token-help" />
+        <small id="verify-token-help">Enter the code from your EPE LAWA verification email.</small>
+      </div>
+      <Feedback state={state} />
+      <div className="auth-step-actions">
+        <button className="auth-submit" type="submit" name="intent" value="verify" disabled={pending}>{pending ? "Working…" : "Verify email"}</button>
+        <button className="btn-secondary" type="submit" name="intent" value="resend" formNoValidate disabled={pending}>Resend verification email</button>
+      </div>
     </form>
   );
 }

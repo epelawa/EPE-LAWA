@@ -1,20 +1,21 @@
 # EPE-LAWA — Implementation Tracker
 
-**Last checked:** 2026-11-13 22:33 WAT.
+**Last checked:** 2026-11-13 23:48 WAT.
 
-**Production code baseline:** `main` at `16ad8e70448b4b48e35759a4cf0c2317f1d6b3f5` (PR #46 merge; includes PR #44’s 52-photo homepage gallery and PR #45’s system-following theme menu).
+**Production code baseline:** `main` at `203d7cae923a50dff7633a7ced8e77324bfcc06b` (normal PR #48 merge; includes PRs #44–#46, the 52-photo homepage gallery, system theme and Newsroom).
 **Scope:** The eight client-approved web modules plus cross-cutting member auth, staff access, publishing, privacy, accessibility, email and audit. Native mobile remains out of scope.
 
 A route existing, a preview building, or a button being visible is not proof that a complete workflow works. Mark a capability complete only with named current evidence.
 
-## Current release snapshot — 2026-11-13 22:33 WAT
+## Current release snapshot — 2026-11-13 23:48 WAT
 
-- PRs #44, #45 and #46 are **MERGED** normally. Current `main` is `16ad8e70448b4b48e35759a4cf0c2317f1d6b3f5`; Vercel Production deployment `dpl_DMtx6FdvxM4VsXiqVbvDWJdcj3aZ` is **READY / PROMOTED** from that exact SHA. A fresh read-only fetch of [the canonical News page](https://epelawa.vercel.app/news) confirms the redesigned `Latest News` page and honest empty state. The owner-requested “Epe · Lagos State” post-hero line remains in the homepage baseline.
+- PRs #44, #45, #46 and #48 are **MERGED** normally. Current `main` is `203d7cae923a50dff7633a7ced8e77324bfcc06b`; Vercel Production deployment `dpl_52yiTmDzdZwjPiXW357TeSwhNfAN` is **READY** for that exact production-target SHA. The public `/auth/verify` route displays the branded code-entry screen. No email or verification code was used; hosted template configuration, sender authentication and actual delivery remain unverified. The canonical News page still shows an honest empty state; no synthetic story was written to Production. The owner-requested “Epe · Lagos State” post-hero line remains in the homepage baseline.
 - PR #45’s system-theme drawer change is merged; its responsive QA and capture notes remain in `docs/screenshots/pr45-system-theme/`.
-- The preserved `feat/full-web-implementation-release` worktree has been rebased onto current `main` `16ad8e7`. Its staged/untracked OTP verification, route/docs updates, form copy/validation, staff error screens and tourism photographs remain preserved and unmerged.
+- The preserved `feat/full-web-implementation-release` worktree is rebased onto `203d7ca`. All 39 pre-rebase tracked/untracked items were byte-verified as restored work or identical content already in `main`; the safety stash remains intact. Remaining form/copy, staff error-screen, route-inventory and Tourism asset changes are still uncommitted.
 - PR #46’s News redesign is on Production. Local workspace gates and production-mode Playwright covered the News listing/article at 320/375/768/1024/1440 CSS px; ten screenshots use clearly labelled synthetic, loopback-only fixtures. No synthetic story was written to Production. Evidence: `docs/screenshots/news-reference-layout/2026-11-13/README.md`.
-- The canonical newsroom currently has no published stories, so no real article was available for live route/RLS verification. The Vercel PR/immutable deployment URLs require SSO and were not visually inspected; the public production alias was fetched successfully. GitHub individual check endpoints are inaccessible (403), though PR #46 reported `CLEAN`/`MERGEABLE` at normal merge time.
-- Production Supabase schema, migration ledger, settings, roles and user data remain untouched. Historical migration drift remains a blocker; no hosted Supabase, mail delivery or provider workflow is claimed as tested.
+- Local Tourism photo-reference candidate `feat/tourism-photo-gallery` is based on `203d7ca`; typecheck, build, tests and local Playwright at 320/375/768/1024/1440 passed. Its two credited Wikimedia photos are references only, not approved destinations; no Tourism PR or Production change exists yet. Evidence is in `docs/screenshots/tourism-photo-gallery/2026-11-13/`.
+- PR #47 is a docs-only sync. Its remote head `f3a87cb` reported `CLEAN`/`MERGEABLE` before this update, while the authenticated CLI could not retrieve individual check/status details (403). The local branch now includes current main `203d7ca` and these status changes; push normally, refresh the exact head and do not merge without a visible healthy gate.
+- Production Supabase schema, migration ledger, Auth settings, roles and user data remain untouched. Historical migration drift remains a blocker; actual email delivery, sender authentication, Paystack and live Maps-provider workflows are not claimed as tested.
 
 ## Review PRs — snapshot before PR #30 merge (09:16 WAT)
 
