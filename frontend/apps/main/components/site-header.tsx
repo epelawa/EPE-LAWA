@@ -92,14 +92,19 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
           <li><details className="nav-more" ref={moreRef}><summary className="nav-link">More <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></summary><ul className="nav-more__list" aria-label="More sections">{more.map(item => <li key={item.href}><Link className="nav-link" href={item.href} aria-current={current(pathname,item.href) ? "page" : undefined}>{item.label}</Link></li>)}</ul></details></li>
         </ul>
       </nav>
-      <div className="masthead-actions"><ThemeToggle /><Link className="header-signin" href="/login">Sign in</Link><Link className="btn-primary header-cta" href="/auth">Join the community <ArrowRightIcon size={15} aria-hidden="true" /></Link><button ref={menuButtonRef} className="btn-icon site-head__menu" type="button" aria-label={drawerOpen ? "Close menu" : "Open menu"} aria-expanded={drawerOpen} aria-controls="site-drawer" onClick={() => drawerOpen ? closeDrawer() : setDrawerOpen(true)}><span className="menu-lines" aria-hidden="true"><span /><span /></span></button></div>
+      <div className="masthead-actions"><Link className="header-signin" href="/login">Sign in</Link><Link className="btn-primary header-cta" href="/auth">Join the community <ArrowRightIcon size={15} aria-hidden="true" /></Link><button ref={menuButtonRef} className="btn-icon site-head__menu" type="button" aria-label={drawerOpen ? "Close menu" : "Open menu"} aria-expanded={drawerOpen} aria-controls="site-drawer" onClick={() => drawerOpen ? closeDrawer() : setDrawerOpen(true)}><span className="menu-lines" aria-hidden="true"><span /><span /></span></button></div>
     </div>
     <div className="drawer-root" data-open={drawerOpen ? "true" : "false"} aria-hidden={!drawerOpen} inert={!drawerOpen}>
       <button type="button" className="drawer-scrim" tabIndex={-1} aria-label="Close menu" onClick={closeDrawer} />
       <div ref={drawerRef} id="site-drawer" className="drawer" role="dialog" aria-modal="true" aria-labelledby="site-drawer-title" inert={!drawerOpen}>
         <div className="drawer-heading"><p id="site-drawer-title">Find your place in Epe.</p><button className="btn-icon" type="button" aria-label="Close menu" onClick={closeDrawer}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg></button></div>
         <nav className="drawer-nav" aria-label="All sections"><ul>{items.map(item => <li key={item.href}><Link className="drawer-link" href={item.href} aria-current={current(pathname,item.href) ? "page" : undefined}><span className="drawer-label">{item.label}</span>{item.hint ? <span className="drawer-hint">{item.hint}</span> : null}</Link></li>)}</ul></nav>
-        <div className="drawer-account" aria-label="Member account"><Link className="btn-primary" href="/auth">Create account <ArrowUpRightIcon size={15} aria-hidden="true" /></Link><Link className="btn-secondary" href="/login">Sign in</Link></div><p className="drawer-foot">A shared home for everyone.</p>
+        <div className="drawer-appearance" role="group" aria-label="Appearance settings">
+          <span className="drawer-appearance__label">Appearance</span>
+          <ThemeToggle />
+        </div>
+        <div className="drawer-account" aria-label="Member account"><Link className="btn-primary" href="/auth">Create account <ArrowUpRightIcon size={15} aria-hidden="true" /></Link><Link className="btn-secondary" href="/login">Sign in</Link></div>
+        <p className="drawer-foot">A shared home for everyone.</p>
       </div>
     </div>
   </header>;

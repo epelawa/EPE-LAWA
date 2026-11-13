@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 
-test("navbar has a distinct theme switch, concise brand lockup, and outside-close drawer", () => {
+test("public Appearance switch lives in the all-viewport hamburger drawer", () => {
   const theme = read("frontend/apps/main/components/theme-toggle.tsx");
   const header = read("frontend/apps/main/components/site-header.tsx");
   const brand = read("frontend/apps/main/components/brand.tsx");
@@ -17,10 +17,14 @@ test("navbar has a distinct theme switch, concise brand lockup, and outside-clos
   const heroCarousel = read("frontend/apps/main/components/hero-carousel.tsx");
   const css = read("frontend/apps/main/app/globals.css");
   const heroManifest = JSON.parse(read("frontend/apps/main/lib/hero-images.json"));
+  const mastheadActions = header.match(/<div className="masthead-actions">([\s\S]*?)<\/div>/)?.[1] ?? "";
 
   assert.match(theme, /className="theme-control"/);
   assert.match(theme, /aria-pressed=\{theme === "dark"\}/);
   assert.match(theme, /theme-control__thumb/);
+  assert.doesNotMatch(mastheadActions, /ThemeToggle/);
+  assert.match(header, /className="drawer-appearance" role="group" aria-label="Appearance settings"[\s\S]*<ThemeToggle \/>/);
+  assert.match(css, /\.site-head__menu \{ display: inline-flex; \}/);
   assert.match(header, /<BrandLockup size=\{30\} \/>/);
   assert.doesNotMatch(header + brand + staffBrand + footer, /Epe Division|brand__place|brand-lockup__tagline|showPlace/);
   assert.match(home, /<HeroCarousel\s*\/>/, "homepage logo hero exists");

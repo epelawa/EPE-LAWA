@@ -39,6 +39,8 @@ Use a compact floating masthead, complete desktop navigation with a clear More m
 
 Use SVG icons only; no emoji. Controls have at least 44px target height. Keyboard focus is visible; drawers trap focus, close with Escape/outside taps and close on navigation. Motion is brief and respects reduced-motion preferences. Account forms have meaningful pending, validation, error and unavailable states.
 
+Appearance follows `prefers-color-scheme` on first visit until the visitor chooses a manual light/dark override, which persists. Keep the public switch in the hamburger drawer at every viewport (not in the masthead), and explain the initial system choice with one dismissible toast only once. Suppress that explanation on focused auth/staff routes and do not let it replace or overlap a connection notice. Auth screens continue to omit the manual switch.
+
 ## Truthful content and unchanged security
 
 All eight areas remain in scope: News, History, Forum, Map, Business Directory/Marketplace, Tourism, Radio and Who is Who. Render approved records only. Do not invent articles, activity, reviews, people, prices, counts, map locations or service status. Distinguish loading, unavailable, empty and denied states. Show Coming Soon for provider-dependent features that are not ready.
