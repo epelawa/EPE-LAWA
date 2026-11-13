@@ -1,9 +1,12 @@
+import type { Metadata } from "next";
 import RadioPlayer from "../../components/radio-player";
 import { RadioIcon } from "../../components/icons";
 import { EmptyPanel, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "../../components/design-system";
 import { createClient } from "../../lib/supabase";
+import { pageMetadata } from "../../lib/metadata";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = pageMetadata({ title: "EPE LAWA Radio", description: "Community programmes, schedules and approved radio archive records from Epe.", path: "/radio" });
 
 export default async function RadioPage() {
   let programmes: Array<{ id: string; name: string; description: string | null }> = [];
