@@ -204,7 +204,9 @@ test('homepage hero carousel is capped, accessible, and resource-aware', async (
   assert.match(source, /slow-2g/);
   assert.match(source, /loading=\{index === 0 \? "eager" : "lazy"\}/);
   assert.match(source, /src: "\/brand-logo\.png"/);
-  assert.doesNotMatch(source, /epe-lagoon-editorial|unsplash|pexels|placeholder/i);
+  assert.match(source, /src: "\/epe-lagoon-editorial\.webp"/);
+  assert.match(source, /Editorial illustration · EPE LAWA/);
+  assert.doesNotMatch(source, /unsplash|pexels|placeholder/i);
 });
 
 test('main news route reports unavailable data honestly and retains the custom 404', async () => {

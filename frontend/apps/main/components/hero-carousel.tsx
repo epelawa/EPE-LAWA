@@ -25,6 +25,14 @@ export const HERO_SLIDES: readonly HeroSlide[] = [
     width: 1348,
     height: 1167,
   },
+  {
+    src: "/epe-lagoon-editorial.webp",
+    alt: "Editorial illustration of a lagoon scene for EPE LAWA",
+    label: "A shared home for Epe.",
+    credit: "Editorial illustration · EPE LAWA",
+    width: 1280,
+    height: 1600,
+  },
 ];
 
 const MAX_HERO_SLIDES = 10;
