@@ -216,7 +216,7 @@ export function SignUpForm() {
 export function SignInForm() {
   const [state, action, pending] = useActionState(signIn, initial);
   return (
-    <form action={action} className="auth-form" aria-busy={pending}>
+    <form action={action} className="auth-form" aria-busy={pending} draggable={false} onDragStart={(event) => event.preventDefault()}>
       <GoogleSignInUnavailable />
       <div className="auth-field">
         <label htmlFor="login-email">Email address</label>

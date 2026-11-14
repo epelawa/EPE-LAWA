@@ -7,15 +7,17 @@ export default function AccountShell({
   description,
   children,
   showThemeToggle = false,
+  fixedViewport = false,
 }: {
   eyebrow: string;
   title: string;
   description: string;
   children: ReactNode;
   showThemeToggle?: boolean;
+  fixedViewport?: boolean;
 }) {
   return (
-    <section className="auth-page" aria-labelledby="auth-title">
+    <section className={`auth-page${fixedViewport ? " auth-page--fixed-viewport" : ""}`} aria-labelledby="auth-title">
       <div className="auth-frame">
         <header className="auth-art">
           <span className="auth-art__shape auth-art__shape--left" aria-hidden="true" />

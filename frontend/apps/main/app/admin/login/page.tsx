@@ -22,6 +22,7 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: S
       eyebrow="Staff sign in"
       title="Welcome back"
       description="Authorised staff only. Sign in to continue."
+      fixedViewport
     >
       <AdminLoginForm nextPath={nextPath} />
       <nav className="auth-switch auth-switch--staff" aria-label="Account options">

@@ -17,7 +17,7 @@ test("member auth routes use a centered branded shell without manual theme contr
     read(app, "../lib/theme.ts"),
   ]);
 
-  assert.match(shell, /className="auth-page"/);
+  assert.match(shell, /auth-page--fixed-viewport/);
   assert.match(shell, /className="auth-frame"/);
   assert.match(shell, /className="auth-art"/);
   assert.match(shell, /className="auth-card"/);
@@ -28,6 +28,10 @@ test("member auth routes use a centered branded shell without manual theme contr
   assert.doesNotMatch(brand, /showPlace|Epe Division|brand__place/);
   assert.match(controls, /showThemeToggle \? <ThemeToggle \/> : null/);
   assert.match(styles, /\.auth-page\s*\{[^}]*place-items:\s*center/s);
+  assert.match(styles, /body:has\(\.auth-page--fixed-viewport\)\s*\{[^}]*min-height:\s*0;[^}]*overflow:\s*hidden/s);
+  assert.match(styles, /body:has\(\.auth-page--fixed-viewport\) \.site-main\s*\{[^}]*height:\s*100vh;[^}]*min-height:\s*0;[^}]*overflow:\s*hidden/s);
+  assert.match(styles, /\.auth-page--fixed-viewport\s*\{[^}]*height:\s*100vh;[^}]*min-height:\s*0;[^}]*overflow:\s*hidden/s);
+  assert.match(styles, /@supports \(height:\s*100dvh\)[\s\S]*body:has\(\.auth-page--fixed-viewport\) \.site-main\s*\{\s*height:\s*100dvh/);
   assert.match(styles, /var\(--storage-notice-height,\s*0px\)/);
   assert.doesNotMatch(styles, /var\(--storage-notice-height,\s*148px\)/);
   assert.match(styles, /auth-step-actions\[data-enhanced="false"\] \.auth-step-back/);
@@ -78,6 +82,8 @@ test("member auth routes use a centered branded shell without manual theme contr
   const adminStyles = await read(app, "admin/admin-shell.css");
   const notices = await read(app, "notice-refinement.css");
   const memberLogin = await read(app, "login/page.tsx");
+  assert.match(memberLogin, /fixedViewport/);
+  assert.match(staffLogin, /fixedViewport/);
   assert.match(staffLogin, /<AccountShell\b/);
   assert.match(staffLogin, /safeAdminNextPath\(nextValue\)/);
   assert.match(staffLogin, /<AdminLoginForm nextPath=\{nextPath\}/);
@@ -140,11 +146,10 @@ test("storage notice is homepage-only and leaves auth screens unobstructed", asy
   assert.match(banner, /role="region"/);
   assert.match(banner, /ResizeObserver/);
   assert.match(banner, /--storage-notice-height/);
-  assert.match(authStyles, /\.auth-page:has\(\.admin-login__form \.auth-error\)\s*\{[^}]*overflow-y:\s*auto/s);
-  assert.match(authStyles, /\.auth-page:has\(\.admin-login__form \.auth-error\) \.auth-art__description\s*\{[^}]*display:\s*none/s);
-  assert.match(authStyles, /\.auth-page:has\(\.admin-login__form \.auth-error\) \.auth-feedback\s*\{[^}]*padding:\s*4px 8px/s);
-  assert.match(staffForm, /page\.scrollHeight > page\.clientHeight/);
-  assert.match(staffForm, /page\.scrollTop = page\.scrollHeight/);
+  assert.doesNotMatch(authStyles, /\.auth-page:has\(\.admin-login__form \.auth-error\)[^{]*\{[^}]*overflow-y:\s*auto/s);
+  assert.doesNotMatch(staffForm, /scrollHeight|scrollTop/);
+  assert.match(staffForm, /draggable=\{false\}/);
+  assert.match(staffForm, /onDragStart=\{\(event\) => event\.preventDefault\(\)\}/);
   assert.match(banner, /Theme stays on this device\. Sign-in uses essential cookies; optional tracking is off\./);
   assert.match(banner, /epelawa_cookie_consent/);
   assert.match(banner, /window\.removeEventListener\("resize", apply\);\s*root\.style\.setProperty\("--storage-notice-height", "0px"\)/);
