@@ -102,3 +102,32 @@ export const ArrowUpRightIcon = ({ size = 18, className, "aria-hidden": ariaHidd
     <path d="M7 7h10v10" />
   </svg>
 );
+
+export const PlayIcon = ({ size = 18, className }: { size?: number; className?: string }) => (
+  <svg aria-hidden="true" focusable="false" className={className} width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M7 4.9v14.2a1 1 0 0 0 1.52.86l11-7.1a1 1 0 0 0 0-1.72l-11-7.1A1 1 0 0 0 7 4.9Z" />
+  </svg>
+);
+
+export const PauseIcon = ({ size = 18, className }: { size?: number; className?: string }) => (
+  <svg aria-hidden="true" focusable="false" className={className} width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+    <rect x="6" y="4" width="4" height="16" rx="1" />
+    <rect x="14" y="4" width="4" height="16" rx="1" />
+  </svg>
+);
+
+export const VolumeOnIcon = ({ size = 18, className }: { size?: number; className?: string }) => (
+  <svg aria-hidden="true" focusable="false" className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M11 5 6 9H3v6h3l5 4V5Z" />
+    <path d="M15.5 8.5a5 5 0 0 1 0 7" />
+    <path d="M18 5a9 9 0 0 1 0 14" />
+  </svg>
+);
+
+export const VolumeOffIcon = ({ size = 18, className }: { size?: number; className?: string }) => (
+  <svg aria-hidden="true" focusable="false" className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M11 5 6 9H3v6h3l5 4V5Z" />
+    <path d="m16 9 5 6" />
+    <path d="m21 9-5 6" />
+  </svg>
+);

@@ -1,0 +1,30 @@
+.page.page {
+  gap: 16px;
+}
+
+.page.page > * + * {
+  margin-top: 0;
+}
+
+.page > :global(.ui-page-intro) {
+  margin-bottom: 0;
+  padding-block: 14px 16px;
+}
+
+.page > :global(.ui-page-intro) h1 {
+  margin: 8px 0;
+}
+
+@media (max-width: 620px) {
+  .page.page {
+    gap: 12px;
+  }
+
+  .page > :global(.ui-page-intro) {
+    padding-block: 6px 12px;
+  }
+
+  .page > :global(.ui-page-intro) h1 {
+    margin: 6px 0 8px;
+  }
+}

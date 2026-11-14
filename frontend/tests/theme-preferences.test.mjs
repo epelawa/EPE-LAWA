@@ -17,25 +17,23 @@ test("first visit follows the device setting and explicit choices persist", asyn
   assert.match(theme, /window\.matchMedia\?\./);
   assert.match(toggle, /aria-pressed=\{theme === "dark"\}/);
   assert.match(toggle, /applyTheme\(next\)/);
-  assert.match(toggle, /window\.dispatchEvent\(new Event\(THEME_PREFERENCE_CHANGED_EVENT\)\)/);
 });
 
-test("system-theme explanation is shown once and not over connection or auth notices", async () => {
+test("system-theme selection applies without a toast overlay", async () => {
   const theme = await read("lib/theme.ts");
   const connectivity = await read("app/connectivity.tsx");
+  const toggle = await read("components/theme-toggle.tsx");
 
-  assert.match(theme, /SYSTEM_THEME_NOTICE_STORAGE_KEY = "epelawa-system-theme-notice-seen"/);
-  assert.match(theme, /function hasSeenSystemThemeNotice\(\)/);
-  assert.match(theme, /function markSystemThemeNoticeSeen\(\)/);
-  assert.match(connectivity, /HIDDEN_THEME_MENU_PREFIXES = \["\/auth", "\/login", "\/forgot-password", "\/admin"\]/);
-  assert.match(connectivity, /readStoredTheme\(\) !== "system" \|\| hasSeenSystemThemeNotice\(\)/);
-  assert.doesNotMatch(connectivity, /SYSTEM_THEME_NOTICE_DURATION_MS|systemThemeDismissTimer/);
-  assert.match(connectivity, /if \(systemThemeNotice === null \|\| notice !== null \|\| isThemeNoticeHidden\(pathname\)\) return;\s*markSystemThemeNoticeSeen\(\);/);
-  assert.match(connectivity, /const dismissSystemThemeNotice = useCallback\(\(\) => \{\s*markSystemThemeNoticeSeen\(\);\s*setSystemThemeNotice\(null\);\s*\}, \[\]\)/);
-  assert.match(connectivity, /notice !== null \|\| isThemeNoticeHidden\(pathname\)/);
+  assert.match(theme, /export type ThemeChoice = "light" \| "dark" \| "system"/);
+  assert.match(theme, /prefers-color-scheme: dark/);
+  assert.match(toggle, /setTheme\(resolveTheme\(readStoredTheme\(\)\)\)/);
+  assert.match(toggle, /setTheme\(applyTheme\(next\)\)/);
+  assert.match(toggle, /applyTheme\("system"\)/);
+  assert.doesNotMatch(connectivity, /ThemeToast|Device theme applied|systemThemeNotice|SYSTEM_THEME_NOTICE/);
+  assert.doesNotMatch(theme, /SYSTEM_THEME_NOTICE|hasSeenSystemThemeNotice|markSystemThemeNoticeSeen/);
   assert.match(connectivity, /role="status" aria-live="polite"/);
-  assert.match(connectivity, /aria-label="Dismiss appearance notice"/);
-  assert.match(connectivity, /setSystemThemeNotice\(null\)/);
+  assert.match(connectivity, /role="alert" aria-live="assertive"/);
+  assert.match(connectivity, /You’re offline|Service unavailable|Retry/);
 });
 
 test("public theme control is in a reachable drawer, not the masthead", async () => {
