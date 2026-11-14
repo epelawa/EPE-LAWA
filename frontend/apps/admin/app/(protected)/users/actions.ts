@@ -3,6 +3,7 @@ import "server-only";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { createClient } from "../../../lib/supabase";
+import { absoluteUrl } from "../../../lib/site";
 import { CAPABILITIES, mayManageUsers, safeGrant } from "../../../lib/user-management";
 
 const PAGE_SIZE = 25;
@@ -172,7 +173,11 @@ export async function inviteUser(form: FormData) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Enter a valid email address.");
 
   const admin = serviceClient();
-  const { data, error } = await admin.auth.admin.inviteUserByEmail(email);
+  const inviteRedirect = new URL(absoluteUrl("/auth/callback"));
+  inviteRedirect.searchParams.set("next", "/auth/new-password?returnTo=staff");
+  const { data, error } = await admin.auth.admin.inviteUserByEmail(email, {
+    redirectTo: inviteRedirect.toString(),
+  });
   if (error || !data.user) {
     throw new Error("Supabase Auth did not confirm the invitation request. Check Auth SMTP and the directory before retrying.");
   }

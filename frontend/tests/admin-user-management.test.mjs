@@ -66,6 +66,8 @@ test("invite action never generates or returns a password or access token", asyn
   const form = await readFile(formPath, "utf8");
   const invite = action.slice(action.indexOf("export async function inviteUser"));
   assert.match(invite, /inviteUserByEmail/);
+  assert.match(invite, /inviteRedirect\.searchParams\.set\("next", "\/auth\/new-password\?returnTo=staff"\)/);
+  assert.match(invite, /redirectTo: inviteRedirect\.toString\(\)/);
   assert.match(invite, /safeGrant\(email, submittedCapabilities\(form\)\)/);
   assert.match(invite, /staff_profiles/);
   assert.match(invite, /staff_user_set_grants/);
