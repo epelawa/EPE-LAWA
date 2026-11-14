@@ -25,9 +25,14 @@ export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const db = await createClient();
-  const { data: canManageStaff, error } = await db.rpc("staff_roles_authorized");
-  const navigation = staffNavigation(!error && canManageStaff === true);
+  let navigation = staffNavigation(false);
+  try {
+    const db = await createClient();
+    const { data: canManageStaff, error } = await db.rpc("staff_roles_authorized");
+    navigation = staffNavigation(!error && canManageStaff === true);
+  } catch (error) {
+    if (!(error instanceof Error) || error.message !== "Unauthorized") throw error;
+  }
   return (
     <html lang="en">
       <body>
