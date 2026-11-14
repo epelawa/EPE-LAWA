@@ -32,12 +32,21 @@ export default function MapSearch({ businesses, businessError = false }: { busin
     ? [selectedBusiness.name, selectedBusiness.address, selectedBusiness.landmark, selectedBusiness.area].filter(Boolean).join(", ")
     : query.trim();
   const requestLocation = () => {
-    if (!navigator.geolocation) { setLocationMessage("Location is not available in this browser."); return; }
-    setLocationMessage("Waiting for your permission…");
+    setLocation(null);
+    if (!window.isSecureContext) { setLocationMessage("Location requires a secure (HTTPS) connection. You can still search manually."); return; }
+    if (!navigator.geolocation) { setLocationMessage("Location is not supported by this browser. You can still search manually."); return; }
+    setLocationMessage("Requesting location permission…");
     navigator.geolocation.getCurrentPosition((position) => {
       setLocation(`${position.coords.latitude},${position.coords.longitude}`);
-      setLocationMessage("Location is ready for an external directions link. Google receives it only if you open that link; EPE LAWA does not store it.");
-    }, () => setLocationMessage("Location was not shared. You can still search and open directions without it."), { maximumAge: 60000, timeout: 10000 });
+      setLocationMessage("Ready for directions. Google receives your coordinates only if you open that link; EPE LAWA does not store them.");
+    }, (error) => {
+      const message = error.code === error.PERMISSION_DENIED
+        ? "Location permission was denied. You can still search manually."
+        : error.code === error.TIMEOUT
+          ? "Location request timed out. You can still search manually."
+          : "Your location is unavailable. You can still search manually.";
+      setLocationMessage(message);
+    }, { maximumAge: 60000, timeout: 10000 });
   };
   return <div className="ui-stack">
     <Panel className="ui-card filter-panel filter-panel--map">
@@ -71,6 +80,6 @@ export default function MapSearch({ businesses, businessError = false }: { busin
         <a className="btn-secondary" target="_blank" rel="noopener noreferrer" href={mapsDirectionsUrl(selectedDestination, location ?? undefined)}>{selectedBusiness ? `Get directions to ${selectedBusiness.name}` : "Get directions"} <span className="sr-only">(opens in a new tab)</span></a>
       </div>
     </Panel>}
-    <Notice tone="neutral">Google Maps search and directions are external links, not an embedded or EPE LAWA-powered Places service. If you open a directions link containing your device coordinates, Google receives those coordinates; EPE LAWA does not store them. Location is requested only after you press “Use my location”.</Notice>
+    <Notice tone="neutral">Google Maps search and directions open an external service. Google receives your device coordinates only if you open directions with location enabled; EPE LAWA does not store them.</Notice>
   </div>;
 }

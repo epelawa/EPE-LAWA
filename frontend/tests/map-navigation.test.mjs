@@ -5,9 +5,15 @@ import { readFile } from 'node:fs/promises';
 const ui = await readFile(new URL('../apps/main/app/map/map-search.tsx', import.meta.url), 'utf8');
 const page = await readFile(new URL('../apps/main/app/map/page.tsx', import.meta.url), 'utf8');
 
-test('device location is opt-in and is not persisted or sent to the server', () => {
+test('device location is click-only, clears stale coordinates, and reports outcomes without sending it to the server', () => {
   assert.match(ui, /onClick=\{requestLocation\}/);
-  assert.match(ui, /navigator\.geolocation\.getCurrentPosition/);
+  assert.match(ui, /const requestLocation = \(\) => \{\s*setLocation\(null\);[\s\S]*?navigator\.geolocation\.getCurrentPosition/);
+  assert.equal((ui.match(/navigator\.geolocation\.getCurrentPosition/g) ?? []).length, 1);
+  assert.match(ui, /if \(!window\.isSecureContext\)/);
+  assert.match(ui, /error\.PERMISSION_DENIED/);
+  assert.match(ui, /error\.TIMEOUT/);
+  assert.match(ui, /Your location is unavailable/);
+  assert.match(ui, /You can still search manually/);
   assert.doesNotMatch(ui, /useEffect|localStorage|sessionStorage|fetch\(|navigator\.geolocation\.watchPosition/);
   assert.match(ui, /setLocation\(`\$\{position\.coords\.latitude\},\$\{position\.coords\.longitude\}`\)/);
   assert.match(page, /published_businesses/);
@@ -47,7 +53,8 @@ test('business query errors are distinct from true no-match results', () => {
 });
 
 test('location disclosure says Google receives coordinates only when an external link is opened', () => {
-  assert.match(ui, /Google receives it only if you open that link/);
-  assert.match(ui, /Google receives those coordinates/);
+  assert.match(ui, /Google receives your coordinates only if you open that link/);
+  assert.match(ui, /Google receives your device coordinates only if you open directions with location enabled/);
+  assert.match(ui, /Google Maps search and directions open an external service/);
   assert.match(ui, /EPE LAWA does not store them/);
 });
