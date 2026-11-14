@@ -17,7 +17,7 @@ const [actions, createPage, editPage, adminLayout, publicAdminLayout, listing, a
 ]);
 
 test("authorized newsroom create and edit use guarded database transitions, not direct table writes", () => {
-  assert.match(createPage, /staff_capability_grants/);
+  assert.match(createPage, /rpc\("has_capability", \{ p_capability: "article\.create" \}\)/);
   assert.match(createPage, /article\.create/);
   assert.match(actions, /supabase\.rpc\("article_create"/);
   assert.match(actions, /supabase\.rpc\("article_draft_update"/);

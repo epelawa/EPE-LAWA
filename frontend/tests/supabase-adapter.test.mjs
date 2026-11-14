@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { getAdminAccessForToken } from '../apps/admin/lib/supabase-access.ts';
 
-test('server adapter verifies identity before RLS-scoped profile and grant reads', async () => {
+test('server adapter verifies identity before RLS-scoped profile and effective capability RPC', async () => {
   const previousFetch = globalThis.fetch;
   const previousUrl = process.env.SUPABASE_URL;
   const previousKey = process.env.SUPABASE_PUBLISHABLE_KEY;
@@ -21,18 +21,18 @@ test('server adapter verifies identity before RLS-scoped profile and grant reads
     if (url.pathname === '/auth/v1/user' && mode === 'invalid-token') return new Response('{}', { status: 401, headers: { 'content-type': 'application/json' } });
     if (url.pathname === '/auth/v1/user') body = { id: 'staff-a', aud: 'authenticated', email_confirmed_at: mode === 'unverified' ? null : '2026-01-01T00:00:00Z' };
     else if (url.pathname === '/rest/v1/staff_profiles') body = [{ user_id: 'staff-a', is_active: mode !== 'inactive' }];
-    else if (url.pathname === '/rest/v1/staff_capability_grants') body = mode === 'missing-grant' ? [] : [{ user_id: 'staff-a', capability: 'admin.access' }];
+    else if (url.pathname === '/rest/v1/rpc/has_capability') body = mode !== 'missing-grant';
     else throw new Error(`Unexpected request to ${url.pathname}`);
     return new Response(JSON.stringify(body), { status: 200, headers: { 'content-type': 'application/json' } });
   };
   try {
     assert.deepEqual(await getAdminAccessForToken('test-token'), { allowed: true, userId: 'staff-a' });
-    assert.deepEqual(calls, ['/auth/v1/user', '/rest/v1/staff_profiles', '/rest/v1/staff_capability_grants']);
+    assert.deepEqual(calls, ['/auth/v1/user', '/rest/v1/staff_profiles', '/rest/v1/rpc/has_capability']);
     for (const [scenario, expectedCalls] of [
       ['invalid-token', ['/auth/v1/user']],
       ['unverified', ['/auth/v1/user']],
       ['inactive', ['/auth/v1/user', '/rest/v1/staff_profiles']],
-      ['missing-grant', ['/auth/v1/user', '/rest/v1/staff_profiles', '/rest/v1/staff_capability_grants']],
+      ['missing-grant', ['/auth/v1/user', '/rest/v1/staff_profiles', '/rest/v1/rpc/has_capability']],
       ['network-error', ['/auth/v1/user']],
     ]) {
       mode = scenario;

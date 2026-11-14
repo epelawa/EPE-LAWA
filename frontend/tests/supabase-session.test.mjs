@@ -44,19 +44,20 @@ test('server session gate verifies Auth before checking current RLS grants and f
     let data;
     if (path === '/auth/v1/user') data = { id: 'staff-a', aud: 'authenticated', email_confirmed_at: scenario === 'unverified' ? null : '2026-01-01T00:00:00Z' };
     else if (path === '/rest/v1/staff_profiles') data = [{ user_id: 'staff-a', is_active: scenario !== 'inactive' }];
-    else if (path === '/rest/v1/staff_capability_grants') data = scenario === 'revoked' ? [] : [{ user_id: 'staff-a', capability: 'admin.access' }];
+    else if (path === '/rest/v1/rpc/has_capability') data = scenario !== 'revoked';
     else throw new Error(`Unexpected request: ${path}`);
     assert.equal(req.headers.get('authorization'), 'Bearer test-access-token');
     return Response.json(data);
   };
   try {
     assert.deepEqual(await getAdminAccessForSession(cookieStore([sessionCookie()])), { allowed: true, userId: 'staff-a' });
-    assert.deepEqual(calls, ['/auth/v1/user', '/rest/v1/staff_profiles', '/rest/v1/staff_capability_grants']);
+    assert.deepEqual(calls, ['/auth/v1/user', '/rest/v1/staff_profiles', '/rest/v1/rpc/has_capability']);
+    assert.equal(scenario, 'active', 'the RPC response can represent an effective capability supplied by an assigned role');
     for (const [mode, expected] of [
       ['invalid', ['/auth/v1/user']],
       ['unverified', ['/auth/v1/user']],
       ['inactive', ['/auth/v1/user', '/rest/v1/staff_profiles']],
-      ['revoked', ['/auth/v1/user', '/rest/v1/staff_profiles', '/rest/v1/staff_capability_grants']],
+      ['revoked', ['/auth/v1/user', '/rest/v1/staff_profiles', '/rest/v1/rpc/has_capability']],
       ['offline', ['/auth/v1/user']],
     ]) {
       scenario = mode; calls.length = 0;
@@ -113,14 +114,14 @@ test('large session chunks are reassembled; gaps and duplicate chunks fail close
     assert.equal(req.headers.get('authorization'), `Bearer ${longToken}`);
     if (path === '/auth/v1/user') return Response.json({ id: 'staff-a', email_confirmed_at: '2026-01-01T00:00:00Z' });
     if (path === '/rest/v1/staff_profiles') return Response.json([{ user_id: 'staff-a', is_active: true }]);
-    if (path === '/rest/v1/staff_capability_grants') return Response.json([{ user_id: 'staff-a', capability: 'admin.access' }]);
+    if (path === '/rest/v1/rpc/has_capability') return Response.json(true);
     throw new Error(`Unexpected request: ${path}`);
   };
   try {
     assert.ok(largeCookies.length > 1);
     assert.equal(readAdminSessionFromCookies(largeCookies)?.access_token, longToken);
     assert.deepEqual(await getAdminAccessForSession(cookieStore(largeCookies)), { allowed: true, userId: 'staff-a' });
-    assert.deepEqual(calls, ['/auth/v1/user', '/rest/v1/staff_profiles', '/rest/v1/staff_capability_grants']);
+    assert.deepEqual(calls, ['/auth/v1/user', '/rest/v1/staff_profiles', '/rest/v1/rpc/has_capability']);
 
     calls.length = 0;
     const missingFirstChunk = largeCookies.filter((cookie) => cookie.name !== `${cookieName}.1`);
@@ -162,13 +163,13 @@ test('refreshed session cookies retain host-only security flags and no-store hea
     assert.equal(req.headers.get('authorization'), 'Bearer refreshed-token');
     if (path === '/auth/v1/user') return Response.json({ id: 'staff-a', aud: 'authenticated', email_confirmed_at: '2026-01-01T00:00:00Z' });
     if (path === '/rest/v1/staff_profiles') return Response.json([{ user_id: 'staff-a', is_active: true }]);
-    if (path === '/rest/v1/staff_capability_grants') return Response.json([{ user_id: 'staff-a', capability: 'admin.access' }]);
+    if (path === '/rest/v1/rpc/has_capability') return Response.json(true);
     throw new Error(`Unexpected request: ${path}`);
   };
   try {
     const store = cookieStore([sessionCookie(Math.floor(Date.now() / 1000) - 10)]);
     assert.deepEqual(await getAdminAccessForSession(store), { allowed: true, userId: 'staff-a' });
-    assert.deepEqual(calls, ['/auth/v1/token', '/auth/v1/user', '/rest/v1/staff_profiles', '/rest/v1/staff_capability_grants']);
+    assert.deepEqual(calls, ['/auth/v1/token', '/auth/v1/user', '/rest/v1/staff_profiles', '/rest/v1/rpc/has_capability']);
     assert.ok(store.writes.length > 0);
     for (const { set, headers } of store.writes) {
       assert.match(headers['Cache-Control'], /no-store/);
@@ -215,7 +216,7 @@ test('refresh expires stale numbered chunks when the new session fits in fewer c
     assert.equal(req.headers.get('authorization'), 'Bearer refreshed-token');
     if (path === '/auth/v1/user') return Response.json({ id: 'staff-a', email_confirmed_at: '2026-01-01T00:00:00Z' });
     if (path === '/rest/v1/staff_profiles') return Response.json([{ user_id: 'staff-a', is_active: true }]);
-    if (path === '/rest/v1/staff_capability_grants') return Response.json([{ user_id: 'staff-a', capability: 'admin.access' }]);
+    if (path === '/rest/v1/rpc/has_capability') return Response.json(true);
     throw new Error(`Unexpected request: ${path}`);
   };
   try {
@@ -252,7 +253,7 @@ test('read-only route adapter returns refreshed cookies and denies without rende
     assert.equal(req.headers.get('authorization'), 'Bearer ' + (largeSession ? 'x'.repeat(10000) : 'refreshed-token'));
     if (path === '/auth/v1/user') return Response.json({ id: 'staff-a', aud: 'authenticated', email_confirmed_at: '2026-01-01T00:00:00Z' });
     if (path === '/rest/v1/staff_profiles') return Response.json([{ user_id: 'staff-a', is_active: true }]);
-    if (path === '/rest/v1/staff_capability_grants') return Response.json(revoked ? [] : [{ user_id: 'staff-a', capability: 'admin.access' }]);
+    if (path === '/rest/v1/rpc/has_capability') return Response.json(!revoked);
     throw new Error(`Unexpected request: ${path}`);
   };
   const expired = sessionCookie(Math.floor(Date.now() / 1000) - 10);
@@ -267,7 +268,7 @@ test('read-only route adapter returns refreshed cookies and denies without rende
     const response = await respondToAdminRead(request(), protectedResponse);
     assert.equal(response.status, 200);
     assert.equal(renders, 1);
-    assert.deepEqual(calls, ['/auth/v1/token', '/auth/v1/user', '/rest/v1/staff_profiles', '/rest/v1/staff_capability_grants']);
+    assert.deepEqual(calls, ['/auth/v1/token', '/auth/v1/user', '/rest/v1/staff_profiles', '/rest/v1/rpc/has_capability']);
     assert.equal(response.headers.get('cache-control'), 'private, no-store, max-age=0');
     assert.equal(response.headers.get('pragma'), 'no-cache');
     assert.equal(response.headers.get('expires'), '0');

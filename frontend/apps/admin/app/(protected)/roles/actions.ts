@@ -1,0 +1,9 @@
+"use server";
+import "server-only";
+import { revalidatePath } from "next/cache";
+import { createClient } from "../../../lib/supabase";
+const KEY = /^[a-z][a-z0-9]*(\.[a-z][a-z0-9]*)+$/;
+async function authorize() { const db=await createClient(); const {data,error}=await db.rpc("staff_roles_authorized"); if(error||data!==true) throw new Error("Role management is not authorized."); return db; }
+export async function saveRole(form:FormData) { const db=await authorize(); const id=String(form.get("id")??"").trim()||null; const name=String(form.get("name")??"").trim().slice(0,80); const description=String(form.get("description")??"").trim().slice(0,500); const capabilities=form.getAll("capability").map(String); if(!name||capabilities.length>100||capabilities.some(x=>!KEY.test(x))) throw new Error("Invalid role details."); const {error}=await db.rpc("staff_role_save",{p_role_id:id,p_name:name,p_description:description,p_capabilities:[...new Set(capabilities)]}); if(error) throw new Error("Role update was rejected."); revalidatePath("/admin/roles"); }
+export async function deleteRole(form:FormData) { const db=await authorize(); const id=String(form.get("id")??""); if(!/^[0-9a-f-]{36}$/i.test(id)) throw new Error("Invalid role."); const {error}=await db.rpc("staff_role_delete",{p_role_id:id}); if(error) throw new Error("Role deletion was rejected."); revalidatePath("/admin/roles"); }
+export async function assignRole(form:FormData) { const db=await authorize(); const userId=String(form.get("user_id")??""); const roleId=String(form.get("role_id")??""); const assigned=String(form.get("assigned"))==="true"; if(!/^[0-9a-f-]{36}$/i.test(userId)||!/^[0-9a-f-]{36}$/i.test(roleId)) throw new Error("Invalid assignment."); const {error}=await db.rpc("staff_role_assign",{p_user_id:userId,p_role_id:roleId,p_assigned:assigned}); if(error) throw new Error("Role assignment was rejected."); revalidatePath("/admin/roles"); }

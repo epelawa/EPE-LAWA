@@ -42,7 +42,7 @@ const SUPABASE_SURFACE = `
   create role anon nologin;
   create role authenticated nologin;
   create schema auth;
-  create table auth.users (id uuid primary key, email_confirmed_at timestamptz);
+  create table auth.users (id uuid primary key, email text, email_confirmed_at timestamptz);
   create function auth.uid() returns uuid language sql stable
     as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
   grant usage on schema public, auth to anon, authenticated;
@@ -133,6 +133,7 @@ const asFails = (uid, sql) => as(uid, () => fails(sql));
 // --------------------------------------------------------------------------- fixtures
 
 const U = {
+  admin: '77777777-7777-4777-8777-777777777777',
   editor: '11111111-1111-4111-8111-111111111111',
   journalist2: '22222222-2222-4222-8222-222222222222',
   publisher: '33333333-3333-4333-8333-333333333333',
@@ -148,16 +149,19 @@ for (const [name, id] of Object.entries(U)) {
   ]);
 }
 
+await db.query("update auth.users set email=$2 where id=$1", [U.admin, 'info.epelawa@gmail.com']);
 // Staff accounts are provisioned out of band in production. The test creates them directly as the
 // table owner, which is the only role with insert rights on staff_profiles and the grants table.
 await db.exec(`
   insert into public.staff_profiles (user_id, is_active) values
+    ('${U.admin}', true),
     ('${U.editor}', true),
     ('${U.journalist2}', true),
     ('${U.publisher}', true),
     ('${U.unverified}', true);
 
   insert into public.staff_capability_grants (user_id, capability) values
+    ('${U.admin}', 'admin.access'),
     ('${U.editor}', 'article.create'),
     ('${U.editor}', 'people.manage'),
     ('${U.journalist2}', 'article.create'),
@@ -287,6 +291,29 @@ test('History publishing requires approved copy, preserves private evidence, and
   assert.equal((await rows("select count(*)::int as n from pg_proc where proname='history_contribution_decide' and pronargs <> 7"))[0].n, 0);
 });
 
+test('configurable roles allow delegated admin entry and granular access while management stays primary-only', async () => {
+  assert.equal((await rows("select count(*)::int n from public.staff_roles"))[0].n, 0, 'no role seeds');
+  assert.equal((await rows("select count(*)::int n from public.staff_role_assignments"))[0].n, 0, 'no assignment seeds');
+  assert.equal((await as(U.editor, () => rows('select public.staff_roles_authorized() as ok')))[0].ok, false);
+  const adminAuthorized=await as(U.admin,()=>rows('select public.staff_roles_authorized() as ok'));
+  assert.equal(adminAuthorized[0].ok,true);
+  assert.equal((await as(U.admin,()=>rows("select public.has_capability('admin.access') ok")))[0].ok,true,'primary owner can enter');
+  const roleId=await as(U.admin,async()=> (await rows("select public.staff_role_save(null,'Test role','',array['admin.access','article.create']) id"))[0].id);
+  await db.query('insert into public.staff_role_assignments(user_id,role_id,assigned_by) values($1,$2,$3)',[U.editor,roleId,U.admin]);
+  assert.equal((await as(U.editor,()=>rows("select public.has_capability('article.create') ok")))[0].ok,true);
+  assert.equal((await as(U.editor,()=>rows("select public.has_capability('admin.access') ok")))[0].ok,true,'owner-assigned role can grant admin entry');
+  assert.equal((await as(U.editor,()=>rows("select public.has_capability('staff.roles.manage') ok")))[0].ok,false,'delegated staff cannot manage roles');
+  assert.equal((await as(U.m1,()=>rows("select public.has_capability('admin.access') ok")))[0].ok,false,'ordinary member cannot enter');
+  assert.equal((await as(U.m1,()=>rows("select public.has_capability('article.create') ok")))[0].ok,false,'ordinary member has no staff capability');
+  assert.equal((await as(U.unverified,()=>rows("select public.has_capability('article.publish') ok")))[0].ok,false);
+  const escalated=await asFails(U.admin,`select public.staff_role_save(null,'Bad','','{staff.roles.manage}')`);
+  assert.match(escalated??'',/privileged_capability_forbidden|staff_role_capabilities_capability_check/);
+  const selfAssign=await asFails(U.admin,`select public.staff_role_assign('${U.admin}','${roleId}',true)`);
+  assert.match(selfAssign??'',/self_assignment_forbidden/);
+  assert.equal((await as(U.admin,()=>rows("select count(*)::int n from public.staff_role_staff_directory('',50)")))[0].n,5);
+  assert.match(await asFails(U.editor,"select * from public.staff_role_staff_directory('',50)")??'',/role_management_forbidden/);
+  assert.ok((await rows("select count(*)::int n from public.audit_events where action like 'staff.role_%'"))[0].n>=1);
+});
 // --------------------------------------------------------------------------- structure
 test('every public table has row level security enabled', async () => {
   const unprotected = await rows(`

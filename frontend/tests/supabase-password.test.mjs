@@ -9,7 +9,7 @@ function store(existingCookies = []) {
   return { writes, getAll: () => existingCookies, setAll: (cookies, headers) => writes.push({ cookies, headers }) };
 }
 
-test('password sign-in stages cookies until identity and active admin grant are verified', async () => {
+test('password sign-in stages cookies until identity and effective admin capability are verified', async () => {
   const oldFetch = globalThis.fetch, oldUrl = process.env.SUPABASE_URL, oldKey = process.env.SUPABASE_PUBLISHABLE_KEY;
   process.env.SUPABASE_URL = 'https://unit.example.invalid';
   process.env.SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_test_only';
@@ -31,13 +31,13 @@ test('password sign-in stages cookies until identity and active admin grant are 
     assert.equal(req.headers.get('authorization'), `Bearer ${largeSession ? 'x'.repeat(10000) : 'fake-access'}`);
     if (path === '/auth/v1/user') return scenario === 'user-error' ? Response.json({ error: 'unavailable' }, { status: 503 }) : Response.json({ id: scenario === 'mismatch' ? 'staff-b' : 'staff-a', aud: 'authenticated', email_confirmed_at: scenario === 'unverified' ? null : '2026-01-01T00:00:00Z' });
     if (path === '/rest/v1/staff_profiles') return scenario === 'profile-error' ? Response.json({ error: 'unavailable' }, { status: 503 }) : Response.json([{ user_id: 'staff-a', is_active: scenario !== 'inactive' }]);
-    if (path === '/rest/v1/staff_capability_grants') return scenario === 'grant-error' ? Response.json({ error: 'unavailable' }, { status: 503 }) : Response.json(scenario === 'revoked' ? [] : [{ user_id: 'staff-a', capability: 'admin.access' }]);
+    if (path === '/rest/v1/rpc/has_capability') return scenario === 'grant-error' ? Response.json({ error: 'unavailable' }, { status: 503 }) : Response.json(scenario !== 'revoked');
     throw new Error('unexpected path ' + path);
   };
   try {
     const result = store();
     assert.deepEqual(await signInAdminWithPassword(input.email, input.password, result), { allowed: true });
-    assert.deepEqual(calls, ['/auth/v1/token', '/auth/v1/user', '/rest/v1/staff_profiles', '/rest/v1/staff_capability_grants']);
+    assert.deepEqual(calls, ['/auth/v1/token', '/auth/v1/user', '/rest/v1/staff_profiles', '/rest/v1/rpc/has_capability']);
     assert.ok(result.writes.length > 0);
     for (const { cookies, headers } of result.writes) {
       assert.match(headers['Cache-Control'], /no-store/);

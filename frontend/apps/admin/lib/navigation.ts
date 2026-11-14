@@ -23,6 +23,15 @@ export function mainNavigation(): NavItem[] {
   return sectionPages;
 }
 
+export function staffNavigation(canManageStaff: boolean): NavItem[] {
+  return canManageStaff
+    ? [...sectionPages,
+      { label: "Roles", href: "/roles", hint: "Configure staff roles and capabilities" },
+      { label: "Staff users", href: "/users", hint: "Invite and manage staff accounts" },
+    ]
+    : sectionPages;
+}
+
 export function primaryNavigation(items: NavItem[]): NavItem[] {
   return items.filter((item) => item.primary);
 }
