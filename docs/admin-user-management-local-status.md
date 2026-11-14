@@ -1,4 +1,4 @@
-# Admin user management — handoff, 2026-11-14 15:05 CET
+# Admin user management — handoff, 2026-11-14 17:30 CET
 
 ## Done
 
@@ -6,11 +6,7 @@ The protected Users page provides paginated Auth-account search, verified-email 
 
 A Users entry is available from the shared staff navigation. Sign out is visible in the desktop masthead and mobile workspace menu; its server action attempts Supabase logout and clears the host-only admin session cookies before redirecting to the matching login route. The sticky masthead is now opaque so page text cannot show through while reviewing long account forms.
 
-Onboarding uses Supabase Auth invitation email delivery and now sets an explicit same-origin redirect to `/auth/callback?next=/auth/new-password?returnTo=staff`, where the invitee sets their own password and returns to staff sign-in. It never generates, returns, displays, logs, or stores a password or sign-in token. Supabase Auth Gmail SMTP is configured and verified by a follow-up read through the Management API; the app-password value is not in this repository. No test email, invitation, or account creation occurred. All unrelated Auth settings remained unchanged.
-
-**Callback gate:** the current Auth `site_url` is `https://epe-lawa-epe-lawa.vercel.app/`, not the expected `https://epelawa.vercel.app/`. The site URL, redirect allow-list, templates, confirmation behavior, and rate limits were deliberately left untouched. Do not send an invitation until the callback-origin mismatch has been reviewed and explicitly resolved.
-
-The first database migration adds only the `must_change_password` flag. The next installs hardened staff-management RPCs and a service-role-only password-flag clear function. These migrations have not been applied; no Production database writes or account provisioning occurred. No service-role credential was accessed.
+Onboarding uses Supabase Auth invitation delivery and an explicit same-origin callback to `/auth/callback?next=/auth/new-password?returnTo=staff`; invitees set their own password and return to staff sign-in. It never generates, returns, displays, logs, or stores a password or sign-in token. Gmail SMTP is configured and read-back verified. On 2026-11-14 at 17:29 CET, after owner approval, the hosted Auth `site_url` was set to `https://epelawa.vercel.app/`; the four exact canonical redirect URLs were appended and all four pre-existing legacy/preview entries were retained. The Auth settings were read back and verified. SMTP was not changed by this update. No test email, invitation, or account creation occurred.
 
 ## Validation and evidence
 
@@ -20,16 +16,17 @@ The first database migration adds only the `must_change_password` flag. The next
 - Full synthetic PGlite schema/RLS suite: **22 passed, 0 failed, 1 documented skip**; the skipped tests are exclusion constraints unavailable in PGlite.
 - Playwright used only synthetic accounts and dummy localhost Supabase settings at **375×812** and **1440×900**. Both widths had no horizontal overflow and no site footer. The sign-out test returned to `/admin/login` and confirmed the synthetic session cookies were cleared.
 - Screenshots: `artifacts/admin-users/admin-users-375.png`, `admin-users-1440.png`, `admin-users-mobile-menu-375.png`, `admin-users-invite-375.png`, and `admin-users-invite-1440.png`. Capture metadata: `artifacts/admin-users/capture-metrics.json`.
-- `git diff --check`: rerun before commit/PR.
+- Invitation callback regression: **10 passed, 0 failed** in the focused admin suite.
+- `git diff --check`: rerun before the next commit.
 
 ## Remaining
 
-Align and verify the Auth callback origin before invitations are used; this requires owner approval because the existing redirect configuration was preserved. Send one test email only after that correction is approved. Review the user-management permissions and migrations before production deployment.
+The callback-origin mismatch is resolved. Do not send a real invitation yet: no test invitation has been approved or sent, and the hosted custom email template remains separate from the local template PR. The user-management migrations still need exact-payload review before any Production database change.
 
 ## Blocked
 
-Production database migrations, account provisioning, and invitations remain unperformed. Vercel authorization/deployment is still pending. No Production user records were read or modified; the only Production change was the explicitly requested Auth SMTP configuration described above.
+Production database migrations and account provisioning remain unperformed. Vercel Production deployment authorization is still pending, so no new merge or deployment was made in this continuation. No Production user records or database were changed; the only Production Auth changes are the previously authorized Gmail SMTP configuration and the owner-approved URL configuration above.
 
 ## Resume
 
-Rerun the focused tests, both TypeScript checks and builds, synthetic PGlite suite, screenshot capture, and `git diff --check` after any change. Open a focused PR; do not merge/deploy or apply migrations until the backup/restore rehearsal and callback-origin gate are resolved.
+After Vercel authorization is cleared, merge only through the ordinary protected path with healthy exact-head checks. Separately obtain approval for the exact additive database migration payload before any live schema write. Test invitation delivery only with an explicitly approved synthetic Preview account after the deployed callback route and hosted email-template choice are ready.
