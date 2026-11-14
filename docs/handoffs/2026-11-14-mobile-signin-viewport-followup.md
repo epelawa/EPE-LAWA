@@ -1,21 +1,23 @@
 # Mobile sign-in viewport follow-up — 2026-11-14
 
 ## Done
-- Created `/workspace/EPE-LAWA-batch-auth` on `fix/mobile-signin-viewport-followup` from `origin/main` at exact SHA `5ce245beeb23c8ea972c7ea9700ad747321fa2e5`.
-- Inspected `/workspace/EPE-LAWA-auth-mobile` read-only, file by file. Its uncommitted changes contained the follow-up viewport fix, removal of admin error auto-scroll, and disabled Google row retention. Copied only those reviewed auth implementation and test files; did not modify the prior worktree.
-- Applied the narrowly scoped fix to member and admin login shells only: fixed viewport sizing (100vh with 100dvh support), hidden page overflow/overscroll, and drag prevention; retained visible disabled Google sign-in. No session/auth/security logic was changed.
-- Added source-level regression assertions for fixed non-scrolling viewport, drag prevention, admin no-auto-scroll, and visible disabled Google row at mobile width.
-- `node --test frontend/tests/auth-shell.test.mjs frontend/tests/member-auth.test.mjs` passed: 8/8.
+
+- Created `/workspace/EPE-LAWA-batch-auth` on branch `fix/mobile-signin-viewport-followup` from verified `origin/main` SHA `5ce245beeb23c8ea972c7ea9700ad747321fa2e5`.
+- Applied a narrow fix to member and admin sign-in only: fixed viewport sizing with `100vh`/`100dvh`, hidden page overflow/overscroll, form drag prevention, and removal of admin error auto-scroll. The disabled Google row remains visible. No auth/session/security logic was changed.
+- Added source regression assertions for the fixed viewport, drag prevention, admin no-auto-scroll, and disabled Google row.
+- Focused tests passed **8/8** under Node 22.23.4. Main app TypeScript check passed and the Next.js production build passed using pnpm 10.34.9, local dummy Supabase values, and no production services.
+- Captured member and staff login at 320×568, 375×812, 768×1024, 1024×900, and 1440×1000 in `docs/screenshots/mobile-signin-viewport-followup/2026-11-14/`. The 320×568 checks returned HTTP 200; both document dimensions exactly matched the viewport; no horizontal overflow occurred; `scrollY` stayed 0 after simulated drag and wheel input; and Google remained disabled/aria-disabled.
+- Screenshots are clean local browser captures; no credentials were entered and non-loopback requests were blocked.
 
 ## Remaining
-- Run TypeScript typecheck and production build using the repository's expected Node 22.23.x / pnpm 10.x environment.
-- Launch the app on dedicated localhost port 3123 with only dummy Supabase configuration. Verify member/admin routes at 320/375/768/1024/1440 and capture actual rendered screenshots; measure 320px scrollHeight/clientHeight and inspect disabled Google row visibility.
-- Commit, push with the authorized GitHub connector askpass procedure, create a focused PR, refresh its exact head, and report hosted check status without treating 403 as success. No PR was created and nothing was merged.
+
+- Run `git diff --check`, commit the screenshot/metrics README and this updated handoff, push with the authorized GitHub connector, and open a separate focused PR.
+- Refresh the PR’s exact head and report hosted check accessibility without treating an inaccessible check endpoint as success. Leave the PR unmerged for review.
 
 ## Blocked
-- The sandbox has Node v24.22.1 and pnpm v11.25.0; no dependency binaries exist in the fresh authorized clone/worktree. The old worktrees are explicitly off-limits for executing dependencies. Thus typecheck/build and runtime screenshot verification could not be performed here.
-- Browser tools are unavailable in this execution context. No screenshots are claimed or attached.
-- GitHub connector authentication is available, but pushing/PR operations were deferred until the requested visual/runtime verification and build checks are complete. Hosted checks are therefore not applicable/not verified (and may be inaccessible with 403).
+
+- None for local code validation or screenshot evidence. Hosted checks will be unverified until a PR exists; prior connector attempts on this repository returned 403 for hosted check rollups.
 
 ## Resume
-Use `/workspace/EPE-LAWA-batch-auth` only. Provision the required runtime/dependencies in this isolated worktree without changing global config or using production records. Start the app on port 3123 with dummy values, verify/capture both auth routes at all requested sizes, then typecheck/build, commit and push through the specified runtime askpass script, and open a separate PR only after all required handoff evidence is in place. Leave the PR open for owner review.
+
+In `/workspace/EPE-LAWA-batch-auth`, verify the branch still descends from exact main `5ce245beeb23c8ea972c7ea9700ad747321fa2e5`, check that only auth code/tests/screenshots/docs are staged, push the focused branch through the authorized connector, and create one PR. Keep the PR open and do not change production configuration.
