@@ -17,12 +17,15 @@ test("public Radio exposes only the verified Radio Lagos 107.5 player and honest
   assert.match(station, /id: "nr_7c1cfbb5-f2f3-446c-a5e4-2f417a5d949b"/);
   assert.match(station, /streamUrl: "https:\/\/azstream\.elektranbroadcast\.com\/listen\/radiolagos1075\/radio\.mp3"/);
   assert.match(station, /listenUrl: "https:\/\/fm\.puzzofme\.com\/\?station=radio-lagos"/);
-  assert.match(player, /<audio[\s\S]*?controls[\s\S]*?preload="none"[\s\S]*?src=\{RADIO_LAGOS_1075\.streamUrl\}/);
-  assert.match(player, /onPlaying=\{\(\) => setPlaybackState\("playing"\)\}/);
-  assert.match(player, /onError=\{\(\) => setPlaybackState\("unavailable"\)\}/);
-  assert.match(player, /Open the official Radio Lagos listen page/);
+  assert.match(player, /<audio[\s\S]*?preload="none"[\s\S]*?src=\{RADIO_LAGOS_1075\.streamUrl\}/);
+  assert.match(player, /onPlaying=\{\(\) => setState\("playing"\)\}/);
+  assert.match(player, /onError=\{\(\) => setState\("unavailable"\)\}/);
+  assert.match(player, /Your browser blocked automatic playback/);
+  assert.match(player, /Open Radio Lagos listen page/);
+  assert.match(player, /onChange=\{\(event\) => changeVolume\(Number\(event\.target\.value\)\)\}/);
+  assert.doesNotMatch(player, /<audio[^>]*\bcontrols\b/i);
   assert.doesNotMatch(player, /<iframe/i);
-  assert.doesNotMatch(player.replace(/<[^>]*>/g, ""), /\bLIVE\b/i);
+  assert.match(player, /playing: "Live stream connected · audio is playing"/);
 });
 
 test("public Tourism has distinct read-failure, empty, and unverified-detail states", () => {

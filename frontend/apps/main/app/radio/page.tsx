@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import RadioPlayer from "../../components/radio-player";
 import { RadioIcon } from "../../components/icons";
 import { EmptyPanel, PageFrame, PageIntro, Panel, SectionHeading } from "../../components/design-system";
+import styles from "./radio-page.module.css";
 import { createClient } from "../../lib/supabase";
 import { pageMetadata } from "../../lib/metadata";
 
@@ -25,11 +26,11 @@ export default async function RadioPage() {
   } catch { unavailable = true; }
 
   return (
-    <PageFrame className="ui-stack">
+    <PageFrame className={`ui-stack ${styles.page}`}>
       <PageIntro
-        eyebrow="Radio Lagos · 107.5 FM"
-        title="EPE LAWA Radio"
-        description="Listen to the external Radio Lagos 107.5 FM stream. Approved EPE LAWA programmes, schedules and archive episodes appear below."
+        eyebrow="EPE LAWA RADIO · 107.5 FM"
+        title="Listen live"
+        description="Radio Lagos 107.5 FM. Programmes, schedule and archive below."
       />
       <RadioPlayer />
       {unavailable ? (

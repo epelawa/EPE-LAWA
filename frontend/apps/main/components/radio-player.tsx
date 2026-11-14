@@ -1,54 +1,113 @@
 "use client";
 
-import { useState } from "react";
-import { Panel, SectionHeading } from "./design-system";
+import { useEffect, useRef, useState } from "react";
+import { PauseIcon, PlayIcon, VolumeOffIcon, VolumeOnIcon } from "./icons";
 import { RADIO_LAGOS_1075 } from "../lib/radio-lagos";
+import styles from "./radio-player.module.css";
 
-type PlaybackState = "ready" | "starting" | "playing" | "buffering" | "unavailable";
+type PlaybackState = "connecting" | "playing" | "paused" | "blocked" | "unavailable";
 
-const statusText: Record<PlaybackState, string> = {
-  ready: "Press play to start the station stream.",
-  starting: "Connecting to Radio Lagos…",
-  playing: "Playing Radio Lagos 107.5 FM.",
-  buffering: "Buffering Radio Lagos 107.5 FM…",
-  unavailable: "The direct stream could not be played.",
-};
+function isAutoplayDenial(error: unknown) {
+  return error instanceof DOMException && error.name === "NotAllowedError";
+}
 
 export default function RadioPlayer() {
-  const [playbackState, setPlaybackState] = useState<PlaybackState>("ready");
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [state, setState] = useState<PlaybackState>("connecting");
+  const [volume, setVolume] = useState(0.8);
+  const [muted, setMuted] = useState(false);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.volume = volume;
+    audio.muted = muted;
+  }, [volume, muted]);
+
+  // Try playback when the route mounts. The browser's `playing` event—not this
+  // attempt—is the only point at which the UI reports that audio is playing.
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    void audio.play().catch((error: unknown) => {
+      setState(isAutoplayDenial(error) ? "blocked" : "unavailable");
+    });
+  }, []);
+
+  async function togglePlayback() {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (!audio.paused) {
+      audio.pause();
+      setState("paused");
+      return;
+    }
+    setState("connecting");
+    try {
+      await audio.play();
+    } catch (error) {
+      setState(isAutoplayDenial(error) ? "blocked" : "unavailable");
+    }
+  }
+
+  function changeVolume(value: number) {
+    setVolume(value);
+    if (audioRef.current) audioRef.current.volume = value;
+    if (value > 0 && muted) setMuted(false);
+  }
+
+  const status = {
+    connecting: "Connecting to the official station stream…",
+    playing: "Live stream connected · audio is playing",
+    paused: "Playback paused",
+    blocked: "Your browser blocked automatic playback. Tap Play to listen.",
+    unavailable: "The station stream is unavailable right now. Please try again later.",
+  }[state];
 
   return (
-    <Panel className="ui-subtle" aria-labelledby="radio-player-title" data-station-id={RADIO_LAGOS_1075.id}>
-      <div className="ui-stack-sm">
-        <SectionHeading
-          eyebrow="External station stream"
-          title={<span id="radio-player-title">{RADIO_LAGOS_1075.name} · {RADIO_LAGOS_1075.frequency}</span>}
-          description="Playback starts only when you press play."
-        />
-        <audio
-          aria-label={`${RADIO_LAGOS_1075.name} ${RADIO_LAGOS_1075.frequency} player`}
-          className="w-full"
-          controls
-          preload="none"
-          src={RADIO_LAGOS_1075.streamUrl}
-          onPlay={() => setPlaybackState("starting")}
-          onPlaying={() => setPlaybackState("playing")}
-          onWaiting={() => setPlaybackState("buffering")}
-          onStalled={() => setPlaybackState("unavailable")}
-          onError={() => setPlaybackState("unavailable")}
-          onPause={() => setPlaybackState((state) => state === "unavailable" ? state : "ready")}
-        >
-          Your browser does not support audio playback.
-        </audio>
-        <p className="ui-meta" role="status" aria-live="polite" aria-atomic="true">
-          {statusText[playbackState]}
-        </p>
-        {playbackState === "unavailable" ? (
-          <a className="ui-text-link" href={RADIO_LAGOS_1075.listenUrl}>
-            Open the official Radio Lagos listen page
-          </a>
-        ) : null}
+    <section className={styles.player} aria-labelledby="radio-player-title" data-station-id={RADIO_LAGOS_1075.id}>
+      <audio
+        ref={audioRef}
+        preload="none"
+        src={RADIO_LAGOS_1075.streamUrl}
+        onPlaying={() => setState("playing")}
+        onWaiting={() => setState("connecting")}
+        onError={() => setState("unavailable")}
+        onPause={() => setState((current) => current === "unavailable" || current === "blocked" ? current : "paused")}
+      />
+      <div className={styles.topline}>
+        <span className={`${styles.liveDot} ${state === "playing" ? styles.connected : ""}`} aria-hidden="true" />
+        <span className={styles.eyebrow}>OFFICIAL STATION STREAM</span>
+        <span className={styles.frequency}>{RADIO_LAGOS_1075.frequency}</span>
       </div>
-    </Panel>
+      <div className={styles.main}>
+        <div className={styles.mark} aria-hidden="true"><span>RL</span><i /></div>
+        <div className={styles.identity}>
+          <p className={styles.city}>{RADIO_LAGOS_1075.city}, Nigeria</p>
+          <h2 id="radio-player-title">{RADIO_LAGOS_1075.name}</h2>
+          <p className={styles.status} role="status" aria-live="polite">{status}</p>
+        </div>
+        <button className={styles.playButton} type="button" onClick={() => void togglePlayback()} aria-label={state === "playing" ? "Pause Radio Lagos" : "Play Radio Lagos"}>
+          {state === "playing" ? <PauseIcon size={18} /> : <PlayIcon size={18} />}
+          <span>{state === "playing" ? "Pause" : state === "blocked" ? "Tap to play" : "Play live"}</span>
+        </button>
+      </div>
+      {(state === "blocked" || state === "unavailable") && (
+        <div className={state === "blocked" ? styles.notice : styles.error}>
+          <strong>{state === "blocked" ? "Playback needs your permission" : "Unable to connect"}</strong>
+          <span>{state === "blocked" ? "Press the Play button to start listening." : "Check your connection and try again later."}</span>
+          {state === "unavailable" && RADIO_LAGOS_1075.listenUrl && <a href={RADIO_LAGOS_1075.listenUrl} target="_blank" rel="noreferrer">Open Radio Lagos listen page ↗</a>}
+        </div>
+      )}
+      <div className={styles.controls}>
+        <button className={styles.muteButton} type="button" onClick={() => { const next = !muted; setMuted(next); if (audioRef.current) audioRef.current.muted = next; }} aria-label={muted || volume === 0 ? "Unmute" : "Mute"}>
+          {muted || volume === 0 ? <VolumeOffIcon size={18} /> : <VolumeOnIcon size={18} />}
+          <span>{muted || volume === 0 ? "Unmute" : "Mute"}</span>
+        </button>
+        <label className={styles.volumeLabel} htmlFor="radio-volume">Volume</label>
+        <input id="radio-volume" className={styles.volume} type="range" min="0" max="1" step="0.01" value={volume} onChange={(event) => changeVolume(Number(event.target.value))} aria-label="Volume" />
+        <span className={styles.volumeValue}>{Math.round(volume * 100)}%</span>
+      </div>
+    </section>
   );
 }

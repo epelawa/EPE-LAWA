@@ -11,17 +11,23 @@ test('public Radio player uses only the verified Radio Lagos 107.5 FM record and
  const station=await read('frontend/apps/main/lib/radio-lagos.ts');
  assert.match(station,/nr_7c1cfbb5-f2f3-446c-a5e4-2f417a5d949b/);
  assert.match(station,/Radio Lagos/);
- assert.match(station,/107\.5 FM/);
- assert.match(station,/https:\/\/azstream\.elektranbroadcast\.com\/listen\/radiolagos1075\/radio\.mp3/);
- assert.match(station,/https:\/\/fm\.puzzofme\.com\/\?station=radio-lagos/);
- assert.match(player,/controls/);
- assert.match(player,/preload="none"/);
- assert.match(player,/onPlaying=\{\(\) => setPlaybackState\("playing"\)\}/);
- assert.match(player,/onError=\{\(\) => setPlaybackState\("unavailable"\)\}/);
- assert.match(player,/Press play to start the station stream/);
- assert.match(player,/Open the official Radio Lagos listen page/);
- assert.doesNotMatch(player,/NAIJA_RADIO_API_KEY|NEXT_PUBLIC|Puzzofme|Naija Radio API/);
- assert.doesNotMatch(player,/autoPlay/);
+	 assert.match(station,/107\.5 FM/);
+	 assert.match(station,/https:\/\/azstream\.elektranbroadcast\.com\/listen\/radiolagos1075\/radio\.mp3/);
+	 assert.match(station,/https:\/\/fm\.puzzofme\.com\/\?station=radio-lagos/);
+	 assert.match(player,/src=\{RADIO_LAGOS_1075\.streamUrl\}/);
+	 assert.match(player,/preload="none"/);
+	 assert.match(player,/onPlaying=\{\(\) => setState\("playing"\)\}/);
+	 assert.match(player,/onError=\{\(\) => setState\("unavailable"\)\}/);
+	 assert.match(player,/void audio\.play\(\)\.catch/);
+	 assert.match(player,/NotAllowedError/);
+	 assert.match(player,/Your browser blocked automatic playback/);
+	 assert.match(player,/Open Radio Lagos listen page/);
+	 assert.match(player,/onChange=\{\(event\) => changeVolume\(Number\(event\.target\.value\)\)\}/);
+	 assert.match(player,/PlayIcon/);
+	 assert.match(player,/VolumeOnIcon/);
+	 assert.doesNotMatch(player,/<audio[^>]*\bcontrols\b/i);
+	 assert.doesNotMatch(player,/NAIJA_RADIO_API_KEY|NEXT_PUBLIC|Puzzofme|Naija Radio API/);
+	 assert.doesNotMatch(player,/autoPlay/);
 });
 
 test('public Radio page renders only database-backed programme, schedule and archive records',async()=>{
@@ -31,7 +37,8 @@ test('public Radio page renders only database-backed programme, schedule and arc
  assert.match(page,/No schedule published yet/);
 	 assert.match(page,/No published episodes available/);
  assert.match(page,/<RadioPlayer/);
- assert.match(page,/Radio Lagos · 107\.5 FM/);
+	 assert.match(page,/EPE LAWA RADIO · 107\.5 FM/);
+	 assert.match(page,/title="Listen live"/);
  assert.doesNotMatch(page,/Live stream not yet available|Stream availability is not verified/);
 });
 
