@@ -6,13 +6,22 @@ import path from 'node:path';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..','..');
 const read=(p)=>readFile(path.join(root,p),'utf8');
 
-test('public Radio player never embeds the unrelated Radio Lagos stream',async()=>{
+test('public Radio player uses only the verified Radio Lagos 107.5 FM record and shows truthful playback state',async()=>{
  const player=await read('frontend/apps/main/components/radio-player.tsx');
- assert.match(player,/EPE LAWA Radio/);
-	 assert.match(player,/Live streaming is unavailable/i);
-	 assert.match(player,/embedding permission/);
-	 assert.doesNotMatch(player,/Coming\s+Soon/i);
- assert.doesNotMatch(player,/Radio Lagos|azstream\.elektranbroadcast\.com|puzzofme/);
+ const station=await read('frontend/apps/main/lib/radio-lagos.ts');
+ assert.match(station,/nr_7c1cfbb5-f2f3-446c-a5e4-2f417a5d949b/);
+ assert.match(station,/Radio Lagos/);
+ assert.match(station,/107\.5 FM/);
+ assert.match(station,/https:\/\/azstream\.elektranbroadcast\.com\/listen\/radiolagos1075\/radio\.mp3/);
+ assert.match(station,/https:\/\/fm\.puzzofme\.com\/\?station=radio-lagos/);
+ assert.match(player,/controls/);
+ assert.match(player,/preload="none"/);
+ assert.match(player,/onPlaying=\{\(\) => setPlaybackState\("playing"\)\}/);
+ assert.match(player,/onError=\{\(\) => setPlaybackState\("unavailable"\)\}/);
+ assert.match(player,/Press play to start the station stream/);
+ assert.match(player,/Open the official Radio Lagos listen page/);
+ assert.doesNotMatch(player,/NAIJA_RADIO_API_KEY|NEXT_PUBLIC|Puzzofme|Naija Radio API/);
+ assert.doesNotMatch(player,/autoPlay/);
 });
 
 test('public Radio page renders only database-backed programme, schedule and archive records',async()=>{
@@ -21,8 +30,9 @@ test('public Radio page renders only database-backed programme, schedule and arc
  assert.match(page,/No programmes published yet/);
  assert.match(page,/No schedule published yet/);
 	 assert.match(page,/No published episodes available/);
-	 assert.match(page,/<RadioPlayer/);
-	 assert.doesNotMatch(page,/Radio Lagos|azstream\.elektranbroadcast\.com|puzzofme/);
+ assert.match(page,/<RadioPlayer/);
+ assert.match(page,/Radio Lagos · 107\.5 FM/);
+ assert.doesNotMatch(page,/Live stream not yet available|Stream availability is not verified/);
 });
 
 test('Radio admin distinguishes failed data reads from empty catalogues',async()=>{

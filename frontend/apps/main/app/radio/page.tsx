@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import RadioPlayer from "../../components/radio-player";
 import { RadioIcon } from "../../components/icons";
-import { EmptyPanel, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "../../components/design-system";
+import { EmptyPanel, PageFrame, PageIntro, Panel, SectionHeading } from "../../components/design-system";
 import { createClient } from "../../lib/supabase";
 import { pageMetadata } from "../../lib/metadata";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = pageMetadata({ title: "EPE LAWA Radio", description: "Community programmes, schedules and approved radio archive records from Epe.", path: "/radio" });
+export const metadata: Metadata = pageMetadata({ title: "EPE LAWA Radio", description: "Radio Lagos 107.5 FM and approved EPE LAWA programmes, schedules and archive episodes.", path: "/radio" });
 
 export default async function RadioPage() {
   let programmes: Array<{ id: string; name: string; description: string | null }> = [];
@@ -27,10 +27,9 @@ export default async function RadioPage() {
   return (
     <PageFrame className="ui-stack">
       <PageIntro
-        eyebrow="Community radio"
+        eyebrow="Radio Lagos · 107.5 FM"
         title="EPE LAWA Radio"
-        description="A home for community voices, programmes and conversations. Browse approved programme information, the schedule and published archive episodes."
-        meta={<StatusBadge tone="warning">Live stream not yet available</StatusBadge>}
+        description="Listen to the external Radio Lagos 107.5 FM stream. Approved EPE LAWA programmes, schedules and archive episodes appear below."
       />
       <RadioPlayer />
       {unavailable ? (
@@ -95,7 +94,6 @@ export default async function RadioPage() {
           </Panel>
         </div>
       )}
-      <p className="ui-meta" role="status"><RadioIcon size={16} aria-hidden="true" />Stream availability is not verified; no live status is claimed.</p>
     </PageFrame>
   );
 }
