@@ -35,7 +35,7 @@ test("public Appearance switch lives in the all-viewport hamburger drawer", () =
   assert.equal(heroManifest.length, 52);
   assert.equal(new Set(heroManifest.map((slide) => slide.source)).size, 52);
   assert.match(heroCarousel, /HERO_SLIDES = heroImages/);
-  assert.match(heroCarousel, /Photo by \{slide\.author\}/);
+  assert.doesNotMatch(heroCarousel, /Photo by \{slide\.author\}/);
   assert.doesNotMatch(heroCarousel, /Epe Division|The voice of Epe Division/i);
   assert.match(header, /A shared home for everyone\./);
   assert.match(header, /addEventListener\("pointerdown", onOutsideDrawer\)/);
