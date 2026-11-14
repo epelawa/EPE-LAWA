@@ -213,3 +213,10 @@ A local candidate on `feat/tourism-photo-gallery`, based on `main` `203d7ca`, ad
 - Local production-mode fallback screenshots at 375px and 1440px use only a synthetic loopback HTTP 500 response; browser external requests were zero and the audio player was not started. See `docs/screenshots/radio-lagos-fallback/2026-11-14/README.md` and `docs/handoffs/2026-11-14-radio-lagos-availability-contract.md`.
 - **Remaining/blocked:** this isolated branch has not yet been pushed or opened as a PR. PR #50 remains blocked while Production lacks the required `publication_status` columns on `programmes` and `episodes`. The official station catalogue still marks availability unknown/stale, so continuous uptime is not guaranteed. No Production schema, data or environment was changed.
 - **Resume:** commit and push the focused branch, open one PR, refresh exact-head checks, and attempt only an ordinary merge if healthy; then verify the public route read-only.
+
+
+## 2026-11-14 10:49 WAT — PR #52 opened; hosted checks not visible
+
+- PR #52 is open at exact head `8356f524c49ca258f809f605f7a6a20e50a382df` (`fix/radio-lagos-availability-contract`) against current `main` `e5c9bde21b82d555f486ac3356592f6e31007b29`.
+- The local gates and screenshots are complete, but `gh pr checks 52` returned HTTP 403 `Resource not accessible by integration` for the exact-head check rollup. Hosted checks are not verified; no merge was attempted and mergeability is not treated as proof.
+- **Resume:** obtain an authorized exact-head check view; only then attempt an ordinary merge if healthy. PR #50 remains blocked by the Production `publication_status` schema prerequisite. No Production writes.

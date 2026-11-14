@@ -324,3 +324,8 @@ PR #51 is confirmed merged at `e5c9bde21b82d555f486ac3356592f6e31007b29`; the Pr
 Focused Radio tests passed 9/9. Forced Node 22.23.4/pnpm 10.34.9 typecheck passed 5/5 tasks, builds passed 2/2 tasks, and the complete suite passed 184 tests with 0 failures and 1 documented skip. Fresh local production-mode screenshots at 375px and 1440px show the synthetic backend-error state; the fixture returned an error only on loopback, the browser made zero external requests, and the player was not started. Evidence is indexed in `docs/screenshots/radio-lagos-fallback/2026-11-14/README.md`.
 
 The focused branch remains local pending commit/push and PR creation. PR #50 remains open and blocked by the missing Production `publication_status` columns on `programmes` and `episodes`. No Production schema, data or environment was changed.
+
+
+### 2026-11-14 10:49 WAT — PR #52 opened
+
+PR #52 is open at exact head `8356f524c49ca258f809f605f7a6a20e50a382df` against `main` `e5c9bde21b82d555f486ac3356592f6e31007b29`. The focused branch contains the Radio programme-error copy fix, updated contract test, local screenshots and timestamped handoff. Local checks are complete, but `gh pr checks 52` returned HTTP 403 `Resource not accessible by integration`; hosted checks remain unverified. No merge was attempted. Refresh the exact-head checks with an authorized status view before any ordinary merge. PR #50 remains blocked by missing Production `publication_status` columns on `programmes` and `episodes`.
