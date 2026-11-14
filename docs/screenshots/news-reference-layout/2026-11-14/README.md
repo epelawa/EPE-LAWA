@@ -24,6 +24,8 @@ These screenshots verify the mobile-first News listing and article layout agains
 
 [metrics.json](metrics.json) records the measured widths and key UI checks. All 10 screenshots have `documentWidth === viewportWidth` (no horizontal overflow). The listing has 0 filter buttons at all five widths and the accessible headline search opens; the signed-out comment action is present in all five article captures. The shared navigation remains on desktop and is hidden only on mobile News listing/article routes to match the reference.
 
+The mobile listing and article surfaces now use a 32px outer radius; the lead story card uses 24px, its image is clipped to a 16px radius, and the article hero image uses 16px. Desktop keeps the open page canvas, a 20px lead-card radius and a 14px image clip. The values are recorded per width in `metrics.json`.
+
 ## Fixture and network boundary
 
 The app preview used dummy Supabase values and the read-only loopback mock at `https://127.0.0.1:54322`. The illustrative cover image was fulfilled by Playwright from the `news-fixture.local` route. The route guard allowed only loopback app/mock traffic and that synthetic image route, aborting all other hosts. No production News, member data, secrets, or remote media were used.

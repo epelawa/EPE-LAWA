@@ -6,13 +6,17 @@
     "documentWidth": 320,
     "viewportWidth": 320,
     "leadCard": {
-      "x": 16,
-      "y": 121.90625,
-      "width": 288,
-      "height": 276.84375
+      "x": 29,
+      "y": 134.90625,
+      "width": 262,
+      "height": 262.390625
     },
+    "pageRadius": "32px",
+    "leadCardRadius": "24px",
+    "leadImageRadius": "0px",
     "searchVisibleWhenOpened": true,
-    "filterButtons": 0
+    "filterButtons": 0,
+    "leadImageClipRadius": "16px"
   },
   {
     "page": "listing",
@@ -21,13 +25,17 @@
     "documentWidth": 375,
     "viewportWidth": 375,
     "leadCard": {
-      "x": 20,
-      "y": 123,
-      "width": 335,
-      "height": 302.953125
+      "x": 33,
+      "y": 136,
+      "width": 309,
+      "height": 288.5
     },
+    "pageRadius": "32px",
+    "leadCardRadius": "24px",
+    "leadImageRadius": "0px",
     "searchVisibleWhenOpened": true,
-    "filterButtons": 0
+    "filterButtons": 0,
+    "leadImageClipRadius": "16px"
   },
   {
     "page": "listing",
@@ -41,8 +49,12 @@
       "width": 706.546875,
       "height": 517.84375
     },
+    "pageRadius": "0px",
+    "leadCardRadius": "20px",
+    "leadImageRadius": "0px",
     "searchVisibleWhenOpened": true,
-    "filterButtons": 0
+    "filterButtons": 0,
+    "leadImageClipRadius": "14px"
   },
   {
     "page": "listing",
@@ -56,8 +68,12 @@
       "width": 942.078125,
       "height": 335.5
     },
+    "pageRadius": "0px",
+    "leadCardRadius": "20px",
+    "leadImageRadius": "0px",
     "searchVisibleWhenOpened": true,
-    "filterButtons": 0
+    "filterButtons": 0,
+    "leadImageClipRadius": "14px"
   },
   {
     "page": "listing",
@@ -71,8 +87,12 @@
       "width": 1160,
       "height": 410.5
     },
+    "pageRadius": "0px",
+    "leadCardRadius": "20px",
+    "leadImageRadius": "0px",
     "searchVisibleWhenOpened": true,
-    "filterButtons": 0
+    "filterButtons": 0,
+    "leadImageClipRadius": "14px"
   },
   {
     "page": "article",
@@ -80,22 +100,24 @@
     "height": 568,
     "documentWidth": 320,
     "viewportWidth": 320,
+    "pageRadius": "32px",
+    "articleImageRadius": "16px",
     "image": {
-      "x": 16,
-      "y": 82,
-      "width": 288,
-      "height": 162
+      "x": 29,
+      "y": 95,
+      "width": 262,
+      "height": 147.375
     },
     "title": {
-      "x": 16,
-      "y": 254,
-      "width": 288,
+      "x": 29,
+      "y": 252.375,
+      "width": 262,
       "height": 57
     },
     "comments": {
-      "x": 16,
-      "y": 580.21875,
-      "width": 288,
+      "x": 29,
+      "y": 578.59375,
+      "width": 262,
       "height": 62
     },
     "signInCommentAction": true
@@ -106,22 +128,24 @@
     "height": 812,
     "documentWidth": 375,
     "viewportWidth": 375,
+    "pageRadius": "32px",
+    "articleImageRadius": "16px",
     "image": {
-      "x": 20,
-      "y": 82,
-      "width": 335,
-      "height": 188.4375
+      "x": 33,
+      "y": 95,
+      "width": 309,
+      "height": 173.8125
     },
     "title": {
-      "x": 20,
-      "y": 280.4375,
-      "width": 335,
+      "x": 33,
+      "y": 278.8125,
+      "width": 309,
       "height": 59.84375
     },
     "comments": {
-      "x": 20,
-      "y": 580.703125,
-      "width": 335,
+      "x": 33,
+      "y": 607.875,
+      "width": 309,
       "height": 62
     },
     "signInCommentAction": true
@@ -132,6 +156,8 @@
     "height": 1024,
     "documentWidth": 768,
     "viewportWidth": 768,
+    "pageRadius": "0px",
+    "articleImageRadius": "18px",
     "image": {
       "x": 30.71875,
       "y": 182,
@@ -158,6 +184,8 @@
     "height": 768,
     "documentWidth": 1024,
     "viewportWidth": 1024,
+    "pageRadius": "0px",
+    "articleImageRadius": "18px",
     "image": {
       "x": 40.953125,
       "y": 182,
@@ -184,6 +212,8 @@
     "height": 900,
     "documentWidth": 1440,
     "viewportWidth": 1440,
+    "pageRadius": "0px",
+    "articleImageRadius": "18px",
     "image": {
       "x": 140,
       "y": 182,

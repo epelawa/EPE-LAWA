@@ -66,7 +66,11 @@ test("mobile News and article routes hide the masthead and keep reference spacin
   assert.ok(header.includes('pathname === "/news" || pathname.startsWith("/news/")'));
   assert.match(header, /site-head--news-reference/);
   assert.match(navigation, /\.site-head--news-reference\s*\{\s*display:\s*none;\s*\}/);
-  assert.match(styles, /@media \(max-width: 600px\) \{\s*\.newsPage,\.articlePage \{\s*padding-top:\s*30px;/);
+  assert.match(styles, /@media \(max-width: 600px\) \{[\s\S]*?\.newsPage,\.articlePage \{[\s\S]*?border-radius:\s*32px;/);
+  assert.match(styles, /@media \(max-width: 520px\) \{[\s\S]*?\.featureCard \{ border-radius: 24px; \}/);
+  assert.match(styles, /\.featureLink \{ margin: 8px 8px 0; border-radius: 16px; \}/);
+  assert.match(styles, /\.storyThumbnail,\.storyThumbnailFallback \{ width: 68px; height: 52px; border-radius: 12px; \}/);
+  assert.match(styles, /\.articleHeroImage,\.articleHeroFallback \{ border-radius: 16px; \}/);
 });
 
 test("News article detail uses a short image-first header on narrow phones", () => {

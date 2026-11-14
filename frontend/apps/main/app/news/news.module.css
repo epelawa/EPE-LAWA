@@ -93,7 +93,16 @@
 .commentSignInLink svg { width: 36px; height: 36px; padding: 9px; flex: 0 0 auto; }
 
 @media (max-width: 600px) {
-  .newsPage,.articlePage { padding-top: 30px; }
+  .newsPage,.articlePage {
+    box-sizing: border-box;
+    gap: 16px;
+    margin-block: 16px 32px;
+    padding: 26px 12px 30px;
+    border: 1px solid hsl(var(--border));
+    border-radius: 32px;
+    background: hsl(var(--card));
+    box-shadow: 0 14px 38px rgba(10,16,35,.08);
+  }
 }
 
 @media (min-width: 900px) {
@@ -108,8 +117,8 @@
 @media (max-width: 520px) {
   .newsPage,.articlePage { gap: 13px; }
   .pageTitle { font-size: 25px; }
-  .featureCard { border-radius: 17px; }
-  .featureLink { margin: 8px 8px 0; border-radius: 11px; }
+  .featureCard { border-radius: 24px; }
+  .featureLink { margin: 8px 8px 0; border-radius: 16px; }
   .featureImage,.featureImageFallback { aspect-ratio: 1.8; }
   .leadCopy { gap: 5px; padding: 8px 10px 10px; }
   .featureTitle { font-size: 18px; line-height: 1.22; }
@@ -117,14 +126,14 @@
   .categoryList { gap: 14px; }
   .categoryLink { min-height: 40px; font-size: 12px; }
   .storyLink { grid-template-columns: 68px minmax(0,1fr); gap: 10px; min-height: 76px; padding-block: 8px; }
-  .storyThumbnail,.storyThumbnailFallback { width: 68px; height: 52px; border-radius: 8px; }
+  .storyThumbnail,.storyThumbnailFallback { width: 68px; height: 52px; border-radius: 12px; }
   .storyCategory { font-size: 10px; }
   .storyTitle { font-size: 13px; }
   .storyMeta { font-size: 10px; }
   .listHeading { font-size: 15px; }
   .article { gap: 13px; }
   .articleHero { gap: 10px; }
-  .articleHeroImage,.articleHeroFallback { border-radius: 13px; }
+  .articleHeroImage,.articleHeroFallback { border-radius: 16px; }
   .articleHeroCopy h1 { font-size: clamp(25px,7vw,31px); }
   .articleMetaBar { gap: 4px 9px; }
   .commentComposerPanel,.commentSignIn { padding: 8px; }
