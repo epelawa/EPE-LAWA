@@ -6,7 +6,8 @@ import "@epelawa/ui/ui.css";
 import "./globals.css";
 import SiteHeader from "../components/site-header";
 import SiteFooter from "../components/site-footer";
-import { mainNavigation } from "../lib/navigation";
+import { staffNavigation } from "../lib/navigation";
+import { createClient } from "../lib/supabase";
 import { siteUrl } from "../lib/site";
 import { themeScript } from "../lib/theme";
 import SiteMotion from "../components/site-motion";
@@ -20,9 +21,13 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { themeColor: "#F1F4FA" };
 
-const navigation = mainNavigation();
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const db = await createClient();
+  const { data: canManageStaff, error } = await db.rpc("staff_roles_authorized");
+  const navigation = staffNavigation(!error && canManageStaff === true);
   return (
     <html lang="en">
       <body>

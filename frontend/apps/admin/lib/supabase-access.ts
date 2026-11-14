@@ -183,18 +183,14 @@ export async function getAdminAccessForToken(
     const profile = profiles.find((p) => p.user_id === userId);
     if (!profile || !profile.is_active) return { allowed: false, userId: null };
 
-    const grantsResp = await fetch(`${url}/rest/v1/staff_capability_grants`, {
+    const capabilityResp = await fetch(`${url}/rest/v1/rpc/has_capability`, {
       cache: "no-store",
-      headers: { Authorization: `Bearer ${token}`, apikey: key },
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, apikey: key, "Content-Type": "application/json" },
+      body: JSON.stringify({ p_capability: "admin.access" }),
     });
-    if (!grantsResp.ok) return { allowed: false, userId: null };
-    const grants = (await grantsResp.json()) as Array<{
-      user_id: string;
-      capability: string;
-    }>;
-    const hasAccess = grants.some(
-      (g) => g.user_id === userId && g.capability === "admin.access",
-    );
+    if (!capabilityResp.ok) return { allowed: false, userId: null };
+    const hasAccess = (await capabilityResp.json()) === true;
     return { allowed: hasAccess, userId };
   } catch {
     return { allowed: false, userId: null };
@@ -284,25 +280,17 @@ export async function signInAdminWithPassword(
       return { allowed: false };
     }
 
-    const grantsResp = await fetch(`${url}/rest/v1/staff_capability_grants`, {
+    const capabilityResp = await fetch(`${url}/rest/v1/rpc/has_capability`, {
       cache: "no-store",
-      headers: { Authorization: `Bearer ${accessToken}`, apikey: key },
+      method: "POST",
+      headers: { Authorization: `Bearer ${accessToken}`, apikey: key, "Content-Type": "application/json" },
+      body: JSON.stringify({ p_capability: "admin.access" }),
     });
-    if (!grantsResp.ok) {
-      await fetch(`${url}/auth/v1/logout`, {
-        cache: "no-store",
-        method: "POST",
-        headers: { Authorization: `Bearer ${accessToken}`, apikey: key },
-      });
+    if (!capabilityResp.ok) {
+      await fetch(`${url}/auth/v1/logout`, { cache: "no-store", method: "POST", headers: { Authorization: `Bearer ${accessToken}`, apikey: key } });
       return { allowed: false };
     }
-    const grants = (await grantsResp.json()) as Array<{
-      user_id: string;
-      capability: string;
-    }>;
-    const hasAccess = grants.some(
-      (g) => g.user_id === sessionUserId && g.capability === "admin.access",
-    );
+    const hasAccess = (await capabilityResp.json()) === true;
     if (!hasAccess) {
       await fetch(`${url}/auth/v1/logout`, {
         cache: "no-store",
@@ -467,18 +455,14 @@ export async function getAdminAccessForSession(
     const profile = profiles.find((p) => p.user_id === userId);
     if (!profile || !profile.is_active) return { allowed: false, userId: null };
 
-    const grantsResp = await fetch(`${url}/rest/v1/staff_capability_grants`, {
+    const capabilityResp = await fetch(`${url}/rest/v1/rpc/has_capability`, {
       cache: "no-store",
-      headers: { Authorization: `Bearer ${accessToken}`, apikey: key },
+      method: "POST",
+      headers: { Authorization: `Bearer ${accessToken}`, apikey: key, "Content-Type": "application/json" },
+      body: JSON.stringify({ p_capability: "admin.access" }),
     });
-    if (!grantsResp.ok) return { allowed: false, userId: null };
-    const grants = (await grantsResp.json()) as Array<{
-      user_id: string;
-      capability: string;
-    }>;
-    const hasAccess = grants.some(
-      (g) => g.user_id === userId && g.capability === "admin.access",
-    );
+    if (!capabilityResp.ok) return { allowed: false, userId: null };
+    const hasAccess = (await capabilityResp.json()) === true;
     if (!hasAccess) return { allowed: false, userId: null };
   } catch {
     return { allowed: false, userId: null };

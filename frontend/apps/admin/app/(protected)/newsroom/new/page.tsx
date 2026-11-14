@@ -19,17 +19,17 @@ export default async function NewArticlePage({
 }) {
   const params = await searchParams;
   const supabase = await createClient();
-  const [grantResult, categoryResult, authorResult] = await Promise.all([
-    supabase.from("staff_capability_grants").select("capability").eq("capability", "article.create").is("revoked_at", null).maybeSingle(),
+  const [capabilityResult, categoryResult, authorResult] = await Promise.all([
+    supabase.rpc("has_capability", { p_capability: "article.create" }),
     supabase.from("categories").select("id,label").eq("is_active", true).order("sort_order").limit(100),
     supabase.from("authors").select("id,display_name").order("display_name").limit(100),
   ]);
-  // The table's RLS permits only this active staff member's own grants; article_create
-  // still performs the authoritative require_capability check for every write.
-  const canCreate = grantResult.data?.capability === "article.create";
+  // Effective capabilities include assigned roles; article_create still enforces
+  // authoritative authorization for every write.
+  const canCreate = !capabilityResult.error && capabilityResult.data === true;
   const categories = (categoryResult.data ?? []) as ReferenceOption[];
   const authors = (authorResult.data ?? []) as ReferenceOption[];
-  const accessCheckUnavailable = !!grantResult.error;
+  const accessCheckUnavailable = !!capabilityResult.error;
   const referencesFailed = !!categoryResult.error || !!authorResult.error;
 
   return (

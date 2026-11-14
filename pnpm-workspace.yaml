@@ -2,7 +2,6 @@ packages:
   - 'frontend/apps/*'
   - 'frontend/packages/*'
   - 'backend/packages/*'
-
 # esbuild (used by tsx, which runs the TypeScript test files) needs its
 # postinstall binary download approved. Everything else stays blocked.
 onlyBuiltDependencies:
