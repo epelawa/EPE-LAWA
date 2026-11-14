@@ -35,6 +35,7 @@ function bodyForEditor(body: unknown): string {
 }
 
 function StatusMessage({ query }: { query: Record<string, string | undefined> }) {
+  if (query.created) return <Notice tone="success" role="status">Private article draft created. It is not public until an authorized publisher publishes it.</Notice>;
   if (query.saved) return <Notice tone="success" role="status">Private draft saved. It is not public.</Notice>;
   if (query.submitted) return <Notice tone="success" role="status">This version remains private. Authorized publishers can publish it directly.</Notice>;
   if (query.reviewed) return <Notice tone="success" role="status">The version status was updated. Publication is a separate, audited action.</Notice>;
@@ -79,7 +80,10 @@ export default async function EditArticlePage({
     supabase.rpc("has_capability", { p_capability: "article.publish" }),
     supabase.rpc("has_capability", { p_capability: "article.unpublish" }),
   ]);
-  if (articleResult.error || !articleResult.data) notFound();
+  if (articleResult.error) {
+    return <PageFrame className="ui-stack"><PageIntro eyebrow="Newsroom" title="Article unavailable" description="Article details could not be verified." /><Notice tone="danger" role="alert"><strong>Article details could not be loaded.</strong><p>No changes were made. Try again in a moment.</p></Notice></PageFrame>;
+  }
+  if (!articleResult.data) notFound();
   const article = articleResult.data as {
     id: string;
     slug: string;
@@ -103,10 +107,12 @@ export default async function EditArticlePage({
   const editablePrivateVersion = (version.state === "draft" || version.state === "review") && canCreate;
   const canCreateRevision = (version.state === "approved" || version.state === "rejected" || version.state === "published") && canCreate;
   const canPublishCurrentVersion = ["draft", "review", "approved", "published"].includes(version.state);
+  const displayState = currentVersionIsPublic ? "published" : version.state;
+  const displayTone = displayState === "published" || displayState === "approved" ? "success" : displayState === "rejected" ? "danger" : displayState === "review" ? "warning" : "neutral";
 
   return (
     <PageFrame className="ui-stack">
-      <PageIntro eyebrow={`Newsroom · Revision ${article.revision}`} title={version.title} description={<>Current version: <StatusBadge tone={version.state === "published" ? "success" : version.state === "rejected" ? "danger" : version.state === "review" ? "warning" : "neutral"}>{version.state}</StatusBadge>. {currentVersionIsPublic ? "This version is public." : olderVersionRemainsPublic ? "The previously published version remains live; this current version is private." : "No version of this article is public yet."}</>} actions={<Link href={adminHref("/newsroom")} className={buttonClassName("secondary")}>Back to newsroom</Link>} meta={<><span>Revision {article.revision}</span><span>Slug: {article.slug}</span></>} />
+      <PageIntro eyebrow={`Newsroom · Revision ${article.revision}`} title={version.title} description={<>Current version: <StatusBadge tone={displayTone}>{displayState}</StatusBadge>. {currentVersionIsPublic ? "This version is public." : olderVersionRemainsPublic ? "The previously published version remains live; this current version is private." : "No version of this article is public yet."}</>} actions={<Link href={adminHref("/newsroom")} className={buttonClassName("secondary")}>Back to newsroom</Link>} meta={<><span>Revision {article.revision}</span><span>Slug: {article.slug}</span></>} />
       <StatusMessage query={query} />
       {article.published_version_id ? <Notice tone="neutral"><Link href={`/news/${article.slug}`} className="ui-text-link">Open public article</Link>{article.published_at ? <span className="ui-meta">Published {new Date(article.published_at).toLocaleDateString("en-NG")}</span> : null}</Notice> : null}
 

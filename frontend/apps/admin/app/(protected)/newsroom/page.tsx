@@ -43,7 +43,8 @@ export default async function NewsroomPage({ searchParams }: { searchParams: Pro
     .order("updated_at", { ascending: false })
     .limit(500);
 
-  if (state) query = query.filter("current_version.state", "eq", state);
+  if (state === "published") query = query.not("published_version_id", "is", null);
+  else if (state) query = query.filter("current_version.state", "eq", state);
 
   const { data, error } = await query;
   if (error) {
@@ -70,7 +71,7 @@ export default async function NewsroomPage({ searchParams }: { searchParams: Pro
       </Panel>
       <section className="ui-stack-sm" aria-labelledby="article-list-heading">
         <SectionHeading eyebrow={`${articles.length} loaded`} title="Articles" id="article-list-heading" description="Current version and publication state for each article." />
-        <nav className="ui-tabs" aria-label="Filter articles by state">
+        <nav className="ui-tabs" aria-label="Filter articles by workflow state or publication">
           <Link href={adminHref("/newsroom")} aria-current={!state ? "page" : undefined}>All</Link>
           {states.map((item) => <Link key={item} href={adminHref(`/newsroom?state=${item}`)} aria-current={state === item ? "page" : undefined}>{item[0].toUpperCase() + item.slice(1)}</Link>)}
         </nav>
@@ -78,8 +79,10 @@ export default async function NewsroomPage({ searchParams }: { searchParams: Pro
           {articles.map((article) => {
             const version = article.current_version;
             const hasPublicVersion = Boolean(article.published_version_id);
-            const tone = version?.state === "published" ? "success" : version?.state === "rejected" ? "danger" : version?.state === "approved" ? "success" : version?.state === "review" ? "warning" : "neutral";
-            return <tr key={article.id}><td><Link href={adminHref(`/newsroom/${article.id}`)} className="ui-item-title">{version?.title || "Untitled article"}</Link></td><td><StatusBadge tone={tone}>{version?.state ?? "unknown"}</StatusBadge>{hasPublicVersion ? <span className="ui-meta">Public version</span> : null}</td><td>{article.revision}</td><td><span className="ui-meta">{article.slug}</span></td><td><span className="ui-meta">{new Date(article.updated_at).toLocaleDateString("en-NG")}</span></td><td><Link href={adminHref(`/newsroom/${article.id}`)} className={buttonClassName("secondary")}>Open</Link></td></tr>;
+            const currentVersionIsPublic = Boolean(article.current_version_id && article.published_version_id === article.current_version_id);
+            const displayState = currentVersionIsPublic ? "published" : version?.state ?? "unknown";
+            const tone = displayState === "published" || displayState === "approved" ? "success" : displayState === "rejected" ? "danger" : displayState === "review" ? "warning" : "neutral";
+            return <tr key={article.id}><td><Link href={adminHref(`/newsroom/${article.id}`)} className="ui-item-title">{version?.title || "Untitled article"}</Link></td><td><StatusBadge tone={tone}>{displayState}</StatusBadge>{hasPublicVersion && !currentVersionIsPublic ? <span className="ui-meta">Earlier version is public</span> : null}</td><td>{article.revision}</td><td><span className="ui-meta">{article.slug}</span></td><td><span className="ui-meta">{new Date(article.updated_at).toLocaleDateString("en-NG")}</span></td><td><Link href={adminHref(`/newsroom/${article.id}`)} className={buttonClassName("secondary")}>Open</Link></td></tr>;
           })}
         </tbody></table></Panel> : <EmptyPanel title={state ? `No ${state} articles` : "No articles yet"} description={state ? "No article currently matches this state." : "Create a private draft to begin. Nothing appears publicly until a publisher explicitly publishes it."} actions={!state ? <Link href={adminHref("/newsroom/new")} className={buttonClassName("primary")}>Create draft</Link> : undefined} />}
       </section>
