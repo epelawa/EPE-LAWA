@@ -10,13 +10,15 @@ type Props = {
   copyButtonClassName?: string;
   feedbackClassName?: string;
   fallbackClassName?: string;
+  compact?: boolean;
+  showCopyButton?: boolean;
 };
 
 function isShareCancelled(error: unknown): boolean {
   return error instanceof Error && error.name === "AbortError";
 }
 
-export default function ArticleShareActions({ title, url, className = "", shareButtonClassName = "", copyButtonClassName = "", feedbackClassName = "", fallbackClassName = "" }: Props) {
+export default function ArticleShareActions({ title, url, className = "", shareButtonClassName = "", copyButtonClassName = "", feedbackClassName = "", fallbackClassName = "", compact = false, showCopyButton = true }: Props) {
   const [message, setMessage] = useState("");
   const [showManualCopy, setShowManualCopy] = useState(false);
 
@@ -49,12 +51,12 @@ export default function ArticleShareActions({ title, url, className = "", shareB
     <div className={className} role="group" aria-label="Share this article">
       <button type="button" className={shareButtonClassName} onClick={shareArticle} aria-label="Share article">
         <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.7 10.7 6.6-4.4M8.7 13.3l6.6 4.4"/></svg>
-        <span>Share</span>
+        <span className={compact ? "sr-only" : undefined}>Share</span>
       </button>
-      <button type="button" className={copyButtonClassName} onClick={copyPublicUrl} aria-label="Copy public article link">
+      {showCopyButton ? <button type="button" className={copyButtonClassName} onClick={copyPublicUrl} aria-label="Copy public article link">
         <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>
-        <span>Copy link</span>
-      </button>
+        <span className={compact ? "sr-only" : undefined}>Copy link</span>
+      </button> : null}
       {message ? <span className={feedbackClassName} role="status" aria-live="polite">{message}</span> : null}
       {showManualCopy ? <label className={fallbackClassName}>Public article URL<input type="text" readOnly value={url} onFocus={(event) => event.currentTarget.select()} /></label> : null}
     </div>

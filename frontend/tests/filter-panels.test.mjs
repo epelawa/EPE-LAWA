@@ -4,9 +4,8 @@ import { readFile } from "node:fs/promises";
 
 const source = (path) => readFile(new URL(path, import.meta.url), "utf8");
 
-test("public search and filter panels share inline icons and mobile-safe rounded styling", async () => {
+test("public filter panels stay consistent while News keeps reference category tabs", async () => {
   const pages = [
-    "../apps/main/app/news/page.tsx",
     "../apps/main/app/business-directory/page.tsx",
     "../apps/main/app/tourism/page.tsx",
     "../apps/main/app/who-is-who/page.tsx",
@@ -19,6 +18,11 @@ test("public search and filter panels share inline icons and mobile-safe rounded
     assert.match(page, /SearchIcon/, path);
     assert.match(page, /role="search"/, path);
   }
+  const news = await source("../apps/main/app/news/page.tsx");
+  assert.match(news, /role="search"/);
+  assert.match(news, /categoryNav/);
+  assert.match(news, /aria-label="Search headlines"/);
+  assert.doesNotMatch(news, /FilterIcon|filter-panel|Filter news/i);
   const icons = await source("../apps/main/components/icons.tsx");
   assert.match(icons, /export const FilterIcon[\s\S]*?<svg aria-hidden="true"/);
   assert.match(icons, /export const SearchIcon[\s\S]*?<svg aria-hidden="true"/);

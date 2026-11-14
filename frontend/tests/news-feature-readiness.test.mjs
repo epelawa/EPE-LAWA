@@ -17,7 +17,7 @@ test('published News articles can be downloaded as safe offline HTML copies', as
   assert.match(status, /Available on article pages/);
   assert.match(status, /Push notifications are unavailable/i);
   assert.match(status, /will not request notification permission/i);
-  assert.match(news, /NewsFeatureStatus/);
+  assert.doesNotMatch(news, /NewsFeatureStatus/);
   assert.doesNotMatch(article, /NewsFeatureStatus/);
   assert.match(article, /OfflineArticleDownload/);
   assert.match(article, /data-offline-article-body/);
@@ -43,19 +43,19 @@ test('article body comes only from the RLS-visible current published version, no
   assert.match(migration, /using\s*\([\s\S]*?a\.published_version_id\s*=\s*article_versions\.id/);
 });
 
-test('News metadata, share actions and related cards use the canonical slug route', async () => {
-  const [article, share, urls, readingTime] = await Promise.all([
+test('News metadata, compact share actions and related cards use the canonical slug route', async () => {
+  const [article, share, urls] = await Promise.all([
     text('app/news/[slug]/page.tsx'),
     text('components/article-share-actions.tsx'),
     text('lib/news-urls.ts'),
-    text('lib/news-reading-time.ts'),
   ]);
   assert.match(article, /canonical: articleUrl/);
   assert.match(article, /url: articleUrl/);
   assert.match(article, /publicNewsArticleUrl\(article\.slug\)/);
   assert.match(article, /newsArticlePath\(item\.slug\)/);
   assert.match(article, /ArticleShareActions title=\{article\.title\} url=\{articleUrl\}/);
-  assert.match(article, /estimateReadMinutes\(body\)/);
+  assert.match(article, /className=\{styles\.articleHeroCopy\}/);
+  assert.doesNotMatch(article, /estimateReadMinutes|Published story|Share on WhatsApp/);
   assert.match(article, /Related stories/);
   assert.match(urls, /encodeURIComponent\(slug\)/);
   assert.match(urls, /absoluteUrl\(newsArticlePath\(slug\)\)/);

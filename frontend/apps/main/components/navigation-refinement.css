@@ -34,6 +34,7 @@
   .theme-control__thumb { width: 20px; height: 20px; }
   .theme-control[data-theme="dark"] .theme-control__thumb { transform: translateX(12px); }
   .drawer { padding: 16px; }
+  .site-head--news-reference { display: none; }
 }
 @media (max-height: 600px) {
   .drawer-hint,.drawer-foot { display: none; }
