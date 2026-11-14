@@ -42,8 +42,8 @@ test("member profile editor updates only the authenticated user's name and handl
   assert.match(editor, /role=\{state\.status === "error" \? "alert" : "status"\}/);
 });
 
-test("sign-in leads members to the dashboard and the dashboard is linked in the account drawer", () => {
-  assert.match(auth, /signInWithPassword[\s\S]*?redirect\("\/dashboard"\)/);
+test("sign-in leads members through completion and the dashboard is linked in the account drawer", () => {
+  assert.match(auth, /signInWithPassword[\s\S]*?redirect\("\/auth\/complete"\)/);
   assert.match(complete, /href="\/dashboard"/);
   assert.match(header, /href="\/dashboard">Member dashboard/);
   assert.match(sitemap, /\/dashboard\s+MOUNTED/);
