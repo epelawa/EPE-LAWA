@@ -6,8 +6,8 @@
 - Passwords are preserved exactly as entered, never logged or returned, and limited to 10–128 characters. Password-reset and OTP operations use generic, account-enumeration-safe responses.
 - Added a forward-only, persistent auth rate-limit migration. The server sends only HMAC-SHA256 identifiers; email and trusted Vercel `x-real-ip` buckets are separate, the SQL update is atomic, stale-row cleanup is bounded, and the RPC is executable only by `service_role` when that Supabase role exists.
 - The compact auth shell keeps the member pages fixed and uncluttered. The OTP header copy was shortened so the complete instructions remain visible at 320×480. Google remains visibly disabled with “Coming Soon”.
-- Staff invites in the admin worktree now pass an explicit same-origin callback to `/auth/new-password?returnTo=staff`; the invitee sets their own password and is directed to `/admin/login`. No temporary password or token is generated, shown, logged or stored.
-- The route manifest now includes `/dashboard`. No production database reset, migration, invite, account creation or user-record change occurred in this work. Gmail SMTP was the only previously authorized Production Auth change; this work did not change SMTP or other hosted settings.
+- Staff invites in the admin worktree pass an explicit same-origin callback to `/auth/new-password?returnTo=staff`; invitees set their own password and are directed to `/admin/login`. No temporary password or token is generated, shown, logged or stored.
+- The route manifest includes `/dashboard`. No Production database reset, migration, invite, account creation or user-record change occurred in this work. Gmail SMTP was the only earlier authorized Production Auth change before the URL configuration update below.
 
 ## Verification
 
@@ -17,28 +17,22 @@
 - Admin user-management focused suite after adding the invitation callback: **10 passed, 0 failed**.
 - Screenshots use only local synthetic UI and empty forms: `docs/screenshots/auth/create-account-320x480.png`, `create-account-320x568.png`, `create-account-375x812.png`, `create-account-768x1024.png`, `create-account-1440x900.png`, `verify-otp-320x480.png`, and `verify-otp-375x812.png`.
 
-## Auth configuration approval gate
+## Auth URL configuration — updated 2026-11-14 17:29 CET
 
-A read-only Supabase Management API check on 2026-11-14 found:
+The owner approved setting the canonical `site_url` and appending the canonical redirects while retaining existing entries. The hosted Supabase Auth configuration was updated and read back successfully:
 
-- Current `site_url`: `https://epe-lawa-epe-lawa.vercel.app/`.
-- Current redirect allow-list: `https://epe-lawa-epe-lawa.vercel.app/`, `https://epe-lawa-epe-lawa.vercel.app/**`, `https://epe-*-lawa-epe-lawa.vercel.app`, and `https://epe-*-lawa-epe-lawa.vercel.app/**`.
-- The app’s canonical origin is `https://epelawa.vercel.app`; the current allow-list does not contain it. Consequently, member confirmation/recovery and staff invitation callbacks remain blocked pending owner approval.
+- `site_url`: `https://epelawa.vercel.app/`
+- Existing legacy/preview redirects retained: `https://epe-lawa-epe-lawa.vercel.app/`, `https://epe-lawa-epe-lawa.vercel.app/**`, `https://epe-*-lawa-epe-lawa.vercel.app`, and `https://epe-*-lawa-epe-lawa.vercel.app/**`.
+- Appended canonical redirects: `https://epelawa.vercel.app/`, `https://epelawa.vercel.app/auth/callback?next=%2Fauth%2Fcomplete`, `https://epelawa.vercel.app/auth/callback?next=%2Fauth%2Fnew-password`, and `https://epelawa.vercel.app/auth/callback?next=%2Fauth%2Fnew-password%3FreturnTo%3Dstaff`.
 
-Proposed canonical entries, generated from the current app redirect builders:
-
-- Site URL: `https://epelawa.vercel.app/`
-- Redirect URLs: `https://epelawa.vercel.app/`, `https://epelawa.vercel.app/auth/callback?next=%2Fauth%2Fcomplete`, `https://epelawa.vercel.app/auth/callback?next=%2Fauth%2Fnew-password`, and `https://epelawa.vercel.app/auth/callback?next=%2Fauth%2Fnew-password%3FreturnTo%3Dstaff`.
-
-The existing old-origin and preview patterns were not changed. The owner must choose whether to retain them (recommended to avoid unexpectedly breaking previews) or replace them with only the canonical entries. Supabase’s [official redirect URL guidance](https://supabase.com/docs/guides/auth/redirect-urls) recommends the exact production redirect URL rather than a broad production wildcard.
+Only `site_url` and `uri_allow_list` were sent in the update. SMTP was not changed. No email, invitation, migration, account creation, or database write occurred.
 
 ## Pending / blocked
 
-- The auth-rate-limit migration and the admin user-management migrations are local additive SQL only; none has been applied to Production. Obtain owner approval for the exact migration payloads before any live schema change. Do not reset or wipe Production.
-- Resolve the Supabase `site_url` and redirect allow-list only after the owner approves the exact payload and whether the old preview patterns stay.
-- Verify invitation delivery and callback handling with a synthetic Preview account only after the owner-approved Auth configuration is in place. No real invitation email has been sent.
-- Vercel Production deployment authorization remains outstanding. Keep the changes in focused PRs and do not deploy or provision accounts until their gates are cleared.
+- The auth rate-limit and admin user-management SQL migrations remain local additive changes; none has been applied to Production. Obtain approval for the exact migration payloads before any live schema change. Do not reset or wipe Production.
+- No invitation or test email has been sent. End-to-end invitation verification should use a synthetic Preview account only after the relevant code is deployed and the hosted email-template choice is approved.
+- Vercel Production deployment authorization remains outstanding. Keep the changes in focused PRs and do not deploy or provision accounts until the gate is cleared.
 
 ## Resume point
 
-After explicit approval of the Supabase Auth URL settings, update only the approved `site_url`/allow-list entries; then run a synthetic Preview invitation and verify password setup returns to `/admin/login`. Separately present the additive migration SQL for review and wait for explicit approval before applying any live migration.
+The Auth URL change is complete. Once Vercel authorization is cleared and the callback code is deployed, run a synthetic Preview verification flow through password setup and confirm it returns to `/admin/login`. Separately present and obtain approval for the exact additive migration SQL before any Production schema update.
