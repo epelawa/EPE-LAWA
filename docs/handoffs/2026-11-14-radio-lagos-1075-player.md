@@ -4,7 +4,7 @@
 
 - Added a direct native audio player for the single catalogue match: Radio Lagos, 107.5 FM, Lagos (`nr_7c1cfbb5-f2f3-446c-a5e4-2f417a5d949b`). Playback is user-initiated (`preload="none"`, no autoplay), with no provider branding or watermark.
 - The status changes to “Playing” only after the browser's `playing` event. Buffering, stalled and error states are reported honestly; the official listen-page link appears only on an unavailable/error state. Duplicate generic unavailable notices were removed, and no unconditional LIVE badge is shown.
-- No API key or bearer credential is in client or server source. The previously configured Vercel `NAIJA_RADIO_API_KEY` remains a Preview-only Secret and is not used by this direct player. Production environment variables and deployments were not changed.
+- No API key or bearer credential is in client or server source. The Vercel `NAIJA_RADIO_API_KEY` is Preview-only and is not used by this direct player. Production environment variables and data were not changed by the player implementation.
 
 ## Catalogue source and media evidence
 
@@ -14,9 +14,9 @@ The stream was checked without recording a body: HEAD returned HTTP 200 with `Co
 
 ## Local validation
 
-- `node --test frontend/tests/radio.test.mjs` — **6 passed, 0 failed**.
-- `cd frontend/apps/main && ./node_modules/.bin/tsc --noEmit -p tsconfig.json` — passed.
-- Production build with dummy loopback Supabase values: `NEXT_PUBLIC_SUPABASE_URL='http://127.0.0.1:54321' NEXT_PUBLIC_SUPABASE_ANON_KEY='local-public-test' SUPABASE_ANON_KEY='local-public-test' NEXT_PUBLIC_SITE_URL='http://localhost:3001' ./node_modules/.bin/next build --webpack` — passed (Next.js 16.4.4).
+- `node --test frontend/tests/radio.test.mjs` — **6 passed, 0 failed** at the original player PR checkpoint.
+- `cd frontend/apps/main && ./node_modules/.bin/tsc --noEmit -p tsconfig.json` — passed at the original player PR checkpoint.
+- Production build with dummy loopback Supabase values — passed (Next.js 16.4.4).
 - Production-mode Chromium at 375×812 and 1440×900 — page returned HTTP 200, no horizontal overflow, player visible in the first fold; playback state and error fallback verified.
 - `git diff --check` — passed. Source scan found no `NAIJA_RADIO_API_KEY` or secret reference.
 
@@ -28,7 +28,6 @@ The stream was checked without recording a body: HEAD returned HTTP 200 with `Co
 
 ## PR, remaining and resume point
 
-- Focused PR: [#51 — feat(radio): add Radio Lagos 107.5 FM player](https://github.com/epelawa/EPE-LAWA/pull/51). It is **Open** and left unmerged under the no-Production-change scope.
-- At the latest check, GitHub returned `mergeStateStatus: UNKNOWN`; its GraphQL check rollup and REST check-run/status endpoints return 403 `Resource not accessible by integration`. Remote CI and Preview checks are **not verified here**. Do not merge or promote until those checks can be reviewed with an authorized status-check view. No Production deployment was triggered by this task.
-- Branch: `feat/radio-lagos-1075-player`, based on `origin/main` at `203d7ca`; player code commit `e7064b7`; current PR head includes the handoff update.
-- There is no known local code blocker. The external catalogue still reports unknown/stale availability, so keep event-driven status and do not claim guaranteed live uptime. If the official stream URL changes, refresh it from the catalogue and repeat the byte-range and browser playback checks before updating the source record.
+- [PR #51 — feat(radio): add Radio Lagos 107.5 FM player](https://github.com/epelawa/EPE-LAWA/pull/51) merged normally into `main` at `e5c9bde21b82d555f486ac3356592f6e31007b29` on 2026-11-14. A read-only request to Production `/radio` returned HTTP 200 and included Radio Lagos 107.5 FM; no play action or data write was performed in that check.
+- The current catalogue still says availability unknown/stale. Keep the player event-driven, do not show a LIVE badge, and do not promise continuous station uptime. PR #50 remains blocked pending a safe production schema path for the `publication_status` columns on `programmes` and `episodes`.
+- Follow-up to the stale programme-error copy and regression contract: [`Radio Lagos availability handoff`](2026-11-14-radio-lagos-availability-contract.md).
