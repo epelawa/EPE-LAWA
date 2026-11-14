@@ -135,6 +135,16 @@
   .label { display: block; margin-bottom: 7px; font-size: 14px; font-weight: 600; }
 }
 
+/* Quiet linework is part of the public light canvas, never a content overlay. */
+html:not([data-theme="dark"]) body:not(:has(.auth-page)):not(:has(.focused-error-shell)) {
+  background-image:
+    linear-gradient(135deg, transparent 49.85%, rgb(71 127 224 / 0.025) 50%, transparent 50.15%),
+    linear-gradient(45deg, transparent 49.9%, rgb(41 75 145 / 0.018) 50%, transparent 50.1%);
+  background-size: 112px 112px, 168px 168px;
+  background-attachment: fixed;
+}
+html[data-theme="dark"] body { background-image: none; }
+
 /* Layout and reusable editorial language. */
 .site-main { flex: 1; width: 100%; }
 body:has(.auth-page) .site-head,
