@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Set up your EPE LAWA staff access</title>
+  </head>
+  <body style="margin:0;padding:0;background-color:#F1F4FA;color:#0A1023;font-family:Arial,sans-serif">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#F1F4FA">
+      <tr>
+        <td align="center" style="padding:32px 12px">
+          <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="width:100%;max-width:600px;background-color:#FFFFFF;border:1px solid #A6B2C5;border-radius:16px">
+            <tr>
+              <td style="padding:32px">
+                <p style="margin:0;color:#294B91;font-size:14px;font-weight:bold;letter-spacing:2px">EPE LAWA</p>
+                <h1 style="margin:20px 0 12px;color:#0A1023;font-size:26px;line-height:1.25">Your staff invitation</h1>
+                <p style="margin:0;color:#17264A;font-size:16px;line-height:1.6">You’ve been invited to join the EPE LAWA staff workspace. Use the secure link below to set your own password and continue to staff sign-in.</p>
+                <p style="margin:28px 0;text-align:center">
+                  <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:14px 22px;background-color:#294B91;color:#FFFFFF;text-decoration:none;border-radius:8px;font-weight:bold">Set your password</a>
+                </p>
+                <p style="margin:0 0 12px;color:#526174;font-size:13px;line-height:1.6">This invitation was requested by an authorized EPE LAWA administrator. If you did not expect it, ignore this message. No password has been created for you.</p>
+                <p style="margin:0;color:#526174;font-size:12px;line-height:1.6">If the button does not work, copy this link:</p>
+                <p style="margin:4px 0 0;color:#294B91;font-size:12px;line-height:1.6;word-break:break-all">{{ .ConfirmationURL }}</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
