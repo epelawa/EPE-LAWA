@@ -12,7 +12,7 @@
 ## Remaining
 
 - The owner has not provided an authorized live-News feed URL. Do not invent or link an external feed; the layout continues to use the existing published-News data path.
-- Refresh PR #54 onto the latest `main`, publish this rounding correction and its updated screenshots, then attempt an ordinary merge. The correction must be on the PR head first.
+- The rounding correction is committed locally and the branch is rebased onto the latest `main`; publish the corrected head and screenshots, then attempt an ordinary merge.
 - Verify Production after any merge; Vercel deployment inspection is pending connector authorization.
 
 ## Blocked
@@ -23,7 +23,7 @@
 
 ## Resume point
 
-Rebase the News branch onto `dd0b66615a7ef2c3a12e0977b7a212e9759bcced` without touching the preserved `/workspace/EPE-LAWA` worktree; stage only the News source, tests, screenshots and handoff; push the updated PR #54; refresh its exact head/check status; then attempt a normal merge. Keep the live-feed source pending until the owner supplies an authorized URL.
+The isolated `fix/news-mobile-reference` branch is already rebased onto `dd0b66615a7ef2c3a12e0977b7a212e9759bcced`. Push the corrected branch with a force-with-lease anchored to the current remote PR #54 head `a010c25f70e7bdc79f53129725cae1393ac4d7c0`; refresh the new exact head/check status; then attempt a normal merge. Do not touch the preserved `/workspace/EPE-LAWA` worktree. Keep the live-feed source pending until the owner supplies an authorized URL.
 
 ## Local QA boundary
 
