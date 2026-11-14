@@ -43,7 +43,7 @@ export async function signUp(_state: AuthState, data: FormData): Promise<AuthSta
       },
     });
     if (error) return { status: "error", message: genericError };
-    return { status: "notice", message: "Your account request was received. If email verification is required, use the code or secure link in the EPE LAWA confirmation email before signing in. Delivery depends on this project’s configured email provider." };
+    return { status: "notice", message: "Your account request was received. If verification is required, check for the EPE LAWA confirmation email before signing in." };
   } catch { return { status: "error", message: genericError }; }
 }
 
@@ -72,7 +72,7 @@ export async function requestPasswordReset(_state: AuthState, data: FormData): P
     await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: authCallbackUrl("/auth/new-password"),
     });
-    return { status: "notice", message: "If an account exists for that address, password-reset instructions may be sent. Delivery depends on this project’s configured email provider." };
+    return { status: "notice", message: "If an account exists for that address, password-reset instructions may be sent." };
   } catch { return { status: "error", message: genericError }; }
 }
 

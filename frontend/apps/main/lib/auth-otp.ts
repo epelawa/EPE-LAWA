@@ -21,7 +21,7 @@ type CreateOtpClient = () => Promise<SupabaseOtpClient>;
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const invalidEmailMessage = "Enter a valid email address.";
 const resendErrorMessage = "We couldn’t request a fresh verification message right now. Try again later.";
-const resendNoticeMessage = "If an account is awaiting verification, Supabase Auth may send a fresh email. Delivery depends on this project’s email configuration.";
+const resendNoticeMessage = "If verification is still needed, we’ve requested a new confirmation email.";
 
 function field(data: FormData, key: string): string {
   const value = data.get(key);

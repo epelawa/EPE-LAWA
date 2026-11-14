@@ -82,7 +82,8 @@ test("resend success is account-enumeration-safe and uses the fixed confirmation
   const result = await handleResendSignupVerification(form({ email: " MEMBER@Example.com " }), factory.createClient, callback);
 
   assert.equal(result.status, "notice");
-  assert.match(result.message, /If an account is awaiting verification/);
+  assert.match(result.message, /If verification is still needed, we’ve requested a new confirmation email/);
+  assert.doesNotMatch(result.message, /Supabase Auth|email configuration|member@example\.com/i);
   assert.doesNotMatch(result.message, /member@example\.com/i);
   assert.deepEqual(received, [{ type: "signup", email: "member@example.com", options: { emailRedirectTo: callback } }]);
 });

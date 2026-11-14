@@ -29,6 +29,7 @@ test("signup remains guided while member sign-in is one accessible screen", asyn
   const forms = await readFile(new URL("auth/auth-forms.tsx", root), "utf8");
   const actions = await readFile(new URL("auth/actions.ts", root), "utf8");
   const resend = await readFile(new URL("auth/resend-verification-form.tsx", root), "utf8");
+  const linkIssue = await readFile(new URL("auth/link-issue-view.tsx", root), "utf8");
   const signupPage = await readFile(new URL("auth/page.tsx", root), "utf8");
   const loginPage = await readFile(new URL("login/page.tsx", root), "utf8");
   const recoveryPage = await readFile(new URL("forgot-password/page.tsx", root), "utf8");
@@ -63,6 +64,9 @@ test("signup remains guided while member sign-in is one accessible screen", asyn
   assert.match(forms, /className="auth-provider__button" type="button" disabled aria-disabled="true"/);
   assert.match(forms, /!flow\.enhanced \|\| flow\.step === 1 \? <GoogleSignInUnavailable \/>/);
   assert.match(actions, /If an account exists for that address/);
+  assert.match(actions, /If verification is required, check for the EPE LAWA confirmation email before signing in/);
+  assert.doesNotMatch(actions + linkIssue, /Supabase Auth may send|Delivery depends on this project|configured email provider/i);
+  assert.doesNotMatch(linkIssue, /Enter the email address you used to sign up/);
   assert.match(signupPage, /href="\/terms"/);
   assert.match(signupPage, /href="\/privacy"/);
   assert.match(signupPage, /href="\/login"/);
