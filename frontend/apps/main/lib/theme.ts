@@ -10,8 +10,6 @@
  */
 
 export const THEME_STORAGE_KEY = "epelawa-theme";
-export const SYSTEM_THEME_NOTICE_STORAGE_KEY = "epelawa-system-theme-notice-seen";
-export const THEME_PREFERENCE_CHANGED_EVENT = "epelawa:theme-preference-changed";
 
 export type ThemeChoice = "light" | "dark" | "system";
 
@@ -51,33 +49,4 @@ export function applyTheme(choice: ThemeChoice): "light" | "dark" {
     // Private mode or a locked-down browser. The theme still applies for this session.
   }
   return resolved;
-}
-
-export function hasSeenSystemThemeNotice(): boolean {
-  if (typeof window === "undefined") return false;
-  try {
-    if (window.localStorage.getItem(SYSTEM_THEME_NOTICE_STORAGE_KEY) === "true") return true;
-  } catch {
-    // Try session storage when persistent storage is unavailable.
-  }
-  try {
-    return window.sessionStorage.getItem(SYSTEM_THEME_NOTICE_STORAGE_KEY) === "true";
-  } catch {
-    return false;
-  }
-}
-
-export function markSystemThemeNoticeSeen(): void {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(SYSTEM_THEME_NOTICE_STORAGE_KEY, "true");
-    return;
-  } catch {
-    // Fall back to a tab-lifetime marker in restricted browsing modes.
-  }
-  try {
-    window.sessionStorage.setItem(SYSTEM_THEME_NOTICE_STORAGE_KEY, "true");
-  } catch {
-    // In-memory state still prevents repeats during the current app session.
-  }
 }

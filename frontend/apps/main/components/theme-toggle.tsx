@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { applyTheme, readStoredTheme, resolveTheme, THEME_PREFERENCE_CHANGED_EVENT, type ThemeChoice } from "../lib/theme";
+import { applyTheme, readStoredTheme, resolveTheme, type ThemeChoice } from "../lib/theme";
 
 const SunIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -45,7 +45,6 @@ export default function ThemeToggle() {
       data-ready={ready ? "true" : "false"}
       onClick={() => {
         setTheme(applyTheme(next));
-        window.dispatchEvent(new Event(THEME_PREFERENCE_CHANGED_EVENT));
       }}
     >
       <span className="theme-control__track" aria-hidden="true">
