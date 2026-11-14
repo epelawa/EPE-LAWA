@@ -230,3 +230,10 @@ A local candidate on `feat/tourism-photo-gallery`, based on `main` `203d7ca`, ad
 - **Pending:** open and attempt the focused PR through an ordinary merge, then verify the exact merged `main` and Production deployment. Hosted CI details remain inaccessible; do not claim they passed.
 - **Blocked:** live News content remains empty pending the separate audited Admin workflow and owner-authorized publication actions. Do not use synthetic fixtures as public content.
 - **Resume:** commit/push only News changes and relevant evidence, open one focused PR, refresh exact-head GitHub/Vercel state, and merge only through the normal CLI if allowed.
+
+
+## 2026-11-14 23:31 WAT — News background test alignment
+- **Done:** PR #78 merged normally at `c25cb3e5f164aa3e661d14a7c78ebc97c6bc3560`; its News-specific `data-news-layout` exclusion intentionally changes the global light-canvas selector. A focused test update now verifies that behavior; 2/2 focused assertions pass.
+- **Pending:** open and attempt the single-file regression-test PR through the ordinary merge path, then sync and rerun the separate Auth worktree checks.
+- **Blocked:** hosted check details remain inaccessible through the GitHub connector; no hosted CI pass is claimed. The exact Production deployment for #78 was still BUILDING at the last metadata check.
+- **Resume:** commit/push the test fix, refresh the exact PR head, and attempt a normal merge without bypass flags.
