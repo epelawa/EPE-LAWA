@@ -69,13 +69,13 @@ export default async function NewsroomPage({ searchParams }: { searchParams: Pro
         <div><p className="ui-number">{readyToPublish}</p><p className="ui-muted">Versions ready to publish</p></div>
         <div><p className="ui-number">{published}</p><p className="ui-muted">Articles with a public version</p></div>
       </Panel>
-      <section className="ui-stack-sm" aria-labelledby="article-list-heading">
+      <section className="ui-stack-sm admin-newsroom-list" aria-labelledby="article-list-heading">
         <SectionHeading eyebrow={`${articles.length} loaded`} title="Articles" id="article-list-heading" description="Current version and publication state for each article." />
         <nav className="ui-tabs" aria-label="Filter articles by workflow state or publication">
           <Link href={adminHref("/newsroom")} aria-current={!state ? "page" : undefined}>All</Link>
           {states.map((item) => <Link key={item} href={adminHref(`/newsroom?state=${item}`)} aria-current={state === item ? "page" : undefined}>{item[0].toUpperCase() + item.slice(1)}</Link>)}
         </nav>
-        {articles.length ? <Panel className="ui-table"><table><thead><tr><th scope="col">Article</th><th scope="col">State</th><th scope="col">Revision</th><th scope="col">Slug</th><th scope="col">Updated</th><th scope="col"><span className="sr-only">Action</span></th></tr></thead><tbody>
+        {articles.length ? <Panel className="ui-table admin-newsroom-table" role="region" aria-label="Articles list; scroll horizontally to see all columns" tabIndex={0}><table><thead><tr><th scope="col">Article</th><th scope="col">State</th><th scope="col">Revision</th><th scope="col">Slug</th><th scope="col">Updated</th><th scope="col"><span className="sr-only">Action</span></th></tr></thead><tbody>
           {articles.map((article) => {
             const version = article.current_version;
             const hasPublicVersion = Boolean(article.published_version_id);
