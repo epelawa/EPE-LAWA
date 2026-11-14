@@ -103,7 +103,7 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
           <span className="drawer-appearance__label">Appearance</span>
           <ThemeToggle />
         </div>
-        <div className="drawer-account" aria-label="Member account"><Link className="btn-primary" href="/auth">Create account <ArrowUpRightIcon size={15} aria-hidden="true" /></Link><Link className="btn-secondary" href="/login">Sign in</Link></div>
+        <div className="drawer-account" aria-label="Member account"><Link className="btn-secondary" href="/dashboard">Member dashboard</Link><Link className="btn-primary" href="/auth">Create account <ArrowUpRightIcon size={15} aria-hidden="true" /></Link><Link className="btn-secondary" href="/login">Sign in</Link></div>
         <p className="drawer-foot">A shared home for everyone.</p>
       </div>
     </div>

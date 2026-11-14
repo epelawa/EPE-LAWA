@@ -49,7 +49,7 @@ export async function signIn(_state: AuthState, data: FormData): Promise<AuthSta
     const supabase = await createClient();
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return { status: "error", message: genericError };
-    redirect("/auth/complete");
+    redirect("/dashboard");
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
     return { status: "error", message: genericError };
@@ -81,7 +81,7 @@ export async function updatePassword(_state: AuthState, data: FormData): Promise
     if (!user) return { status: "error", message: "Your recovery session is missing or expired. Request a new password reset." };
     const { error } = await supabase.auth.updateUser({ password });
     if (error) return { status: "error", message: genericError };
-    redirect("/auth/complete");
+    redirect("/dashboard");
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
     return { status: "error", message: genericError };

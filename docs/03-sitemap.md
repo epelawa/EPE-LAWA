@@ -53,6 +53,7 @@ The current canonical production origin is `https://epelawa.vercel.app/`. The ow
 /auth/verify                        MOUNTED  branded email-code verification and resend; noindex
 /auth/link-expired                  MOUNTED  expired-link recovery
 /auth/link-problem                  MOUNTED  generic callback problem
+/dashboard                          MOUNTED  private member dashboard and profile settings; noindex
 /status/[code]                      MOUNTED  designed status/error route; not navigation
 
 /llms.txt                           MOUNTED  machine-readable site summary
@@ -60,7 +61,7 @@ The current canonical production origin is `https://epelawa.vercel.app/`. The ow
 /sitemap.xml                        MOUNTED  public sitemap
 ```
 
-The member dashboard/account-center route and account settings are not in the current build output. Finalize the canonical route and implement the account workflow before linking it or marking it complete.
+`/dashboard` is the canonical member account center. It requires a verified member session, is excluded from indexing, and exposes only the signed-in member’s profile settings and links to existing member spaces. Profile edits are limited to the member’s own display name and handle under the database’s own-row RLS policy.
 
 ---
 
@@ -136,6 +137,7 @@ Rules for the header:
 | `/forum/*` | conditional | Public discussions only; no private/member details |
 | `/login`, `/auth`, `/forgot-password`, `/auth/*` | no | — |
 | `/business-directory/orders` | no | — |
+| `/dashboard` | no | — |
 | `/status/*` | no | — |
 | `/admin/*` | no, `noindex` + `Disallow: /admin` | — |
 
