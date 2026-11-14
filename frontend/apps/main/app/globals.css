@@ -136,7 +136,7 @@
 }
 
 /* Quiet linework is part of the public light canvas, never a content overlay. */
-html:not([data-theme="dark"]) body:not(:has(.auth-page)):not(:has(.focused-error-shell)) {
+html[data-theme="light"] body:not(:has(.auth-page)):not(:has(.focused-error-shell)) {
   background-image:
     linear-gradient(135deg, transparent 49.85%, rgb(71 127 224 / 0.025) 50%, transparent 50.15%),
     linear-gradient(45deg, transparent 49.9%, rgb(41 75 145 / 0.018) 50%, transparent 50.1%);
