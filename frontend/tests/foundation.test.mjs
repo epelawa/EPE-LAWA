@@ -297,3 +297,22 @@ test('admin dashboard is protected and login is noindex with security headers', 
     assert.doesNotMatch(html, /Create draft|Quick actions/i);
   });
 });
+
+test('same-origin Admin login is noindex and management routes redirect anonymous users', async () => {
+  await withApp('main', async (base) => {
+    const login = await fetch(base + '/admin/login');
+    assert.equal(login.status, 200);
+    assert.match(await login.text(), /noindex,?\s*nofollow/i);
+
+    for (const route of ['/admin', '/admin/roles', '/admin/users']) {
+      const response = await fetch(base + route, { redirect: 'manual' });
+      const location = response.headers.get('location') || '';
+      const body = await response.text();
+      const responseRedirect = [302, 307, 308].includes(response.status) && /\/admin\/login/.test(location);
+      const streamedRedirect = response.status === 200 && /NEXT_REDIRECT|http-equiv="refresh"[^>]*\/admin\/login|\/admin\/login\?next=/i.test(body);
+      assert.ok(responseRedirect || streamedRedirect, `${route} must redirect; status=${response.status}, location=${location || 'none'}, redirectMarker=${/NEXT_REDIRECT|http-equiv="refresh"|\/admin\/login\?next=/i.test(body)}`);
+      assert.doesNotMatch(body, /Create a role|Staff directory|Invite staff/i, `${route} must not render protected management content anonymously`);
+      assert.match(response.headers.get('cache-control') || '', /no-store/);
+    }
+  });
+});

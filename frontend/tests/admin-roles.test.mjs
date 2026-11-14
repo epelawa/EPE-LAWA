@@ -4,3 +4,18 @@ test("role UI and actions use server RPC authorization with visible gated manage
 
 test("role migration can safely be reapplied and audits bounded before/after context",async()=>{const sql=await readFile(new URL("backend/supabase/migrations/20261114190000_configurable_staff_roles.sql",root),"utf8");for(const name of ["staff_roles","staff_role_capabilities","staff_role_assignments"])assert.match(sql,new RegExp(`create table if not exists public\\.${name}`));assert.match(sql,/create index if not exists staff_role_assignments_role_idx/);assert.match(sql,/drop trigger if exists staff_roles_updated_at/);assert.match(sql,/drop policy if exists staff_roles_read/);assert.match(sql,/jsonb_build_object\('before',[\s\S]*?'after'/);assert.match(sql,/capability <> 'staff\.roles\.manage'/);});
 test("admin sign-in checks the effective capability RPC, not direct grants",async()=>{const src=await readFile(new URL("frontend/apps/admin/lib/supabase-access.ts",root),"utf8");assert.equal((src.match(/rest\/v1\/rpc\/has_capability/g)||[]).length,3);assert.doesNotMatch(src,/rest\/v1\/staff_capability_grants/);assert.match(src,/JSON\.stringify\(\{ p_capability: "admin\.access" \}\)/);});
+
+test("same-origin Admin routes expose Roles and Staff users only behind server authorization", async () => {
+  const [layout, protectedLayout, rolesRoute, usersRoute] = await Promise.all([
+    readFile(new URL("frontend/apps/main/app/admin/layout.tsx", root), "utf8"),
+    readFile(new URL("frontend/apps/main/app/admin/(protected)/layout.tsx", root), "utf8"),
+    readFile(new URL("frontend/apps/main/app/admin/(protected)/roles/page.tsx", root), "utf8"),
+    readFile(new URL("frontend/apps/main/app/admin/(protected)/users/page.tsx", root), "utf8"),
+  ]);
+  assert.match(layout, /staff_roles_authorized/);
+  assert.match(layout, /staffNavigation\(!error && canManageStaff === true\)/);
+  assert.match(layout, /error\.message !== "Unauthorized"/);
+  assert.match(protectedLayout, /AdminAccessGuard loginPath="\/admin\/login"/);
+  assert.match(rolesRoute, /admin\/app\/\(protected\)\/roles\/page/);
+  assert.match(usersRoute, /admin\/app\/\(protected\)\/users\/page/);
+});

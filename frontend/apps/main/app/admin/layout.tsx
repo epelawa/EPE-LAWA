@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import StaffSiteHeader from "../../../admin/components/site-header";
-import { mainNavigation } from "../../../admin/lib/navigation";
+import { staffNavigation } from "../../../admin/lib/navigation";
+import { createClient } from "../../../admin/lib/supabase";
 import "./admin-shell.css";
 
 export const dynamic = "force-dynamic";
@@ -12,9 +13,19 @@ export const metadata: Metadata = {
   alternates: { canonical: "/admin" },
 };
 
-const navigation = mainNavigation();
+async function navigationForRequest() {
+  try {
+    const db = await createClient();
+    const { data: canManageStaff, error } = await db.rpc("staff_roles_authorized");
+    return staffNavigation(!error && canManageStaff === true);
+  } catch (error) {
+    if (!(error instanceof Error) || error.message !== "Unauthorized") throw error;
+    return staffNavigation(false);
+  }
+}
 
-export default function SameOriginAdminLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function SameOriginAdminLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const navigation = await navigationForRequest();
   return (
     <div className="admin-shell">
       <StaffSiteHeader items={navigation} basePath="/admin" />

@@ -82,7 +82,13 @@
       "path": "/admin/radio"
     },
     {
+      "path": "/admin/roles"
+    },
+    {
       "path": "/admin/tourism"
+    },
+    {
+      "path": "/admin/users"
     },
     {
       "path": "/auth/complete"
