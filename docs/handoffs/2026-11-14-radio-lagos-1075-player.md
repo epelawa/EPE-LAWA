@@ -29,6 +29,6 @@ The stream was checked without recording a body: HEAD returned HTTP 200 with `Co
 ## PR, remaining and resume point
 
 - Focused PR: [#51 — feat(radio): add Radio Lagos 107.5 FM player](https://github.com/epelawa/EPE-LAWA/pull/51). It is **Open** and left unmerged under the no-Production-change scope.
-- The GitHub connector reports `mergeStateStatus: UNSTABLE`; its GraphQL check rollup and REST check-run/status endpoints return 403 `Resource not accessible by integration`. Therefore remote CI/Preview checks are **not verified here**. Do not merge or promote until those checks can be reviewed with an authorized status-check view. No Production deployment was triggered by this task.
-- Branch: `feat/radio-lagos-1075-player`, based on `origin/main` at `203d7ca`; latest player commit `e7064b7`.
+- At the latest check, GitHub returned `mergeStateStatus: UNKNOWN`; its GraphQL check rollup and REST check-run/status endpoints return 403 `Resource not accessible by integration`. Remote CI and Preview checks are **not verified here**. Do not merge or promote until those checks can be reviewed with an authorized status-check view. No Production deployment was triggered by this task.
+- Branch: `feat/radio-lagos-1075-player`, based on `origin/main` at `203d7ca`; player code commit `e7064b7`; current PR head includes the handoff update.
 - There is no known local code blocker. The external catalogue still reports unknown/stale availability, so keep event-driven status and do not claim guaranteed live uptime. If the official stream URL changes, refresh it from the catalogue and repeat the byte-range and browser playback checks before updating the source record.
