@@ -761,6 +761,15 @@ test('a banned member can read but cannot write, and unbanning restores writing'
   const articleId = await newPublishedArticle('Ban behaviour');
   const threadCategoryId = (await rows('select id from public.forum_categories limit 1'))[0].id;
 
+  // Seed a hidden own comment to exercise the own-history RLS policy without requiring
+  // members to select the restricted author_id column.
+  const priorCommentId = (await rows(
+    `insert into public.comments
+       (article_id, author_id, body, state, hidden_reason, hidden_by, hidden_at)
+     values ($1, $2, $3, 'hidden', $4, $5, now()) returning id`,
+    [articleId, U.m1, 'A prior hidden comment', 'Synthetic moderation fixture', U.publisher],
+  ))[0].id;
+
   await db.query(
     'insert into public.member_bans (user_id, reason, issued_by) values ($1, $2, $3)',
     [U.m1, 'Repeated abuse of the comment section', U.publisher],
@@ -780,8 +789,10 @@ test('a banned member can read but cannot write, and unbanning restores writing'
   assert.match(thread ?? '', /member_banned/, 'a ban must block starting a thread');
 
   // A ban is not a deletion. The member keeps their own history.
-  const own = await as(U.m1, () => rows('select id from public.comments where author_id = $1', [U.m1]));
-  assert.ok(own.length >= 1, 'a banned member keeps read access to their own comments');
+  const own = await as(U.m1, () => rows('select id from public.comments where id = $1', [priorCommentId]));
+  assert.equal(own.length, 1, 'a banned member keeps read access to their own hidden comment');
+  const otherMember = await as(U.m2, () => rows('select id from public.comments where id = $1', [priorCommentId]));
+  assert.equal(otherMember.length, 0, 'another member cannot read the hidden comment');
 
   await db.query(
     'update public.member_bans set revoked_at = now(), revoked_by = $2 where user_id = $1 and revoked_at is null',
