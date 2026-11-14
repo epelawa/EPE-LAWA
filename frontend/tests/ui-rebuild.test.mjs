@@ -23,7 +23,12 @@ test('homepage hero uses a 52-photo sourced Epe gallery without invented artwork
   assert.match(source,/<HeroCarousel\s*\/>/);
   assert.equal(manifest.length,52);
   assert.equal(new Set(manifest.map(slide=>slide.source)).size,52);
-  assert.match(source,/home-hero__brand.*BrandLockup/);
+  assert.doesNotMatch(source,/home-hero__brand|BrandLockup/);
+  assert.match(source,/Epe\.<br \/><em>Closer to home\.<\/em>/);
+  assert.match(source,/Stories, places and people that bring Epe together\./);
+  assert.doesNotMatch(source,/Stories worth knowing|History worth keeping|Places worth finding|People worth connecting/);
+  assert.match(carousel,/Epe · Lagos State/);
+  assert.match(carousel,/Rooted in the community\. Open to everyone\./);
   assert.match(carousel,/HERO_SLIDES = heroImages/);
   assert.match(carousel,/Photo by \{slide\.author\}/);
   assert.match(credits,/CC BY-SA 4\.0|CC0 1\.0/);

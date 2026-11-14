@@ -149,6 +149,7 @@ export default function HeroCarousel() {
           <span className="home-hero__location-mark"><MapPinIcon size={18} /></span>
           <span>Epe · Lagos State</span>
         </p>
+        <p className="home-hero__note">Rooted in the community. Open to everyone.</p>
         <div className="home-hero__caption" aria-live="off" aria-atomic="true">
           <p key={slide.slug} className="home-hero__slide-label">{slide.label}</p>
           <small className="home-hero__photo-credit">

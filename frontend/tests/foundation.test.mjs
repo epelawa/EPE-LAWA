@@ -194,8 +194,8 @@ test('homepage hero gallery is sourced, responsive, eager and resource-aware', a
   const credits = await readProjectFile('docs/hero-image-sources.md');
   const manifest = JSON.parse(await readProjectFile('frontend/apps/main/lib/hero-images.json'));
   assert.match(page, /<HeroCarousel\s*\/>/);
-  assert.match(page, /home-hero__brand"><BrandLockup size=\{36\} \/>/);
-  assert.match(page, /import \{ BrandLockup \} from "\.\.\/components\/brand"/);
+  assert.doesNotMatch(page, /home-hero__brand|BrandLockup/);
+  assert.match(page, /Epe\.<br \/><em>Closer to home\.<\/em>/);
   assert.match(source, /MAX_HERO_SLIDES\s*=\s*60/);
   assert.match(source, /HERO_SLIDES\.slice\(0, MAX_HERO_SLIDES\)/);
   assert.match(source, /aria-roledescription="carousel"/);
@@ -219,7 +219,7 @@ test('homepage hero gallery is sourced, responsive, eager and resource-aware', a
   assert.match(icons, /export const MapPinIcon/);
   assert.match(styles, /home-hero__carousel-pause/);
   assert.match(styles, /width: 44px/);
-  assert.match(styles, /home-hero__brand/);
+  assert.doesNotMatch(styles, /home-hero__brand/);
   assert.match(styles, /prefers-reduced-motion/);
   assert.equal(manifest.length, 52);
   assert.equal(new Set(manifest.map((slide) => slide.slug)).size, 52);
