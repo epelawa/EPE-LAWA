@@ -17,7 +17,7 @@ const [page, action, editor, auth, complete, header, sitemap, globalStyles, foot
 ]);
 
 test("member dashboard is session-gated, noindex and only reads the signed-in member profile", () => {
-  assert.match(page, /className=\{`\$\{styles\.shell\} member-dashboard-shell`\}/);
+  assert.equal((page.match(/<main className=\{`\$\{styles\.shell\} member-dashboard-shell`\}/g) ?? []).length, 3, "all dashboard render states must hide the shared footer");
   assert.match(globalStyles, /body:has\(\.member-dashboard-shell\) \.site-footer\s*\{\s*display:\s*none;\s*\}/);
   assert.match(globalStyles, /body:has\(\.auth-page\) \.site-footer/);
   assert.match(footer, /footerNavigation\.map/);

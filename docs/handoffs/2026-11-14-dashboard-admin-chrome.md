@@ -2,33 +2,30 @@
 
 ## Done
 
-- Created a narrowly scoped dashboard-only hook class and hide rule so the shared site footer does not render on `/dashboard`; News and other routes are unaffected.
-- Added regression assertions covering the dashboard-only selector, the existing auth footer behavior, and the approved compact admin sign-in/disabled Google row.
-- Source inspection found no continuous vertical logo movement and no unintended black page bands in the admin screen, so no speculative animation or theme changes were made. The dark auth palette remains intentional.
-- Captured dashboard-route and admin-sign-in evidence at 320, 375, 768, 1024, and 1440 CSS-pixel widths under `artifacts/chrome-2026-11-14/`. The dashboard screenshots show the expected signed-out redirect; they do not claim to prove the authenticated dashboard layout.
-- Branch `fix/dashboard-admin-chrome` is based on verified main `5ce245beeb23c8ea972c7ea9700ad747321fa2e5` and was pushed at exact head `7d254f810dd39299b37f0b959ca0ad7ba3b47ded`.
+- Added a dashboard-only footer-hiding hook covering both normal and fail-closed server-rendered dashboard states; other routes, including News, are unaffected.
+- Added regression assertions for the footer rule on all dashboard return paths, kept the member dashboard in the public route manifest, and updated the dashboard shell contract test.
+- Captured fresh local `/dashboard` fail-closed screenshots at 320×568, 375×812, 768×1024, 1024×900, and 1440×1000. The expected synthetic “Account service unavailable” state has no visible footer; metrics show zero horizontal overflow and document height equal to the viewport at each width.
+- Kept the approved compact admin sign-in, visible disabled Google row, dark/navy palette, and header behavior unchanged. Source inspection found no continuous vertical logo sway or page-owned black strip, so no speculative edits were made.
 
 ## Validation
 
-- Focused dashboard/auth tests: **4/4 passed**.
-- Main-app TypeScript check: **passed**.
-- Next.js production build: **passed**.
-- Full suite: one unrelated existing failure in `frontend/tests/ui-rebuild.test.mjs`; its generic wrapper expectation conflicts with the intentionally bespoke member dashboard.
-- Local `pnpm` install/test lifecycle is blocked by the ignored `esbuild` build-script policy; direct installed binaries were used for successful focused tests, typecheck, and build.
-- No live services, production Supabase, Vercel, or user secrets were used.
+- Pinned Node 22.23.4 / pnpm 10.34.9 full repository tests: **189 passed, 0 failed, 1 documented PGlite extension skip**.
+- Production builds for both `@epelawa/main` and `@epelawa/admin`: **passed**; Next build includes TypeScript checking.
+- Dashboard viewport checks: 320, 375, 768, 1024, and 1440 CSS pixels; footer computed `display:none` and height `0` at every width; no horizontal overflow.
+- No Production Supabase, real member data, or deployment was used. The screenshot build used deliberately invalid local configuration and the browser blocked all non-loopback requests.
 
 ## Remaining
 
-- Open a focused pull request from `fix/dashboard-admin-chrome` and leave it unmerged for owner review.
-- If an isolated synthetic authenticated Supabase session fixture becomes available, capture the authenticated dashboard at the same widths.
+- Review and commit only the focused dashboard source/tests/route-manifest/screenshots/docs changes on the existing PR #56 branch; push through the authorized connector.
+- Refresh PR #56’s exact pushed head and hosted checks. Attempt a normal non-bypass merge only if exact-head checks are verifiably healthy; otherwise keep the PR open and report the access/check blocker.
 
 ## Blocked / scope notes
 
-- Phone screenshot black status/navigation/address bars are Android/Chrome interface chrome, outside website CSS. No page-owned black strip was found to remove.
-- No vertical logo sway was present in the shared brand/admin styles, so there is no evidenced animation to remove.
-- Admin sign-in remains on the approved compact dark/navy design with visible disabled Google sign-in; it was not restyled.
-- The authorized Vercel connection is not part of these local checks; no deployment or production verification was performed.
+- No synthetic authenticated member session is available in this local run, so the authenticated dashboard layout is not screenshot-verified; screenshots show only the fail-closed configuration-error state.
+- The one skipped PGlite test is already documented: `btree_gist` is unavailable in that local test setup, so two exclusion constraints are not exercised.
+- No page-owned black strip was found. Phone status/navigation/address bars, if present in a device screenshot, are outside page CSS. The approved dark auth palette remains intentional.
+- No Vercel or Production verification was performed.
 
 ## Resume point
 
-In `/workspace/EPE-LAWA-dashboard-admin-chrome`, verify the exact remote base/head using the authorized GitHub connector, open the focused PR, and leave it unmerged. Do not modify News routes or auth behavior.
+In `/workspace/EPE-LAWA-dashboard-admin-chrome`, inspect the pending diff and branch status, commit and push the dashboard-only follow-up, refresh PR #56’s exact head/checks, and merge only through the ordinary non-bypass path if the hosted checks are healthy. Do not touch the preserved `/workspace/EPE-LAWA` worktree or the separate News branch.
