@@ -973,6 +973,65 @@ test('newsroom RPCs use the live schema, publish directly from a private draft, 
   assert.equal(article.published_version_id, priorPublicVersion, 'the old approved version remains live until the correction is published');
 });
 
+test('Newsroom RLS grants eligible staff private reads but exposes only the current published snapshot', async () => {
+  const categoryId = (await rows("select id from public.categories where slug = 'politics'"))[0].id;
+  const authorId = (await rows("select id from public.authors where slug = 'test-byline'"))[0].id;
+  const id = (await as(U.editor, () => rows(
+    `select public.article_create($1, null, '{"type":"doc","content":[]}'::jsonb, $2, $3, null, null, null) as id`,
+    ['RLS private draft fixture', authorId, categoryId],
+  )))[0].id;
+  const currentVersion = (await rows('select current_version_id from public.articles where id = $1', [id]))[0].current_version_id;
+
+  assert.equal((await as(U.editor, () => rows('select id from public.articles where id = $1', [id]))).length, 1,
+    'an article.create owner can read the private article');
+  assert.equal((await as(U.editor, () => rows('select id from public.article_versions where id = $1', [currentVersion]))).length, 1,
+    'an article.create owner can read their private draft version');
+  assert.equal((await as(U.journalist2, () => rows('select id from public.articles where id = $1', [id]))).length, 0,
+    'another creating journalist cannot read the private article');
+  assert.equal((await as(U.journalist2, () => rows('select id from public.article_versions where id = $1', [currentVersion]))).length, 0,
+    'another creating journalist cannot read its private version');
+  assert.equal((await as(U.publisher, () => rows('select id from public.articles where id = $1', [id]))).length, 1,
+    'review/publish staff can read private articles');
+  assert.equal((await as(U.publisher, () => rows('select id from public.article_versions where id = $1', [currentVersion]))).length, 1,
+    'review/publish staff can read private versions');
+  assert.equal((await as(U.m1, () => rows('select id from public.articles where id = $1', [id]))).length, 0,
+    'regular members cannot read private articles');
+  assert.equal((await as(U.m1, () => rows('select id from public.article_versions where id = $1', [currentVersion]))).length, 0,
+    'regular members cannot read private versions');
+  assert.equal((await as(null, () => rows('select id from public.articles where id = $1', [id]))).length, 0,
+    'anonymous readers cannot read private articles');
+  assert.equal((await as(null, () => rows('select id from public.article_versions where id = $1', [currentVersion]))).length, 0,
+    'anonymous readers cannot read private versions');
+
+  let revision = (await rows('select revision from public.articles where id = $1', [id]))[0].revision;
+  await as(U.publisher, () => db.query('select public.article_publish($1, $2)', [id, revision]));
+  const firstPublished = (await rows('select published_version_id from public.articles where id = $1', [id]))[0].published_version_id;
+  assert.equal((await as(null, () => rows('select id from public.article_versions where id = $1', [firstPublished]))).length, 1,
+    'the exact approved pointer-selected snapshot remains public');
+
+  revision = (await rows('select revision from public.articles where id = $1', [id]))[0].revision;
+  await as(U.editor, () => db.query(
+    'select public.article_revise($1, $2, $3, $4, $5::jsonb, $6, $7, $8, $9, $10)',
+    [id, revision, 'RLS correction fixture', null, '{"type":"doc","content":[]}', authorId, categoryId, null, null, null],
+  ));
+  revision = (await rows('select revision from public.articles where id = $1', [id]))[0].revision;
+  await as(U.publisher, () => db.query('select public.article_publish($1, $2)', [id, revision]));
+  const secondPublished = (await rows('select published_version_id from public.articles where id = $1', [id]))[0].published_version_id;
+  assert.notEqual(secondPublished, firstPublished);
+  assert.equal((await as(null, () => rows('select id from public.article_versions where id = $1', [firstPublished]))).length, 0,
+    'the formerly approved version is hidden after the publication pointer advances');
+  assert.equal((await as(null, () => rows('select id from public.article_versions where id = $1', [secondPublished]))).length, 1,
+    'the newly selected approved version is public');
+
+  revision = (await rows('select revision from public.articles where id = $1', [id]))[0].revision;
+  await db.query("insert into public.staff_capability_grants (user_id, capability) values ($1, 'article.unpublish') on conflict do nothing", [U.publisher]);
+  await as(U.publisher, () => db.query('select public.article_unpublish($1, $2)', [id, revision]));
+  assert.equal((await as(null, () => rows('select id from public.article_versions where id = $1', [secondPublished]))).length, 0,
+    'the approved version is hidden after unpublish clears its article pointer');
+  assert.equal((await as(U.publisher, () => rows('select id from public.article_versions where id = $1', [secondPublished]))).length, 1,
+    'authorized staff retain read access to the private approved history');
+});
+
 test('draft-save rejects an article without a current version and does not record success', async () => {
   const categoryId = (await rows("select id from public.categories where slug = 'politics'"))[0].id;
   const authorId = (await rows("select id from public.authors where slug = 'test-byline'"))[0].id;
