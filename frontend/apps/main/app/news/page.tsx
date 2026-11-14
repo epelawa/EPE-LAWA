@@ -9,6 +9,7 @@ import { currentNewsLayout } from "../../lib/news-daily-layout.mjs";
 import { NewspaperIcon } from "../../components/icons";
 import { EmptyPanel, PageFrame, StatusBadge } from "../../components/design-system";
 import styles from "./news.module.css";
+import NewsLayoutFrame from "./news-layout-frame";
 
 type ArticleListItem = {
   slug: string; title: string; summary: string | null; published_at: string | null;
@@ -56,11 +57,11 @@ function fallbackCategories(articles: ArticleListItem[]): NewsCategory[] {
 function NewsError() {
   return <PageFrame className={`${styles.newsPage} ui-stack`}>
     <header className={styles.pageHeader}><div><p className={styles.kicker}>EPE LAWA · NEWSROOM</p><h1 className={styles.pageTitle}>News</h1></div></header>
-    <EmptyPanel icon={<NewspaperIcon size={28} />} title="The newsroom did not load" description="We could not reach the published newsroom, so no stories are shown rather than a guess. Try again in a moment." actions={<Link href="/news" className="btn-secondary">Reload the newsroom</Link>} />
+    <EmptyPanel title="The newsroom did not load" description="We could not reach the published newsroom, so no stories are shown rather than a guess. Try again in a moment." actions={<Link href="/news" className="btn-secondary">Reload the newsroom</Link>} />
   </PageFrame>;
 }
 export default async function NewsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  const dailyLayout = currentNewsLayout();
+  const initialLayout = currentNewsLayout();
   const params = await searchParams;
   const query = typeof params.q === "string" ? params.q.trim().slice(0, 100) : "";
   const category = safeCategory(params.category);
@@ -91,9 +92,9 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
   const lead = page === 1 ? (breakingLead ?? articles[0] ?? null) : null;
   const listArticles = lead ? articles.filter((article) => article.slug !== lead.slug) : articles;
   const railArticleCount = Math.min(3, Math.max(1, listArticles.length - 1));
-  const railArticles = dailyLayout === "editorial-rail" && lead ? listArticles.slice(0, railArticleCount) : [];
-  const mainListArticles = dailyLayout === "editorial-rail" ? listArticles.slice(railArticleCount) : listArticles;
-  return <PageFrame className={`${styles.newsPage} ${styles[dailyLayout]} ui-stack`} data-news-layout={dailyLayout}>
+  const railArticles = initialLayout === "editorial-rail" && lead ? listArticles.slice(0, railArticleCount) : [];
+  const mainListArticles = initialLayout === "editorial-rail" ? listArticles.slice(railArticleCount) : listArticles;
+  return <NewsLayoutFrame initialLayout={initialLayout} className="ui-stack">
     <nav className={styles.newsNav} aria-label="News navigation">
       <Link href="/" className={styles.newsHomeLink}>EPE LAWA</Link>
       <Link href="/news" aria-current="page" className={styles.newsCurrentLink}>News</Link>
@@ -118,6 +119,8 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
     <header className={styles.pageHeader}>
       <h1 className={styles.pageTitle}>{lead && isBreakingNow(lead) ? "Breaking News" : "News"}</h1>
     </header>
+    <div className={`${styles.editorialGrid} ${railArticles.length ? styles.editorialGridRail : ""}`}>
+      <div className={`${styles.editorialMain} ${railArticles.length ? styles.editorialMainRail : ""}`}>
     {lead ? <section className={styles.featureSection} aria-label="Lead story"><div className={styles.featureCard}>
       <Link href={newsArticlePath(lead.slug)} className={styles.featureLink} aria-label={`Read: ${lead.title}`}>
         {publicMediaUrl(lead.og_image_key) ? <img className={styles.featureImage} src={publicMediaUrl(lead.og_image_key)!} alt="" loading="eager" decoding="async" /> : <span className={styles.featureImageFallback} aria-hidden="true"><NewspaperIcon size={44} /></span>}
@@ -131,7 +134,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
       <li><Link href={categoryHref(query, "")} aria-current={!category ? "page" : undefined} className={styles.categoryLink}>All</Link></li>
       {categories.map((item) => <li key={item.slug}><Link href={categoryHref(query, item.slug)} aria-current={category === item.slug ? "page" : undefined} className={styles.categoryLink}>{item.label}</Link></li>)}
     </ul></nav>
-    {articles.length === 0 ? <EmptyPanel icon={<NewspaperIcon size={28} />} title={category ? "No published stories in this category" : "No stories published yet"} description={category ? "There are no published stories in this category yet." : "When the newsroom publishes a story, it will appear here with its byline, date and category. Nothing is shown before it exists."} /> : mainListArticles.length ? <section className={styles.storySection} aria-labelledby="stories-heading">
+    {articles.length === 0 ? <EmptyPanel title={category ? "No published stories in this category" : "No stories published yet"} description={category ? "There are no published stories in this category yet." : "When the newsroom publishes a story, it will appear here with its byline, date and category. Nothing is shown before it exists."} /> : mainListArticles.length ? <section className={styles.storySection} aria-labelledby="stories-heading">
       <h2 className={styles.listHeading} id="stories-heading">{category ? (categories.find((item) => item.slug === category)?.label ?? "Stories") : "More stories"}</h2>
       <ul className={styles.storyList}>{mainListArticles.map((article) => {
         const imageUrl = publicMediaUrl(article.og_image_key);
@@ -143,6 +146,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
         </Link></li>;
       })}</ul>
     </section> : null}
+      </div>
     {railArticles.length ? <aside className={styles.relatedSection} aria-labelledby="related-news-heading">
       <div className={styles.sectionHeading}><h2 id="related-news-heading">Related News</h2></div>
       <ul className={`${styles.relatedGrid} ${styles.newsRailGrid}`}>{railArticles.map((article) => {
@@ -156,6 +160,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
         </Link></li>;
       })}</ul>
     </aside> : null}
+    </div>
     {page > 1 || hasOlder ? <nav className={styles.pagination} aria-label="News pages">{page > 1 ? <Link className="btn-secondary" href={pageHref(page - 1, query, category)}>Newer stories</Link> : null}<span className={styles.sectionMeta} aria-live="polite">Page {page}</span>{hasOlder ? <Link className="btn-secondary" href={pageHref(page + 1, query, category)}>Older stories</Link> : null}</nav> : null}
-  </PageFrame>;
+  </NewsLayoutFrame>;
 }
