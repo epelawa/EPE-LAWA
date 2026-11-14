@@ -340,3 +340,15 @@ PR #52 is open at exact head `8356f524c49ca258f809f605f7a6a20e50a382df` against 
 
 ### 2026-11-14 23:31 WAT — News theme test follow-up
 PR #78 merged normally at `c25cb3e5f164aa3e661d14a7c78ebc97c6bc3560`. The focused light-theme test was stale because the intended selector now excludes `[data-news-layout]`; updated `frontend/tests/light-theme-lines.test.mjs` passes 2/2 under Node's test runner and `git diff --check` passes. No UI changed; the visual baseline remains in [`News mobile capture`](handoffs/assets/2026-11-14-news-minute/news-390.png) and [`News desktop capture`](handoffs/assets/2026-11-14-news-minute/news-1440.png). Exact Production deployment for the new main SHA was BUILDING at the last check; hosted GitHub check details are inaccessible. Next: create and normally merge one test-only PR, then continue the isolated Auth workstream.
+
+
+### 2026-11-14 23:38 WAT — News PR #79 merged; schema-test fixture repaired
+
+PR #78 (News minute-rotation layout) and PR #79 (light-theme selector regression test) were normally merged; the latest verified `main` is `64370cb9c17e6d6445cd9227ca6ee451119c31a4`. The full suite on the Auth branch exposed two linked PGlite failures: the forward-only News comments migration restricts `author_id` selection, while the old synthetic ban test filtered on that field and errored before revoking its test ban. The following poll test therefore encountered the still-active synthetic ban. A separate test-only worktree now seeds a hidden own-comment and checks it by permitted `id`, also verifying another member cannot read it. On Node 22.23.5/pnpm 10.34.9, the exact schema test passed 23, failed 0, with 1 documented PGlite constraint skip. No production SQL was changed.
+
+The isolated Auth worktree separately passed its 15 focused member-auth tests, workspace typecheck 5/5 and builds 2/2 with localhost-only synthetic Supabase settings; its full suite awaits the test fixture fix. The test-only PR and subsequent exact-head Auth full-suite rerun remain pending. GitHub hosted-check details are inaccessible through the connected CLI, so no hosted CI pass is claimed. No Production schema, Auth settings, accounts or content were changed in this step. See `docs/handoffs/2026-11-14-schema-test-fixture.md` for Done/Pending/Blocked/Resume state.
+
+
+### 2026-11-14 23:41 WAT — Schema-test fixture exact-tree verification
+
+On `test/schema-comment-acl-ban-regression-20261114`, Node 22.23.5/pnpm 10.34.9 workspace typecheck passed **5/5 tasks**, both production builds passed **2/2 tasks**, and the complete test suite passed **225 total: 224 passed, 0 failed, 1 documented PGlite constraint skip**. The earlier pre-build attempt had four local HTTP-smoke socket errors; after producing the two app builds with loopback-only synthetic Supabase settings, those smoke tests passed. The branch remains test-only, with no Production schema/settings/account/content changes, and is ready for its own PR. Next: push and normally merge the test fix, then fast-forward Auth and rerun the exact focused and full suites before opening the Auth PR.

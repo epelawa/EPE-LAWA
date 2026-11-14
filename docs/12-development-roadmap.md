@@ -237,3 +237,17 @@ A local candidate on `feat/tourism-photo-gallery`, based on `main` `203d7ca`, ad
 - **Pending:** open and attempt the single-file regression-test PR through the ordinary merge path, then sync and rerun the separate Auth worktree checks.
 - **Blocked:** hosted check details remain inaccessible through the GitHub connector; no hosted CI pass is claimed. The exact Production deployment for #78 was still BUILDING at the last metadata check.
 - **Resume:** commit/push the test fix, refresh the exact PR head, and attempt a normal merge without bypass flags.
+
+
+## 2026-11-14 23:38 WAT — News PR #79 merged; schema-test fixture repaired
+
+- **Done:** PR #78 (News minute-rotation layout) and PR #79 (theme-selector regression test) were normally merged. Latest verified `main` is `64370cb9c17e6d6445cd9227ca6ee451119c31a4`. On the Auth branch, the 15 focused member-auth tests passed; workspace typecheck passed 5/5 tasks and production builds passed 2/2 using localhost-only synthetic Supabase settings.
+- **Done:** The full suite exposed two linked PGlite failures. The News comments migration restricts `author_id` selection; the old ban fixture filtered by that column, aborted before unban, and left the subsequent poll test seeing an active synthetic ban. A separate test-only worktree now verifies own hidden-comment access by permitted `id` and another member's denial. The schema test passes 23, fails 0, with 1 documented PGlite/PostgreSQL constraint skip.
+- **Pending:** commit/push the test-only fix in its own PR and attempt only an ordinary merge; then sync Auth to that `main` and rerun the exact full suite before opening the separate Auth PR.
+- **Blocked:** GitHub hosted-check details are inaccessible through the connected CLI. No hosted CI pass is claimed. No Production schema, Auth settings, accounts or content changed during this step.
+- **Resume:** finish the focused schema-test PR first, then rerun Auth tests on updated `main`; only proceed with the Auth PR after all local gates pass.
+
+
+## 2026-11-14 23:41 WAT — Schema-test fix exact-tree gates
+
+On the isolated test-only branch, Node 22.23.5/pnpm 10.34.9 workspace typecheck passed **5/5**, production builds passed **2/2**, and the full suite passed **225 total: 224 passed, 0 failed, 1 documented PGlite constraint skip**. The four HTTP-smoke socket errors in the earlier pre-build attempt did not recur after building both local apps with loopback-only synthetic Supabase settings. The focused schema-test branch is ready for a separate PR; next merge it only through the ordinary path, then sync Auth and rerun its exact full suite before opening the Auth PR. No Production schema, settings, accounts or content changed.
