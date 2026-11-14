@@ -220,3 +220,13 @@ A local candidate on `feat/tourism-photo-gallery`, based on `main` `203d7ca`, ad
 - PR #52 is open at exact head `8356f524c49ca258f809f605f7a6a20e50a382df` (`fix/radio-lagos-availability-contract`) against current `main` `e5c9bde21b82d555f486ac3356592f6e31007b29`.
 - The local gates and screenshots are complete, but `gh pr checks 52` returned HTTP 403 `Resource not accessible by integration` for the exact-head check rollup. Hosted checks are not verified; no merge was attempted and mergeability is not treated as proof.
 - **Resume:** obtain an authorized exact-head check view; only then attempt an ordinary merge if healthy. PR #50 remains blocked by the Production `publication_status` schema prerequisite. No Production writes.
+
+
+## 2026-11-14 23:23 WAT — News minute-rotation candidate
+
+- The isolated News branch now combines the owner-directed mobile-first, flat, cloud-blue News layout with deterministic minute-by-minute layout rotation and a corrected two-column editorial rail. News has no global footer; only the small EPE LAWA wordmark remains at the bottom.
+- Exact local validation: Node 22.23.5/pnpm 10.34.9; News focused tests **13/13**, public-app typecheck passed, `git diff --check` clean. Synthetic-only Playwright passed at 320/390/430/768/1440 CSS px with no browser errors or horizontal overflow. The editorial-rail feature-to-category gap measured 14px at desktop.
+- Five local synthetic screenshots and the timestamped Done/Pending/Blocked/Resume handoff are tracked in [`the News minute-layout handoff`](handoffs/2026-11-14-news-minute-layout.md). No Production article rows were read or created by these screenshots.
+- **Pending:** open and attempt the focused PR through an ordinary merge, then verify the exact merged `main` and Production deployment. Hosted CI details remain inaccessible; do not claim they passed.
+- **Blocked:** live News content remains empty pending the separate audited Admin workflow and owner-authorized publication actions. Do not use synthetic fixtures as public content.
+- **Resume:** commit/push only News changes and relevant evidence, open one focused PR, refresh exact-head GitHub/Vercel state, and merge only through the normal CLI if allowed.
