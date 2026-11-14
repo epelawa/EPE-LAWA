@@ -1,0 +1,10 @@
+{
+  "path": "/workspace/EPE-LAWA-batch-news/artifacts/news-layout/news-desktop-1440x900.png",
+  "layout": "magazine-sections",
+  "frameWidth": 1280,
+  "frameRadius": "32px",
+  "documentWidth": 1440,
+  "clientWidth": 1440,
+  "hasFullFooter": false,
+  "hasTinyBrandMark": true
+}

@@ -1,0 +1,15 @@
+{
+  "path": "/workspace/EPE-LAWA-batch-news/artifacts/news-layout/editorial-rail-desktop-1440.png",
+  "layout": "editorial-rail",
+  "width": 1440,
+  "documentWidth": 1440,
+  "clientWidth": 1440,
+  "frameRadius": "32px",
+  "fixtureTitle": true,
+  "newsNav": true,
+  "tinyBrand": true,
+  "fullFooter": false,
+  "leadImageLoaded": true,
+  "storyRows": 1,
+  "frameWidth": 1280
+}
