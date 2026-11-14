@@ -75,6 +75,12 @@
 .ui-table table { width:100%; min-width:680px; border-collapse:collapse; text-align:left; font-size:14px; }
 .ui-table th,.ui-table td { padding:14px; border-bottom:1px solid hsl(var(--border)); vertical-align:top; }
 .ui-table th { color:hsl(var(--muted-foreground)); font-size:12px; text-transform:uppercase; letter-spacing:.08em; }
+.admin-newsroom-list { min-width:0; }
+.admin-newsroom-table { position:relative; width:100%; min-width:0; overflow-x:auto; overscroll-behavior-x:contain; }
+.admin-newsroom-table:focus-visible { outline:2px solid hsl(var(--ring)); outline-offset:3px; }
+.admin-newsroom-table table { min-width:680px; }
+.admin-newsroom-table .ui-item-title,.admin-newsroom-table .ui-meta { overflow-wrap:anywhere; }
+.admin-newsroom-table th,.admin-newsroom-table td:nth-child(2),.admin-newsroom-table td:nth-child(5),.admin-newsroom-table td:last-child { white-space:nowrap; }
 .btn-primary,.btn-secondary,.btn-ghost,.btn-icon,.ep-icon-btn { display:inline-flex; align-items:center; justify-content:center; gap:9px; min-height:44px; padding:11px 20px; border:1px solid transparent; border-radius:999px; font-size:14px; font-weight:600; text-decoration:none; }
 .btn-primary { background:hsl(var(--primary)); color:hsl(var(--primary-foreground)); }
 .btn-secondary { background:hsl(var(--card)); color:hsl(var(--foreground)); border-color:hsl(var(--input)); }
