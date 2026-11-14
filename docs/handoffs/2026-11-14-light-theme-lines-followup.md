@@ -12,13 +12,13 @@
 
 ## Remaining
 
-- Commit the reviewed changes, push branch with the authorized GitHub connector and runtime askpass, open a separate focused PR, then record its URL and exact head SHA here/results. Do not merge.
-- Read PR hosted check state if accessible; do not claim checks passed without verification. Note possible 403/unavailability truthfully.
+- Owner review remains pending; PR #59 is open and intentionally unmerged: https://github.com/epelawa/EPE-LAWA/pull/59. The delivered exact head SHA is included in the PR details and task result.
+- Hosted checks could not be inspected: `gh pr checks 59 --repo epelawa/EPE-LAWA` returned `GraphQL: Resource not accessible by integration (node.statusCheckRollup.nodes.0.commit.statusCheckRollup)`. No hosted check is claimed as passed; hosted checks may be inaccessible (403).
 
 ## Blocked
 
-- None for local implementation, tests, build or screenshots. GitHub connector is present; PR work is not yet performed.
+- Hosted-check inspection is blocked by GitHub integration permission (GraphQL resource inaccessible). Local implementation, tests, build and screenshots are complete.
 
 ## Resume
 
-Run `git status --short`, review staged paths, commit only the CSS, focused test, dated screenshot directory and this handoff. Push using temporary `GIT_ASKPASS` that invokes `"$MANUS_CONFIG_HOME/connectors/github/gh" auth token` at runtime, with no token output/storage or global git config changes. Create one PR for `feat/light-theme-lines-followup` against `main`; refresh exact PR head, inspect check results, and keep the PR open and unmerged.
+Owner: review PR #59 and keep it open until all new requirements have been represented; do not merge. If hosted checks become accessible, refresh PR #59 check status and record the evidence without changing the local validation claims above.
