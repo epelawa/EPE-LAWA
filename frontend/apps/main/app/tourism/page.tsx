@@ -4,6 +4,8 @@ import { FilterIcon, SearchIcon } from "../../components/icons";
 import { createClient } from "../../lib/supabase";
 import { PageFrame, PageIntro, Panel, SectionHeading, Notice, EmptyPanel } from "../../components/design-system";
 import { submitTourismContribution } from "./actions";
+import Image from "next/image";
+import styles from "./tourism.module.css";
 
 export const metadata: Metadata = { title: "Historical Sites & Tourism", description: "Browse approved, source-backed Epe tourism destinations and verified visitor details.", alternates: { canonical: "/tourism" } };
 type Destination = { id: string; slug: string; name: string; description: string; visitor_context: string | null; location_label: string | null; published_at: string; source_citation: string; source_url: string | null };
@@ -57,6 +59,33 @@ export default async function TourismPage({ searchParams }: { searchParams: Prom
   return <PageFrame className="ui-stack">
     <PageIntro eyebrow="Epe Lawa · Public record" title="Historical Sites &amp; Tourism" description="A guide to Epe destinations, built from verified sources. Visitor and location details appear only when checked by our editorial team." />
     <Notice tone="neutral">We do not guess opening hours, prices, access conditions or locations. Confirm current arrangements with the destination before travelling.</Notice>
+
+    <section className="ui-stack-sm" aria-labelledby="tourism-photo-references">
+      <SectionHeading eyebrow="Licensed photo references" title="Epe in photographs" id="tourism-photo-references" description="Wikimedia Commons images shown for visual context only. These are not approved destination listings and do not verify access, amenities, safety, opening hours, prices or current conditions." />
+      <ul className="ui-grid ui-grid--2 ui-list" aria-label="Licensed Epe photo references">
+        <li className="ui-card ui-stack-sm">
+          <figure className={styles.figure}>
+            <Image className={styles.photo} src="/epe-iberekodo-beach.jpg" alt="A sandy shoreline with water, sky and green plants in the foreground." width={2592} height={1456} sizes="(max-width: 640px) 100vw, 50vw" />
+            <figcaption className={styles.caption}>
+              <span>Wikimedia Commons title: “Iberekodo Beach, Epe, Lagos”</span>
+              <span>Photograph by Tarikhaldun.</span>
+              <span>Source: <a href="https://commons.wikimedia.org/wiki/File:Iberekodo_Beach,_Epe,_Lagos.jpg" rel="noreferrer">Wikimedia Commons file</a>. License: <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="license noreferrer">CC BY-SA 4.0</a>.</span>
+            </figcaption>
+          </figure>
+        </li>
+        <li className="ui-card ui-stack-sm">
+          <figure className={styles.figure}>
+            <Image className={styles.photo} src="/epe-through-mangrove.jpg" alt="People in canoes on a tree-lined waterway, seen from another canoe." width={1600} height={1200} sizes="(max-width: 640px) 100vw, 50vw" />
+            <figcaption className={styles.caption}>
+              <span>Wikimedia Commons title: “Through Epe Mangrove”</span>
+              <span>Photograph by Dotun55 (Adedotun Ajibade).</span>
+              <span>Source: <a href="https://commons.wikimedia.org/wiki/File:Through_Epe_Mangrove.jpg" rel="noreferrer">Wikimedia Commons file</a>. License: <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="license noreferrer">CC BY-SA 4.0</a>.</span>
+            </figcaption>
+          </figure>
+        </li>
+      </ul>
+      <p className="ui-meta">Images retain their full source aspect ratios; responsive delivery resizes and re-encodes them without cropping.</p>
+    </section>
 
     <form method="get" action="/tourism" role="search" aria-label="Search approved tourism destinations" className="ui-toolbar filter-panel">
       <div className="filter-panel__heading"><span className="filter-panel__icon"><FilterIcon/></span><div><p className="ui-eyebrow">Approved records</p><h2 className="filter-panel__title">Find a destination</h2></div></div>
