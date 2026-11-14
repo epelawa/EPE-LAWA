@@ -11,10 +11,10 @@
 
 ## Verification
 
-- Member app build (Node 22.23.4, pnpm 10.34.9) and admin app build: **passed**, including TypeScript.
+- After the latest copy refinement, member app production build and TypeScript check passed with Node 22.23.4/pnpm 10.34.9; the admin app build also passed.
 - Full member/backend test run before the latest copy-only refinement: **194 passed, 0 failed, 1 skipped** (195 total). The single skip is the documented exclusion-constraint limitation in PGlite.
 - After the copy refinement, focused auth OTP and member-auth tests: **11 passed, 0 failed**.
-- Screenshots use only local synthetic UI and empty forms: `docs/screenshots/auth/create-account-320x480.png`, `create-account-320x568.png`, `create-account-375x812.png`, `create-account-768x1024.png`, `create-account-1440x900.png`, `verify-otp-320x480.png`, and `verify-otp-375x812.png`.
+- Screenshots use only local synthetic UI and empty forms: Create Account at 320×480, 320×568, 375×812, 768×1024 and 1440×900; OTP at 320×480 and 375×812; and the updated expired-link screen at 320×812, 375×812 and 1440×900 (`docs/screenshots/auth/link-expired-*.png`).
 
 ## Auth URL configuration — updated 2026-11-14 17:29 CET
 
