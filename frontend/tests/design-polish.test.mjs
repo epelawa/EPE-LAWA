@@ -87,6 +87,8 @@ test("Tidegate loader and scroll blur are wired into public and staff routes", (
     assert.match(motion, /IntersectionObserver/);
     assert.match(motion, /prefers-reduced-motion/);
     assert.match(motion, /dataset\.scrollReveal = "pending"/);
+    assert.match(motion, /element\.dataset\.scrollReveal === "visible" \|\| element\.closest/);
+    assert.match(motion, /observer\.observe\(element\)/);
     assert.match(motion, /TidegateSpinner/);
   }
   for (const layout of [publicLayout, staffLayout]) assert.match(layout, /<SiteMotion\s*\/>/);

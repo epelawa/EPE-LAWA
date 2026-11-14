@@ -71,7 +71,7 @@ export default function SiteMotion() {
       if (root instanceof HTMLElement && root.matches(REVEAL_TARGETS)) candidates.add(root);
       root.querySelectorAll<HTMLElement>(REVEAL_TARGETS).forEach((element) => candidates.add(element));
       for (const element of candidates) {
-        if (element.dataset.scrollReveal || element.closest('[aria-busy="true"]')) continue;
+        if (element.dataset.scrollReveal === "visible" || element.closest('[aria-busy="true"]')) continue;
         let ancestor = element.parentElement;
         let nested = false;
         while (ancestor && ancestor !== main) {
