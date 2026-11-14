@@ -3,7 +3,6 @@ import { ArrowRightIcon, ArrowUpRightIcon, NewspaperIcon, BuildingIcon, UsersIco
 import { EmptyPanel } from "../components/design-system";
 import { formatPublishedDate } from "../lib/dates";
 import { getLatestStories } from "../lib/home-data";
-import { BrandLockup } from "../components/brand";
 import "./hero-logo.css";
 import CookieBanner from "../components/cookie-banner";
 import HeroCarousel from "../components/hero-carousel";
@@ -23,10 +22,9 @@ export default async function Home() {
   const stories = await getLatestStories(3);
   return <div className="public-home">
     <section className="home-hero" aria-labelledby="home-title"><div className="ep-container home-hero__grid">
-      <div className="home-hero__copy"><div className="home-hero__brand"><BrandLockup size={36} /></div><h1 id="home-title">The place.<br />The people.<br /><em>Our Epe.</em></h1><p className="home-hero__lede">A shared home for the stories, conversations and everyday discoveries that bring Epe together.</p><div className="ui-actions"><Link href="/news" className="btn-primary">Discover what’s happening <ArrowRightIcon size={17} aria-hidden="true" /></Link><Link href="/itan-ilu-mi" className="ui-text-link">Know our story <ArrowUpRightIcon size={17} aria-hidden="true" /></Link></div><p className="home-hero__note"><UsersIcon size={20} aria-hidden="true" />Rooted in the community. Open to everyone.</p></div>
+      <div className="home-hero__copy"><h1 id="home-title">Epe.<br /><em>Closer to home.</em></h1><p className="home-hero__lede">Stories, places and people that bring Epe together.</p><div className="ui-actions"><Link href="/news" className="btn-primary">Explore Epe <ArrowRightIcon size={17} aria-hidden="true" /></Link><Link href="/itan-ilu-mi" className="ui-text-link">Our story <ArrowUpRightIcon size={17} aria-hidden="true" /></Link></div></div>
       <HeroCarousel />
     </div></section>
-    <div className="ep-container home-topics" aria-label="A platform for community life"><span>Stories worth knowing</span><span>History worth keeping</span><span>Places worth finding</span><span>People worth connecting</span></div>
 
     <section className="ep-container home-section" aria-labelledby="start-title"><div className="home-section__head"><div><p className="ui-eyebrow">Start somewhere familiar</p><h2 id="start-title">Closer to the things<br />that make us, us.</h2></div><p>Catch up on local life, trace the stories before us, or find a business around the corner. There’s more than one way to belong.</p></div><div className="home-features">
       <Link className="home-feature" href="/news"><span className="home-feature__icon"><NewspaperIcon size={20}/></span><h3>Read the room.</h3><p>News and perspectives from across Epe Division.</p><span className="home-feature__arrow" aria-hidden="true"><ArrowUpRightIcon size={20}/></span></Link>

@@ -298,21 +298,19 @@ body:has(.focused-error-shell) .site-main { display: grid; min-height: 100dvh; p
 .drawer-foot { margin-top: 20px; color: hsl(var(--muted-foreground)); font-size: 12px; }
 
 /* An original editorial home, not the previous card-grid landing. */
-.home-hero { padding: 64px 0 52px; }
+.home-hero { padding: 48px 0 32px; }
 .home-hero__grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(32px,5vw,72px); align-items: center; }
-.home-hero__copy { padding-block: 24px; }
-.home-hero h1 { margin: 24px 0; font-weight: 550; font-size: var(--text-display); line-height: 1.07; letter-spacing: -.055em; }
+.home-hero__copy { min-width: 0; padding-block: 12px; }
+.home-hero h1 { margin: 0 0 16px; font-weight: 550; font-size: clamp(3rem, 6vw, 5rem); line-height: .98; letter-spacing: -.06em; overflow-wrap: anywhere; }
 .home-hero h1 em { font-family: var(--font-display); font-weight: 400; color: hsl(var(--primary)); letter-spacing: -.06em; }
-.home-hero__lede { max-width: 40ch; color: hsl(var(--muted-foreground)); font-size: 16px; line-height: 1.75; }
-.home-hero .ui-actions { margin-top: 30px; }
-.home-hero__note { display: flex; align-items: center; gap: 10px; margin-top: 40px; padding-top: 22px; border-top: 1px solid hsl(var(--border)); font-size: 12px; color: hsl(var(--muted-foreground)); }
+.home-hero__lede { max-width: 34ch; margin: 0; color: hsl(var(--muted-foreground)); font-size: 17px; line-height: 1.5; }
+.home-hero .ui-actions { margin-top: 22px; }
+.home-hero__note { margin: 0; color: hsl(var(--muted-foreground)); font-size: 13px; line-height: 1.45; }
 .home-hero__note svg { flex-shrink: 0; }
 .home-hero__art { position: relative; overflow: hidden; border-radius: 180px 180px 24px 24px; margin: 0; background: hsl(var(--secondary)); }
 .home-hero__art img { display: block; width: 100%; height: 560px; object-fit: cover; }
 .home-hero__art figcaption { position: absolute; bottom: 18px; left: 18px; right: 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 18px; border-radius: 16px; color: var(--palette-midnight); background: var(--palette-cloud); font-size: 12px; }
 .home-hero__art figcaption strong { display: block; font-size: 14px; margin-bottom: 2px; }
-.home-topics { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; padding-block: 24px; border-top: 1px solid hsl(var(--border)); border-bottom: 1px solid hsl(var(--border)); color: hsl(var(--muted-foreground)); font-size: 13px; }
-.home-topics span { display: flex; align-items: center; }
 .home-section { padding-block: var(--section-y); }
 .home-section__head { display: grid; grid-template-columns: 1.1fr 1fr; align-items: end; gap: 40px; margin-bottom: 36px; }
 .home-section__head h2 { margin-top: 16px; font-size: clamp(1.75rem,3.5vw,2.7rem); font-weight: 500; letter-spacing: -.045em; }
@@ -406,7 +404,7 @@ body:has(.focused-error-shell) .site-main { display: grid; min-height: 100dvh; p
   .ui-page-intro { align-items: flex-start; flex-direction: column; gap: 18px; }
   .ui-page-intro__actions { flex-shrink: 1; }
   .home-hero { padding-top: 32px; }
-  .home-hero__grid { gap: 28px; }
+  .home-hero__grid { gap: 24px; }
   .home-hero__art img { height: 440px; }
   .home-hero__art { border-radius: 120px 120px 22px 22px; }
   .home-section__head { gap: 24px; }
@@ -443,14 +441,14 @@ body:has(.focused-error-shell) .site-main { display: grid; min-height: 100dvh; p
   .ui-card { padding: 20px; }
   .ui-empty { padding: 36px 20px; }
   .home-hero__grid,.home-section__head,.home-community { grid-template-columns: 1fr; }
-  .home-hero__copy { padding-block: 12px; }
-  .home-hero h1 { margin-block: 20px; font-size: clamp(2.025rem,9vw,3rem); }
-  .home-hero__lede { max-width: 38ch; }
-  .home-hero__note { margin-top: 28px; }
+  .home-hero { padding-block: 24px 32px; }
+  .home-hero__grid { gap: 18px; }
+  .home-hero__copy { padding-block: 0; }
+  .home-hero h1 { margin-bottom: 12px; font-size: clamp(2.75rem, 11vw, 4.25rem); line-height: .98; }
+  .home-hero__lede { max-width: 34ch; font-size: 16px; }
   .home-hero__art { border-radius: 110px 110px 22px 22px; }
   .home-hero__art img { height: 410px; }
   .home-hero__art figcaption { left: 12px; right: 12px; bottom: 12px; padding: 12px 14px; }
-  .home-topics { justify-content: flex-start; gap: 10px 22px; font-size: 12px; }
   .home-section__head { gap: 20px; }
   .home-index { border-radius: 24px; padding: 28px 24px; }
   .home-index__list { grid-template-columns: 1fr; }

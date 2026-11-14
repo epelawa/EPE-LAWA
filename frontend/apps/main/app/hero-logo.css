@@ -18,19 +18,6 @@
   background: var(--palette-cloud);
   border: 1px solid hsl(var(--border));
 }
-.home-hero__brand {
-  display: flex;
-  align-items: center;
-  width: fit-content;
-  min-height: 48px;
-  margin: 0 0 24px;
-  padding: 5px 12px 5px 6px;
-  border: 1px solid hsl(var(--border));
-  border-radius: 999px;
-  background: hsl(var(--card) / .9);
-  box-shadow: 0 5px 16px hsl(var(--palette-midnight) / .06);
-}
-
 .home-hero__carousel {
   position: relative;
   margin: 0;

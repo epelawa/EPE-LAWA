@@ -28,7 +28,10 @@ test("public Appearance switch lives in the all-viewport hamburger drawer", () =
   assert.match(header, /<BrandLockup size=\{30\} \/>/);
   assert.doesNotMatch(header + brand + staffBrand + footer, /Epe Division|brand__place|brand-lockup__tagline|showPlace/);
   assert.match(home, /<HeroCarousel\s*\/>/, "homepage logo hero exists");
-  assert.match(home, /home-hero__brand.*BrandLockup/);
+  assert.doesNotMatch(home, /home-hero__brand|BrandLockup/);
+  assert.match(home, /Epe\.<br \/><em>Closer to home\.<\/em>/);
+  assert.match(home, /Stories, places and people that bring Epe together\./);
+  assert.doesNotMatch(home, /Stories worth knowing|History worth keeping|Places worth finding|People worth connecting|home-topics/);
   assert.equal(heroManifest.length, 52);
   assert.equal(new Set(heroManifest.map((slide) => slide.source)).size, 52);
   assert.match(heroCarousel, /HERO_SLIDES = heroImages/);
