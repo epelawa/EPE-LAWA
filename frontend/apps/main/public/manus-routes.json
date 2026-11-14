@@ -79,6 +79,12 @@
       "path": "/admin/tourism"
     },
     {
+      "path": "/admin/users"
+    },
+    {
+      "path": "/admin/change-password"
+    },
+    {
       "path": "/auth/complete"
     },
     {

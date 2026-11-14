@@ -6,7 +6,7 @@ import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { getAdminAccessForSession, readAdminSessionFromCookies } from "./supabase-access";
 
-export async function createClient() {
+export async function createClient(options: { allowPasswordChange?: boolean } = {}) {
   const cookieStore = await cookies();
   const access = await getAdminAccessForSession({
     getAll: () => cookieStore.getAll().map(({ name, value }) => ({ name, value })),
@@ -29,8 +29,13 @@ export async function createClient() {
   if (!url || !key?.startsWith("sb_publishable_")) {
     throw new Error("Supabase is unavailable");
   }
-  return createSupabaseClient(url, key, {
+  const client = createSupabaseClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     global: { headers: { Authorization: `Bearer ${session.access_token}` } },
   });
+  if (!options.allowPasswordChange) {
+    const { data: profile, error } = await client.from("staff_profiles").select("must_change_password").eq("user_id", access.userId).maybeSingle();
+    if (error || profile?.must_change_password) throw new Error("Password change required");
+  }
+  return client;
 }

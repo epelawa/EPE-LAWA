@@ -17,6 +17,7 @@ const sectionPages: NavItem[] = [
   { label: "Tourism", href: "/tourism", hint: "Tourism submissions" },
   { label: "Radio", href: "/radio", hint: "Programmes, rights, episodes and schedule", primary: true },
   { label: "People", href: "/people", hint: "Who is Who records" },
+  { label: "Users", href: "/users", hint: "Accounts, staff access and invitations" },
 ];
 
 export function mainNavigation(): NavItem[] {

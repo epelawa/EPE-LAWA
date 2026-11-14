@@ -1,0 +1,48 @@
+{
+  "source": "local synthetic fixture only",
+  "viewports": [
+    {
+      "name": "mobile",
+      "width": 375,
+      "height": 812,
+      "httpStatus": 200,
+      "usersVisible": true,
+      "usersNavigationVisible": true,
+      "signOutVisible": true,
+      "primaryAdminAddressVisible": false,
+      "directoryUnavailableVisible": false,
+      "invitationScreenshot": "/workspace/EPE-LAWA-admin-user-management/artifacts/admin-users/admin-users-invite-375.png",
+      "viewportWidth": 375,
+      "documentWidth": 375,
+      "documentHeight": 2950,
+      "mainWidth": 375,
+      "footerVisible": false,
+      "directoryCards": 7,
+      "screenshot": "/workspace/EPE-LAWA-admin-user-management/artifacts/admin-users/admin-users-375.png"
+    },
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 900,
+      "httpStatus": 200,
+      "usersVisible": true,
+      "usersNavigationVisible": true,
+      "signOutVisible": true,
+      "primaryAdminAddressVisible": false,
+      "directoryUnavailableVisible": false,
+      "invitationScreenshot": "/workspace/EPE-LAWA-admin-user-management/artifacts/admin-users/admin-users-invite-1440.png",
+      "viewportWidth": 1440,
+      "documentWidth": 1440,
+      "documentHeight": 2652,
+      "mainWidth": 1440,
+      "footerVisible": false,
+      "directoryCards": 7,
+      "screenshot": "/workspace/EPE-LAWA-admin-user-management/artifacts/admin-users/admin-users-1440.png"
+    }
+  ],
+  "signOutTest": {
+    "redirectedToLogin": true,
+    "sessionCookiesCleared": true,
+    "providerData": "synthetic fixture only"
+  }
+}

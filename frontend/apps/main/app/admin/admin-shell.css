@@ -37,7 +37,7 @@ body:has(.admin-shell):has(.focused-error-shell) .site-main {
   padding: 12px 18px;
   border: 1px solid hsl(var(--border));
   border-radius: 24px;
-  background: hsl(var(--card) / .97);
+  background: hsl(var(--card));
   box-shadow: 0 5px 24px rgb(10 16 35 / .035);
 }
 
@@ -117,6 +117,25 @@ body:has(.admin-shell):has(.focused-error-shell) .site-main {
   color: hsl(var(--link));
   font-size: 13px;
 }
+
+.admin-shell .admin-signout-form { display: flex; margin: 0; }
+.admin-shell .admin-signout-form--masthead { display: flex; }
+.admin-shell .admin-signout-button {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 999px;
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  font-size: 13px;
+  font-weight: 600;
+}
+.admin-shell .admin-signout-button:hover { background: hsl(var(--secondary)); }
+.admin-shell .drawer__actions { display: grid; gap: 10px; margin-top: 18px; padding-top: 16px; border-top: 1px solid hsl(var(--border)); }
+.admin-shell .drawer__actions .drawer__foot { margin: 0; }
 
 .admin-shell .ep-button {
   display: inline-flex;
@@ -338,6 +357,7 @@ body:has(.admin-shell):has(.focused-error-shell) .site-main {
 @media (max-width: 1024px) {
   .admin-shell .admin-nav { display: none; }
   .admin-shell .admin-menu-button { display: inline-flex; }
+  .admin-shell .admin-signout-form--masthead { display: none; }
 }
 
 @media (max-width: 760px) {

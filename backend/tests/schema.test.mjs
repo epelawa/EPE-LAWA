@@ -41,6 +41,7 @@ const SHIMMED = [];
 const SUPABASE_SURFACE = `
   create role anon nologin;
   create role authenticated nologin;
+  create role service_role nologin bypassrls;
   create schema auth;
   create table auth.users (id uuid primary key, email_confirmed_at timestamptz);
   create function auth.uid() returns uuid language sql stable

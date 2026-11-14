@@ -8,6 +8,7 @@ import { staffHref } from "../lib/admin-path";
 import type { NavItem } from "../lib/navigation";
 import ThemeToggle from "./theme-toggle";
 import { BrandLockup } from "./brand";
+import { signOutAdminAction } from "../app/sign-out/actions";
 
 const FOCUSABLE = 'a[href],button:not([disabled]),[tabindex]:not([tabindex="-1"])';
 const isCurrent = (path: string, href: string) =>
@@ -89,6 +90,9 @@ export default function SiteHeader({
           <a className="admin-public-link" href="https://epelawa.vercel.app">
             Public site <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10" /></svg>
           </a>
+          {!login ? <form action={signOutAdminAction.bind(null, basePath)} className="admin-signout-form admin-signout-form--masthead">
+            <button className="admin-signout-button" type="submit">Sign out</button>
+          </form> : null}
           <ThemeToggle />
           {!login ? <button
             ref={trigger}
@@ -121,7 +125,12 @@ export default function SiteHeader({
             </Link>
           </li>)}
         </ul></nav>
-        <p className="drawer__foot">Authorised staff only. All publishing and moderation remains capability-gated.</p>
+        <div className="drawer__actions">
+          <p className="drawer__foot">Authorised staff only. All publishing and moderation remains capability-gated.</p>
+          <form action={signOutAdminAction.bind(null, basePath)} className="admin-signout-form">
+            <button className="admin-signout-button admin-signout-button--drawer" type="submit">Sign out</button>
+          </form>
+        </div>
       </div>
     </div> : null}
   </>;
