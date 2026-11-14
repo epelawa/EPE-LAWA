@@ -5,6 +5,8 @@ import { readFile } from "node:fs/promises";
 const root = new URL("../apps/main/", import.meta.url);
 const page = await readFile(new URL("app/news/page.tsx", root), "utf8");
 const styles = await readFile(new URL("app/news/news.module.css", root), "utf8");
+const header = await readFile(new URL("components/site-header.tsx", root), "utf8");
+const navigation = await readFile(new URL("components/navigation-refinement.css", root), "utf8");
 
 test("News queries only published stories and obtains safe cover images from public media keys", () => {
   assert.match(page, /from\("published_articles"\)/);
@@ -18,53 +20,59 @@ test("News queries only published stories and obtains safe cover images from pub
   assert.doesNotMatch(page, /from\("articles"\)|service_role|SUPABASE_SERVICE/);
 });
 
-test("News search, category tabs and pagination preserve the public filters safely", () => {
+test("News search icon opens an accessible headline form and pagination preserves category/query", () => {
+  assert.match(page, /<details className=\{styles\.searchToggle\} open=\{query \? true : undefined\}>/);
+  assert.match(page, /aria-label="Search headlines"/);
+  assert.match(page, /role="search"/);
   assert.match(page, /name="q"/);
-  assert.match(page, /name="category" value=\{category\}/);
+  assert.match(page, /name="category"/);
   assert.match(page, /function pageHref\(page: number, query: string, category: string\)/);
   assert.match(page, /params\.set\("q", query\)/);
   assert.match(page, /params\.set\("category", category\)/);
   assert.match(page, /Newer stories/);
   assert.match(page, /Older stories/);
-  assert.match(page, /No published stories match/);
+  assert.match(page, /No published stories in this category/);
 });
 
-test("News category filters remain available in empty states and featured guidance matches the rail", () => {
+test("News category tabs remain available without a featured carousel", () => {
   assert.match(page, /<nav className=\{styles\.categoryNav\} aria-label="News categories">/);
-  assert.match(page, /featured\.length > 1 \? "Swipe to explore" : "Featured story"/);
 });
 
-test("News is image-led with featured cards, accessible category tabs and compact story thumbnails", () => {
-  assert.match(page, /Breaking News/);
-  assert.match(page, /featureRail/);
+test("News is image-led with one truthful lead, accessible category tabs and compact story thumbnails", () => {
+  assert.match(page, /<h1 className=\{styles\.pageTitle\}>\{lead && isBreakingNow\(lead\) \? "Breaking News" : "News"\}<\/h1>/);
+  assert.match(page, /className=\{styles\.featureCard\}/);
   assert.match(page, /aria-label="News categories"/);
   assert.match(page, /aria-current=\{category === item\.slug \? "page" : undefined\}/);
   assert.match(page, /storyThumbnail/);
-  assert.match(page, /Swipe to explore/);
   assert.match(page, /newsArticlePath\(article\.slug\)/);
-  assert.match(styles, /\.featureRail\s*\{/);
+  assert.match(styles, /\.featureCard\s*\{/);
   assert.match(styles, /\.storyLink\s*\{/);
-  assert.match(styles, /@media \(max-width: 800px\)/);
   assert.match(styles, /@media \(max-width: 520px\)/);
   assert.match(styles, /@media \(max-width: 360px\)/);
-  assert.match(styles, /scroll-snap-type:\s*x mandatory/);
   assert.match(styles, /min-height:\s*44px/);
   assert.doesNotMatch(page, /SpaceX|Crew Dragon|iPhone 12/);
 });
 
-test("News keeps featured reporting before accessible icon filters and a compact search row", () => {
-  const featuredPosition = page.indexOf("className={styles.featureSection}");
-  const categoriesPosition = page.indexOf('<nav className={styles.categoryNav}');
-  const searchPosition = page.indexOf("className={`${styles.newsSearchForm} filter-panel`}");
-  assert.ok(featuredPosition >= 0 && featuredPosition < categoriesPosition && categoriesPosition < searchPosition);
-  assert.match(page, /aria-label="All published stories"/);
-  assert.match(page, /aria-label="Search news"/);
-  assert.match(page, /<label className="sr-only" htmlFor="news-query">Search published headlines<\/label>/);
-  assert.match(styles, /\.newsSearchForm:global\(\.filter-panel\)\s*\{\s*grid-template-columns:\s*minmax\(0,1fr\) 44px;/);
+test("News has plain category tabs and a search icon but no invented filter button or status widget", () => {
+  assert.match(page, /aria-label="News categories"/);
+  assert.match(page, />All<\/Link>/);
+  assert.match(page, /newsSearchForm/);
+  assert.doesNotMatch(page, /FilterIcon|newsFilterButton|NewsFeatureStatus/);
+  assert.match(styles, /\.featureImage,\.featureImageFallback\s*\{[^}]*aspect-ratio:/);
+  assert.match(styles, /\.storyLink\s*\{/);
 });
 
-test("News article hero uses a bounded portrait height on narrow phones", () => {
-  assert.match(styles, /@media \(max-width: 520px\)[\s\S]*?\.articleHero \{ height: clamp\(420px, 125vw, 500px\); min-height: 0; aspect-ratio: auto;/);
+test("mobile News and article routes hide the masthead and keep reference spacing", () => {
+  assert.ok(header.includes('pathname === "/news" || pathname.startsWith("/news/")'));
+  assert.match(header, /site-head--news-reference/);
+  assert.match(navigation, /\.site-head--news-reference\s*\{\s*display:\s*none;\s*\}/);
+  assert.match(styles, /@media \(max-width: 600px\) \{\s*\.newsPage,\.articlePage \{\s*padding-top:\s*30px;/);
+});
+
+test("News article detail uses a short image-first header on narrow phones", () => {
+  assert.ok(styles.includes("height: auto; min-height: 0; aspect-ratio: auto"));
+  assert.ok(styles.includes("aspect-ratio: 16/9"));
+  assert.ok(styles.includes("color: hsl(var(--foreground))"));
 });
 
 test("News pagination remains bounded, avoids count queries and uses deterministic ordering", () => {

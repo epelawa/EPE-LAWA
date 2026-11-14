@@ -16,7 +16,10 @@ test('News comments are rendered from published article scope with anonymous mem
   assert.match(component, /Community member/);
   assert.match(component, /select\("id,parent_id,body,state,created_at"\)/);
   assert.doesNotMatch(component, /select\([^)]*(email|display_name|author_name)/i);
-  assert.match(component, /aria-labelledby="comments-title"/);
+  assert.match(component, /aria-label="Comments"/);
+  assert.match(component, /aria-label="Sign in to comment"/);
+  assert.match(component, /styles\.commentSignInLink/);
+  assert.match(component, /aria-label="Post comment"/);
   assert.match(component, /role="status"/);
   assert.match(component, /role=\{alertNotice \? "alert" : "status"\}/);
   assert.match(migration, /state = 'deleted'[\s\S]*published_version_id is not null/);

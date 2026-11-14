@@ -6,13 +6,12 @@ import { createClient } from "../../../lib/supabase";
 import { newsArticlePath, publicNewsArticleUrl } from "../../../lib/news-urls";
 import { publicMediaUrl } from "../../../lib/media";
 import { formatPublishedDate } from "../../../lib/dates";
-import { estimateReadMinutes } from "../../../lib/news-reading-time";
 import { ArticleBody } from "../../../lib/editorial-body";
 import { CommentThread } from "../comment-thread";
 import OfflineArticleDownload from "../../../components/offline-article-download";
 import ArticleShareActions from "../../../components/article-share-actions";
 import { NewspaperIcon } from "../../../components/icons";
-import { PageFrame, StatusBadge } from "../../../components/design-system";
+import { PageFrame } from "../../../components/design-system";
 import styles from "../news.module.css";
 
 type PublishedArticle = {
@@ -122,54 +121,35 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
   const articleUrl = publicNewsArticleUrl(article.slug);
   const imageUrl = publicMediaUrl(article.og_image_key);
   const date = formatPublishedDate(article.published_at);
-  const readMinutes = estimateReadMinutes(body);
-  const breakingNow = article.is_breaking && article.breaking_until !== null && new Date(article.breaking_until).getTime() > Date.now();
-  const shareText = `${article.title}\n\n${articleUrl}`;
 
   return (
     <PageFrame className={`${styles.articlePage} ui-stack`}>
       <article className={styles.article}>
         <header className={styles.articleHero}>
-          {imageUrl ? <img className={styles.articleHeroImage} src={imageUrl} alt="" loading="eager" decoding="async" /> : <span className={styles.articleHeroFallback} aria-hidden="true" />}
-          <span className={styles.articleHeroScrim} aria-hidden="true" />
           <div className={styles.articleHeroTop}>
             <Link href="/news" className={styles.heroControl} aria-label="Back to News">
               <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/><path d="M9 12h12"/></svg>
-              <span>News</span>
+              <span className="sr-only">Back to News</span>
             </Link>
-            <ArticleShareActions title={article.title} url={articleUrl} className={styles.heroShareActions} shareButtonClassName={styles.heroControl} copyButtonClassName={styles.heroControl} feedbackClassName={styles.heroShareFeedback} fallbackClassName={styles.shareFallback} />
+            <ArticleShareActions title={article.title} url={articleUrl} compact showCopyButton={false} className={styles.heroShareActions} shareButtonClassName={styles.heroControl} feedbackClassName={styles.heroShareFeedback} fallbackClassName={styles.shareFallback} />
           </div>
+          {imageUrl ? <img className={styles.articleHeroImage} src={imageUrl} alt="" loading="eager" decoding="async" /> : <span className={styles.articleHeroFallback} aria-hidden="true" />}
           <div className={styles.articleHeroCopy}>
-            <div className={styles.featureBadges}><span className={styles.featureCategory}>{article.category_label}</span>{breakingNow ? <StatusBadge tone="warning">Breaking</StatusBadge> : null}</div>
             <h1>{article.title}</h1>
           </div>
         </header>
 
         <div className={styles.articleMetaBar} aria-label="Story details">
-          <span className={styles.byline}>By {article.author_name}</span>
+          <span className={styles.byline}>{article.author_name}</span>
           {date ? <time dateTime={article.published_at ?? undefined}>{date}</time> : null}
-          <span className={styles.readTime}><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>{readMinutes} min read</span>
-          <span className={styles.metaNote}>Published story</span>
         </div>
 
-        <div className={styles.articleUtilities}><OfflineArticleDownload article={{ slug: article.slug, title: article.title, summary: article.summary, publishedAt: article.published_at, author: article.author_name, category: article.category_label, sourceUrl: articleUrl }} /></div>
-        {article.summary ? <p className={styles.articleSummary}>{article.summary}</p> : null}
         <div className={`ui-prose ${styles.articleBody}`} data-offline-article-body><ArticleBody body={body} /></div>
-        {article.tags?.length ? <ul className={styles.articleTags} aria-label="Story tags">{article.tags.map((tag) => <li key={tag.slug} className="ui-tag">{tag.label}</li>)}</ul> : null}
-
-        {related.length ? <section className={styles.relatedSection} aria-labelledby="related-heading"><div className={styles.sectionHeading}><div><p className={styles.kicker}>Keep reading</p><h2 id="related-heading">Related stories</h2></div></div><ul className={styles.relatedGrid}>{related.map((item) => { const relatedImage = publicMediaUrl(item.og_image_key); return <li className={styles.relatedCard} key={item.slug}><Link href={newsArticlePath(item.slug)} className={styles.relatedLink}>{relatedImage ? <img className={styles.relatedImage} src={relatedImage} alt="" loading="lazy" decoding="async" /> : <span className={styles.relatedImageFallback} aria-hidden="true"><NewspaperIcon size={24} /></span>}<span className={styles.relatedCategory}>{item.category_label}</span><span className={styles.relatedTitle}>{item.title}</span></Link></li>; })}</ul></section> : null}
-
         <CommentThread articleId={article.id} slug={article.slug} notice={notice.comments} />
-        <section className={styles.shareSection} aria-labelledby="share-heading">
-          <div><p className={styles.kicker}>Pass it along</p><h2 id="share-heading">Share this story</h2><p className={styles.articleSummarySmall}>Share the public article address. It opens directly at this story and does not expose a database record URL.</p></div>
-          <ArticleShareActions title={article.title} url={articleUrl} className={styles.bottomShareActions} shareButtonClassName={styles.bottomShareButton} copyButtonClassName={styles.bottomShareButton} feedbackClassName={styles.shareFeedback} fallbackClassName={styles.shareFallback} />
-          <ul className={styles.socialLinks}>
-            <li><a href={`https://wa.me/?text=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer" className="btn-secondary">Share on WhatsApp<span className="sr-only"> (opens in a new tab)</span></a></li>
-            <li><a href={`https://x.com/intent/tweet?text=${encodeURIComponent(article.title)}&url=${encodeURIComponent(articleUrl)}`} target="_blank" rel="noopener noreferrer" className="btn-secondary">Share on X<span className="sr-only"> (opens in a new tab)</span></a></li>
-            <li><a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(articleUrl)}`} target="_blank" rel="noopener noreferrer" className="btn-secondary">Share on Facebook<span className="sr-only"> (opens in a new tab)</span></a></li>
-          </ul>
-        </section>
-        <p className={styles.correctionNote}>Something in this story wrong or missing? <Link href="/contact" className="ui-text-link">Tell the newsroom</Link>.</p>
+        <details className={styles.articleExtras}><summary>More story options</summary><OfflineArticleDownload article={{ slug: article.slug, title: article.title, summary: article.summary, publishedAt: article.published_at, author: article.author_name, category: article.category_label, sourceUrl: articleUrl }} /></details>
+        {article.tags?.length ? <ul className={styles.articleTags} aria-label="Story tags">{article.tags.map((tag) => <li key={tag.slug} className="ui-tag">{tag.label}</li>)}</ul> : null}
+        {related.length ? <section className={styles.relatedSection} aria-labelledby="related-heading"><div className={styles.sectionHeading}><div><h2 id="related-heading">Related stories</h2></div></div><ul className={styles.relatedGrid}>{related.map((item) => { const relatedImage = publicMediaUrl(item.og_image_key); return <li className={styles.relatedCard} key={item.slug}><Link href={newsArticlePath(item.slug)} className={styles.relatedLink}>{relatedImage ? <img className={styles.relatedImage} src={relatedImage} alt="" loading="lazy" decoding="async" /> : <span className={styles.relatedImageFallback} aria-hidden="true"><NewspaperIcon size={24} /></span>}<span className={styles.relatedCategory}>{item.category_label}</span><span className={styles.relatedTitle}>{item.title}</span></Link></li>; })}</ul></section> : null}
+        <p className={styles.correctionNote}>Report a correction: <Link href="/contact" className="ui-text-link">contact the newsroom</Link>.</p>
       </article>
     </PageFrame>
   );

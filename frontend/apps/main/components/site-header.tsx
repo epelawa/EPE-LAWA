@@ -21,6 +21,7 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
   const previousPath = useRef(pathname);
   const inline = primaryNavigation(items);
   const more = items.filter(item => !item.primary);
+  const isNewsReference = pathname === "/news" || pathname.startsWith("/news/");
   const closeDrawer = useCallback(() => { setDrawerOpen(false); menuButtonRef.current?.focus(); }, []);
 
   useEffect(() => {
@@ -83,7 +84,7 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
     return () => { cancelAnimationFrame(frame); document.body.style.overflow = previousOverflow; document.removeEventListener("keydown", onKeyDown); };
   }, [drawerOpen, closeDrawer]);
 
-  return <header className="site-head">
+  return <header className={`site-head${isNewsReference ? " site-head--news-reference" : ""}`}>
     <div className="masthead-bar">
       <Link className="nav-brand" href="/"><BrandLockup size={30} /></Link>
       <nav className="site-head__nav" aria-label="Main">
