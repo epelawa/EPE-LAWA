@@ -260,3 +260,9 @@ PR #80 (schema-test fixture alignment) merged normally; `main` is now `2c11154a1
 - **Remaining:** commit/push and open one focused PR; attempt ordinary merge only. After a successful merge, freshly preflight and apply only the exact additive Newsroom migration, then read back the generated ledger version and verify route behavior. Owner-approved private drafts remain pending Admin access.
 - **Blocked/remaining:** the 390px synthetic Admin Newsroom capture reports page-level horizontal overflow (641px document width); this is a separate responsive follow-up, not fixed here. Supabase Auth SMTP still awaits the private configuration step. No account was recreated.
 - **Resume:** run whitespace/scope checks, commit and push this branch, refresh exact PR/deployment state, use no bypass, then proceed with a current live schema/ledger preflight before any migration application.
+
+## 2026-11-15 00:44 WAT — Newsroom private-read and publication privacy
+
+- [x] Additive staff SELECT policies and restrictive guards: private drafts limited to authoring owners or review/publish/unpublish staff; public versions require approved state plus exact publication pointer.
+- [x] Full migration-chain regression and separate Production-baseline fixture. Full suite: 238 total, 237 passed, 0 failed, 1 documented skip; forced typecheck/build: 7/7 combined tasks on pinned Node/pnpm with localhost-only settings.
+- [ ] Ordinary PR/merge, fresh Production preflight, apply one migration and verify catalog/ledger. No content/account writes. See `docs/handoffs/2026-11-15-newsroom-staff-read-rls.md`.
