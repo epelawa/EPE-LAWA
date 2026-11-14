@@ -42,7 +42,7 @@ const SUPABASE_SURFACE = `
   create role anon nologin;
   create role authenticated nologin;
   create schema auth;
-  create table auth.users (id uuid primary key, email_confirmed_at timestamptz);
+  create table auth.users (id uuid primary key, email_confirmed_at timestamptz, raw_user_meta_data jsonb not null default '{}'::jsonb);
   create function auth.uid() returns uuid language sql stable
     as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
   grant usage on schema public, auth to anon, authenticated;
@@ -139,12 +139,20 @@ const U = {
   m1: '44444444-4444-4444-8444-444444444444',
   m2: '55555555-5555-4555-8555-555555555555',
   unverified: '66666666-6666-4666-8666-666666666666',
+  bootstrap: '77777777-7777-4777-8777-777777777777',
+  bootstrapUnverified: '88888888-8888-4888-8888-888888888888',
+  bootstrapReserved: '99999999-9999-4999-8999-999999999999',
+  bootstrapDuplicate: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
 };
 
 for (const [name, id] of Object.entries(U)) {
-  await db.query('insert into auth.users (id, email_confirmed_at) values ($1, $2)', [
+  await db.query('insert into auth.users (id, email_confirmed_at, raw_user_meta_data) values ($1, $2, $3)', [
     id,
-    name === 'unverified' ? null : new Date().toISOString(),
+    name === 'unverified' || name === 'bootstrapUnverified' ? null : new Date().toISOString(),
+    name === 'bootstrap' ? { handle: 'bootstrap_member', display_name: 'Bootstrap Member' }
+      : name === 'bootstrapUnverified' ? { handle: 'unverified_member', display_name: 'Unverified Member' }
+        : name === 'bootstrapReserved' ? { handle: 'admin', display_name: 'Reserved Handle' }
+          : name === 'bootstrapDuplicate' ? { handle: 'member_one', display_name: 'Duplicate Handle' } : {},
   ]);
 }
 
@@ -183,6 +191,26 @@ await db.exec(`
     ('Test Byline', 'test-byline')
   on conflict (slug) do nothing;
 `);
+
+test('member identity prerequisite defines public profile, moderation schema, RLS, grants, and timestamp trigger', async () => {
+  assert.deepEqual((await rows("select column_name from information_schema.columns where table_schema='public' and table_name='profiles' order by ordinal_position")).map((r) => r.column_name), ['user_id','handle','display_name','avatar_key','bio','is_verified','verified_at','verified_by','created_at','updated_at','deleted_at']);
+  for (const table of ['profiles', 'member_bans', 'moderation_actions']) {
+    assert.equal((await rows('select relrowsecurity as enabled from pg_class where oid=$1::regclass', [`public.${table}`]))[0].enabled, true, `${table} RLS`);
+  }
+  assert.equal((await rows("select count(*)::int as n from pg_trigger where tgrelid='public.profiles'::regclass and tgname='profiles_set_updated_at'"))[0].n, 1);
+  assert.equal((await rows("select has_function_privilege('anon','public.handle_is_reserved(text)','execute') as allowed"))[0].allowed, true);
+});
+test('verified member bootstrap creates only the caller profile and rejects unverified, reserved, and duplicate identities', async () => {
+  assert.equal((await as(U.bootstrap, () => rows('select public.bootstrap_verified_member_profile() as ok')))[0].ok, true);
+  assert.equal((await rows('select handle, display_name from public.profiles where user_id = $1', [U.bootstrap]))[0].handle, 'bootstrap_member');
+  assert.equal((await as(U.bootstrap, () => rows('select public.bootstrap_verified_member_profile() as ok')))[0].ok, true, 'retry is idempotent');
+  assert.equal((await as(U.bootstrapUnverified, () => rows('select public.bootstrap_verified_member_profile() as ok')))[0].ok, false);
+  assert.equal((await as(U.bootstrapReserved, () => rows('select public.bootstrap_verified_member_profile() as ok')))[0].ok, false);
+  assert.equal((await as(U.bootstrapDuplicate, () => rows('select public.bootstrap_verified_member_profile() as ok')))[0].ok, false);
+  assert.equal((await rows("select has_function_privilege('anon', 'public.bootstrap_verified_member_profile()', 'execute') as allowed"))[0].allowed, false);
+  assert.equal((await rows('select count(*)::int as n from public.profiles where user_id in ($1,$2)', [U.bootstrapUnverified, U.bootstrapReserved]))[0].n, 0);
+  assert.equal((await rows('select count(*)::int as n from public.profiles where user_id=$1', [U.bootstrapDuplicate]))[0].n, 0);
+});
 
 /**
  * Create and publish a fresh article through the real transition functions.
