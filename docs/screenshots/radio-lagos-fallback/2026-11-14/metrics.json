@@ -1,0 +1,25 @@
+{
+  "results": [
+    {
+      "width": 375,
+      "height": 812,
+      "documentWidth": 375,
+      "audioSource": "https://azstream.elektranbroadcast.com/listen/radiolagos1075/radio.mp3",
+      "programmeErrorVisible": true,
+      "playerIdleUntilUserGesture": true,
+      "externalRequestsBlocked": 0,
+      "screenshot": "/workspace/EPE-LAWA-radio-contract/docs/screenshots/radio-lagos-fallback/2026-11-14/radio-error-375px.png"
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "documentWidth": 1440,
+      "audioSource": "https://azstream.elektranbroadcast.com/listen/radiolagos1075/radio.mp3",
+      "programmeErrorVisible": true,
+      "playerIdleUntilUserGesture": true,
+      "externalRequestsBlocked": 0,
+      "screenshot": "/workspace/EPE-LAWA-radio-contract/docs/screenshots/radio-lagos-fallback/2026-11-14/radio-error-1440px.png"
+    }
+  ],
+  "blockedExternalRequestHosts": []
+}

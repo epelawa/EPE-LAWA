@@ -34,8 +34,8 @@ export default async function RadioPage() {
       <RadioPlayer />
       {unavailable ? (
         <EmptyPanel
-          title="Programme information is temporarily unavailable"
-          description="Please try again later. The live stream has not been verified and no live status is claimed."
+          title="Programme information is unavailable"
+          description="Try again later."
           icon={<RadioIcon size={22} />}
         />
       ) : (

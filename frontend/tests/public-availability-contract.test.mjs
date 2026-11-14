@@ -7,15 +7,22 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 
-test("public Radio keeps stream availability explicitly unverified", () => {
+test("public Radio exposes only the verified Radio Lagos 107.5 player and honest programme status", () => {
   const page = read("frontend/apps/main/app/radio/page.tsx");
   const player = read("frontend/apps/main/components/radio-player.tsx");
-  assert.match(page, /Live stream not yet available/);
-  assert.match(page, /stream has not been verified/);
-  assert.match(page, /no live status is claimed/);
-  assert.match(player, /Live streaming is unavailable/);
-  assert.doesNotMatch(player, /Radio Lagos|azstream\.elektranbroadcast\.com|puzzofme/i);
-  assert.doesNotMatch(player, /<iframe|<audio[^>]+src=/i);
+  const station = read("frontend/apps/main/lib/radio-lagos.ts");
+  assert.match(page, /Radio Lagos.*107\.5 FM/);
+  assert.match(page, /Programme information is unavailable/);
+  assert.doesNotMatch(page, /stream has not been verified|no live status is claimed/i);
+  assert.match(station, /id: "nr_7c1cfbb5-f2f3-446c-a5e4-2f417a5d949b"/);
+  assert.match(station, /streamUrl: "https:\/\/azstream\.elektranbroadcast\.com\/listen\/radiolagos1075\/radio\.mp3"/);
+  assert.match(station, /listenUrl: "https:\/\/fm\.puzzofme\.com\/\?station=radio-lagos"/);
+  assert.match(player, /<audio[\s\S]*?controls[\s\S]*?preload="none"[\s\S]*?src=\{RADIO_LAGOS_1075\.streamUrl\}/);
+  assert.match(player, /onPlaying=\{\(\) => setPlaybackState\("playing"\)\}/);
+  assert.match(player, /onError=\{\(\) => setPlaybackState\("unavailable"\)\}/);
+  assert.match(player, /Open the official Radio Lagos listen page/);
+  assert.doesNotMatch(player, /<iframe/i);
+  assert.doesNotMatch(player.replace(/<[^>]*>/g, ""), /\bLIVE\b/i);
 });
 
 test("public Tourism has distinct read-failure, empty, and unverified-detail states", () => {
