@@ -5,6 +5,7 @@ import { formatPublishedDate } from "../../lib/dates";
 import { publicMediaUrl } from "../../lib/media";
 import { absoluteUrl } from "../../lib/site";
 import { newsArticlePath } from "../../lib/news-urls";
+import { currentNewsLayout } from "../../lib/news-daily-layout.mjs";
 import { NewspaperIcon } from "../../components/icons";
 import { EmptyPanel, PageFrame, StatusBadge } from "../../components/design-system";
 import styles from "./news.module.css";
@@ -25,6 +26,7 @@ export const metadata: Metadata = {
 const PAGE_SIZE = 30;
 const MAX_PAGE = 1000;
 const MAX_CATEGORIES = 100;
+export const dynamic = "force-dynamic";
 function isBreakingNow(item: ArticleListItem): boolean {
   return item.is_breaking && !!item.breaking_until && new Date(item.breaking_until).getTime() > Date.now();
 }
@@ -58,6 +60,7 @@ function NewsError() {
   </PageFrame>;
 }
 export default async function NewsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const dailyLayout = currentNewsLayout();
   const params = await searchParams;
   const query = typeof params.q === "string" ? params.q.trim().slice(0, 100) : "";
   const category = safeCategory(params.category);
@@ -87,7 +90,14 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
   const breakingLead = page === 1 ? articles.find(isBreakingNow) : undefined;
   const lead = page === 1 ? (breakingLead ?? articles[0] ?? null) : null;
   const listArticles = lead ? articles.filter((article) => article.slug !== lead.slug) : articles;
-  return <PageFrame className={`${styles.newsPage} ui-stack`}>
+  const railArticleCount = Math.min(3, Math.max(1, listArticles.length - 1));
+  const railArticles = dailyLayout === "editorial-rail" && lead ? listArticles.slice(0, railArticleCount) : [];
+  const mainListArticles = dailyLayout === "editorial-rail" ? listArticles.slice(railArticleCount) : listArticles;
+  return <PageFrame className={`${styles.newsPage} ${styles[dailyLayout]} ui-stack`} data-news-layout={dailyLayout}>
+    <nav className={styles.newsNav} aria-label="News navigation">
+      <Link href="/" className={styles.newsHomeLink}>EPE LAWA</Link>
+      <Link href="/news" aria-current="page" className={styles.newsCurrentLink}>News</Link>
+    </nav>
     <div className={styles.newsTopBar}>
       <div className={styles.publisherStamp} aria-label="EPE LAWA newsroom">
         <span className={styles.publisherAvatar} aria-hidden="true"><NewspaperIcon size={17} /></span>
@@ -121,9 +131,9 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
       <li><Link href={categoryHref(query, "")} aria-current={!category ? "page" : undefined} className={styles.categoryLink}>All</Link></li>
       {categories.map((item) => <li key={item.slug}><Link href={categoryHref(query, item.slug)} aria-current={category === item.slug ? "page" : undefined} className={styles.categoryLink}>{item.label}</Link></li>)}
     </ul></nav>
-    {articles.length === 0 ? <EmptyPanel icon={<NewspaperIcon size={28} />} title={category ? "No published stories in this category" : "No stories published yet"} description={category ? "There are no published stories in this category yet." : "When the newsroom publishes a story, it will appear here with its byline, date and category. Nothing is shown before it exists."} /> : listArticles.length ? <section className={styles.storySection} aria-labelledby="stories-heading">
+    {articles.length === 0 ? <EmptyPanel icon={<NewspaperIcon size={28} />} title={category ? "No published stories in this category" : "No stories published yet"} description={category ? "There are no published stories in this category yet." : "When the newsroom publishes a story, it will appear here with its byline, date and category. Nothing is shown before it exists."} /> : mainListArticles.length ? <section className={styles.storySection} aria-labelledby="stories-heading">
       <h2 className={styles.listHeading} id="stories-heading">{category ? (categories.find((item) => item.slug === category)?.label ?? "Stories") : "More stories"}</h2>
-      <ul className={styles.storyList}>{listArticles.map((article) => {
+      <ul className={styles.storyList}>{mainListArticles.map((article) => {
         const imageUrl = publicMediaUrl(article.og_image_key);
         const date = formatPublishedDate(article.published_at);
         return <li className={styles.storyRow} key={article.slug}><Link href={newsArticlePath(article.slug)} className={styles.storyLink}>
@@ -133,6 +143,19 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
         </Link></li>;
       })}</ul>
     </section> : null}
+    {railArticles.length ? <aside className={styles.relatedSection} aria-labelledby="related-news-heading">
+      <div className={styles.sectionHeading}><h2 id="related-news-heading">Related News</h2></div>
+      <ul className={`${styles.relatedGrid} ${styles.newsRailGrid}`}>{railArticles.map((article) => {
+        const imageUrl = publicMediaUrl(article.og_image_key);
+        const date = formatPublishedDate(article.published_at);
+        return <li className={styles.relatedCard} key={article.slug}><Link href={newsArticlePath(article.slug)} className={styles.relatedLink}>
+          {imageUrl ? <img className={styles.relatedImage} src={imageUrl} alt="" loading="lazy" decoding="async" /> : <span className={styles.relatedImageFallback} aria-hidden="true"><NewspaperIcon size={26} /></span>}
+          <span className={styles.relatedCategory}>{article.category_label}</span>
+          <span className={styles.relatedTitle}>{article.title}</span>
+          <span className={styles.relatedMeta}>By {article.author_name}{date ? <> · <time dateTime={article.published_at ?? undefined}>{date}</time></> : null}</span>
+        </Link></li>;
+      })}</ul>
+    </aside> : null}
     {page > 1 || hasOlder ? <nav className={styles.pagination} aria-label="News pages">{page > 1 ? <Link className="btn-secondary" href={pageHref(page - 1, query, category)}>Newer stories</Link> : null}<span className={styles.sectionMeta} aria-live="polite">Page {page}</span>{hasOlder ? <Link className="btn-secondary" href={pageHref(page + 1, query, category)}>Older stories</Link> : null}</nav> : null}
   </PageFrame>;
 }

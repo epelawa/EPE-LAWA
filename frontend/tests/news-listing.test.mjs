@@ -79,6 +79,19 @@ test("News article detail uses a short image-first header on narrow phones", () 
   assert.ok(styles.includes("color: hsl(var(--foreground))"));
 });
 
+test("daily News variants use distinct structures without inventing reader actions", () => {
+  assert.match(page, /const railArticleCount = Math\.min\(3, Math\.max\(1, listArticles\.length - 1\)\)/);
+  assert.match(page, /const railArticles = dailyLayout === "editorial-rail" && lead \? listArticles\.slice\(0, railArticleCount\) : \[\]/);
+  assert.match(page, /mainListArticles = dailyLayout === "editorial-rail" \? listArticles\.slice\(railArticleCount\) : listArticles/);
+  assert.match(page, /<aside className=\{styles\.relatedSection\} aria-labelledby="related-news-heading">/);
+  assert.match(styles, /data-news-layout="editorial-rail"\]\) \.relatedSection \{ grid-column: 2;/);
+  assert.match(styles, /data-news-layout="magazine-sections"\]\) \.storyList \{ grid-template-columns: repeat\(auto-fit/);
+  assert.match(styles, /data-news-layout="breaking-ranked"\]\) \.storyLink::before \{ content: counter\(news-rank/);
+  assert.match(styles, /data-news-layout="reader-saved"\]\) \.featureTitle \{[^}]*font-family: Georgia/s);
+  assert.match(styles, /data-news-layout="compact-topical"\]\) \.categoryLink \{[^}]*border-radius: 999px/s);
+  assert.doesNotMatch(page, /Save to pocket|Saved to|bookmark/i);
+});
+
 test("News pagination remains bounded, avoids count queries and uses deterministic ordering", () => {
   assert.match(page, /const PAGE_SIZE = 30/);
   assert.match(page, /const MAX_PAGE = 1000/);
@@ -86,4 +99,13 @@ test("News pagination remains bounded, avoids count queries and uses determinist
   assert.match(page, /\.order\("slug", \{ ascending: true \}\)/);
   assert.match(page, /const hasOlder = rows\.length > PAGE_SIZE && page < MAX_PAGE/);
   assert.doesNotMatch(page, /count:\s*"exact"/);
+});
+
+test("expanded News search flows below the heading and the desktop reference keeps a contained frame", () => {
+  assert.match(styles, /\.searchToggle\[open\]\s*\{[^}]*flex:\s*1 0 100%/);
+  assert.match(styles, /\.newsSearchForm\s*\{[^}]*position:\s*static/);
+  assert.match(styles, /@media \(min-width: 601px\)[\s\S]*?\.newsPage\s*\{[^}]*border-radius:\s*32px;/);
+  assert.match(styles, /@media \(min-width: 960px\)/);
+  assert.match(styles, /\.categoryList\s*\{[^}]*display:\s*grid/);
+  assert.match(styles, /\.categoryNav\s*\{[^}]*grid-column:\s*1;\s*grid-row:\s*4 \/ span 2/);
 });

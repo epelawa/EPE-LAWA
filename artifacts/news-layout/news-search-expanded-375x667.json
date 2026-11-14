@@ -1,0 +1,30 @@
+{
+  "path": "/workspace/EPE-LAWA-batch-news/artifacts/news-layout/news-search-expanded-375x667.png",
+  "form": {
+    "top": 191,
+    "bottom": 257,
+    "left": 33,
+    "right": 342,
+    "width": 309,
+    "height": 66
+  },
+  "title": {
+    "top": 270,
+    "bottom": 297,
+    "left": 33,
+    "right": 342,
+    "width": 309,
+    "height": 27
+  },
+  "categories": {
+    "top": 615.5,
+    "bottom": 655.5,
+    "left": 33,
+    "right": 342,
+    "width": 309,
+    "height": 40
+  },
+  "docWidth": 375,
+  "clientWidth": 375,
+  "searchOpen": true
+}

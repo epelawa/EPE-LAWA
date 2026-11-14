@@ -1,0 +1,15 @@
+{
+  "path": "/workspace/EPE-LAWA-batch-news/artifacts/news-layout/editorial-rail-mobile-375.png",
+  "layout": "editorial-rail",
+  "width": 375,
+  "documentWidth": 375,
+  "clientWidth": 375,
+  "frameRadius": "32px",
+  "fixtureTitle": true,
+  "newsNav": true,
+  "tinyBrand": true,
+  "fullFooter": false,
+  "leadImageLoaded": true,
+  "storyRows": 1,
+  "frameWidth": 335
+}

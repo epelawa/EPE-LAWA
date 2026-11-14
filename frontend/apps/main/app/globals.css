@@ -510,3 +510,6 @@ html.has-scroll-reveal .site-main [data-scroll-reveal="visible"] { opacity:1; fi
 
 /* Prevent browser pull-to-refresh at the page boundary without disabling normal document scrolling. */
 html { overscroll-behavior-y: none; }
+
+.news-route-mark { display: flex; justify-content: center; padding: 8px 16px 18px; color: var(--palette-silver); }
+.news-route-mark a { color: inherit; font-size: 10px; font-weight: 700; letter-spacing: .12em; text-decoration: none; }
