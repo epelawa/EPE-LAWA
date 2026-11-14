@@ -41,6 +41,8 @@ test("signup remains guided while member sign-in is one accessible screen", asyn
   assert.match(signIn, /id="login-email"/);
   assert.match(signIn, /id="login-password"/);
   assert.match(signIn, /<GoogleSignInUnavailable \/>/);
+  assert.match(signIn, /draggable=\{false\}/);
+  assert.match(signIn, /onDragStart=\{\(event\) => event\.preventDefault\(\)\}/);
   assert.match(signIn, /className="auth-submit" type="submit"/);
   assert.match(forms, /data-total=\{total\}/);
   assert.match(forms, /data-enhanced=\{flow\.enhanced\}/);
@@ -61,6 +63,7 @@ test("signup remains guided while member sign-in is one accessible screen", asyn
   assert.match(forms, /aria-controls=\{id\}/);
   assert.match(forms, /className="auth-provider__button" type="button" disabled aria-disabled="true"/);
   assert.match(forms, /!flow\.enhanced \|\| flow\.step === 1 \? <GoogleSignInUnavailable \/>/);
+  assert.match(forms, /function SignUpForm\(\)[\s\S]*GoogleSignInUnavailable/);
   assert.match(actions, /If an account exists for that address/);
   assert.match(signupPage, /href="\/terms"/);
   assert.match(signupPage, /href="\/privacy"/);
@@ -112,4 +115,21 @@ test("transactional email templates use Supabase confirmation placeholder and no
     assert.match(text, /\{\{ \.ConfirmationURL \}\}/);
     assert.doesNotMatch(text, /sale|discount|subscribe|newsletter/i);
   }
+});
+
+test("320px sign-in stays fixed without scroll/drag and keeps Google visibly disabled", async () => {
+  const styles = await readFile(new URL("auth/auth.css", root), "utf8");
+  const forms = await readFile(new URL("auth/auth-forms.tsx", root), "utf8");
+  const shell = await readFile(new URL("../components/account-shell.tsx", root), "utf8");
+  const staffForm = await readFile(new URL("../components/admin-login-form.tsx", root), "utf8");
+
+  assert.match(shell, /fixedViewport \? " auth-page--fixed-viewport"/);
+  assert.match(styles, /\.auth-page--fixed-viewport\s*\{[^}]*overflow:\s*hidden/s);
+  assert.match(styles, /\.auth-page--fixed-viewport\s*\{[^}]*overscroll-behavior:\s*none/s);
+  assert.match(styles, /body:has\(\.auth-page--fixed-viewport\) \.site-main\s*\{[^}]*overflow:\s*hidden/s);
+  assert.match(forms, /function SignInForm\(\)[\s\S]*<GoogleSignInUnavailable \/>/);
+  assert.match(forms, /className="auth-provider__button" type="button" disabled aria-disabled="true"/);
+  assert.match(forms, /draggable=\{false\} onDragStart=\{\(event\) => event\.preventDefault\(\)\}/);
+  assert.match(staffForm, /draggable=\{false\} onDragStart=\{\(event\) => event\.preventDefault\(\)\}/);
+  assert.doesNotMatch(staffForm, /scrollHeight|scrollTop/);
 });

@@ -12,6 +12,7 @@ export default function LoginPage() {
       title="Welcome back"
       description="Access your EPE LAWA member account."
       showThemeToggle={false}
+      fixedViewport
     >
       <SignInForm />
       <nav className="auth-switch auth-switch--member" aria-label="Account options">
