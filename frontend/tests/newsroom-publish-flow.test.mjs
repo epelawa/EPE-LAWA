@@ -5,15 +5,17 @@ import { readFile } from "node:fs/promises";
 const root = new URL("../../", import.meta.url);
 const read = (path) => readFile(new URL(path, root), "utf8");
 
-const [actions, createPage, editPage, adminLayout, publicAdminLayout, listing, article, schema] = await Promise.all([
+const [actions, createPage, editPage, adminLayout, publicAdminLayout, listing, newsroomListing, article, schema, liveSchema] = await Promise.all([
   read("frontend/apps/admin/lib/actions.ts"),
   read("frontend/apps/admin/app/(protected)/newsroom/new/page.tsx"),
   read("frontend/apps/admin/app/(protected)/newsroom/[id]/page.tsx"),
   read("frontend/apps/admin/app/(protected)/layout.tsx"),
   read("frontend/apps/main/app/admin/(protected)/layout.tsx"),
   read("frontend/apps/main/app/news/page.tsx"),
+  read("frontend/apps/admin/app/(protected)/newsroom/page.tsx"),
   read("frontend/apps/main/app/news/[slug]/page.tsx"),
   read("backend/supabase/migrations/20261107195000_direct_article_publish_verified_staff.sql"),
+  read("backend/supabase/migrations/20261114235700_newsroom_authoring_live_schema.sql"),
 ]);
 
 test("authorized newsroom create and edit use guarded database transitions, not direct table writes", () => {
@@ -55,4 +57,26 @@ test("all admin newsroom routes remain behind server-side protected layouts", ()
   assert.match(adminLayout, /AdminAccessGuard/);
   assert.match(adminLayout, /loginPath="\/login"/);
   assert.match(publicAdminLayout, /AdminAccessGuard/);
+});
+
+test("live-schema Newsroom repair is forward-only, authenticated-only, and does not depend on articles.state", () => {
+  const executableSql = liveSchema.replace(/^\s*--.*$/gm, "");
+  assert.doesNotMatch(executableSql, /\b(drop|truncate|delete)\b/i);
+  assert.doesNotMatch(executableSql, /\bcall\s+public\.(require_capability|audit_event)\b/i);
+  assert.doesNotMatch(executableSql, /public\.articles\s+set\s+[^;]*\bstate\b/i);
+  assert.match(executableSql, /create or replace function public\.article_publish[\s\S]*?security definer[\s\S]*?set search_path = ''/i);
+  assert.match(executableSql, /revoke all on function public\.article_publish\(uuid, bigint\) from public, anon/i);
+  assert.match(executableSql, /grant execute on function public\.article_publish\(uuid, bigint\) to authenticated/i);
+  assert.match(executableSql, /set state = 'approved'/i);
+  assert.match(executableSql, /if v_state is null or v_state not in \('draft', 'review'\)/i);
+});
+
+test("Newsroom reports public state from the published-version pointer and distinguishes query errors from missing articles", () => {
+  assert.match(editPage, /const displayState = currentVersionIsPublic \? "published" : version\.state/);
+  assert.match(newsroomListing, /state === "published"\) query = query\.not\("published_version_id", "is", null\)/);
+  assert.match(newsroomListing, /const currentVersionIsPublic = Boolean\(article\.current_version_id && article\.published_version_id === article\.current_version_id\)/);
+  assert.match(editPage, /query\.created[\s\S]*?Private article draft created/);
+  assert.match(editPage, /if \(articleResult\.error\) \{[\s\S]*?role="alert"/);
+  assert.match(editPage, /if \(!articleResult\.data\) notFound\(\)/);
+  assert.doesNotMatch(editPage, /articleResult\.error\s*\|\|\s*!articleResult\.data/);
 });

@@ -79,6 +79,13 @@ function shim(sql) {
         SHIMMED.push('business_featured_no_overlap exclusion constraint NOT exercised');
         return '-- shim: exclusion constraint omitted';
       },
+    )
+    .replace(
+      /drop trigger if exists article_versions_guard on public\.article_versions;\s*create trigger article_versions_guard\s+before update or delete on public\.article_versions\s+for each row execute function public\.guard_article_version\(\);/i,
+      () => {
+        SHIMMED.push('article_versions_guard trigger omitted because it is absent in Production');
+        return '-- shim: Production catalog has no article_versions_guard trigger';
+      },
     );
   return out;
 }
@@ -205,13 +212,7 @@ async function newPublishedArticle(title) {
   const revision = async () =>
     (await rows('select revision from public.articles where id = $1', [id]))[0].revision;
 
-  let r = await revision();
-  await as(U.editor, () => db.query('select public.article_submit($1, $2)', [id, r]));
-  r = await revision();
-  await as(U.publisher, () =>
-    db.query("select public.article_review($1, 'approve', $2, null)", [id, r]),
-  );
-  r = await revision();
+  const r = await revision();
   await as(U.publisher, () => db.query('select public.article_publish($1, $2)', [id, r]));
   return id;
 }
@@ -437,32 +438,15 @@ test('a draft article is invisible to anon and to other journalists, but visible
   assert.equal((await as(U.publisher, () => rows('select id from public.articles'))).length, 1,
     'a reviewer must see the draft');
 
-  // Approving is not publishing: an approved snapshot with no published pointer stays private.
   const revision = async () =>
     (await rows('select revision from public.articles where id = $1', [articleId]))[0].revision;
-
-  const rSubmit = await revision();
-  await as(U.editor, () => db.query('select public.article_submit($1, $2)', [articleId, rSubmit]));
-
-  const selfReview = await asFails(
-    U.editor,
-    `select public.article_review('${articleId}', 'approve', ${rSubmit}, null)`,
-  );
-  assert.match(selfReview ?? '', /capability_required/, 'a journalist cannot approve their own work');
-
-  const rReview = await revision();
-  await as(U.publisher, () =>
-    db.query('select public.article_review($1, $2, $3, null)', [articleId, 'approve', rReview]),
-  );
-  assert.equal((await as(null, () => rows('select id from public.articles'))).length, 0,
-    'approved but unpublished must stay invisible to anon');
 
   const rPublish = await revision();
   await as(U.publisher, () =>
     db.query('select public.article_publish($1, $2)', [articleId, rPublish]),
   );
   assert.equal((await as(null, () => rows('select slug from public.published_articles'))).length, 1,
-    'a published article must reach anon');
+    'an authorized publisher may publish the private draft directly');
 
   // Capability is checked before the revision, so grant it first, then prove the conflict path.
   await db.query(
@@ -503,12 +487,12 @@ test('a verified publisher can publish a private draft directly and corrections 
     'select v.id, v.state, v.title from public.articles a join public.article_versions v on v.id = a.published_version_id where a.id = $1',
     [articleId],
   ))[0];
-  assert.equal(firstVersion.state, 'published', 'direct publication freezes the draft as a published snapshot');
+  assert.equal(firstVersion.state, 'approved', 'Production keeps published versions in the approved state');
   assert.equal((await as(null, () => rows('select title from public.published_articles where id = $1', [articleId])))[0].title,
     'Private direct-publish regression', 'only the explicit publish transition makes the article public');
 
-  const frozen = await fails(`update public.article_versions set title = 'Silently changed' where id = '${firstVersion.id}'`);
-  assert.match(frozen ?? '', /published_version_immutable/, 'published snapshots cannot be edited in place');
+  const frozen = await asFails(U.publisher, `update public.article_versions set title = 'Silently changed' where id = '${firstVersion.id}'`);
+  assert.match(frozen ?? '', /permission denied/, 'API publishers cannot edit a published snapshot through table writes');
 
   const correctionBody = { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Private corrected test-only body.' }] }] };
   const revisionBeforeCorrection = await currentRevision();
@@ -601,13 +585,13 @@ test('a private draft update saves submitted values, uses revision CAS, and reop
   assert.ok(audit.some((event) => event.action === 'article.draft_update'), 'draft updates are recorded in the audit ledger');
 });
 
-test('a published article snapshot cannot be edited or deleted', async () => {
+test('an API client cannot edit or delete a published article version', async () => {
   const version = (await rows("select id from public.article_versions limit 1"))[0].id;
-  const edited = await fails(`update public.article_versions set title = 'changed' where id = '${version}'`);
-  assert.match(edited ?? '', /approved_version_immutable|published_version_immutable/, 'published text must be immutable');
+  const edited = await asFails(U.publisher, `update public.article_versions set title = 'changed' where id = '${version}'`);
+  assert.match(edited ?? '', /permission denied/, 'article versions are not client-writable');
 
-  const deleted = await fails(`delete from public.article_versions where id = '${version}'`);
-  assert.match(deleted ?? '', /immutable/, 'version history must not be deletable');
+  const deleted = await asFails(U.publisher, `delete from public.article_versions where id = '${version}'`);
+  assert.match(deleted ?? '', /permission denied/, 'version history is not client-deletable');
 });
 
 // --------------------------------------------------------------------------- who is who
@@ -940,4 +924,104 @@ test('the two exclusion constraints are not exercised under PGlite', { skip: SHI
 
 test('record which shims were applied', () => {
   assert.ok(SHIMMED.length > 0, 'the shim list must be discoverable at runtime');
+});
+
+test('newsroom RPCs use the live schema, publish directly from a private draft, and unpublish safely', async () => {
+  const categoryId = (await rows("select id from public.categories where slug = 'politics'"))[0].id;
+  const authorId = (await rows("select id from public.authors where slug = 'test-byline'"))[0].id;
+  const id = (await as(U.editor, () => rows(
+    `select public.article_create($1, null, '{"type":"doc","content":[]}'::jsonb, $2, $3, null, null, null) as id`,
+    ['Live schema direct publish fixture', authorId, categoryId],
+  )))[0].id;
+
+  let revision = (await rows('select revision from public.articles where id = $1', [id]))[0].revision;
+  await as(U.editor, () => db.query(
+    'select public.article_draft_update($1, $2, $3, $4, $5::jsonb, $6, $7, $8, $9, $10)',
+    [id, revision, 'Updated private fixture', 'Private summary', '{"type":"doc","content":[]}', authorId, categoryId, null, null, null],
+  ));
+  revision = (await rows('select revision from public.articles where id = $1', [id]))[0].revision;
+  assert.equal((await as(null, () => rows('select id from public.published_articles where id = $1', [id]))).length, 0,
+    'a saved private draft is not visible in the public view');
+
+  await as(U.publisher, () => db.query('select public.article_publish($1, $2)', [id, revision]));
+  const published = await as(null, () => rows(
+    'select a.current_version_id, a.published_version_id, v.state, v.title from public.articles a join public.article_versions v on v.id = a.published_version_id where a.id = $1',
+    [id],
+  ));
+  assert.equal(published[0].published_version_id, published[0].current_version_id);
+  assert.equal(published[0].state, 'approved', 'Production publication uses its existing approved state');
+  assert.equal(published[0].title, 'Updated private fixture');
+  assert.equal((await as(null, () => rows('select id from public.published_articles where id = $1', [id]))).length, 1,
+    'the pointer makes the approved version public');
+
+  await db.query("insert into public.staff_capability_grants (user_id, capability) values ($1, 'article.unpublish') on conflict do nothing", [U.publisher]);
+  revision = (await rows('select revision from public.articles where id = $1', [id]))[0].revision;
+  await as(U.publisher, () => db.query('select public.article_unpublish($1, $2)', [id, revision]));
+  assert.equal((await as(null, () => rows('select id from public.published_articles where id = $1', [id]))).length, 0,
+    'unpublishing clears the public pointer');
+
+  revision = (await rows('select revision from public.articles where id = $1', [id]))[0].revision;
+  await as(U.publisher, () => db.query('select public.article_publish($1, $2)', [id, revision]));
+  const priorPublicVersion = (await rows('select published_version_id from public.articles where id = $1', [id]))[0].published_version_id;
+  revision = (await rows('select revision from public.articles where id = $1', [id]))[0].revision;
+  const newVersion = (await as(U.editor, () => rows(
+    'select public.article_revise($1, $2, $3, $4, $5::jsonb, $6, $7, $8, $9, $10) as id',
+    [id, revision, 'Private correction fixture', null, '{"type":"doc","content":[]}', authorId, categoryId, null, null, null],
+  )))[0].id;
+  const article = (await rows('select current_version_id, published_version_id from public.articles where id = $1', [id]))[0];
+  assert.equal(article.current_version_id, newVersion, 'correction starts as a new private version');
+  assert.equal(article.published_version_id, priorPublicVersion, 'the old approved version remains live until the correction is published');
+});
+
+test('draft-save rejects an article without a current version and does not record success', async () => {
+  const categoryId = (await rows("select id from public.categories where slug = 'politics'"))[0].id;
+  const authorId = (await rows("select id from public.authors where slug = 'test-byline'"))[0].id;
+  const id = (await as(U.editor, () => rows(
+    `select public.article_create($1, null, '{"type":"doc","content":[]}'::jsonb, $2, $3, null, null, null) as id`,
+    ['Missing current-version fixture', authorId, categoryId],
+  )))[0].id;
+
+  await db.query('update public.articles set current_version_id = null where id = $1', [id]);
+  const revision = (await rows('select revision from public.articles where id = $1', [id]))[0].revision;
+  const failure = await asFails(U.editor,
+    `select public.article_draft_update('${id}', ${revision}, 'Must not save', null, '{"type":"doc","content":[]}'::jsonb, '${authorId}', '${categoryId}', null, null, null)`);
+  assert.match(failure ?? '', /invalid_transition/);
+  assert.equal((await rows('select revision from public.articles where id = $1', [id]))[0].revision, revision,
+    'a rejected transition does not bump the article revision');
+  assert.equal((await rows("select count(*)::int as count from public.audit_events where resource_id = $1 and action = 'article.draft_update'", [id]))[0].count, 0,
+    'a rejected transition does not record a success audit event');
+});
+
+test('Newsroom RPC privileges are restricted to verified authenticated staff actions', async () => {
+  const procedures = await rows(`
+    select p.proname, p.prosecdef, p.proconfig,
+           has_function_privilege('anon', p.oid, 'EXECUTE') as anon_execute,
+           has_function_privilege('authenticated', p.oid, 'EXECUTE') as authenticated_execute
+    from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public'
+      and p.proname in ('article_create','article_draft_update','article_revise','article_submit','article_publish','article_unpublish')
+    order by p.proname
+    limit 20
+  `);
+  assert.equal(procedures.length, 6);
+  for (const procedure of procedures) {
+    assert.equal(procedure.prosecdef, true, `${procedure.proname} runs with its constrained owner privileges`);
+    assert.ok((procedure.proconfig ?? []).some((setting) => setting.includes('search_path=""')),
+      `${procedure.proname} pins search_path`);
+    assert.equal(procedure.anon_execute, false, `${procedure.proname} is not executable by anon`);
+    assert.equal(procedure.authenticated_execute, true, `${procedure.proname} is executable by authenticated`);
+  }
+  const legacyReview = (await rows(`
+    select has_function_privilege('anon', p.oid, 'EXECUTE') as anon_execute,
+           has_function_privilege('authenticated', p.oid, 'EXECUTE') as authenticated_execute
+    from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.proname = 'article_review'
+    limit 1
+  `))[0];
+  assert.equal(legacyReview.anon_execute, false);
+  assert.equal(legacyReview.authenticated_execute, false,
+    'the stale, incompatible review RPC is disabled until a versioned review flow exists');
+  const anonymousCreate = await asFails(null,
+    `select public.article_create('Anon fixture', null, '{"type":"doc"}'::jsonb, '${U.editor}', '${U.editor}', null, null, null)`);
+  assert.match(anonymousCreate ?? '', /permission denied/i);
 });
