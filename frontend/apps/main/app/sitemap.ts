@@ -20,6 +20,7 @@ const publicPaths = [
   "/guidelines",
   "/privacy",
   "/terms",
+  "/photo-credits",
 ] as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {

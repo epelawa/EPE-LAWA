@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import heroImages from "../lib/hero-images.json";
-import { MapPinIcon } from "./icons";
 
 type ImageVariant = { src: string; width: number };
 type ImageFormat = { small: ImageVariant; large: ImageVariant };
@@ -58,7 +57,9 @@ function closestVariant(format: ImageFormat, width: number) {
 export default function HeroCarousel() {
   const [index, setIndex] = useState(0);
   const [automaticMotionDisabled, setAutomaticMotionDisabled] = useState(true);
-  const [isPaused, setIsPaused] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const isPaused = isFocused || isHovered;
   const [loadedIndex, setLoadedIndex] = useState(-1);
   const [activeCurrentSrc, setActiveCurrentSrc] = useState("");
 
@@ -77,7 +78,7 @@ export default function HeroCarousel() {
 
   useEffect(() => {
     if (slides.length < 2 || automaticMotionDisabled || isPaused) return;
-    const timer = window.setInterval(() => setIndex((current) => (current + 1) % slides.length), 6500);
+    const timer = window.setInterval(() => setIndex((current) => (current + 1) % slides.length), 7000);
     return () => window.clearInterval(timer);
   }, [automaticMotionDisabled, isPaused]);
 
@@ -104,10 +105,15 @@ export default function HeroCarousel() {
 
   return (
     <div className="home-hero__media">
-      <figure
+      <button
+        type="button"
         className="home-hero__art home-hero__art--logo home-hero__carousel"
-        aria-roledescription="carousel"
-        aria-label="Epe photo gallery"
+        aria-label={`Next Epe photo: ${slide.label}`}
+        onClick={() => setIndex((current) => (current + 1) % slides.length)}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
         <div className="home-hero__carousel-stage" aria-live="off">
           <picture>
@@ -130,31 +136,10 @@ export default function HeroCarousel() {
             />
           </picture>
         </div>
-        {!automaticMotionDisabled ? (
-          <button
-            className="home-hero__carousel-pause"
-            type="button"
-            aria-label={isPaused ? "Resume photo rotation" : "Pause photo rotation"}
-            aria-pressed={isPaused}
-            onClick={() => setIsPaused((paused) => !paused)}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              {isPaused ? <path d="m8 5 11 7-11 7V5Z" /> : <><path d="M8 5h3v14H8z" /><path d="M15 5h3v14h-3z" /></>}
-            </svg>
-          </button>
-        ) : null}
-      </figure>
+      </button>
       <div className="home-hero__details">
-        <p className="home-hero__location">
-          <span className="home-hero__location-mark"><MapPinIcon size={18} /></span>
-          <span>Epe · Lagos State</span>
-        </p>
-        <p className="home-hero__note">Rooted in the community. Open to everyone.</p>
         <div className="home-hero__caption" aria-live="off" aria-atomic="true">
           <p key={slide.slug} className="home-hero__slide-label">{slide.label}</p>
-          <small className="home-hero__photo-credit">
-            Photo by {slide.author} · {slide.license} · <a href={slide.source}>Source</a> · <a href={slide.licenseUrl}>License</a>
-          </small>
         </div>
       </div>
     </div>
