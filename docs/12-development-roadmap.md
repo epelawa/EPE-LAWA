@@ -32,7 +32,9 @@ Do not mark any gate complete without evidence. No commit, push or merge is impl
 
 ## Known status
 
-Latest `main` is `d39acdd703321822d470ebc93c33243786c5f037` after normal merges of PRs #44 and #45. Vercel Production deployment `dpl_HQPPJWFHfLTftzMoAWiXfcceC7b2` is READY from that exact SHA. The News-reference candidate in `/workspace/EPE-LAWA-news` is rebased to this `main`; its local workspace gates and production-mode synthetic-fixture Playwright matrix pass, but it is not committed, pushed, merged or deployed yet. Read-only production `/news` still shows the prior honest empty state. Production Supabase remains read-only; email sender authentication, Paystack setup, and a configured Maps API/Places/geocoding provider remain unconfirmed.
+Latest `main` is `203d7cae923a50dff7633a7ced8e77324bfcc06b` after the normal squash merge of [PR #48](https://github.com/epelawa/EPE-LAWA/pull/48); PRs #44, #45 and #46 remain merged. Vercel Production deployment `dpl_52yiTmDzdZwjPiXW357TeSwhNfAN` is `READY` for that exact production-target SHA. A read-only fetch of the [canonical `/auth/verify` route](https://epelawa.vercel.app/auth/verify) shows the branded code-entry screen; no email was sent or code submitted, so hosted email delivery and sender authentication remain unverified. The [canonical newsroom](https://epelawa.vercel.app/news) remains in its honest empty state.
+
+The preserved `feat/full-web-implementation-release` worktree is now rebased onto exact `main` `203d7ca`. All 39 items saved before the rebase (16 tracked, 23 untracked) were byte-verified either in the restored worktree or as identical content already merged in `main`; the safety stash remains intact. Its remaining edits are still uncommitted and not released. A separate Tourism photo-reference candidate on the same base passed local typecheck, build, tests and five-width Playwright; it is not an approved destination listing and is not merged or deployed. PR #47 is open after its normal push onto `203d7ca`; GitHub reports merge state `UNKNOWN`, and the authenticated CLI's `gh pr checks` query is blocked with `Resource not accessible by integration`. No merge was attempted; leave it open until the exact hosted gate is visible and healthy. Production Supabase remains read-only; mail delivery, Paystack and live Maps providers remain unconfirmed.
 
 
 ## 2026-11-09 — Community History correction disclosure (PR #30)
@@ -157,6 +159,25 @@ Cross-cutting status: the member auth reference layout passes local 320px, 375px
 - **Resume:** set the required commit identity (`info.epelawa@gmail.com`), commit and push the News candidate without force, open a separate PR, then refresh exact-head GitHub checks and Vercel preview state. Use only a normal merge if the exact PR is healthy and re-test the updated `main`/Production deployment. Continue the remaining modules sequentially; preserve the separate staged OTP/form/tourism worktree, do not mix it into the News PR, and leave unconfigured production providers and unreconciled Supabase changes untouched.
 
 
+## 2026-11-13 22:33 WAT — PR #46 deployed; preserved work rebased
+
+[PR #46](https://github.com/epelawa/EPE-LAWA/pull/46) was normally squash-merged, producing `main` commit `16ad8e70448b4b48e35759a4cf0c2317f1d6b3f5`. Vercel deployment `dpl_DMtx6FdvxM4VsXiqVbvDWJdcj3aZ` is **READY / PROMOTED** from that exact SHA and owns the production aliases. A fresh read-only fetch of [the public News page](https://epelawa.vercel.app/news) verifies the redesigned newsroom and honest empty state; no published article is available, and no synthetic data was written. The exact [immutable deployment URL](https://epe-lawa-p3y6iiit6-epe-lawa.vercel.app/news) and earlier PR preview require Vercel SSO; neither was visually inspected. GitHub's individual status APIs return 403, but the PR reported `CLEAN`/`MERGEABLE` before the normal merge. The staged, unstaged and untracked work in `/workspace/EPE-LAWA` has been stashed/restored intact and rebased onto `16ad8e7`. **Resume:** inspect that preserved work and split only verified, locally tested changes into separate PRs; keep schema/provider blockers explicit and production Supabase read-only.
+
+
+## 2026-11-13 23:48 WAT — PR #48 deployed; preserved work rebased
+
+[PR #48](https://github.com/epelawa/EPE-LAWA/pull/48) was normally merged into `main` as `203d7cae923a50dff7633a7ced8e77324bfcc06b`. Vercel Production deployment `dpl_52yiTmDzdZwjPiXW357TeSwhNfAN` is `READY` for that exact production-target SHA, and a read-only fetch of [the public `/auth/verify` route](https://epelawa.vercel.app/auth/verify) shows the branded code-entry screen. No email was sent and no code was entered; hosted template settings, sender authentication and real delivery remain unverified. Production Supabase settings, schema and data were not changed.
+
+The preserved `feat/full-web-implementation-release` worktree is rebased onto exact `main` `203d7ca`. All 39 pre-rebase items (16 tracked and 23 untracked) were byte-verified as present either in the restored worktree or identically in `main`; the safety stash remains intact. The remaining work is still local and unreleased. A separate Tourism photo-reference candidate passed local typecheck, build, tests and Playwright at 320/375/768/1024/1440 CSS px; it does not invent or publish destinations and is not yet a PR.
+
+PR #47 remains open. Its remote pre-update head `f3a87cb` reported `CLEAN`/`MERGEABLE`, but individual GitHub check/status details remain inaccessible to the authenticated CLI (403). The local docs branch incorporates current `main` and this checkpoint; push normally, refresh the exact head and do not merge unless the required hosted gate is visible and healthy. Continue with the Tourism handoff/PR and remaining modules sequentially; keep schema and provider-dependent work blocked until verified.
+
+
+## 2026-11-13 23:52 WAT — PR #47 status after normal docs push
+
+PR [#47](https://github.com/epelawa/EPE-LAWA/pull/47) is open on current `main` `203d7ca` after a normal push. The authenticated CLI reports merge state `UNKNOWN`; `gh pr checks 47` fails with `GraphQL: Resource not accessible by integration (node.statusCheckRollup.nodes.0.commit.statusCheckRollup)`. No merge was attempted. Keep the docs PR open until the exact hosted gate is visible and healthy; proceed with independent Tourism work in the meantime.
+
+
 ## 2026-11-13 23:56 WAT — Tourism photo-reference candidate
 
 A local candidate on `feat/tourism-photo-gallery`, based on `main` `203d7ca`, adds two credited CC BY-SA 4.0 photo references with responsive uncropped image delivery. The gallery is clearly not an approved destination set. Local typecheck, production build, tests and the 320/375/768/1024/1440 Playwright matrix passed; screenshot evidence and exact limitations are documented in [`the Tourism handoff`](handoffs/2026-11-13-tourism-photo-reference.md) and [`the capture README`](screenshots/tourism-photo-gallery/2026-11-13/README.md). The candidate is not yet a PR or deployment. Approved destination content, verified visit details and isolated production-schema workflow tests remain pending/blocked. PR #47's separate docs sync remains open with hosted status unavailable; do not merge either PR without healthy exact-head checks.
@@ -169,3 +190,17 @@ A local candidate on `feat/tourism-photo-gallery`, based on `main` `203d7ca`, ad
 - GitHub reports PRs #47 and #49 as `MERGEABLE`, but both PR check-rollup and combined commit-status calls return HTTP 403 `Resource not accessible by integration`. Neither PR may be merged until exact-head required checks are verifiably healthy.
 - The preserved `feat/full-web-implementation-release` worktree is at `203d7ca` with 15 local modified/untracked paths; its local `main` ref is stale at `9066e56`. Continue from the verified remote base, preserve the changes and review independent fixes as separate PRs. Keep production Supabase read-only until schema reconciliation/backup verification.
 - The 00:12 PR #49 status above refers to feature head `4a0964241e41644ee76980ecb889b93b13067097`; a documentation-only status-sync commit is being prepared and will advance the branch. Recheck GitHub required checks and Vercel metadata for the new exact head before considering any merge.
+
+## 2026-11-14 09:48 WAT — PR #47 merged; PR #49 sync in progress
+
+- PR #47 merged normally into `main` at `a3bf95190e4d01c161a04e2e6aee5821ee7c1b7b`. The matching Vercel Production deployment was READY; read-only checks of `/` and `/news` returned HTTP 200. No Production writes were made.
+- PR #49's prior remote head `b9808926783e0de6ed822500f1e361a8ebd5b396` became DIRTY after `main` advanced. GitHub rejected the ordinary merge because of conflicts only in `docs/12-development-roadmap.md`, `docs/16-progress-log.md` and `docs/17-owner-requirements-checklist.md`; the Tourism feature source and photo-credit files are unchanged.
+- The focused Tourism photo-gallery tests passed 2/2 on the prior head. Its isolated worktree had no installed workspace dependency tree, so the attempted TypeScript check could not resolve modules; this is neither a passing typecheck nor evidence of a source-code failure. The pinned Node/pnpm toolchain, full gates and five-width screenshots are being rerun on the synced exact tree before any merge attempt.
+
+
+## 2026-11-14 09:59 WAT — PR #49 synced-tree validation complete
+
+- The Tourism branch is locally synchronized with latest remote `main` `a3bf95190e4d01c161a04e2e6aee5821ee7c1b7b`; only the three named documentation files conflicted. Tourism source, image assets and credits remain unchanged.
+- With Node 22.23.4 and pnpm 10.34.9 across all subprocesses, uncached typecheck passed 5/5 tasks and uncached production builds passed 2/2 tasks. The full suite passed 185 tests (184 passed, 0 failed, 1 documented PGlite/PostgreSQL constraint skip); `git diff --check` passed.
+- Local production-mode Playwright passed at 320/375/768/1024/1440 CSS px using a loopback-only HTTPS Supabase mock. The page rendered the real images, both CC BY-SA credits and the honest empty destination state; there was no horizontal overflow, external browser request, console error or page error. Ten fresh captures are indexed in [`the 2026-11-14 screenshot README`](screenshots/tourism-photo-gallery/2026-11-14/README.md).
+- **Resume:** commit and push the verified merge-forward without force, refresh PR #49's exact remote head/checks/Preview status and attempt only a normal merge. If blocked, keep it open and report the exact reason. Production remained read-only; PR #50 remains blocked by missing `publication_status` columns on the live `programmes`/`episodes` schema.
