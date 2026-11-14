@@ -13,10 +13,12 @@ test("member auth uses the public Supabase client and validates profile/session 
   assert.match(actions, /signInWithPassword/);
   assert.match(actions, /resetPasswordForEmail/);
   assert.match(actions, /updateUser\(\{ password \}\)/);
+  assert.match(actions, /function passwordField\(data: FormData\)[\s\S]*?return typeof value === "string" \? value : ""/);
+  assert.equal((actions.match(/const password = passwordField\(data\);/g) ?? []).length, 3, "signup, sign-in and password update must preserve exact passwords");
   assert.doesNotMatch(actions + complete, /SERVICE_ROLE|service_role/i);
   assert.match(complete, /email_confirmed_at/);
-  assert.match(complete, /from\("profiles"\)\.insert/);
-  assert.match(complete, /user_id: user\.id/);
+  assert.match(complete, /rpc\("bootstrap_verified_member_profile"\)/);
+  assert.doesNotMatch(complete, /from\("profiles"\)\.insert/);
   assert.match(callback, /exchangeCodeForSession/);
   assert.match(callback, /startsWith\("\/\/"\)/);
   assert.match(serverClient, /createServerClient/);
@@ -34,7 +36,7 @@ test("signup remains guided while member sign-in is one accessible screen", asyn
   const newPasswordPage = await readFile(new URL("auth/new-password/page.tsx", root), "utf8");
   const signIn = forms.match(/export function SignInForm\(\) \{[\s\S]*?\n\}/)?.[0] ?? "";
 
-  assert.match(forms, /useAuthSteps\(4\)/);
+  assert.match(forms, /useAuthSteps\(4,/);
   assert.doesNotMatch(forms, /useAuthSteps\(2\)/);
   assert.ok(signIn, "a single public sign-in component exists");
   assert.doesNotMatch(signIn, /useAuthSteps|StepProgress|StepActions|auth-step/);

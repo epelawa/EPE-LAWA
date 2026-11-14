@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { requestPasswordReset, signIn, signUp, updatePassword, verifyEmailOtp, type AuthState } from "./actions";
+import { requestPasswordReset, signIn, signUp, updatePassword, verifyEmailOtp, verifyHandleBeforeContinue, type AuthState } from "./actions";
 
 const initial: AuthState = { status: "idle", message: "" };
 
@@ -15,7 +15,7 @@ type StepFlow = {
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 };
 
-function useAuthSteps(totalSteps: number): StepFlow {
+function useAuthSteps(totalSteps: number, validateHandle?: () => Promise<boolean>): StepFlow {
   const formRef = useRef<HTMLFormElement>(null);
   const [step, setStep] = useState(1);
   const [enhanced, setEnhanced] = useState(false);
@@ -30,11 +30,12 @@ function useAuthSteps(totalSteps: number): StepFlow {
     });
   };
 
-  const next = () => {
+  const next = async () => {
     if (!enhanced) return;
     const currentFieldset = formRef.current?.querySelector<HTMLFieldSetElement>(`fieldset[data-step="${step}"]`);
     const fields = Array.from(currentFieldset?.querySelectorAll<HTMLInputElement>("input") ?? []);
     if (!fields.every((field) => field.reportValidity())) return;
+    if (step === 2 && validateHandle && !(await validateHandle())) return;
     const target = Math.min(step + 1, totalSteps);
     setStep(target);
     focusStep(target);
@@ -162,7 +163,23 @@ function GoogleSignInUnavailable() {
 
 export function SignUpForm() {
   const [state, action, pending] = useActionState(signUp, initial);
-  const flow = useAuthSteps(4);
+  const [handleMessage, setHandleMessage] = useState("");
+  const [checkingHandle, setCheckingHandle] = useState(false);
+  const flow = useAuthSteps(4, async () => {
+    const input = flow.formRef.current?.querySelector<HTMLInputElement>("#handle");
+    if (!input) return false;
+    setCheckingHandle(true);
+    setHandleMessage("");
+    try {
+      const result = await verifyHandleBeforeContinue(input.value);
+      if (result === "available") { setHandleMessage("This handle is available."); return true; }
+      setHandleMessage(result === "taken" ? "That handle is already in use. Choose another." : "We couldn’t check handle availability. Please try again later.");
+      return false;
+    } catch {
+      setHandleMessage("We couldn’t check handle availability. Please try again later.");
+      return false;
+    } finally { setCheckingHandle(false); }
+  });
   if (state.status === "notice") {
     return (
       <>
@@ -190,6 +207,7 @@ export function SignUpForm() {
           <label htmlFor="handle">Choose a handle</label>
           <input id="handle" name="handle" autoComplete="username" placeholder="your_handle" minLength={3} maxLength={24} pattern="[a-zA-Z0-9_]{3,24}" required={!flow.enhanced || flow.step === 2} aria-describedby="handle-help" />
           <small id="handle-help">3–24 letters, numbers or underscores.</small>
+          {handleMessage ? <small role={handleMessage.includes("available") ? "status" : "alert"}>{handleMessage}</small> : null}
         </div>
       </fieldset>
       <fieldset className="auth-step" data-step="3" hidden={flow.enhanced && flow.step !== 3}>
@@ -208,7 +226,7 @@ export function SignUpForm() {
         </div>
       </fieldset>
       <Feedback state={state} />
-      <StepActions enhanced={flow.enhanced} step={flow.step} total={4} pending={pending} submitLabel="Create account" pendingLabel="Creating account…" onNext={flow.next} onBack={flow.back} />
+      <StepActions enhanced={flow.enhanced} step={flow.step} total={4} pending={pending || checkingHandle} submitLabel="Create account" pendingLabel="Creating account…" onNext={flow.next} onBack={flow.back} />
     </form>
   );
 }
