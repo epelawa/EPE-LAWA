@@ -1,0 +1,518 @@
+{
+  "version": 1,
+  "schema": "public",
+  "notes": "Expected inventory reflects the owner's supplied read-only Production inventory plus subsequently verified requirements. public.published_articles exists. public.programmes and public.episodes currently lack publication_status; those required columns are included to detect the known gap. The approved candidate reconcile migration is unapplied. Update routeRefs and columns only after reviewing migrations and application routes. The absent profiles table is intentionally not expected. Route-referenced missing relations/views are also expected so schema absence is explicit; empty columns means table existence only, pending reviewed field-level requirements.",
+  "views": [
+    "published_articles",
+    "published_businesses",
+    "published_people"
+  ],
+  "functions": [
+    "has_capability",
+    "current_staff_is_active",
+    "handle_is_reserved",
+    "is_member_active",
+    "article_create",
+    "article_draft_update",
+    "article_revise",
+    "article_publish",
+    "article_unpublish",
+    "radio_authoring_save",
+    "people_create_with_achievements",
+    "people_update_achievements",
+    "people_source_add",
+    "people_source_set_visibility",
+    "people_office_add",
+    "people_correction_resolve",
+    "business_review_moderate",
+    "business_set_status",
+    "business_submit",
+    "business_verify",
+    "comment_moderate",
+    "comment_report_resolve",
+    "forum_create_thread",
+    "forum_report_resolve",
+    "forum_vote",
+    "history_contribution_decide",
+    "marketplace_order_request",
+    "order_advance",
+    "tourism_submission_decide"
+  ],
+  "tables": [
+    {
+      "name": "article_version_tags",
+      "columns": [
+        "article_version_id",
+        "tag_id"
+      ],
+      "routeRefs": [
+        "/news/[slug]",
+        "/admin/newsroom"
+      ]
+    },
+    {
+      "name": "article_versions",
+      "columns": [
+        "id",
+        "article_id",
+        "version_number",
+        "status",
+        "title",
+        "body"
+      ],
+      "routeRefs": [
+        "/news/[slug]",
+        "/admin/newsroom"
+      ]
+    },
+    {
+      "name": "articles",
+      "columns": [
+        "id",
+        "slug",
+        "status",
+        "published_version_id",
+        "created_at"
+      ],
+      "routeRefs": [
+        "/news/[slug]",
+        "/admin/newsroom"
+      ]
+    },
+    {
+      "name": "audit_events",
+      "columns": [
+        "id",
+        "actor_user_id",
+        "action",
+        "created_at"
+      ],
+      "routeRefs": [
+        "/admin"
+      ]
+    },
+    {
+      "name": "authors",
+      "columns": [
+        "id",
+        "display_name",
+        "slug"
+      ],
+      "routeRefs": [
+        "/admin/newsroom"
+      ]
+    },
+    {
+      "name": "capabilities",
+      "columns": [
+        "key",
+        "description"
+      ],
+      "routeRefs": [
+        "/admin"
+      ]
+    },
+    {
+      "name": "categories",
+      "columns": [
+        "id",
+        "slug",
+        "label"
+      ],
+      "routeRefs": [
+        "/news",
+        "/admin/newsroom"
+      ]
+    },
+    {
+      "name": "episodes",
+      "columns": [
+        "id",
+        "programme_id",
+        "title",
+        "publication_status"
+      ],
+      "routeRefs": [
+        "/radio",
+        "/admin/radio"
+      ]
+    },
+    {
+      "name": "media_assets",
+      "columns": [
+        "id",
+        "bucket",
+        "object_key"
+      ],
+      "routeRefs": [
+        "/admin/newsroom"
+      ]
+    },
+    {
+      "name": "people",
+      "columns": [
+        "id",
+        "slug",
+        "display_name"
+      ],
+      "routeRefs": [
+        "/who-is-who",
+        "/admin/people"
+      ]
+    },
+    {
+      "name": "people_corrections",
+      "columns": [
+        "id",
+        "person_id",
+        "status"
+      ],
+      "routeRefs": [
+        "/admin/people"
+      ]
+    },
+    {
+      "name": "people_offices",
+      "columns": [
+        "id",
+        "person_id",
+        "office_title"
+      ],
+      "routeRefs": [
+        "/admin/people"
+      ]
+    },
+    {
+      "name": "people_sources",
+      "columns": [
+        "id",
+        "person_id",
+        "source_url"
+      ],
+      "routeRefs": [
+        "/admin/people"
+      ]
+    },
+    {
+      "name": "people_verifications",
+      "columns": [
+        "id",
+        "person_id",
+        "status"
+      ],
+      "routeRefs": [
+        "/admin/people"
+      ]
+    },
+    {
+      "name": "programmes",
+      "columns": [
+        "id",
+        "title",
+        "slug",
+        "publication_status"
+      ],
+      "routeRefs": [
+        "/radio",
+        "/admin/radio"
+      ]
+    },
+    {
+      "name": "radio_schedule",
+      "columns": [
+        "id",
+        "programme_id",
+        "starts_at"
+      ],
+      "routeRefs": [
+        "/radio",
+        "/admin/radio"
+      ]
+    },
+    {
+      "name": "staff_capability_grants",
+      "columns": [
+        "user_id",
+        "capability",
+        "granted_by",
+        "revoked_at"
+      ],
+      "routeRefs": [
+        "/admin/*"
+      ]
+    },
+    {
+      "name": "staff_profiles",
+      "columns": [
+        "user_id",
+        "is_active"
+      ],
+      "routeRefs": [
+        "/admin/*"
+      ]
+    },
+    {
+      "name": "stream_config",
+      "columns": [
+        "id",
+        "stream_url",
+        "is_enabled"
+      ],
+      "routeRefs": [
+        "/radio",
+        "/admin/radio"
+      ]
+    },
+    {
+      "name": "stream_status_checks",
+      "columns": [
+        "id",
+        "checked_at",
+        "is_healthy"
+      ],
+      "routeRefs": [
+        "/radio"
+      ]
+    },
+    {
+      "name": "tags",
+      "columns": [
+        "id",
+        "slug",
+        "label"
+      ],
+      "routeRefs": [
+        "/news",
+        "/admin/newsroom"
+      ]
+    },
+    {
+      "name": "profiles",
+      "columns": [],
+      "routeRefs": [
+        "/auth/complete",
+        "/dashboard",
+        "/forum/thread/[slug]"
+      ]
+    },
+    {
+      "name": "comments",
+      "columns": [],
+      "routeRefs": [
+        "/news/[slug]"
+      ]
+    },
+    {
+      "name": "comment_reports",
+      "columns": [],
+      "routeRefs": [
+        "/news/[slug]"
+      ]
+    },
+    {
+      "name": "forum_categories",
+      "columns": [],
+      "routeRefs": [
+        "/forum"
+      ]
+    },
+    {
+      "name": "forum_threads",
+      "columns": [],
+      "routeRefs": [
+        "/forum"
+      ]
+    },
+    {
+      "name": "forum_posts",
+      "columns": [],
+      "routeRefs": [
+        "/forum/thread/[slug]"
+      ]
+    },
+    {
+      "name": "forum_reports",
+      "columns": [],
+      "routeRefs": [
+        "/admin/moderation/forum"
+      ]
+    },
+    {
+      "name": "forum_polls",
+      "columns": [],
+      "routeRefs": [
+        "/forum/thread/[slug]"
+      ]
+    },
+    {
+      "name": "forum_poll_options",
+      "columns": [],
+      "routeRefs": [
+        "/forum/thread/[slug]"
+      ]
+    },
+    {
+      "name": "forum_poll_results",
+      "columns": [],
+      "routeRefs": [
+        "/forum/thread/[slug]"
+      ]
+    },
+    {
+      "name": "forum_poll_votes",
+      "columns": [],
+      "routeRefs": [
+        "/forum/thread/[slug]"
+      ]
+    },
+    {
+      "name": "history_records",
+      "columns": [],
+      "routeRefs": [
+        "/itan-ilu-mi"
+      ]
+    },
+    {
+      "name": "history_contributions",
+      "columns": [],
+      "routeRefs": [
+        "/itan-ilu-mi",
+        "/admin/itan-ilu-mi/review"
+      ]
+    },
+    {
+      "name": "history_record_sources",
+      "columns": [],
+      "routeRefs": [
+        "/itan-ilu-mi"
+      ]
+    },
+    {
+      "name": "business_categories",
+      "columns": [],
+      "routeRefs": [
+        "/business-directory"
+      ]
+    },
+    {
+      "name": "businesses",
+      "columns": [],
+      "routeRefs": [
+        "/business-directory",
+        "/admin/business-review"
+      ]
+    },
+    {
+      "name": "business_reviews",
+      "columns": [],
+      "routeRefs": [
+        "/business-directory",
+        "/admin/business-review"
+      ]
+    },
+    {
+      "name": "products",
+      "columns": [],
+      "routeRefs": [
+        "/business-directory"
+      ]
+    },
+    {
+      "name": "orders",
+      "columns": [],
+      "routeRefs": [
+        "/business-directory/orders",
+        "/admin/orders"
+      ]
+    },
+    {
+      "name": "order_items",
+      "columns": [],
+      "routeRefs": [
+        "/admin/orders"
+      ]
+    },
+    {
+      "name": "tourism_destinations",
+      "columns": [],
+      "routeRefs": [
+        "/tourism"
+      ]
+    },
+    {
+      "name": "tourism_submissions",
+      "columns": [],
+      "routeRefs": [
+        "/admin/tourism"
+      ]
+    },
+    {
+      "name": "published_businesses",
+      "columns": [],
+      "routeRefs": [
+        "/business-directory"
+      ]
+    },
+    {
+      "name": "active_business_sponsorships",
+      "columns": [],
+      "routeRefs": [
+        "/business-directory"
+      ]
+    },
+    {
+      "name": "published_people",
+      "columns": [],
+      "routeRefs": [
+        "/who-is-who"
+      ]
+    }
+  ],
+  "knownAbsent": [
+    {
+      "name": "profiles",
+      "reason": "Not present in the supplied Production inventory. Auth/profile failures require diagnosis; this audit never creates a profile or table."
+    },
+    {
+      "name": "member_bans",
+      "reason": "Not present in the supplied Production inventory."
+    },
+    {
+      "name": "moderation_actions",
+      "reason": "Not present in the supplied Production inventory."
+    },
+    {
+      "name": "forum_*",
+      "reason": "No public forum tables in the supplied Production inventory."
+    },
+    {
+      "name": "business_*",
+      "reason": "No public business tables in the supplied Production inventory."
+    },
+    {
+      "name": "marketplace_*",
+      "reason": "No public marketplace tables in the supplied Production inventory."
+    },
+    {
+      "name": "tourism_*",
+      "reason": "No public tourism tables in the supplied Production inventory."
+    },
+    {
+      "name": "notifications",
+      "reason": "Not present in the supplied Production inventory."
+    },
+    {
+      "name": "comments",
+      "reason": "Not present in the supplied Production inventory."
+    }
+  ],
+  "migrationLedgerExpected": [
+    "20261102133703_staff_access_foundation",
+    "20261102190001_capabilities_catalogue",
+    "20261102190002_editorial_core",
+    "20261102190003_editorial_media_and_radio",
+    "20261102190004_people_directory",
+    "20261102190005_audit_events",
+    "20261102200006_editorial_transitions"
+  ]
+}
