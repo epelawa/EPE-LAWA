@@ -19,6 +19,9 @@
       "path": "/contact"
     },
     {
+      "path": "/dashboard"
+    },
+    {
       "path": "/forgot-password"
     },
     {

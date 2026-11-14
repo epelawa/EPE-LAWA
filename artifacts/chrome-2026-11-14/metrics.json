@@ -1,0 +1,97 @@
+[
+  {
+    "title": "Member dashboard | EPE LAWA",
+    "h1": "Account service unavailable",
+    "viewport": {
+      "width": 320,
+      "height": 568
+    },
+    "documentHeight": 568,
+    "scrollWidth": 320,
+    "footerPresent": true,
+    "footerDisplay": "none",
+    "footerVisibility": "visible",
+    "footerRectHeight": 0,
+    "dashboardShellPresent": true,
+    "unavailableText": true,
+    "appearanceToastVisible": false,
+    "httpStatus": 200,
+    "screenshot": "dashboard-320.png"
+  },
+  {
+    "title": "Member dashboard | EPE LAWA",
+    "h1": "Account service unavailable",
+    "viewport": {
+      "width": 375,
+      "height": 812
+    },
+    "documentHeight": 812,
+    "scrollWidth": 375,
+    "footerPresent": true,
+    "footerDisplay": "none",
+    "footerVisibility": "visible",
+    "footerRectHeight": 0,
+    "dashboardShellPresent": true,
+    "unavailableText": true,
+    "appearanceToastVisible": false,
+    "httpStatus": 200,
+    "screenshot": "dashboard-375.png"
+  },
+  {
+    "title": "Member dashboard | EPE LAWA",
+    "h1": "Account service unavailable",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "documentHeight": 1024,
+    "scrollWidth": 768,
+    "footerPresent": true,
+    "footerDisplay": "none",
+    "footerVisibility": "visible",
+    "footerRectHeight": 0,
+    "dashboardShellPresent": true,
+    "unavailableText": true,
+    "appearanceToastVisible": false,
+    "httpStatus": 200,
+    "screenshot": "dashboard-768.png"
+  },
+  {
+    "title": "Member dashboard | EPE LAWA",
+    "h1": "Account service unavailable",
+    "viewport": {
+      "width": 1024,
+      "height": 900
+    },
+    "documentHeight": 900,
+    "scrollWidth": 1024,
+    "footerPresent": true,
+    "footerDisplay": "none",
+    "footerVisibility": "visible",
+    "footerRectHeight": 0,
+    "dashboardShellPresent": true,
+    "unavailableText": true,
+    "appearanceToastVisible": false,
+    "httpStatus": 200,
+    "screenshot": "dashboard-1024.png"
+  },
+  {
+    "title": "Member dashboard | EPE LAWA",
+    "h1": "Account service unavailable",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "documentHeight": 1000,
+    "scrollWidth": 1440,
+    "footerPresent": true,
+    "footerDisplay": "none",
+    "footerVisibility": "visible",
+    "footerRectHeight": 0,
+    "dashboardShellPresent": true,
+    "unavailableText": true,
+    "appearanceToastVisible": false,
+    "httpStatus": 200,
+    "screenshot": "dashboard-1440.png"
+  }
+]
