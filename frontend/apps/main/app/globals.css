@@ -137,6 +137,7 @@
 
 /* Layout and reusable editorial language. */
 .site-main { flex: 1; width: 100%; }
+body:has(.member-dashboard-shell) .site-footer { display: none; }
 body:has(.auth-page) .site-head,
 body:has(.auth-page) .site-footer,
 body:has(.auth-link-issue) .site-head,

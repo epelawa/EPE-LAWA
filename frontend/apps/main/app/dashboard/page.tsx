@@ -35,7 +35,7 @@ export default async function MemberDashboardPage() {
   if (profile.deleted_at) redirect("/login");
 
   return (
-    <main className={styles.shell}>
+    <main className={`${styles.shell} member-dashboard-shell`}>
       <header className={styles.hero}>
         <p className={styles.eyebrow}>Member dashboard</p>
         <h1>Welcome, {profile.display_name}.</h1>
