@@ -253,10 +253,11 @@ export function ResetForm() {
   );
 }
 
-export function NewPasswordForm() {
+export function NewPasswordForm({ returnTo = "member" }: { returnTo?: "member" | "staff" }) {
   const [state, action, pending] = useActionState(updatePassword, initial);
   return (
     <form action={action} className="auth-form" aria-busy={pending}>
+      <input type="hidden" name="returnTo" value={returnTo} />
       <div className="auth-field">
         <label htmlFor="new-password">New password</label>
         <PasswordField id="new-password" name="password" autoComplete="new-password" placeholder="At least 10 characters" minLength={10} maxLength={128} required describedBy="new-password-help" />

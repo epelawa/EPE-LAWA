@@ -313,6 +313,7 @@ html[data-theme="dark"] .auth-card {
 .auth-step-back:focus-visible,
 .auth-step-continue:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 3px; }
 .auth-feedback { padding: 9px 11px; border-radius: 13px; font-size: 12px; line-height: 1.45; }
+.auth-feedback.auth-error { margin: 0; padding: 3px 2px; border: 0; background: transparent; font-size: 11px; line-height: 1.35; }
 .auth-confirmation { padding: 14px; border-radius: 16px; background: hsl(var(--secondary) / .58); }
 .auth-confirmation__progress { font-size: 10px; }
 .auth-confirmation > p:last-child { font-size: 12px; }
@@ -321,6 +322,9 @@ html[data-theme="dark"] .auth-card {
 .auth-switch a,
 .auth-secondary-link a { color: hsl(var(--link)); font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
 .auth-switch { display: flex; min-height: 44px; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 7px; margin: 0; color: hsl(var(--foreground)); font-size: 12px; line-height: 1.4; text-align: center; }
+.auth-feedback.auth-error { animation: none; }
+@keyframes auth-error-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
+@media (prefers-reduced-motion: no-preference) { .auth-feedback.auth-error { animation: auth-error-shake 180ms ease-out; } }
 .auth-switch a { display: inline-flex; min-height: 44px; align-items: center; }
 .auth-secondary-link { display: flex; min-height: 44px; align-items: center; justify-content: center; margin: -8px 0 0; color: hsl(var(--muted-foreground)); font-size: 11px; line-height: 1.4; text-align: center; }
 .auth-secondary-link a { display: inline-flex; min-height: 44px; align-items: center; }

@@ -36,11 +36,13 @@ export async function handleResendSignupVerification(
   data: FormData,
   createClient: CreateOtpClient,
   emailRedirectTo: string,
+  limit?: (email: string) => Promise<boolean>,
 ): Promise<AuthState> {
   const email = field(data, "email").toLowerCase();
   if (!validEmail(email)) return { status: "error", message: invalidEmailMessage };
 
   try {
+    if (limit && !(await limit(email))) return { status: "error", message: resendErrorMessage };
     const supabase = await createClient();
     const { error } = await supabase.auth.resend({
       type: "signup",
@@ -58,9 +60,10 @@ export async function handleVerifyEmailOtp(
   data: FormData,
   createClient: CreateOtpClient,
   emailRedirectTo: string,
+  limit?: (email: string) => Promise<boolean>,
 ): Promise<EmailOtpOutcome> {
   if (field(data, "intent") === "resend") {
-    return handleResendSignupVerification(data, createClient, emailRedirectTo);
+    return handleResendSignupVerification(data, createClient, emailRedirectTo, limit);
   }
 
   const email = field(data, "email").toLowerCase();
@@ -70,6 +73,7 @@ export async function handleVerifyEmailOtp(
   }
 
   try {
+    if (limit && !(await limit(email))) return { status: "error", message: "That code could not be verified. Request a new verification email and try again." };
     const supabase = await createClient();
     const { error } = await supabase.auth.verifyOtp({ email, token, type: "signup" });
     if (error) {

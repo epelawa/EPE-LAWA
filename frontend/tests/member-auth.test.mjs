@@ -13,6 +13,7 @@ test("member auth uses the public Supabase client and validates profile/session 
   assert.match(actions, /signInWithPassword/);
   assert.match(actions, /resetPasswordForEmail/);
   assert.match(actions, /updateUser\(\{ password \}\)/);
+  assert.match(actions, /field\(data, "returnTo"\) === "staff" \? "\/admin\/login" : "\/dashboard"/);
   assert.doesNotMatch(actions + complete, /SERVICE_ROLE|service_role/i);
   assert.match(complete, /email_confirmed_at/);
   assert.match(complete, /from\("profiles"\)\.insert/);
@@ -69,7 +70,10 @@ test("signup remains guided while member sign-in is one accessible screen", asyn
   assert.match(loginPage, /href="\/forgot-password"/);
   assert.match(recoveryPage, /href="\/login"/);
   assert.match(newPasswordPage, /href="\/forgot-password"/);
-  assert.match(newPasswordPage, /href="\/login"/);
+  assert.match(newPasswordPage, /href=\{isStaffInvite \? "\/admin\/login" : "\/login"\}/);
+  assert.match(newPasswordPage, /searchParams: Promise/);
+  assert.match(newPasswordPage, /isStaffInvite \? "staff" : "member"/);
+  assert.match(forms, /type="hidden" name="returnTo" value=\{returnTo\}/);
 
   assert.match(resend, /htmlFor="verification-email"/);
   assert.match(resend, /placeholder="name@example\.com"/);
@@ -80,6 +84,7 @@ test("email verification uses a branded noindex OTP route and Supabase signup-co
   const verifyPage = await readFile(new URL("auth/verify/page.tsx", root), "utf8");
   const forms = await readFile(new URL("auth/auth-forms.tsx", root), "utf8");
   const actions = await readFile(new URL("auth/actions.ts", root), "utf8");
+  const complete = await readFile(new URL("auth/complete/page.tsx", root), "utf8");
   const otpLogic = await readFile(new URL("../lib/auth-otp.ts", root), "utf8");
 
   assert.match(verifyPage, /AccountShell/);
@@ -90,9 +95,12 @@ test("email verification uses a branded noindex OTP route and Supabase signup-co
   assert.match(forms, /name="intent" value="verify"/);
   assert.match(forms, /name="intent" value="resend" formNoValidate/);
   assert.match(forms, /one-time code and a secure link/);
-  assert.match(actions, /handleVerifyEmailOtp\(data, createClient, authCallbackUrl\("\/auth\/complete"\)\)/);
-  assert.match(actions, /redirect\(outcome\.redirectTo\)/);
+  assert.match(actions, /handleVerifyEmailOtp\(data, createClient, authCallbackUrl\("\/auth\/complete"\), \(email\) => consumeAuthRateLimit\("otp_verify", email\)\)/);
+  assert.match(actions, /if \("redirectTo" in outcome\) redirect\(outcome\.redirectTo\)/);
   assert.match(otpLogic, /verifyOtp\(\{ email, token, type: "signup" \}\)/);
+  assert.match(otpLogic, /redirectTo: "\/auth\/complete"/);
+  assert.match(complete, /if \(!user\.email_confirmed_at\)/);
+  assert.match(complete, /redirect\("\/dashboard"\)/);
   assert.match(actions, /resendSignupVerification/);
   assert.match(otpLogic, /type: "signup"/);
   assert.match(actions, /authCallbackUrl\("\/auth\/complete"\)/);

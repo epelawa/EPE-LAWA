@@ -35,7 +35,7 @@ test("OTP rejects malformed email or code before contacting Supabase", async () 
   assert.equal(factory.calls(), 0);
 });
 
-test("valid signup OTP is passed to Supabase and returns only the fixed completion route", async () => {
+test("valid signup OTP is passed to Supabase and completes profile setup before the dashboard", async () => {
   const received = [];
   const factory = clientFactory({
     verifyOtp: async (input) => { received.push(input); return { error: null }; },
@@ -47,6 +47,15 @@ test("valid signup OTP is passed to Supabase and returns only the fixed completi
   assert.deepEqual(received, [{ email: "member@example.com", token: "12345678", type: "signup" }]);
   assert.deepEqual(result, { redirectTo: "/auth/complete" });
   assert.equal(factory.calls(), 1);
+});
+
+test("OTP verification is blocked by the persistent rate-limit gate before Supabase", async () => {
+  const factory = clientFactory({ verifyOtp: async () => ({ error: null }), resend: async () => ({ error: null }) });
+  let gated = "";
+  const result = await handleVerifyEmailOtp(form({ email: "member@example.com", token: "123456" }), factory.createClient, callback, async (email) => { gated = email; return false; });
+  assert.equal(gated, "member@example.com");
+  assert.equal(result.status, "error");
+  assert.equal(factory.calls(), 0);
 });
 
 test("invalid or expired OTP never redirects and does not expose provider errors", async () => {

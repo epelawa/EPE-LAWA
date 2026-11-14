@@ -38,7 +38,7 @@ test("member profile editor updates only the authenticated user's name and handl
 
 test("sign-in leads members to the dashboard and the dashboard is linked in the account drawer", () => {
   assert.match(auth, /signInWithPassword[\s\S]*?redirect\("\/dashboard"\)/);
-  assert.match(complete, /href="\/dashboard"/);
+  assert.match(complete, /redirect\("\/dashboard"\)/);
   assert.match(header, /href="\/dashboard">Member dashboard/);
   assert.match(sitemap, /\/dashboard\s+MOUNTED/);
 });
