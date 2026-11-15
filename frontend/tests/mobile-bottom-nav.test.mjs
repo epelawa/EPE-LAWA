@@ -13,7 +13,9 @@ test('mobile bottom navigation matches the reference tabs and uses only mounted 
     assert.match(nav,new RegExp(`label: "${label}", Icon:`));
     assert.match(nav,new RegExp(`href: "${href.replaceAll('/','\\/')}", label: "${label}"`));
   }
-  assert.match(nav,/aria-label="Mobile primary navigation"/);
+  const mobileLandmark=nav.match(/<nav className="mobile-bottom-nav" aria-label="([^"]+)"/);
+  assert.ok(mobileLandmark?.[1].trim(),'mobile bottom tabs expose a named navigation landmark');
+  assert.equal([...nav.matchAll(/\{ key: "(?:home|news|discover|account)", href:/g)].length,4);
   assert.match(nav,/aria-current=\{current\}/);
   assert.match(layout,/MobileBottomNav/);
 });
@@ -42,4 +44,19 @@ test('private screens are excluded; mobile bar has keyboard/touch access and no 
   assert.match(css,/body:has\(\.public-home\):has\(\.mobile-bottom-nav\) \.storage-notice \{ bottom: calc\(76px/);
   assert.match(css,/body:has\(\.mobile-bottom-nav\) \.toast-region \{ bottom: calc\(76px/);
   assert.match(css,/body:has\(\.focused-error-shell\) \.mobile-bottom-nav/);
+  const header=read('../apps/main/components/site-header.tsx');
+  const desktopLandmark=header.match(/<nav ref=\{desktopNavRef\} className="site-head__nav" aria-label="([^"]+)"/);
+  const menuNames=header.match(/aria-label=\{drawerOpen \? "([^"]+)" : "([^"]+)"\}/);
+  assert.ok(desktopLandmark?.[1].trim(),'desktop navigation exposes a named landmark');
+  assert.ok(menuNames?.[1].trim()&&menuNames?.[2].trim(),'menu trigger has accessible names for open and close states');
+  assert.match(header,/aria-label="Close [^"]*menu"/);
+});
+
+test('homepage hero copy retains the shared 16px minimum side gutter on phones',()=>{
+  const globals=read('../apps/main/app/globals.css');
+  const contentRule=homeCss.match(/\.home-hero__content\s*\{([^}]*)\}/);
+  assert.ok(contentRule,'hero content rule exists');
+  assert.doesNotMatch(contentRule[1],/\bwidth\s*:\s*100%/i,'hero must not override ep-container width');
+  assert.match(globals,/--gutter:\s*clamp\(16px,\s*4vw,\s*48px\)/);
+  assert.match(globals,/\.ep-container[^\{]*\{\s*width:\s*min\(var\(--content-max\),\s*calc\(100%\s*-\s*var\(--gutter\)\s*\*\s*2\)\)/);
 });
