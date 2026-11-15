@@ -204,6 +204,12 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
             })}</ul>
           </section> : null}
 
+          <Link className={styles.discoverBanner} href="/tourism">
+            <span className={styles.discoverBannerImage}><img src="/epe-iberekodo-beach.jpg" alt="Iberekodo Beach in Epe" loading="lazy" decoding="async" /></span>
+            <span className={styles.discoverBannerShade} aria-hidden="true" />
+            <span className={styles.discoverBannerCopy}><span className={styles.asideEyebrow}>Discover Epe</span><strong>Discover the Beauty of Epe</strong><span>Explore the culture, history, people and opportunities of Epe.</span><span className={styles.discoverBannerAction}>Explore Epe <span aria-hidden="true">→</span></span></span>
+          </Link>
+
           {categories.length ? <section className={styles.topicSection} aria-labelledby="topics-heading">
             <div className={styles.sectionHeading}><h2 id="topics-heading">Explore Topics</h2><span>Browse the newsroom</span></div>
             <ul className={styles.topicGrid}>{categories.slice(0, topicImages.length).map((item, index) => <li key={item.slug} className={styles.topicItem}>
@@ -235,10 +241,6 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
             <p className={styles.asideCopy}>Newsletter delivery is not configured, so sign-up is paused.</p>
             <NewsletterUnavailable id="news-sidebar-signup" />
           </section>
-          <Link className={styles.discoverCard} href="/tourism">
-            <span className={styles.discoverImage}><img src="/epe-iberekodo-beach.jpg" alt="Iberekodo Beach in Epe" loading="lazy" decoding="async" /></span>
-            <span className={styles.discoverCopy}><span className={styles.asideEyebrow}>Discover Epe</span><strong>Explore local places and history</strong><span>Explore Tourism <span aria-hidden="true">→</span></span></span>
-          </Link>
           {categories.length ? <section className={styles.popularCard} aria-labelledby="popular-heading"><h2 id="popular-heading">Popular Topics</h2><ul>{categories.slice(0, 8).map((item) => <li key={item.slug}><Link href={categoryHref(query, item.slug)}>{item.label}</Link></li>)}</ul></section> : null}
         </aside>
       </div>}
