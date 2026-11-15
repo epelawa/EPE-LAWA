@@ -13,7 +13,7 @@ test("public Appearance switch lives in the all-viewport hamburger drawer", () =
   const brand = read("frontend/apps/main/components/brand.tsx");
   const staffBrand = read("frontend/apps/admin/components/brand.tsx");
   const footer = read("frontend/apps/main/components/site-footer.tsx");
-  const newsletter = read("frontend/apps/main/components/newsletter-unavailable.tsx");
+  const newsletterFooterCard = read("frontend/apps/main/components/newsletter-footer-card.tsx");
   const home = read("frontend/apps/main/app/page.tsx");
   const heroCarousel = read("frontend/apps/main/components/hero-carousel.tsx");
   const navCss = read("frontend/apps/main/components/navigation-refinement.css");
@@ -51,10 +51,13 @@ test("public Appearance switch lives in the all-viewport hamburger drawer", () =
   assert.match(heroCarousel, /home-hero__pause/);
   assert.doesNotMatch(heroCarousel, /home-hero__controls|home-hero__counter|Previous photo:|Next photo:/);
   assert.match(home, /Quick access to EPE LAWA features/);
-  assert.match(footer, /<NewsletterUnavailable id="site-footer-newsletter" variant="footer" \/>/);
-  assert.match(footer, /Newsletter sign-up is paused/);
-  assert.match(newsletter, /disabled/);
-  assert.doesNotMatch(newsletter, /<form|onSubmit=/);
+  assert.match(footer, /<NewsletterFooterCard \/>/);
+  assert.match(newsletterFooterCard, /EPE LAWA Newsletter/);
+  assert.match(newsletterFooterCard, /Subscription storage, email delivery, unsubscribe handling and abuse controls are not ready/);
+  assert.match(newsletterFooterCard, /No email address is collected here/);
+  assert.match(newsletterFooterCard, /href="\/newsletter"/);
+  assert.match(newsletterFooterCard, /href="\/newsletter\/unsubscribe"/);
+  assert.doesNotMatch(newsletterFooterCard, /<form|type=["']email|onSubmit=|createClient|supabase/i);
   assert.match(navCss, /\.drawer-account__actions \{ display: grid;/);
 });
 
