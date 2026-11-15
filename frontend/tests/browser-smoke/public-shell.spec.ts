@@ -210,6 +210,7 @@ for (const width of [320, 375] as const) {
       await expect(discoverLink).toHaveAttribute("aria-current", "page");
 
       await page.goto("/news");
+      await expect(page.locator(".site-preloader")).toHaveCount(0, { timeout: 15_000 });
       await expect(newsLink).toHaveAttribute("aria-current", "page");
       const lastFooterLink = page.locator("footer a").last();
       await lastFooterLink.scrollIntoViewIfNeeded();
