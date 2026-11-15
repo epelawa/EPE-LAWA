@@ -108,3 +108,12 @@ test("admin current-version joins use stable column hints rather than deployment
     assert.doesNotMatch(source, /articles_current_version(?:_fkey|_id_fkey)/);
   }
 });
+
+test("staff Newsroom exposes read-only revision and audit history without actor identifiers", async () => {
+  const editor = await read("frontend/apps/admin/app/(protected)/newsroom/[id]/page.tsx");
+  assert.match(editor, /from\("article_versions"\)/);
+  assert.match(editor, /from\("audit_events"\)/);
+  assert.match(editor, /Revision and audit history/);
+  assert.match(editor, /audit\.read capability/);
+  assert.doesNotMatch(editor, /actor_id|created_by<\/td>|email_address/);
+});

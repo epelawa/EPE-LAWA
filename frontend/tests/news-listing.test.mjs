@@ -48,6 +48,14 @@ test("News reference composition keeps an actionable lead and local-image topic 
   assert.match(styles, /\.featureAction \{[^}]*border-radius:999px/);
 });
 
+test("Breaking news is visible only for a flagged, unexpired published lead", () => {
+  assert.match(page, /function isBreakingNow\(item: ArticleListItem\)/);
+  assert.match(page, /breaking_until.*Date\.now\(\)/);
+  assert.match(page, /breakingLead \? <section className=\{styles\.breakingBanner\}/);
+  assert.match(page, /aria-label="Breaking news"/);
+  assert.match(styles, /\.breakingBanner \{/);
+});
+
 test("News masthead is visible and uses real EPE-LAWA editorial routes", () => {
   assert.match(header, /isNewsReference \|\| pathname === "\/advertise"/);
   assert.match(header, /news-utilitybar/);

@@ -33,6 +33,8 @@ type ArticleVersion = {
   cover_license_url: string | null;
   cover_caption: string | null;
 };
+type VersionHistoryItem = { id: string; version_number: number; title: string; state: string; created_at: string; created_by: string | null };
+type AuditHistoryItem = { action: string; outcome: string; created_at: string; metadata: Record<string, unknown> | null };
 
 function bodyForEditor(body: unknown): string {
   if (typeof body === "string") return body;
@@ -78,7 +80,7 @@ export default async function EditArticlePage({
   const [{ id }, query, supabase] = await Promise.all([params, searchParams, createClient()]);
   if (!UUID.test(id)) notFound();
 
-  const [articleResult, categoryResult, authorResult, createCapability, publishCapability, unpublishCapability] = await Promise.all([
+  const [articleResult, categoryResult, authorResult, createCapability, publishCapability, unpublishCapability, versionHistoryResult, auditHistoryResult] = await Promise.all([
     supabase.from("articles").select(`
       id, slug, revision, current_version_id, published_version_id, published_at,
         current_version:article_versions!current_version_id(
@@ -91,6 +93,8 @@ export default async function EditArticlePage({
     supabase.rpc("has_capability", { p_capability: "article.create" }),
     supabase.rpc("has_capability", { p_capability: "article.publish" }),
     supabase.rpc("has_capability", { p_capability: "article.unpublish" }),
+    supabase.from("article_versions").select("id,version_number,title,state,created_at,created_by").eq("article_id", id).order("version_number", { ascending: false }).limit(100),
+    supabase.from("audit_events").select("action,outcome,created_at,metadata").eq("resource_type", "article").eq("resource_id", id).order("created_at", { ascending: false }).limit(100),
   ]);
   if (articleResult.error) {
     return <PageFrame className="ui-stack"><PageIntro eyebrow="Newsroom" title="Article unavailable" description="Article details could not be verified." /><Notice tone="danger" role="alert"><strong>Article details could not be loaded.</strong><p>No changes were made. Try again in a moment.</p></Notice></PageFrame>;
@@ -121,12 +125,20 @@ export default async function EditArticlePage({
   const canPublishCurrentVersion = ["draft", "review", "approved", "published"].includes(version.state);
   const displayState = currentVersionIsPublic ? "published" : version.state;
   const displayTone = displayState === "published" || displayState === "approved" ? "success" : displayState === "rejected" ? "danger" : displayState === "review" ? "warning" : "neutral";
+  const versionHistory = (versionHistoryResult.data ?? []) as VersionHistoryItem[];
+  const auditHistory = (auditHistoryResult.data ?? []) as AuditHistoryItem[];
 
   return (
     <PageFrame className="ui-stack">
       <PageIntro eyebrow={`Newsroom · Revision ${article.revision}`} title={version.title} description={<>Current version: <StatusBadge tone={displayTone}>{displayState}</StatusBadge>. {currentVersionIsPublic ? "This version is public." : olderVersionRemainsPublic ? "The previously published version remains live; this current version is private." : "No version of this article is public yet."}</>} actions={<Link href={adminHref("/newsroom")} className={buttonClassName("secondary")}>Back to newsroom</Link>} meta={<><span>Revision {article.revision}</span><span>Slug: {article.slug}</span></>} />
       <StatusMessage query={query} />
       {article.published_version_id ? <Notice tone="neutral"><Link href={`/news/${article.slug}`} className="ui-text-link">Open public article</Link>{article.published_at ? <span className="ui-meta">Published {new Date(article.published_at).toLocaleDateString("en-NG")}</span> : null}</Notice> : null}
+
+      <Panel>
+        <SectionHeading eyebrow="Protected history" title="Revision and audit history" description="Read-only workflow history. Actor identifiers and private article content are not exposed here." />
+        {versionHistoryResult.error ? <Notice tone="neutral" role="status">Revision history is unavailable for this article right now.</Notice> : versionHistory.length ? <div className="ui-table" role="region" aria-label="Article revision history" tabIndex={0}><table><thead><tr><th scope="col">Version</th><th scope="col">Headline</th><th scope="col">State</th><th scope="col">Created</th></tr></thead><tbody>{versionHistory.map((item) => <tr key={item.id}><td>{item.version_number}</td><td>{item.title}</td><td><StatusBadge tone={item.state === "approved" || item.state === "published" ? "success" : item.state === "rejected" ? "danger" : item.state === "review" ? "warning" : "neutral"}>{item.state}</StatusBadge></td><td><span className="ui-meta">{new Date(item.created_at).toLocaleString("en-NG")}</span></td></tr>)}</tbody></table></div> : <p className="ui-muted">No saved revisions are available.</p>}
+        {auditHistoryResult.error ? <Notice tone="neutral" role="status">Audit history requires the audit.read capability and is not available to this account.</Notice> : auditHistory.length ? <div className="ui-table" role="region" aria-label="Article audit history" tabIndex={0}><table><thead><tr><th scope="col">Action</th><th scope="col">Outcome</th><th scope="col">Recorded</th></tr></thead><tbody>{auditHistory.map((item, index) => <tr key={`${item.created_at}-${item.action}-${index}`}><td>{item.action}</td><td>{item.outcome}</td><td><span className="ui-meta">{new Date(item.created_at).toLocaleString("en-NG")}</span></td></tr>)}</tbody></table></div> : <p className="ui-muted">No audit events are available.</p>}
+      </Panel>
 
       {editablePrivateVersion || canCreateRevision ? (
         !referencesAvailable ? <EmptyPanel title="Bylines and categories unavailable" description="The article was not changed. Reload after the reference lists can be verified." /> : (
