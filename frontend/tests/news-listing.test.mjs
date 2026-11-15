@@ -9,7 +9,10 @@ const header = await readFile(new URL("components/site-header.tsx", root), "utf8
 const headerStyles = await readFile(new URL("components/navigation-refinement.css", root), "utf8");
 const footer = await readFile(new URL("components/site-footer.tsx", root), "utf8");
 const newsFooter = await readFile(new URL("components/news-footer.tsx", root), "utf8");
-const newsletter = await readFile(new URL("components/newsletter-unavailable.tsx", root), "utf8");
+const newsletterCard = await readFile(new URL("components/newsletter-footer-card.tsx", root), "utf8");
+const newsletterAvailability = await readFile(new URL("components/newsletter-availability-page.tsx", root), "utf8");
+const signupRoute = await readFile(new URL("app/newsletter/page.tsx", root), "utf8");
+const unsubscribeRoute = await readFile(new URL("app/newsletter/unsubscribe/page.tsx", root), "utf8");
 const advertise = await readFile(new URL("app/advertise/page.tsx", root), "utf8");
 
 test("News queries only published stories and active real categories", () => {
@@ -59,7 +62,7 @@ test("News reference composition keeps an actionable lead and local-image topic 
   assert.match(styles, /\.featureAction \{[^}]*border-radius:999px/);
   assert.match(page, /className=\{styles\.discoverBanner\}/);
   assert.match(styles, /\.discoverBanner \{[^}]*border-radius:16px/);
-  assert.match(styles, /\.newsletterCard,.popularCard \{[^}]*border-radius:16px/);
+  assert.match(styles, /\.popularCard \{[^}]*border-radius:16px/);
 });
 
 test("Breaking news is visible only for a flagged, unexpired published lead", () => {
@@ -89,14 +92,17 @@ test("News page and editorial footer use the same cobalt and navy identity", asy
   assert.doesNotMatch(newsStyles + footerStyles, /#(?:0b4a32|063d2b|0b7042|16894d)|rgb\(0 69 44|rgb\(10 40 26/);
 });
 
-test("News and Advertise use the complete reference-style footer without a duplicate global footer", () => {
+test("News and Advertise use the editorial footer with the shared newsletter card", () => {
   assert.match(page, /<NewsFooter categories=\{categories\} \/>/);
   assert.match(footer, /pathname\.startsWith\("\/news\/"\) \|\| pathname === "\/advertise"/);
   assert.match(footer, /if \(isEditorial\) return null/);
-  for (const heading of ["Quick Links", "Categories", "Newsletter"]) assert.ok(newsFooter.includes(heading));
+  for (const heading of ["Quick Links", "Categories"]) assert.ok(newsFooter.includes(heading));
+  assert.match(footer, /NewsletterFooterCard/);
+  assert.match(newsFooter, /NewsletterFooterCard/);
   assert.match(newsFooter, /href="\/advertise"/);
   assert.match(newsFooter, /Contact availability/);
   assert.match(newsFooter, /from\("categories"\)/);
+  assert.doesNotMatch(page, /newsletter|NewsletterUnavailable/i);
 });
 
 test("public footers and correction links do not imply that unavailable contact intake works", async () => {
@@ -117,10 +123,18 @@ test("public footers and correction links do not imply that unavailable contact 
   assert.doesNotMatch(article, /contact the newsroom/i);
 });
 
-test("Newsletter and advertising states do not pretend to accept or deliver submissions", () => {
-  assert.match(newsletter, /disabled/);
-  assert.match(newsletter, /no email address is collected/);
-  assert.doesNotMatch(newsletter, /<form|action=|name="email"/);
+test("Newsletter footer, signup and unsubscribe routes stay unavailable and collect no data", () => {
+  assert.match(newsletterCard, /Unavailable/);
+  assert.match(newsletterCard, /Subscription storage, email delivery, unsubscribe handling and abuse controls are not ready/);
+  assert.match(newsletterCard, /No email address is collected here/);
+  assert.match(newsletterCard, /href="\/newsletter"/);
+  assert.match(newsletterCard, /href="\/newsletter\/unsubscribe"/);
+  assert.match(signupRoute, /mode="signup"/);
+  assert.match(unsubscribeRoute, /mode="unsubscribe"/);
+  assert.match(newsletterAvailability, /no form/);
+  assert.match(newsletterAvailability, /Persistent subscription storage, authorized email delivery, unsubscribe handling and abuse controls/);
+  assert.doesNotMatch(newsletterCard + newsletterAvailability, /<form|type="email"|name=["']email["']/i);
+  assert.doesNotMatch(newsletterAvailability, /success|subscribed|unsubscribed/i);
   assert.match(advertise, /does not collect or store contact details/);
   assert.match(advertise, /Enquiries unavailable/);
   assert.doesNotMatch(advertise, /<form|action=|mailto:/);

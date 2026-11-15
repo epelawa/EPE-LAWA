@@ -276,6 +276,25 @@ test('main news route reports unavailable data honestly and retains the custom 4
   });
 });
 
+test('newsletter signup and unsubscribe routes remain no-index, unavailable, and non-collecting', async () => {
+  await withApp('main', async (base) => {
+    for (const [route, heading] of [
+      ['/newsletter', /Newsletter sign-up is unavailable/i],
+      ['/newsletter/unsubscribe', /Newsletter unsubscribe is unavailable/i],
+    ]) {
+      const response = await fetch(base + route);
+      assert.equal(response.status, 200, route);
+      const html = await response.text();
+      assert.match(html, heading, route);
+      assert.match(html, /<meta name="robots" content="noindex,\s*follow"/i, route);
+      assert.match(html, /Subscription storage|subscription store/i, route);
+      assert.match(html, /email address is collected/i, route);
+      assert.doesNotMatch(html, /<form\b|type="email"|name="email"/i, route);
+      assert.doesNotMatch(html, /successfully subscribed|successfully unsubscribed/i, route);
+    }
+  });
+});
+
 test('admin dashboard is protected and login is noindex with security headers', async () => {
   await withApp('admin', async (base) => {
     const response = await fetch(base + '/', { redirect: 'manual' });

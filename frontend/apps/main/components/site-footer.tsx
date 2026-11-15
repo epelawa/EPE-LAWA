@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { footerNavigation } from "../lib/navigation";
+import NewsletterFooterCard from "./newsletter-footer-card";
 import { BrandLockup } from "./brand";
 
 export default function SiteFooter() {
@@ -42,6 +43,7 @@ export default function SiteFooter() {
               </nav>
             </div>
           </div>
+          <NewsletterFooterCard />
         </div>
         <div className="footer-bottom">
           <span>© {new Date().getFullYear()} EPE LAWA</span>
