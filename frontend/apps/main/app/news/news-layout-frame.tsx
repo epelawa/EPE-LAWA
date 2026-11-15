@@ -14,11 +14,13 @@ export default function NewsLayoutFrame({ initialLayout, children, className = "
     const clear = () => { if (timer.current !== undefined) window.clearTimeout(timer.current); };
     const schedule = () => {
       clear();
-      setLayout(selectNewsLayout(Math.floor(Date.now() / 60_000)));
+      const active = document.activeElement;
+      const typingInSearch = active instanceof HTMLElement && !!active.closest('form[role="search"]') && (active instanceof HTMLInputElement || active instanceof HTMLButtonElement);
+      if (!typingInSearch) setLayout(selectNewsLayout(Math.floor(Date.now() / 60_000)));
       timer.current = window.setTimeout(schedule, 60_000 - (Date.now() % 60_000) + 5);
     };
     const onVisibility = () => { if (document.visibilityState === "visible") schedule(); };
-    timer.current = window.setTimeout(schedule, 60_000 - (Date.now() % 60_000) + 5);
+    schedule();
     document.addEventListener("visibilitychange", onVisibility);
     return () => { clear(); document.removeEventListener("visibilitychange", onVisibility); };
   }, []);

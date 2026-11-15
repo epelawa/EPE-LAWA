@@ -25,6 +25,9 @@ test("client frame keeps hydration stable, ticks at minute boundaries, and catch
   assert.match(frame, /visibilitychange/);
   assert.match(frame, /setLayout\(selectNewsLayout\(Math\.floor\(Date\.now\(\) \/ 60_000\)\)\)/);
   assert.match(frame, /return \(\) => \{ clear\(\); document\.removeEventListener/);
+  assert.ok(frame.includes(`active.closest('form[role="search"]')`));
+  assert.doesNotMatch(frame, /closest\("\.newsSearchForm"\)/);
+  assert.match(frame, /const onVisibility[^\n]+\n\s+schedule\(\);/);
   assert.doesNotMatch(page, /Math\.random|crypto\.random/);
 });
 
@@ -32,6 +35,9 @@ test("layout changes presentation only and retains published-only source content
   assert.match(page, /from\("published_articles"\)/);
   assert.match(frame, /data-news-layout=\{layout\}/);
   for (const layout of NEWS_LAYOUTS) assert.ok(styles.includes(`data-news-layout="${layout}"`), `missing CSS for ${layout}`);
+  assert.match(page, /const mainListArticles = listArticles/);
+  assert.doesNotMatch(page, /initialLayout === "editorial-rail" \? listArticles/);
+  for (const layout of NEWS_LAYOUTS) assert.ok(styles.includes(`data-news-layout="${layout}"`) && styles.includes(`data-news-layout="${layout}"]) .featureCard`), `lead composition does not vary for ${layout}`);
 });
 
 test("every minute variant visibly restyles the truthful unboxed empty state without empty-state icons", () => {

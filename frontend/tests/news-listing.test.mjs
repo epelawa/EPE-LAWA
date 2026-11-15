@@ -58,12 +58,12 @@ test("News mobile nav is separated and empty/content panels stay flat", () => {
 });
 
 test("editorial rail keeps the story flow independent from sidebar height", () => {
-  assert.match(page, /railArticles\.length \? styles\.editorialGridRail/);
-  assert.match(page, /railArticles\.length \? styles\.editorialMainRail/);
-  assert.match(styles, /\.editorialGrid,\.editorialMain \{ display:contents; \}/);
-  assert.match(styles, /:global\(\[data-news-layout="editorial-rail"\]\) \.editorialGridRail \{ display:grid; grid-template-columns:minmax\(0,1fr\) 280px; align-items:start; column-gap:24px; min-width:0; \}/);
-  assert.match(styles, /:global\(\[data-news-layout="editorial-rail"\]\) \.editorialMainRail \{ display:grid; grid-template-columns:minmax\(0,1fr\); gap:14px; min-width:0; align-content:start; \}/);
-  assert.match(styles, /:global\(\[data-news-layout="editorial-rail"\]\) \.relatedSection \{ grid-column:2; grid-row:1; align-content:start; \}/);
+  assert.match(page, /<div className=\{styles\.leadColumn\}>/);
+  assert.match(page, /const mainListArticles = listArticles/);
+  assert.doesNotMatch(page, /railArticles|initialLayout === "editorial-rail"/);
+  assert.match(styles, /\.editorialGrid,\.editorialMain,\.leadColumn \{ display:contents; \}/);
+  assert.match(styles, /:global\(\[data-news-layout="editorial-rail"\]\) \.editorialMain \{ display:grid;[^}]*align-items:start;[^}]*row-gap:14px; \}/);
+  assert.match(styles, /:global\(\[data-news-layout="editorial-rail"\]\) \.leadColumn \{ display:grid; grid-template-columns:minmax\(0,1fr\); align-content:start; gap:14px; min-width:0; \}/);
 });
 
 test("News pagination remains bounded with deterministic ordering", () => {
