@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { existsSync, rmSync, writeFileSync } from "node:fs";
+import { rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 const [appPackageArg, portArg, dataURL, publishableKey, caPath, siteURL] = process.argv.slice(2);
@@ -10,19 +10,23 @@ if (!appPackageArg || !portArg || !dataURL || !publishableKey || !caPath || !sit
 const appPackageDir = resolve(appPackageArg);
 const port = String(Number(portArg));
 const envPath = join(appPackageDir, ".env.local");
-if (existsSync(envPath)) {
-  throw new Error("Admin smoke refuses to overwrite an existing frontend/apps/main/.env.local file.");
+try {
+  writeFileSync(envPath, [
+    `SUPABASE_URL=${dataURL}`,
+    `SUPABASE_PUBLISHABLE_KEY=${publishableKey}`,
+    `NEXT_PUBLIC_SUPABASE_URL=${dataURL}`,
+    `NEXT_PUBLIC_SUPABASE_ANON_KEY=${publishableKey}`,
+    `NODE_EXTRA_CA_CERTS=${caPath}`,
+    "NEXT_TELEMETRY_DISABLED=1",
+    `NEXT_PUBLIC_SITE_URL=${siteURL}`,
+    "",
+  ].join("\n"), { flag: "wx", mode: 0o600 });
+} catch (error) {
+  if (error?.code === "EEXIST") {
+    throw new Error("Admin smoke refuses to overwrite an existing frontend/apps/main/.env.local file.");
+  }
+  throw error;
 }
-writeFileSync(envPath, [
-  `SUPABASE_URL=${dataURL}`,
-  `SUPABASE_PUBLISHABLE_KEY=${publishableKey}`,
-  `NEXT_PUBLIC_SUPABASE_URL=${dataURL}`,
-  `NEXT_PUBLIC_SUPABASE_ANON_KEY=${publishableKey}`,
-  `NODE_EXTRA_CA_CERTS=${caPath}`,
-  "NEXT_TELEMETRY_DISABLED=1",
-  `NEXT_PUBLIC_SITE_URL=${siteURL}`,
-  "",
-].join("\n"), { flag: "wx" });
 
 const env = {
   PATH: process.env.PATH ?? "",
