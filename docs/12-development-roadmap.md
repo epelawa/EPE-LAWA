@@ -302,3 +302,6 @@ Done: exact-byte two-cover Commons catalog; server-validated Admin selection and
 ### 2026-11-15 newsroom current-version read compatibility
 Bounded source-only fix: newsroom editor relationship selection uses the stable `current_version_id` column hint instead of an environment-specific FK constraint name. Verification pending; no schema migration required.
 Verification complete: forced build and typecheck passed; complete frontend/backend suite passed (263 passed, 1 skipped). Strict synthetic editor capture passed at five widths with no overflow and stable-hint validation.
+
+## 2026-11-15 07:50 WAT — canonical Admin cache inputs
+Done: package-level build inputs track imported sibling source while preserving root env/outputs, default inputs and caching. Actual dry-hash proof changes main hash for Admin code but not unrelated docs. Final pinned forced builds/typechecks and full SERIAL suite pass: 265 total,264 passed,0failed,1existing skip. Initial concurrent HTTP-fixture failures were NOT accepted as release evidence. UI unchanged; existing five-width editor screenshots apply. Remaining: ordinary merge, exact Production READY and main build-cache MISS, then finish only the two existing approved drafts. Handoff: `handoffs/2026-11-15-canonical-admin-build-cache-inputs.md`.
