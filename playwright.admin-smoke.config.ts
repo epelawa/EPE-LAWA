@@ -46,7 +46,7 @@ const appCommand = [
 
 export default defineConfig({
   testDir: "./frontend/tests/browser-smoke",
-  testMatch: "admin-dashboard.spec.ts",
+  testMatch: "admin-dashboard.admin-smoke.ts",
   fullyParallel: false,
   workers: 1,
   reporter: "list",
