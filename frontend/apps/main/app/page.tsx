@@ -43,17 +43,38 @@ export default async function Home() {
           <Link className="ui-text-link" href="/news">View all news <ArrowRightIcon size={17} aria-hidden="true" /></Link>
         </div>
         {stories.state === "ok" && stories.items.length > 0 ? (
-          <ul className="home-story-list">
-            {stories.items.map((story) => (
-              <li key={story.slug}>
-                <Link className="home-story-link" href={`/news/${story.slug}`}>
-                  <span className="home-story-meta">{story.category ?? "News"}{story.publishedAt ? <> <span aria-hidden="true">·</span> <time dateTime={story.publishedAt}>{formatPublishedDate(story.publishedAt)}</time></> : null}</span>
-                  <h3>{story.title}</h3>
-                  {story.summary ? <p>{story.summary}</p> : null}
-                  <span className="home-story-read">Read story <ArrowUpRightIcon size={16} aria-hidden="true" /></span>
-                </Link>
-              </li>
-            ))}
+          <ul className={`home-story-list home-story-list--${stories.items.length}`}>
+            {stories.items.map((story, index) => {
+              const storyHref = `/news/${story.slug}`;
+              return (
+                <li key={story.slug} className={index === 0 ? "home-story-item home-story-item--lead" : "home-story-item home-story-item--support"}>
+                  <article className="home-story-card">
+                    {story.cover ? (
+                      <figure className="home-story-cover">
+                        <Link className="home-story-cover-link" href={storyHref} aria-label={`Read story: ${story.title}`}>
+                          <img className="home-story-image" src={story.cover.src} alt={story.cover.alt} loading="lazy" decoding="async" referrerPolicy="no-referrer" />
+                        </Link>
+                        <figcaption>
+                          {story.cover.caption ? <span className="home-story-cover-caption">{story.cover.caption}</span> : null}
+                          <span className="home-story-cover-attribution">Photo: <a href={story.cover.source} target="_blank" rel="noopener noreferrer">{story.cover.credit}</a> · <a href={story.cover.license} target="_blank" rel="noopener noreferrer">License</a></span>
+                        </figcaption>
+                      </figure>
+                    ) : (
+                      <div className="home-story-cover home-story-cover--unavailable">
+                        <span>No credited cover image available.</span>
+                      </div>
+                    )}
+                    <div className="home-story-copy">
+                      <span className="home-story-meta">{story.category ?? "News"}{story.publishedAt ? <> <span aria-hidden="true">·</span> <time dateTime={story.publishedAt}>{formatPublishedDate(story.publishedAt)}</time></> : null}</span>
+                      <h3><Link href={storyHref}>{story.title}</Link></h3>
+                      {story.summary ? <p className="home-story-summary">{story.summary}</p> : null}
+                      <p className="home-story-byline">{story.authorName ? `By ${story.authorName}` : "Byline unavailable"}</p>
+                      <Link className="home-story-read" href={storyHref}>Read story <ArrowUpRightIcon size={16} aria-hidden="true" /></Link>
+                    </div>
+                  </article>
+                </li>
+              );
+            })}
           </ul>
         ) : (
           <div className={`home-story-state${stories.state === "error" ? " home-story-state--error" : ""}`} role={stories.state === "error" ? "status" : undefined}>

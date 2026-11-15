@@ -107,3 +107,21 @@
 @media (prefers-reduced-motion: reduce) {
   .site-head *, .drawer-root, .drawer { scroll-behavior: auto; transition-duration: 0.01ms !important; }
 }
+
+.mobile-bottom-nav { display: none; }
+.mobile-bottom-nav ul { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; width: min(540px, 100%); margin: 0 auto; padding: 0; list-style: none; }
+.mobile-bottom-nav li { min-width: 0; }
+.mobile-bottom-nav__link { display: grid; grid-template-rows: 20px auto; place-items: center; gap: 3px; min-width: 0; min-height: 56px; padding: 6px 4px; border-radius: 12px; color: hsl(var(--muted-foreground)); font-size: 11px; font-weight: 600; line-height: 1.1; text-decoration: none; }
+.mobile-bottom-nav__icon { display: grid; width: 22px; height: 22px; place-items: center; }
+.mobile-bottom-nav__icon svg { display: block; width: 20px; height: 20px; }
+.mobile-bottom-nav__link[aria-current="page"], .mobile-bottom-nav__link[aria-current="location"] { color: hsl(var(--primary)); background: hsl(var(--secondary)); font-weight: 700; }
+.mobile-bottom-nav__link:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: -3px; }
+body:has(.focused-error-shell) .mobile-bottom-nav,
+body:has(.auth-link-issue) .mobile-bottom-nav { display: none !important; }
+
+@media (max-width: 767px) {
+  .mobile-bottom-nav { position: fixed; inset: auto 0 0; z-index: 58; display: block; padding: 4px 8px calc(4px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid hsl(var(--border)); background: hsl(var(--card) / .97); box-shadow: 0 -6px 18px rgb(10 16 35 / .08); -webkit-backdrop-filter: saturate(160%) blur(14px); backdrop-filter: saturate(160%) blur(14px); }
+  body:has(.mobile-bottom-nav):not(:has(.focused-error-shell)):not(:has(.auth-link-issue)) { padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px)); }
+  body:has(.public-home):has(.mobile-bottom-nav) .storage-notice { bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+  body:has(.mobile-bottom-nav) .toast-region { bottom: calc(76px + env(safe-area-inset-bottom, 0px) + var(--storage-notice-height, 0px)); }
+}

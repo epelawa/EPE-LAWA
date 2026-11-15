@@ -17,7 +17,8 @@ test("News queries only published stories and active real categories", () => {
   assert.match(page, /escapeLike\(query\)/);
   assert.match(page, /from\("categories"\)/);
   assert.match(page, /\.eq\("is_active", true\)/);
-  assert.match(page, /og_image_key,cover_url/);
+  assert.match(page, /og_image_key/);
+  assert.doesNotMatch(page, /cover_url|cover_alt|cover_source_url|cover_license_url/);
   assert.doesNotMatch(page, /from\("articles"\)|service_role/);
 });
 
@@ -38,6 +39,14 @@ test("News feed uses real story links and truthful empty/error states", () => {
   assert.match(page, /No stories published yet/);
   assert.match(page, /No unpublished stories are shown/);
   assert.doesNotMatch(page, /featuredHeadline\s*=|sampleStory|mockArticles/);
+});
+
+test("News empty and no-results states provide an explore or reset action", () => {
+  assert.match(page, /Clear search and filters/);
+  assert.match(page, /Back to latest stories/);
+  assert.match(page, /Explore EPE LAWA/);
+  assert.match(page, /const needsReset = hasSearchOrCategory \|\| page > 1/);
+  assert.match(page, /actions=\{needsReset \?/);
 });
 
 test("News reference composition keeps an actionable lead and local-image topic explorer", () => {
@@ -86,7 +95,26 @@ test("News and Advertise use the complete reference-style footer without a dupli
   assert.match(footer, /if \(isEditorial\) return null/);
   for (const heading of ["Quick Links", "Categories", "Newsletter"]) assert.ok(newsFooter.includes(heading));
   assert.match(newsFooter, /href="\/advertise"/);
+  assert.match(newsFooter, /Contact availability/);
   assert.match(newsFooter, /from\("categories"\)/);
+});
+
+test("public footers and correction links do not imply that unavailable contact intake works", async () => {
+  const contact = await readFile(new URL("app/contact/page.tsx", root), "utf8");
+  const article = await readFile(new URL("app/news/[slug]/page.tsx", root), "utf8");
+  const informationPage = await readFile(new URL("components/information-page.tsx", root), "utf8");
+  const errorPage = await readFile(new URL("app/error.tsx", root), "utf8");
+  assert.match(footer, /Contact availability/);
+  assert.match(footer, /Messages are not accepted yet/);
+  assert.doesNotMatch(footer, /Contact the team|Have something to share\?/);
+  assert.match(informationPage, /Contact availability/);
+  assert.doesNotMatch(informationPage, /Contact the team/);
+  assert.match(errorPage, /View contact availability/);
+  assert.doesNotMatch(errorPage, /contact the team|with the page address/i);
+  assert.match(contact, /nothing is sent or stored/);
+  assert.match(article, /Correction reporting is not available through this site yet/);
+  assert.match(article, /View contact availability/);
+  assert.doesNotMatch(article, /contact the newsroom/i);
 });
 
 test("Newsletter and advertising states do not pretend to accept or deliver submissions", () => {

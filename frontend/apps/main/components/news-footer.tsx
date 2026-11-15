@@ -37,7 +37,7 @@ export default async function NewsFooter({ categories }: { categories?: NewsCate
           <nav aria-label="Quick links"><ul>
             <li><Link href="/">Home</Link></li>
             <li><Link href="/about">About Us</Link></li>
-            <li><Link href="/contact">Contact</Link></li>
+            <li><Link href="/contact">Contact availability</Link></li>
             <li><Link href="/advertise">Advertise</Link></li>
           </ul></nav>
         </section>

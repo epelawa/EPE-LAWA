@@ -26,7 +26,7 @@ test('homepage hero uses a 52-photo sourced Epe gallery without invented artwork
   assert.doesNotMatch(source,/home-hero__brand|BrandLockup/);
   assert.match(source,/Epe\.<br \/><em>Closer to home\.<\/em>/);
   assert.match(source,/A digital home for Epe’s news, heritage, businesses and community voices\./);
-  assert.match(source,/className="home-story-list"/);
+  assert.match(source,/className=\{`home-story-list home-story-list--\$\{stories\.items\.length\}`\}/);
   assert.match(source,/getLatestStories\(3\)/);
   assert.doesNotMatch(source,/Stories worth knowing|History worth keeping|Places worth finding|People worth connecting/);
   assert.doesNotMatch(carousel,/Epe · Lagos State|Rooted in the community\. Open to everyone\./);
@@ -65,4 +65,28 @@ test('every admin page has actual rebuilt markup and complete workflow navigatio
   assert.doesNotMatch(nav,/label: "Who is Who review", href: "\/itan-ilu-mi/);
   assert.match(read('frontend/apps/admin/app/(protected)/layout.tsx'),/AdminAccessGuard/);assert.match(read('frontend/apps/admin/components/admin-access-guard.tsx'),/getAdminAccessForSession/);assert.ok(!fs.existsSync(path.join(root,'frontend/apps/admin/app/loading.tsx')));assert.ok(fs.existsSync(path.join(root,'frontend/apps/admin/app/(protected)/loading.tsx')));
   assert.match(read('frontend/apps/admin/components/site-header.tsx'),/aria-modal="true"/);
+});
+
+test('homepage story cards use published bylines and only fully credited cover images',()=>{
+  const data=read('frontend/apps/main/lib/home-data.ts');
+  const home=read('frontend/apps/main/app/page.tsx');
+  const styles=read('frontend/apps/main/app/hero-logo.css');
+  assert.match(data,/author_name,og_image_key/);
+  assert.doesNotMatch(data,/cover_url|cover_alt|cover_credit|cover_source_url|cover_license_url|cover_caption/);
+  assert.doesNotMatch(data,/publicMediaUrl/);
+  assert.match(data,/selectedNewsCover\(row\.og_image_key\)/);
+  assert.match(home,/story\.authorName/);
+  assert.match(home,/story\.cover\.alt/);
+  assert.match(home,/story\.cover\.source/);
+  assert.match(home,/story\.cover\.license/);
+  assert.match(home,/index === 0 \? "home-story-item home-story-item--lead"/);
+  assert.match(home,/home-story-item--support/);
+  assert.match(home,/No credited cover image available/);
+  assert.match(home,/Byline unavailable/);
+  assert.match(styles,/\.home-story-cover-link \{[^}]*aspect-ratio: 16 \/ 10/);
+  assert.match(styles,/\.home-story-list--3 \{[^}]*grid-template-columns: minmax\(0, 2fr\) repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(styles,/\.home-story-item--support \.home-story-cover-link \{[^}]*aspect-ratio: 4 \/ 3/);
+  assert.match(styles,/\.home-story-cover-attribution/);
+  assert.match(styles,/\.home-story-cover--unavailable/);
+  assert.doesNotMatch(data+home,/sampleStory|mockArticles|placeholder image/i);
 });

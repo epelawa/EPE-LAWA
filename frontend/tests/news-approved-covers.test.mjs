@@ -13,9 +13,10 @@ test('approved keys resolve locally and admin validates and passes selected key 
  assert.match(read('apps/main/lib/media.ts'),/isNewsCoverKey\(key\).*NEWS_COVERS\[key\]\.url/s);
  const a=read('apps/admin/lib/actions.ts'); assert.match(a,/rawCover && !isNewsCoverKey\(rawCover\)/); assert.match(a,/p_og_image_key: fields\.ogImageKey/); assert.match(a,/p_og_image_key: ogImageKey/);
 });
-test('public article renders linked credit and every approved or remote cover fills its image container',()=>{
+test('public article renders approved local cover credits and reserves the cover container',()=>{
  const p=read('apps/main/app/news/[slug]/page.tsx'), css=read('apps/main/app/news/news.module.css');
- assert.match(p,/cover\.source/); assert.match(p,/cover\.license/); assert.match(p,/cover\?\.alt/); assert.match(p,/article\.cover_source_url/);
+ assert.match(p,/cover\.source/); assert.match(p,/cover\.license/); assert.match(p,/cover\?\.alt/); assert.match(p,/selectedNewsCover\(article\.og_image_key\)/);
+ assert.doesNotMatch(p,/cover_url|cover_alt|cover_credit|cover_source_url|cover_license_url|cover_caption/);
  assert.match(css,/articleHeroImage\.approvedCoverFull[\s\S]*object-fit:cover/); assert.match(css,/approvedCoverThumb \{ object-fit:cover/);
 });
 
@@ -70,14 +71,17 @@ test('Admin imports resolve and editor preserves current-version image key rathe
   assert.match(fields, /The image preview could not load/);
 });
 
-test('public lead covers load eagerly and remote image URLs never load with a referrer', () => {
+test('public lead covers use approved local keys and images never send a referrer', () => {
   const listing = read('apps/main/app/news/page.tsx');
   const article = read('apps/main/app/news/[slug]/page.tsx');
   assert.match(listing, /loading="eager" fetchPriority="high"/);
   assert.match(listing, /className=\{styles\.headlineImage\} src=\{image\} alt="" loading="eager"/);
   assert.match(listing, /className=\{styles\.storyImage\} src=\{image\} alt="" loading="lazy"/);
   assert.doesNotMatch(listing, /fetchPriority="auto"/);
-  assert.match(listing, /normalizeExternalNewsCoverUrl\(article\.cover_url\)/);
+  assert.match(listing, /selectedNewsCover\(article\.og_image_key\)\?\.url \?\? publicMediaUrl\(article\.og_image_key\)/);
+  assert.match(article, /selectedNewsCover\(article\.og_image_key\)\?\.url \?\? publicMediaUrl\(article\.og_image_key\)/);
+  assert.doesNotMatch(listing, /cover_url|cover_alt|cover_source_url|cover_license_url/);
+  assert.doesNotMatch(article, /cover_url|cover_alt|cover_source_url|cover_license_url/);
   assert.match(article, /loading="eager" fetchPriority="high"/);
   assert.match(article, /referrerPolicy="no-referrer"/);
 });

@@ -131,3 +131,24 @@ export const VolumeOffIcon = ({ size = 18, className }: { size?: number; classNa
     <path d="m21 9-5 6" />
   </svg>
 );
+
+export const HomeIcon = ({ size = 20, className }: { size?: number; className?: string }) => (
+  <svg aria-hidden="true" focusable="false" className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m3 10.7 9-7.5 9 7.5" />
+    <path d="M5.5 9.6V21h13V9.6M9.25 21v-6.5h5.5V21" />
+  </svg>
+);
+
+export const CompassIcon = ({ size = 20, className }: { size?: number; className?: string }) => (
+  <svg aria-hidden="true" focusable="false" className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="9" />
+    <path d="m15.6 8.4-2.3 4.9-4.9 2.3 2.3-4.9 4.9-2.3Z" />
+  </svg>
+);
+
+export const UserIcon = ({ size = 20, className }: { size?: number; className?: string }) => (
+  <svg aria-hidden="true" focusable="false" className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="8" r="3.7" />
+    <path d="M4.5 21v-1.3a7.5 7.5 0 0 1 15 0V21Z" />
+  </svg>
+);
