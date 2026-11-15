@@ -4,7 +4,6 @@ import { resolve } from "node:path";
 
 const viewportWidths = [320, 375, 768, 1024, 1440] as const;
 const fixtureURL = `http://localhost:${process.env.SMOKE_FIXTURE_PORT ?? "54321"}`;
-const smokeBaseURL = process.env.SMOKE_BASE_URL ?? "http://127.0.0.1:3100";
 const noResultsQuery = "browser-smoke-no-results";
 const mainNavigationName = /^Primary navigation$/;
 const newsLinkName = /News/;
@@ -54,8 +53,8 @@ for (const width of viewportWidths) {
     await page.goto("/");
 
     await expect(page.locator("main#main")).toBeVisible();
-    await expect(page.getByRole("heading", { level: 1, name: /Epe\.\s*Closer to home\./i })).toBeVisible();
-    await expect(page.getByRole("heading", { level: 2, name: "News from Epe" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Epe Closer To Home" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "Stories from Epe" })).toBeVisible();
     await expect(page.locator(".mobile-bottom-nav")).toHaveCount(0);
     await captureEvidence(page, "home", width);
     await expectNoHorizontalOverflow(page, `homepage at ${width}px`);
@@ -66,7 +65,7 @@ for (const width of viewportWidths) {
       await newsLink.click();
       await expect(newsLink).toHaveAttribute("aria-current", "page");
     } else {
-      await page.getByRole("link", { name: "Read the latest", exact: true }).click();
+      await page.getByRole("link", { name: "Read the latest stories", exact: true }).click();
     }
 
     await expect(page).toHaveURL(/\/news$/);
@@ -140,7 +139,7 @@ for (const width of [320, 375, 768, 1024] as const) {
     } else {
       const mainNavigation = page.getByRole("navigation", { name: mainNavigationName });
       const newsLink = mainNavigation.getByRole("link", { name: newsLinkName });
-      const target = await newsLink.isVisible() ? newsLink : page.getByRole("link", { name: "Read the latest", exact: true });
+      const target = await newsLink.isVisible() ? newsLink : page.getByRole("link", { name: "Read the latest stories", exact: true });
       await tabUntilFocused(page, target);
       await page.keyboard.press("Enter");
       await expect(page).toHaveURL(/\/news$/);
@@ -152,75 +151,13 @@ for (const width of [320, 375, 768, 1024] as const) {
   });
 }
 
-for (const width of [320, 375] as const) {
-  test(`four-tab mobile bottom navigation works without covering content at ${width}px`, async ({ browser, request }) => {
+for (const width of [320, 375, 768] as const) {
+  test(`public mobile routes do not render dashboard bottom tabs at ${width}px`, async ({ page, request }) => {
     await setFixtureMode(request, "empty");
-    const context = await browser.newContext({
-      baseURL: smokeBaseURL,
-      viewport: { width, height: 900 },
-      isMobile: true,
-      hasTouch: true,
-    });
-    const page = await context.newPage();
-
-    try {
-      await page.goto("/news");
-      const bottomNavigation = page.getByRole("navigation", { name: /Mobile (?:bottom|primary) navigation/ });
-      await expect(bottomNavigation).toBeVisible();
-      await expectNoHorizontalOverflow(page, `News bottom navigation at ${width}px`);
-
-      const homeLink = bottomNavigation.getByRole("link", { name: "Home", exact: true });
-      const newsLink = bottomNavigation.getByRole("link", { name: "News", exact: true });
-      const discoverLink = bottomNavigation.getByRole("link", { name: /^(?:Discover|Explore)$/i });
-      const accountLink = bottomNavigation.getByRole("link", { name: "Account", exact: true });
-      await expect(bottomNavigation.getByRole("link")).toHaveCount(4);
-      await expect(homeLink).toBeVisible();
-      await expect(newsLink).toBeVisible();
-      await expect(discoverLink).toBeVisible();
-      await expect(accountLink).toBeVisible();
-      await expect(bottomNavigation.getByRole("link", { name: /Forum/i })).toHaveCount(0);
-
-      const currentLink = bottomNavigation.locator('a[aria-current="page"]');
-      await expect(currentLink).toHaveCount(1);
-      await expect(newsLink).toHaveAttribute("aria-current", "page");
-      await expect(currentLink).toHaveAttribute("href", "/news");
-
-      await homeLink.focus();
-      await expect(homeLink).toBeFocused();
-      await page.keyboard.press("Enter");
-      await expect(page).toHaveURL(new URL("/", smokeBaseURL).href);
-
-      await page.goto("/news");
-      await expect(newsLink).toHaveAttribute("aria-current", "page");
-      const discoverHref = await discoverLink.getAttribute("href");
-      if (!discoverHref?.startsWith("/")) throw new Error("Discover/Explore tab needs an internal route link");
-      await discoverLink.tap();
-      await expect(page).toHaveURL(new URL(discoverHref, smokeBaseURL).href);
-
-      await page.goto("/news");
-      await expect(newsLink).toHaveAttribute("aria-current", "page");
-      const lastFooterLink = page.locator("footer a").last();
-      await lastFooterLink.scrollIntoViewIfNeeded();
-      const navigationBox = await bottomNavigation.boundingBox();
-      const contentBox = await lastFooterLink.boundingBox();
-      expect(navigationBox, "mobile bottom navigation should have a visible box").not.toBeNull();
-      expect(contentBox, "the final footer link should remain reachable").not.toBeNull();
-      if (!navigationBox || !contentBox) throw new Error("Could not measure mobile navigation/content bounds");
-
-      const overlaps = contentBox.left < navigationBox.right
-        && contentBox.right > navigationBox.left
-        && contentBox.top < navigationBox.bottom
-        && contentBox.bottom > navigationBox.top;
-      expect(overlaps, `bottom navigation at ${width}px should not obscure the final footer link`).toBe(false);
-      const footerLinkIsHitTestable = await lastFooterLink.evaluate((element) => {
-        const bounds = element.getBoundingClientRect();
-        const topmost = document.elementFromPoint(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
-        return topmost === element || element.contains(topmost);
-      });
-      expect(footerLinkIsHitTestable, `footer content at ${width}px should not sit under an overlay`).toBe(true);
-      await expectNoHorizontalOverflow(page, `News bottom navigation at ${width}px after touch navigation`);
-    } finally {
-      await context.close();
+    await page.setViewportSize({ width, height: 900 });
+    for (const route of ["/", "/news", "/tourism"]) {
+      await page.goto(route);
+      await expect(page.locator(".mobile-bottom-nav")).toHaveCount(0);
     }
   });
 }

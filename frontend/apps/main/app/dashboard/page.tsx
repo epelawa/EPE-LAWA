@@ -6,6 +6,7 @@ import ProfileEditor from "./profile-editor";
 import { DashboardDiscoverNews, DashboardHomeNews, safePage } from "./news-content";
 import styles from "./dashboard.module.css";
 import { BookmarkIcon, CompassIcon, HomeIcon, UserIcon } from "../../components/icons";
+import MobileBottomNav from "../../components/mobile-bottom-nav";
 
 export const metadata = {
   title: "Member dashboard",
@@ -85,6 +86,7 @@ export default async function MemberDashboardPage({ searchParams }: { searchPara
             </section>
           </div>}
       <form className={styles.signOut} action={signOut}><button className="btn-secondary" type="submit">Sign out</button></form>
+      <MobileBottomNav />
     </main>
   );
 }

@@ -10,7 +10,6 @@ import Script from "next/script";
 import Connectivity from "./connectivity";
 import SiteHeader from "../components/site-header";
 import SiteFooter from "../components/site-footer";
-import MobileBottomNav from "../components/mobile-bottom-nav";
 import { mainNavigation } from "../lib/navigation";
 import { isIndexingAllowed, siteUrl } from "../lib/site";
 import { themeScript } from "../lib/theme";
@@ -55,7 +54,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           {children}
         </main>
         <SiteFooter />
-        <MobileBottomNav />
         <Connectivity />
 
         {/* `components/notification-prompt.tsx` is intentionally NOT mounted.

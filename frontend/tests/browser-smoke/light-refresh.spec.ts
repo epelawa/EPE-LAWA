@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 const fixtureURL = `http://localhost:${process.env.SMOKE_FIXTURE_PORT ?? "54321"}`;
 
-test("light mode ignores old dark preferences and the public drawer keeps only approved account actions", async ({ page, request }) => {
+test("light mode ignores old dark preferences and the public drawer keeps only approved account actions", async ({ page, request }, testInfo) => {
   const hydrationErrors: string[] = [];
   page.on("console", (message) => {
     if (message.type() === "error" && /hydrat/i.test(message.text())) hydrationErrors.push(message.text());
@@ -18,20 +18,42 @@ test("light mode ignores old dark preferences and the public drawer keeps only a
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   expect(await page.locator("html").evaluate((el) => getComputedStyle(el).colorScheme)).toBe("light");
   await expect(page.getByRole("button", { name: /appearance|dark mode|light mode|theme/i })).toHaveCount(0);
+  await page.addStyleTag({ content: "nextjs-portal { display: none !important; }" });
   await page.getByRole("button", { name: "Open navigation menu" }).click();
   const drawer = page.getByRole("dialog", { name: "Find your place in Epe." });
   await expect(drawer).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath("navigation-drawer.png"), fullPage: false });
   await expect(drawer.getByRole("link", { name: "Create account" })).toHaveAttribute("href", "/auth");
   await expect(drawer.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/login");
   await expect(drawer.getByText(/Appearance|Member dashboard/i)).toHaveCount(0);
   await page.keyboard.press("Escape");
   await expect(drawer).toBeHidden();
   await expect(page.getByRole("button", { name: "Open navigation menu" })).toBeFocused();
-  await page.goto("/news");
+  await page.getByRole("button", { name: "Open navigation menu" }).click();
+  await page.getByRole("dialog", { name: "Find your place in Epe." }).locator('a[href="/news"]').click();
+  await expect(page).toHaveURL(/\/news$/);
+  await expect(page.getByRole("heading", { level: 1, name: "News" })).toBeVisible();
+  await page.getByRole("button", { name: "Open navigation menu" }).click();
+  await page.getByRole("dialog", { name: "Find your place in Epe." }).getByRole("link", { name: "Photo credits", exact: true }).click();
+  await expect(page).toHaveURL(/\/photo-credits$/);
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   await page.goto("/login");
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   await expect(page.getByRole("button", { name: /appearance|dark mode|light mode|theme/i })).toHaveCount(0);
+  expect(hydrationErrors).toEqual([]);
+});
+
+test("direct News entry does not mutate markup before hydration", async ({ page, request }) => {
+  const hydrationErrors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error" && /hydrat/i.test(message.text())) hydrationErrors.push(message.text());
+  });
+  page.on("pageerror", (error) => {
+    if (/hydrat/i.test(error.message)) hydrationErrors.push(error.message);
+  });
+  await request.post(`${fixtureURL}/__smoke__/mode`, { data: { mode: "empty" } });
+  await page.goto("/news");
+  await expect(page.getByRole("heading", { level: 1, name: "News" })).toBeVisible();
   expect(hydrationErrors).toEqual([]);
 });
 
@@ -40,7 +62,7 @@ test("phone hero copy is centered and the CTAs clear the cookie notice", async (
   await page.setViewportSize({ width: 375, height: 900 });
   await page.goto("/");
   const hero = page.locator(".home-hero__visual");
-  const title = page.getByRole("heading", { level: 1, name: /Epe\.\s*Closer to home\./i });
+  const title = page.getByRole("heading", { level: 1, name: "Epe Closer To Home" });
   const actions = page.locator(".home-hero__actions");
   const notice = page.getByRole("region", { name: "Storage notice" });
   await expect(notice).toBeVisible();
