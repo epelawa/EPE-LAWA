@@ -363,3 +363,7 @@ The isolated Newsroom branch now contains a forward-only RPC/ACL repair and poin
 ### 2026-11-15 00:44 WAT — Newsroom RLS privacy candidate
 
 Implemented additive-only staff-read/public-pointer RLS without changing earlier migrations or table data. Independent review and a Production-baseline fixture supplement the complete local migration-chain tests. Full suite: 237 passed / 0 failed / 1 documented skip (238 total); forced uncached typecheck/build 7/7 tasks. PR/merge and fresh Production preflight/application remain. No content/account changes; see `docs/handoffs/2026-11-15-newsroom-staff-read-rls.md`.
+
+## 2026-11-15 01:05 WAT — Forum moderation repair checkpoint
+
+Prepared `20261115010000_forum_moderation_schema_repair.sql` against verified missing-table Production baseline. Separate PGlite RLS/action/audit behavior passed; combined full suite 243 total/242 passed/0 failed/1 existing skip. Exact forced builds and typechecks passed on Node22.23.5/pnpm10.34.9. SQL-only focused PR/application remain pending; no Production content/account writes.
