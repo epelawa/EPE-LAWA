@@ -7,6 +7,7 @@ const nav=read('../apps/main/components/mobile-bottom-nav.tsx');
 const css=read('../apps/main/components/navigation-refinement.css');
 const homeCss=read('../apps/main/app/hero-logo.css');
 const layout=read('../apps/main/app/layout.tsx');
+const icons=read('../apps/main/components/icons.tsx');
 
 test('mobile bottom navigation matches the reference tabs and uses only mounted routes',()=>{
   for (const [label,href] of [['Home','/'],['News','/news'],['Discover','/tourism'],['Account','/dashboard']]) {
@@ -16,6 +17,13 @@ test('mobile bottom navigation matches the reference tabs and uses only mounted 
   const mobileLandmark=nav.match(/<nav className="mobile-bottom-nav" aria-label="([^"]+)"/);
   assert.ok(mobileLandmark?.[1].trim(),'mobile bottom tabs expose a named navigation landmark');
   assert.equal([...nav.matchAll(/\{ key: "(?:home|news|discover|account)", href:/g)].length,4);
+  assert.match(nav,/label: "News", Icon: NewsTabIcon/,'News uses its dedicated newspaper-style tab icon');
+  const newsIcon=icons.match(/export const NewsTabIcon\s*=([\s\S]*?<\/svg>)/);
+  assert.ok(newsIcon?.[1],'the reference-style News icon is an inline SVG');
+  assert.match(newsIcon[1],/aria-hidden="true"/);
+  assert.match(newsIcon[1],/fill="currentColor"/);
+  assert.match(newsIcon[1],/fill="#F1F4FA"/);
+  assert.match(newsIcon[1],/fill="#A7C5F5"/);
   assert.match(nav,/aria-current=\{current\}/);
   assert.match(nav,/shouldRenderMobileNavigation\(pathname\)/,'the shared component uses route visibility');
   assert.match(layout,/MobileBottomNav/);

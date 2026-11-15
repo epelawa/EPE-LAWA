@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { mobileNavigationCurrentState, shouldRenderMobileNavigation } from "../lib/navigation";
 import type { MobileNavigationKey } from "../lib/navigation";
-import { CompassIcon, HomeIcon, NewspaperIcon, UserIcon } from "./icons";
+import { CompassIcon, HomeIcon, NewsTabIcon, UserIcon } from "./icons";
 
 type Tab = {
   key: MobileNavigationKey;
@@ -15,7 +15,7 @@ type Tab = {
 
 const TABS: Tab[] = [
   { key: "home", href: "/", label: "Home", Icon: HomeIcon },
-  { key: "news", href: "/news", label: "News", Icon: NewspaperIcon },
+  { key: "news", href: "/news", label: "News", Icon: NewsTabIcon },
   { key: "discover", href: "/tourism", label: "Discover", Icon: CompassIcon },
   { key: "account", href: "/dashboard", label: "Account", Icon: UserIcon },
 ];
