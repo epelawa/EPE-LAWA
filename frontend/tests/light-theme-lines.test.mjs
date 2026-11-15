@@ -5,8 +5,8 @@ import { readFile } from "node:fs/promises";
 const css = await readFile(new URL("../apps/main/app/globals.css", import.meta.url), "utf8");
 
 test("linework is a subtle static light-only public canvas treatment", () => {
-  const selector = /html\[data-theme="light"\] body:not\(:has\(\.auth-page\)\):not\(:has\(\.focused-error-shell\)\):not\(:has\(\[data-news-layout\]\)\)/;
-  const light = css.match(/html\[data-theme="light"\] body:not\(:has\(\.auth-page\)\):not\(:has\(\.focused-error-shell\)\):not\(:has\(\[data-news-layout\]\)\)\s*\{([^}]*)\}/)?.[1];
+  const selector = /html\[data-theme="light"\] body:not\(:has\(\.auth-page\)\):not\(:has\(\.focused-error-shell\)\):not\(:has\(\.site-head--news-reference\)\)/;
+  const light = css.match(/html\[data-theme="light"\] body:not\(:has\(\.auth-page\)\):not\(:has\(\.focused-error-shell\)\):not\(:has\(\.site-head--news-reference\)\)\s*\{([^}]*)\}/)?.[1];
   assert.ok(light, "public light pages receive a canvas-only pattern");
   assert.match(light, /background-image:\s*[\s\S]*linear-gradient/);
   assert.match(light, /rgb\(71 127 224 \/ 0\.025\)/);
@@ -14,6 +14,7 @@ test("linework is a subtle static light-only public canvas treatment", () => {
   assert.match(light, /background-attachment:\s*fixed/);
   assert.doesNotMatch(light, /position:|z-index:|pointer-events:|animation|transition/);
   assert.match(css, /html\[data-theme="dark"\]\s+body\s*\{\s*background-image:\s*none;\s*\}/);
+  assert.match(css, /html\[data-theme="light"\]\s+body:has\(\.site-head--news-reference\),html\[data-theme="dark"\]\s+body:has\(\.site-head--news-reference\)\s*\{\s*background-color:#fff; background-image:none;\s*\}/);
   assert.match(css, selector);
 });
 

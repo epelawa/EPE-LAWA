@@ -35,18 +35,19 @@ const MIGRATIONS = path.join(
 const SHIMMED = [];
 
 /**
- * The Supabase surface the migrations legitimately depend on: the two request roles, auth.users,
+ * The Supabase surface the migrations legitimately depend on: the request roles, auth.users,
  * and auth.uid() reading the JWT subject claim. Recreated here exactly as Supabase defines them.
  */
 const SUPABASE_SURFACE = `
   create role anon nologin;
   create role authenticated nologin;
+  create role service_role nologin;
   create schema auth;
   create table auth.users (id uuid primary key, email text, email_confirmed_at timestamptz);
   create function auth.uid() returns uuid language sql stable
     as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
-  grant usage on schema public, auth to anon, authenticated;
-  grant execute on function auth.uid() to anon, authenticated;
+  grant usage on schema public, auth to anon, authenticated, service_role;
+  grant execute on function auth.uid() to anon, authenticated, service_role;
 `;
 
 /**
@@ -583,6 +584,108 @@ test('a private draft update saves submitted values, uses revision CAS, and reop
 
   const audit = await rows("select action from public.audit_events where resource_id = $1 order by id", [articleId]);
   assert.ok(audit.some((event) => event.action === 'article.draft_update'), 'draft updates are recorded in the audit ledger');
+});
+
+test('external News covers are safe, attributed, published by version, and switch atomically with catalog covers', async () => {
+  const categoryId = (await rows("select id from public.categories where slug = 'politics'"))[0].id;
+  const authorId = (await rows("select id from public.authors where slug = 'test-byline'"))[0].id;
+  const body = JSON.stringify({ type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Cover workflow body remains unchanged.' }] }] });
+  const sourceUrl = 'https://commons.wikimedia.org/wiki/File:Test_cover.jpg';
+  const licenseUrl = 'https://creativecommons.org/licenses/by/4.0/';
+  const createWithCover = async (title, url) => as(U.editor, async () => (await rows(
+    `select public.article_create_with_cover($1, null, $2::jsonb, $3, $4, null, null, null,
+      $5, 'A description of the cover image', 'Example photographer', $6, $7, 'News cover') as id`,
+    [title, body, authorId, categoryId, url, sourceUrl, licenseUrl],
+  ))[0].id);
+
+  const invalid = await asFails(U.editor, `select public.article_create_with_cover(
+    'Rejected external cover', null, '{"type":"doc"}'::jsonb, '${authorId}', '${categoryId}',
+    null, null, null, 'http://images.unsplash.com/cover.jpg', 'Alt text', 'Photographer',
+    '${sourceUrl}', '${licenseUrl}', null
+  )`);
+  assert.match(invalid ?? '', /invalid_news_cover_metadata/, 'insecure image links must fail before article creation');
+
+  const articleId = await createWithCover('External cover article', 'https://images.unsplash.com/photo-1234567890?auto=format');
+  const original = (await rows(
+    `select cover_url, cover_alt, cover_credit, cover_source_url, cover_license_url, cover_caption,
+       body->'content'->0->'content'->0->>'text' as body_text
+     from public.article_versions where article_id = $1 and version_number = 1`,
+    [articleId],
+  ))[0];
+  assert.deepEqual(original, {
+    cover_url: 'https://images.unsplash.com/photo-1234567890?auto=format',
+    cover_alt: 'A description of the cover image',
+    cover_credit: 'Example photographer',
+    cover_source_url: sourceUrl,
+    cover_license_url: licenseUrl,
+    cover_caption: 'News cover',
+    body_text: 'Cover workflow body remains unchanged.',
+  });
+
+  const firstRevision = (await rows('select revision from public.articles where id = $1', [articleId]))[0].revision;
+  await as(U.publisher, () => db.query('select public.article_publish($1, $2)', [articleId, firstRevision]));
+  const firstPublic = (await as(null, () => rows(
+    'select cover_url, cover_alt, cover_credit, cover_source_url, cover_license_url from public.published_articles where id = $1',
+    [articleId],
+  )))[0];
+  assert.deepEqual(firstPublic, {
+    cover_url: 'https://images.unsplash.com/photo-1234567890?auto=format',
+    cover_alt: 'A description of the cover image',
+    cover_credit: 'Example photographer',
+    cover_source_url: sourceUrl,
+    cover_license_url: licenseUrl,
+  }, 'the public view returns attribution only from the published version');
+
+  const beforeCorrection = (await rows('select revision from public.articles where id = $1', [articleId]))[0].revision;
+  await as(U.editor, () => db.query(
+    `select public.article_revise_with_cover($1, $2, 'Private cover correction', null, $3::jsonb, $4, $5,
+       null, null, null, $6, 'Updated alt text', 'Second photographer', $7, $8, 'Updated credit')`,
+    [articleId, beforeCorrection, body, authorId, categoryId, 'https://images.unsplash.com/photo-9876543210?auto=format', sourceUrl, licenseUrl],
+  ));
+  assert.equal((await as(null, () => rows('select cover_url from public.published_articles where id = $1', [articleId])))[0].cover_url,
+    'https://images.unsplash.com/photo-1234567890?auto=format', 'a private correction cannot change the live cover');
+  const secondRevision = (await rows('select revision from public.articles where id = $1', [articleId]))[0].revision;
+  await as(U.publisher, () => db.query('select public.article_publish($1, $2)', [articleId, secondRevision]));
+  const versions = await rows(
+    'select cover_url, cover_credit from public.article_versions where article_id = $1 order by version_number',
+    [articleId],
+  );
+  assert.deepEqual(versions, [
+    { cover_url: 'https://images.unsplash.com/photo-1234567890?auto=format', cover_credit: 'Example photographer' },
+    { cover_url: 'https://images.unsplash.com/photo-9876543210?auto=format', cover_credit: 'Second photographer' },
+  ], 'a correction appends cover metadata and preserves the prior credited version');
+  assert.equal((await as(null, () => rows('select cover_url from public.published_articles where id = $1', [articleId])))[0].cover_url,
+    'https://images.unsplash.com/photo-9876543210?auto=format');
+
+  const draftId = await createWithCover('Draft cover switching', 'https://images.unsplash.com/photo-1122334455?auto=format');
+  const catalogRevision = (await as(U.editor, () => rows(
+    `select public.article_draft_update_with_cover($1, 1, 'Switch to catalog cover', null, $2::jsonb,
+      $3, $4, null, null, $5, null, null, null, null, null, null) as revision`,
+    [draftId, body, authorId, categoryId, 'epe_welcome_demobebz'],
+  )))[0].revision;
+  assert.equal(catalogRevision, 2);
+  assert.deepEqual((await rows(
+    'select og_image_key, cover_url, cover_alt, cover_credit from public.article_versions where article_id = $1 and state = $2',
+    [draftId, 'draft'],
+  ))[0], { og_image_key: 'epe_welcome_demobebz', cover_url: null, cover_alt: null, cover_credit: null },
+  'switching from a URL to a catalog cover clears remote metadata in the same version update');
+  const remoteRevision = (await as(U.editor, () => rows(
+    `select public.article_draft_update_with_cover($1, $2, 'Switch back to URL cover', null, $3::jsonb,
+      $4, $5, null, null, null, $6, 'Alt text', 'Photographer', $7, $8, null) as revision`,
+    [draftId, catalogRevision, body, authorId, categoryId, 'https://images.unsplash.com/photo-5566778899?auto=format', sourceUrl, licenseUrl],
+  )))[0].revision;
+  assert.equal(remoteRevision, 3);
+  assert.equal((await rows(
+    'select og_image_key, cover_url from public.article_versions where article_id = $1 and state = $2',
+    [draftId, 'draft'],
+  ))[0].cover_url, 'https://images.unsplash.com/photo-5566778899?auto=format');
+
+  await db.exec('set role service_role');
+  assert.equal((await rows('select public.news_cover_url_is_safe($1) as valid', [sourceUrl]))[0].valid, true,
+    'the read-only constraint helper remains executable by Supabase service_role');
+  await db.exec('reset role');
+  assert.match(await asFails(U.editor, `select public.news_cover_url_is_safe('${sourceUrl}')`) ?? '', /permission denied/,
+    'ordinary authenticated users cannot call the internal URL helper directly');
 });
 
 test('an API client cannot edit or delete a published article version', async () => {

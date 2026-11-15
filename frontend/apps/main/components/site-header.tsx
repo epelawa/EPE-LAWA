@@ -22,6 +22,7 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
   const inline = primaryNavigation(items);
   const more = items.filter(item => !item.primary);
   const isNewsReference = pathname === "/news" || pathname.startsWith("/news/");
+  const isEditorial = isNewsReference || pathname === "/advertise";
   const closeDrawer = useCallback(() => { setDrawerOpen(false); menuButtonRef.current?.focus(); }, []);
 
   useEffect(() => {
@@ -84,7 +85,8 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
     return () => { cancelAnimationFrame(frame); document.body.style.overflow = previousOverflow; document.removeEventListener("keydown", onKeyDown); };
   }, [drawerOpen, closeDrawer]);
 
-  return <header className={`site-head${isNewsReference ? " site-head--news-reference" : ""}`}>
+  return <header className={`site-head${isEditorial ? " site-head--news-reference" : ""}`}>
+    {isEditorial ? <div className="news-utilitybar"><div className="news-utilitybar__inner"><span>Epe, Lagos State · Nigeria</span><nav aria-label="Editorial links"><Link href="/about" aria-current={pathname === "/about" ? "page" : undefined}>About</Link><Link href="/contact" aria-current={pathname === "/contact" ? "page" : undefined}>Contact</Link><Link href="/advertise" aria-current={pathname === "/advertise" ? "page" : undefined}>Advertise</Link></nav></div></div> : null}
     <div className="masthead-bar">
       <Link className="nav-brand" href="/"><BrandLockup size={30} /></Link>
       <nav className="site-head__nav" aria-label="Main">

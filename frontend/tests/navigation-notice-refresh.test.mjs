@@ -8,7 +8,7 @@ test('navbar keeps Sign in visible and scrolls menu destinations independently o
  assert.match(css,/\.header-signin\s*\{[^}]*display: inline-flex/);
  assert.match(css,/\.drawer-nav\s*\{[^}]*overflow-y: auto/);
  assert.match(css,/\.drawer-account\s*\{[^}]*flex: 0 0 auto/);
- assert.match(css,/\.drawer-label\s*\{[^}]*font-size: 13px/);
+	 assert.match(css,/\.drawer-label\s*\{[^}]*font-size: \.8125rem/);
  assert.match(header,/navigation-refinement\.css/);
  assert.match(header,/aria-modal="true"/);
  assert.match(header,/event\.key === "Escape"/);

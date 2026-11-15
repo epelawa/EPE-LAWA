@@ -13,10 +13,10 @@ test('approved keys resolve locally and admin validates and passes selected key 
  assert.match(read('apps/main/lib/media.ts'),/isNewsCoverKey\(key\).*NEWS_COVERS\[key\]\.url/s);
  const a=read('apps/admin/lib/actions.ts'); assert.match(a,/rawCover && !isNewsCoverKey\(rawCover\)/); assert.match(a,/p_og_image_key: fields\.ogImageKey/); assert.match(a,/p_og_image_key: ogImageKey/);
 });
-test('public article renders linked credit and approved images contain without cropping',()=>{
+test('public article renders linked credit and every approved or remote cover fills its image container',()=>{
  const p=read('apps/main/app/news/[slug]/page.tsx'), css=read('apps/main/app/news/news.module.css');
- assert.match(p,/cover\.source/); assert.match(p,/cover\.license/); assert.match(p,/cover\?\.alt/);
- assert.match(css,/articleHeroImage\.approvedCoverFull[\s\S]*object-fit:contain/); assert.match(css,/approvedCoverThumb \{ object-fit:contain/);
+ assert.match(p,/cover\.source/); assert.match(p,/cover\.license/); assert.match(p,/cover\?\.alt/); assert.match(p,/article\.cover_source_url/);
+ assert.match(css,/articleHeroImage\.approvedCoverFull[\s\S]*object-fit:cover/); assert.match(css,/approvedCoverThumb \{ object-fit:cover/);
 });
 
 import { createHash } from 'node:crypto';
@@ -57,4 +57,27 @@ test('Admin imports resolve and editor preserves current-version image key rathe
   assert.match(editor, /isNewsCoverKey\(version\.og_image_key\)/);
   assert.match(editor, /seo_description,og_image_key/);
   assert.doesNotMatch(editor, /published_at,og_image_key/);
+  assert.match(editor, /cover_url,cover_alt,cover_credit,cover_source_url,cover_license_url,cover_caption/);
+  const fields = read('apps/admin/components/news-cover-url-fields.tsx');
+  assert.match(fields, /An EPE LAWA image-storage bucket is not configured/);
+  assert.match(fields, /The browser requests the image directly, so its host can see visitors’ IP addresses/);
+  assert.match(fields, /a domain’s DNS can change later/);
+  assert.match(fields, /urlTouched/);
+  assert.match(fields, /onBlur=\{\(\) => setUrlTouched\(true\)\}/);
+  assert.match(fields, /aria-describedby=\{invalidUrl \? `\$\{labelId\("help"\)\} \$\{labelId\("error"\)\}`/);
+  assert.match(fields, /role="status" aria-live="polite"/);
+  assert.match(read('apps/admin/components/news-cover-url-fields.module.css'), /min-block-size:3rem; font-size:1rem/);
+  assert.match(fields, /The image preview could not load/);
+});
+
+test('public lead covers load eagerly and remote image URLs never load with a referrer', () => {
+  const listing = read('apps/main/app/news/page.tsx');
+  const article = read('apps/main/app/news/[slug]/page.tsx');
+  assert.match(listing, /loading="eager" fetchPriority="high"/);
+  assert.match(listing, /className=\{styles\.headlineImage\} src=\{image\} alt="" loading="eager"/);
+  assert.match(listing, /className=\{styles\.storyImage\} src=\{image\} alt="" loading="lazy"/);
+  assert.doesNotMatch(listing, /fetchPriority="auto"/);
+  assert.match(listing, /normalizeExternalNewsCoverUrl\(article\.cover_url\)/);
+  assert.match(article, /loading="eager" fetchPriority="high"/);
+  assert.match(article, /referrerPolicy="no-referrer"/);
 });

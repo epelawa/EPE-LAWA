@@ -21,8 +21,9 @@ const [actions, createPage, editPage, adminLayout, publicAdminLayout, listing, n
 test("authorized newsroom create and edit use guarded database transitions, not direct table writes", () => {
   assert.match(createPage, /rpc\("has_capability", \{ p_capability: "article\.create" \}\)/);
   assert.match(createPage, /article\.create/);
-  assert.match(actions, /supabase\.rpc\("article_create"/);
-  assert.match(actions, /supabase\.rpc\("article_draft_update"/);
+  assert.match(actions, /supabase\.rpc\("article_create_with_cover"/);
+  assert.match(actions, /supabase\.rpc\("article_draft_update_with_cover"/);
+  assert.match(actions, /supabase\.rpc\("article_revise_with_cover"/);
   assert.match(editPage, /name="revision"/);
   assert.match(editPage, /action=\{editablePrivateVersion \? saveDraft : reviseArticle\}/);
   assert.doesNotMatch(actions, /\.from\("articles"\)\.(insert|update|upsert|delete)/);
@@ -56,7 +57,8 @@ test("drafts stay private and the public list and article resolve only published
 test("public News selects only columns verified on published_articles", () => {
   const verifiedColumns = new Set([
     "id", "slug", "published_at", "is_breaking", "breaking_until", "title", "summary", "body",
-    "seo_title", "seo_description", "og_image_key", "author_name", "author_slug", "category_slug", "category_label",
+    "seo_title", "seo_description", "og_image_key", "cover_url", "cover_alt", "cover_credit", "cover_source_url", "cover_license_url", "cover_caption",
+    "author_name", "author_slug", "category_slug", "category_label",
   ]);
   const selections = [...listing.matchAll(/\.from\("published_articles"\)\s*\.select\("([^"]+)"\)/g),
     ...article.matchAll(/\.from\("published_articles"\)\s*\.select\("([^"]+)"\)/g)];

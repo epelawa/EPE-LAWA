@@ -8,68 +8,87 @@ const styles = await readFile(new URL("app/news/news.module.css", root), "utf8")
 const header = await readFile(new URL("components/site-header.tsx", root), "utf8");
 const headerStyles = await readFile(new URL("components/navigation-refinement.css", root), "utf8");
 const footer = await readFile(new URL("components/site-footer.tsx", root), "utf8");
+const newsFooter = await readFile(new URL("components/news-footer.tsx", root), "utf8");
+const newsletter = await readFile(new URL("components/newsletter-unavailable.tsx", root), "utf8");
+const advertise = await readFile(new URL("app/advertise/page.tsx", root), "utf8");
 
-test("News queries only published stories and uses active real categories/public media", () => {
+test("News queries only published stories and active real categories", () => {
   assert.match(page, /from\("published_articles"\)/);
   assert.match(page, /escapeLike\(query\)/);
   assert.match(page, /from\("categories"\)/);
   assert.match(page, /\.eq\("is_active", true\)/);
-  assert.match(page, /og_image_key/);
+  assert.match(page, /og_image_key,cover_url/);
   assert.doesNotMatch(page, /from\("articles"\)|service_role/);
 });
 
 test("News retains search, category links and no invented filters", () => {
   assert.match(page, /aria-label="Search headlines"/);
-  assert.match(page, /role="search"/);
+  assert.match(page, /<search className=\{styles\.searchRegion\} aria-label="Search published stories">/);
   assert.match(page, /aria-label="News categories"/);
   assert.match(page, />All<\/Link>/);
   assert.doesNotMatch(page, /FilterIcon|newsFilterButton/);
 });
 
-test("News feed has truthful lead/story links and an icon-free empty state", () => {
-  assert.match(page, /className=\{styles\.featureCard\}/);
+test("News feed uses real story links and truthful empty/error states", () => {
+  assert.match(page, /newsArticlePath\(lead\.slug\)/);
   assert.match(page, /newsArticlePath\(article\.slug\)/);
   assert.match(page, /<EmptyPanel title=/);
-  assert.doesNotMatch(page, /EmptyPanel icon=/);
   assert.match(page, /No stories published yet/);
+  assert.match(page, /No unpublished stories are shown/);
+  assert.doesNotMatch(page, /featuredHeadline\s*=|sampleStory|mockArticles/);
 });
 
-test("News masthead/footer remain minimal on News routes", () => {
-  assert.ok(header.includes('pathname === "/news" || pathname.startsWith("/news/"'));
-  assert.match(headerStyles, /\.site-head--news-reference\s*\{\s*display:\s*none;?\s*\}/);
-  assert.ok(footer.includes('pathname === "/news" || pathname.startsWith("/news/"'));
-  assert.match(footer, /className="news-route-mark"/);
+test("News masthead is visible and uses real EPE-LAWA editorial routes", () => {
+  assert.match(header, /isNewsReference \|\| pathname === "\/advertise"/);
+  assert.match(header, /news-utilitybar/);
+  assert.match(headerStyles, /\.site-head--news-reference\s*\{[^}]*display:block/);
+  assert.match(headerStyles, /#063d2b/);
+  assert.match(header, /href="\/advertise"/);
+  assert.doesNotMatch(headerStyles, /site-head--news-reference\s*\{\s*display:\s*none/);
 });
 
-test("News publisher stamp uses the monochrome reference icon rather than a blue accent", () => {
-  assert.match(page, /className=\{styles\.publisherAvatar\}[^]*?<NewspaperIcon size=\{17\}/);
-  assert.match(styles, /\.publisherAvatar\s*\{[^}]*display:grid[^}]*border-radius:50%[^}]*color:hsl\(var\(--foreground\)\)/);
+test("News and Advertise use the complete reference-style footer without a duplicate global footer", () => {
+  assert.match(page, /<NewsFooter categories=\{categories\} \/>/);
+  assert.match(footer, /pathname\.startsWith\("\/news\/"\) \|\| pathname === "\/advertise"/);
+  assert.match(footer, /if \(isEditorial\) return null/);
+  for (const heading of ["Quick Links", "Categories", "Newsletter"]) assert.ok(newsFooter.includes(heading));
+  assert.match(newsFooter, /href="\/advertise"/);
+  assert.match(newsFooter, /from\("categories"\)/);
 });
 
-test("News mobile nav is separated and empty/content panels stay flat", () => {
-  assert.match(styles, /\.newsPage \{[^}]*width:min\(1160px/);
+test("Newsletter and advertising states do not pretend to accept or deliver submissions", () => {
+  assert.match(newsletter, /disabled/);
+  assert.match(newsletter, /no email address is collected/);
+  assert.doesNotMatch(newsletter, /<form|action=|name="email"/);
+  assert.match(advertise, /does not collect or store contact details/);
+  assert.match(advertise, /Enquiries unavailable/);
+  assert.doesNotMatch(advertise, /<form|action=|mailto:/);
+});
+
+test("News lead and cards eagerly load above-fold covers that fill their containers", () => {
+  assert.match(page, /className=\{styles\.featureImage\}[^>]*loading="eager" fetchPriority="high"/);
+  assert.match(page, /loading="eager" decoding="async" referrerPolicy="no-referrer"/);
+  assert.match(page, /className=\{styles\.headlineImage\} src=\{image\} alt="" loading="eager"/);
+  assert.match(page, /className=\{styles\.storyImage\} src=\{image\} alt="" loading="lazy"/);
+  assert.doesNotMatch(page, /fetchPriority="auto"/);
+  assert.match(styles, /\.featureImage,\.featureImageFallback \{[^}]*object-fit:cover/);
+  assert.match(styles, /\.headlineImage,\.headlineImageFallback \{[^}]*object-fit:cover/);
+  assert.match(styles, /\.storyImage,\.storyImageFallback \{[^}]*object-fit:cover/);
+  assert.doesNotMatch(styles, /object-fit:\s*contain/);
+});
+
+test("News content keeps a responsive editorial grid and accessible 48px controls", () => {
+  assert.match(styles, /\.newsPageGrid \{[^}]*grid-template-columns:minmax\(0,1fr\) 294px/);
   assert.match(styles, /@media \(max-width:600px\)/);
-  assert.match(styles, /\.newsNav \{[^}]*gap:10px/);
-  assert.match(styles, /\.featureCard \{[^}]*border:1px solid/);
-  assert.match(styles, /\.storyLink \{[^}]*grid-template-columns/);
-  assert.match(styles, /\.newsPage :global\(\.ui-empty\)[^{]*\{[^}]*border-radius:0/s);
-  assert.match(styles, /min-height:44px/);
-  assert.doesNotMatch(styles, /border-radius:32px|border-radius:24px/);
+  assert.match(styles, /\.categoryLink \{[^}]*min-height:48px/);
+  assert.match(styles, /\.searchSummary \{[^}]*min-height:48px/);
+  assert.match(styles, /\.featureCard \{[^}]*aspect-ratio/);
 });
 
-test("editorial rail keeps the story flow independent from sidebar height", () => {
-  assert.match(page, /<div className=\{styles\.leadColumn\}>/);
-  assert.match(page, /const mainListArticles = listArticles/);
-  assert.doesNotMatch(page, /railArticles|initialLayout === "editorial-rail"/);
-  assert.match(styles, /\.editorialGrid,\.editorialMain,\.leadColumn \{ display:contents; \}/);
-  assert.match(styles, /:global\(\[data-news-layout="editorial-rail"\]\) \.editorialMain \{ display:grid;[^}]*align-items:start;[^}]*row-gap:14px; \}/);
-  assert.match(styles, /:global\(\[data-news-layout="editorial-rail"\]\) \.leadColumn \{ display:grid; grid-template-columns:minmax\(0,1fr\); align-content:start; gap:14px; min-width:0; \}/);
-});
-
-test("News pagination remains bounded with deterministic ordering", () => {
+test("News pagination remains bounded with deterministic published ordering", () => {
   assert.match(page, /const PAGE_SIZE = 30/);
   assert.match(page, /const MAX_PAGE = 1000/);
   assert.match(page, /\.range\(start, start \+ PAGE_SIZE\)/);
   assert.match(page, /\.order\("slug", \{ ascending: true \}\)/);
-  assert.match(page, /const hasOlder = rows.length > PAGE_SIZE/);
+  assert.match(page, /const hasOlder = rows\.length > PAGE_SIZE/);
 });
