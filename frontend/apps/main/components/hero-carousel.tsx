@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import heroImages from "../lib/hero-images.json";
 
 type ImageVariant = { src: string; width: number };
@@ -53,6 +53,7 @@ function closestVariant(format: ImageFormat, width: number) {
 
 export default function HeroCarousel() {
   const [index, setIndex] = useState(Math.min(INITIAL_SLIDE, Math.max(0, slides.length - 1)));
+  const photoRef = useRef<HTMLImageElement>(null);
   const [loadedIndex, setLoadedIndex] = useState(-1);
   const [activeCurrentSrc, setActiveCurrentSrc] = useState("");
   const [paused, setPaused] = useState(false);
@@ -76,6 +77,13 @@ export default function HeroCarousel() {
     document.addEventListener("visibilitychange", syncVisibility);
     return () => document.removeEventListener("visibilitychange", syncVisibility);
   }, []);
+
+  useEffect(() => {
+    const image = photoRef.current;
+    if (!image?.complete || image.naturalWidth === 0) return;
+    setActiveCurrentSrc(image.currentSrc || image.src);
+    setLoadedIndex(index);
+  }, [index]);
 
   useEffect(() => {
     if (loadedIndex !== index || !activeCurrentSrc || slides.length < 2 || paused || interacting || !pageVisible || reducedMotion || isConstrainedConnection()) return;
@@ -127,6 +135,7 @@ export default function HeroCarousel() {
           <source type="image/webp" srcSet={responsiveSrcSet(slide.webp)} sizes={IMAGE_SIZES} />
           <img
             key={slide.slug}
+            ref={photoRef}
             className="home-hero__photo"
             src={slide.fallbackSrc}
             srcSet={responsiveSrcSet(slide.jpg)}

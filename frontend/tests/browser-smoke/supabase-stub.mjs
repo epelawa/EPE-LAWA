@@ -2,6 +2,23 @@ import { createServer } from "node:http";
 
 const port = Number(process.argv[2] ?? "54321");
 let mode = "empty";
+const syntheticMemberId = "00000000-0000-4000-8000-000000000001";
+const syntheticAccessToken = "browser-smoke-synthetic-access-token";
+const syntheticUser = {
+  id: syntheticMemberId,
+  aud: "authenticated",
+  role: "authenticated",
+  email: "browser-smoke-member@example.test",
+  email_confirmed_at: "2026-01-01T00:00:00.000Z",
+  app_metadata: { provider: "email", providers: ["email"] },
+  user_metadata: {},
+};
+const syntheticProfile = {
+  user_id: syntheticMemberId,
+  handle: "browser-smoke-member",
+  display_name: "Browser Smoke Member",
+  deleted_at: null,
+};
 
 function respond(response, status, payload, headers = {}) {
   response.writeHead(status, {
@@ -29,7 +46,7 @@ const server = createServer((request, response) => {
     request.on("end", () => {
       try {
         const value = JSON.parse(body).mode;
-        if (value !== "empty" && value !== "error") {
+        if (value !== "empty" && value !== "error" && value !== "member") {
           respond(response, 400, { error: "Unsupported fixture mode" });
           return;
         }
@@ -39,6 +56,15 @@ const server = createServer((request, response) => {
         respond(response, 400, { error: "Invalid fixture mode request" });
       }
     });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/auth/v1/user") {
+    if (mode === "member" && request.headers.authorization === `Bearer ${syntheticAccessToken}`) {
+      respond(response, 200, syntheticUser);
+    } else {
+      respond(response, 401, { message: "Synthetic smoke session required" });
+    }
     return;
   }
 
@@ -54,15 +80,28 @@ const server = createServer((request, response) => {
     }
 
     if (
-      url.pathname === "/rest/v1/published_articles" ||
-      url.pathname === "/rest/v1/categories"
+      mode === "member"
+      && url.pathname === "/rest/v1/profiles"
+      && url.searchParams.get("user_id") === `eq.${syntheticMemberId}`
+      && request.headers.authorization === `Bearer ${syntheticAccessToken}`
+    ) {
+      respond(response, 200, syntheticProfile, { "content-range": "0-0/1" });
+      return;
+    }
+
+    if (
+      url.pathname === "/rest/v1/published_articles"
+      || url.pathname === "/rest/v1/categories"
+      || url.pathname === "/rest/v1/tourism_destinations"
     ) {
       respond(response, 200, [], { "content-range": "*/0" });
       return;
     }
   }
 
-  respond(response, 405, { error: "Fixture permits only health, mode control, and read-only smoke queries" });
+  respond(response, 405, {
+    error: "Fixture permits only health, mode control, synthetic read-only auth/profile/article/tourism queries, and no writes",
+  });
 });
 
 server.listen(port, "localhost", () => {

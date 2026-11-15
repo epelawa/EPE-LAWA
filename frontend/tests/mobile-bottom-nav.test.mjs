@@ -40,6 +40,8 @@ test('signed-in dashboard uses Home, Discover, Saved and Profile with actual sec
   }
   assert.match(nav,/usePathname\(\)/);
   assert.match(nav,/window\.addEventListener\("hashchange", syncHash\)/);
+  assert.match(nav,/window\.addEventListener\("popstate", syncHash\)/);
+  assert.match(nav,/onClick=\{\(\) => setHash\(tab\.href\.slice\(tab\.href\.indexOf\("#"\)\)\)\}/);
   for (const id of ['home','discover','saved','profile']) assert.match(dashboard,new RegExp(`id="${id}"`),`missing #${id} dashboard destination`);
   assert.match(dashboard,/Saved-item tools are not connected to member accounts yet/);
   assert.match(dashboard,/className=\{styles\.profileForm\}|<ProfileEditor/);

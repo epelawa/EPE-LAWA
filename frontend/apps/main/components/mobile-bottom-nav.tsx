@@ -38,7 +38,11 @@ export default function MobileBottomNav() {
     const syncHash = () => setHash(window.location.hash);
     syncHash();
     window.addEventListener("hashchange", syncHash);
-    return () => window.removeEventListener("hashchange", syncHash);
+    window.addEventListener("popstate", syncHash);
+    return () => {
+      window.removeEventListener("hashchange", syncHash);
+      window.removeEventListener("popstate", syncHash);
+    };
   }, []);
 
   if (!shouldRenderMobileNavigation(pathname)) return null;
@@ -56,7 +60,12 @@ export default function MobileBottomNav() {
               const current = dashboardNavigationCurrentState(pathname, hash, tab.key);
               return (
                 <li key={tab.key}>
-                  <Link className="mobile-bottom-nav__link" href={tab.href} aria-current={current}>
+                  <Link
+                    className="mobile-bottom-nav__link"
+                    href={tab.href}
+                    aria-current={current}
+                    onClick={() => setHash(tab.href.slice(tab.href.indexOf("#")))}
+                  >
                     <span className="mobile-bottom-nav__icon" aria-hidden="true"><Icon size={20} /></span>
                     <span className="mobile-bottom-nav__label">{tab.label}</span>
                   </Link>

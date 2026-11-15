@@ -88,7 +88,7 @@ test("owner-approved cobalt palette is consistent across light/dark apps and sha
   assert.doesNotMatch(main + admin + statusPage, /#(?:60436d|3f2b49|faf9f6|29242d|dbe8ad|c8c1cc|504955|6e6873|e4dee8)\b/i);
 });
 
-test("Tidegate loader and scroll blur are wired into public and staff routes", () => {
+test("Tidegate loader and hydration-safe motion are wired into public and staff routes", () => {
   const publicMotion = read("frontend/apps/main/components/site-motion.tsx");
   const staffMotion = read("frontend/apps/admin/components/site-motion.tsx");
   const publicLayout = read("frontend/apps/main/app/layout.tsx");
@@ -98,19 +98,19 @@ test("Tidegate loader and scroll blur are wired into public and staff routes", (
   const publicCss = read("frontend/apps/main/app/globals.css");
   const staffCss = read("frontend/apps/admin/app/globals.css");
 
-  for (const motion of [publicMotion, staffMotion]) {
-    assert.match(motion, /IntersectionObserver/);
-    assert.match(motion, /prefers-reduced-motion/);
-    assert.match(motion, /dataset\.scrollReveal = "pending"/);
-    assert.match(motion, /element\.dataset\.scrollReveal === "visible" \|\| element\.closest/);
-    assert.match(motion, /observer\.observe\(element\)/);
-    assert.match(motion, /TidegateSpinner/);
-  }
+  assert.match(publicMotion, /IntersectionObserver/);
+  assert.match(publicMotion, /prefers-reduced-motion/);
+  assert.match(publicMotion, /target\.animate\(/);
+  assert.doesNotMatch(publicMotion, /dataset\.scrollReveal|has-scroll-reveal/);
+  assert.match(staffMotion, /IntersectionObserver/);
+  assert.match(staffMotion, /dataset\.scrollReveal = "pending"/);
+  for (const motion of [publicMotion, staffMotion]) assert.match(motion, /TidegateSpinner/);
   for (const layout of [publicLayout, staffLayout]) assert.match(layout, /<SiteMotion\s*\/>/);
   for (const loading of [publicLoading, staffProtectedLoading]) assert.match(loading, /TidegateSpinner/);
   for (const css of [publicCss, staffCss]) {
     assert.match(css, /epe-tidegate-orbit/);
-    assert.match(css, /filter:blur\(10px\)/);
     assert.match(css, /prefers-reduced-motion:\s*reduce/);
   }
+  assert.doesNotMatch(publicCss, /has-scroll-reveal|data-scroll-reveal/);
+  assert.match(staffCss, /filter:blur\(10px\)/);
 });

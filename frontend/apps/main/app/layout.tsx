@@ -42,7 +42,7 @@ const navigation = mainNavigation();
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <body>
         <Script strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeScript }} />
         <AuthCallbackErrorRouter />
