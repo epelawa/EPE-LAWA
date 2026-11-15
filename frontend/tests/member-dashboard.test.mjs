@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 
 const app = new URL("../apps/main/app/", import.meta.url);
 const components = new URL("../apps/main/components/", import.meta.url);
-const [page, action, editor, auth, complete, header, sitemap, globalStyles, footer] = await Promise.all([
+const [page, action, editor, auth, complete, header, sitemap, globalStyles, footer, newsContent, dashboardCss, dashboardLoading] = await Promise.all([
   readFile(new URL("dashboard/page.tsx", app), "utf8"),
   readFile(new URL("dashboard/actions.ts", app), "utf8"),
   readFile(new URL("dashboard/profile-editor.tsx", app), "utf8"),
@@ -14,6 +14,9 @@ const [page, action, editor, auth, complete, header, sitemap, globalStyles, foot
   readFile(new URL("../../../../docs/03-sitemap.md", app), "utf8"),
   readFile(new URL("globals.css", app), "utf8"),
   readFile(new URL("../components/site-footer.tsx", app), "utf8"),
+  readFile(new URL("dashboard/news-content.tsx", app), "utf8"),
+  readFile(new URL("dashboard/dashboard.module.css", app), "utf8"),
+  readFile(new URL("dashboard/loading.tsx", app), "utf8"),
 ]);
 
 test("member dashboard is session-gated, noindex and only reads the signed-in member profile", () => {
@@ -26,6 +29,7 @@ test("member dashboard is session-gated, noindex and only reads the signed-in me
   assert.match(page, /redirect\("\/login\?next=%2Fdashboard"\)/);
   assert.match(page, /\.select\("user_id, handle, display_name, deleted_at"\)/);
   assert.match(page, /\.eq\("user_id", user\.id\)/);
+  assert.doesNotMatch(page, /Your community spaces|Welcome, \{profile\.display_name\}/);
   assert.doesNotMatch(page, /SERVICE_ROLE|service_role|email_address|view_count|fake|mock/i);
 });
 
@@ -47,6 +51,29 @@ test("sign-in leads members through completion and the dashboard is linked in th
   assert.match(complete, /href="\/dashboard"/);
   assert.match(header, /renderLink\("\/dashboard", "Member dashboard", "btn-secondary"\)/);
   assert.match(sitemap, /\/dashboard\s+MOUNTED/);
+});
+
+test("member Home and Discover use published story data and distinguish loading, empty, and error states", () => {
+  const columns = new Set(["slug", "title", "summary", "published_at", "is_breaking", "breaking_until", "author_name", "category_slug", "category_label", "og_image_key"]);
+  const selections = [...newsContent.matchAll(/\.from\("published_articles"\)\.select\(STORY_COLUMNS\)/g)];
+  assert.ok(selections.length >= 3, "Home and Discover read the published articles view");
+  for (const column of "slug,title,summary,published_at,is_breaking,breaking_until,author_name,category_slug,category_label,og_image_key".split(",")) assert.ok(columns.has(column));
+  assert.match(newsContent, /\.eq\("is_breaking", true\)\.gt\("breaking_until", now\)/);
+  assert.match(newsContent, /title", `%\$\{escapeLike\(query\)\}%`/);
+  assert.match(newsContent, /\.from\("categories"\)\.select\("slug,label"\)\.eq\("is_active", true\)/);
+  assert.match(newsContent, /title="Breaking News"/);
+  assert.match(newsContent, /title="Recommendations"/);
+  assert.match(newsContent, /title="Breaking News"[^\n]*level="h1"/);
+  assert.match(newsContent, /title="Discover"[^\n]*level="h1"/);
+  assert.match(newsContent, /no active breaking stories/i);
+  assert.match(newsContent, /No stories published yet/);
+  assert.match(newsContent, /role="alert"/);
+  assert.match(newsContent, /form action="\/dashboard" method="get" role="search"/);
+  assert.match(newsContent, /category_slug/);
+  assert.match(dashboardLoading, /aria-busy="true"/);
+  assert.match(dashboardLoading, /role="status"/);
+  assert.match(dashboardCss, /@media \(max-width: 767px\) \{ \.tabs \{ display: none; \} \}/);
+  assert.doesNotMatch(newsContent, /from\("articles"\)|sampleStory|mockArticles|fakeStory/i);
 });
 
 test("admin sign-in preserves the compact navy shell and disabled Google row without continuous logo movement", async () => {

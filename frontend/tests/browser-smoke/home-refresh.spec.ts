@@ -52,6 +52,21 @@ test("homepage preserves copy and CTAs, uses a full-height cover hero, and has n
   await expect(carousel.locator('[aria-roledescription="slide"]')).toHaveCount(1);
 });
 
+test("the original cover hero reaches the viewport bottom across phone, tablet and desktop sizes", async ({ page, request }, testInfo) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await openHome(page, request);
+  for (const [width, height] of [[320, 800], [375, 900], [768, 900], [1024, 768], [1440, 900]]) {
+    await page.setViewportSize({ width, height });
+    const bounds = await page.locator(".home-hero__visual").evaluate((hero) => {
+      const rect = hero.getBoundingClientRect();
+      return { bottom: rect.bottom + window.scrollY, viewportHeight: window.innerHeight, fit: getComputedStyle(hero.querySelector(".home-hero__photo")!).objectFit };
+    });
+    expect(bounds.bottom, `hero should cover to the viewport bottom at ${width}px`).toBeGreaterThanOrEqual(bounds.viewportHeight - 1);
+    expect(bounds.fit).toBe("cover");
+    await page.screenshot({ path: testInfo.outputPath(`homepage-cover-${width}.png`), fullPage: true });
+  }
+});
+
 test("autoplay pauses on focus, stays paused after blur, and resumes only after explicit activation", async ({ browser, request }) => {
   test.setTimeout(60_000);
   const context = await browser.newContext({ viewport: { width: 375, height: 900 }, isMobile: true, hasTouch: true });
@@ -96,6 +111,33 @@ test("reduced motion disables hero autoplay while retaining the accessible slide
   await page.waitForTimeout(rotationWindowMs);
   expect(await activePhotoKey(page)).toBe(initialPhoto);
   await expect(page.locator(".home-hero__pause")).toHaveAttribute("aria-label", /pause|resume/i);
+});
+
+test("previous and next photo controls are keyboard-revealed without resting overlays", async ({ page, request }) => {
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await openHome(page, request);
+
+  const carousel = page.locator('[aria-roledescription="carousel"]');
+  const previous = carousel.getByRole("button", { name: "Previous Epe photo" });
+  const next = carousel.getByRole("button", { name: "Next Epe photo" });
+  await expect(previous).toHaveCount(1);
+  await expect(next).toHaveCount(1);
+  expect(await previous.evaluate((button) => getComputedStyle(button).clipPath)).toContain("inset");
+  expect(await next.evaluate((button) => getComputedStyle(button).clipPath)).toContain("inset");
+
+  const slide = carousel.locator('[aria-roledescription="slide"]');
+  await previous.focus();
+  await expect(previous).toBeFocused();
+  await expect(carousel.locator(".home-hero__pause")).toHaveAttribute("aria-label", "Resume automatic Epe photo rotation");
+  await expect.poll(() => previous.evaluate((button) => getComputedStyle(button).clipPath)).toBe("none");
+  await page.keyboard.press("Enter");
+  await expect(slide).toHaveAttribute("aria-label", "2 of 52");
+
+  await next.focus();
+  await expect.poll(() => next.evaluate((button) => getComputedStyle(button).clipPath)).toBe("none");
+  await page.keyboard.press("Enter");
+  await expect(slide).toHaveAttribute("aria-label", "3 of 52");
 });
 
 test("photo credits remain available off-hero for all 52 original images", async ({ page, request }) => {
