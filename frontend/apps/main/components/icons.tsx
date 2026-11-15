@@ -20,6 +20,16 @@ export const NewspaperIcon = ({ size = 20, className }: { size?: number; classNa
   </svg>
 );
 
+export const NewsTabIcon = ({ size = 20, className }: { size?: number; className?: string }) => (
+  <svg aria-hidden="true" focusable="false" className={className} width={size} height={size} viewBox="0 0 24 24">
+    <rect x="1.5" y="1.5" width="21" height="21" rx="5.8" fill="currentColor" />
+    <rect x="4.2" y="5.2" width="10.6" height="13.7" rx="2.4" fill="#78B6F2" />
+    <path d="M10 4.2h7.4a2.8 2.8 0 0 1 2.8 2.8v10a2.8 2.8 0 0 1-2.8 2.8H10a2.8 2.8 0 0 1-2.8-2.8V7A2.8 2.8 0 0 1 10 4.2Z" fill="#F1F4FA" />
+    <rect x="10.4" y="7" width="7.6" height="3.2" rx="1" fill="#A7C5F5" />
+    <rect x="10.4" y="12" width="4.8" height="1.8" rx="0.9" fill="#A7C5F5" />
+  </svg>
+);
+
 export const UsersIcon = ({ size = 20, className }: { size?: number; className?: string }) => (
   <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -129,6 +139,12 @@ export const VolumeOffIcon = ({ size = 18, className }: { size?: number; classNa
     <path d="M11 5 6 9H3v6h3l5 4V5Z" />
     <path d="m16 9 5 6" />
     <path d="m21 9-5 6" />
+  </svg>
+);
+
+export const BookmarkIcon = ({ size = 20, className }: { size?: number; className?: string }) => (
+  <svg aria-hidden="true" focusable="false" className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M7.25 4h9.5A1.25 1.25 0 0 1 18 5.25V21l-6-3.75L6 21V5.25A1.25 1.25 0 0 1 7.25 4Z" />
   </svg>
 );
 

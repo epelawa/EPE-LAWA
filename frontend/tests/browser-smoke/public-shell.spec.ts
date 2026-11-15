@@ -2,11 +2,14 @@ import { expect, test, type APIRequestContext, type Locator, type Page } from "@
 import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 
-const viewportWidths = [320, 375, 768, 1024, 1440] as const;
+const viewportWidths = [320, 375, 600, 767, 768, 800, 960, 1024, 1440] as const;
 const fixtureURL = `http://localhost:${process.env.SMOKE_FIXTURE_PORT ?? "54321"}`;
 const smokeBaseURL = process.env.SMOKE_BASE_URL ?? "http://127.0.0.1:3100";
 const noResultsQuery = "browser-smoke-no-results";
-const mainNavigationName = /^Main(?: navigation)?$/;
+const mainNavigationName = "Primary navigation";
+const mobileNavigationName = "Mobile primary navigation";
+const openMenuName = "Open navigation menu";
+const closeMenuName = "Close navigation menu";
 const newsLinkName = /News/;
 
 async function setFixtureMode(request: APIRequestContext, mode: "empty" | "error") {
@@ -55,7 +58,8 @@ for (const width of viewportWidths) {
 
     await expect(page.locator("main#main")).toBeVisible();
     await expect(page.getByRole("heading", { level: 1, name: /Epe\.\s*Closer to home\./i })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "The next story starts here." })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "News from Epe" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 3, name: "No stories published yet" })).toBeVisible();
     await captureEvidence(page, "home", width);
     await expectNoHorizontalOverflow(page, `homepage at ${width}px`);
 
@@ -87,7 +91,7 @@ for (const width of viewportWidths) {
 
     await setFixtureMode(request, "error");
     await page.goto("/");
-    await expect(page.getByRole("heading", { name: "The newsroom is taking a moment." })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 3, name: "The newsroom is unavailable right now" })).toBeVisible();
     await expectNoHorizontalOverflow(page, `homepage error state at ${width}px`);
     await page.goto("/news");
     await expect(page).toHaveURL(/\/news$/);
@@ -107,14 +111,14 @@ for (const width of [320, 375, 768, 1024] as const) {
     await page.keyboard.press("Tab");
     await expect(skipLink).toBeFocused();
 
-    const menuButton = page.getByRole("button", { name: "Open menu", exact: true });
+    const menuButton = page.getByRole("button", { name: openMenuName, exact: true });
     if (await menuButton.isVisible()) {
       await tabUntilFocused(page, menuButton);
       await page.keyboard.press("Enter");
 
       const drawer = page.getByRole("dialog", { name: "Find your place in Epe." });
       await expect(drawer).toBeVisible();
-      const closeButton = drawer.getByRole("button", { name: "Close menu" });
+      const closeButton = drawer.getByRole("button", { name: closeMenuName, exact: true });
       await expect(closeButton).toBeFocused();
       await expect(drawer.getByRole("link", { name: /Forum/i })).toHaveAttribute("href", "/forum");
       await page.keyboard.press("Shift+Tab");
@@ -164,7 +168,7 @@ for (const width of [320, 375] as const) {
 
     try {
       await page.goto("/news");
-      const bottomNavigation = page.getByRole("navigation", { name: "Mobile bottom navigation" });
+      const bottomNavigation = page.getByRole("navigation", { name: mobileNavigationName, exact: true });
       await expect(bottomNavigation).toBeVisible();
       await expectNoHorizontalOverflow(page, `News bottom navigation at ${width}px`);
 
@@ -188,6 +192,7 @@ for (const width of [320, 375] as const) {
       await expect(homeLink).toBeFocused();
       await page.keyboard.press("Enter");
       await expect(page).toHaveURL(new URL("/", smokeBaseURL).href);
+      await expect(page.getByRole("navigation", { name: mobileNavigationName, exact: true })).toHaveCount(0);
 
       await page.goto("/news");
       await expect(newsLink).toHaveAttribute("aria-current", "page");
@@ -195,6 +200,7 @@ for (const width of [320, 375] as const) {
       if (!discoverHref?.startsWith("/")) throw new Error("Discover/Explore tab needs an internal route link");
       await discoverLink.tap();
       await expect(page).toHaveURL(new URL(discoverHref, smokeBaseURL).href);
+      await expect(discoverLink).toHaveAttribute("aria-current", "page");
 
       await page.goto("/news");
       await expect(newsLink).toHaveAttribute("aria-current", "page");

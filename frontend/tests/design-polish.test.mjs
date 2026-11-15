@@ -13,6 +13,7 @@ test("public Appearance switch lives in the all-viewport hamburger drawer", () =
   const brand = read("frontend/apps/main/components/brand.tsx");
   const staffBrand = read("frontend/apps/admin/components/brand.tsx");
   const footer = read("frontend/apps/main/components/site-footer.tsx");
+  const newsletter = read("frontend/apps/main/components/newsletter-unavailable.tsx");
   const home = read("frontend/apps/main/app/page.tsx");
   const heroCarousel = read("frontend/apps/main/components/hero-carousel.tsx");
   const navCss = read("frontend/apps/main/components/navigation-refinement.css");
@@ -32,14 +33,28 @@ test("public Appearance switch lives in the all-viewport hamburger drawer", () =
   assert.match(home, /Epe\.<br \/><em>Closer to home\.<\/em>/);
   assert.match(home, /A digital home for Epe’s news, heritage, businesses and community voices\./);
   assert.doesNotMatch(home, /Stories worth knowing|History worth keeping|Places worth finding|People worth connecting|home-topics/);
-  assert.equal(heroManifest.length, 52);
-  assert.equal(new Set(heroManifest.map((slide) => slide.source)).size, 52);
+  assert.equal(heroManifest.length, 2);
+  assert.equal(new Set(heroManifest.map((slide) => slide.source)).size, 2);
+  assert.ok(heroManifest.some((slide) => slide.source.endsWith("File:New_Epe_lagos_road.jpg")));
+  assert.ok(heroManifest.some((slide) => slide.source.endsWith("File:Fish_Statue_Epe.jpg")));
   assert.match(heroCarousel, /HERO_SLIDES = heroImages/);
   assert.doesNotMatch(heroCarousel, /Photo by \{slide\.author\}/);
   assert.doesNotMatch(heroCarousel, /Epe Division|The voice of Epe Division/i);
   assert.match(header, /A shared home for everyone\./);
   assert.match(header, /addEventListener\("pointerdown", onOutsideDrawer\)/);
-  assert.match(navCss, /width: min\(380px, calc\(100vw - 20px\)\)/);
+  assert.match(navCss, /width: min\(348px, calc\(100vw - 24px\)\)/);
+  assert.match(navCss, /border-top-left-radius: 22px/);
+  assert.match(heroCarousel, /ROTATION_DELAY_MS = 7200/);
+  assert.match(heroCarousel, /window\.setTimeout/);
+  assert.match(heroCarousel, /prefers-reduced-motion: reduce/);
+  assert.match(heroCarousel, /isConstrainedConnection\(\)/);
+  assert.match(heroCarousel, /home-hero__pause/);
+  assert.doesNotMatch(heroCarousel, /home-hero__controls|home-hero__counter|Previous photo:|Next photo:/);
+  assert.match(home, /Quick access to EPE LAWA features/);
+  assert.match(footer, /<NewsletterUnavailable id="site-footer-newsletter" variant="footer" \/>/);
+  assert.match(footer, /Newsletter sign-up is paused/);
+  assert.match(newsletter, /disabled/);
+  assert.doesNotMatch(newsletter, /<form|onSubmit=/);
   assert.match(navCss, /\.drawer-account__actions \{ display: grid;/);
 });
 
@@ -73,7 +88,7 @@ test("owner-approved cobalt palette is consistent across light/dark apps and sha
   assert.doesNotMatch(main + admin + statusPage, /#(?:60436d|3f2b49|faf9f6|29242d|dbe8ad|c8c1cc|504955|6e6873|e4dee8)\b/i);
 });
 
-test("Tidegate loader and scroll blur are wired into public and staff routes", () => {
+test("Tidegate loader and hydration-safe motion are wired into public and staff routes", () => {
   const publicMotion = read("frontend/apps/main/components/site-motion.tsx");
   const staffMotion = read("frontend/apps/admin/components/site-motion.tsx");
   const publicLayout = read("frontend/apps/main/app/layout.tsx");
@@ -83,19 +98,19 @@ test("Tidegate loader and scroll blur are wired into public and staff routes", (
   const publicCss = read("frontend/apps/main/app/globals.css");
   const staffCss = read("frontend/apps/admin/app/globals.css");
 
-  for (const motion of [publicMotion, staffMotion]) {
-    assert.match(motion, /IntersectionObserver/);
-    assert.match(motion, /prefers-reduced-motion/);
-    assert.match(motion, /dataset\.scrollReveal = "pending"/);
-    assert.match(motion, /element\.dataset\.scrollReveal === "visible" \|\| element\.closest/);
-    assert.match(motion, /observer\.observe\(element\)/);
-    assert.match(motion, /TidegateSpinner/);
-  }
+  assert.match(publicMotion, /IntersectionObserver/);
+  assert.match(publicMotion, /prefers-reduced-motion/);
+  assert.match(publicMotion, /target\.animate\(/);
+  assert.doesNotMatch(publicMotion, /dataset\.scrollReveal|has-scroll-reveal/);
+  assert.match(staffMotion, /IntersectionObserver/);
+  assert.match(staffMotion, /dataset\.scrollReveal = "pending"/);
+  for (const motion of [publicMotion, staffMotion]) assert.match(motion, /TidegateSpinner/);
   for (const layout of [publicLayout, staffLayout]) assert.match(layout, /<SiteMotion\s*\/>/);
   for (const loading of [publicLoading, staffProtectedLoading]) assert.match(loading, /TidegateSpinner/);
   for (const css of [publicCss, staffCss]) {
     assert.match(css, /epe-tidegate-orbit/);
-    assert.match(css, /filter:blur\(10px\)/);
     assert.match(css, /prefers-reduced-motion:\s*reduce/);
   }
+  assert.doesNotMatch(publicCss, /has-scroll-reveal|data-scroll-reveal/);
+  assert.match(staffCss, /filter:blur\(10px\)/);
 });
