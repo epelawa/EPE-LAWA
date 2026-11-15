@@ -63,7 +63,7 @@ export default async function NewsroomPage({ searchParams }: { searchParams: Pro
 
   return (
     <PageFrame className="ui-stack">
-      <PageIntro eyebrow="Staff workspace · Editorial" title="Newsroom" description="Save privately, then publish immediately when the final version is ready. Publication requires verified staff access and is recorded in the audit log." actions={<Link href={adminHref("/newsroom/new")} className={buttonClassName("primary")}>Create draft</Link>} />
+      <PageIntro eyebrow="Staff workspace · Editorial" title="Newsroom" description="Save privately, then publish immediately when the final version is ready. Publication requires verified staff access and is recorded in the audit log." actions={<div className="ui-actions"><Link href={adminHref("/newsroom/settings")} className={buttonClassName("secondary")}>Categories & bylines</Link><Link href={adminHref("/newsroom/new")} className={buttonClassName("primary")}>Create draft</Link></div>} />
       <Panel className="ui-grid ui-grid--3" aria-label="Newsroom counts">
         <div><p className="ui-number">{drafts}</p><p className="ui-muted">Private drafts</p></div>
         <div><p className="ui-number">{readyToPublish}</p><p className="ui-muted">Versions ready to publish</p></div>

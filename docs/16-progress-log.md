@@ -375,3 +375,7 @@ Verified explicit Supabase anon grants survive PUBLIC-only revoke. Added forward
 ## 2026-11-15 01:24 WAT — Radio catalogue live-schema candidate
 
 Prepared forward-only20261115010500 migration on29c01dd: timestamps/revision, additive guarded triggers, radio.manage scoped rights-note/audit RPC. Pinned forced build/typecheck pass; full247total246pass0fail1skip. No rows seeded and no UI/player changes. Exact PR/normal merge and Production apply/verification next.
+
+## 2026-11-15 01:33 WAT — Newsroom setup controls verified
+
+On82167c8 base, implemented secure category/byline management using live-compatible columns. Complete252total251pass0fail1existing skip; pinned forced build/typecheck pass. Synthetic320/390/430/768/1440 captures measured no overflow. Source PR and Production RPC apply next; no real reference/article/account created.

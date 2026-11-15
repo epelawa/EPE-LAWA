@@ -279,3 +279,7 @@ Production default privileges required explicit anon revocation after PR #85; ca
 ## 2026-11-15 01:24 WAT — Radio authoring metadata/RPC repair
 
 The additive live-baseline Radio candidate supplies missing timestamps/revision and rights-aware audited authoring without changing existing station playback/content/status. Combined-main suite246pass0fail1existing skip; forced build2/2/typecheck5/5. Fresh preflight confirms target columns/RPC absent. Ordinary focused PR, recheck/apply and live metadata/ACL verification remain. See `docs/handoffs/2026-11-15-radio-live-authoring.md`.
+
+## 2026-11-15 01:33 WAT — Permissioned category/byline management
+
+Done locally: linked Newsroom settings, audited create/edit categories and credited bylines, category deactivation, truthful errors, UI/RPC article.publish checks without role assignments. Forced pinned builds2/2/typechecks5/5; combined252total251pass0fail1existing skip. Five-width synthetic captures have no page overflow and all reveals visible. Ordinary merge and additive migration/readback remain; no rows seeded. See `docs/handoffs/2026-11-15-newsroom-reference-settings.md`.
