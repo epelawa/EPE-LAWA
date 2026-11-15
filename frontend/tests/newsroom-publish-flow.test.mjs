@@ -5,7 +5,7 @@ import { readFile } from "node:fs/promises";
 const root = new URL("../../", import.meta.url);
 const read = (path) => readFile(new URL(path, root), "utf8");
 
-const [actions, createPage, editPage, adminLayout, publicAdminLayout, listing, newsroomListing, article, schema, liveSchema] = await Promise.all([
+const [actions, createPage, editPage, adminLayout, publicAdminLayout, listing, newsroomListing, article, schema, liveSchema, homeData] = await Promise.all([
   read("frontend/apps/admin/lib/actions.ts"),
   read("frontend/apps/admin/app/(protected)/newsroom/new/page.tsx"),
   read("frontend/apps/admin/app/(protected)/newsroom/[id]/page.tsx"),
@@ -16,6 +16,7 @@ const [actions, createPage, editPage, adminLayout, publicAdminLayout, listing, n
   read("frontend/apps/main/app/news/[slug]/page.tsx"),
   read("backend/supabase/migrations/20261107195000_direct_article_publish_verified_staff.sql"),
   read("backend/supabase/migrations/20261114235700_newsroom_authoring_live_schema.sql"),
+  read("frontend/apps/main/lib/home-data.ts"),
 ]);
 
 test("authorized newsroom create and edit use guarded database transitions, not direct table writes", () => {
@@ -57,12 +58,13 @@ test("drafts stay private and the public list and article resolve only published
 test("public News selects only columns verified on published_articles", () => {
   const verifiedColumns = new Set([
     "id", "slug", "published_at", "is_breaking", "breaking_until", "title", "summary", "body",
-    "seo_title", "seo_description", "og_image_key", "cover_url", "cover_alt", "cover_credit", "cover_source_url", "cover_license_url", "cover_caption",
+    "seo_title", "seo_description", "og_image_key",
     "author_name", "author_slug", "category_slug", "category_label",
   ]);
   const selections = [...listing.matchAll(/\.from\("published_articles"\)\s*\.select\("([^"]+)"\)/g),
-    ...article.matchAll(/\.from\("published_articles"\)\s*\.select\("([^"]+)"\)/g)];
-  assert.ok(selections.length >= 3, "expected index, article metadata and related-story queries");
+    ...article.matchAll(/\.from\("published_articles"\)\s*\.select\("([^"]+)"\)/g),
+    ...homeData.matchAll(/\.from\("published_articles"\)\s*\.select\("([^"]+)"\)/g)];
+  assert.ok(selections.length >= 4, "expected index, article metadata, related-story and homepage queries");
   for (const [, selection] of selections) {
     for (const column of selection.split(",")) assert.ok(verifiedColumns.has(column), `unsupported published_articles column: ${column}`);
   }

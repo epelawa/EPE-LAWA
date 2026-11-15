@@ -38,3 +38,29 @@ export const footerNavigation: NavItem[] = [
   { label: "Who is Who in Epe", href: "/who-is-who" },
   { label: "Advertise with EPE LAWA", href: "/advertise" },
 ];
+
+export type MobileNavigationKey = "home" | "news" | "discover" | "account";
+export type MobileNavigationCurrent = "page" | "location" | undefined;
+
+const mobileNavigationHrefs: Record<MobileNavigationKey, string> = {
+  home: "/",
+  news: "/news",
+  discover: "/tourism",
+  account: "/dashboard",
+};
+const mobileDiscoverRoutes = ["/map", "/business-directory", "/tourism", "/radio"];
+const mobileNavigationExcludedRoutes = ["/admin", "/auth", "/login", "/forgot-password", "/status"];
+
+function routeMatches(pathname: string, route: string): boolean {
+  return route === "/" ? pathname === "/" : pathname === route || pathname.startsWith(`${route}/`);
+}
+
+export function mobileNavigationCurrentState(pathname: string, key: MobileNavigationKey): MobileNavigationCurrent {
+  if (routeMatches(pathname, mobileNavigationHrefs[key])) return "page";
+  if (key === "discover" && mobileDiscoverRoutes.some((route) => routeMatches(pathname, route))) return "location";
+  return undefined;
+}
+
+export function shouldRenderMobileNavigation(pathname: string): boolean {
+  return !mobileNavigationExcludedRoutes.some((route) => routeMatches(pathname, route));
+}

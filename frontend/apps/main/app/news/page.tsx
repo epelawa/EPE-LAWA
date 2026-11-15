@@ -3,7 +3,7 @@ import Link from "next/link";
 import { createClient, SupabaseConfigurationError } from "../../lib/supabase";
 import { formatPublishedDate } from "../../lib/dates";
 import { publicMediaUrl } from "../../lib/media";
-import { normalizeExternalNewsCoverUrl } from "../../lib/news-cover-url.mjs";
+import { selectedNewsCover } from "../../lib/news-covers";
 import { absoluteUrl } from "../../lib/site";
 import { newsArticlePath } from "../../lib/news-urls";
 import { NewspaperIcon } from "../../components/icons";
@@ -23,10 +23,9 @@ type ArticleListItem = {
   category_slug: string;
   category_label: string;
   og_image_key: string | null;
-  cover_url: string | null;
 };
 type NewsCategory = { slug: string; label: string };
-type SearchParams = { q?: string | string[]; page?: string | string[]; category?: string | string[] };
+type SearchParams = { q?: string | string[]; page?: string | string[]; category?: string | string[]; search?: string | string[] };
 
 const newsIndexUrl = absoluteUrl("/news");
 const newsDescription = "Source-backed reporting from Epe and its connected communities.";
@@ -77,7 +76,7 @@ function fallbackCategories(articles: ArticleListItem[]): NewsCategory[] {
   return [...labels].map(([slug, label]) => ({ slug, label }));
 }
 function coverUrl(article: ArticleListItem): string | null {
-  return normalizeExternalNewsCoverUrl(article.cover_url) ?? publicMediaUrl(article.og_image_key);
+  return selectedNewsCover(article.og_image_key)?.url ?? publicMediaUrl(article.og_image_key);
 }
 
 function NewsError() {
@@ -93,15 +92,18 @@ function NewsError() {
 export default async function NewsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const params = await searchParams;
   const query = typeof params.q === "string" ? params.q.trim().slice(0, 100) : "";
+  const searchOpen = query.length > 0 || params.search === "1";
   const category = safeCategory(params.category);
   const page = safePage(params.page);
+  const hasSearchOrCategory = Boolean(query || category);
+  const needsReset = hasSearchOrCategory || page > 1;
   const start = (page - 1) * PAGE_SIZE;
   let supabase: Awaited<ReturnType<typeof createClient>>;
   try { supabase = await createClient(); }
   catch (error) { if (!(error instanceof SupabaseConfigurationError)) throw error; return <NewsError />; }
 
   let articleQuery = supabase.from("published_articles")
-    .select("slug,title,summary,published_at,is_breaking,breaking_until,author_name,category_slug,category_label,og_image_key,cover_url")
+    .select("slug,title,summary,published_at,is_breaking,breaking_until,author_name,category_slug,category_label,og_image_key")
     .order("published_at", { ascending: false, nullsFirst: false })
     .order("slug", { ascending: true });
   if (query) articleQuery = articleQuery.ilike("title", `%${escapeLike(query)}%`);
@@ -133,7 +135,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
     <PageFrame className={`${styles.newsPage} ui-stack`}>
       <div className={styles.newsTopBar}>
         <p className={styles.publisherStamp}><span className={styles.publisherDot} aria-hidden="true" />Reporting and community information from Epe</p>
-        <details className={styles.searchToggle} open={query ? true : undefined}>
+        <details className={styles.searchToggle} open={searchOpen || undefined}>
           <summary className={styles.searchSummary} aria-label="Search headlines" title="Search headlines">
             <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg>
             <span>Search</span>
@@ -164,7 +166,18 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
         <span className={styles.breakingMeta}>Published {formatPublishedDate(breakingLead.published_at)}</span>
       </section> : null}
 
-      {articles.length === 0 ? <EmptyPanel title={category ? "No published stories in this category" : query ? "No matching stories" : "No stories published yet"} description={category ? "There are no published stories in this category yet." : query ? "Try a different headline search. No unpublished stories are shown." : "When the newsroom publishes a story, it will appear here with its byline, date and category."} /> : <div className={styles.newsPageGrid}>
+      {articles.length === 0 ? (
+        <EmptyPanel
+          title={category ? "No published stories in this category" : query ? "No matching stories" : "No stories published yet"}
+          description={category ? "There are no published stories in this category yet." : query ? "Try a different headline search. No unpublished stories are shown." : "When the newsroom publishes a story, it will appear here with its byline, date and category."}
+          actions={needsReset ? (
+            <>
+              <Link href="/news" className="btn-secondary">{hasSearchOrCategory ? "Clear search and filters" : "Back to latest stories"}</Link>
+              <Link href="/" className="btn-secondary">Explore EPE LAWA</Link>
+            </>
+          ) : <Link href="/" className="btn-secondary">Explore EPE LAWA</Link>}
+        />
+      ) : <div className={styles.newsPageGrid}>
         <div className={styles.newsMain}>
           <div className={styles.leadGrid}>
             {lead ? <section className={styles.featureSection} aria-label="Lead story">

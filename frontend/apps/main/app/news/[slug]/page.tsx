@@ -5,7 +5,6 @@ import { cache } from "react";
 import { createClient } from "../../../lib/supabase";
 import { newsArticlePath, publicNewsArticleUrl } from "../../../lib/news-urls";
 import { publicMediaUrl } from "../../../lib/media";
-import { normalizeExternalNewsCoverUrl } from "../../../lib/news-cover-url.mjs";
 import { readPublishedArticleBody } from "../../../lib/published-article-body";
 import { selectedNewsCover } from "../../../lib/news-covers";
 import { formatPublishedDate } from "../../../lib/dates";
@@ -29,12 +28,6 @@ type PublishedArticle = {
   seo_title: string | null;
   seo_description: string | null;
   og_image_key: string | null;
-  cover_url: string | null;
-  cover_alt: string | null;
-  cover_credit: string | null;
-  cover_source_url: string | null;
-  cover_license_url: string | null;
-  cover_caption: string | null;
   author_name: string;
   author_slug: string;
   category_slug: string;
@@ -46,7 +39,6 @@ type RelatedArticle = {
   summary: string | null;
   published_at: string | null;
   og_image_key: string | null;
-  cover_url: string | null;
   category_label: string;
 };
 type ArticleResult = { status: "found"; article: PublishedArticle } | { status: "missing" } | { status: "error" };
@@ -56,7 +48,7 @@ const loadArticle = cache(async (slug: string): Promise<ArticleResult> => {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("published_articles")
-      .select("id,slug,title,summary,published_at,is_breaking,breaking_until,seo_title,seo_description,og_image_key,cover_url,cover_alt,cover_credit,cover_source_url,cover_license_url,cover_caption,author_name,author_slug,category_slug,category_label")
+      .select("id,slug,title,summary,published_at,is_breaking,breaking_until,seo_title,seo_description,og_image_key,author_name,author_slug,category_slug,category_label")
       .eq("slug", slug)
       .maybeSingle();
     if (error) {
@@ -78,7 +70,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const article = result.article;
   const title = article.seo_title || article.title;
   const description = article.seo_description || article.summary || undefined;
-  const image = normalizeExternalNewsCoverUrl(article.cover_url) ?? publicMediaUrl(article.og_image_key);
+  const image = selectedNewsCover(article.og_image_key)?.url ?? publicMediaUrl(article.og_image_key);
   const articleUrl = publicNewsArticleUrl(article.slug);
   return {
     title,
@@ -113,7 +105,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
     const supabase = await createClient();
     const [bodyResult, relatedResult] = await Promise.all([
       readPublishedArticleBody(supabase, article.id),
-      supabase.from("published_articles").select("slug,title,summary,published_at,og_image_key,cover_url,category_label").eq("category_slug", article.category_slug).neq("slug", article.slug).order("published_at", { ascending: false, nullsFirst: false }).order("slug", { ascending: true }).limit(3),
+      supabase.from("published_articles").select("slug,title,summary,published_at,og_image_key,category_label").eq("category_slug", article.category_slug).neq("slug", article.slug).order("published_at", { ascending: false, nullsFirst: false }).order("slug", { ascending: true }).limit(3),
     ]);
     if (bodyResult.error || !bodyResult.data) {
       console.error("published article body read failed", { code: bodyResult.error?.code ?? "missing_published_version" });
@@ -128,9 +120,8 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
   }
 
   const articleUrl = publicNewsArticleUrl(article.slug);
-  const externalCoverUrl = normalizeExternalNewsCoverUrl(article.cover_url);
-  const imageUrl = externalCoverUrl ?? publicMediaUrl(article.og_image_key);
   const cover = selectedNewsCover(article.og_image_key);
+  const imageUrl = cover?.url ?? publicMediaUrl(article.og_image_key);
   const date = formatPublishedDate(article.published_at);
 
   return (
@@ -148,9 +139,9 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
           <div className={styles.articleHeroCopy}>
             <h1>{article.title}</h1>
           </div>
-          <div className={styles.articleCoverFrame}>{imageUrl ? <img className={`${styles.articleHeroImage} ${cover || externalCoverUrl ? styles.approvedCoverFull : ""}`} src={imageUrl} alt={cover?.alt ?? article.cover_alt ?? ""} loading="eager" fetchPriority="high" decoding="async" referrerPolicy="no-referrer" /> : <span className={styles.articleHeroFallback} aria-hidden="true" />}</div>
+          <div className={styles.articleCoverFrame}>{imageUrl ? <img className={`${styles.articleHeroImage} ${cover ? styles.approvedCoverFull : ""}`} src={imageUrl} alt={cover?.alt ?? ""} loading="eager" fetchPriority="high" decoding="async" referrerPolicy="no-referrer" /> : <span className={styles.articleHeroFallback} aria-hidden="true" />}</div>
         </header>
-        {cover ? <figure className={styles.coverCredit}><figcaption>{cover.caption} <a href={cover.source} target="_blank" rel="noreferrer">{cover.credit}</a> License: <a href={cover.license} target="_blank" rel="noreferrer">CC BY-SA 4.0</a>.</figcaption></figure> : externalCoverUrl ? <figure className={styles.coverCredit}><figcaption>{article.cover_caption ? `${article.cover_caption} ` : ""}<a href={article.cover_source_url!} target="_blank" rel="noreferrer">{article.cover_credit}</a> · License: <a href={article.cover_license_url!} target="_blank" rel="noreferrer">view terms</a>.</figcaption></figure> : null}
+        {cover ? <figure className={styles.coverCredit}><figcaption>{cover.caption} <a href={cover.source} target="_blank" rel="noreferrer">{cover.credit}</a> License: <a href={cover.license} target="_blank" rel="noreferrer">CC BY-SA 4.0</a>.</figcaption></figure> : null}
 
         <div className={styles.articleMetaBar} aria-label="Story details">
           <span className={styles.byline}>{article.author_name}</span>
@@ -160,8 +151,8 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
         <div className={`ui-prose ${styles.articleBody}`} data-offline-article-body><ArticleBody body={body} /></div>
         <CommentThread articleId={article.id} slug={article.slug} notice={notice.comments} />
         <details className={styles.articleExtras}><summary>More story options</summary><OfflineArticleDownload article={{ slug: article.slug, title: article.title, summary: article.summary, publishedAt: article.published_at, author: article.author_name, category: article.category_label, sourceUrl: articleUrl }} /></details>
-        {related.length ? <section className={styles.relatedSection} aria-labelledby="related-heading"><div className={styles.sectionHeading}><div><h2 id="related-heading">Related stories</h2></div></div><ul className={styles.relatedGrid}>{related.map((item) => { const relatedImage = normalizeExternalNewsCoverUrl(item.cover_url) ?? publicMediaUrl(item.og_image_key); return <li className={styles.relatedCard} key={item.slug}><Link href={newsArticlePath(item.slug)} className={styles.relatedLink}>{relatedImage ? <img className={`${styles.relatedImage} ${selectedNewsCover(item.og_image_key) ? styles.approvedCoverThumb : ""}`} src={relatedImage} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" /> : <span className={styles.relatedImageFallback} aria-hidden="true"><NewspaperIcon size={24} /></span>}<span className={styles.relatedCategory}>{item.category_label}</span><span className={styles.relatedTitle}>{item.title}</span></Link></li>; })}</ul></section> : null}
-        <p className={styles.correctionNote}>Report a correction: <Link href="/contact" className="ui-text-link">contact the newsroom</Link>.</p>
+        {related.length ? <section className={styles.relatedSection} aria-labelledby="related-heading"><div className={styles.sectionHeading}><div><h2 id="related-heading">Related stories</h2></div></div><ul className={styles.relatedGrid}>{related.map((item) => { const relatedCover = selectedNewsCover(item.og_image_key); const relatedImage = relatedCover?.url ?? publicMediaUrl(item.og_image_key); return <li className={styles.relatedCard} key={item.slug}><Link href={newsArticlePath(item.slug)} className={styles.relatedLink}>{relatedImage ? <img className={`${styles.relatedImage} ${relatedCover ? styles.approvedCoverThumb : ""}`} src={relatedImage} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" /> : <span className={styles.relatedImageFallback} aria-hidden="true"><NewspaperIcon size={24} /></span>}<span className={styles.relatedCategory}>{item.category_label}</span><span className={styles.relatedTitle}>{item.title}</span></Link></li>; })}</ul></section> : null}
+        <p className={styles.correctionNote}>Correction reporting is not available through this site yet. <Link href="/contact" className="ui-text-link">View contact availability</Link>.</p>
       </article>
     </PageFrame>
     <NewsFooter />

@@ -16,7 +16,7 @@ export default function ErrorPage({ reset }: { error: Error & { digest?: string 
         />
         <EmptyPanel
           title="Try once more, or take another route."
-          description="No private error details are shown here. If the problem continues, contact the team with the page address."
+          description="No private error details are shown here. If the problem continues, see whether contact intake is currently available."
           actions={
             <>
               <button type="button" className="btn-primary" onClick={() => reset()}>
@@ -26,7 +26,7 @@ export default function ErrorPage({ reset }: { error: Error & { digest?: string 
                 Go to the homepage
               </Link>
               <Link className="ui-text-link" href="/contact">
-                Contact the team
+                View contact availability
               </Link>
             </>
           }

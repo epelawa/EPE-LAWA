@@ -20,36 +20,38 @@ The current canonical production origin is `https://epelawa.vercel.app/`. The ow
 ```
 /                                   MOUNTED  landing with official EPE-LAWA logo and section links
 /about                              MOUNTED  project information
-/contact                            MOUNTED  truthful contact state
-/gallery                            MOUNTED  public gallery
+/contact                            MOUNTED  truthful contact state; no live intake form
+/gallery                            MOUNTED  public gallery and honest empty state
 /guidelines                         MOUNTED  community rules
 /privacy                            MOUNTED  privacy notice
 /terms                              MOUNTED  terms of use
+/advertise                          MOUNTED  advertising information; no live intake form
+/photo-credits                      MOUNTED  public photo/source/license credits
 
-/news                               MOUNTED  public News list
-/news/[slug]                        MOUNTED  public article detail
-/itan-ilu-mi                        MOUNTED  community history archive
-/tourism                            MOUNTED  approved tourism records
+/news                               MOUNTED  public News list and GET search/filter controls
+/news/[slug]                        MOUNTED  published article detail and gated comments/reports
+/itan-ilu-mi                        MOUNTED  community history archive and private member contribution form
+/tourism                            MOUNTED  approved tourism records and private member suggestion form
 /tourism/[slug]                     MOUNTED  public destination detail
 /map                                MOUNTED  manual map search and safe external directions
-/business-directory                 MOUNTED  approved business directory
-/business-directory/[slug]          MOUNTED  public business detail
-/business-directory/submit           MOUNTED  member submission flow
-/business-directory/orders           MOUNTED  member order view
+/business-directory                 MOUNTED  approved business directory and filters
+/business-directory/[slug]          MOUNTED  public business detail and gated review/order request
+/business-directory/submit           MOUNTED  verified-member listing submission
+/business-directory/orders           MOUNTED  seller-side order requests; buyer-history contract unresolved
 /forum                              MOUNTED  forum index
 /forum/category/[slug]              MOUNTED  category thread list
-/forum/thread/[slug]                MOUNTED  thread and replies
-/forum/new                          MOUNTED  authenticated new-thread flow
-/who-is-who                         MOUNTED  public people directory
+/forum/thread/[slug]                MOUNTED  thread, replies, poll and report interactions
+/forum/new                          MOUNTED  authenticated new-thread and optional poll form
+/who-is-who                         MOUNTED  public people directory and filters
 /who-is-who/[slug]                  MOUNTED  public person detail
-/radio                              MOUNTED  truthful stream/schedule/archive states
+/radio                              MOUNTED  user-started stream and programme/schedule/archive states
 
 /login                              MOUNTED  member sign in
 /auth                               MOUNTED  member signup
 /forgot-password                    MOUNTED  request a password reset
 /auth/new-password                  MOUNTED  set a new password
 /auth/callback                      MOUNTED  Auth callback route handler
-/auth/complete                      MOUNTED  branded verification completion
+/auth/complete                      MOUNTED  branded verification completion and profile bootstrap
 /auth/verify                        MOUNTED  branded email-code verification and resend; noindex
 /auth/link-expired                  MOUNTED  expired-link recovery
 /auth/link-problem                  MOUNTED  generic callback problem
@@ -61,13 +63,15 @@ The current canonical production origin is `https://epelawa.vercel.app/`. The ow
 /sitemap.xml                        MOUNTED  public sitemap
 ```
 
+`/advertise` and `/photo-credits` are present in the source route tree and public navigation; their omission from earlier route lists was a documentation gap. Their indexing status must follow the actual explicit sitemap/robots configuration and any owner decision, not be inferred from being mounted. No contact, advertising, newsletter, or correction/takedown form should claim to collect or deliver data until its provider, privacy, retention, abuse-control, and end-to-end contracts are verified.
+
 `/dashboard` is the canonical member account center. It requires a verified member session, is excluded from indexing, and exposes only the signed-in member’s profile settings and links to existing member spaces. Profile edits are limited to the member’s own display name and handle under the database’s own-row RLS policy.
 
 ---
 
 ## 3. `/news` — public publication
 
-News is public on the canonical platform origin at `/news` and `/news/[slug]`. Do not link separate category, author, tag, search or video routes unless they are mounted. Articles remain free to read. Commenting and liking require sign-in and an in-context prompt with a validated same-origin return path; drafts and private previews are never exposed to public lists, search, metadata or sitemaps. Empty and unavailable states must remain distinct.
+News is public on the canonical platform origin at `/news` and `/news/[slug]`. Do not link separate category, author, tag, search or video routes unless they are mounted. Articles remain free to read. Comment and report actions require their existing verified-member and server-side moderation gates; sharing/copy actions are not likes, and no like/reaction persistence route is mounted. Drafts and private previews are never exposed to public lists, search, metadata or sitemaps. Empty and unavailable states must remain distinct.
 
 ---
 
@@ -79,18 +83,21 @@ News is public on the canonical platform origin at `/news` and `/news/[slug]`. D
 /admin/newsroom                      MOUNTED  newsroom list
 /admin/newsroom/new                  MOUNTED  draft creation gate/form
 /admin/newsroom/[id]                 MOUNTED  article editor
+/admin/newsroom/settings             MOUNTED  category and byline settings
 /admin/itan-ilu-mi/review             MOUNTED  History review
 /admin/moderation/forum               MOUNTED  Forum moderation
 /admin/business-review                MOUNTED  business review queue
 /admin/business-review/moderation     MOUNTED  business moderation
-/admin/orders                         MOUNTED  order queue
+/admin/orders                         MOUNTED  order queue; workflow readiness unverified
 /admin/people                         MOUNTED  Who-is-Who administration
 /admin/radio                          MOUNTED  Radio administration
 /admin/tourism                        MOUNTED  Tourism review queue
+/admin/roles                          MOUNTED  capability and role management
+/admin/users                          MOUNTED  staff invitations and status
 /admin/[...unknown]                  MOUNTED  designed unknown-route response
 ```
 
-The main app serves staff at same-origin `/admin/*`; staff sessions remain Secure, HttpOnly, SameSite=Lax host-only `__Host` cookies with no `Domain`. Every protected page/action checks the verified session and capability server-side; return-path hints never grant access. A mounted page is not proof that its end-to-end workflow is safe to operate: production schema drift and migration conflicts remain under review, and other unlisted admin destinations are not available.
+`/admin/error.tsx` and `/admin/not-found.tsx` are framework error/fallback surfaces, not additional routable URLs. A mirrored Admin app also exists in the workspace; it does not add separate public URLs to this same-origin route inventory. The main app serves staff at `/admin/*`; staff sessions remain Secure, HttpOnly, SameSite=Lax host-only `__Host` cookies with no `Domain`. Every protected page/action checks the verified session and capability server-side; return-path hints never grant access. A mounted page is not proof that its end-to-end workflow is safe to operate: production schema drift, provider readiness, and migration conflicts remain under review.
 
 ---
 
@@ -101,12 +108,14 @@ The main app serves staff at same-origin `/admin/*`; staff sessions remain Secur
 Rules for the header:
 
 - A destination appears only when the route is built. No greyed-out links, no "coming soon".
-- On mobile, the menu is a disclosure with a labelled trigger, `aria-expanded`, and escape to close.
-- The current section is marked with `aria-current="page"`, not just colour.
+- On mobile, the existing accessible drawer uses a labelled trigger, `aria-expanded`, modal dialog semantics, keyboard focus handling, Escape and outside-close behavior.
+- The mobile bottom bar has exactly four tabs: **Home**, **News**, **Discover**, and **Account**, linking to `/`, `/news`, `/tourism`, and `/dashboard`. Links use `aria-current` for the current page/section, remain keyboard/touch accessible, respect safe-area insets, and reserve page space so content is not obscured. It is hidden on focused sign-in, staff/Admin and system-status routes.
+- Forum stays in the existing drawer under **Community**; do not add a fifth bottom tab. The Discover tab remains the four-tab destination and marks mounted discovery routes as the current section.
+- The current section is marked with `aria-current`, not just colour.
 
-**News header:** Do not imply separate categories, search or video pages until those routes are mounted.
+**News header:** Do not imply separate category, search or video pages until those routes are mounted.
 
-**Admin navigation:** `/admin` · `/admin/newsroom` · `/admin/itan-ilu-mi/review` · `/admin/moderation/forum` · `/admin/business-review` · `/admin/business-review/moderation` · `/admin/orders` · `/admin/tourism` · `/admin/radio` · `/admin/people`. Navigation may be capability-filtered, but the route and action must still refuse unauthorized sessions.
+**Admin navigation:** `/admin` · `/admin/newsroom` · `/admin/newsroom/settings` · `/admin/itan-ilu-mi/review` · `/admin/moderation/forum` · `/admin/business-review` · `/admin/business-review/moderation` · `/admin/orders` · `/admin/tourism` · `/admin/radio` · `/admin/people` · `/admin/roles` · `/admin/users`. Navigation may be capability-filtered, but the route and action must still refuse unauthorized sessions.
 
 **Footer (public):** About · Contact · Guidelines · Privacy · Terms · WhatsApp · social links that actually exist.
 
@@ -135,6 +144,7 @@ Rules for the header:
 | `/business-directory/[slug]` | conditional | LocalBusiness only for approved public listings |
 | `/tourism/[slug]` | conditional | Only sourced, approved destination data |
 | `/forum/*` | conditional | Public discussions only; no private/member details |
+| `/advertise`, `/photo-credits` | verify explicit sitemap/owner decision | — |
 | `/login`, `/auth`, `/forgot-password`, `/auth/*` | no | — |
 | `/business-directory/orders` | no | — |
 | `/dashboard` | no | — |
@@ -145,8 +155,10 @@ Rules for the header:
 
 ## 8. Coverage check before any release
 
+- Every page and route handler in both frontend app trees is inventoried here or explicitly identified as a framework/error surface; the mirrored Admin workspace does not create duplicate public URLs.
 - Every route in this document either resolves or does not appear in navigation.
 - No route is reachable only by guessing a slug.
 - Every list route has an empty state that a real empty database would show.
 - Member routes return through `/login?next=`; staff routes return through `/admin/login?next=` after server-side authorization.
 - Every 404 is a designed 404, not a stack trace.
+- News likes/reactions, History correction/takedown, buyer order history, contact/advertising/newsletter intake, payment checkout, and media uploads are not to be implied as working until their routes, provider/schema contracts, persistence, security controls and end-to-end journeys actually exist and pass.

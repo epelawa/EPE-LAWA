@@ -2,64 +2,92 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { primaryNavigation, type NavItem } from "../lib/navigation";
-import { ArrowRightIcon, ArrowUpRightIcon } from "./icons";
+import { useCallback, useEffect, useRef, useState, type SyntheticEvent } from "react";
+import type { NavItem } from "../lib/navigation";
+import { ArrowRightIcon, ArrowUpRightIcon, SearchIcon } from "./icons";
 import ThemeToggle from "./theme-toggle";
 import { BrandLockup } from "./brand";
 import "./navigation-refinement.css";
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input, [tabindex]:not([tabindex="-1"])';
-const current = (path: string, href: string) => href === "/" ? path === "/" : path === href || path.startsWith(`${href}/`);
+const DESKTOP_GROUPS = [
+  { label: "Community", routes: [["/itan-ilu-mi", "Ìtàn Ilú Mi"], ["/forum", "Forum"], ["/who-is-who", "Who is Who"]] },
+  { label: "Discover", routes: [["/map", "Map & Navigation"], ["/business-directory", "Business Directory"], ["/tourism", "Tourism"], ["/radio", "Radio"]] },
+  { label: "About", routes: [["/about", "About"], ["/contact", "Contact"], ["/guidelines", "Guidelines"], ["/advertise", "Advertise"], ["/photo-credits", "Photo credits"], ["/privacy", "Privacy"], ["/terms", "Terms"]] },
+] as const;
+const MOBILE_GROUPS = [
+  { label: "Read", routes: [["/news", "News"], ["/radio", "Radio"]] },
+  { label: "Community", routes: [["/itan-ilu-mi", "Ìtàn Ilú Mi"], ["/forum", "Forum"], ["/who-is-who", "Who is Who"]] },
+  { label: "Explore", routes: [["/map", "Map & Navigation"], ["/business-directory", "Business Directory"], ["/tourism", "Tourism"]] },
+  { label: "EPE LAWA", routes: [["/about", "About"], ["/contact", "Contact"], ["/guidelines", "Guidelines"], ["/advertise", "Advertise"], ["/photo-credits", "Photo credits"], ["/privacy", "Privacy"], ["/terms", "Terms"]] },
+] as const;
+
+function isCurrent(path: string, href: string) {
+  return href === "/" ? path === "/" : path === href || path.startsWith(`${href}/`);
+}
 
 export default function SiteHeader({ items }: { items: NavItem[] }) {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "/";
   const [drawerOpen, setDrawerOpen] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
-  const moreRef = useRef<HTMLDetailsElement>(null);
+  const desktopNavRef = useRef<HTMLElement>(null);
   const previousPath = useRef(pathname);
-  const inline = primaryNavigation(items);
-  const more = items.filter(item => !item.primary);
   const isNewsReference = pathname === "/news" || pathname.startsWith("/news/");
-  const isEditorial = isNewsReference || pathname === "/advertise";
-  const closeDrawer = useCallback(() => { setDrawerOpen(false); menuButtonRef.current?.focus(); }, []);
+  const navItem = useCallback((href: string, fallbackLabel: string): NavItem =>
+    items.find((item) => item.href === href) ?? { label: fallbackLabel, href }, [items]);
+
+  const closeDesktopDisclosures = useCallback(() => {
+    desktopNavRef.current?.querySelectorAll<HTMLDetailsElement>("details[open]").forEach((details) => {
+      details.removeAttribute("open");
+    });
+  }, []);
+
+  const handleDisclosureToggle = useCallback((event: SyntheticEvent<HTMLDetailsElement>) => {
+    if (!event.currentTarget.open) return;
+    desktopNavRef.current?.querySelectorAll<HTMLDetailsElement>("details[open]").forEach((details) => {
+      if (details !== event.currentTarget) details.removeAttribute("open");
+    });
+  }, []);
+
+  const closeDrawer = useCallback(() => {
+    setDrawerOpen(false);
+    menuButtonRef.current?.focus();
+  }, []);
+
+  const renderLink = (href: string, label: string, className: string) => {
+    const item = navItem(href, label);
+    return <Link className={className} href={item.href} aria-current={isCurrent(pathname, item.href) ? "page" : undefined} key={item.href}>{item.label}</Link>;
+  };
 
   useEffect(() => {
     if (previousPath.current === pathname) return;
     previousPath.current = pathname;
-    moreRef.current?.removeAttribute("open");
-    if (drawerRef.current && !drawerRef.current.inert) menuButtonRef.current?.focus();
+    closeDesktopDisclosures();
+    if (drawerOpen) menuButtonRef.current?.focus();
     setDrawerOpen(false);
-  }, [pathname]);
+  }, [pathname, closeDesktopDisclosures, drawerOpen]);
 
   useEffect(() => {
-    if (!drawerOpen) return;
-    const onOutsideDrawer = (event: PointerEvent) => {
-      const target = event.target;
-      if (!(target instanceof Node)) return;
-      if (drawerRef.current?.contains(target) || menuButtonRef.current?.contains(target)) return;
-      setDrawerOpen(false);
-      menuButtonRef.current?.focus();
-    };
-    document.addEventListener("pointerdown", onOutsideDrawer);
-    return () => document.removeEventListener("pointerdown", onOutsideDrawer);
-  }, [drawerOpen]);
-
-  useEffect(() => {
-    const onOutside = (event: PointerEvent) => {
-      if (moreRef.current?.open && !moreRef.current.contains(event.target as Node)) moreRef.current.open = false;
+    const onOutsideDisclosure = (event: PointerEvent) => {
+      if (!(event.target instanceof Node)) return;
+      if (!desktopNavRef.current?.contains(event.target)) closeDesktopDisclosures();
     };
     const onEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && moreRef.current?.open) {
-        moreRef.current.open = false;
-        moreRef.current.querySelector("summary")?.focus();
-      }
+      if (event.key !== "Escape") return;
+      const opened = desktopNavRef.current?.querySelector<HTMLDetailsElement>("details[open]");
+      if (!opened) return;
+      event.preventDefault();
+      opened.removeAttribute("open");
+      opened.querySelector<HTMLElement>("summary")?.focus();
     };
-    document.addEventListener("pointerdown", onOutside);
+    document.addEventListener("pointerdown", onOutsideDisclosure);
     document.addEventListener("keydown", onEscape);
-    return () => { document.removeEventListener("pointerdown", onOutside); document.removeEventListener("keydown", onEscape); };
-  }, []);
+    return () => {
+      document.removeEventListener("pointerdown", onOutsideDisclosure);
+      document.removeEventListener("keydown", onEscape);
+    };
+  }, [closeDesktopDisclosures]);
 
   useEffect(() => {
     if (!drawerOpen) return;
@@ -74,41 +102,117 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
     };
     frame = requestAnimationFrame(focusDrawer);
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") { event.preventDefault(); closeDrawer(); return; }
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeDrawer();
+        return;
+      }
       if (event.key !== "Tab") return;
-      const nodes = Array.from(drawerRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? []).filter(node => node.offsetParent !== null);
+      const nodes = Array.from(drawerRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? [])
+        .filter((node) => node.offsetParent !== null);
       if (!nodes.length) return;
-      if (event.shiftKey && document.activeElement === nodes[0]) { event.preventDefault(); nodes[nodes.length - 1].focus(); }
-      else if (!event.shiftKey && document.activeElement === nodes[nodes.length - 1]) { event.preventDefault(); nodes[0].focus(); }
+      if (event.shiftKey && document.activeElement === nodes[0]) {
+        event.preventDefault();
+        nodes[nodes.length - 1].focus();
+      } else if (!event.shiftKey && document.activeElement === nodes[nodes.length - 1]) {
+        event.preventDefault();
+        nodes[0].focus();
+      }
     };
     document.addEventListener("keydown", onKeyDown);
-    return () => { cancelAnimationFrame(frame); document.body.style.overflow = previousOverflow; document.removeEventListener("keydown", onKeyDown); };
+    return () => {
+      cancelAnimationFrame(frame);
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKeyDown);
+    };
   }, [drawerOpen, closeDrawer]);
 
-  return <header className={`site-head${isEditorial ? " site-head--news-reference" : ""}`}>
-    {isEditorial ? <div className="news-utilitybar"><div className="news-utilitybar__inner"><span>Epe, Lagos State · Nigeria</span><nav aria-label="Editorial links"><Link href="/about" aria-current={pathname === "/about" ? "page" : undefined}>About</Link><Link href="/contact" aria-current={pathname === "/contact" ? "page" : undefined}>Contact</Link><Link href="/advertise" aria-current={pathname === "/advertise" ? "page" : undefined}>Advertise</Link></nav></div></div> : null}
-    <div className="masthead-bar">
-      <Link className="nav-brand" href="/"><BrandLockup size={30} /></Link>
-      <nav className="site-head__nav" aria-label="Main">
-        <ul className="nav-items">
-          {inline.map(item => <li key={item.href}><Link className="nav-link" href={item.href} aria-current={current(pathname,item.href) ? "page" : undefined}>{item.label}</Link></li>)}
-          <li><details className="nav-more" ref={moreRef}><summary className="nav-link">More <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></summary><ul className="nav-more__list" aria-label="More sections">{more.map(item => <li key={item.href}><Link className="nav-link" href={item.href} aria-current={current(pathname,item.href) ? "page" : undefined}>{item.label}</Link></li>)}</ul></details></li>
-        </ul>
-      </nav>
-      <div className="masthead-actions"><Link className="header-signin" href="/login">Sign in</Link><Link className="btn-primary header-cta" href="/auth">Join the community <ArrowRightIcon size={15} aria-hidden="true" /></Link><button ref={menuButtonRef} className="btn-icon site-head__menu" type="button" aria-label={drawerOpen ? "Close menu" : "Open menu"} aria-expanded={drawerOpen} aria-controls="site-drawer" onClick={() => drawerOpen ? closeDrawer() : setDrawerOpen(true)}><span className="menu-lines" aria-hidden="true"><span /><span /></span></button></div>
-    </div>
-    <div className="drawer-root" data-open={drawerOpen ? "true" : "false"} aria-hidden={!drawerOpen} inert={!drawerOpen}>
-      <button type="button" className="drawer-scrim" tabIndex={-1} aria-label="Close menu" onClick={closeDrawer} />
-      <div ref={drawerRef} id="site-drawer" className="drawer" role="dialog" aria-modal="true" aria-labelledby="site-drawer-title" inert={!drawerOpen}>
-        <div className="drawer-heading"><p id="site-drawer-title">Find your place in Epe.</p><button className="btn-icon" type="button" aria-label="Close menu" onClick={closeDrawer}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg></button></div>
-        <nav className="drawer-nav" aria-label="All sections"><ul>{items.map(item => <li key={item.href}><Link className="drawer-link" href={item.href} aria-current={current(pathname,item.href) ? "page" : undefined}><span className="drawer-label">{item.label}</span>{item.hint ? <span className="drawer-hint">{item.hint}</span> : null}</Link></li>)}</ul></nav>
-        <div className="drawer-appearance" role="group" aria-label="Appearance settings">
-          <span className="drawer-appearance__label">Appearance</span>
-          <ThemeToggle />
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const onOutsideDrawer = (event: PointerEvent) => {
+      if (!(event.target instanceof Node)) return;
+      if (drawerRef.current?.contains(event.target) || menuButtonRef.current?.contains(event.target)) return;
+      closeDrawer();
+    };
+    document.addEventListener("pointerdown", onOutsideDrawer);
+    return () => document.removeEventListener("pointerdown", onOutsideDrawer);
+  }, [drawerOpen, closeDrawer]);
+
+  const renderMobileGroup = (group: typeof MOBILE_GROUPS[number]) => (
+    <section className="drawer-group" key={group.label} aria-labelledby={`drawer-${group.label.toLowerCase().replaceAll(" ", "-")}`}>
+      <h2 id={`drawer-${group.label.toLowerCase().replaceAll(" ", "-")}`}>{group.label}</h2>
+      <ul>{group.routes.map(([href, label]) => <li key={href}>{renderLink(href, label, "drawer-link")}</li>)}</ul>
+    </section>
+  );
+
+  return (
+    <header className={`site-head${isNewsReference ? " site-head--news-reference" : ""}`}>
+      <div className="masthead-bar">
+        <Link className="nav-brand" href="/" aria-label="EPE LAWA home"><BrandLockup size={32} /></Link>
+        <nav ref={desktopNavRef} className="site-head__nav" aria-label="Primary navigation">
+          <ul className="nav-items">
+            <li>{renderLink("/news", "News", "nav-link")}</li>
+            {DESKTOP_GROUPS.map((group) => {
+              const groupItems = group.routes.map(([href, label]) => navItem(href, label));
+              const active = groupItems.some((item) => isCurrent(pathname, item.href));
+              return <li key={group.label}>
+                <details className="nav-disclosure" onToggle={handleDisclosureToggle}>
+                  <summary className="nav-link" data-active={active ? "true" : undefined}>
+                    {group.label}<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                  </summary>
+                  <ul className="nav-disclosure__list" aria-label={`${group.label} pages`}>
+                    {group.routes.map(([href, label]) => <li key={href}>{renderLink(href, label, "nav-link")}</li>)}
+                  </ul>
+                </details>
+              </li>;
+            })}
+          </ul>
+        </nav>
+        <div className="masthead-actions">
+          <Link className="btn-icon header-search" href="/news?search=1" aria-label="Search news"><SearchIcon size={19} /></Link>
+          <Link className="header-signin" href="/login">Sign in</Link>
+          <Link className="btn-primary header-cta" href="/auth">Join the community <ArrowRightIcon size={15} aria-hidden="true" /></Link>
+          <button
+            ref={menuButtonRef}
+            className="btn-icon site-head__menu"
+            type="button"
+            aria-label={drawerOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-expanded={drawerOpen}
+            aria-controls="site-drawer"
+            onClick={() => {
+              closeDesktopDisclosures();
+              drawerOpen ? closeDrawer() : setDrawerOpen(true);
+            }}
+          >
+            <span className="menu-lines" aria-hidden="true"><span /><span /></span>
+          </button>
         </div>
-        <div className="drawer-account" aria-label="Member account"><Link className="btn-secondary" href="/dashboard">Member dashboard</Link><Link className="btn-primary" href="/auth">Create account <ArrowUpRightIcon size={15} aria-hidden="true" /></Link><Link className="btn-secondary" href="/login">Sign in</Link></div>
-        <p className="drawer-foot">A shared home for everyone.</p>
       </div>
-    </div>
-  </header>;
+      <div className="drawer-root" data-open={drawerOpen ? "true" : "false"} aria-hidden={!drawerOpen} inert={!drawerOpen}>
+        <button type="button" className="drawer-scrim" tabIndex={-1} aria-label="Close navigation menu" onClick={closeDrawer} />
+        <div ref={drawerRef} id="site-drawer" className="drawer" role="dialog" aria-modal="true" aria-labelledby="site-drawer-title" inert={!drawerOpen}>
+          <div className="drawer-heading">
+            <div><p className="drawer-eyebrow">EPE LAWA</p><p id="site-drawer-title">Find your place in Epe.</p></div>
+            <button className="btn-icon" type="button" aria-label="Close navigation menu" onClick={closeDrawer}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg></button>
+          </div>
+          <nav className="drawer-nav" aria-label="All sections">
+            {MOBILE_GROUPS.map(renderMobileGroup)}
+          </nav>
+          <div className="drawer-appearance" role="group" aria-label="Appearance settings">
+            <span className="drawer-appearance__label">Appearance</span>
+            <ThemeToggle />
+          </div>
+          <section className="drawer-account" aria-labelledby="drawer-account-title">
+            <h2 id="drawer-account-title">Account</h2>
+            <div className="drawer-account__actions">
+              {renderLink("/dashboard", "Member dashboard", "btn-secondary")}
+              {renderLink("/auth", "Create account", "btn-primary")}
+              {renderLink("/login", "Sign in", "btn-secondary")}
+            </div>
+          </section>
+          <p className="drawer-foot">A shared home for everyone.</p>
+        </div>
+      </div>
+    </header>
+  );
 }
