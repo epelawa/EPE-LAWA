@@ -31,7 +31,6 @@ type PublishedArticle = {
   author_slug: string;
   category_slug: string;
   category_label: string;
-  tags: { slug: string; label: string }[] | null;
 };
 type RelatedArticle = {
   slug: string;
@@ -48,7 +47,7 @@ const loadArticle = cache(async (slug: string): Promise<ArticleResult> => {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("published_articles")
-      .select("id,slug,title,summary,published_at,is_breaking,breaking_until,seo_title,seo_description,og_image_key,author_name,author_slug,category_slug,category_label,tags")
+      .select("id,slug,title,summary,published_at,is_breaking,breaking_until,seo_title,seo_description,og_image_key,author_name,author_slug,category_slug,category_label")
       .eq("slug", slug)
       .maybeSingle();
     if (error) {
@@ -150,7 +149,6 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
         <div className={`ui-prose ${styles.articleBody}`} data-offline-article-body><ArticleBody body={body} /></div>
         <CommentThread articleId={article.id} slug={article.slug} notice={notice.comments} />
         <details className={styles.articleExtras}><summary>More story options</summary><OfflineArticleDownload article={{ slug: article.slug, title: article.title, summary: article.summary, publishedAt: article.published_at, author: article.author_name, category: article.category_label, sourceUrl: articleUrl }} /></details>
-        {article.tags?.length ? <ul className={styles.articleTags} aria-label="Story tags">{article.tags.map((tag) => <li key={tag.slug} className="ui-tag">{tag.label}</li>)}</ul> : null}
         {related.length ? <section className={styles.relatedSection} aria-labelledby="related-heading"><div className={styles.sectionHeading}><div><h2 id="related-heading">Related stories</h2></div></div><ul className={styles.relatedGrid}>{related.map((item) => { const relatedImage = publicMediaUrl(item.og_image_key); return <li className={styles.relatedCard} key={item.slug}><Link href={newsArticlePath(item.slug)} className={styles.relatedLink}>{relatedImage ? <img className={`${styles.relatedImage} ${selectedNewsCover(item.og_image_key) ? styles.approvedCoverThumb : ""}`} src={relatedImage} alt="" loading="lazy" decoding="async" /> : <span className={styles.relatedImageFallback} aria-hidden="true"><NewspaperIcon size={24} /></span>}<span className={styles.relatedCategory}>{item.category_label}</span><span className={styles.relatedTitle}>{item.title}</span></Link></li>; })}</ul></section> : null}
         <p className={styles.correctionNote}>Report a correction: <Link href="/contact" className="ui-text-link">contact the newsroom</Link>.</p>
       </article>

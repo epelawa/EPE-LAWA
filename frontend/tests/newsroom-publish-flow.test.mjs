@@ -53,6 +53,20 @@ test("drafts stay private and the public list and article resolve only published
   assert.doesNotMatch(article, /service_role|SUPABASE_SERVICE/);
 });
 
+test("public News selects only columns verified on published_articles", () => {
+  const verifiedColumns = new Set([
+    "id", "slug", "published_at", "is_breaking", "breaking_until", "title", "summary", "body",
+    "seo_title", "seo_description", "og_image_key", "author_name", "author_slug", "category_slug", "category_label",
+  ]);
+  const selections = [...listing.matchAll(/\.from\("published_articles"\)\s*\.select\("([^"]+)"\)/g),
+    ...article.matchAll(/\.from\("published_articles"\)\s*\.select\("([^"]+)"\)/g)];
+  assert.ok(selections.length >= 3, "expected index, article metadata and related-story queries");
+  for (const [, selection] of selections) {
+    for (const column of selection.split(",")) assert.ok(verifiedColumns.has(column), `unsupported published_articles column: ${column}`);
+  }
+  assert.doesNotMatch(article, /article\.tags|tags:/);
+});
+
 test("all admin newsroom routes remain behind server-side protected layouts", () => {
   assert.match(adminLayout, /AdminAccessGuard/);
   assert.match(adminLayout, /loginPath="\/login"/);
