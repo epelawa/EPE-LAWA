@@ -1,0 +1,1364 @@
+{
+  "syntheticOnly": true,
+  "visualMethod": "Direct presentation attribute switching; actual component scheduler checked separately with controlled local clock.",
+  "results": [
+    {
+      "layout": "editorial-rail",
+      "width": 320,
+      "documentWidth": 320,
+      "lead": {
+        "x": 22,
+        "y": 201,
+        "width": 276,
+        "height": 374
+      },
+      "image": {
+        "x": 22,
+        "y": 201,
+        "width": 276,
+        "height": 167
+      },
+      "title": {
+        "x": 22,
+        "y": 405,
+        "width": 276,
+        "height": 130
+      },
+      "font": "\"Plus Jakarta Sans Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "covers": [
+        {
+          "fit": "contain",
+          "naturalWidth": 1860,
+          "box": {
+            "x": 22,
+            "y": 201,
+            "width": 276,
+            "height": 167
+          }
+        },
+        {
+          "fit": "contain",
+          "naturalWidth": 1080,
+          "box": {
+            "x": 22,
+            "y": 723,
+            "width": 62,
+            "height": 48
+          }
+        }
+      ],
+      "links": [
+        "/news/synthetic-community-briefing",
+        "/news/synthetic-transport-update"
+      ],
+      "h1Visible": true,
+      "visibleFooters": [
+        "EPE LAWA"
+      ]
+    },
+    {
+      "layout": "magazine-sections",
+      "width": 320,
+      "documentWidth": 320,
+      "lead": {
+        "x": 22,
+        "y": 201,
+        "width": 276,
+        "height": 372
+      },
+      "image": {
+        "x": 22,
+        "y": 399,
+        "width": 276,
+        "height": 175
+      },
+      "title": {
+        "x": 22,
+        "y": 226,
+        "width": 276,
+        "height": 138
+      },
+      "font": "\"Plus Jakarta Sans Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "covers": [
+        {
+          "fit": "contain",
+          "naturalWidth": 1860,
+          "box": {
+            "x": 22,
+            "y": 399,
+            "width": 276,
+            "height": 175
+          }
+        },
+        {
+          "fit": "contain",
+          "naturalWidth": 1080,
+          "box": {
+            "x": 23,
+            "y": 686,
+            "width": 274,
+            "height": 154
+          }
+        }
+      ],
+      "links": [
+        "/news/synthetic-community-briefing",
+        "/news/synthetic-transport-update"
+      ],
+      "h1Visible": true,
+      "visibleFooters": [
+        "EPE LAWA"
+      ]
+    },
+    {
+      "layout": "breaking-ranked",
+      "width": 320,
+      "documentWidth": 320,
+      "lead": {
+        "x": 22,
+        "y": 201,
+        "width": 276,
+        "height": 271
+      },
+      "image": {
+        "x": 214,
+        "y": 232,
+        "width": 84,
+        "height": 210
+      },
+      "title": {
+        "x": 22,
+        "y": 226,
+        "width": 192,
+        "height": 193
+      },
+      "font": "\"Plus Jakarta Sans Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "covers": [
+        {
+          "fit": "contain",
+          "naturalWidth": 1860,
+          "box": {
+            "x": 214,
+            "y": 232,
+            "width": 84,
+            "height": 210
+          }
+        },
+        {
+          "fit": "contain",
+          "naturalWidth": 1080,
+          "box": {
+            "x": 55,
+            "y": 618,
+            "width": 58,
+            "height": 46
+          }
+        }
+      ],
+      "links": [
+        "/news/synthetic-community-briefing",
+        "/news/synthetic-transport-update"
+      ],
+      "h1Visible": true,
+      "visibleFooters": [
+        "EPE LAWA"
+      ]
+    },
+    {
+      "layout": "reader-focused",
+      "width": 320,
+      "documentWidth": 320,
+      "lead": {
+        "x": 22,
+        "y": 201,
+        "width": 276,
+        "height": 351
+      },
+      "image": {
+        "x": 22,
+        "y": 201,
+        "width": 276,
+        "height": 145
+      },
+      "title": {
+        "x": 22,
+        "y": 386,
+        "width": 276,
+        "height": 123
+      },
+      "font": "Georgia, \"Times New Roman\", serif",
+      "covers": [
+        {
+          "fit": "contain",
+          "naturalWidth": 1860,
+          "box": {
+            "x": 22,
+            "y": 201,
+            "width": 276,
+            "height": 145
+          }
+        },
+        {
+          "fit": "contain",
+          "naturalWidth": 1080,
+          "box": {
+            "x": 31,
+            "y": 704,
+            "width": 64,
+            "height": 50
+          }
+        }
+      ],
+      "links": [
+        "/news/synthetic-community-briefing",
+        "/news/synthetic-transport-update"
+      ],
+      "h1Visible": true,
+      "visibleFooters": [
+        "EPE LAWA"
+      ]
+    },
+    {
+      "layout": "compact-topical",
+      "width": 320,
+      "documentWidth": 320,
+      "lead": {
+        "x": 22,
+        "y": 201,
+        "width": 276,
+        "height": 388
+      },
+      "image": {
+        "x": 30,
+        "y": 201,
+        "width": 260,
+        "height": 151
+      },
+      "title": {
+        "x": 22,
+        "y": 392,
+        "width": 276,
+        "height": 154
+      },
+      "font": "\"Plus Jakarta Sans Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "covers": [
+        {
+          "fit": "contain",
+          "naturalWidth": 1860,
+          "box": {
+            "x": 30,
+            "y": 201,
+            "width": 260,
+            "height": 151
+          }
+        },
+        {
+          "fit": "contain",
+          "naturalWidth": 1080,
+          "box": {
+            "x": 31,
+            "y": 741,
+            "width": 64,
+            "height": 50
+          }
+        }
+      ],
+      "links": [
+        "/news/synthetic-community-briefing",
+        "/news/synthetic-transport-update"
+      ],
+      "h1Visible": true,
+      "visibleFooters": [
+        "EPE LAWA"
+      ]
+    },
+    {
+      "layout": "editorial-rail",
+      "width": 390,
+      "documentWidth": 390,
+      "lead": {
+        "x": 22,
+        "y": 201,
+        "width": 346,
+        "height": 405
+      },
+      "image": {
+        "x": 22,
+        "y": 201,
+        "width": 346,
+        "height": 210
+      },
+      "title": {
+        "x": 22,
+        "y": 448,
+        "width": 346,
+        "height": 118
+      },
+      "font": "\"Plus Jakarta Sans Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "covers": [
+        {
+          "fit": "contain",
+          "naturalWidth": 1860,
+          "box": {
+            "x": 22,
+            "y": 201,
+            "width": 346,
+            "height": 210
+          }
+        },
+        {
+          "fit": "contain",
+          "naturalWidth": 1080,
+          "box": {
+            "x": 22,
+            "y": 743,
+            "width": 68,
+            "height": 52
+          }
+        }
+      ],
+      "links": [
+        "/news/synthetic-community-briefing",
+        "/news/synthetic-transport-update"
+      ],
+      "h1Visible": true,
+      "visibleFooters": [
+        "EPE LAWA"
+      ]
+    },
+    {
+      "layout": "magazine-sections",
+      "width": 390,
+      "documentWidth": 390,
+      "lead": {
+        "x": 22,
+        "y": 201,
+        "width": 346,
+        "height": 413
+      },
+      "image": {
+        "x": 22,
+        "y": 395,
+        "width": 346,
+        "height": 219
+      },
+      "title": {
+        "x": 22,
+        "y": 238,
+        "width": 346,
+        "height": 118
+      },
+      "font": "\"Plus Jakarta Sans Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "covers": [
+        {
+          "fit": "contain",
+          "naturalWidth": 1860,
+          "box": {
+            "x": 22,
+            "y": 395,
+            "width": 346,
+            "height": 219
+          }
+        },
+        {
+          "fit": "contain",
+          "naturalWidth": 1080,
+          "box": {
+            "x": 22,
+            "y": 739,
+            "width": 68,
+            "height": 38
+          }
+        }
+      ],
+      "links": [
+        "/news/synthetic-community-briefing",
+        "/news/synthetic-transport-update"
+      ],
+      "h1Visible": true,
+      "visibleFooters": [
+        "EPE LAWA"
+      ]
+    },
+    {
+      "layout": "breaking-ranked",
+      "width": 390,
+      "documentWidth": 390,
+      "lead": {
+        "x": 22,
+        "y": 201,
+        "width": 346,
+        "height": 251
+      },
+      "image": {
+        "x": 271,
+        "y": 222,
+        "width": 97,
+        "height": 210
+      },
+      "title": {
+        "x": 22,
+        "y": 226,
+        "width": 249,
+        "height": 191
+      },
+      "font": "\"Plus Jakarta Sans Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "covers": [
+        {
+          "fit": "contain",
+          "naturalWidth": 1860,
+          "box": {
+            "x": 271,
+            "y": 222,
+            "width": 97,
+            "height": 210
+          }
+        },
+        {
+          "fit": "contain",
+          "naturalWidth": 1080,
+          "box": {
+            "x": 55,
+            "y": 590,
+            "width": 58,
+            "height": 46
+          }
+        }
+      ],
+      "links": [
+        "/news/synthetic-community-briefing",
+        "/news/synthetic-transport-update"
+      ],
+      "h1Visible": true,
+      "visibleFooters": [
+        "EPE LAWA"
+      ]
+    },
+    {
+      "layout": "reader-focused",
+      "width": 390,
+      "documentWidth": 390,
+      "lead": {
+        "x": 22,
+        "y": 201,
+        "width": 346,
+        "height": 357
+      },
+      "image": {
+        "x": 22,
+        "y": 201,
+        "width": 346,
+        "height": 182
+      },
+      "title": {
+        "x": 22,
+        "y": 423,
+        "width": 346,
+        "height": 92
+      },
+      "font": "Georgia, \"Times New Roman\", serif",
+      "covers": [
+        {
+          "fit": "contain",
+          "naturalWidth": 1860,
+          "box": {
+            "x": 22,
+            "y": 201,
+            "width": 346,
+            "height": 182
+          }
+        },
+        {
+          "fit": "contain",
+          "naturalWidth": 1080,
+          "box": {
+            "x": 31,
+            "y": 702,
+            "width": 64,
+            "height": 50
+          }
+        }
+      ],
+      "links": [
+        "/news/synthetic-community-briefing",
+        "/news/synthetic-transport-update"
+      ],
+      "h1Visible": true,
+      "visibleFooters": [
+        "EPE LAWA"
+      ]
+    },
+    {
+      "layout": "compact-topical",
+      "width": 390,
+      "documentWidth": 390,
+      "lead": {
+        "x": 22,
+        "y": 201,
+        "width": 346,
+        "height": 398
+      },
+      "image": {
+        "x": 30,
+        "y": 201,
+        "width": 330,
+        "height": 192
+      },
+      "title": {
+        "x": 22,
+        "y": 433,
+        "width": 346,
+        "height": 123
+      },
+      "font": "\"Plus Jakarta Sans Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "covers": [
+        {
+          "fit": "contain",
+          "naturalWidth": 1860,
+          "box": {
+            "x": 30,
+            "y": 201,
+            "width": 330,
+            "height": 192
+          }
+        },
+        {
+          "fit": "contain",
+          "naturalWidth": 1080,
+          "box": {
+            "x": 31,
+            "y": 743,
+            "width": 64,
+            "height": 50
+          }
+        }
+      ],
+      "links": [
+        "/news/synthetic-community-briefing",
+        "/news/synthetic-transport-update"
+      ],
+      "h1Visible": true,
+      "visibleFooters": [
+        "EPE LAWA"
+      ]
+    },
+    {
+      "layout": "editorial-rail",
+      "width": 430,
+      "documentWidth": 430,
+      "lead": {
+        "x": 22,
+        "y": 201,
+        "width": 386,
+        "height": 441
+      },
+      "image": {
+        "x": 22,
+        "y": 201,
+        "width": 386,
+        "height": 234
+      },
+      "title": {
+        "x": 22,
+        "y": 472,
+        "width": 386,
+        "height": 130
+      },
+      "font": "\"Plus Jakarta Sans Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "covers": [
+        {
+          "fit": "contain",
+          "naturalWidth": 1860,
+          "box": {
+            "x": 22,
+            "y": 201,
+            "width": 386,
+            "height": 234
+          }
+        },
+        {
+          "fit": "contain",
+          "naturalWidth": 1080,
+          "box": {
+            "x": 22,
+            "y": 780,
+            "width": 68,
+            "height": 52
+          }
+        }
+      ],
+      "links": [
+        "/news/synthetic-community-briefing",
+        "/news/synthetic-transport-update"
+      ],
+      "h1Visible": true,
+      "visibleFooters": [
+        "EPE LAWA"
+      ]
+    },
+    {
+      "layout": "magazine-sections",
+      "width": 430,
+      "documentWidth": 430,
+      "lead": {
+        "x": 22,
+        "y": 201,
+        "width": 386,
+        "height": 450
+      },
+      "image": {
+        "x": 22,
+        "y": 407,
+        "width": 386,
+        "height": 244
+      },
+      "title": {
+        "x": 22,
+        "y": 238,
+        "width": 386,
+        "height": 130
+      },
+      "font": "\"Plus Jakarta Sans Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "covers": [
+        {
+          "fit": "contain",
+          "naturalWidth": 1860,
+          "box": {
+            "x": 22,
+            "y": 407,
+            "width": 386,
+            "height": 244
+          }
+        },
+        {
+          "fit": "contain",
+          "naturalWidth": 1080,
+          "box": {
+            "x": 22,
+            "y": 776,
+            "width": 68,
+            "height": 38
+          }
+        }
+      ],
+      "links": [
+        "/news/synthetic-community-briefing",
+        "/news/synthetic-transport-update"
+      ],
+      "h1Visible": true,
+      "visibleFooters": [
+        "EPE LAWA"
+      ]
+    },
+    {
+      "layout": "breaking-ranked",
+      "width": 430,
+      "documentWidth": 430,
+      "lead": {
+        "x": 22,
+        "y": 201,
+        "width": 386,
+        "height": 271
+      },
+      "image": {
+        "x": 300,
+        "y": 232,
+        "width": 108,
+        "height": 210
+      },
+      "title": {
+        "x": 22,
+        "y": 226,
+        "width": 278,
+        "height": 211
+      },
+      "font": "\"Plus Jakarta Sans Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "covers": [
+        {
+          "fit": "contain",
+          "naturalWidth": 1860,
+          "box": {
+            "x": 300,
+            "y": 232,
+            "width": 108,
+            "height": 210
+          }
+        },
+        {
+          "fit": "contain",
+          "naturalWidth": 1080,
+          "box": {
+            "x": 55,
+            "y": 609,
+            "width": 58,
+            "height": 46
+          }
+        }
+      ],
+      "links": [
+        "/news/synthetic-community-briefing",
+        "/news/synthetic-transport-update"
+      ],
+      "h1Visible": true,
+      "visibleFooters": [
+        "EPE LAWA"
+      ]
+    },
+    {
+      "layout": "reader-focused",
+      "width": 430,
+      "documentWidth": 430,
+      "lead": {
+        "x": 22,
+        "y": 201,
+        "width": 386,
+        "height": 378
+      },
+      "image": {
+        "x": 22,
+        "y": 201,
+        "width": 386,
+        "height": 203
+      },
+      "title": {
+        "x": 22,
+        "y": 444,
+        "width": 386,
+        "height": 92
+      },
+      "font": "Georgia, \"Times New Roman\", serif",
+      "covers": [
+        {
+          "fit": "contain",
+          "naturalWidth": 1860,
+          "box": {
+            "x": 22,
+            "y": 201,
+            "width": 386,
+            "height": 203
+          }
+        },
+        {
+          "fit": "contain",
+          "naturalWidth": 1080,
+          "box": {
+            "x": 31,
+            "y": 723,
+            "width": 64,
+            "height": 50
+          }
+        }
+      ],
+      "links": [
+        "/news/synthetic-community-briefing",
+        "/news/synthetic-transport-update"
+      ],
+      "h1Visible": true,
+      "visibleFooters": [
+        "EPE LAWA"
+      ]
+    },
+    {
+      "layout": "compact-topical",
+      "width": 430,
+      "documentWidth": 430,
+      "lead": {
+        "x": 22,
+        "y": 201,
+        "width": 386,
+        "height": 390
+      },
+      "image": {
+        "x": 30,
+        "y": 201,
+        "width": 370,
+        "height": 215
+      },
+      "title": {
+        "x": 22,
+        "y": 456,
+        "width": 386,
+        "height": 92
+      },
+      "font": "\"Plus Jakarta Sans Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "covers": [
+        {
+          "fit": "contain",
+          "naturalWidth": 1860,
+          "box": {
+            "x": 30,
+            "y": 201,
+            "width": 370,
+            "height": 215
+          }
+        },
+        {
+          "fit": "contain",
+          "naturalWidth": 1080,
+          "box": {
+            "x": 31,
+            "y": 735,
+            "width": 64,
+            "height": 50
+          }
+        }
+      ],
+      "links": [
+        "/news/synthetic-community-briefing",
+        "/news/synthetic-transport-update"
+      ],
+      "h1Visible": true,
+      "visibleFooters": [
+        "EPE LAWA"
+      ]
+    },
+    {
+      "layout": "editorial-rail",
+      "width": 768,
+      "documentWidth": 768,
+      "lead": {
+        "x": 16,
+        "y": 220,
+        "width": 448,
+        "height": 401
+      },
+      "image": {
+        "x": 16,
+        "y": 220,
+        "width": 448,
+        "height": 219
+      },
+      "title": {
+        "x": 16,
+        "y": 477,
+        "width": 448,
+        "height": 100
+      },
+      "font": "\"Plus Jakarta Sans Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "covers": [
+        {
+          "fit": "contain",
+          "naturalWidth": 1860,
+          "box": {
+            "x": 16,
+            "y": 220,
+            "width": 448,
+            "height": 219
+          }
+        },
+        {
+          "fit": "contain",
+          "naturalWidth": 1080,
+          "box": {
+            "x": 492,
+            "y": 292,
+            "width": 104,
+            "height": 78
+          }
+        }
+      ],
+      "links": [
+        "/news/synthetic-community-briefing",
+        "/news/synthetic-transport-update"
+      ],
+      "h1Visible": true,
+      "visibleFooters": [
+        "EPE LAWA"
+      ]
+    },
+    {
+      "layout": "magazine-sections",
+      "width": 768,
+      "documentWidth": 768,
+      "lead": {
+        "x": 16,
+        "y": 220,
+        "width": 736,
+        "height": 647
+      },
+      "image": {
+        "x": 16,
+        "y": 401,
+        "width": 736,
+        "height": 466
+      },
+      "title": {
+        "x": 16,
+        "y": 258,
+        "width": 519,
+        "height": 100
+      },
+      "font": "\"Plus Jakarta Sans Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "covers": [
+        {
+          "fit": "contain",
+          "naturalWidth": 1860,
+          "box": {
+            "x": 16,
+            "y": 401,
+            "width": 736,
+            "height": 466
+          }
+        },
+        {
+          "fit": "contain",
+          "naturalWidth": 1080,
+          "box": {
+            "x": 16,
+            "y": 1002,
+            "width": 104,
+            "height": 59
+          }
+        }
+      ],
+      "links": [
+        "/news/synthetic-community-briefing",
+        "/news/synthetic-transport-update"
+      ],
+      "h1Visible": true,
+      "visibleFooters": [
+        "EPE LAWA"
+      ]
+    },
+    {
+      "layout": "breaking-ranked",
+      "width": 768,
+      "documentWidth": 768,
+      "lead": {
+        "x": 16,
+        "y": 220,
+        "width": 736,
+        "height": 261
+      },
+      "image": {
+        "x": 439,
+        "y": 220,
+        "width": 313,
+        "height": 241
+      },
+      "title": {
+        "x": 16,
+        "y": 246,
+        "width": 423,
+        "height": 196
+      },
+      "font": "\"Plus Jakarta Sans Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "covers": [
+        {
+          "fit": "contain",
+          "naturalWidth": 1860,
+          "box": {
+            "x": 439,
+            "y": 220,
+            "width": 313,
+            "height": 241
+          }
+        },
+        {
+          "fit": "contain",
+          "naturalWidth": 1080,
+          "box": {
+            "x": 59,
+            "y": 615,
+            "width": 82,
+            "height": 78
+          }
+        }
+      ],
+      "links": [
+        "/news/synthetic-community-briefing",
+        "/news/synthetic-transport-update"
+      ],
+      "h1Visible": true,
+      "visibleFooters": [
+        "EPE LAWA"
+      ]
+    },
+    {
+      "layout": "reader-focused",
+      "width": 768,
+      "documentWidth": 768,
+      "lead": {
+        "x": 16,
+        "y": 220,
+        "width": 736,
+        "height": 514
+      },
+      "image": {
+        "x": 74,
+        "y": 234,
+        "width": 620,
+        "height": 326
+      },
+      "title": {
+        "x": 54,
+        "y": 619,
+        "width": 636,
+        "height": 70
+      },
+      "font": "Georgia, \"Times New Roman\", serif",
+      "covers": [
+        {
+          "fit": "contain",
+          "naturalWidth": 1860,
+          "box": {
+            "x": 74,
+            "y": 234,
+            "width": 620,
+            "height": 326
+          }
+        },
+        {
+          "fit": "contain",
+          "naturalWidth": 1080,
+          "box": {
+            "x": 24,
+            "y": 857,
+            "width": 82,
+            "height": 78
+          }
+        }
+      ],
+      "links": [
+        "/news/synthetic-community-briefing",
+        "/news/synthetic-transport-update"
+      ],
+      "h1Visible": true,
+      "visibleFooters": [
+        "EPE LAWA"
+      ]
+    },
+    {
+      "layout": "compact-topical",
+      "width": 768,
+      "documentWidth": 768,
+      "lead": {
+        "x": 16,
+        "y": 220,
+        "width": 736,
+        "height": 215
+      },
+      "image": {
+        "x": 24,
+        "y": 220,
+        "width": 444,
+        "height": 215
+      },
+      "title": {
+        "x": 484,
+        "y": 213,
+        "width": 260,
+        "height": 203
+      },
+      "font": "\"Plus Jakarta Sans Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "covers": [
+        {
+          "fit": "contain",
+          "naturalWidth": 1860,
+          "box": {
+            "x": 24,
+            "y": 220,
+            "width": 444,
+            "height": 215
+          }
+        },
+        {
+          "fit": "contain",
+          "naturalWidth": 1080,
+          "box": {
+            "x": 27,
+            "y": 573,
+            "width": 82,
+            "height": 78
+          }
+        }
+      ],
+      "links": [
+        "/news/synthetic-community-briefing",
+        "/news/synthetic-transport-update"
+      ],
+      "h1Visible": true,
+      "visibleFooters": [
+        "EPE LAWA"
+      ]
+    },
+    {
+      "layout": "editorial-rail",
+      "width": 1440,
+      "documentWidth": 1440,
+      "lead": {
+        "x": 140,
+        "y": 224,
+        "width": 852,
+        "height": 415
+      },
+      "image": {
+        "x": 140,
+        "y": 224,
+        "width": 504,
+        "height": 246
+      },
+      "title": {
+        "x": 644,
+        "y": 263,
+        "width": 348,
+        "height": 333
+      },
+      "font": "\"Plus Jakarta Sans Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "covers": [
+        {
+          "fit": "contain",
+          "naturalWidth": 1860,
+          "box": {
+            "x": 140,
+            "y": 224,
+            "width": 504,
+            "height": 246
+          }
+        },
+        {
+          "fit": "contain",
+          "naturalWidth": 1080,
+          "box": {
+            "x": 1020,
+            "y": 296,
+            "width": 104,
+            "height": 78
+          }
+        }
+      ],
+      "links": [
+        "/news/synthetic-community-briefing",
+        "/news/synthetic-transport-update"
+      ],
+      "h1Visible": true,
+      "visibleFooters": [
+        "EPE LAWA"
+      ]
+    },
+    {
+      "layout": "magazine-sections",
+      "width": 1440,
+      "documentWidth": 1440,
+      "lead": {
+        "x": 140,
+        "y": 224,
+        "width": 1160,
+        "height": 958
+      },
+      "image": {
+        "x": 140,
+        "y": 449,
+        "width": 1160,
+        "height": 734
+      },
+      "title": {
+        "x": 140,
+        "y": 263,
+        "width": 743,
+        "height": 143
+      },
+      "font": "\"Plus Jakarta Sans Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "covers": [
+        {
+          "fit": "contain",
+          "naturalWidth": 1860,
+          "box": {
+            "x": 140,
+            "y": 449,
+            "width": 1160,
+            "height": 734
+          }
+        },
+        {
+          "fit": "contain",
+          "naturalWidth": 1080,
+          "box": {
+            "x": 140,
+            "y": 1314,
+            "width": 104,
+            "height": 59
+          }
+        }
+      ],
+      "links": [
+        "/news/synthetic-community-briefing",
+        "/news/synthetic-transport-update"
+      ],
+      "h1Visible": true,
+      "visibleFooters": [
+        "EPE LAWA"
+      ]
+    },
+    {
+      "layout": "breaking-ranked",
+      "width": 1440,
+      "documentWidth": 1440,
+      "lead": {
+        "x": 140,
+        "y": 230,
+        "width": 1160,
+        "height": 379
+      },
+      "image": {
+        "x": 807,
+        "y": 230,
+        "width": 493,
+        "height": 379
+      },
+      "title": {
+        "x": 140,
+        "y": 304,
+        "width": 667,
+        "height": 220
+      },
+      "font": "\"Plus Jakarta Sans Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "covers": [
+        {
+          "fit": "contain",
+          "naturalWidth": 1860,
+          "box": {
+            "x": 807,
+            "y": 230,
+            "width": 493,
+            "height": 379
+          }
+        },
+        {
+          "fit": "contain",
+          "naturalWidth": 1080,
+          "box": {
+            "x": 183,
+            "y": 734,
+            "width": 82,
+            "height": 78
+          }
+        }
+      ],
+      "links": [
+        "/news/synthetic-community-briefing",
+        "/news/synthetic-transport-update"
+      ],
+      "h1Visible": true,
+      "visibleFooters": [
+        "EPE LAWA"
+      ]
+    },
+    {
+      "layout": "reader-focused",
+      "width": 1440,
+      "documentWidth": 1440,
+      "lead": {
+        "x": 140,
+        "y": 230,
+        "width": 1160,
+        "height": 594
+      },
+      "image": {
+        "x": 410,
+        "y": 244,
+        "width": 620,
+        "height": 326
+      },
+      "title": {
+        "x": 390,
+        "y": 629,
+        "width": 636,
+        "height": 150
+      },
+      "font": "Georgia, \"Times New Roman\", serif",
+      "covers": [
+        {
+          "fit": "contain",
+          "naturalWidth": 1860,
+          "box": {
+            "x": 410,
+            "y": 244,
+            "width": 620,
+            "height": 326
+          }
+        },
+        {
+          "fit": "contain",
+          "naturalWidth": 1080,
+          "box": {
+            "x": 360,
+            "y": 947,
+            "width": 82,
+            "height": 78
+          }
+        }
+      ],
+      "links": [
+        "/news/synthetic-community-briefing",
+        "/news/synthetic-transport-update"
+      ],
+      "h1Visible": true,
+      "visibleFooters": [
+        "EPE LAWA"
+      ]
+    },
+    {
+      "layout": "compact-topical",
+      "width": 1440,
+      "documentWidth": 1440,
+      "lead": {
+        "x": 140,
+        "y": 230,
+        "width": 1160,
+        "height": 300
+      },
+      "image": {
+        "x": 148,
+        "y": 230,
+        "width": 709,
+        "height": 300
+      },
+      "title": {
+        "x": 873,
+        "y": 226,
+        "width": 419,
+        "height": 304
+      },
+      "font": "\"Plus Jakarta Sans Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "covers": [
+        {
+          "fit": "contain",
+          "naturalWidth": 1860,
+          "box": {
+            "x": 148,
+            "y": 230,
+            "width": 709,
+            "height": 300
+          }
+        },
+        {
+          "fit": "contain",
+          "naturalWidth": 1080,
+          "box": {
+            "x": 151,
+            "y": 668,
+            "width": 82,
+            "height": 78
+          }
+        }
+      ],
+      "links": [
+        "/news/synthetic-community-briefing",
+        "/news/synthetic-transport-update"
+      ],
+      "h1Visible": true,
+      "visibleFooters": [
+        "EPE LAWA"
+      ]
+    }
+  ],
+  "timer": {
+    "immediateMinuteSync": true,
+    "focusedSearchPause": true,
+    "searchTextPreserved": true,
+    "rotationResumes": true,
+    "reducedMotionStillRotates": true,
+    "dataSavingStillRotates": true
+  }
+}

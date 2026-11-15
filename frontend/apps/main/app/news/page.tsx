@@ -92,9 +92,8 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
   const breakingLead = page === 1 ? articles.find(isBreakingNow) : undefined;
   const lead = page === 1 ? (breakingLead ?? articles[0] ?? null) : null;
   const listArticles = lead ? articles.filter((article) => article.slug !== lead.slug) : articles;
-  const railArticleCount = Math.min(3, Math.max(1, listArticles.length - 1));
-  const railArticles = initialLayout === "editorial-rail" && lead ? listArticles.slice(0, railArticleCount) : [];
-  const mainListArticles = initialLayout === "editorial-rail" ? listArticles.slice(railArticleCount) : listArticles;
+  // Keep the complete, ordered story list mounted; rotation is presentation-only.
+  const mainListArticles = listArticles;
   return <NewsLayoutFrame initialLayout={initialLayout} className="ui-stack">
     <nav className={styles.newsNav} aria-label="News navigation">
       <Link href="/" className={styles.newsHomeLink}>EPE LAWA</Link>
@@ -120,8 +119,9 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
     <header className={styles.pageHeader}>
       <h1 className={styles.pageTitle}>{lead && isBreakingNow(lead) ? "Breaking News" : "News"}</h1>
     </header>
-    <div className={`${styles.editorialGrid} ${railArticles.length ? styles.editorialGridRail : ""}`}>
-      <div className={`${styles.editorialMain} ${railArticles.length ? styles.editorialMainRail : ""}`}>
+    <div className={styles.editorialGrid}>
+      <div className={styles.editorialMain}>
+      <div className={styles.leadColumn}>
     {lead ? <section className={styles.featureSection} aria-label="Lead story"><div className={styles.featureCard}>
       <Link href={newsArticlePath(lead.slug)} className={styles.featureLink} aria-label={`Read: ${lead.title}`}>
         {publicMediaUrl(lead.og_image_key) ? <img className={`${styles.featureImage} ${isNewsCoverKey(lead.og_image_key) ? styles.approvedCoverThumb : ""}`} src={publicMediaUrl(lead.og_image_key)!} alt="" loading="eager" decoding="async" /> : <span className={styles.featureImageFallback} aria-hidden="true"><NewspaperIcon size={44} /></span>}
@@ -135,6 +135,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
       <li><Link href={categoryHref(query, "")} aria-current={!category ? "page" : undefined} className={styles.categoryLink}>All</Link></li>
       {categories.map((item) => <li key={item.slug}><Link href={categoryHref(query, item.slug)} aria-current={category === item.slug ? "page" : undefined} className={styles.categoryLink}>{item.label}</Link></li>)}
     </ul></nav>
+      </div>
     {articles.length === 0 ? <EmptyPanel title={category ? "No published stories in this category" : "No stories published yet"} description={category ? "There are no published stories in this category yet." : "When the newsroom publishes a story, it will appear here with its byline, date and category. Nothing is shown before it exists."} /> : mainListArticles.length ? <section className={styles.storySection} aria-labelledby="stories-heading">
       <h2 className={styles.listHeading} id="stories-heading">{category ? (categories.find((item) => item.slug === category)?.label ?? "Stories") : "More stories"}</h2>
       <ul className={styles.storyList}>{mainListArticles.map((article) => {
@@ -148,19 +149,6 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
       })}</ul>
     </section> : null}
       </div>
-    {railArticles.length ? <aside className={styles.relatedSection} aria-labelledby="related-news-heading">
-      <div className={styles.sectionHeading}><h2 id="related-news-heading">Related News</h2></div>
-      <ul className={`${styles.relatedGrid} ${styles.newsRailGrid}`}>{railArticles.map((article) => {
-        const imageUrl = publicMediaUrl(article.og_image_key);
-        const date = formatPublishedDate(article.published_at);
-        return <li className={styles.relatedCard} key={article.slug}><Link href={newsArticlePath(article.slug)} className={styles.relatedLink}>
-          {imageUrl ? <img className={`${styles.relatedImage} ${isNewsCoverKey(article.og_image_key) ? styles.approvedCoverThumb : ""}`} src={imageUrl} alt="" loading="lazy" decoding="async" /> : <span className={styles.relatedImageFallback} aria-hidden="true"><NewspaperIcon size={26} /></span>}
-          <span className={styles.relatedCategory}>{article.category_label}</span>
-          <span className={styles.relatedTitle}>{article.title}</span>
-          <span className={styles.relatedMeta}>By {article.author_name}{date ? <> · <time dateTime={article.published_at ?? undefined}>{date}</time></> : null}</span>
-        </Link></li>;
-      })}</ul>
-    </aside> : null}
     </div>
     {page > 1 || hasOlder ? <nav className={styles.pagination} aria-label="News pages">{page > 1 ? <Link className="btn-secondary" href={pageHref(page - 1, query, category)}>Newer stories</Link> : null}<span className={styles.sectionMeta} aria-live="polite">Page {page}</span>{hasOlder ? <Link className="btn-secondary" href={pageHref(page + 1, query, category)}>Older stories</Link> : null}</nav> : null}
   </NewsLayoutFrame>;
