@@ -5,6 +5,7 @@ import { buttonClassName, EmptyPanel, Notice, PageFrame, PageIntro, Panel, Secti
 import { createClient } from "../../../../lib/supabase";
 import { publishArticle, reviseArticle, saveDraft, unpublishArticle } from "../../../../lib/actions";
 import { adminHref } from "../../../../lib/admin-path";
+import { NEWS_COVERS, isNewsCoverKey } from "../../../../../main/lib/news-covers";
 
 export const metadata: Metadata = { title: "Article workflow", robots: { index: false, follow: false } };
 
@@ -23,6 +24,7 @@ type ArticleVersion = {
   created_by: string;
   seo_title: string | null;
   seo_description: string | null;
+  og_image_key: string | null;
 };
 
 function bodyForEditor(body: unknown): string {
@@ -71,7 +73,7 @@ export default async function EditArticlePage({
     supabase.from("articles").select(`
       id, slug, revision, current_version_id, published_version_id, published_at,
       current_version:article_versions!articles_current_version_fkey(
-        id,title,summary,body,state,version_number,author_id,category_id,created_by,seo_title,seo_description
+        id,title,summary,body,state,version_number,author_id,category_id,created_by,seo_title,seo_description,og_image_key
       )
     `).eq("id", id).maybeSingle(),
     supabase.from("categories").select("id,label").eq("is_active", true).order("sort_order").limit(100),
@@ -130,6 +132,7 @@ export default async function EditArticlePage({
                 <div className="ui-field"><label className="label" htmlFor="categoryId">Category</label><select id="categoryId" name="categoryId" className="input" required defaultValue={version.category_id}>{categories.map((category) => <option key={category.id} value={category.id}>{category.label}</option>)}</select></div>
                 <div className="ui-field"><label className="label" htmlFor="authorId">Byline</label><select id="authorId" name="authorId" className="input" required defaultValue={version.author_id}>{authors.map((author) => <option key={author.id} value={author.id}>{author.display_name}</option>)}</select></div>
               </div>
+              <div className="ui-field"><label className="label" htmlFor="ogImageKey">Approved cover (optional)</label><select id="ogImageKey" name="ogImageKey" className="input" defaultValue={isNewsCoverKey(version.og_image_key) ? version.og_image_key : ""}><option value="">No cover</option>{Object.entries(NEWS_COVERS).map(([key, cover]) => <option key={key} value={key}>{cover.title} — {cover.credit}</option>)}</select><p className="ui-meta">Approved, unmodified Commons images only.</p></div>
               <div className="ui-form-grid">
                 <div className="ui-field"><label className="label" htmlFor="seoTitle">Search title</label><input id="seoTitle" name="seoTitle" className="input" maxLength={70} defaultValue={version.seo_title ?? ""} /></div>
                 <div className="ui-field"><label className="label" htmlFor="seoDescription">Search description</label><input id="seoDescription" name="seoDescription" className="input" maxLength={200} defaultValue={version.seo_description ?? ""} /></div>

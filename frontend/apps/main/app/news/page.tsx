@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient, SupabaseConfigurationError } from "../../lib/supabase";
 import { formatPublishedDate } from "../../lib/dates";
 import { publicMediaUrl } from "../../lib/media";
+import { isNewsCoverKey } from "../../lib/news-covers";
 import { absoluteUrl } from "../../lib/site";
 import { newsArticlePath } from "../../lib/news-urls";
 import { currentNewsLayout } from "../../lib/news-daily-layout.mjs";
@@ -123,7 +124,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
       <div className={`${styles.editorialMain} ${railArticles.length ? styles.editorialMainRail : ""}`}>
     {lead ? <section className={styles.featureSection} aria-label="Lead story"><div className={styles.featureCard}>
       <Link href={newsArticlePath(lead.slug)} className={styles.featureLink} aria-label={`Read: ${lead.title}`}>
-        {publicMediaUrl(lead.og_image_key) ? <img className={styles.featureImage} src={publicMediaUrl(lead.og_image_key)!} alt="" loading="eager" decoding="async" /> : <span className={styles.featureImageFallback} aria-hidden="true"><NewspaperIcon size={44} /></span>}
+        {publicMediaUrl(lead.og_image_key) ? <img className={`${styles.featureImage} ${isNewsCoverKey(lead.og_image_key) ? styles.approvedCoverThumb : ""}`} src={publicMediaUrl(lead.og_image_key)!} alt="" loading="eager" decoding="async" /> : <span className={styles.featureImageFallback} aria-hidden="true"><NewspaperIcon size={44} /></span>}
       </Link>
       <div className={styles.leadCopy}><p className={styles.featureCategory}>{lead.category_label}{isBreakingNow(lead) ? <StatusBadge tone="warning">Breaking</StatusBadge> : null}</p>
         <h2 className={styles.featureTitle}><Link href={newsArticlePath(lead.slug)}>{lead.title}</Link></h2>
@@ -140,7 +141,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
         const imageUrl = publicMediaUrl(article.og_image_key);
         const date = formatPublishedDate(article.published_at);
         return <li className={styles.storyRow} key={article.slug}><Link href={newsArticlePath(article.slug)} className={styles.storyLink}>
-          {imageUrl ? <img className={styles.storyThumbnail} src={imageUrl} alt="" loading="lazy" decoding="async" /> : <span className={styles.storyThumbnailFallback} aria-hidden="true"><NewspaperIcon size={22} /></span>}
+          {imageUrl ? <img className={`${styles.storyThumbnail} ${isNewsCoverKey(article.og_image_key) ? styles.approvedCoverThumb : ""}`} src={imageUrl} alt="" loading="lazy" decoding="async" /> : <span className={styles.storyThumbnailFallback} aria-hidden="true"><NewspaperIcon size={22} /></span>}
           <span className={styles.storyCopy}><span className={styles.storyCategory}>{article.category_label}{isBreakingNow(article) ? <StatusBadge tone="warning">Breaking</StatusBadge> : null}</span>
             <span className={styles.storyTitle}>{article.title}</span><span className={styles.storyMeta}>By {article.author_name}{date ? <> · <time dateTime={article.published_at ?? undefined}>{date}</time></> : null}</span></span>
         </Link></li>;
@@ -153,7 +154,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
         const imageUrl = publicMediaUrl(article.og_image_key);
         const date = formatPublishedDate(article.published_at);
         return <li className={styles.relatedCard} key={article.slug}><Link href={newsArticlePath(article.slug)} className={styles.relatedLink}>
-          {imageUrl ? <img className={styles.relatedImage} src={imageUrl} alt="" loading="lazy" decoding="async" /> : <span className={styles.relatedImageFallback} aria-hidden="true"><NewspaperIcon size={26} /></span>}
+          {imageUrl ? <img className={`${styles.relatedImage} ${isNewsCoverKey(article.og_image_key) ? styles.approvedCoverThumb : ""}`} src={imageUrl} alt="" loading="lazy" decoding="async" /> : <span className={styles.relatedImageFallback} aria-hidden="true"><NewspaperIcon size={26} /></span>}
           <span className={styles.relatedCategory}>{article.category_label}</span>
           <span className={styles.relatedTitle}>{article.title}</span>
           <span className={styles.relatedMeta}>By {article.author_name}{date ? <> · <time dateTime={article.published_at ?? undefined}>{date}</time></> : null}</span>
