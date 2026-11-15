@@ -148,6 +148,7 @@ const U = {
   m1: '44444444-4444-4444-8444-444444444444',
   m2: '55555555-5555-4555-8555-555555555555',
   unverified: '66666666-6666-4666-8666-666666666666',
+  atomic: '88888888-8888-4888-8888-888888888888',
 };
 
 for (const [name, id] of Object.entries(U)) {
@@ -1152,6 +1153,191 @@ test('draft-save rejects an article without a current version and does not recor
     'a rejected transition does not bump the article revision');
   assert.equal((await rows("select count(*)::int as count from public.audit_events where resource_id = $1 and action = 'article.draft_update'", [id]))[0].count, 0,
     'a rejected transition does not record a success audit event');
+});
+
+test('atomic publication and recoverable soft-delete enforce capabilities, audit, rollback, and revision concurrency', async () => {
+  const categoryId = (await rows("select id from public.categories where slug = 'politics'"))[0].id;
+  const authorId = (await rows("select id from public.authors where slug = 'test-byline'"))[0].id;
+  await db.query('insert into public.staff_profiles (user_id, is_active) values ($1, true)', [U.atomic]);
+  await db.query(
+    "insert into public.staff_capability_grants (user_id, capability) values ($1, 'article.create'), ($1, 'article.publish'), ($1, 'article.delete') on conflict do nothing",
+    [U.atomic],
+  );
+
+  const atomicSql = `select public.article_create_and_publish_with_cover(
+    $1, null, '{"type":"doc","content":[]}'::jsonb, $2, $3,
+    null, null, null, $4, null, null, null, null, null
+  ) as id`;
+  const callAtomic = (uid, title, coverUrl = null) => as(uid, async () =>
+    (await rows(atomicSql, [title, authorId, categoryId, coverUrl]))[0].id,
+  );
+  const deniedCreateOnly = await asFails(U.editor,
+    `select public.article_create_and_publish_with_cover('Create only denied', null, '{"type":"doc"}'::jsonb, '${authorId}', '${categoryId}', null, null, null, null, null, null, null, null, null)`);
+  assert.match(deniedCreateOnly ?? '', /capability_required/,
+    'article.create alone cannot use the atomic publish operation');
+  const deniedPublishOnly = await asFails(U.publisher,
+    `select public.article_create_and_publish_with_cover('Publish only denied', null, '{"type":"doc"}'::jsonb, '${authorId}', '${categoryId}', null, null, null, null, null, null, null, null, null)`);
+  assert.match(deniedPublishOnly ?? '', /capability_required/,
+    'article.publish alone cannot use the atomic create operation');
+  const invalidCover = await asFails(U.atomic,
+    `select public.article_create_and_publish_with_cover('Invalid cover denied', null, '{"type":"doc"}'::jsonb, '${authorId}', '${categoryId}', null, null, null, 'http://invalid.example/cover.jpg', null, null, null, null, null)`);
+  assert.match(invalidCover ?? '', /invalid_news_cover_metadata/);
+  assert.equal((await rows(`select count(*)::int as count from public.article_versions
+    where title in ('Create only denied','Publish only denied','Invalid cover denied')`))[0].count, 0,
+  'permission and validation failures create no partial draft');
+
+  const atomicFailureTitle = 'Synthetic atomic publish audit failure';
+  await db.exec(`
+    create function public.test_fail_article_publish_audit() returns trigger
+      language plpgsql set search_path = '' as $$
+      begin
+        if new.action = 'article.publish' then
+          raise exception using errcode = 'P0001', message = 'synthetic_publish_audit_failure';
+        end if;
+        return new;
+      end;
+      $$;
+    create trigger test_fail_article_publish_audit
+      before insert on public.audit_events
+      for each row execute function public.test_fail_article_publish_audit();
+  `);
+  let atomicAuditFailure;
+  try {
+    atomicAuditFailure = await asFails(U.atomic,
+      `select public.article_create_and_publish_with_cover('${atomicFailureTitle}', null, '{"type":"doc"}'::jsonb, '${authorId}', '${categoryId}', null, null, null, null, null, null, null, null, null)`);
+  } finally {
+    await db.exec('drop trigger test_fail_article_publish_audit on public.audit_events; drop function public.test_fail_article_publish_audit();');
+  }
+  assert.match(atomicAuditFailure ?? '', /synthetic_publish_audit_failure/);
+  assert.equal((await rows(`select count(*)::int as count from public.article_versions where title = $1`, [atomicFailureTitle]))[0].count, 0,
+    'a failed publish audit rolls back the article, version, and create audit together');
+
+  const articleId = await callAtomic(U.atomic, 'Synthetic atomic publish success');
+  const published = (await rows(`select a.revision, a.current_version_id, a.published_version_id,
+      a.deleted_at, v.state
+    from public.articles a join public.article_versions v on v.id = a.published_version_id
+    where a.id = $1`, [articleId]))[0];
+  assert.deepEqual(published, {
+    revision: 2,
+    current_version_id: published.published_version_id,
+    published_version_id: published.published_version_id,
+    deleted_at: null,
+    state: 'approved',
+  }, 'create and publish commit as one state transition with the production approved-version model');
+  assert.deepEqual((await rows(`select action from public.audit_events
+    where resource_id = $1 and action in ('article.create','article.publish') order by id`, [articleId])).map(({ action }) => action),
+  ['article.create', 'article.publish'], 'both capabilities’ operations have durable audit events');
+  assert.equal((await as(null, () => rows('select id from public.published_articles where id = $1', [articleId]))).length, 1,
+    'the atomic operation is publicly visible only after its publish transaction succeeds');
+
+  const initialRevision = published.revision;
+  const deniedDelete = await asFails(U.editor,
+    `select public.article_soft_delete('${articleId}', ${initialRevision})`);
+  assert.match(deniedDelete ?? '', /capability_required/);
+  const missingUnpublish = await asFails(U.atomic,
+    `select public.article_soft_delete('${articleId}', ${initialRevision})`);
+  assert.match(missingUnpublish ?? '', /capability_required/,
+    'deleting a live article also requires explicit takedown permission');
+  const staleDelete = await asFails(U.atomic,
+    `select public.article_soft_delete('${articleId}', ${initialRevision - 1})`);
+  assert.match(staleDelete ?? '', /revision_conflict/);
+
+  await db.query(
+    "insert into public.staff_capability_grants (user_id, capability) values ($1, 'article.unpublish') on conflict do nothing",
+    [U.atomic],
+  );
+  await db.exec(`
+    create function public.test_fail_article_soft_delete_audit() returns trigger
+      language plpgsql set search_path = '' as $$
+      begin
+        if new.action = 'article.soft_delete' then
+          raise exception using errcode = 'P0001', message = 'synthetic_soft_delete_audit_failure';
+        end if;
+        return new;
+      end;
+      $$;
+    create trigger test_fail_article_soft_delete_audit
+      before insert on public.audit_events
+      for each row execute function public.test_fail_article_soft_delete_audit();
+  `);
+  let deleteAuditFailure;
+  try {
+    deleteAuditFailure = await asFails(U.atomic,
+      `select public.article_soft_delete('${articleId}', ${initialRevision})`);
+  } finally {
+    await db.exec('drop trigger test_fail_article_soft_delete_audit on public.audit_events; drop function public.test_fail_article_soft_delete_audit();');
+  }
+  assert.match(deleteAuditFailure ?? '', /synthetic_soft_delete_audit_failure/);
+  const afterFailedDelete = (await rows('select revision, published_version_id, deleted_at from public.articles where id = $1', [articleId]))[0];
+  assert.equal(afterFailedDelete.revision, initialRevision);
+  assert.ok(afterFailedDelete.published_version_id);
+  assert.equal(afterFailedDelete.deleted_at, null,
+    'a failed deletion audit rolls back the pointer and tombstone');
+
+  await db.query("select set_config('request.jwt.claim.sub', $1, false)", [U.atomic]);
+  await db.exec('set role authenticated');
+  let duplicateDeletes;
+  try {
+    duplicateDeletes = await Promise.allSettled([
+      db.query('select public.article_soft_delete($1, $2)', [articleId, initialRevision]),
+      db.query('select public.article_soft_delete($1, $2)', [articleId, initialRevision]),
+    ]);
+  } finally {
+    await db.exec('reset role');
+  }
+  assert.equal(duplicateDeletes.filter(({ status }) => status === 'fulfilled').length, 1,
+    'only one competing delete can commit at the same expected revision');
+  const conflict = duplicateDeletes.find(({ status }) => status === 'rejected')?.reason;
+  assert.match(conflict?.message ?? '', /revision_conflict/);
+
+  const deleted = (await rows('select revision, current_version_id, published_version_id, deleted_at from public.articles where id = $1', [articleId]))[0];
+  assert.equal(deleted.revision, initialRevision + 1);
+  assert.equal(deleted.published_version_id, null);
+  assert.ok(deleted.deleted_at);
+  assert.equal((await rows('select count(*)::int as count from public.article_versions where article_id = $1', [articleId]))[0].count, 1,
+    'soft-delete retains immutable version history');
+  assert.equal((await as(null, () => rows('select id from public.published_articles where id = $1', [articleId]))).length, 0,
+    'the public view excludes a deleted article');
+  assert.equal((await rows("select count(*)::int as count from public.audit_events where resource_id = $1 and action = 'article.soft_delete'", [articleId]))[0].count, 1);
+  assert.match(await asFails(U.atomic,
+    `select public.article_publish('${articleId}', ${deleted.revision})`), /article_deleted/,
+  'an older publish RPC cannot republish a deleted article');
+  assert.match(await asFails(U.atomic,
+    `select public.article_revise('${articleId}', ${deleted.revision}, 'Blocked edit', null, '{"type":"doc"}'::jsonb, '${authorId}', '${categoryId}', null, null, null)`),
+  /article_deleted/, 'an older edit RPC cannot mutate a deleted article');
+  assert.equal((await rows('select count(*)::int as count from public.article_versions where article_id = $1', [articleId]))[0].count, 1,
+    'a rejected post-delete edit leaves history unchanged');
+
+  const restoredRevision = (await as(U.atomic, () => rows(
+    'select public.article_restore($1, $2) as revision', [articleId, deleted.revision],
+  )))[0].revision;
+  assert.equal(restoredRevision, deleted.revision + 1);
+  const restored = (await rows('select revision, published_version_id, deleted_at from public.articles where id = $1', [articleId]))[0];
+  assert.equal(restored.revision, restoredRevision);
+  assert.equal(restored.published_version_id, null,
+    'restore is recoverable but never silently republishes');
+  assert.equal(restored.deleted_at, null);
+  assert.equal((await as(null, () => rows('select id from public.published_articles where id = $1', [articleId]))).length, 0);
+  assert.deepEqual((await rows(`select action from public.audit_events where resource_id = $1
+    and action in ('article.create','article.publish','article.soft_delete','article.restore') order by id`, [articleId])).map(({ action }) => action),
+  ['article.create', 'article.publish', 'article.soft_delete', 'article.restore']);
+
+  const newRpcPrivileges = await rows(`
+    select p.proname, p.prosecdef, p.proconfig,
+           has_function_privilege('anon', p.oid, 'EXECUTE') as anon_execute,
+           has_function_privilege('authenticated', p.oid, 'EXECUTE') as authenticated_execute
+    from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public'
+      and p.proname in ('article_create_and_publish_with_cover','article_soft_delete','article_restore')
+    order by p.proname limit 5
+  `);
+  assert.equal(newRpcPrivileges.length, 3);
+  for (const procedure of newRpcPrivileges) {
+    assert.equal(procedure.prosecdef, true);
+    assert.ok((procedure.proconfig ?? []).some((setting) => setting.includes('search_path=""')));
+    assert.equal(procedure.anon_execute, false);
+    assert.equal(procedure.authenticated_execute, true);
+  }
 });
 
 test('Newsroom RPC privileges are restricted to verified authenticated staff actions', async () => {
