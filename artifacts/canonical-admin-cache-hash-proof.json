@@ -1,0 +1,9 @@
+{
+  "package": "@epelawa/main",
+  "baseline_hash": "682e90ff13a8ce3a",
+  "admin_source_change_hash": "1c5dec731df65cb9",
+  "unrelated_docs_change_hash": "682e90ff13a8ce3a",
+  "admin_source_change_changes_hash": true,
+  "unrelated_docs_change_preserves_hash": true,
+  "method": "Turbo --dry=json; temporary Admin-source and documentation edits were restored byte-for-byte"
+}
