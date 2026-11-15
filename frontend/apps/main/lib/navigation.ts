@@ -62,5 +62,5 @@ export function mobileNavigationCurrentState(pathname: string, key: MobileNaviga
 }
 
 export function shouldRenderMobileNavigation(pathname: string): boolean {
-  return !mobileNavigationExcludedRoutes.some((route) => routeMatches(pathname, route));
+  return pathname !== "/" && !mobileNavigationExcludedRoutes.some((route) => routeMatches(pathname, route));
 }

@@ -17,13 +17,22 @@ test('mobile bottom navigation matches the reference tabs and uses only mounted 
   assert.ok(mobileLandmark?.[1].trim(),'mobile bottom tabs expose a named navigation landmark');
   assert.equal([...nav.matchAll(/\{ key: "(?:home|news|discover|account)", href:/g)].length,4);
   assert.match(nav,/aria-current=\{current\}/);
+  assert.match(nav,/shouldRenderMobileNavigation\(pathname\)/,'the shared component uses route visibility');
   assert.match(layout,/MobileBottomNav/);
 });
 
-test('mobile bottom tabs mark exact pages and the Discover section semantically',()=>{
-  assert.equal(mobileNavigationCurrentState('/','home'),'page');
-  assert.equal(mobileNavigationCurrentState('/news/story','news'),'page');
+test('mobile bottom navigation is absent only at the homepage and remains on the requested destinations',()=>{
+  assert.equal(shouldRenderMobileNavigation('/'),false,'the main page has no mobile bottom bar');
+  for (const path of ['/news','/tourism','/dashboard']) {
+    assert.equal(shouldRenderMobileNavigation(path),true,path);
+  }
+});
+
+test('News, Discover and Account tabs mark their current routes semantically',()=>{
+  assert.equal(mobileNavigationCurrentState('/news','news'),'page');
+  assert.equal(mobileNavigationCurrentState('/tourism','discover'),'page');
   assert.equal(mobileNavigationCurrentState('/dashboard','account'),'page');
+  assert.equal(mobileNavigationCurrentState('/news/story','news'),'page');
   assert.equal(mobileNavigationCurrentState('/map','discover'),'location');
   assert.equal(mobileNavigationCurrentState('/business-directory/orders','discover'),'location');
   assert.equal(mobileNavigationCurrentState('/forum','discover'),undefined);
