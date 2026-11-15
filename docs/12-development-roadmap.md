@@ -290,3 +290,7 @@ Done locally: safe contextual provider errors, explicit field validation, preser
 
 ## 2026-11-15 07:03 WAT — Newsroom settings route parity
 The same-origin `/admin/newsroom/settings` route was absent even though its staff navigation link and canonical Admin settings page existed. The isolated route-fix worktree adds the missing page re-export and a regression asserting both its canonical target and existing staff-auth/capability boundaries. This restores route parity only; it does not change editorial settings behavior, authorization implementation or production data. Verification is recorded in `docs/16-progress-log.md` and `docs/handoffs/2026-11-15-newsroom-settings-route-fix.md`.
+
+## 2026-11-15 07:18 WAT — public article version binding
+
+Done: public body reads bind the exact publication pointer even when staff RLS exposes private revisions; missing/error pointers fail closed. Actual-helper synthetic regressions and the complete suite pass: 257 tests, 256 passed, zero failed, one existing skip. Forced pinned build/typecheck pass. Loopback-only five-width public-body screenshots/overflow assertions pass. No production schema/account/content changes belong to this patch. Remaining: ordinary merge, exact deployment verification, separate cover release, then only the two approved stories and unpublish/republish checks. See `handoffs/2026-11-15-published-version-body-read.md`.

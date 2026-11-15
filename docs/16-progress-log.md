@@ -389,3 +389,7 @@ In isolated worktree `fix/admin-newsroom-settings-route-20261115` based on `orig
 
 ### Verification refresh — 2026-11-15 07:08 WAT
 Pinned Node.js 22.23.5 / pnpm 10.34.9 frozen install completed. Focused newsroom-settings regression: 3/3 passed. Full workspace typecheck: 5/5 tasks passed. Synthetic `.invalid` environment production builds: 2/2 app builds passed; main app output includes `/admin/newsroom/settings`. Full suite: 254 total, 253 passed, 0 failed, 1 documented PGlite exclusion-constraint skip. `git diff --check` passed. An initial full-suite run identified that `frontend/apps/main/public/manus-routes.json` also needed the newly mounted route; after adding it, the full suite passed. No Production requests/accounts/data; no commit, push, PR, merge, or deployment.
+
+## 2026-11-15 07:18 WAT — public article version binding
+
+Done: public body reads bind the exact publication pointer even when staff RLS exposes private revisions; missing/error pointers fail closed. Actual-helper synthetic regressions and the complete suite pass: 257 tests, 256 passed, zero failed, one existing skip. Forced pinned build/typecheck pass. Loopback-only five-width public-body screenshots/overflow assertions pass. No production schema/account/content changes belong to this patch. Remaining: ordinary merge, exact deployment verification, separate cover release, then only the two approved stories and unpublish/republish checks. See `handoffs/2026-11-15-published-version-body-read.md`.
