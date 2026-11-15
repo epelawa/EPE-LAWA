@@ -67,6 +67,11 @@ test("signup remains guided while member sign-in is one accessible screen", asyn
   assert.match(forms, /!flow\.enhanced \|\| flow\.step === 1 \? <GoogleSignInUnavailable \/>/);
   assert.match(forms, /function SignUpForm\(\)[\s\S]*GoogleSignInUnavailable/);
   assert.match(actions, /If an account exists for that address/);
+  assert.match(actions, /Enter a valid email address\./);
+  assert.match(actions, /Enter your password\./);
+  assert.match(actions, /Choose a handle with 3–24 letters, numbers or underscores\./);
+  assert.match(actions, /if \(error\) return \{ status: "error", message: genericError \}/);
+  assert.match(actions, /const availability = await checkHandleAvailability\(handle\)/);
   assert.match(signupPage, /href="\/terms"/);
   assert.match(signupPage, /href="\/privacy"/);
   assert.match(signupPage, /href="\/login"/);
@@ -134,4 +139,15 @@ test("320px sign-in stays fixed without scroll/drag and keeps Google visibly dis
   assert.match(forms, /draggable=\{false\} onDragStart=\{\(event\) => event\.preventDefault\(\)\}/);
   assert.match(staffForm, /draggable=\{false\} onDragStart=\{\(event\) => event\.preventDefault\(\)\}/);
   assert.doesNotMatch(staffForm, /scrollHeight|scrollTop/);
+});
+
+test("auth provider errors are allowlisted, contextual, and never expose provider messages", async () => {
+  const { mapAuthProviderError } = await import("../apps/main/app/auth/auth-error.ts");
+  assert.equal(mapAuthProviderError({ code: "invalid_credentials", status: 400, message: "secret provider text" }, "signin"), "Email or password is incorrect. Try again or reset your password.");
+  assert.match(mapAuthProviderError({ code: "email_not_confirmed", status: 400 }, "signin"), /Confirm your email/);
+  assert.match(mapAuthProviderError({ code: "over_email_send_rate_limit", status: 429 }, "signup"), /wait a moment/);
+  assert.match(mapAuthProviderError({ status: 500, message: "SMTP credentials leaked" }, "signup"), /Account setup or verification is temporarily unavailable/);
+  assert.match(mapAuthProviderError({ name: "TypeError", message: "network details" }, "signin"), /temporarily unavailable/);
+  assert.doesNotMatch(mapAuthProviderError({ code: "invalid_credentials", status: 400, message: "secret provider text" }, "signup"), /incorrect|secret provider text/);
+  assert.doesNotMatch(mapAuthProviderError({ code: "unrecognized", status: 400, message: "do not show" }, "signin"), /do not show/);
 });

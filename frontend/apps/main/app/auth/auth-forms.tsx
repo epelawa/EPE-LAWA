@@ -132,13 +132,14 @@ type PasswordFieldProps = {
   maxLength: number;
   required: boolean;
   describedBy?: string;
+  invalid?: boolean;
 };
 
-function PasswordField({ id, name, autoComplete, placeholder, minLength, maxLength, required, describedBy }: PasswordFieldProps) {
+function PasswordField({ id, name, autoComplete, placeholder, minLength, maxLength, required, describedBy, invalid }: PasswordFieldProps) {
   const [visible, setVisible] = useState(false);
   return (
     <div className="auth-password-control">
-      <input id={id} name={name} type={visible ? "text" : "password"} autoComplete={autoComplete} placeholder={placeholder} minLength={minLength} maxLength={maxLength} required={required} aria-describedby={describedBy} />
+      <input id={id} name={name} type={visible ? "text" : "password"} autoComplete={autoComplete} placeholder={placeholder} minLength={minLength} maxLength={maxLength} required={required} aria-describedby={describedBy} aria-invalid={invalid || undefined} />
       <button className="auth-password-toggle" type="button" aria-label={visible ? "Hide password" : "Show password"} aria-pressed={visible} aria-controls={id} onClick={() => setVisible((current) => !current)}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M2.2 12s3.4-6.6 9.8-6.6 9.8 6.6 9.8 6.6-3.4 6.6-9.8 6.6S2.2 12 2.2 12Z" />
@@ -238,12 +239,14 @@ export function SignInForm() {
       <GoogleSignInUnavailable />
       <div className="auth-field">
         <label htmlFor="login-email">Email address</label>
-        <input id="login-email" name="email" type="email" autoComplete="email" placeholder="name@example.com" maxLength={254} required aria-describedby="login-email-help" />
+        <input id="login-email" name="email" type="email" autoComplete="email" placeholder="name@example.com" maxLength={254} required aria-invalid={Boolean(state.fieldErrors?.email)} aria-describedby="login-email-help login-email-error" />
         <small id="login-email-help">Use the email on your member account.</small>
+        <small id="login-email-error" className="auth-error" hidden={!state.fieldErrors?.email}>{state.fieldErrors?.email}</small>
       </div>
       <div className="auth-field">
         <label htmlFor="login-password">Password</label>
-        <PasswordField id="login-password" name="password" autoComplete="current-password" placeholder="Enter your password" maxLength={128} required />
+        <PasswordField id="login-password" name="password" autoComplete="current-password" placeholder="Enter your password" maxLength={128} required invalid={Boolean(state.fieldErrors?.password)} describedBy="login-password-error" />
+        <small id="login-password-error" className="auth-error" hidden={!state.fieldErrors?.password}>{state.fieldErrors?.password}</small>
       </div>
       <Feedback state={state} />
       <button className="auth-submit" type="submit" disabled={pending}>{pending ? "Signing in…" : "Sign in"}</button>

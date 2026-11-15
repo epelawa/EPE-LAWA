@@ -1,4 +1,4 @@
-export type AuthState = { status: "idle" | "error" | "notice"; message: string };
+export type AuthState = { status: "idle" | "error" | "notice"; message: string; fieldErrors?: Partial<Record<"email" | "password" | "displayName" | "handle", string>> };
 export type EmailOtpOutcome = AuthState | { redirectTo: "/auth/complete" };
 
 type SupabaseOtpClient = {
