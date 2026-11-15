@@ -15,6 +15,8 @@ import { isIndexingAllowed, siteUrl } from "../lib/site";
 import { themeScript } from "../lib/theme";
 import SiteMotion from "../components/site-motion";
 import AuthCallbackErrorRouter from "../components/auth-callback-error-router";
+import MobileBottomNav from "../components/mobile-bottom-nav";
+import { createClient } from "../lib/supabase";
 
 const description =
   "News, community history, local discussion, maps, local business, tourism, radio and Who-is-Who for Epe Division.";
@@ -39,7 +41,18 @@ export const metadata: Metadata = {
 
 const navigation = mainNavigation();
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+async function AuthenticatedMobileNavigation() {
+  try {
+    const supabase = await createClient();
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error || !user) return null;
+    return <MobileBottomNav />;
+  } catch {
+    return null;
+  }
+}
+
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" data-theme="light" style={{ colorScheme: "light" }} suppressHydrationWarning>
       <body>
@@ -54,6 +67,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           {children}
         </main>
         <SiteFooter />
+        <AuthenticatedMobileNavigation />
         <Connectivity />
 
         {/* `components/notification-prompt.tsx` is intentionally NOT mounted.

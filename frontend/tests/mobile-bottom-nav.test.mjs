@@ -23,8 +23,10 @@ test('mobile bottom navigation matches the dashboard tabs and uses only mounted 
   assert.ok(tabs,'dashboard tabs declaration exists');
   assert.equal([...tabs[0].matchAll(/\{ key: "(?:home|discover|saved|profile)", href:/g)].length,4);
   assert.match(nav,/aria-current=\{current\}/);
-  assert.doesNotMatch(layout,/MobileBottomNav/);
-  assert.match(dashboard,/if \(authError \|\| !user\) redirect[\s\S]*?<MobileBottomNav\s*\/>/);
+  assert.match(layout,/async function AuthenticatedMobileNavigation\(\)[\s\S]*?supabase\.auth\.getUser\(\)[\s\S]*?if \(error \|\| !user\) return null[\s\S]*?return <MobileBottomNav\s*\/>/);
+  assert.match(layout,/<AuthenticatedMobileNavigation\s*\/>/);
+  assert.doesNotMatch(dashboard,/MobileBottomNav/);
+  assert.match(dashboard,/if \(authError \|\| !user\) redirect/);
 });
 
 test('mobile bottom tabs mark exact pages and the Discover section semantically',()=>{
@@ -36,6 +38,8 @@ test('mobile bottom tabs mark exact pages and the Discover section semantically'
   assert.equal(mobileNavigationCurrentState('/dashboard','saved','?tab=saved'),'page');
   assert.equal(mobileNavigationCurrentState('/dashboard','profile','?tab=profile'),'page');
   assert.equal(mobileNavigationCurrentState('/dashboard','saved','?tab=profile'),undefined);
+  assert.equal(mobileNavigationCurrentState('/news/smoke-breaking-story','discover'),'location');
+  assert.equal(mobileNavigationCurrentState('/news/smoke-breaking-story','home'),undefined);
   assert.equal(mobileNavigationCurrentState('/map','discover'),undefined);
   assert.equal(mobileNavigationCurrentState('/business-directory/orders','discover'),undefined);
   assert.equal(mobileNavigationCurrentState('/forum','discover'),undefined);
@@ -47,14 +51,20 @@ test('private screens are excluded; mobile bar has keyboard/touch access and no 
   }
   assert.equal(shouldRenderMobileNavigation('/dashboard'),true);
   assert.equal(shouldRenderMobileNavigation('/dashboard/profile'),false);
+  assert.equal(shouldRenderMobileNavigation('/news/smoke-breaking-story'),true);
+  assert.equal(shouldRenderMobileNavigation('/news/smoke-breaking-story/'),true);
+  assert.equal(shouldRenderMobileNavigation('/news/smoke-breaking-story/comments'),false);
   assert.match(css,/@media\s*\(max-width:\s*767px\)/);
   assert.match(css,/\.mobile-bottom-nav__link[^\{]*\{[^}]*min-height:\s*56px/);
   assert.match(css,/grid-template-columns:\s*repeat\(4,minmax\(0,1fr\)\)/);
-  assert.match(css,/body:has\(\.mobile-bottom-nav\)[^{]*\{[^}]*padding-bottom:\s*calc\(68px \+ env\(safe-area-inset-bottom/);
+  assert.match(css,/--mobile-nav-clearance:\s*calc\(68px \+ env\(safe-area-inset-bottom/);
+  assert.match(css,/body:has\(\.mobile-bottom-nav\)[^{]*\{[^}]*height:\s*100dvh[^}]*overflow:\s*hidden/);
+  assert.match(css,/body:has\(\.mobile-bottom-nav\) \.site-main\s*\{[^}]*min-height:\s*0[^}]*overflow-y:\s*auto/);
+  assert.match(css,/body:has\(\.mobile-bottom-nav\) \.site-footer\s*\{[^}]*display:\s*none/);
   assert.match(homeCss,/\.public-home\s+\.home-news\s*\{[^}]*padding-top:\s*32px/);
   assert.match(css,/env\(safe-area-inset-bottom,\s*0px\)/);
   assert.match(css,/\.mobile-bottom-nav__link:focus-visible/);
-  assert.match(css,/body:has\(\.mobile-bottom-nav\) \.toast-region\s*\{[^}]*bottom:\s*calc\(76px/);
+  assert.match(css,/body:has\(\.mobile-bottom-nav\) \.toast-region\s*\{[^}]*bottom:\s*calc\(var\(--mobile-nav-clearance,68px\)/);
   assert.match(css,/body:has\(\.focused-error-shell\) \.mobile-bottom-nav/);
   assert.match(dashboardCss,/@media\s*\(max-width:\s*767px\)\s*\{\s*\.tabs\s*\{\s*display:\s*none;\s*\}\s*\}/);
   assert.match(nav,/aria-label="Mobile primary navigation"/);

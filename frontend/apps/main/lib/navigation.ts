@@ -48,11 +48,16 @@ function dashboardTab(search: string | URLSearchParams | undefined): string | un
   return params.get("tab") ?? undefined;
 }
 
+function isNewsArticlePath(pathname: string): boolean {
+  return /^\/news\/[^/]+\/?$/.test(pathname);
+}
+
 export function mobileNavigationCurrentState(
   pathname: string,
   key: MobileNavigationKey,
   search?: string | URLSearchParams,
 ): MobileNavigationCurrent {
+  if (isNewsArticlePath(pathname)) return key === "discover" ? "location" : undefined;
   if (pathname !== "/dashboard") return undefined;
   const tab = dashboardTab(search);
   if (key === "home" && tab !== "discover" && tab !== "saved" && tab !== "profile") return "page";
@@ -63,5 +68,5 @@ export function mobileNavigationCurrentState(
 }
 
 export function shouldRenderMobileNavigation(pathname: string): boolean {
-  return pathname === "/dashboard";
+  return pathname === "/dashboard" || isNewsArticlePath(pathname);
 }

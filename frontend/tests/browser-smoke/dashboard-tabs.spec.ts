@@ -187,6 +187,39 @@ test("signed-in Home and Discover render and filter only published story records
   expect(hydrationErrors).toEqual([]);
 });
 
+test("signed-in mobile Discover keeps its final content link clear of the fixed tabs", async ({ page, request }) => {
+  await setFixtureMode(request, "stories");
+  await limitToLocalOrigins(page);
+  await signIn(page);
+
+  for (const width of [320, 375]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/dashboard?tab=discover");
+    await expect(page.locator(".site-preloader")).toHaveCount(0);
+    await page.addStyleTag({ content: "nextjs-portal { display: none !important; }" });
+    const navigation = page.getByRole("navigation", { name: "Mobile primary navigation" });
+    await expect(navigation).toBeVisible();
+    await expect(navigation.getByRole("link", { name: "Discover", exact: true })).toHaveAttribute("aria-current", "page");
+
+    const contentTarget = page.getByRole("main").getByRole("link").last();
+    await contentTarget.scrollIntoViewIfNeeded();
+    const navigationBox = await navigation.boundingBox();
+    const contentBox = await contentTarget.boundingBox();
+    expect(navigationBox).not.toBeNull();
+    expect(contentBox).not.toBeNull();
+    if (!navigationBox || !contentBox) throw new Error("Could not measure mobile navigation/content bounds");
+    expect(contentBox.y + contentBox.height).toBeLessThanOrEqual(navigationBox.y);
+
+    const contentIsHitTestable = await contentTarget.evaluate((element) => {
+      const bounds = element.getBoundingClientRect();
+      const topmost = document.elementFromPoint(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
+      return topmost === element || element.contains(topmost);
+    });
+    expect(contentIsHitTestable).toBe(true);
+  }
+  await expectLocalSupabaseOnly(page);
+});
+
 test("story query failures stay distinct from empty results on both dashboard feeds", async ({ page, request }) => {
   await setFixtureMode(request, "error");
   await page.setViewportSize({ width: 1024, height: 900 });
