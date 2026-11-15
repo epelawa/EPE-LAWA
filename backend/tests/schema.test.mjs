@@ -1074,6 +1074,41 @@ test('newsroom RPCs use the live schema, publish directly from a private draft, 
   const article = (await rows('select current_version_id, published_version_id from public.articles where id = $1', [id]))[0];
   assert.equal(article.current_version_id, newVersion, 'correction starts as a new private version');
   assert.equal(article.published_version_id, priorPublicVersion, 'the old approved version remains live until the correction is published');
+
+  const privateCurrent = (await rows(
+    `select a.current_version_id, a.published_version_id, a.revision, v.state as current_state
+     from public.articles a join public.article_versions v on v.id = a.current_version_id
+     where a.id = $1`,
+    [id],
+  ))[0];
+  assert.equal(privateCurrent.current_version_id, newVersion);
+  assert.equal(privateCurrent.published_version_id, priorPublicVersion);
+  assert.equal(privateCurrent.current_state, 'draft', 'the current version is private while the older version remains public');
+  const unpublishEventsBefore = (await rows(
+    "select count(*)::int as count from public.audit_events where resource_id = $1 and action = 'article.unpublish'",
+    [id],
+  ))[0].count;
+
+  await as(U.publisher, () => db.query('select public.article_unpublish($1, $2)', [id, privateCurrent.revision]));
+
+  const afterOlderVersionUnpublish = (await rows(
+    'select current_version_id, published_version_id, revision from public.articles where id = $1',
+    [id],
+  ))[0];
+  assert.equal(afterOlderVersionUnpublish.current_version_id, newVersion, 'unpublish leaves the private current version untouched');
+  assert.equal(afterOlderVersionUnpublish.published_version_id, null, 'unpublish clears the older public pointer');
+  assert.equal(afterOlderVersionUnpublish.revision, privateCurrent.revision + 1, 'unpublish advances the article revision');
+
+  const unpublishEventsAfter = (await rows(
+    "select count(*)::int as count from public.audit_events where resource_id = $1 and action = 'article.unpublish'",
+    [id],
+  ))[0].count;
+  assert.equal(unpublishEventsAfter, unpublishEventsBefore + 1, 'unpublish emits exactly one new audit event');
+  const auditEvent = (await rows(
+    "select metadata from public.audit_events where resource_id = $1 and action = 'article.unpublish' order by id desc limit 1",
+    [id],
+  ))[0];
+  assert.equal(auditEvent.metadata.version_id, priorPublicVersion, 'the audit event references the old published version');
 });
 
 test('Newsroom RLS grants eligible staff private reads but exposes only the current published snapshot', async () => {
