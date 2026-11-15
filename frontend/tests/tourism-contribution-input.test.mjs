@@ -71,6 +71,17 @@ test("tourism contribution rejects every field that exceeds its server-side limi
   }
 });
 
+test("tourism contribution rejects raw over-limit values even when trimming would fit", () => {
+  for (const [key, maximum] of Object.entries(limits)) {
+    const form = makeForm();
+    const value = key === "source_url" || key === "media_url"
+      ? `${httpsUrlOfLength(maximum)} `
+      : `${"x".repeat(maximum)} `;
+    form.set(key, value);
+    assert.equal(parseTourismContribution(form), null, `${key} whitespace padding must not bypass the limit`);
+  }
+});
+
 test("tourism action validates the complete form before creating a client and inserts parsed values", async () => {
   const action = await readFile(new URL("../apps/main/app/tourism/actions.ts", import.meta.url), "utf8");
   const parseAt = action.indexOf("parseTourismContribution(data)");

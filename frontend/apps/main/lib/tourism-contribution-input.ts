@@ -22,7 +22,7 @@ export type TourismContributionInput = {
 
 function readField(formData: Pick<FormData, "get">, key: string): string {
   const value = formData.get(key);
-  return typeof value === "string" ? value.trim() : "";
+  return typeof value === "string" ? value : "";
 }
 
 function isHttpsUrl(value: string): boolean {
@@ -51,26 +51,37 @@ export function parseTourismContribution(formData: Pick<FormData, "get">): Touri
     return null;
   }
 
+  const normalizedValues = {
+    name: values.name.trim(),
+    description: values.description.trim(),
+    source_citation: values.source_citation.trim(),
+    source_url: values.source_url.trim(),
+    media_url: values.media_url.trim(),
+    media_rights: values.media_rights.trim(),
+    visitor_context: values.visitor_context.trim(),
+    visit_details: values.visit_details.trim(),
+  };
+
   if (
-    values.name.length < 2 ||
-    values.description.length < 20 ||
-    values.source_citation.length < 5 ||
-    !isHttpsUrl(values.source_url) ||
-    !isHttpsUrl(values.media_url) ||
-    (values.media_url && values.media_rights.length < 5) ||
+    normalizedValues.name.length < 2 ||
+    normalizedValues.description.length < 20 ||
+    normalizedValues.source_citation.length < 5 ||
+    !isHttpsUrl(normalizedValues.source_url) ||
+    !isHttpsUrl(normalizedValues.media_url) ||
+    (normalizedValues.media_url && normalizedValues.media_rights.length < 5) ||
     formData.get("consent") !== "yes"
   ) {
     return null;
   }
 
   return {
-    name: values.name,
-    description: values.description,
-    sourceCitation: values.source_citation,
-    sourceUrl: values.source_url,
-    mediaUrl: values.media_url,
-    mediaRights: values.media_rights,
-    visitorContext: values.visitor_context,
-    visitDetails: values.visit_details,
+    name: normalizedValues.name,
+    description: normalizedValues.description,
+    sourceCitation: normalizedValues.source_citation,
+    sourceUrl: normalizedValues.source_url,
+    mediaUrl: normalizedValues.media_url,
+    mediaRights: normalizedValues.media_rights,
+    visitorContext: normalizedValues.visitor_context,
+    visitDetails: normalizedValues.visit_details,
   };
 }
