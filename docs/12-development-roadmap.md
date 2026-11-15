@@ -266,3 +266,8 @@ PR #80 (schema-test fixture alignment) merged normally; `main` is now `2c11154a1
 - [x] Additive staff SELECT policies and restrictive guards: private drafts limited to authoring owners or review/publish/unpublish staff; public versions require approved state plus exact publication pointer.
 - [x] Full migration-chain regression and separate Production-baseline fixture. Full suite: 238 total, 237 passed, 0 failed, 1 documented skip; forced typecheck/build: 7/7 combined tasks on pinned Node/pnpm with localhost-only settings.
 - [ ] Ordinary PR/merge, fresh Production preflight, apply one migration and verify catalog/ledger. No content/account writes. See `docs/handoffs/2026-11-15-newsroom-staff-read-rls.md`.
+
+## 2026-11-15 01:05 WAT — Forum queue schema reconciliation
+
+- Done locally: additive missing-table queue schema, scoped RLS, audited reason-required resolution, full-chain and missing-table behavioral checks. Combined-main tests 242 passed/0 failed/1 existing skip; forced builds 2/2 and typechecks 5/5, pinned tools.
+- Remaining: ordinary PR/merge, fresh live preflight, exact additive application and authenticated route check. No content seeded; public Forum/poll provisioning is not claimed. See `docs/handoffs/2026-11-15-forum-moderation-repair.md`.
