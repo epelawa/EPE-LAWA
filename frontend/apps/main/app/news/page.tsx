@@ -6,7 +6,7 @@ import { publicMediaUrl } from "../../lib/media";
 import { isNewsCoverKey } from "../../lib/news-covers";
 import { absoluteUrl } from "../../lib/site";
 import { newsArticlePath } from "../../lib/news-urls";
-import { currentNewsLayout } from "../../lib/news-daily-layout.mjs";
+import { DEFAULT_NEWS_LAYOUT } from "../../lib/news-daily-layout.mjs";
 import { NewspaperIcon } from "../../components/icons";
 import { EmptyPanel, PageFrame, StatusBadge } from "../../components/design-system";
 import styles from "./news.module.css";
@@ -62,7 +62,7 @@ function NewsError() {
   </PageFrame>;
 }
 export default async function NewsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  const initialLayout = currentNewsLayout();
+  const initialLayout = DEFAULT_NEWS_LAYOUT;
   const params = await searchParams;
   const query = typeof params.q === "string" ? params.q.trim().slice(0, 100) : "";
   const category = safeCategory(params.category);
