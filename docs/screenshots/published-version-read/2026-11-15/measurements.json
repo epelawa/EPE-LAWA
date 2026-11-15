@@ -1,0 +1,37 @@
+[
+  {
+    "width": 320,
+    "viewport": 320,
+    "document": 320,
+    "body": 320,
+    "overflow": []
+  },
+  {
+    "width": 390,
+    "viewport": 390,
+    "document": 390,
+    "body": 390,
+    "overflow": []
+  },
+  {
+    "width": 430,
+    "viewport": 430,
+    "document": 430,
+    "body": 430,
+    "overflow": []
+  },
+  {
+    "width": 768,
+    "viewport": 768,
+    "document": 768,
+    "body": 768,
+    "overflow": []
+  },
+  {
+    "width": 1440,
+    "viewport": 1440,
+    "document": 1440,
+    "body": 1440,
+    "overflow": []
+  }
+]

@@ -5,6 +5,7 @@ import { cache } from "react";
 import { createClient } from "../../../lib/supabase";
 import { newsArticlePath, publicNewsArticleUrl } from "../../../lib/news-urls";
 import { publicMediaUrl } from "../../../lib/media";
+import { readPublishedArticleBody } from "../../../lib/published-article-body";
 import { formatPublishedDate } from "../../../lib/dates";
 import { ArticleBody } from "../../../lib/editorial-body";
 import { CommentThread } from "../comment-thread";
@@ -102,8 +103,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
   try {
     const supabase = await createClient();
     const [bodyResult, relatedResult] = await Promise.all([
-      // RLS exposes only a version whose id is the article's current published_version_id.
-      supabase.from("article_versions").select("body").eq("article_id", article.id).limit(1).maybeSingle(),
+      readPublishedArticleBody(supabase, article.id),
       supabase.from("published_articles").select("slug,title,summary,published_at,og_image_key,category_label").eq("category_slug", article.category_slug).neq("slug", article.slug).order("published_at", { ascending: false, nullsFirst: false }).order("slug", { ascending: true }).limit(3),
     ]);
     if (bodyResult.error || !bodyResult.data) {

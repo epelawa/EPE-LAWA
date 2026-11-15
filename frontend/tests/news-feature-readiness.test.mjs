@@ -32,13 +32,16 @@ test('published News articles can be downloaded as safe offline HTML copies', as
 });
 
 test('article body comes only from the RLS-visible current published version, not a missing view column', async () => {
-  const [article, migration] = await Promise.all([
+  const [article, bodyReader, migration] = await Promise.all([
     text('app/news/[slug]/page.tsx'),
+    text('lib/published-article-body.ts'),
     readFile(new URL('../../../backend/supabase/migrations/20261102190002_editorial_core.sql', root), 'utf8'),
   ]);
   assert.match(article, /from\("published_articles"\)/);
-  assert.match(article, /from\("article_versions"\)\.select\("body"\)/);
-  assert.match(article, /\.eq\("article_id", article\.id\)/);
+  assert.match(article, /readPublishedArticleBody\(supabase, article\.id\)/);
+  assert.match(bodyReader, /from\("article_versions"\)\s*\.select\("body"\)/);
+  assert.match(bodyReader, /\.eq\("article_id", articleId\)/);
+  assert.match(bodyReader, /\.eq\("id", publication\.published_version_id\)/);
   assert.doesNotMatch(article, /published_articles"\)\.select\([^)]*body/);
   assert.match(migration, /using\s*\([\s\S]*?a\.published_version_id\s*=\s*article_versions\.id/);
 });
