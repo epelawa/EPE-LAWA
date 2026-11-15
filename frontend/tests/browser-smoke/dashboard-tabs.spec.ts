@@ -82,7 +82,7 @@ test("signed-in dashboard keeps honest empty views and one responsive tab bar", 
   await expect(page.getByRole("heading", { name: "Breaking News" })).toBeVisible();
   await expect(page.getByText("There are no active breaking stories right now.")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Recommendations" })).toBeVisible();
-  await expect(page.getByText("No published stories are available to recommend yet.")).toBeVisible();
+  await expect(page.getByText("No other recent published stories are available to recommend yet.")).toBeVisible();
   await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
 
   await dashboardNavigation(page).getByRole("link", { name: "Discover", exact: true }).click();
@@ -146,6 +146,13 @@ test("signed-in dashboard keeps honest empty views and one responsive tab bar", 
 
 test("signed-in Home and Discover render and filter only published story records", async ({ page, request }) => {
   test.setTimeout(60_000);
+  const hydrationErrors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error" && /hydrat/i.test(message.text())) hydrationErrors.push(message.text());
+  });
+  page.on("pageerror", (error) => {
+    if (/hydrat/i.test(error.message)) hydrationErrors.push(error.message);
+  });
   await setFixtureMode(request, "stories");
   await page.setViewportSize({ width: 1024, height: 900 });
   await limitToLocalOrigins(page);
@@ -155,6 +162,10 @@ test("signed-in Home and Discover render and filter only published story records
   await expect(page.getByRole("link", { name: "Read breaking story: Smoke fixture: breaking headline" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Read: Smoke fixture: market story" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Read: Smoke fixture: sports story" })).toBeVisible();
+  const missingMetadata = page.getByRole("link", { name: "Read: Smoke fixture: sports story" });
+  await expect(missingMetadata.getByText("Byline unavailable")).toBeVisible();
+  await expect(missingMetadata.getByText("News", { exact: true })).toBeVisible();
+  await expect(missingMetadata.locator("img")).toHaveCount(0);
   await expect(page.locator("#recommendations-heading").locator("..")
     .getByText("Smoke fixture: breaking headline")).toHaveCount(0);
 
@@ -171,6 +182,7 @@ test("signed-in Home and Discover render and filter only published story records
   await expect(page.getByRole("link", { name: "Read: Smoke fixture: sports story" })).toHaveCount(0);
   await expect(page.getByText(/Showing 1 published story matching “market” on this page\./)).toBeVisible();
   await expectLocalSupabaseOnly(page);
+  expect(hydrationErrors).toEqual([]);
 });
 
 test("story query failures stay distinct from empty results on both dashboard feeds", async ({ page, request }) => {

@@ -1,12 +1,12 @@
 .signup { display:grid; gap:8px; min-width:0; }
-.label { color:#23342b; font-size:.75rem; font-weight:700; }
+.label { color:hsl(var(--foreground)); font-size:.75rem; font-weight:700; }
 .row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:7px; min-width:0; }
-.email { min-width:0; min-height:48px; padding:0 11px; border:1px solid #d4dfd7; border-radius:7px; background:#fff; color:#526259; font:inherit; font-size:.8125rem; }
-.email::placeholder { color:#64736a; opacity:1; }
-.button { min-width:88px; min-height:48px; padding:0 12px; border:0; border-radius:7px; background:#0b4932; color:#fff; font:inherit; font-size:.8125rem; font-weight:700; }
-.note { color:#53635a; font-size:.6875rem; line-height:1.45; }
+.email { min-width:0; min-height:48px; padding:0 11px; border:1px solid hsl(var(--input)); border-radius:7px; background:hsl(var(--card)); color:hsl(var(--foreground)); font:inherit; font-size:.8125rem; }
+.email::placeholder { color:hsl(var(--muted-foreground)); opacity:1; }
+.button { min-width:88px; min-height:48px; padding:0 12px; border:0; border-radius:7px; background:hsl(var(--primary)); color:hsl(var(--primary-foreground)); font:inherit; font-size:.8125rem; font-weight:700; }
+.note { color:hsl(var(--muted-foreground)); font-size:.6875rem; line-height:1.45; }
 .footer .label { color:#fff; }
-.footer .email { border-color:#d7e4db; }
-.footer .button { background:#148547; color:#fff; }
-.footer .note { color:#deebe3; }
+.footer .email { border-color:rgb(255 255 255/.45); }
+.footer .button { background:#294B91; color:#fff; }
+.footer .note { color:#D8E0EF; }
 @media (max-width:420px) { .row { grid-template-columns:minmax(0,1fr); } .button { width:100%; } }

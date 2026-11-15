@@ -1,0 +1,101 @@
+.connection-panel {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 32px;
+  margin-block: clamp(28px, 5vw, 64px);
+  padding: clamp(32px, 6vw, 72px);
+  border: 0;
+  border-radius: clamp(24px, 4vw, 40px);
+  background: #E3EBF8;
+  color: var(--palette-midnight);
+}
+
+.connection-panel .ui-eyebrow {
+  color: var(--palette-royal-steel);
+}
+
+.connection-panel h2 {
+  max-width: 16ch;
+  margin: 8px 0 12px;
+  color: var(--palette-midnight);
+  font-size: clamp(2rem, 4.2vw, 3.5rem);
+  line-height: 1.04;
+}
+
+.connection-panel h2 em {
+  font-style: italic;
+  font-weight: 500;
+}
+
+.connection-panel > div:first-child > p:last-child {
+  max-width: 56ch;
+  color: color-mix(in srgb, var(--palette-midnight) 76%, transparent);
+}
+
+.connection-panel .home-community__actions {
+  position: relative;
+  z-index: 1;
+  justify-items: start;
+}
+
+.connection-panel .btn-primary {
+  background: var(--palette-midnight);
+  color: var(--palette-cloud);
+}
+
+.connection-panel .ui-text-link {
+  color: var(--palette-royal-steel);
+}
+
+.connection-panel__icon {
+  position: absolute;
+  right: clamp(20px, 4vw, 56px);
+  bottom: clamp(16px, 3vw, 34px);
+  z-index: 0;
+  display: block;
+  color: var(--palette-cobalt);
+  opacity: .92;
+  pointer-events: none;
+}
+
+.connection-panel__icon svg {
+  display: block;
+  width: clamp(64px, 11vw, 112px);
+  height: auto;
+  stroke-width: 1.35;
+}
+
+@media (max-width: 700px) {
+  .connection-panel {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+    margin-block: 28px 40px;
+    padding: 32px 24px 112px;
+    border-radius: 28px;
+  }
+
+  .connection-panel h2 {
+    max-width: 13ch;
+    font-size: clamp(2rem, 10vw, 3rem);
+  }
+
+  .connection-panel .home-community__actions {
+    width: 100%;
+  }
+
+  .connection-panel__icon {
+    right: 22px;
+    bottom: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .connection-panel,
+  .connection-panel * {
+    transition: none;
+  }
+}

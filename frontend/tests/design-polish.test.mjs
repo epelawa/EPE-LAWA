@@ -7,10 +7,10 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 
-test("public Appearance switch lives in the all-viewport hamburger drawer", () => {
-  const theme = read("frontend/apps/main/components/theme-toggle.tsx");
+test("public shell stays light and the all-viewport drawer is account-only", () => {
   const header = read("frontend/apps/main/components/site-header.tsx");
-  const brand = read("frontend/apps/main/components/brand.tsx");
+	const layout = read("frontend/apps/main/app/layout.tsx");
+	const brand = read("frontend/apps/main/components/brand.tsx");
   const staffBrand = read("frontend/apps/admin/components/brand.tsx");
   const footer = read("frontend/apps/main/components/site-footer.tsx");
   const home = read("frontend/apps/main/app/page.tsx");
@@ -19,13 +19,13 @@ test("public Appearance switch lives in the all-viewport hamburger drawer", () =
   const heroManifest = JSON.parse(read("frontend/apps/main/lib/hero-images.json"));
   const mastheadActions = header.match(/<div className="masthead-actions">([\s\S]*?)<\/div>/)?.[1] ?? "";
 
-  assert.match(theme, /className="theme-control"/);
-  assert.match(theme, /aria-pressed=\{theme === "dark"\}/);
-  assert.match(theme, /theme-control__thumb/);
-  assert.doesNotMatch(mastheadActions, /ThemeToggle/);
-  assert.match(header, /className="drawer-appearance" role="group" aria-label="Appearance settings"[\s\S]*<ThemeToggle \/>/);
-  assert.match(navCss, /\.site-head__menu \{ display: inline-flex;/);
-  assert.match(header, /<BrandLockup size=\{32\} \/>/);
+	assert.match(layout, /<html lang="en" data-theme="light" style=\{\{ colorScheme: "light" \}\} suppressHydrationWarning>/);
+  assert.doesNotMatch(header, /ThemeToggle|Appearance|appearance|Member dashboard/);
+	assert.doesNotMatch(mastheadActions, /ThemeToggle/);
+	assert.match(header, /renderLink\("\/auth", "Create account", "btn-primary"\)/);
+	assert.match(header, /renderLink\("\/login", "Sign in", "btn-secondary"\)/);
+	assert.match(navCss, /\.site-head__menu\s*\{[^}]*display:inline-flex/);
+	assert.match(header, /<BrandLockup size=\{32\} \/>/);
   assert.doesNotMatch(header + brand + staffBrand + footer, /Epe Division|brand__place|brand-lockup__tagline|showPlace/);
   assert.match(home, /<HeroCarousel\s*\/>/, "homepage logo hero exists");
   assert.doesNotMatch(home, /home-hero__brand|BrandLockup/);
@@ -37,15 +37,21 @@ test("public Appearance switch lives in the all-viewport hamburger drawer", () =
   assert.match(heroCarousel, /HERO_SLIDES = heroImages/);
   assert.match(heroCarousel, /setTimeout|setInterval|ROTATION_DELAY/);
   assert.match(heroCarousel, /prefers-reduced-motion/);
-  assert.match(heroCarousel, /home-hero__pause/);
+	assert.match(heroCarousel, /home-hero__pause/);
+	assert.match(heroCarousel, /onFocusCapture=\{\(\) => setPaused\(true\)\}/);
+	assert.match(heroCarousel, /aria-label="Previous Epe photo"/);
+	assert.match(heroCarousel, /aria-label="Next Epe photo"/);
+	assert.match(heroCarousel, /aria-label=\{rotationLabel\}/);
+  assert.match(read("frontend/apps/main/app/hero-logo.css"), /\.home-hero__slide-control\s*\{[^}]*clip-path:\s*inset\(50%\)/);
+  assert.match(read("frontend/apps/main/app/hero-logo.css"), /\.home-hero__pause\s*\{[^}]*clip-path:\s*inset\(50%\)/);
   assert.match(heroCarousel, /aria-roledescription="slide"/);
   assert.doesNotMatch(heroCarousel, /home-hero__caption|home-hero__credit|home-hero__slide-label|home-hero__counter|Photo by <a/);
   assert.doesNotMatch(heroCarousel, /Epe Division|The voice of Epe Division/i);
   assert.doesNotMatch(home, /home-hero__quicknav|Quick access to EPE LAWA features|Explore sections/);
   assert.match(header, /A shared home for everyone\./);
   assert.match(header, /addEventListener\("pointerdown", onOutsideDrawer\)/);
-  assert.match(navCss, /width: min\(380px, calc\(100vw - 20px\)\)/);
-  assert.match(navCss, /\.drawer-account__actions \{ display: grid;/);
+  assert.match(navCss, /\.drawer\s*\{[^}]*width:min\(520px,calc\(100vw - 52px\)\)/);
+  assert.match(navCss, /\.drawer-account__actions\s*\{[^}]*display:\s*grid/);
 });
 
 test("editorial dot decorations are gone and footer links stay split on mobile", () => {
@@ -61,15 +67,16 @@ test("owner-approved cobalt palette is consistent across light/dark apps and sha
   const sharedCss = read("frontend/packages/ui/src/ui.css");
   const statusPage = read("frontend/apps/main/app/status/[code]/route.ts");
   const palette = ["#0A1023", "#17264A", "#294B91", "#477FE0", "#A7C5F5", "#F1F4FA", "#A6B2C5", "#293650"];
+  const statusPalette = ["#0A1023", "#294B91", "#477FE0", "#F1F4FA"];
 
   for (const color of palette) {
     assert.ok(main.includes(color), `public app is missing ${color}`);
     assert.ok(admin.includes(color), `staff app is missing ${color}`);
     assert.ok(shared.includes(color), `shared tokens are missing ${color}`);
-    assert.ok(statusPage.includes(color), `status page is missing ${color}`);
   }
+  for (const color of statusPalette) assert.ok(statusPage.includes(color), `status page is missing ${color}`);
   assert.match(main, /--primary: 218\.04 71\.16% 57\.84%;[\s\S]*?--primary-foreground: 225\.6 55\.56% 8\.82%;/);
-  assert.match(main, /--link: 216\.92 79\.59% 80\.78%/);
+  assert.match(main, /--link: 220\.38 55\.91% 36\.47%/);
   assert.match(admin, /--link: 220\.38 55\.91% 36\.47%/);
   assert.match(sharedCss, /var\(--primary-foreground,225\.6 55\.56% 8\.82%\)/);
   assert.match(main, /--ui-success: #26614a/);

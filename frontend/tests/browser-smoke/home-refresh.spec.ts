@@ -91,7 +91,8 @@ test("autoplay pauses on focus, stays paused after blur, and resumes only after 
     await page.waitForTimeout(rotationWindowMs);
     expect(await activePhotoKey(page)).toBe(focusedPhoto);
 
-    await pause.tap();
+    await pause.focus();
+    await page.keyboard.press("Enter");
     await page.waitForTimeout(rotationWindowMs + 500);
     expect(await activePhotoKey(page)).not.toBe(focusedPhoto);
   } finally {

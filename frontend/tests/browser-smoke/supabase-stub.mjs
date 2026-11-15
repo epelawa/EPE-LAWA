@@ -25,7 +25,7 @@ function fixtureStories() {
   return [
     { slug: "smoke-breaking-story", title: "Smoke fixture: breaking headline", summary: "Synthetic browser-test content only.", published_at: new Date(now - 5 * 60_000).toISOString(), is_breaking: true, breaking_until: new Date(now + 60 * 60_000).toISOString(), author_name: "Browser fixture", category_slug: "local-news", category_label: "Local News", og_image_key: null },
     { slug: "smoke-market-story", title: "Smoke fixture: market story", summary: "Synthetic searchable story for local browser tests.", published_at: new Date(now - 15 * 60_000).toISOString(), is_breaking: false, breaking_until: null, author_name: "Browser fixture", category_slug: "local-news", category_label: "Local News", og_image_key: null },
-    { slug: "smoke-sports-story", title: "Smoke fixture: sports story", summary: "Synthetic category-filter story for local browser tests.", published_at: new Date(now - 25 * 60_000).toISOString(), is_breaking: false, breaking_until: null, author_name: "Browser fixture", category_slug: "sports", category_label: "Sports", og_image_key: null },
+    { slug: "smoke-sports-story", title: "Smoke fixture: sports story", summary: "Synthetic category-filter story for local browser tests.", published_at: new Date(now - 25 * 60_000).toISOString(), is_breaking: false, breaking_until: null, author_name: null, category_slug: "sports", category_label: null, og_image_key: "unapproved/synthetic-cover.jpg" },
   ];
 }
 

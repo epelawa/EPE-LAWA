@@ -4,17 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 /**
- * Homepage-only storage notice.
- *
- * Preferences use localStorage; authenticated member sessions use essential
- * cookies. Optional analytics and advertising tracking are not enabled.
- * This notice describes storage rather than asking for unnecessary consent.
+ * Homepage-only storage notice. Preferences use localStorage; authenticated
+ * member sessions use essential cookies. Optional analytics and advertising
+ * tracking are not enabled.
  *
  * Not a modal: it must not trap focus or block the page, and "Got it" is enough
  * because nothing is being consented to that could be refused.
  *
- * Its measured height lets homepage connectivity toasts sit above the floating
- * card. It is cleared on dismissal and when leaving the homepage.
+ * Its measured height lets the hero keep its actions just above the floating
+ * notice. It is cleared on dismissal and when leaving the homepage.
  */
 export default function CookieBanner() {
   const [show, setShow] = useState(true);
@@ -73,7 +71,7 @@ export default function CookieBanner() {
     <div ref={bannerRef} className="storage-notice" role="region" aria-label="Storage notice">
       <p className="storage-notice__title">Your browser, your preferences.</p>
       <div className="storage-notice__copy">
-        Theme stays on this device. Sign-in uses essential cookies; optional tracking is off.
+        Sign-in uses essential cookies; optional tracking is off.
       </div>
       <div className="ui-actions">
         <button type="button" className="btn-primary" onClick={accept}>Got it</button>

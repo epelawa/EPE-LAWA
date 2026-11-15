@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { createClient } from "../../lib/supabase";
 import { formatPublishedDate } from "../../lib/dates";
-import { publicMediaUrl } from "../../lib/media";
 import { selectedNewsCover } from "../../lib/news-covers";
 import { newsArticlePath } from "../../lib/news-urls";
 import { NewspaperIcon } from "../../components/icons";
@@ -16,9 +15,9 @@ type PublishedStory = {
   published_at: string | null;
   is_breaking: boolean;
   breaking_until: string | null;
-  author_name: string;
-  category_slug: string;
-  category_label: string;
+  author_name: string | null;
+  category_slug: string | null;
+  category_label: string | null;
   og_image_key: string | null;
 };
 type NewsCategory = { slug: string; label: string };
@@ -132,14 +131,14 @@ async function loadDiscover(client: SupabaseClient, query: string, category: str
 }
 
 function storyImage(story: PublishedStory) {
-  const approved = selectedNewsCover(story.og_image_key);
-  const src = approved?.url ?? publicMediaUrl(story.og_image_key);
+  const src = selectedNewsCover(story.og_image_key)?.url;
   return src ? <img className={styles.storyImage} src={src} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" /> : <span className={styles.storyImageFallback} aria-hidden="true"><NewspaperIcon size={24} /></span>;
 }
 
 function StoryMeta({ story }: { story: PublishedStory }) {
   const date = formatPublishedDate(story.published_at);
-  return <span className={styles.storyMeta}>By {story.author_name}{date ? <> · <time dateTime={story.published_at ?? undefined}>{date}</time></> : null}</span>;
+  const author = story.author_name?.trim();
+  return <span className={styles.storyMeta}>{author ? `By ${author}` : "Byline unavailable"}{date ? <> · <time dateTime={story.published_at ?? undefined}>{date}</time></> : null}</span>;
 }
 
 function StoryCard({ story }: { story: PublishedStory }) {
@@ -147,7 +146,7 @@ function StoryCard({ story }: { story: PublishedStory }) {
     <Link href={newsArticlePath(story.slug)} className={styles.storyCardLink} aria-label={`Read: ${story.title}`}>
       <span className={styles.storyImageWrap}>{storyImage(story)}</span>
       <span className={styles.storyCardCopy}>
-        <span className={styles.storyCategory}>{story.category_label}</span>
+        <span className={styles.storyCategory}>{story.category_label?.trim() || "News"}</span>
         <span className={styles.storyTitle}>{story.title}</span>
         {story.summary ? <span className={styles.storySummary}>{story.summary}</span> : null}
         <StoryMeta story={story} />
@@ -160,7 +159,7 @@ function BreakingStory({ story }: { story: PublishedStory }) {
   return <Link href={newsArticlePath(story.slug)} className={styles.breakingStory} aria-label={`Read breaking story: ${story.title}`}>
     <span className={styles.breakingImage}>{storyImage(story)}</span>
     <span className={styles.breakingCopy}>
-      <span className={styles.storyCategory}>{story.category_label}<StatusBadge tone="warning">Breaking</StatusBadge></span>
+      <span className={styles.storyCategory}>{story.category_label?.trim() || "News"}<StatusBadge tone="warning">Breaking</StatusBadge></span>
       <strong>{story.title}</strong>
       {story.summary ? <span className={styles.storySummary}>{story.summary}</span> : null}
       <StoryMeta story={story} />
@@ -197,7 +196,7 @@ export async function DashboardHomeNews({ client }: { client: SupabaseClient }) 
       <HomeSectionHeading id="recommendations-heading" title="Recommendations" helper="Recent published stories from the newsroom; not ranked by popularity." />
       {recommendations.state === "error" ? <ErrorState title="Recommendations could not be loaded" href="/dashboard?tab=home" />
         : recommendations.items.length ? <ul className={styles.storyGrid}>{recommendations.items.map((story) => <StoryCard key={story.slug} story={story} />)}</ul>
-        : <p className={styles.feedEmpty}>{breaking.items.length ? "No other published stories are available to recommend yet." : "No published stories are available to recommend yet."}</p>}
+        : <p className={styles.feedEmpty}>No other recent published stories are available to recommend yet.</p>}
       <Link className={styles.seeAllLink} href="/dashboard?tab=discover">Discover all published stories <span aria-hidden="true">→</span></Link>
     </section>
   </div>;

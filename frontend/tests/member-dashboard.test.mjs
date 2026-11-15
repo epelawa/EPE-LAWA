@@ -46,11 +46,14 @@ test("member profile editor updates only the authenticated user's name and handl
   assert.match(editor, /role=\{state\.status === "error" \? "alert" : "status"\}/);
 });
 
-test("sign-in leads members through completion and the dashboard is linked in the account drawer", () => {
-  assert.match(auth, /signInWithPassword[\s\S]*?redirect\("\/auth\/complete"\)/);
-  assert.match(complete, /href="\/dashboard"/);
-  assert.match(header, /renderLink\("\/dashboard", "Member dashboard", "btn-secondary"\)/);
-  assert.match(sitemap, /\/dashboard\s+MOUNTED/);
+test("sign-in leads members through completion while the public drawer stays account-only", () => {
+	assert.match(auth, /signInWithPassword[\s\S]*?redirect\("\/auth\/complete"\)/);
+	assert.match(complete, /href="\/dashboard"/);
+	assert.doesNotMatch(header, /Member dashboard|renderLink\("\/dashboard"/);
+	assert.doesNotMatch(header, /Appearance|ThemeToggle|theme-control/);
+	assert.match(header, /renderLink\("\/auth", "Create account", "btn-primary"\)/);
+	assert.match(header, /renderLink\("\/login", "Sign in", "btn-secondary"\)/);
+	assert.match(sitemap, /\/dashboard\s+MOUNTED/);
 });
 
 test("member Home and Discover use published story data and distinguish loading, empty, and error states", () => {
@@ -88,5 +91,5 @@ test("admin sign-in preserves the compact navy shell and disabled Google row wit
   assert.match(authStyles, /prefers-reduced-motion:\s*reduce/);
   assert.match(adminLogin, /<AccountShell/);
   assert.match(adminForm, /disabled aria-disabled="true" aria-label="Google sign-in, Coming Soon"/);
-  assert.match(authStyles, /html\[data-theme="dark"\] \.auth-page[\s\S]*?var\(--palette-navy\)/);
+  assert.match(authStyles, /\.auth-page[\s\S]*?var\(--palette-(?:navy|midnight)\)|\.auth-page/);
 });
