@@ -379,3 +379,7 @@ Prepared forward-only20261115010500 migration on29c01dd: timestamps/revision, ad
 ## 2026-11-15 01:33 WAT — Newsroom setup controls verified
 
 On82167c8 base, implemented secure category/byline management using live-compatible columns. Complete252total251pass0fail1existing skip; pinned forced build/typecheck pass. Synthetic320/390/430/768/1440 captures measured no overflow. Source PR and Production RPC apply next; no real reference/article/account created.
+
+## 2026-11-15 01:39 WAT — Actionable member authentication feedback
+
+Onb03a3fb base, safe contextual provider messages and accessible field errors passed forced pinned build/typecheck and full253total252pass0fail1existing skip. A real local server action with synthetic Supabase invalid_credentials rendered the exact intended message at320x568 with no page scroll/overflow. Screenshots use loopback fixtures only. Core prior schema repairs are live; wider missing route dependencies remain explicit blockers. Feedback PR/normal merge/deployment audit next; no real account/content created.

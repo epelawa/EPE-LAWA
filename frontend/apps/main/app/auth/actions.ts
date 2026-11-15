@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "../../lib/supabase";
 import { siteUrl } from "../../lib/site";
+import { mapAuthProviderError } from "./auth-error";
 import { availabilityFromRpc, isValidHandle, normalizeHandle } from "../../lib/member-handle";
 import { handleResendSignupVerification, handleVerifyEmailOtp, type AuthState } from "../../lib/auth-otp";
 export type { AuthState } from "../../lib/auth-otp";
@@ -16,6 +17,15 @@ function passwordField(data: FormData): string {
   return typeof value === "string" ? value : "";
 }
 function validEmail(email: string) { return email.length <= 254 && emailPattern.test(email); }
+function signupValidationError(input: { email: string; password: string; handle: string; displayName: string }): string | null {
+  if (!input.displayName) return "Enter your name to create an account.";
+  if (input.displayName.length > 60) return "Your name must be 60 characters or fewer.";
+  if (!isValidHandle(input.handle)) return "Choose a handle with 3–24 letters, numbers or underscores.";
+  if (!validEmail(input.email)) return "Enter a valid email address.";
+  if (input.password.length < 10) return "Use a password with at least 10 characters.";
+  if (input.password.length > 128) return "Use a password with no more than 128 characters.";
+  return null;
+}
 function authCallbackUrl(nextPath: string): string {
   const url = new URL("/auth/callback", siteUrl);
   url.searchParams.set("next", nextPath);
@@ -39,9 +49,8 @@ export async function signUp(_state: AuthState, data: FormData): Promise<AuthSta
   const password = passwordField(data);
   const handle = normalizeHandle(field(data, "handle"));
   const displayName = field(data, "displayName");
-  if (!validEmail(email) || password.length < 10 || password.length > 128 || !isValidHandle(handle) || displayName.length < 1 || displayName.length > 60) {
-    return { status: "error", message: "Check your name, handle, email and password. Passwords must be at least 10 characters." };
-  }
+  const validationError = signupValidationError({ email, password, handle, displayName });
+  if (validationError) return { status: "error", message: validationError };
   const availability = await checkHandleAvailability(handle);
   if (availability === "taken") return { status: "error", message: "That handle is already in use. Choose another handle." };
   if (availability !== "available") return { status: "error", message: "Handle availability could not be checked because account setup is temporarily unavailable. Please try again later." };
@@ -51,22 +60,24 @@ export async function signUp(_state: AuthState, data: FormData): Promise<AuthSta
       email, password,
       options: { emailRedirectTo: authCallbackUrl("/auth/complete"), data: { handle, display_name: displayName } },
     });
-    if (error) return { status: "error", message: genericError };
+    if (error) return { status: "error", message: mapAuthProviderError(error, "signup") };
     return { status: "notice", message: "Your account request was received. If email verification is required, use the code or secure link in the EPE LAWA confirmation email before signing in. Delivery depends on this project’s configured email provider." };
-  } catch { return { status: "error", message: genericError }; }
+  } catch (error) { return { status: "error", message: mapAuthProviderError(error, "signup") }; }
 }
 export async function signIn(_state: AuthState, data: FormData): Promise<AuthState> {
   const email = field(data, "email").toLowerCase();
   const password = passwordField(data);
-  if (!validEmail(email) || !password || password.length > 128) return { status: "error", message: genericError };
+  if (!validEmail(email)) return { status: "error", message: "Enter a valid email address.", fieldErrors: { email: "Enter a valid email address." } };
+  if (!password) return { status: "error", message: "Enter your password.", fieldErrors: { password: "Enter your password." } };
+  if (password.length > 128) return { status: "error", message: "Your password must be no more than 128 characters.", fieldErrors: { password: "Your password must be no more than 128 characters." } };
   try {
     const supabase = await createClient();
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return { status: "error", message: genericError };
+    if (error) return { status: "error", message: mapAuthProviderError(error, "signin") };
     redirect("/auth/complete");
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
-    return { status: "error", message: genericError };
+    return { status: "error", message: mapAuthProviderError(error, "signin") };
   }
 }
 export async function requestPasswordReset(_state: AuthState, data: FormData): Promise<AuthState> {

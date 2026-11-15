@@ -283,3 +283,7 @@ The additive live-baseline Radio candidate supplies missing timestamps/revision 
 ## 2026-11-15 01:33 WAT — Permissioned category/byline management
 
 Done locally: linked Newsroom settings, audited create/edit categories and credited bylines, category deactivation, truthful errors, UI/RPC article.publish checks without role assignments. Forced pinned builds2/2/typechecks5/5; combined252total251pass0fail1existing skip. Five-width synthetic captures have no page overflow and all reveals visible. Ordinary merge and additive migration/readback remain; no rows seeded. See `docs/handoffs/2026-11-15-newsroom-reference-settings.md`.
+
+## 2026-11-15 01:39 WAT — Member feedback and current release state
+
+Done locally: safe contextual provider errors, explicit field validation, preserved database handle checks/recovery privacy. Pinned forced builds2/2,typechecks5/5, full253total252pass0fail1existing skip. Actual local invalid-credential server action and default login both fit320x568 without page scroll; five-width screenshots included. Production prior PRs81–88 normally merged; recent Forum,Radio and reference-setting additive migrations applied and ACL verified; Gmail recovery request200 but inbox receipt unverified. Remaining: ordinary feedback PR/merge/deployment check; authorized live sessions/private drafts; broader absent module objects tracked separately. See `docs/handoffs/2026-11-15-member-auth-feedback.md`.
