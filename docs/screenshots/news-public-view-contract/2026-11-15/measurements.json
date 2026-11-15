@@ -1,0 +1,492 @@
+[
+  {
+    "width": 320,
+    "key": "epe_welcome_demobebz",
+    "indexThumb": {
+      "fit": "contain",
+      "naturalWidth": 1860,
+      "naturalHeight": 4032,
+      "rect": {
+        "x": 31,
+        "y": 210.390625,
+        "width": 258,
+        "height": 117.265625,
+        "top": 210.390625,
+        "right": 289,
+        "bottom": 327.65625,
+        "left": 31
+      }
+    },
+    "articleHero": {
+      "fit": "contain",
+      "naturalWidth": 1860,
+      "naturalHeight": 4032,
+      "rect": {
+        "x": 22,
+        "y": 147,
+        "width": 276,
+        "height": 598.28125,
+        "top": 147,
+        "right": 298,
+        "bottom": 745.28125,
+        "left": 22
+      },
+      "src": "/news-media/Welcome_to_Epe.jpg"
+    },
+    "creditLinks": [
+      {
+        "text": "“Welcome to Epe” by DemoBebz, via Wikimedia Commons, CC BY-SA 4.0. No image edits.",
+        "href": "https://commons.wikimedia.org/wiki/File:Welcome_to_Epe.jpg"
+      },
+      {
+        "text": "CC BY-SA 4.0",
+        "href": "https://creativecommons.org/licenses/by-sa/4.0/deed.en"
+      }
+    ],
+    "viewport": 320,
+    "document": 320,
+    "body": 320,
+    "overflow": []
+  },
+  {
+    "width": 320,
+    "key": "epe_road_benbeezy",
+    "indexThumb": {
+      "fit": "contain",
+      "naturalWidth": 1080,
+      "naturalHeight": 810,
+      "rect": {
+        "x": 22,
+        "y": 573.09375,
+        "width": 62,
+        "height": 48,
+        "top": 573.09375,
+        "right": 84,
+        "bottom": 621.09375,
+        "left": 22
+      }
+    },
+    "articleHero": {
+      "fit": "contain",
+      "naturalWidth": 1080,
+      "naturalHeight": 810,
+      "rect": {
+        "x": 22,
+        "y": 147,
+        "width": 276,
+        "height": 207,
+        "top": 147,
+        "right": 298,
+        "bottom": 354,
+        "left": 22
+      },
+      "src": "/news-media/Epe_Express_Road.jpg"
+    },
+    "creditLinks": [
+      {
+        "text": "“Epe Express Road” by Benbeezy, via Wikimedia Commons, CC BY-SA 4.0. No image edits.",
+        "href": "https://commons.wikimedia.org/wiki/File:Epe_Express_Road.jpg"
+      },
+      {
+        "text": "CC BY-SA 4.0",
+        "href": "https://creativecommons.org/licenses/by-sa/4.0/deed.en"
+      }
+    ],
+    "viewport": 320,
+    "document": 320,
+    "body": 320,
+    "overflow": []
+  },
+  {
+    "width": 390,
+    "key": "epe_welcome_demobebz",
+    "indexThumb": {
+      "fit": "contain",
+      "naturalWidth": 1860,
+      "naturalHeight": 4032,
+      "rect": {
+        "x": 31,
+        "y": 210.390625,
+        "width": 328,
+        "height": 182.21875,
+        "top": 210.390625,
+        "right": 359,
+        "bottom": 392.609375,
+        "left": 31
+      }
+    },
+    "articleHero": {
+      "fit": "contain",
+      "naturalWidth": 1860,
+      "naturalHeight": 4032,
+      "rect": {
+        "x": 22,
+        "y": 152.21875,
+        "width": 346,
+        "height": 720,
+        "top": 152.21875,
+        "right": 368,
+        "bottom": 872.21875,
+        "left": 22
+      },
+      "src": "/news-media/Welcome_to_Epe.jpg"
+    },
+    "creditLinks": [
+      {
+        "text": "“Welcome to Epe” by DemoBebz, via Wikimedia Commons, CC BY-SA 4.0. No image edits.",
+        "href": "https://commons.wikimedia.org/wiki/File:Welcome_to_Epe.jpg"
+      },
+      {
+        "text": "CC BY-SA 4.0",
+        "href": "https://creativecommons.org/licenses/by-sa/4.0/deed.en"
+      }
+    ],
+    "viewport": 390,
+    "document": 390,
+    "body": 390,
+    "overflow": []
+  },
+  {
+    "width": 390,
+    "key": "epe_road_benbeezy",
+    "indexThumb": {
+      "fit": "contain",
+      "naturalWidth": 1080,
+      "naturalHeight": 810,
+      "rect": {
+        "x": 23,
+        "y": 590.09375,
+        "width": 166,
+        "height": 93.375,
+        "top": 590.09375,
+        "right": 189,
+        "bottom": 683.46875,
+        "left": 23
+      }
+    },
+    "articleHero": {
+      "fit": "contain",
+      "naturalWidth": 1080,
+      "naturalHeight": 810,
+      "rect": {
+        "x": 22,
+        "y": 152.21875,
+        "width": 346,
+        "height": 259.5,
+        "top": 152.21875,
+        "right": 368,
+        "bottom": 411.71875,
+        "left": 22
+      },
+      "src": "/news-media/Epe_Express_Road.jpg"
+    },
+    "creditLinks": [
+      {
+        "text": "“Epe Express Road” by Benbeezy, via Wikimedia Commons, CC BY-SA 4.0. No image edits.",
+        "href": "https://commons.wikimedia.org/wiki/File:Epe_Express_Road.jpg"
+      },
+      {
+        "text": "CC BY-SA 4.0",
+        "href": "https://creativecommons.org/licenses/by-sa/4.0/deed.en"
+      }
+    ],
+    "viewport": 390,
+    "document": 390,
+    "body": 390,
+    "overflow": []
+  },
+  {
+    "width": 430,
+    "key": "epe_welcome_demobebz",
+    "indexThumb": {
+      "fit": "contain",
+      "naturalWidth": 1860,
+      "naturalHeight": 4032,
+      "rect": {
+        "x": 31,
+        "y": 210.390625,
+        "width": 368,
+        "height": 204.4375,
+        "top": 210.390625,
+        "right": 399,
+        "bottom": 414.828125,
+        "left": 31
+      }
+    },
+    "articleHero": {
+      "fit": "contain",
+      "naturalWidth": 1860,
+      "naturalHeight": 4032,
+      "rect": {
+        "x": 22,
+        "y": 158.59375,
+        "width": 386,
+        "height": 720,
+        "top": 158.59375,
+        "right": 408,
+        "bottom": 878.59375,
+        "left": 22
+      },
+      "src": "/news-media/Welcome_to_Epe.jpg"
+    },
+    "creditLinks": [
+      {
+        "text": "“Welcome to Epe” by DemoBebz, via Wikimedia Commons, CC BY-SA 4.0. No image edits.",
+        "href": "https://commons.wikimedia.org/wiki/File:Welcome_to_Epe.jpg"
+      },
+      {
+        "text": "CC BY-SA 4.0",
+        "href": "https://creativecommons.org/licenses/by-sa/4.0/deed.en"
+      }
+    ],
+    "viewport": 430,
+    "document": 430,
+    "body": 430,
+    "overflow": []
+  },
+  {
+    "width": 430,
+    "key": "epe_road_benbeezy",
+    "indexThumb": {
+      "fit": "contain",
+      "naturalWidth": 1080,
+      "naturalHeight": 810,
+      "rect": {
+        "x": 23,
+        "y": 612.3125,
+        "width": 186,
+        "height": 104.625,
+        "top": 612.3125,
+        "right": 209,
+        "bottom": 716.9375,
+        "left": 23
+      }
+    },
+    "articleHero": {
+      "fit": "contain",
+      "naturalWidth": 1080,
+      "naturalHeight": 810,
+      "rect": {
+        "x": 22,
+        "y": 158.59375,
+        "width": 386,
+        "height": 289.5,
+        "top": 158.59375,
+        "right": 408,
+        "bottom": 448.09375,
+        "left": 22
+      },
+      "src": "/news-media/Epe_Express_Road.jpg"
+    },
+    "creditLinks": [
+      {
+        "text": "“Epe Express Road” by Benbeezy, via Wikimedia Commons, CC BY-SA 4.0. No image edits.",
+        "href": "https://commons.wikimedia.org/wiki/File:Epe_Express_Road.jpg"
+      },
+      {
+        "text": "CC BY-SA 4.0",
+        "href": "https://creativecommons.org/licenses/by-sa/4.0/deed.en"
+      }
+    ],
+    "viewport": 430,
+    "document": 430,
+    "body": 430,
+    "overflow": []
+  },
+  {
+    "width": 768,
+    "key": "epe_welcome_demobebz",
+    "indexThumb": {
+      "fit": "contain",
+      "naturalWidth": 1860,
+      "naturalHeight": 4032,
+      "rect": {
+        "x": 29,
+        "y": 232.546875,
+        "width": 710,
+        "height": 412.78125,
+        "top": 232.546875,
+        "right": 739,
+        "bottom": 645.328125,
+        "left": 29
+      }
+    },
+    "articleHero": {
+      "fit": "contain",
+      "naturalWidth": 1860,
+      "naturalHeight": 4032,
+      "rect": {
+        "x": 16,
+        "y": 142.515625,
+        "width": 736,
+        "height": 720,
+        "top": 142.515625,
+        "right": 752,
+        "bottom": 862.515625,
+        "left": 16
+      },
+      "src": "/news-media/Welcome_to_Epe.jpg"
+    },
+    "creditLinks": [
+      {
+        "text": "“Welcome to Epe” by DemoBebz, via Wikimedia Commons, CC BY-SA 4.0. No image edits.",
+        "href": "https://commons.wikimedia.org/wiki/File:Welcome_to_Epe.jpg"
+      },
+      {
+        "text": "CC BY-SA 4.0",
+        "href": "https://creativecommons.org/licenses/by-sa/4.0/deed.en"
+      }
+    ],
+    "viewport": 768,
+    "document": 768,
+    "body": 768,
+    "overflow": []
+  },
+  {
+    "width": 768,
+    "key": "epe_road_benbeezy",
+    "indexThumb": {
+      "fit": "contain",
+      "naturalWidth": 1080,
+      "naturalHeight": 810,
+      "rect": {
+        "x": 17,
+        "y": 698.109375,
+        "width": 359,
+        "height": 201.9375,
+        "top": 698.109375,
+        "right": 376,
+        "bottom": 900.046875,
+        "left": 17
+      }
+    },
+    "articleHero": {
+      "fit": "contain",
+      "naturalWidth": 1080,
+      "naturalHeight": 810,
+      "rect": {
+        "x": 16,
+        "y": 142.515625,
+        "width": 736,
+        "height": 552,
+        "top": 142.515625,
+        "right": 752,
+        "bottom": 694.515625,
+        "left": 16
+      },
+      "src": "/news-media/Epe_Express_Road.jpg"
+    },
+    "creditLinks": [
+      {
+        "text": "“Epe Express Road” by Benbeezy, via Wikimedia Commons, CC BY-SA 4.0. No image edits.",
+        "href": "https://commons.wikimedia.org/wiki/File:Epe_Express_Road.jpg"
+      },
+      {
+        "text": "CC BY-SA 4.0",
+        "href": "https://creativecommons.org/licenses/by-sa/4.0/deed.en"
+      }
+    ],
+    "viewport": 768,
+    "document": 768,
+    "body": 768,
+    "overflow": []
+  },
+  {
+    "width": 1440,
+    "key": "epe_welcome_demobebz",
+    "indexThumb": {
+      "fit": "contain",
+      "naturalWidth": 1860,
+      "naturalHeight": 4032,
+      "rect": {
+        "x": 153,
+        "y": 237.359375,
+        "width": 481.421875,
+        "height": 279.890625,
+        "top": 237.359375,
+        "right": 634.421875,
+        "bottom": 517.25,
+        "left": 153
+      }
+    },
+    "articleHero": {
+      "fit": "contain",
+      "naturalWidth": 1860,
+      "naturalHeight": 4032,
+      "rect": {
+        "x": 240,
+        "y": 149.59375,
+        "width": 960,
+        "height": 720,
+        "top": 149.59375,
+        "right": 1200,
+        "bottom": 869.59375,
+        "left": 240
+      },
+      "src": "/news-media/Welcome_to_Epe.jpg"
+    },
+    "creditLinks": [
+      {
+        "text": "“Welcome to Epe” by DemoBebz, via Wikimedia Commons, CC BY-SA 4.0. No image edits.",
+        "href": "https://commons.wikimedia.org/wiki/File:Welcome_to_Epe.jpg"
+      },
+      {
+        "text": "CC BY-SA 4.0",
+        "href": "https://creativecommons.org/licenses/by-sa/4.0/deed.en"
+      }
+    ],
+    "viewport": 1440,
+    "document": 1440,
+    "body": 1440,
+    "overflow": []
+  },
+  {
+    "width": 1440,
+    "key": "epe_road_benbeezy",
+    "indexThumb": {
+      "fit": "contain",
+      "naturalWidth": 1080,
+      "naturalHeight": 810,
+      "rect": {
+        "x": 1021,
+        "y": 266.859375,
+        "width": 278,
+        "height": 156.375,
+        "top": 266.859375,
+        "right": 1299,
+        "bottom": 423.234375,
+        "left": 1021
+      }
+    },
+    "articleHero": {
+      "fit": "contain",
+      "naturalWidth": 1080,
+      "naturalHeight": 810,
+      "rect": {
+        "x": 240,
+        "y": 149.59375,
+        "width": 960,
+        "height": 720,
+        "top": 149.59375,
+        "right": 1200,
+        "bottom": 869.59375,
+        "left": 240
+      },
+      "src": "/news-media/Epe_Express_Road.jpg"
+    },
+    "creditLinks": [
+      {
+        "text": "“Epe Express Road” by Benbeezy, via Wikimedia Commons, CC BY-SA 4.0. No image edits.",
+        "href": "https://commons.wikimedia.org/wiki/File:Epe_Express_Road.jpg"
+      },
+      {
+        "text": "CC BY-SA 4.0",
+        "href": "https://creativecommons.org/licenses/by-sa/4.0/deed.en"
+      }
+    ],
+    "viewport": 1440,
+    "document": 1440,
+    "body": 1440,
+    "overflow": []
+  }
+]
