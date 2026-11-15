@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { ArrowRightIcon, ArrowUpRightIcon } from "../components/icons";
+import { ArrowRightIcon, ArrowUpRightIcon, UsersIcon } from "../components/icons";
 import { formatPublishedDate } from "../lib/dates";
 import { getLatestStories } from "../lib/home-data";
 import "./hero-logo.css";
+import "./connection-panel.css";
 import CookieBanner from "../components/cookie-banner";
 import HeroCarousel from "../components/hero-carousel";
 
@@ -117,16 +118,17 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="ep-container home-community" aria-labelledby="community-title">
+      <section className="ep-container home-community connection-panel" aria-labelledby="community-title">
         <div>
-          <p className="ui-eyebrow">Belong and contribute</p>
-          <h2 id="community-title">Local voices shape this place.</h2>
+          <p className="ui-eyebrow">OUR PLACE. OUR VOICES.</p>
+          <h2 id="community-title">Good things begin with <em>connection.</em></h2>
           <p>Join conversations and share community knowledge through the features available on EPE LAWA.</p>
         </div>
         <div className="home-community__actions">
           <Link className="btn-primary" href="/auth">Create an account <ArrowUpRightIcon size={16} aria-hidden="true" /></Link>
           <Link className="ui-text-link" href="/guidelines">Read the community guidelines</Link>
         </div>
+        <span className="connection-panel__icon" aria-hidden="true"><UsersIcon size={96} /></span>
       </section>
       <CookieBanner />
     </div>

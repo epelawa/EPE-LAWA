@@ -48,7 +48,7 @@ export default function SiteMotion() {
       window.removeEventListener("load", onLoad);
       setPhase("exiting");
       exitTimer = window.setTimeout(() => setPhase("done"), 180);
-    }, 1_800);
+    }, 1800);
     if (document.readyState === "complete") finish();
     else window.addEventListener("load", onLoad, { once: true });
     return () => {
@@ -61,39 +61,13 @@ export default function SiteMotion() {
 
   useEffect(() => {
     const main = document.querySelector<HTMLElement>(".site-main");
-    if (!main || typeof IntersectionObserver === "undefined") return;
+    if (!main || window.matchMedia("(prefers-reduced-motion: reduce)").matches || typeof IntersectionObserver === "undefined") return;
 
-    // Observe server-rendered content without changing its attributes: this root
-    // layout can mount while streamed route segments are still hydrating.
-    const scheduled = new WeakSet<HTMLElement>();
-    const activeAnimations = new Set<Animation>();
-    const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const cancelAnimationsForReducedMotion = () => {
-      if (!motionPreference.matches) return;
-      for (const animation of activeAnimations) animation.cancel();
-      activeAnimations.clear();
-    };
-    motionPreference.addEventListener("change", cancelAnimationsForReducedMotion);
-
-    const observer = new IntersectionObserver((entries, currentObserver) => {
+    const observer = new IntersectionObserver((entries) => {
       for (const entry of entries) {
         if (!entry.isIntersecting) continue;
-        const target = entry.target as HTMLElement;
-        currentObserver.unobserve(target);
-        if (motionPreference.matches || typeof target.animate !== "function") continue;
-
-        const animation = target.animate(
-          [
-            { opacity: 0, filter: "blur(10px)", transform: "translate3d(0,22px,0) scale(.99)" },
-            { opacity: 1, filter: "blur(0)", transform: "translate3d(0,0,0) scale(1)" },
-          ],
-          { duration: 680, easing: "cubic-bezier(.2,.7,.2,1)", fill: "both" },
-        );
-        activeAnimations.add(animation);
-        animation.addEventListener("finish", () => {
-          animation.cancel();
-          activeAnimations.delete(animation);
-        }, { once: true });
+        (entry.target as HTMLElement).dataset.scrollReveal = "visible";
+        observer.unobserve(entry.target);
       }
     }, { rootMargin: "0px 0px -8% 0px", threshold: 0.06 });
 
@@ -102,20 +76,21 @@ export default function SiteMotion() {
       if (root instanceof HTMLElement && root.matches(REVEAL_TARGETS)) candidates.add(root);
       root.querySelectorAll<HTMLElement>(REVEAL_TARGETS).forEach((element) => candidates.add(element));
       for (const element of candidates) {
-        if (scheduled.has(element) || element.closest('[aria-busy="true"]')) continue;
+        if (element.dataset.scrollReveal === "visible" || element.closest('[aria-busy="true"], .member-dashboard-shell, .public-home')) continue;
         let ancestor = element.parentElement;
         let nested = false;
         while (ancestor && ancestor !== main) {
-          if (scheduled.has(ancestor)) { nested = true; break; }
+          if (ancestor.dataset.scrollReveal) { nested = true; break; }
           ancestor = ancestor.parentElement;
         }
         if (nested) continue;
-        scheduled.add(element);
+        element.dataset.scrollReveal = "pending";
         observer.observe(element);
       }
     };
 
     collect(main);
+    document.documentElement.classList.add("has-scroll-reveal");
     const mutations = new MutationObserver((records) => {
       for (const record of records) {
         for (const node of record.addedNodes) if (node instanceof Element) collect(node);
@@ -126,9 +101,7 @@ export default function SiteMotion() {
     return () => {
       observer.disconnect();
       mutations.disconnect();
-      motionPreference.removeEventListener("change", cancelAnimationsForReducedMotion);
-      for (const animation of activeAnimations) animation.cancel();
-      activeAnimations.clear();
+      document.documentElement.classList.remove("has-scroll-reveal");
     };
   }, []);
 

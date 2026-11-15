@@ -12,7 +12,7 @@ test('every public page has rebuilt editorial or account markup, not the old nar
   for(const file of pages){const source=read(file);if(file.includes('/app/admin/'))continue;assert.match(source,/PageFrame|AccountShell|InformationPage|public-home|LinkIssueView|member-dashboard-shell/,file);assert.doesNotMatch(source,/max-w-md mx-auto px-4 py-12|landing-hero/,file);}
 });
 test('new design scales display roles to 90 percent and retains readable body/control floors',()=>{
-  const css=read('frontend/apps/main/app/globals.css');assert.match(css,/--text-display: clamp\(2\.025rem, 4\.8vw, 3\.6rem\)/);assert.match(css,/--text-title: clamp\(1\.25rem, 2\.4vw, 1\.575rem\)/);assert.match(css,/font-size: 16px/);assert.match(css,/min-height: 44px/);assert.match(css,/prefers-reduced-motion/);assert.doesNotMatch(css,/#(?:da251c|ff4a3d|17253a)\b/i);assert.match(css,/\[data-theme="dark"\]/);
+  const css=read('frontend/apps/main/app/globals.css');const layout=read('frontend/apps/main/app/layout.tsx');const header=read('frontend/apps/main/components/site-header.tsx');assert.match(css,/--text-display: clamp\(2\.025rem, 4\.8vw, 3\.6rem\)/);assert.match(css,/--text-title: clamp\(1\.25rem, 2\.4vw, 1\.575rem\)/);assert.match(css,/font-size: 16px/);assert.match(css,/min-height: 44px/);assert.match(css,/prefers-reduced-motion/);assert.doesNotMatch(css,/#(?:da251c|ff4a3d|17253a)\b/i);assert.match(css,/:root\s*\{[\s\S]*color-scheme:\s*light/);assert.doesNotMatch(css,/data-theme="dark"|color-scheme:\s*dark/);assert.match(layout,/<html\b/);assert.match(layout,/data-theme="light"/);assert.match(layout,/colorScheme: "light"/);assert.doesNotMatch(header,/ThemeToggle|Appearance|appearance/);
 });
 test('homepage preserves the original 52-photo sourced Epe hero without extra overlays or pill blocks',()=>{
   const source=read('frontend/apps/main/app/page.tsx');
@@ -44,8 +44,8 @@ test('homepage preserves the original 52-photo sourced Epe hero without extra ov
   assert.match(carousel,/home-hero__media/);
   assert.doesNotMatch(carousel,/Epe · Lagos State|Rooted in the community\. Open to everyone\./);
   assert.doesNotMatch(source+carousel,/HeroArt|hero-art|sckooly|jasab|getquant|unsplash|pexels/i);
-  assert.match(heroCss,/object-fit: cover/);
-  assert.match(heroCss,/padding: 0/);
+  assert.match(heroCss,/object-fit:\s*cover/);
+  assert.match(heroCss,/padding:\s*0/);
   assert.match(heroCss,/\.home-hero__visual/);
   assert.match(read('frontend/apps/main/components/brand.tsx'),/style=\{\{ width: markWidth, height: size \}\}/);
 });
@@ -82,9 +82,9 @@ test('homepage story cards use published bylines and only fully credited cover i
   assert.match(home,/home-story-item--support/);
   assert.match(home,/No credited cover image available/);
   assert.match(home,/Byline unavailable/);
-  assert.match(styles,/\.home-story-cover-link \{[^}]*aspect-ratio: 16 \/ 10/);
-  assert.match(styles,/\.home-story-list--3 \{[^}]*grid-template-columns: minmax\(0, 2fr\) repeat\(2, minmax\(0, 1fr\)\)/);
-  assert.match(styles,/\.home-story-item--support \.home-story-cover-link \{[^}]*aspect-ratio: 4 \/ 3/);
+  assert.match(styles,/\.home-story-cover-link \{[^}]*aspect-ratio:\s*16\s*\/\s*10/);
+  assert.match(styles,/\.home-story-list--3 \{[^}]*grid-template-columns:\s*minmax\(0,\s*2fr\)\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(styles,/\.home-story-item--support \.home-story-cover-link \{[^}]*aspect-ratio:\s*4\s*\/\s*3/);
   assert.match(styles,/\.home-story-cover-attribution/);
   assert.match(styles,/\.home-story-cover--unavailable/);
   assert.doesNotMatch(data+home,/sampleStory|mockArticles|placeholder image/i);
