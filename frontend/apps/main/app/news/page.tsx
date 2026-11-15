@@ -158,6 +158,12 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
         </ul></nav>
       </header>
 
+      {breakingLead ? <section className={styles.breakingBanner} aria-label="Breaking news">
+        <span className={styles.breakingLabel}>Breaking</span>
+        <Link href={newsArticlePath(breakingLead.slug)}>{breakingLead.title}</Link>
+        <span className={styles.breakingMeta}>Published {formatPublishedDate(breakingLead.published_at)}</span>
+      </section> : null}
+
       {articles.length === 0 ? <EmptyPanel title={category ? "No published stories in this category" : query ? "No matching stories" : "No stories published yet"} description={category ? "There are no published stories in this category yet." : query ? "Try a different headline search. No unpublished stories are shown." : "When the newsroom publishes a story, it will appear here with its byline, date and category."} /> : <div className={styles.newsPageGrid}>
         <div className={styles.newsMain}>
           <div className={styles.leadGrid}>
