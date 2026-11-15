@@ -46,6 +46,9 @@ test("News reference composition keeps an actionable lead and local-image topic 
   assert.match(styles, /\.topicGrid \{[^}]*grid-template-columns:repeat\(6/);
   assert.match(styles, /\.topicImage \{[^}]*border-radius:50%/);
   assert.match(styles, /\.featureAction \{[^}]*border-radius:999px/);
+  assert.match(page, /className=\{styles\.discoverBanner\}/);
+  assert.match(styles, /\.discoverBanner \{[^}]*border-radius:16px/);
+  assert.match(styles, /\.newsletterCard,.popularCard \{[^}]*border-radius:16px/);
 });
 
 test("Breaking news is visible only for a flagged, unexpired published lead", () => {
