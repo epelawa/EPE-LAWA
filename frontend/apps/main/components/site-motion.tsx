@@ -2,19 +2,6 @@
 
 import { useEffect, useState } from "react";
 
-const REVEAL_TARGETS = [
-  "main section",
-  "main article",
-  "main .ui-page > *",
-  "main .home-hero__copy",
-  "main .home-hero__art",
-  "main .home-feature",
-  "main .home-index__link",
-  "main .home-story",
-  "main .home-community > *",
-  "main .home-join",
-].join(",");
-
 type LoaderProps = { label?: string };
 
 export function TidegateSpinner({ label = "Loading EPE LAWA" }: LoaderProps) {
@@ -56,52 +43,6 @@ export default function SiteMotion() {
       window.clearTimeout(safetyTimer);
       window.clearTimeout(finishTimer);
       window.clearTimeout(exitTimer);
-    };
-  }, []);
-
-  useEffect(() => {
-    const main = document.querySelector<HTMLElement>(".site-main");
-    if (!main || window.matchMedia("(prefers-reduced-motion: reduce)").matches || typeof IntersectionObserver === "undefined") return;
-
-    const observer = new IntersectionObserver((entries) => {
-      for (const entry of entries) {
-        if (!entry.isIntersecting) continue;
-        (entry.target as HTMLElement).dataset.scrollReveal = "visible";
-        observer.unobserve(entry.target);
-      }
-    }, { rootMargin: "0px 0px -8% 0px", threshold: 0.06 });
-
-    const collect = (root: Element) => {
-      const candidates = new Set<HTMLElement>();
-      if (root instanceof HTMLElement && root.matches(REVEAL_TARGETS)) candidates.add(root);
-      root.querySelectorAll<HTMLElement>(REVEAL_TARGETS).forEach((element) => candidates.add(element));
-      for (const element of candidates) {
-        if (element.dataset.scrollReveal === "visible" || element.closest('[aria-busy="true"], .member-dashboard-shell, .public-home')) continue;
-        let ancestor = element.parentElement;
-        let nested = false;
-        while (ancestor && ancestor !== main) {
-          if (ancestor.dataset.scrollReveal) { nested = true; break; }
-          ancestor = ancestor.parentElement;
-        }
-        if (nested) continue;
-        element.dataset.scrollReveal = "pending";
-        observer.observe(element);
-      }
-    };
-
-    collect(main);
-    document.documentElement.classList.add("has-scroll-reveal");
-    const mutations = new MutationObserver((records) => {
-      for (const record of records) {
-        for (const node of record.addedNodes) if (node instanceof Element) collect(node);
-      }
-    });
-    mutations.observe(main, { childList: true, subtree: true });
-
-    return () => {
-      observer.disconnect();
-      mutations.disconnect();
-      document.documentElement.classList.remove("has-scroll-reveal");
     };
   }, []);
 

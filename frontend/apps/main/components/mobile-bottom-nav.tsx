@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { mobileNavigationCurrentState, shouldRenderMobileNavigation } from "../lib/navigation";
 import type { MobileNavigationKey } from "../lib/navigation";
-import { BookmarkIcon, CompassIcon, HomeIcon, NewspaperIcon, UserIcon } from "./icons";
+import { BookmarkIcon, CompassIcon, HomeIcon, UserIcon } from "./icons";
 
 type Tab = {
   key: MobileNavigationKey;
@@ -12,13 +12,6 @@ type Tab = {
   label: string;
   Icon: typeof HomeIcon;
 };
-
-const PUBLIC_TABS: Tab[] = [
-  { key: "home", href: "/", label: "Home", Icon: HomeIcon },
-  { key: "news", href: "/news", label: "News", Icon: NewspaperIcon },
-  { key: "discover", href: "/tourism", label: "Discover", Icon: CompassIcon },
-  { key: "account", href: "/dashboard", label: "Account", Icon: UserIcon },
-];
 
 const DASHBOARD_TABS: Tab[] = [
   { key: "home", href: "/dashboard?tab=home", label: "Home", Icon: HomeIcon },
@@ -31,12 +24,11 @@ export default function MobileBottomNav() {
   const pathname = usePathname() ?? "/";
   const searchParams = useSearchParams();
   if (!shouldRenderMobileNavigation(pathname)) return null;
-  const tabs = pathname === "/dashboard" ? DASHBOARD_TABS : PUBLIC_TABS;
 
   return (
     <nav className="mobile-bottom-nav" aria-label="Mobile primary navigation">
       <ul>
-        {tabs.map((tab) => {
+        {DASHBOARD_TABS.map((tab) => {
           const Icon = tab.Icon;
           const current = mobileNavigationCurrentState(pathname, tab.key, searchParams);
           return (

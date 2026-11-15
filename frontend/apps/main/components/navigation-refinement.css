@@ -78,6 +78,5 @@ body:has(.focused-error-shell) .mobile-bottom-nav,body:has(.auth-link-issue) .mo
 @media (max-width:767px) {
   .mobile-bottom-nav { position:fixed; inset:auto 0 0; z-index:58; display:block; padding:4px 8px calc(4px + env(safe-area-inset-bottom,0px)); border-top:1px solid hsl(var(--border)); background:hsl(var(--card)/.97); box-shadow:0 -6px 18px rgb(10 16 35/.08); -webkit-backdrop-filter:saturate(160%) blur(14px); backdrop-filter:saturate(160%) blur(14px); }
   body:has(.mobile-bottom-nav):not(:has(.focused-error-shell)):not(:has(.auth-link-issue)) { padding-bottom:calc(68px + env(safe-area-inset-bottom,0px)); }
-  body:has(.public-home):has(.mobile-bottom-nav) .storage-notice { bottom:calc(76px + env(safe-area-inset-bottom,0px)); }
   body:has(.mobile-bottom-nav) .toast-region { bottom:calc(76px + env(safe-area-inset-bottom,0px) + var(--storage-notice-height,0px)); }
 }

@@ -22,20 +22,23 @@ async function openHome(page: Page, request: APIRequestContext) {
   await setFixtureMode(request, "empty");
   const response = await page.goto("/");
   expect(response?.status()).toBe(200);
-  await expect(page.getByRole("heading", { level: 1, name: /Epe\.\s*Closer to home\./i })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Epe Closer To Home" })).toBeVisible();
   await waitForHeroImage(page);
+  await expect(page.locator(".site-preloader")).toHaveCount(0);
 }
 
-test("homepage preserves copy and CTAs, uses a full-height cover hero, and has no bottom bar", async ({ page, request }) => {
+test("homepage presents editorial copy and a news-first CTA in a full-height hero without a bottom bar", async ({ page, request }) => {
   await page.setViewportSize({ width: 375, height: 900 });
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await openHome(page, request);
 
-  await expect(page.getByText("A digital home for Epe’s news, heritage, businesses and community voices.")).toBeVisible();
-  await expect(page.getByRole("link", { name: "Explore Epe", exact: true })).toHaveAttribute("href", "/tourism");
-  await expect(page.getByRole("link", { name: "Read the latest", exact: true })).toHaveAttribute("href", "/news");
+  await expect(page.getByText("From local headlines to the people, places and ideas shaping everyday life in Epe, this is a place to stay informed and feel connected.")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Read the latest stories", exact: true })).toHaveAttribute("href", "/news");
+  await expect(page.locator(".home-hero__actions a")).toHaveCount(1);
+  await expect(page.getByRole("link", { name: /Explore Epe|Tour Epe/i })).toHaveCount(0);
   await expect(page.locator(".mobile-bottom-nav")).toHaveCount(0);
-  await expect(page.locator(".home-hero__quicknav, .home-hero__caption, .home-hero__credit, .home-hero__slide-label, .home-hero__counter")).toHaveCount(0);
+  await expect(page.locator(".home-hero__location, .home-index, .home-discover-grid, .home-hero__quicknav, .home-hero__caption, .home-hero__credit, .home-hero__slide-label, .home-hero__counter")).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Explore what matters to you." })).toHaveCount(0);
 
   const composition = await page.locator(".home-hero__visual").evaluate((hero) => {
     const image = hero.querySelector(".home-hero__photo");
@@ -55,6 +58,7 @@ test("homepage preserves copy and CTAs, uses a full-height cover hero, and has n
 test("the original cover hero reaches the viewport bottom across phone, tablet and desktop sizes", async ({ page, request }, testInfo) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await openHome(page, request);
+  await page.addStyleTag({ content: "nextjs-portal { display: none !important; }" });
   for (const [width, height] of [[320, 800], [375, 900], [768, 900], [1024, 768], [1440, 900]]) {
     await page.setViewportSize({ width, height });
     const bounds = await page.locator(".home-hero__visual").evaluate((hero) => {
@@ -63,6 +67,7 @@ test("the original cover hero reaches the viewport bottom across phone, tablet a
     });
     expect(bounds.bottom, `hero should cover to the viewport bottom at ${width}px`).toBeGreaterThanOrEqual(bounds.viewportHeight - 1);
     expect(bounds.fit).toBe("cover");
+    if (width === 1440) await page.screenshot({ path: testInfo.outputPath("homepage-hero-desktop.png") });
     await page.screenshot({ path: testInfo.outputPath(`homepage-cover-${width}.png`), fullPage: true });
   }
 });
@@ -104,6 +109,9 @@ test("reduced motion disables hero autoplay while retaining the accessible slide
   await page.setViewportSize({ width: 375, height: 900 });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await openHome(page, request);
+
+  const heroAnimations = await page.locator(".home-hero__content h1, .home-hero__lede, .home-hero__actions").evaluateAll((nodes) => nodes.map((node) => getComputedStyle(node).animationName));
+  expect(heroAnimations).toEqual(["none", "none", "none"]);
 
   const carousel = page.locator('[aria-roledescription="carousel"]');
   const slide = carousel.locator('[aria-roledescription="slide"]');

@@ -113,7 +113,9 @@ test("signed-in dashboard keeps honest empty views and one responsive tab bar", 
   await expect(page).toHaveURL(/\/dashboard\?tab=not-a-real-tab$/);
   await expectActiveTab(page, "Home");
   await expect(page.getByRole("heading", { name: "Breaking News" })).toBeVisible();
+  await expect(page.locator(".site-preloader")).toHaveCount(0);
 
+  await page.addStyleTag({ content: "nextjs-portal { display: none !important; }" });
   for (const [width, height] of [[320, 800], [375, 900], [768, 900], [1024, 768], [1440, 900]]) {
     await page.setViewportSize({ width, height });
     const mobile = width <= 767;
@@ -133,7 +135,7 @@ test("signed-in dashboard keeps honest empty views and one responsive tab bar", 
   }
 
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1, name: /Epe\.\s*Closer to home\./i })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Epe Closer To Home" })).toBeVisible();
   await expect(page.locator(".mobile-bottom-nav")).toHaveCount(0);
   await expectLocalSupabaseOnly(page);
 

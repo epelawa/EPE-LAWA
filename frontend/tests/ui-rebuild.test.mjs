@@ -24,8 +24,13 @@ test('homepage preserves the original 52-photo sourced Epe hero without extra ov
   assert.equal(manifest.length,52);
   assert.equal(new Set(manifest.map(slide=>slide.source)).size,52);
   assert.doesNotMatch(source,/home-hero__brand|BrandLockup/);
-  assert.match(source,/Epe\.<br \/><em>Closer to home\.<\/em>/);
-  assert.match(source,/A digital home for Epe’s news, heritage, businesses and community voices\./);
+  assert.match(source,/home-hero__title-line">Epe<\/span>/);
+  assert.match(source,/home-hero__title-line home-hero__title-line--accent">Closer<\/span>/);
+  assert.match(source,/home-hero__title-line home-hero__title-line--preposition">To<\/span>/);
+  assert.match(source,/home-hero__title-line">Home<\/span>/);
+  assert.match(source,/From local headlines to the people, places and ideas shaping everyday life in Epe, this is a place to stay informed and feel connected\./);
+  assert.match(source,/href="\/news" className="btn-primary">Read the latest stories/);
+  assert.doesNotMatch(source,/Explore Epe|href="\/tourism"/);
   assert.match(source,/className=\{`home-story-list home-story-list--\$\{stories\.items\.length\}`\}/);
   assert.match(source,/getLatestStories\(3\)/);
   assert.doesNotMatch(source,/Stories worth knowing|History worth keeping|Places worth finding|People worth connecting/);
@@ -35,7 +40,7 @@ test('homepage preserves the original 52-photo sourced Epe hero without extra ov
   assert.match(carousel,/home-hero__pause/);
   assert.match(carousel,/aria-roledescription="slide"/);
   assert.doesNotMatch(carousel,/home-hero__caption|home-hero__credit|home-hero__slide-label|home-hero__counter|Photo by <a/);
-  assert.doesNotMatch(source,/home-hero__quicknav|Quick access to EPE LAWA features|Explore sections/);
+  assert.doesNotMatch(source,/home-hero__quicknav|home-hero__location|Epe · Lagos State|home-index|home-discover|Explore what matters to you|Quick access to EPE LAWA features|Explore sections/i);
   assert.match(read('frontend/apps/main/app/photo-credits/page.tsx'),/href=\{image\.licenseUrl\}/);
   assert.match(read('frontend/apps/main/components/site-footer.tsx'),/photo-credits/);
   assert.match(carousel,/HERO_SLIDES = heroImages/);
