@@ -80,3 +80,15 @@ test("Newsroom reports public state from the published-version pointer and disti
   assert.match(editPage, /if \(!articleResult\.data\) notFound\(\)/);
   assert.doesNotMatch(editPage, /articleResult\.error\s*\|\|\s*!articleResult\.data/);
 });
+
+test("admin current-version joins use stable column hints rather than deployment-specific FK names", async () => {
+  const [list, editor] = await Promise.all([
+    read("frontend/apps/admin/app/(protected)/newsroom/page.tsx"),
+    read("frontend/apps/admin/app/(protected)/newsroom/[id]/page.tsx"),
+  ]);
+  assert.match(list, /current_version:current_version_id\s*\(/);
+  assert.match(editor, /current_version:article_versions!current_version_id\s*\(/);
+  for (const source of [list, editor]) {
+    assert.doesNotMatch(source, /articles_current_version(?:_fkey|_id_fkey)/);
+  }
+});

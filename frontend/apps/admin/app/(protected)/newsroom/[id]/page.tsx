@@ -72,7 +72,7 @@ export default async function EditArticlePage({
   const [articleResult, categoryResult, authorResult, createCapability, publishCapability, unpublishCapability] = await Promise.all([
     supabase.from("articles").select(`
       id, slug, revision, current_version_id, published_version_id, published_at,
-      current_version:article_versions!articles_current_version_fkey(
+      current_version:article_versions!current_version_id(
         id,title,summary,body,state,version_number,author_id,category_id,created_by,seo_title,seo_description,og_image_key
       )
     `).eq("id", id).maybeSingle(),

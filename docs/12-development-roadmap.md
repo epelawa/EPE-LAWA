@@ -298,3 +298,7 @@ Done: public body reads bind the exact publication pointer even when staff RLS e
 ## 2026-11-15 07:24 WAT — approved full-image News covers
 
 Done: exact-byte two-cover Commons catalog; server-validated Admin selection and saved-version key retention; uncropped contain sizing in public article/index/related slots; visible linked source/author/license and illustrative captions. Pinned forced builds/typechecks pass; complete combined suite 263 total, 262 passed, zero failed, one existing skip. Public and canonical Admin fixtures pass at 320/390/430/768/1440px, including cover selection/retention and no overflow. Remaining: ordinary focused merge/exact Production verification, then only two approved real stories with edit/unpublish/republish/public-copy verification. Third story remains on hold; no schema/account/env change in this patch. Handoff: `handoffs/2026-11-15-news-approved-cover-attribution.md`.
+
+### 2026-11-15 newsroom current-version read compatibility
+Bounded source-only fix: newsroom editor relationship selection uses the stable `current_version_id` column hint instead of an environment-specific FK constraint name. Verification pending; no schema migration required.
+Verification complete: forced build and typecheck passed; complete frontend/backend suite passed (263 passed, 1 skipped). Strict synthetic editor capture passed at five widths with no overflow and stable-hint validation.
