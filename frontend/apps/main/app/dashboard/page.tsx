@@ -5,6 +5,17 @@ import { signOut } from "../auth/actions";
 import ProfileEditor from "./profile-editor";
 import styles from "./dashboard.module.css";
 
+const discoverLinks = [
+  ["News", "/news"],
+  ["Ìtàn Ilú Mi", "/itan-ilu-mi"],
+  ["Forum", "/forum"],
+  ["Map & Navigation", "/map"],
+  ["Business Directory", "/business-directory"],
+  ["Tourism", "/tourism"],
+  ["EPE LAWA Radio", "/radio"],
+  ["Who is Who", "/who-is-who"],
+] as const;
+
 export const metadata = {
   title: "Member dashboard",
   robots: { index: false, follow: false },
@@ -36,13 +47,33 @@ export default async function MemberDashboardPage() {
 
   return (
     <main className={`${styles.shell} member-dashboard-shell`}>
-      <header className={styles.hero}>
+      <header className={styles.hero} id="home" tabIndex={-1}>
         <p className={styles.eyebrow}>Member dashboard</p>
         <h1>Welcome, {profile.display_name}.</h1>
         <p>Manage your public profile and return to your Epe community spaces.</p>
       </header>
+
+      <section className={styles.discover} id="discover" tabIndex={-1} aria-labelledby="discover-title">
+        <div className={styles.sectionHeading}>
+          <p className={styles.eyebrow}>Explore EPE LAWA</p>
+          <h2 id="discover-title">Discover more of Epe</h2>
+          <p className={styles.helper}>Browse the public news, places, local knowledge and community spaces available on EPE LAWA.</p>
+        </div>
+        <nav aria-label="Discover EPE LAWA">
+          <ul className={styles.discoverLinks}>
+            {discoverLinks.map(([label, href]) => <li key={href}><Link href={href}>{label}<span aria-hidden="true">↗</span></Link></li>)}
+          </ul>
+        </nav>
+      </section>
+
+      <section className={`${styles.panel} ${styles.savedPanel}`} id="saved" tabIndex={-1} aria-labelledby="saved-title">
+        <p className={styles.eyebrow}>Saved for later</p>
+        <h2 id="saved-title">Saved items</h2>
+        <p className={styles.helper}>Saved-item tools are not connected to member accounts yet, so this dashboard cannot display or store saved items.</p>
+      </section>
+
       <div className={styles.grid}>
-        <section className={styles.panel} aria-labelledby="profile-title">
+        <section className={styles.panel} id="profile" tabIndex={-1} aria-labelledby="profile-title">
           <div className={styles.panelHeading}><div><p className={styles.eyebrow}>Your details</p><h2 id="profile-title">Public profile</h2></div><span className={styles.handle}>@{profile.handle}</span></div>
           <p className={styles.helper}>Your display name and handle appear beside your posts. Keep private contact details out of your public name.</p>
           <ProfileEditor displayName={profile.display_name} handle={profile.handle} />

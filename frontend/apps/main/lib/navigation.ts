@@ -41,6 +41,7 @@ export const footerNavigation: NavItem[] = [
 
 export type MobileNavigationKey = "home" | "news" | "discover" | "account";
 export type MobileNavigationCurrent = "page" | "location" | undefined;
+export type DashboardNavigationKey = "dashboardHome" | "dashboardDiscover" | "dashboardSaved" | "dashboardProfile";
 
 const mobileNavigationHrefs: Record<MobileNavigationKey, string> = {
   home: "/",
@@ -59,6 +60,23 @@ export function mobileNavigationCurrentState(pathname: string, key: MobileNaviga
   if (routeMatches(pathname, mobileNavigationHrefs[key])) return "page";
   if (key === "discover" && mobileDiscoverRoutes.some((route) => routeMatches(pathname, route))) return "location";
   return undefined;
+}
+
+const dashboardNavigationTargets: Record<DashboardNavigationKey, string> = {
+  dashboardHome: "#home",
+  dashboardDiscover: "#discover",
+  dashboardSaved: "#saved",
+  dashboardProfile: "#profile",
+};
+
+export function dashboardNavigationCurrentState(
+  pathname: string,
+  hash: string,
+  key: DashboardNavigationKey,
+): MobileNavigationCurrent {
+  if (!routeMatches(pathname, "/dashboard")) return undefined;
+  const currentHash = hash || "#home";
+  return currentHash === dashboardNavigationTargets[key] ? "page" : undefined;
 }
 
 export function shouldRenderMobileNavigation(pathname: string): boolean {

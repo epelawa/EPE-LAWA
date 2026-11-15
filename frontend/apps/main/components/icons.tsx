@@ -142,6 +142,12 @@ export const VolumeOffIcon = ({ size = 18, className }: { size?: number; classNa
   </svg>
 );
 
+export const BookmarkIcon = ({ size = 20, className }: { size?: number; className?: string }) => (
+  <svg aria-hidden="true" focusable="false" className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M7.25 4h9.5A1.25 1.25 0 0 1 18 5.25V21l-6-3.75L6 21V5.25A1.25 1.25 0 0 1 7.25 4Z" />
+  </svg>
+);
+
 export const HomeIcon = ({ size = 20, className }: { size?: number; className?: string }) => (
   <svg aria-hidden="true" focusable="false" className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
     <path d="m3 10.7 9-7.5 9 7.5" />

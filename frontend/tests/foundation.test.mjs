@@ -196,15 +196,17 @@ test('homepage hero gallery is sourced, responsive, eager and resource-aware', a
   assert.match(page, /<HeroCarousel\s*\/>/);
   assert.doesNotMatch(page, /home-hero__brand|BrandLockup/);
   assert.match(page, /Epe\.<br \/><em>Closer to home\.<\/em>/);
-  assert.match(source, /MAX_HERO_SLIDES\s*=\s*60/);
-  assert.match(source, /HERO_SLIDES\.slice\(0, MAX_HERO_SLIDES\)/);
-  assert.match(source, /<button\s+type="button"/);
+  assert.match(source, /ROTATION_DELAY_MS = 7200/);
+  assert.match(source, /window\.setTimeout/);
+  assert.match(source, /prefers-reduced-motion: reduce/);
+  assert.match(source, /visibilitychange/);
+  assert.match(source, /isConstrainedConnection\(\)/);
+  assert.match(source, /home-hero__pause/);
+  assert.doesNotMatch(source, /home-hero__controls|home-hero__counter|Previous photo:|Next photo:/);
+  assert.match(source, /<button[\s\S]*?className="home-hero__pause"[\s\S]*?type="button"/);
   assert.doesNotMatch(source, /role="button"|tabIndex=\{0\}|onKeyDown=/);
-  assert.match(source, /aria-label=\{`Next photo:/);
-  assert.match(source, /aria-label=\{`Previous photo:/);
-  assert.match(source, /onClick=\{\(\) => moveTo\(index \+ 1\)\}/);
-  assert.match(source, /onClick=\{\(\) => moveTo\(index - 1\)\}/);
-  assert.doesNotMatch(source, /setInterval|setIsFocused|setIsHovered|onMouseEnter|onFocus=/, 'photo changes are always visitor-controlled');
+  assert.match(source, /onMouseEnter=\{\(\) => setHovered\(true\)\}/);
+  assert.match(source, /onFocusCapture=\{\(\) => setFocused\(true\)\}/);
   assert.match(source, /Photo by <a href=\{slide\.source\}/);
   assert.match(source, /href=\{slide\.licenseUrl\}/);
   assert.match(source, /key=\{slide\.slug\}/);
@@ -223,9 +225,9 @@ test('homepage hero gallery is sourced, responsive, eager and resource-aware', a
   assert.doesNotMatch(styles, /home-hero__carousel-pause|home-hero__photo-credit/);
   assert.doesNotMatch(styles, /home-hero__brand/);
   assert.match(styles, /prefers-reduced-motion/);
-  assert.equal(manifest.length, 52);
-  assert.equal(new Set(manifest.map((slide) => slide.slug)).size, 52);
-  assert.equal(new Set(manifest.map((slide) => slide.source)).size, 52);
+  assert.equal(manifest.length, 2);
+  assert.equal(new Set(manifest.map((slide) => slide.slug)).size, 2);
+  assert.equal(new Set(manifest.map((slide) => slide.source)).size, 2);
   const creditsPage = await readProjectFile('frontend/apps/main/app/photo-credits/page.tsx');
   assert.match(creditsPage, /Photo by \{image\.author\}/);
   assert.match(creditsPage, /href=\{image\.source\}/);
@@ -237,24 +239,28 @@ test('homepage hero gallery is sourced, responsive, eager and resource-aware', a
   assert.deepEqual(manifest.map((slide) => slide.source).sort(), documentedSources);
   const localFiles = new Set();
   for (const slide of manifest) {
-    assert.match(slide.slug, /^\d{2}-epe-/);
+    assert.match(slide.slug, /^(?:new-epe-road|fish-statue-epe)$/);
     assert.ok(['CC0 1.0', 'CC BY-SA 4.0'].includes(slide.license), slide.license);
     assert.match(slide.licenseUrl, /^https:\/\/creativecommons\.org\//);
     assert.ok(credits.includes(`[${slide.license}](${slide.licenseUrl})`), `missing license for ${slide.slug}`);
     assert.ok(credits.includes(`(${slide.source})`), `missing source for ${slide.slug}`);
-    for (const format of ['avif', 'webp']) {
+    for (const format of ['avif', 'webp', 'jpg']) {
       for (const size of ['small', 'large']) {
         const variant = slide[format][size];
         assert.match(variant.src, new RegExp(`\\.${format}$`));
         assert.ok([640, 1280].includes(variant.width), `${slide.slug} ${format} width`);
-        assert.equal(Number(variant.src.match(/-(\d+)\.(?:avif|webp)$/)?.[1]), variant.width, `${slide.slug} filename width`);
+        assert.equal(Number(variant.src.match(/-(\d+)\.(?:avif|webp|jpg)$/)?.[1]), variant.width, `${slide.slug} filename width`);
         const localPath = path.join(root, 'frontend/apps/main/public', variant.src.replace(/^\//, ''));
         assert.ok(fs.existsSync(localPath), `missing optimized image: ${localPath}`);
         localFiles.add(localPath);
       }
     }
+    const fallbackPath = path.join(root, 'frontend/apps/main/public', slide.fallbackSrc.replace(/^\//, ''));
+    assert.match(slide.fallbackSrc, /\.jpg$/);
+    assert.ok(fs.existsSync(fallbackPath), `missing JPEG fallback: ${fallbackPath}`);
+    localFiles.add(fallbackPath);
   }
-  assert.equal(localFiles.size, 206);
+  assert.equal(localFiles.size, 12);
   assert.doesNotMatch(page, /ui-eyebrow">Epe · Lagos State/);
   assert.doesNotMatch(source, /unsplash|pexels|placeholder/i);
 });

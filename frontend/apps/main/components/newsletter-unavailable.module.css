@@ -1,12 +1,13 @@
-.signup { display:grid; gap:8px; min-width:0; }
-.label { color:#23342b; font-size:.75rem; font-weight:700; }
-.row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:7px; min-width:0; }
-.email { min-width:0; min-height:48px; padding:0 11px; border:1px solid #d4dfd7; border-radius:7px; background:#fff; color:#526259; font:inherit; font-size:.8125rem; }
-.email::placeholder { color:#64736a; opacity:1; }
-.button { min-width:88px; min-height:48px; padding:0 12px; border:0; border-radius:7px; background:#0b4932; color:#fff; font:inherit; font-size:.8125rem; font-weight:700; }
-.note { color:#53635a; font-size:.6875rem; line-height:1.45; }
-.footer .label { color:#fff; }
-.footer .email { border-color:#d7e4db; }
-.footer .button { background:#148547; color:#fff; }
-.footer .note { color:#deebe3; }
-@media (max-width:420px) { .row { grid-template-columns:minmax(0,1fr); } .button { width:100%; } }
+.signup { display: grid; gap: 8px; min-width: 0; }
+.label { color: var(--palette-navy); font-size: .75rem; font-weight: 700; }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; min-width: 0; }
+.email { box-sizing: border-box; min-width: 0; min-height: 46px; padding: 0 13px; border: 1px solid var(--palette-border); border-radius: 12px; background: hsl(var(--card)); color: hsl(var(--muted-foreground)); font: inherit; font-size: .8125rem; }
+.email::placeholder { color: hsl(var(--muted-foreground)); opacity: 1; }
+.button { min-width: 94px; min-height: 46px; padding: 0 13px; border: 1px solid transparent; border-radius: 12px; background: var(--palette-cobalt); color: var(--palette-midnight); font: inherit; font-size: .8125rem; font-weight: 750; }
+.button:disabled, .email:disabled { cursor: not-allowed; opacity: .84; }
+.note { margin: 0; color: hsl(var(--muted-foreground)); font-size: .6875rem; line-height: 1.5; }
+.footer .label { color: var(--palette-cloud); }
+.footer .email { border-color: var(--palette-border); background: rgb(255 255 255 / .96); color: var(--palette-navy); }
+.footer .button { background: var(--palette-cobalt); color: var(--palette-midnight); }
+.footer .note { color: var(--palette-silver); }
+@media (max-width: 420px) { .row { grid-template-columns: minmax(0, 1fr); } .button { width: 100%; } }
