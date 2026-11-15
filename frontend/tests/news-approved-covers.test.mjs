@@ -61,14 +61,19 @@ test('Admin imports resolve and editor preserves current-version image key rathe
   assert.match(editor, /cover_url,cover_alt,cover_credit,cover_source_url,cover_license_url,cover_caption/);
   const fields = read('apps/admin/components/news-cover-url-fields.tsx');
   assert.match(fields, /An EPE LAWA image-storage bucket is not configured/);
-  assert.match(fields, /The browser requests the image directly, so its host can see visitors’ IP addresses/);
-  assert.match(fields, /a domain’s DNS can change later/);
+  assert.match(fields, /images\.unsplash\.com, images\.pexels\.com, cdn\.pixabay\.com, or upload\.wikimedia\.org/);
+  assert.match(fields, /safe existing cover from another host can be retained unchanged/);
+  assert.match(fields, /Any safe public HTTPS source page is allowed/);
   assert.match(fields, /urlTouched/);
   assert.match(fields, /onBlur=\{\(\) => setUrlTouched\(true\)\}/);
   assert.match(fields, /aria-describedby=\{invalidUrl \? `\$\{labelId\("help"\)\} \$\{labelId\("error"\)\}`/);
   assert.match(fields, /role="status" aria-live="polite"/);
   assert.match(read('apps/admin/components/news-cover-url-fields.module.css'), /min-block-size:3rem; font-size:1rem/);
   assert.match(fields, /The image preview could not load/);
+  const actions = read('apps/admin/lib/actions.ts');
+  assert.match(actions, /normalizeExternalNewsAttributionUrl\(rawSource\)/);
+  assert.match(actions, /normalizeExternalNewsAttributionUrl\(rawLicense\)/);
+  assert.match(actions, /invalidCover\(formData, true\)/);
 });
 
 test('public lead covers use approved local keys and images never send a referrer', () => {

@@ -26,7 +26,8 @@ test('the article-create server action remains database-RPC-only and the RPC enf
 
   assert.match(action, /supabase\.rpc\("article_create_with_cover"/);
   assert.match(action, /normalizeExternalNewsCoverUrl/);
-  assert.match(action, /invalidCover\(formData\)/);
+  assert.match(action, /coverFields\(formData, rawCover\)/);
+  assert.match(action, /normalizeExternalNewsAttributionUrl\(rawSource\)/);
   assert.doesNotMatch(action, /\.from\("articles"\)\.(insert|update|upsert|delete)/);
   assert.match(transition, /perform public\.require_capability\('article\.create'\)/);
   assert.match(foundation, /create policy staff_read_own_active_capability[\s\S]*?\(select auth\.uid\(\)\) = user_id[\s\S]*?profile\.is_active = true/);

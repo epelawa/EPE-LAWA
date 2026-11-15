@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "./supabase";
 import { adminHref } from "./admin-path";
 import { isNewsCoverKey } from "../../main/lib/news-covers";
-import { normalizeExternalNewsCoverUrl } from "../../main/lib/news-cover-url.mjs";
+import { normalizeExternalNewsAttributionUrl, normalizeExternalNewsCoverUrl } from "../../main/lib/news-cover-url.mjs";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -39,14 +39,17 @@ function text(formData: FormData, name: string, max: number): string {
 function nullCoverFields(): CoverFields {
   return { coverUrl: null, coverAlt: null, coverCredit: null, coverSourceUrl: null, coverLicenseUrl: null, coverCaption: null };
 }
-function coverFields(formData: FormData, rawCoverKey: string): CoverFields | null {
+function coverFields(formData: FormData, rawCoverKey: string, allowLegacyCoverUrl = false): CoverFields | null {
   const rawUrl = rawText(formData, "coverUrl");
   if (rawUrl.length > 2048) return null;
   // Selecting a catalog cover, or explicitly clearing the cover URL, clears remote metadata.
   if (rawCoverKey) return rawUrl ? null : nullCoverFields();
   if (!rawUrl) return nullCoverFields();
 
-  const url = normalizeExternalNewsCoverUrl(rawUrl);
+  const normalizedCoverUrl = normalizeExternalNewsCoverUrl(rawUrl);
+  const url = normalizedCoverUrl ?? (
+    allowLegacyCoverUrl && normalizeExternalNewsAttributionUrl(rawUrl) ? rawUrl : null
+  );
   const rawAlt = rawText(formData, "coverAlt");
   const rawCredit = rawText(formData, "coverCredit");
   const rawSource = rawText(formData, "coverSourceUrl");
@@ -56,8 +59,8 @@ function coverFields(formData: FormData, rawCoverKey: string): CoverFields | nul
     !url || rawAlt.length < 1 || rawAlt.length > 500 || rawCredit.length < 1 || rawCredit.length > 300 ||
     rawSource.length > 2048 || rawLicense.length > 2048 || rawCaption.length > 500
   ) return null;
-  const sourceUrl = normalizeExternalNewsCoverUrl(rawSource);
-  const licenseUrl = normalizeExternalNewsCoverUrl(rawLicense);
+  const sourceUrl = normalizeExternalNewsAttributionUrl(rawSource);
+  const licenseUrl = normalizeExternalNewsAttributionUrl(rawLicense);
   if (!sourceUrl || !licenseUrl) return null;
   return {
     coverUrl: url,
@@ -68,10 +71,10 @@ function coverFields(formData: FormData, rawCoverKey: string): CoverFields | nul
     coverCaption: rawCaption || null,
   };
 }
-function invalidCover(formData: FormData): boolean {
+function invalidCover(formData: FormData, allowLegacyCoverUrl = false): boolean {
   const rawCoverKey = rawText(formData, "ogImageKey");
   if (rawCoverKey && !isNewsCoverKey(rawCoverKey)) return true;
-  return coverFields(formData, rawCoverKey) === null;
+  return coverFields(formData, rawCoverKey, allowLegacyCoverUrl) === null;
 }
 function articleBody(value: string): Record<string, unknown> | null {
   const source = value.trim();
@@ -93,7 +96,7 @@ function articleBody(value: string): Record<string, unknown> | null {
     .map((paragraph) => ({ type: "paragraph", content: [{ type: "text", text: paragraph }] }));
   return { type: "doc", content: paragraphs };
 }
-function articleFields(formData: FormData): ArticleFields | null {
+function articleFields(formData: FormData, allowLegacyCoverUrl = false): ArticleFields | null {
   const articleId = text(formData, "articleId", 64);
   const revision = Number(text(formData, "revision", 24));
   const title = text(formData, "title", 200);
@@ -102,7 +105,7 @@ function articleFields(formData: FormData): ArticleFields | null {
   const categoryId = text(formData, "categoryId", 64);
   const rawCover = text(formData, "ogImageKey", 64);
   if (rawCover && !isNewsCoverKey(rawCover)) return null;
-  const cover = coverFields(formData, rawCover);
+  const cover = coverFields(formData, rawCover, allowLegacyCoverUrl);
   if (!cover) return null;
   if (
     !UUID.test(articleId) || !Number.isSafeInteger(revision) || revision < 1 ||
@@ -182,8 +185,8 @@ export async function createArticle(formData: FormData): Promise<void> {
 
 export async function saveDraft(formData: FormData): Promise<void> {
   const requestedArticleId = text(formData, "articleId", 64);
-  if (invalidCover(formData)) fail(`/newsroom/${requestedArticleId}?error=cover`);
-  const fields = articleFields(formData);
+  if (invalidCover(formData, true)) fail(`/newsroom/${requestedArticleId}?error=cover`);
+  const fields = articleFields(formData, true);
   if (!fields) fail("/newsroom?error=invalid");
 
   let errorCode: string | null = null;
@@ -217,8 +220,8 @@ export async function saveDraft(formData: FormData): Promise<void> {
 
 export async function reviseArticle(formData: FormData): Promise<void> {
   const requestedArticleId = text(formData, "articleId", 64);
-  if (invalidCover(formData)) fail(`/newsroom/${requestedArticleId}?error=cover`);
-  const fields = articleFields(formData);
+  if (invalidCover(formData, true)) fail(`/newsroom/${requestedArticleId}?error=cover`);
+  const fields = articleFields(formData, true);
   if (!fields) fail("/newsroom?error=invalid");
 
   let errorCode: string | null = null;

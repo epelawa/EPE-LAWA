@@ -8,8 +8,14 @@ const RESERVED_HOST_SUFFIXES = [
   ".example",
 ];
 
-/** Normalize a public HTTPS image/source/license URL; never fetch it server-side. */
-export function normalizeExternalNewsCoverUrl(value) {
+const APPROVED_IMAGE_HOSTS = new Set([
+  "images.unsplash.com",
+  "images.pexels.com",
+  "cdn.pixabay.com",
+  "upload.wikimedia.org",
+]);
+
+function normalizePublicHttpsUrl(value) {
   if (typeof value !== "string") return null;
   const input = value.trim();
   if (!input || input.length > 2048 || /[\u0000-\u0020\u007f\\]/.test(input)) return null;
@@ -32,4 +38,16 @@ export function normalizeExternalNewsCoverUrl(value) {
   if (!/^(?:[a-z]{2,63}|xn--[a-z0-9-]{4,59})$/.test(tld)) return null;
   url.hostname = hostname;
   return url.href;
+}
+
+/** Normalize an HTTPS cover image URL from an explicitly approved provider. Never fetch it server-side. */
+export function normalizeExternalNewsCoverUrl(value) {
+  const normalized = normalizePublicHttpsUrl(value);
+  if (!normalized) return null;
+  return APPROVED_IMAGE_HOSTS.has(new URL(normalized).hostname) ? normalized : null;
+}
+
+/** Normalize a clickable source or license page URL; these links are not image-host allowlist entries. */
+export function normalizeExternalNewsAttributionUrl(value) {
+  return normalizePublicHttpsUrl(value);
 }

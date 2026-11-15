@@ -598,6 +598,44 @@ test('external News covers are safe, attributed, published by version, and switc
     [title, body, authorId, categoryId, url, sourceUrl, licenseUrl],
   ))[0].id);
 
+  const normalizedHostCases = [
+    'HTTPS://IMAGES.UNSPLASH.COM:443/cover.jpg',
+    'https://images.pexels.com.:443/cover.jpg',
+    'https://CDN.PIXABAY.COM./cover.jpg',
+    'https://UPLOAD.WIKIMEDIA.ORG/cover.jpg',
+  ];
+  for (const url of normalizedHostCases) {
+    const result = (await rows(
+      'select public.news_cover_url_is_safe($1) as safe, public.news_cover_image_url_is_allowed($1) as image_allowed',
+      [url],
+    ))[0];
+    assert.deepEqual(result, { safe: true, image_allowed: true }, `SQL must normalize scheme/host case, :443, and trailing dots for ${url}`);
+  }
+  for (const url of [
+    'https://public.example.org/cover.jpg',
+    'https://images.unsplash.com.attacker.example/cover.jpg',
+    'https://cdn.pixabay.com.evil.example/cover.jpg',
+  ]) {
+    assert.equal((await rows('select public.news_cover_image_url_is_allowed($1) as allowed', [url]))[0].allowed, false,
+      `SQL must reject arbitrary or lookalike cover host ${url}`);
+  }
+  assert.equal((await rows('select public.news_cover_url_is_safe($1) as safe', [sourceUrl]))[0].safe, true,
+    'safe source pages remain valid without being approved image hosts');
+  assert.equal((await rows('select public.news_cover_image_url_is_allowed($1) as allowed', [sourceUrl]))[0].allowed, false,
+    'a safe attribution link is not treated as a cover-image host');
+  assert.equal((await rows(
+    `select public.news_cover_metadata_is_valid(null, $1, 'Alt text', 'Photographer', $2, $3, null) as valid`,
+    ['https://images.unsplash.com/cover.jpg', sourceUrl, licenseUrl],
+  ))[0].valid, true, 'safe non-allowlisted source/license hosts remain valid beside an approved cover');
+
+  const unapprovedWrite = await asFails(U.editor, `select public.article_create_with_cover(
+    'Rejected public cover host', null, '{"type":"doc"}'::jsonb, '${authorId}', '${categoryId}',
+    null, null, null, 'https://public.example.org/cover.jpg', 'Alt text', 'Photographer',
+    '${sourceUrl}', '${licenseUrl}', null
+  )`);
+  assert.match(unapprovedWrite ?? '', /invalid_news_cover_image_host/,
+    'the database trigger rejects new writes using arbitrary public image hosts');
+
   const invalid = await asFails(U.editor, `select public.article_create_with_cover(
     'Rejected external cover', null, '{"type":"doc"}'::jsonb, '${authorId}', '${categoryId}',
     null, null, null, 'http://images.unsplash.com/cover.jpg', 'Alt text', 'Photographer',
@@ -680,12 +718,57 @@ test('external News covers are safe, attributed, published by version, and switc
     [draftId, 'draft'],
   ))[0].cover_url, 'https://images.unsplash.com/photo-5566778899?auto=format');
 
+  const legacyUrl = 'https://archive.example.org/legacy-cover.jpg';
+  const legacyDraftId = await createWithCover('Legacy URL draft', 'https://images.unsplash.com/legacy-seed.jpg');
+  await db.exec('alter table public.article_versions disable trigger article_versions_news_cover_host_guard');
+  try {
+    await db.query(`update public.article_versions set cover_url = $1 where article_id = $2 and state = 'draft'`, [legacyUrl, legacyDraftId]);
+  } finally {
+    await db.exec('alter table public.article_versions enable trigger article_versions_news_cover_host_guard');
+  }
+  const legacyDraftUpdate = await as(U.editor, () => rows(
+    `select public.article_draft_update_with_cover($1, 1, 'Unrelated edit with retained legacy cover', null, $2::jsonb,
+      $3, $4, null, null, null, $5, 'A description of the cover image', 'Example photographer', $6, $7, 'News cover') as revision`,
+    [legacyDraftId, body, authorId, categoryId, legacyUrl, sourceUrl, licenseUrl],
+  ));
+  assert.equal(legacyDraftUpdate[0].revision, 2, 'an unrelated draft edit can retain the exact safe legacy URL');
+  assert.equal((await rows('select cover_url from public.article_versions where article_id = $1 and state = $2', [legacyDraftId, 'draft']))[0].cover_url, legacyUrl);
+
+  const legacyPublishedId = await createWithCover('Legacy published cover', 'https://images.unsplash.com/legacy-published-seed.jpg');
+  await as(U.publisher, () => db.query('select public.article_publish($1, 1)', [legacyPublishedId]));
+  await db.exec('alter table public.article_versions disable trigger article_versions_news_cover_host_guard');
+  try {
+    await db.query(`update public.article_versions set cover_url = $1 where article_id = $2 and version_number = 1`, [legacyUrl, legacyPublishedId]);
+  } finally {
+    await db.exec('alter table public.article_versions enable trigger article_versions_news_cover_host_guard');
+  }
+  const legacyPublishedRevision = (await rows('select revision from public.articles where id = $1', [legacyPublishedId]))[0].revision;
+  const rejectedLegacyReplacement = await asFails(U.editor, `select public.article_revise_with_cover(
+    '${legacyPublishedId}', ${legacyPublishedRevision}, 'Try to replace a legacy cover', null, '${body}'::jsonb, '${authorId}', '${categoryId}',
+    null, null, null, 'https://public.example.org/new-cover.jpg', 'Alt text', 'Photographer', '${sourceUrl}', '${licenseUrl}', null
+  )`);
+  assert.match(rejectedLegacyReplacement ?? '', /invalid_news_cover_image_host/,
+    'a revision cannot replace a legacy cover with a new arbitrary host');
+  const legacyRevisionId = (await as(U.editor, () => rows(
+    `select public.article_revise_with_cover($1, $2, 'Retain a legacy cover in a new version', null, $3::jsonb,
+      $4, $5, null, null, null, $6, 'A description of the cover image', 'Example photographer', $7, $8, 'News cover') as id`,
+    [legacyPublishedId, legacyPublishedRevision, body, authorId, categoryId, legacyUrl, sourceUrl, licenseUrl],
+  )))[0].id;
+  assert.equal((await rows('select cover_url from public.article_versions where id = $1', [legacyRevisionId]))[0].cover_url, legacyUrl,
+    'a new private revision can carry forward an exact safe legacy cover URL');
+
   await db.exec('set role service_role');
   assert.equal((await rows('select public.news_cover_url_is_safe($1) as valid', [sourceUrl]))[0].valid, true,
     'the read-only constraint helper remains executable by Supabase service_role');
+  assert.equal((await rows('select public.news_cover_image_url_is_allowed($1) as valid', ['https://images.unsplash.com/cover.jpg']))[0].valid, true,
+    'the strict cover-host helper is executable by Supabase service_role');
   await db.exec('reset role');
   assert.match(await asFails(U.editor, `select public.news_cover_url_is_safe('${sourceUrl}')`) ?? '', /permission denied/,
     'ordinary authenticated users cannot call the internal URL helper directly');
+  assert.match(await asFails(U.editor, "select public.news_cover_image_url_is_allowed('https://images.unsplash.com/cover.jpg')") ?? '', /permission denied/,
+    'ordinary authenticated users cannot call the internal image-host helper directly');
+  assert.match(await asFails(null, "select public.news_cover_image_url_is_allowed('https://images.unsplash.com/cover.jpg')") ?? '', /permission denied/,
+    'anonymous users cannot call the internal image-host helper directly');
 });
 
 test('an API client cannot edit or delete a published article version', async () => {
