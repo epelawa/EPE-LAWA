@@ -142,6 +142,9 @@
       "path": "/admin/newsroom/new"
     },
     {
+      "path": "/admin/newsroom/settings"
+    },
+    {
       "path": "/forum/category/:slug"
     },
     {
