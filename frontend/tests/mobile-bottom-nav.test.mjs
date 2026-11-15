@@ -8,22 +8,33 @@ const css=read('../apps/main/components/navigation-refinement.css');
 const homeCss=read('../apps/main/app/hero-logo.css');
 const layout=read('../apps/main/app/layout.tsx');
 
-test('mobile bottom navigation matches the reference tabs and uses only mounted routes',()=>{
+test('mobile bottom navigation matches the dashboard tabs and uses only mounted routes',()=>{
+  for (const [label,href] of [['Home','/dashboard?tab=home'],['Discover','/dashboard?tab=discover'],['Saved','/dashboard?tab=saved'],['Profile','/dashboard?tab=profile']]) {
+    assert.match(nav,new RegExp(`label: "${label}", Icon:`));
+    assert.match(nav,new RegExp(`href: "${href.replaceAll('/','\\/').replaceAll('?','\\?')}", label: "${label}"`));
+  }
   for (const [label,href] of [['Home','/'],['News','/news'],['Discover','/tourism'],['Account','/dashboard']]) {
     assert.match(nav,new RegExp(`label: "${label}", Icon:`));
-    assert.match(nav,new RegExp(`href: "${href.replaceAll('/','\\/')}", label: "${label}"`));
+    assert.match(nav,new RegExp(`href: "${href.replaceAll('/','\\/').replaceAll('?','\\?')}", label: "${label}"`));
   }
-  const mobileLandmark=nav.match(/<nav className="mobile-bottom-nav" aria-label="([^"]+)"/);
+  const mobileLandmark=nav.match(/<nav className="mobile-bottom-nav" aria-label="(Mobile (?:primary|bottom) navigation)"/);
   assert.ok(mobileLandmark?.[1].trim(),'mobile bottom tabs expose a named navigation landmark');
-  assert.equal([...nav.matchAll(/\{ key: "(?:home|news|discover|account)", href:/g)].length,4);
+  const tabs=nav.match(/const DASHBOARD_TABS:[\s\S]*?\n\];/);
+  assert.ok(tabs,'dashboard tabs declaration exists');
+  assert.equal([...tabs[0].matchAll(/\{ key: "(?:home|discover|saved|profile)", href:/g)].length,4);
   assert.match(nav,/aria-current=\{current\}/);
   assert.match(layout,/MobileBottomNav/);
 });
 
 test('mobile bottom tabs mark exact pages and the Discover section semantically',()=>{
   assert.equal(mobileNavigationCurrentState('/','home'),'page');
-  assert.equal(mobileNavigationCurrentState('/news/story','news'),'page');
-  assert.equal(mobileNavigationCurrentState('/dashboard','account'),'page');
+  assert.equal(mobileNavigationCurrentState('/dashboard','home','?tab=home'),'page');
+  assert.equal(mobileNavigationCurrentState('/dashboard','home'),'page');
+  assert.equal(mobileNavigationCurrentState('/dashboard','home','?tab=unknown'),'page');
+  assert.equal(mobileNavigationCurrentState('/dashboard','discover','?tab=discover'),'page');
+  assert.equal(mobileNavigationCurrentState('/dashboard','saved','?tab=saved'),'page');
+  assert.equal(mobileNavigationCurrentState('/dashboard','profile','?tab=profile'),'page');
+  assert.equal(mobileNavigationCurrentState('/dashboard','saved','?tab=profile'),undefined);
   assert.equal(mobileNavigationCurrentState('/map','discover'),'location');
   assert.equal(mobileNavigationCurrentState('/business-directory/orders','discover'),'location');
   assert.equal(mobileNavigationCurrentState('/forum','discover'),undefined);
@@ -33,6 +44,8 @@ test('private screens are excluded; mobile bar has keyboard/touch access and no 
   for (const path of ['/admin','/admin/newsroom','/auth/verify','/login','/forgot-password','/status/500']) {
     assert.equal(shouldRenderMobileNavigation(path),false,path);
   }
+  assert.equal(shouldRenderMobileNavigation('/'),false);
+  assert.equal(shouldRenderMobileNavigation('/news'),true);
   assert.equal(shouldRenderMobileNavigation('/dashboard'),true);
   assert.match(css,/@media \(max-width: 767px\)/);
   assert.match(css,/\.mobile-bottom-nav__link[^\{]*\{[^}]*min-height: 56px/);

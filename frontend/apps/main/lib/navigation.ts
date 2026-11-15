@@ -39,7 +39,7 @@ export const footerNavigation: NavItem[] = [
   { label: "Advertise with EPE LAWA", href: "/advertise" },
 ];
 
-export type MobileNavigationKey = "home" | "news" | "discover" | "account";
+export type MobileNavigationKey = "home" | "news" | "discover" | "account" | "saved" | "profile";
 export type MobileNavigationCurrent = "page" | "location" | undefined;
 
 const mobileNavigationHrefs: Record<MobileNavigationKey, string> = {
@@ -47,6 +47,8 @@ const mobileNavigationHrefs: Record<MobileNavigationKey, string> = {
   news: "/news",
   discover: "/tourism",
   account: "/dashboard",
+  saved: "/dashboard?tab=saved",
+  profile: "/dashboard?tab=profile",
 };
 const mobileDiscoverRoutes = ["/map", "/business-directory", "/tourism", "/radio"];
 const mobileNavigationExcludedRoutes = ["/admin", "/auth", "/login", "/forgot-password", "/status"];
@@ -55,12 +57,33 @@ function routeMatches(pathname: string, route: string): boolean {
   return route === "/" ? pathname === "/" : pathname === route || pathname.startsWith(`${route}/`);
 }
 
-export function mobileNavigationCurrentState(pathname: string, key: MobileNavigationKey): MobileNavigationCurrent {
-  if (routeMatches(pathname, mobileNavigationHrefs[key])) return "page";
+function dashboardTab(search: string | URLSearchParams | undefined): string | undefined {
+  if (!search) return undefined;
+  const params = typeof search === "string" ? new URLSearchParams(search) : search;
+  return params.get("tab") ?? undefined;
+}
+
+export function mobileNavigationCurrentState(
+  pathname: string,
+  key: MobileNavigationKey,
+  search?: string | URLSearchParams,
+): MobileNavigationCurrent {
+  if (pathname === "/dashboard") {
+    const tab = dashboardTab(search);
+    if (key === "home" && tab !== "discover" && tab !== "saved" && tab !== "profile") return "page";
+    if (key === "discover" && tab === "discover") return "page";
+    if (key === "saved" && tab === "saved") return "page";
+    if (key === "profile" && tab === "profile") return "page";
+    return undefined;
+  }
+  if (key === "home" && routeMatches(pathname, mobileNavigationHrefs.home)) return "page";
+  if (key === "news" && routeMatches(pathname, mobileNavigationHrefs.news)) return "page";
+  if (key === "account" && routeMatches(pathname, mobileNavigationHrefs.account)) return "page";
+  if (key === "discover" && routeMatches(pathname, mobileNavigationHrefs.discover)) return "page";
   if (key === "discover" && mobileDiscoverRoutes.some((route) => routeMatches(pathname, route))) return "location";
   return undefined;
 }
 
 export function shouldRenderMobileNavigation(pathname: string): boolean {
-  return !mobileNavigationExcludedRoutes.some((route) => routeMatches(pathname, route));
+  return pathname !== "/" && !mobileNavigationExcludedRoutes.some((route) => routeMatches(pathname, route));
 }

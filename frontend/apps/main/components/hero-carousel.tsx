@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import heroImages from "../lib/hero-images.json";
 
 type ImageVariant = { src: string; width: number };
@@ -25,7 +25,8 @@ export const HERO_SLIDES = heroImages as unknown as readonly HeroSlide[];
 const MAX_HERO_SLIDES = 60;
 const INITIAL_SLIDE = 2;
 const slides = HERO_SLIDES.slice(0, MAX_HERO_SLIDES);
-const IMAGE_SIZES = "(max-width: 600px) calc(100vw - 32px), (max-width: 1200px) calc(100vw - 48px), 1200px";
+const IMAGE_SIZES = "100vw";
+const ROTATION_DELAY_MS = 7200;
 
 type NetworkConnection = EventTarget & { saveData?: boolean; effectiveType?: string };
 function getNetworkConnection(): NetworkConnection | undefined {
@@ -52,17 +53,54 @@ function closestVariant(format: ImageFormat, width: number) {
 
 export default function HeroCarousel() {
   const [index, setIndex] = useState(Math.min(INITIAL_SLIDE, Math.max(0, slides.length - 1)));
+  const photoRef = useRef<HTMLImageElement>(null);
+  const pointerPauseState = useRef<boolean | null>(null);
   const [loadedIndex, setLoadedIndex] = useState(-1);
   const [activeCurrentSrc, setActiveCurrentSrc] = useState("");
+  const [paused, setPaused] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const [pageVisible, setPageVisible] = useState(true);
+  const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
-    if (loadedIndex !== index || !activeCurrentSrc || slides.length < 2 || isConstrainedConnection()) return;
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const syncPreference = () => setReducedMotion(query.matches);
+    syncPreference();
+    query.addEventListener("change", syncPreference);
+    return () => query.removeEventListener("change", syncPreference);
+  }, []);
+
+  useEffect(() => {
+    const syncVisibility = () => setPageVisible(!document.hidden);
+    syncVisibility();
+    document.addEventListener("visibilitychange", syncVisibility);
+    return () => document.removeEventListener("visibilitychange", syncVisibility);
+  }, []);
+
+  useEffect(() => {
+    const image = photoRef.current;
+    if (!image?.complete || image.naturalWidth === 0) return;
+    setActiveCurrentSrc(image.currentSrc || image.src);
+    setLoadedIndex(index);
+  }, [index]);
+
+  useEffect(() => {
+    if (loadedIndex !== index || !activeCurrentSrc || slides.length < 2 || paused || hovered || !pageVisible || reducedMotion || isConstrainedConnection()) return;
+    const timeout = window.setTimeout(() => {
+      setActiveCurrentSrc("");
+      setLoadedIndex(-1);
+      setIndex((current) => (current + 1) % slides.length);
+    }, ROTATION_DELAY_MS);
+    return () => window.clearTimeout(timeout);
+  }, [loadedIndex, index, activeCurrentSrc, paused, hovered, pageVisible, reducedMotion]);
+
+  useEffect(() => {
+    if (loadedIndex !== index || !activeCurrentSrc || slides.length < 2 || paused || hovered || !pageVisible || reducedMotion || isConstrainedConnection()) return;
     const connection = getNetworkConnection();
-    const count = connection?.effectiveType === "3g" ? 1 : 2;
+    const count = Math.min(slides.length - 1, connection?.effectiveType === "3g" ? 1 : 2);
     const match = activeCurrentSrc.match(/-(\d+)\.(avif|webp)(?:\?.*)?$/i);
     const preferredWidth = match ? Number(match[1]) : 1280;
     const formatName = match?.[2]?.toLowerCase() === "avif" ? "avif" : "webp";
-
     for (let offset = 1; offset <= count; offset += 1) {
       const nextSlide = slides[(index + offset) % slides.length];
       const image = new window.Image();
@@ -70,25 +108,47 @@ export default function HeroCarousel() {
       image.fetchPriority = "low";
       image.src = closestVariant(nextSlide[formatName], preferredWidth).src;
     }
-  }, [loadedIndex, index, activeCurrentSrc]);
+  }, [loadedIndex, index, activeCurrentSrc, paused, hovered, pageVisible, reducedMotion]);
 
   if (!slides.length) return null;
   const slide = slides[index] ?? slides[0];
-  const previous = slides[(index - 1 + slides.length) % slides.length];
-  const next = slides[(index + 1) % slides.length];
-  const moveTo = (nextIndex: number) => {
-    setActiveCurrentSrc("");
-    setLoadedIndex(-1);
-    setIndex((nextIndex + slides.length) % slides.length);
-  };
+  const rotationLabel = paused ? "Resume automatic Epe photo rotation" : "Pause automatic Epe photo rotation";
 
   return (
-    <figure className="home-hero__media" aria-label="Photographs of Epe">
-      <div className="home-hero__carousel-stage">
+    <figure
+      className="home-hero__media"
+      role="group"
+      aria-roledescription="carousel"
+      aria-label="Photographs of Epe"
+      onPointerEnter={(event) => { if (event.pointerType === "mouse") setHovered(true); }}
+      onPointerLeave={(event) => { if (event.pointerType === "mouse") setHovered(false); }}
+      onFocusCapture={() => setPaused(true)}
+    >
+      <button
+        className="home-hero__pause"
+        type="button"
+        aria-label={rotationLabel}
+        title={rotationLabel}
+        onPointerDown={() => { pointerPauseState.current = paused; }}
+        onPointerCancel={() => { pointerPauseState.current = null; }}
+        onClick={(event) => {
+          const wasPaused = event.detail > 0 && pointerPauseState.current !== null ? pointerPauseState.current : paused;
+          pointerPauseState.current = null;
+          setPaused(!wasPaused);
+        }}
+      >
+        {paused ? (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
+        ) : (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 5h4v14H6zm8 0h4v14h-4z" /></svg>
+        )}
+      </button>
+      <div className="home-hero__carousel-stage" role="group" aria-roledescription="slide" aria-label={`${index + 1} of ${slides.length}`}>
         <picture>
           <source type="image/avif" srcSet={responsiveSrcSet(slide.avif)} sizes={IMAGE_SIZES} />
           <img
             key={slide.slug}
+            ref={photoRef}
             className="home-hero__photo"
             src={slide.fallbackSrc}
             srcSet={responsiveSrcSet(slide.webp)}
@@ -100,27 +160,12 @@ export default function HeroCarousel() {
             loading="eager"
             decoding="async"
             onLoad={(event) => {
-              setActiveCurrentSrc(event.currentTarget.currentSrc);
+              setActiveCurrentSrc(event.currentTarget.currentSrc || event.currentTarget.src);
               setLoadedIndex(index);
             }}
           />
         </picture>
       </div>
-      <figcaption className="home-hero__caption ep-container">
-        <div className="home-hero__credit">
-          <span className="home-hero__slide-label">{slide.label}</span>
-          <span>Photo by <a href={slide.source} target="_blank" rel="noopener noreferrer">{slide.author}</a> · <a href={slide.licenseUrl} target="_blank" rel="noopener noreferrer">{slide.license}</a></span>
-        </div>
-        <div className="home-hero__controls" role="group" aria-label="Epe photo gallery controls">
-          <span className="home-hero__counter" aria-live="polite">Photo {index + 1} of {slides.length}</span>
-          <button type="button" className="home-hero__control" aria-label={`Previous photo: ${previous.label}`} onClick={() => moveTo(index - 1)}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
-          </button>
-          <button type="button" className="home-hero__control" aria-label={`Next photo: ${next.label}`} onClick={() => moveTo(index + 1)}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
-          </button>
-        </div>
-      </figcaption>
     </figure>
   );
 }
