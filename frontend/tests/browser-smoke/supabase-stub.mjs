@@ -20,6 +20,39 @@ const fixtureProfile = {
 };
 const fixtureAccessToken = "browser-smoke-access-token";
 
+function fixtureStories() {
+  const now = Date.now();
+  return [
+    { slug: "smoke-breaking-story", title: "Smoke fixture: breaking headline", summary: "Synthetic browser-test content only.", published_at: new Date(now - 5 * 60_000).toISOString(), is_breaking: true, breaking_until: new Date(now + 60 * 60_000).toISOString(), author_name: "Browser fixture", category_slug: "local-news", category_label: "Local News", og_image_key: null },
+    { slug: "smoke-market-story", title: "Smoke fixture: market story", summary: "Synthetic searchable story for local browser tests.", published_at: new Date(now - 15 * 60_000).toISOString(), is_breaking: false, breaking_until: null, author_name: "Browser fixture", category_slug: "local-news", category_label: "Local News", og_image_key: null },
+    { slug: "smoke-sports-story", title: "Smoke fixture: sports story", summary: "Synthetic category-filter story for local browser tests.", published_at: new Date(now - 25 * 60_000).toISOString(), is_breaking: false, breaking_until: null, author_name: "Browser fixture", category_slug: "sports", category_label: "Sports", og_image_key: null },
+  ];
+}
+
+function filteredStories(url) {
+  let stories = fixtureStories();
+  const breaking = url.searchParams.get("is_breaking");
+  if (breaking === "eq.true") stories = stories.filter((story) => story.is_breaking);
+  const until = url.searchParams.get("breaking_until");
+  if (until?.startsWith("gt.")) stories = stories.filter((story) => story.breaking_until && story.breaking_until > until.slice(3));
+  const category = url.searchParams.get("category_slug");
+  if (category?.startsWith("eq.")) stories = stories.filter((story) => story.category_slug === category.slice(3));
+  const title = url.searchParams.get("title");
+  if (title?.startsWith("ilike.")) {
+    const needle = title.slice(6).replace(/^%|%$/g, "").replace(/\\([\\%_])/g, "$1").toLocaleLowerCase();
+    stories = stories.filter((story) => story.title.toLocaleLowerCase().includes(needle));
+  }
+  const range = requestRange(url);
+  return stories.slice(range.start, range.end + 1);
+}
+
+function requestRange(url) {
+  const range = url.searchParams.get("offset");
+  const limit = Number(url.searchParams.get("limit")) || 1000;
+  const start = Number(range) || 0;
+  return { start, end: start + limit - 1 };
+}
+
 function respond(response, status, payload, headers = {}) {
   response.writeHead(status, {
     "content-type": "application/json; charset=utf-8",
@@ -50,7 +83,7 @@ const server = createServer((request, response) => {
     request.on("end", () => {
       try {
         const value = JSON.parse(body).mode;
-        if (value !== "empty" && value !== "error") {
+        if (value !== "empty" && value !== "error" && value !== "stories") {
           respond(response, 400, { error: "Unsupported fixture mode" });
           return;
         }
@@ -77,7 +110,7 @@ const server = createServer((request, response) => {
   }
 
   if (request.method === "GET" && url.pathname.startsWith("/rest/v1/")) {
-    if (mode === "error") {
+    if (mode === "error" && (url.pathname === "/rest/v1/published_articles" || url.pathname === "/rest/v1/categories")) {
       respond(response, 503, {
         code: "SMOKE503",
         message: "Deterministic local browser-smoke fixture error",
@@ -96,6 +129,15 @@ const server = createServer((request, response) => {
       url.pathname === "/rest/v1/published_articles" ||
       url.pathname === "/rest/v1/categories"
     ) {
+      if (mode === "stories" && url.pathname === "/rest/v1/published_articles") {
+        const items = filteredStories(url);
+        respond(response, 200, items, { "content-range": `0-${Math.max(0, items.length - 1)}/${items.length}` });
+        return;
+      }
+      if (mode === "stories" && url.pathname === "/rest/v1/categories") {
+        respond(response, 200, [{ slug: "local-news", label: "Local News" }, { slug: "sports", label: "Sports" }], { "content-range": "0-1/2" });
+        return;
+      }
       respond(response, 200, [], { "content-range": "*/0" });
       return;
     }

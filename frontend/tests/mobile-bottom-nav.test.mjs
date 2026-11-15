@@ -7,6 +7,7 @@ const nav=read('../apps/main/components/mobile-bottom-nav.tsx');
 const css=read('../apps/main/components/navigation-refinement.css');
 const homeCss=read('../apps/main/app/hero-logo.css');
 const layout=read('../apps/main/app/layout.tsx');
+const dashboardCss=read('../apps/main/app/dashboard/dashboard.module.css');
 
 test('mobile bottom navigation matches the dashboard tabs and uses only mounted routes',()=>{
   for (const [label,href] of [['Home','/dashboard?tab=home'],['Discover','/dashboard?tab=discover'],['Saved','/dashboard?tab=saved'],['Profile','/dashboard?tab=profile']]) {
@@ -57,6 +58,8 @@ test('private screens are excluded; mobile bar has keyboard/touch access and no 
   assert.match(css,/body:has\(\.public-home\):has\(\.mobile-bottom-nav\) \.storage-notice \{ bottom: calc\(76px/);
   assert.match(css,/body:has\(\.mobile-bottom-nav\) \.toast-region \{ bottom: calc\(76px/);
   assert.match(css,/body:has\(\.focused-error-shell\) \.mobile-bottom-nav/);
+  assert.match(dashboardCss,/@media \(max-width: 767px\) \{ \.tabs \{ display: none; \} \}/);
+  assert.match(nav,/aria-label="Mobile primary navigation"/);
   const header=read('../apps/main/components/site-header.tsx');
   const desktopLandmark=header.match(/<nav ref=\{desktopNavRef\} className="site-head__nav" aria-label="([^"]+)"/);
   const menuNames=header.match(/aria-label=\{drawerOpen \? "([^"]+)" : "([^"]+)"\}/);

@@ -201,11 +201,15 @@ test('homepage hero gallery is sourced, responsive, eager and resource-aware', a
   assert.match(source, /prefers-reduced-motion/);
   assert.match(source, /visibilitychange/);
   assert.match(source, /home-hero__pause/);
+  assert.match(source, /aria-label="Previous Epe photo"/);
+  assert.match(source, /aria-label="Next Epe photo"/);
   assert.match(source, /aria-roledescription="carousel"/);
   assert.match(source, /aria-roledescription="slide"/);
   assert.match(source, /onFocusCapture|focus/);
   assert.doesNotMatch(source, /home-hero__caption|home-hero__credit|home-hero__slide-label|home-hero__counter|Photo by <a/);
   assert.match(source, /key=\{slide\.slug\}/);
+  assert.match(styles, /\.home-hero__slide-control:focus-visible \{ clip-path: none/);
+  assert.match(styles, /\.home-hero__slide-control \{[^}]*clip-path: inset\(50%\)/);
   assert.match(styles, /prefers-reduced-motion/);
   assert.match(source, /saveData/);
   assert.match(source, /slow-2g/);
