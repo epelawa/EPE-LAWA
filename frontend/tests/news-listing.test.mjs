@@ -24,6 +24,8 @@ test("News queries only published stories and active real categories", () => {
 test("News retains search, category links and no invented filters", () => {
   assert.match(page, /aria-label="Search headlines"/);
   assert.match(page, /<search className=\{styles\.searchRegion\} aria-label="Search published stories">/);
+  assert.match(page, /params\.search === "1"/);
+  assert.match(page, /open=\{searchOpen \|\| undefined\}/);
   assert.match(page, /aria-label="News categories"/);
   assert.match(page, />All<\/Link>/);
   assert.doesNotMatch(page, /FilterIcon|newsFilterButton/);
@@ -59,13 +61,23 @@ test("Breaking news is visible only for a flagged, unexpired published lead", ()
   assert.match(styles, /\.breakingBanner \{/);
 });
 
-test("News masthead is visible and uses real EPE-LAWA editorial routes", () => {
-  assert.match(header, /isNewsReference \|\| pathname === "\/advertise"/);
-  assert.match(header, /news-utilitybar/);
-  assert.match(headerStyles, /\.site-head--news-reference\s*\{[^}]*display:block/);
-  assert.match(headerStyles, /#063d2b/);
-  assert.match(header, /href="\/advertise"/);
+test("News uses the shared public shell and keeps its cobalt search and route entry points", () => {
+  assert.match(header, /const isNewsReference = pathname === "\/news"/);
+  assert.match(header, /const DESKTOP_GROUPS =/);
+  assert.match(header, /const MOBILE_GROUPS =/);
+  assert.match(header, /href="\/news\?search=1"/);
+  assert.match(headerStyles, /\.site-head--news-reference\s*\{\s*display: block/);
+  assert.match(header, /"\/advertise"/);
+  assert.doesNotMatch(header + headerStyles, /news-utilitybar|#063d2b|#0b4a32/);
   assert.doesNotMatch(headerStyles, /site-head--news-reference\s*\{\s*display:\s*none/);
+});
+
+test("News page and editorial footer use the same cobalt and navy identity", async () => {
+  const newsStyles = await readFile(new URL("app/news/news.module.css", root), "utf8");
+  const footerStyles = await readFile(new URL("components/news-footer.module.css", root), "utf8");
+  assert.match(newsStyles, /--news-blue:#294B91/);
+  assert.match(footerStyles, /background:#17264A/);
+  assert.doesNotMatch(newsStyles + footerStyles, /#(?:0b4a32|063d2b|0b7042|16894d)|rgb\(0 69 44|rgb\(10 40 26/);
 });
 
 test("News and Advertise use the complete reference-style footer without a duplicate global footer", () => {

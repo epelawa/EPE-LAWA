@@ -20,34 +20,30 @@ export type HeroSlide = {
   fallbackSrc: string;
 };
 
-/** Kept local, sourced, and capped so future additions do not cause bulk requests. */
+/** Approved local Epe photographs; only the visible image and a small nearby window are requested. */
 export const HERO_SLIDES = heroImages as unknown as readonly HeroSlide[];
 const MAX_HERO_SLIDES = 60;
+const INITIAL_SLIDE = 2;
 const slides = HERO_SLIDES.slice(0, MAX_HERO_SLIDES);
-const IMAGE_SIZES = "(max-width: 600px) calc(100vw - 40px), (max-width: 800px) 46vw, 560px";
+const IMAGE_SIZES = "(max-width: 600px) calc(100vw - 32px), (max-width: 1200px) calc(100vw - 48px), 1200px";
 
 type NetworkConnection = EventTarget & { saveData?: boolean; effectiveType?: string };
-
 function getNetworkConnection(): NetworkConnection | undefined {
   if (typeof navigator === "undefined") return undefined;
   return (navigator as Navigator & { connection?: NetworkConnection }).connection;
 }
-
 function isConstrainedConnection() {
   const connection = getNetworkConnection();
   return Boolean(connection?.saveData || connection?.effectiveType === "slow-2g" || connection?.effectiveType === "2g");
 }
-
 function uniqueVariants(format: ImageFormat): ImageVariant[] {
   const bySource = new Map<string, ImageVariant>();
   for (const variant of [format.small, format.large]) bySource.set(variant.src, variant);
   return [...bySource.values()].sort((a, b) => a.width - b.width);
 }
-
 function responsiveSrcSet(format: ImageFormat) {
   return uniqueVariants(format).map((variant) => `${variant.src} ${variant.width}w`).join(", ");
 }
-
 function closestVariant(format: ImageFormat, width: number) {
   return uniqueVariants(format).reduce((best, variant) =>
     Math.abs(variant.width - width) < Math.abs(best.width - width) ? variant : best,
@@ -55,35 +51,12 @@ function closestVariant(format: ImageFormat, width: number) {
 }
 
 export default function HeroCarousel() {
-  const [index, setIndex] = useState(0);
-  const [automaticMotionDisabled, setAutomaticMotionDisabled] = useState(true);
-  const [isFocused, setIsFocused] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-  const isPaused = isFocused || isHovered;
+  const [index, setIndex] = useState(Math.min(INITIAL_SLIDE, Math.max(0, slides.length - 1)));
   const [loadedIndex, setLoadedIndex] = useState(-1);
   const [activeCurrentSrc, setActiveCurrentSrc] = useState("");
 
   useEffect(() => {
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const connection = getNetworkConnection();
-    const update = () => setAutomaticMotionDisabled(media.matches || isConstrainedConnection());
-    update();
-    media.addEventListener?.("change", update);
-    connection?.addEventListener?.("change", update);
-    return () => {
-      media.removeEventListener?.("change", update);
-      connection?.removeEventListener?.("change", update);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (slides.length < 2 || automaticMotionDisabled || isPaused) return;
-    const timer = window.setInterval(() => setIndex((current) => (current + 1) % slides.length), 7000);
-    return () => window.clearInterval(timer);
-  }, [automaticMotionDisabled, isPaused]);
-
-  useEffect(() => {
-    if (automaticMotionDisabled || loadedIndex !== index || !activeCurrentSrc || slides.length < 2) return;
+    if (loadedIndex !== index || !activeCurrentSrc || slides.length < 2 || isConstrainedConnection()) return;
     const connection = getNetworkConnection();
     const count = connection?.effectiveType === "3g" ? 1 : 2;
     const match = activeCurrentSrc.match(/-(\d+)\.(avif|webp)(?:\?.*)?$/i);
@@ -92,56 +65,62 @@ export default function HeroCarousel() {
 
     for (let offset = 1; offset <= count; offset += 1) {
       const nextSlide = slides[(index + offset) % slides.length];
-      const format = nextSlide[formatName];
       const image = new window.Image();
       image.decoding = "async";
       image.fetchPriority = "low";
-      image.src = closestVariant(format, preferredWidth).src;
+      image.src = closestVariant(nextSlide[formatName], preferredWidth).src;
     }
-  }, [automaticMotionDisabled, loadedIndex, index, activeCurrentSrc]);
+  }, [loadedIndex, index, activeCurrentSrc]);
 
   if (!slides.length) return null;
   const slide = slides[index] ?? slides[0];
+  const previous = slides[(index - 1 + slides.length) % slides.length];
+  const next = slides[(index + 1) % slides.length];
+  const moveTo = (nextIndex: number) => {
+    setActiveCurrentSrc("");
+    setLoadedIndex(-1);
+    setIndex((nextIndex + slides.length) % slides.length);
+  };
 
   return (
-    <div className="home-hero__media">
-      <button
-        type="button"
-        className="home-hero__art home-hero__art--logo home-hero__carousel"
-        aria-label={`Next Epe photo: ${slide.label}`}
-        onClick={() => setIndex((current) => (current + 1) % slides.length)}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        <div className="home-hero__carousel-stage" aria-live="off">
-          <picture>
-            <source type="image/avif" srcSet={responsiveSrcSet(slide.avif)} sizes={IMAGE_SIZES} />
-            <img
-              key={slide.slug}
-              src={slide.fallbackSrc}
-              srcSet={responsiveSrcSet(slide.webp)}
-              sizes={IMAGE_SIZES}
-              alt={slide.alt}
-              width={slide.width}
-              height={slide.height}
-              fetchPriority={index === 0 ? "high" : "auto"}
-              loading="eager"
-              decoding="async"
-              onLoad={(event) => {
-                setActiveCurrentSrc(event.currentTarget.currentSrc);
-                setLoadedIndex(index);
-              }}
-            />
-          </picture>
-        </div>
-      </button>
-      <div className="home-hero__details">
-        <div className="home-hero__caption" aria-live="off" aria-atomic="true">
-          <p key={slide.slug} className="home-hero__slide-label">{slide.label}</p>
-        </div>
+    <figure className="home-hero__media" aria-label="Photographs of Epe">
+      <div className="home-hero__carousel-stage">
+        <picture>
+          <source type="image/avif" srcSet={responsiveSrcSet(slide.avif)} sizes={IMAGE_SIZES} />
+          <img
+            key={slide.slug}
+            className="home-hero__photo"
+            src={slide.fallbackSrc}
+            srcSet={responsiveSrcSet(slide.webp)}
+            sizes={IMAGE_SIZES}
+            alt={slide.alt}
+            width={slide.width}
+            height={slide.height}
+            fetchPriority={index === INITIAL_SLIDE ? "high" : "auto"}
+            loading="eager"
+            decoding="async"
+            onLoad={(event) => {
+              setActiveCurrentSrc(event.currentTarget.currentSrc);
+              setLoadedIndex(index);
+            }}
+          />
+        </picture>
       </div>
-    </div>
+      <figcaption className="home-hero__caption ep-container">
+        <div className="home-hero__credit">
+          <span className="home-hero__slide-label">{slide.label}</span>
+          <span>Photo by <a href={slide.source} target="_blank" rel="noopener noreferrer">{slide.author}</a> · <a href={slide.licenseUrl} target="_blank" rel="noopener noreferrer">{slide.license}</a></span>
+        </div>
+        <div className="home-hero__controls" role="group" aria-label="Epe photo gallery controls">
+          <span className="home-hero__counter" aria-live="polite">Photo {index + 1} of {slides.length}</span>
+          <button type="button" className="home-hero__control" aria-label={`Previous photo: ${previous.label}`} onClick={() => moveTo(index - 1)}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+          </button>
+          <button type="button" className="home-hero__control" aria-label={`Next photo: ${next.label}`} onClick={() => moveTo(index + 1)}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+          </button>
+        </div>
+      </figcaption>
+    </figure>
   );
 }

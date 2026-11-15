@@ -38,13 +38,12 @@ test("system-theme selection applies without a toast overlay", async () => {
 
 test("public theme control is in a reachable drawer, not the masthead", async () => {
   const header = await read("components/site-header.tsx");
-  const baseCss = await read("app/globals.css");
   const drawerCss = await read("components/navigation-refinement.css");
 
   const masthead = header.match(/<div className="masthead-actions">([\s\S]*?)<\/div>/)?.[1] ?? "";
   assert.doesNotMatch(masthead, /ThemeToggle/);
   assert.match(header, /className="drawer-appearance" role="group" aria-label="Appearance settings"[\s\S]*<ThemeToggle \/>/);
-  assert.match(baseCss, /\.site-head__menu \{ display: inline-flex; \}/);
+  assert.match(drawerCss, /\.site-head__menu \{ display: inline-flex;/);
   assert.match(drawerCss, /\.drawer-appearance\s*\{[^}]*display: flex/);
   assert.match(drawerCss, /\.drawer-appearance \.theme-control\s*\{[^}]*width: 58px/);
 });

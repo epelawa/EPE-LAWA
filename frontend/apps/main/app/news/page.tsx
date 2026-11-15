@@ -26,7 +26,7 @@ type ArticleListItem = {
   cover_url: string | null;
 };
 type NewsCategory = { slug: string; label: string };
-type SearchParams = { q?: string | string[]; page?: string | string[]; category?: string | string[] };
+type SearchParams = { q?: string | string[]; page?: string | string[]; category?: string | string[]; search?: string | string[] };
 
 const newsIndexUrl = absoluteUrl("/news");
 const newsDescription = "Source-backed reporting from Epe and its connected communities.";
@@ -93,6 +93,7 @@ function NewsError() {
 export default async function NewsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const params = await searchParams;
   const query = typeof params.q === "string" ? params.q.trim().slice(0, 100) : "";
+  const searchOpen = query.length > 0 || params.search === "1";
   const category = safeCategory(params.category);
   const page = safePage(params.page);
   const start = (page - 1) * PAGE_SIZE;
@@ -133,7 +134,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
     <PageFrame className={`${styles.newsPage} ui-stack`}>
       <div className={styles.newsTopBar}>
         <p className={styles.publisherStamp}><span className={styles.publisherDot} aria-hidden="true" />Reporting and community information from Epe</p>
-        <details className={styles.searchToggle} open={query ? true : undefined}>
+        <details className={styles.searchToggle} open={searchOpen || undefined}>
           <summary className={styles.searchSummary} aria-label="Search headlines" title="Search headlines">
             <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg>
             <span>Search</span>

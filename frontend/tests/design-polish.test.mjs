@@ -15,7 +15,7 @@ test("public Appearance switch lives in the all-viewport hamburger drawer", () =
   const footer = read("frontend/apps/main/components/site-footer.tsx");
   const home = read("frontend/apps/main/app/page.tsx");
   const heroCarousel = read("frontend/apps/main/components/hero-carousel.tsx");
-  const css = read("frontend/apps/main/app/globals.css");
+  const navCss = read("frontend/apps/main/components/navigation-refinement.css");
   const heroManifest = JSON.parse(read("frontend/apps/main/lib/hero-images.json"));
   const mastheadActions = header.match(/<div className="masthead-actions">([\s\S]*?)<\/div>/)?.[1] ?? "";
 
@@ -24,13 +24,13 @@ test("public Appearance switch lives in the all-viewport hamburger drawer", () =
   assert.match(theme, /theme-control__thumb/);
   assert.doesNotMatch(mastheadActions, /ThemeToggle/);
   assert.match(header, /className="drawer-appearance" role="group" aria-label="Appearance settings"[\s\S]*<ThemeToggle \/>/);
-  assert.match(css, /\.site-head__menu \{ display: inline-flex; \}/);
-  assert.match(header, /<BrandLockup size=\{30\} \/>/);
+  assert.match(navCss, /\.site-head__menu \{ display: inline-flex;/);
+  assert.match(header, /<BrandLockup size=\{32\} \/>/);
   assert.doesNotMatch(header + brand + staffBrand + footer, /Epe Division|brand__place|brand-lockup__tagline|showPlace/);
   assert.match(home, /<HeroCarousel\s*\/>/, "homepage logo hero exists");
   assert.doesNotMatch(home, /home-hero__brand|BrandLockup/);
   assert.match(home, /Epe\.<br \/><em>Closer to home\.<\/em>/);
-  assert.match(home, /Stories, places and people that bring Epe together\./);
+  assert.match(home, /A digital home for Epe’s news, heritage, businesses and community voices\./);
   assert.doesNotMatch(home, /Stories worth knowing|History worth keeping|Places worth finding|People worth connecting|home-topics/);
   assert.equal(heroManifest.length, 52);
   assert.equal(new Set(heroManifest.map((slide) => slide.source)).size, 52);
@@ -39,8 +39,8 @@ test("public Appearance switch lives in the all-viewport hamburger drawer", () =
   assert.doesNotMatch(heroCarousel, /Epe Division|The voice of Epe Division/i);
   assert.match(header, /A shared home for everyone\./);
   assert.match(header, /addEventListener\("pointerdown", onOutsideDrawer\)/);
-  assert.match(css, /width: min\(215px,max\(150px,calc\(50vw - 10px\)\)\)/);
-  assert.match(css, /\.drawer-account \{ flex-direction: column;/);
+  assert.match(navCss, /width: min\(380px, calc\(100vw - 20px\)\)/);
+  assert.match(navCss, /\.drawer-account__actions \{ display: grid;/);
 });
 
 test("editorial dot decorations are gone and footer links stay split on mobile", () => {
