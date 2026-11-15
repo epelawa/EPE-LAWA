@@ -2,23 +2,23 @@ import { createServer } from "node:http";
 
 const port = Number(process.argv[2] ?? "54321");
 let mode = "empty";
-const syntheticMemberId = "00000000-0000-4000-8000-000000000001";
-const syntheticAccessToken = "browser-smoke-synthetic-access-token";
-const syntheticUser = {
-  id: syntheticMemberId,
+
+const fixtureUser = {
+  id: "00000000-0000-4000-8000-000000000001",
   aud: "authenticated",
   role: "authenticated",
-  email: "browser-smoke-member@example.test",
+  email: "browser-smoke@example.invalid",
   email_confirmed_at: "2026-01-01T00:00:00.000Z",
+  user_metadata: { display_name: "Aderonke Smoke" },
   app_metadata: { provider: "email", providers: ["email"] },
-  user_metadata: {},
 };
-const syntheticProfile = {
-  user_id: syntheticMemberId,
-  handle: "browser-smoke-member",
-  display_name: "Browser Smoke Member",
+const fixtureProfile = {
+  user_id: fixtureUser.id,
+  handle: "aderonke_smoke",
+  display_name: "Aderonke Smoke",
   deleted_at: null,
 };
+const fixtureAccessToken = "browser-smoke-access-token";
 
 function respond(response, status, payload, headers = {}) {
   response.writeHead(status, {
@@ -26,7 +26,11 @@ function respond(response, status, payload, headers = {}) {
     "cache-control": "no-store",
     ...headers,
   });
-  response.end(JSON.stringify(payload));
+  response.end(payload === undefined ? "" : JSON.stringify(payload));
+}
+
+function isFixtureSession(request) {
+  return request.headers.authorization === `Bearer ${fixtureAccessToken}`;
 }
 
 const server = createServer((request, response) => {
@@ -46,7 +50,7 @@ const server = createServer((request, response) => {
     request.on("end", () => {
       try {
         const value = JSON.parse(body).mode;
-        if (value !== "empty" && value !== "error" && value !== "member") {
+        if (value !== "empty" && value !== "error") {
           respond(response, 400, { error: "Unsupported fixture mode" });
           return;
         }
@@ -59,12 +63,16 @@ const server = createServer((request, response) => {
     return;
   }
 
-  if (request.method === "GET" && url.pathname === "/auth/v1/user") {
-    if (mode === "member" && request.headers.authorization === `Bearer ${syntheticAccessToken}`) {
-      respond(response, 200, syntheticUser);
-    } else {
-      respond(response, 401, { message: "Synthetic smoke session required" });
+  if (url.pathname.startsWith("/auth/v1/")) {
+    if (request.method === "GET" && url.pathname === "/auth/v1/user" && isFixtureSession(request)) {
+      respond(response, 200, fixtureUser);
+      return;
     }
+    if (request.method === "POST" && url.pathname === "/auth/v1/logout" && isFixtureSession(request)) {
+      respond(response, 204);
+      return;
+    }
+    respond(response, 401, { error: "Invalid local browser-smoke session" });
     return;
   }
 
@@ -79,29 +87,21 @@ const server = createServer((request, response) => {
       return;
     }
 
-    if (
-      mode === "member"
-      && url.pathname === "/rest/v1/profiles"
-      && url.searchParams.get("user_id") === `eq.${syntheticMemberId}`
-      && request.headers.authorization === `Bearer ${syntheticAccessToken}`
-    ) {
-      respond(response, 200, syntheticProfile, { "content-range": "0-0/1" });
+    if (url.pathname === "/rest/v1/profiles" && isFixtureSession(request)) {
+      respond(response, 200, [fixtureProfile], { "content-range": "0-0/1" });
       return;
     }
 
     if (
-      url.pathname === "/rest/v1/published_articles"
-      || url.pathname === "/rest/v1/categories"
-      || url.pathname === "/rest/v1/tourism_destinations"
+      url.pathname === "/rest/v1/published_articles" ||
+      url.pathname === "/rest/v1/categories"
     ) {
       respond(response, 200, [], { "content-range": "*/0" });
       return;
     }
   }
 
-  respond(response, 405, {
-    error: "Fixture permits only health, mode control, synthetic read-only auth/profile/article/tourism queries, and no writes",
-  });
+  respond(response, 405, { error: "Fixture permits only health, mode control, and read-only smoke queries" });
 });
 
 server.listen(port, "localhost", () => {

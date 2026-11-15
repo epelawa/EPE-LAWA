@@ -14,17 +14,15 @@ test('every public page has rebuilt editorial or account markup, not the old nar
 test('new design scales display roles to 90 percent and retains readable body/control floors',()=>{
   const css=read('frontend/apps/main/app/globals.css');assert.match(css,/--text-display: clamp\(2\.025rem, 4\.8vw, 3\.6rem\)/);assert.match(css,/--text-title: clamp\(1\.25rem, 2\.4vw, 1\.575rem\)/);assert.match(css,/font-size: 16px/);assert.match(css,/min-height: 44px/);assert.match(css,/prefers-reduced-motion/);assert.doesNotMatch(css,/#(?:da251c|ff4a3d|17253a)\b/i);assert.match(css,/\[data-theme="dark"\]/);
 });
-test('homepage hero uses two newly sourced Epe photos without invented artwork',()=>{
+test('homepage preserves the original 52-photo sourced Epe hero without extra overlays or pill blocks',()=>{
   const source=read('frontend/apps/main/app/page.tsx');
   const carousel=read('frontend/apps/main/components/hero-carousel.tsx');
   const credits=read('docs/hero-image-sources.md');
   const heroCss=read('frontend/apps/main/app/hero-logo.css');
   const manifest=JSON.parse(read('frontend/apps/main/lib/hero-images.json'));
   assert.match(source,/<HeroCarousel\s*\/>/);
-  assert.equal(manifest.length,2);
-  assert.equal(new Set(manifest.map(slide=>slide.source)).size,2);
-  assert.ok(manifest.some(slide=>slide.source.endsWith('File:New_Epe_lagos_road.jpg')));
-  assert.ok(manifest.some(slide=>slide.source.endsWith('File:Fish_Statue_Epe.jpg')));
+  assert.equal(manifest.length,52);
+  assert.equal(new Set(manifest.map(slide=>slide.source)).size,52);
   assert.doesNotMatch(source,/home-hero__brand|BrandLockup/);
   assert.match(source,/Epe\.<br \/><em>Closer to home\.<\/em>/);
   assert.match(source,/A digital home for Epe’s news, heritage, businesses and community voices\./);
@@ -32,14 +30,12 @@ test('homepage hero uses two newly sourced Epe photos without invented artwork',
   assert.match(source,/getLatestStories\(3\)/);
   assert.doesNotMatch(source,/Stories worth knowing|History worth keeping|Places worth finding|People worth connecting/);
   assert.doesNotMatch(carousel,/Epe · Lagos State|Rooted in the community\. Open to everyone\./);
-  assert.match(carousel,/<button[\s\S]*?home-hero__pause/);
-  assert.match(carousel,/ROTATION_DELAY_MS = 7200/);
-  assert.match(carousel,/prefers-reduced-motion: reduce/);
-  assert.match(carousel,/isConstrainedConnection\(\)/);
-  assert.doesNotMatch(carousel,/home-hero__controls|home-hero__counter|Previous photo:|Next photo:/);
-  assert.match(source,/Quick access to EPE LAWA features/);
-  assert.match(carousel,/Photo by <a href=\{slide\.source\}/);
-  assert.match(carousel,/href=\{slide\.licenseUrl\}/);
+  assert.match(carousel,/setTimeout|setInterval|ROTATION_DELAY/);
+  assert.match(carousel,/prefers-reduced-motion/);
+  assert.match(carousel,/home-hero__pause/);
+  assert.match(carousel,/aria-roledescription="slide"/);
+  assert.doesNotMatch(carousel,/home-hero__caption|home-hero__credit|home-hero__slide-label|home-hero__counter|Photo by <a/);
+  assert.doesNotMatch(source,/home-hero__quicknav|Quick access to EPE LAWA features|Explore sections/);
   assert.match(read('frontend/apps/main/app/photo-credits/page.tsx'),/href=\{image\.licenseUrl\}/);
   assert.match(read('frontend/apps/main/components/site-footer.tsx'),/photo-credits/);
   assert.match(carousel,/HERO_SLIDES = heroImages/);
