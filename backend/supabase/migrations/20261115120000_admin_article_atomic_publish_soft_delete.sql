@@ -3,6 +3,8 @@
 -- exact column shape while ensuring deleted articles can never be served publicly.
 begin;
 
+-- Catalogue entry only: no direct user grant or role assignment is seeded. The
+-- authorized staff scope must be selected explicitly before separate provisioning.
 insert into public.capabilities (key, description)
 values ('article.delete', 'Soft-delete and restore articles while retaining version history')
 on conflict (key) do nothing;

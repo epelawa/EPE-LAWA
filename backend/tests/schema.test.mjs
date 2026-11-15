@@ -1155,7 +1155,13 @@ test('draft-save rejects an article without a current version and does not recor
     'a rejected transition does not record a success audit event');
 });
 
-test('atomic publication and recoverable soft-delete enforce capabilities, audit, rollback, and revision concurrency', async () => {
+test('atomic publication and recoverable soft-delete enforce capabilities, audit, rollback, and same-instance revision CAS', async () => {
+  const unassignedDelete = (await rows(`select
+    (select count(*)::int from public.staff_capability_grants where capability = 'article.delete' and revoked_at is null) as direct_grants,
+    (select count(*)::int from public.staff_role_capabilities where capability = 'article.delete') as role_grants`))[0];
+  assert.deepEqual(unassignedDelete, { direct_grants: 0, role_grants: 0 },
+    'article.delete is not granted directly or through a role by default');
+
   const categoryId = (await rows("select id from public.categories where slug = 'politics'"))[0].id;
   const authorId = (await rows("select id from public.authors where slug = 'test-byline'"))[0].id;
   await db.query('insert into public.staff_profiles (user_id, is_active) values ($1, true)', [U.atomic]);
@@ -1278,6 +1284,9 @@ test('atomic publication and recoverable soft-delete enforce capabilities, audit
   await db.exec('set role authenticated');
   let duplicateDeletes;
   try {
+    // PGlite 0.5.14 exposes one embedded instance per db, without a connect/pool
+    // API. Promise.all here exercises same-instance expected-revision CAS, not a
+    // two-session FOR UPDATE row-lock race; that still needs isolated PostgreSQL CI.
     duplicateDeletes = await Promise.allSettled([
       db.query('select public.article_soft_delete($1, $2)', [articleId, initialRevision]),
       db.query('select public.article_soft_delete($1, $2)', [articleId, initialRevision]),
