@@ -367,3 +367,7 @@ Implemented additive-only staff-read/public-pointer RLS without changing earlier
 ## 2026-11-15 01:05 WAT — Forum moderation repair checkpoint
 
 Prepared `20261115010000_forum_moderation_schema_repair.sql` against verified missing-table Production baseline. Separate PGlite RLS/action/audit behavior passed; combined full suite 243 total/242 passed/0 failed/1 existing skip. Exact forced builds and typechecks passed on Node22.23.5/pnpm10.34.9. SQL-only focused PR/application remain pending; no Production content/account writes.
+
+## 2026-11-15 01:18 WAT — Forum RPC ACL default-grant regression
+
+Verified explicit Supabase anon grants survive PUBLIC-only revoke. Added forward-only explicit revocation with reproduced default-grant PGlite fixture; full suite243pass0fail1skip, pinned forced build/typecheck passed. Release/application pending.

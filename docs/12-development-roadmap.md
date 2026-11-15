@@ -271,3 +271,7 @@ PR #80 (schema-test fixture alignment) merged normally; `main` is now `2c11154a1
 
 - Done locally: additive missing-table queue schema, scoped RLS, audited reason-required resolution, full-chain and missing-table behavioral checks. Combined-main tests 242 passed/0 failed/1 existing skip; forced builds 2/2 and typechecks 5/5, pinned tools.
 - Remaining: ordinary PR/merge, fresh live preflight, exact additive application and authenticated route check. No content seeded; public Forum/poll provisioning is not claimed. See `docs/handoffs/2026-11-15-forum-moderation-repair.md`.
+
+## 2026-11-15 01:18 WAT — Forum explicit anon ACL follow-up
+
+Production default privileges required explicit anon revocation after PR #85; capability checks still protected writes. New additive ACL-only migration and Supabase-default fixture passed full244 total243pass0fail1skip, forced builds2/2 and typechecks5/5. Ordinary PR/application pending; no content/account changes. See `docs/handoffs/2026-11-15-forum-rpc-anon-acl.md`.
