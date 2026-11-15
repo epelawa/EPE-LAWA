@@ -157,3 +157,9 @@
 }
 @media (max-width:360px) { .storyLink { grid-template-columns:62px minmax(0,1fr); gap:9px; }.storyThumbnail,.storyThumbnailFallback { width:62px; height:48px; }.relatedGrid { grid-template-columns:1fr; } }
 @media (prefers-reduced-motion:reduce) { .featureImage { transition:none; } }
+
+/* Approved Commons covers remain complete, unmodified images in every news slot. */
+.approvedCoverThumb { object-fit:contain !important; object-position:center; background:hsl(var(--secondary)); }
+.articleHeroImage.approvedCoverFull { height:auto; max-height:min(80vh,900px); aspect-ratio:auto; object-fit:contain; overflow:visible; background:transparent; }
+.coverCredit { margin:0; color:hsl(var(--muted-foreground)); font-size:12px; line-height:1.5; }
+.coverCredit a { color:hsl(var(--link)); text-decoration:underline; }

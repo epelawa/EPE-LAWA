@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "./supabase";
 import { adminHref } from "./admin-path";
+import { isNewsCoverKey } from "../../main/lib/news-covers";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -17,6 +18,7 @@ type ArticleFields = {
   categoryId: string;
   seoTitle: string | null;
   seoDescription: string | null;
+  ogImageKey: string | null;
 };
 
 function text(formData: FormData, name: string, max: number): string {
@@ -56,6 +58,8 @@ function articleFields(formData: FormData): ArticleFields | null {
   const body = articleBody(text(formData, "body", 100_000));
   const authorId = text(formData, "authorId", 64);
   const categoryId = text(formData, "categoryId", 64);
+  const rawCover = text(formData, "ogImageKey", 64);
+  if (rawCover && !isNewsCoverKey(rawCover)) return null;
   if (
     !UUID.test(articleId) || !Number.isSafeInteger(revision) || revision < 1 ||
     !title || !body || !UUID.test(authorId) || !UUID.test(categoryId)
@@ -71,6 +75,7 @@ function articleFields(formData: FormData): ArticleFields | null {
     categoryId,
     seoTitle: text(formData, "seoTitle", 70) || null,
     seoDescription: text(formData, "seoDescription", 200) || null,
+    ogImageKey: rawCover || null,
   };
 }
 
@@ -93,6 +98,9 @@ export async function createArticle(formData: FormData): Promise<void> {
   const categoryId = text(formData, "categoryId", 64);
   const seoTitle = text(formData, "seoTitle", 70) || null;
   const seoDescription = text(formData, "seoDescription", 200) || null;
+  const rawCover = text(formData, "ogImageKey", 64);
+  if (rawCover && !isNewsCoverKey(rawCover)) fail("/newsroom/new?error=invalid");
+  const ogImageKey = rawCover || null;
 
   if (!title || !body || !UUID.test(authorId) || !UUID.test(categoryId)) {
     fail("/newsroom/new?error=invalid");
@@ -109,7 +117,7 @@ export async function createArticle(formData: FormData): Promise<void> {
       p_category_id: categoryId,
       p_seo_title: seoTitle,
       p_seo_description: seoDescription,
-      p_og_image_key: null,
+      p_og_image_key: ogImageKey,
     });
     if (result.error) {
       console.error("article creation failed", { code: result.error.code });
@@ -142,7 +150,7 @@ export async function saveDraft(formData: FormData): Promise<void> {
       p_category_id: fields.categoryId,
       p_seo_title: fields.seoTitle,
       p_seo_description: fields.seoDescription,
-      p_og_image_key: null,
+      p_og_image_key: fields.ogImageKey,
     });
     if (saved.error || typeof saved.data !== "number") {
       errorCode = saved.error?.code ?? "save_failed";
@@ -176,7 +184,7 @@ export async function reviseArticle(formData: FormData): Promise<void> {
       p_category_id: fields.categoryId,
       p_seo_title: fields.seoTitle,
       p_seo_description: fields.seoDescription,
-      p_og_image_key: null,
+      p_og_image_key: fields.ogImageKey,
     });
     if (error) errorCode = error.code;
   } catch (error) {

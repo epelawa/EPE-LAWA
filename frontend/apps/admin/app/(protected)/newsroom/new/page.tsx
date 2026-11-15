@@ -4,6 +4,7 @@ import { buttonClassName, EmptyPanel, Notice, PageFrame, PageIntro, Panel, Secti
 import { createClient } from "../../../../lib/supabase";
 import { createArticle } from "../../../../lib/actions";
 import { adminHref } from "../../../../lib/admin-path";
+import { NEWS_COVERS } from "../../../../../main/lib/news-covers";
 
 export const metadata: Metadata = {
   title: "Create article draft",
@@ -49,6 +50,7 @@ export default async function NewArticlePage({
               <div className="ui-field"><label className="label" htmlFor="categoryId">Category</label><select id="categoryId" name="categoryId" className="input" required defaultValue=""><option value="" disabled>Select a category</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.label}</option>)}</select></div>
               <div className="ui-field"><label className="label" htmlFor="authorId">Byline</label><select id="authorId" name="authorId" className="input" required defaultValue=""><option value="" disabled>Select an author</option>{authors.map((author) => <option key={author.id} value={author.id}>{author.display_name}</option>)}</select></div>
             </div>
+            <div className="ui-field"><label className="label" htmlFor="ogImageKey">Approved cover (optional)</label><select id="ogImageKey" name="ogImageKey" className="input" defaultValue=""><option value="">No cover</option>{Object.entries(NEWS_COVERS).map(([key, cover]) => <option key={key} value={key}>{cover.title} — {cover.credit}</option>)}</select><p className="ui-meta">Approved, unmodified Commons images only.</p></div>
             <div className="ui-form-grid">
               <div className="ui-field"><label className="label" htmlFor="seoTitle">Search title (optional)</label><input id="seoTitle" name="seoTitle" className="input" maxLength={70} /></div>
               <div className="ui-field"><label className="label" htmlFor="seoDescription">Search description (optional)</label><input id="seoDescription" name="seoDescription" className="input" maxLength={200} /></div>

@@ -6,6 +6,7 @@ import { createClient } from "../../../lib/supabase";
 import { newsArticlePath, publicNewsArticleUrl } from "../../../lib/news-urls";
 import { publicMediaUrl } from "../../../lib/media";
 import { readPublishedArticleBody } from "../../../lib/published-article-body";
+import { selectedNewsCover } from "../../../lib/news-covers";
 import { formatPublishedDate } from "../../../lib/dates";
 import { ArticleBody } from "../../../lib/editorial-body";
 import { CommentThread } from "../comment-thread";
@@ -120,6 +121,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
 
   const articleUrl = publicNewsArticleUrl(article.slug);
   const imageUrl = publicMediaUrl(article.og_image_key);
+  const cover = selectedNewsCover(article.og_image_key);
   const date = formatPublishedDate(article.published_at);
 
   return (
@@ -133,11 +135,12 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
             </Link>
             <ArticleShareActions title={article.title} url={articleUrl} compact showCopyButton={false} className={styles.heroShareActions} shareButtonClassName={styles.heroControl} feedbackClassName={styles.heroShareFeedback} fallbackClassName={styles.shareFallback} />
           </div>
-          {imageUrl ? <img className={styles.articleHeroImage} src={imageUrl} alt="" loading="eager" decoding="async" /> : <span className={styles.articleHeroFallback} aria-hidden="true" />}
           <div className={styles.articleHeroCopy}>
             <h1>{article.title}</h1>
           </div>
+          {imageUrl ? <img className={`${styles.articleHeroImage} ${cover ? styles.approvedCoverFull : ""}`} src={imageUrl} alt={cover?.alt ?? ""} loading="eager" decoding="async" /> : <span className={styles.articleHeroFallback} aria-hidden="true" />}
         </header>
+        {cover ? <figure className={styles.coverCredit}><figcaption>{cover.caption} <a href={cover.source} target="_blank" rel="noreferrer">{cover.credit}</a> License: <a href={cover.license} target="_blank" rel="noreferrer">CC BY-SA 4.0</a>.</figcaption></figure> : null}
 
         <div className={styles.articleMetaBar} aria-label="Story details">
           <span className={styles.byline}>{article.author_name}</span>
@@ -148,7 +151,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
         <CommentThread articleId={article.id} slug={article.slug} notice={notice.comments} />
         <details className={styles.articleExtras}><summary>More story options</summary><OfflineArticleDownload article={{ slug: article.slug, title: article.title, summary: article.summary, publishedAt: article.published_at, author: article.author_name, category: article.category_label, sourceUrl: articleUrl }} /></details>
         {article.tags?.length ? <ul className={styles.articleTags} aria-label="Story tags">{article.tags.map((tag) => <li key={tag.slug} className="ui-tag">{tag.label}</li>)}</ul> : null}
-        {related.length ? <section className={styles.relatedSection} aria-labelledby="related-heading"><div className={styles.sectionHeading}><div><h2 id="related-heading">Related stories</h2></div></div><ul className={styles.relatedGrid}>{related.map((item) => { const relatedImage = publicMediaUrl(item.og_image_key); return <li className={styles.relatedCard} key={item.slug}><Link href={newsArticlePath(item.slug)} className={styles.relatedLink}>{relatedImage ? <img className={styles.relatedImage} src={relatedImage} alt="" loading="lazy" decoding="async" /> : <span className={styles.relatedImageFallback} aria-hidden="true"><NewspaperIcon size={24} /></span>}<span className={styles.relatedCategory}>{item.category_label}</span><span className={styles.relatedTitle}>{item.title}</span></Link></li>; })}</ul></section> : null}
+        {related.length ? <section className={styles.relatedSection} aria-labelledby="related-heading"><div className={styles.sectionHeading}><div><h2 id="related-heading">Related stories</h2></div></div><ul className={styles.relatedGrid}>{related.map((item) => { const relatedImage = publicMediaUrl(item.og_image_key); return <li className={styles.relatedCard} key={item.slug}><Link href={newsArticlePath(item.slug)} className={styles.relatedLink}>{relatedImage ? <img className={`${styles.relatedImage} ${selectedNewsCover(item.og_image_key) ? styles.approvedCoverThumb : ""}`} src={relatedImage} alt="" loading="lazy" decoding="async" /> : <span className={styles.relatedImageFallback} aria-hidden="true"><NewspaperIcon size={24} /></span>}<span className={styles.relatedCategory}>{item.category_label}</span><span className={styles.relatedTitle}>{item.title}</span></Link></li>; })}</ul></section> : null}
         <p className={styles.correctionNote}>Report a correction: <Link href="/contact" className="ui-text-link">contact the newsroom</Link>.</p>
       </article>
     </PageFrame>
