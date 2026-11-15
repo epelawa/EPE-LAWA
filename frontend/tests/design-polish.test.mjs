@@ -13,6 +13,7 @@ test("public shell stays light and the all-viewport drawer is account-only", () 
 	const brand = read("frontend/apps/main/components/brand.tsx");
   const staffBrand = read("frontend/apps/admin/components/brand.tsx");
   const footer = read("frontend/apps/main/components/site-footer.tsx");
+  const newsletter = read("frontend/apps/main/components/newsletter-unavailable.tsx");
   const home = read("frontend/apps/main/app/page.tsx");
   const heroCarousel = read("frontend/apps/main/components/hero-carousel.tsx");
   const navCss = read("frontend/apps/main/components/navigation-refinement.css");
@@ -59,6 +60,10 @@ test("public shell stays light and the all-viewport drawer is account-only", () 
   assert.doesNotMatch(home, /home-hero__quicknav|Quick access to EPE LAWA features|Explore sections/);
   assert.match(header, /A shared home for everyone\./);
   assert.match(header, /addEventListener\("pointerdown", onOutsideDrawer\)/);
+  assert.match(footer, /<NewsletterUnavailable id="site-footer-newsletter" variant="footer" \/>/);
+  assert.match(footer, /Newsletter sign-up is paused/);
+  assert.match(newsletter, /disabled/);
+  assert.doesNotMatch(newsletter, /<form|onSubmit=/);
   assert.match(navCss, /\.drawer\s*\{[^}]*width:min\(520px,calc\(100vw - 52px\)\)/);
   assert.match(navCss, /\.drawer-account__actions\s*\{[^}]*display:\s*grid/);
 });
