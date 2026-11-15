@@ -29,7 +29,7 @@ test('homepage preserves the original 52-photo sourced Epe hero without extra ov
   assert.match(source,/home-hero__title-line home-hero__title-line--preposition">To<\/span>/);
   assert.match(source,/home-hero__title-line">Home<\/span>/);
   assert.match(source,/From local headlines to the people, places and ideas shaping everyday life in Epe, this is a place to stay informed and feel connected\./);
-  assert.match(source,/href="\/news" className="btn-primary">Read the latest stories/);
+  assert.match(source,/href="\/news" className="btn-primary">Read latest news/);
   assert.doesNotMatch(source,/Explore Epe|href="\/tourism"/);
   assert.match(source,/className=\{`home-story-list home-story-list--\$\{stories\.items\.length\}`\}/);
   assert.match(source,/getLatestStories\(3\)/);

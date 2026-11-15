@@ -14,24 +14,11 @@ const DESKTOP_GROUPS = [
   { label: "Discover", routes: [["/map", "Map & Navigation"], ["/business-directory", "Business Directory"], ["/tourism", "Tourism"], ["/radio", "Radio"]] },
   { label: "About", routes: [["/about", "About"], ["/contact", "Contact"], ["/guidelines", "Guidelines"], ["/advertise", "Advertise"], ["/photo-credits", "Photo credits"], ["/privacy", "Privacy"], ["/terms", "Terms"]] },
 ] as const;
-const MOBILE_LINKS = [
-  ["/news", "News", "Local reporting from Epe and Lagos."],
-  ["/itan-ilu-mi", "Ìtàn Ilú Mi", "Epe stories, names and traditions."],
-  ["/forum", "Forum", "Join a local conversation."],
-  ["/map", "Map & Navigation", "Find places and directions across Epe."],
-  ["/business-directory", "Business Directory", "Discover local businesses."],
-  ["/tourism", "Tourism", "Explore Epe’s heritage and destinations."],
-  ["/radio", "EPE LAWA Radio", "Listen to local voices and programmes."],
-  ["/who-is-who", "Who is Who", "Meet the people shaping Epe."],
-  ["/about", "About EPE LAWA", "Our mission and community."],
-  ["/contact", "Contact Us", "Connect with our team."],
-  ["/advertise", "Advertise", "Reach Epe’s local audience."],
-] as const;
-const MOBILE_FOOTER_LINKS = [
-  ["/guidelines", "Guidelines"],
-  ["/photo-credits", "Photo credits"],
-  ["/privacy", "Privacy"],
-  ["/terms", "Terms"],
+const MOBILE_GROUPS = [
+  { label: "Read", routes: [["/news", "News"], ["/radio", "Radio"]] },
+  { label: "Community", routes: [["/itan-ilu-mi", "Ìtàn Ilú Mi"], ["/forum", "Forum"], ["/who-is-who", "Who is Who"]] },
+  { label: "Explore", routes: [["/map", "Map & Navigation"], ["/business-directory", "Business Directory"], ["/tourism", "Tourism"]] },
+  { label: "EPE LAWA", routes: [["/about", "About"], ["/contact", "Contact"], ["/guidelines", "Guidelines"], ["/advertise", "Advertise"], ["/photo-credits", "Photo credits"], ["/privacy", "Privacy"], ["/terms", "Terms"]] },
 ] as const;
 
 function isCurrent(path: string, href: string) {
@@ -72,15 +59,15 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
     return <Link className={className} href={item.href} aria-current={isCurrent(pathname, item.href) ? "page" : undefined} key={item.href}>{item.label}</Link>;
   };
 
-  const renderMobileLink = (href: string, label: string, description: string) => {
-    const item = navItem(href, label);
-    return (
-      <Link className="drawer-link" href={item.href} aria-current={isCurrent(pathname, item.href) ? "page" : undefined} key={item.href}>
-        <span>{label}</span>
-        <small>{description}</small>
-      </Link>
-    );
-  };
+  const renderMobileGroup = (group: typeof MOBILE_GROUPS[number]) => (
+    <section className="drawer-group" key={group.label} aria-labelledby={`drawer-${group.label.toLowerCase().replaceAll(" ", "-")}`}>
+      <h2 id={`drawer-${group.label.toLowerCase().replaceAll(" ", "-")}`}>{group.label}</h2>
+      <ul>{group.routes.map(([href, label]) => {
+        const item = navItem(href, label);
+        return <li key={href}><Link className="drawer-link" href={item.href} aria-current={isCurrent(pathname, item.href) ? "page" : undefined}>{label}</Link></li>;
+      })}</ul>
+    </section>
+  );
 
   useEffect(() => {
     if (previousPath.current === pathname) return;
@@ -211,12 +198,7 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
             <button className="btn-icon" type="button" aria-label="Close navigation menu" onClick={closeDrawer}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg></button>
           </div>
           <nav className="drawer-nav" aria-label="All sections">
-            <ul className="drawer-list">
-              {MOBILE_LINKS.map(([href, label, description]) => <li key={href}>{renderMobileLink(href, label, description)}</li>)}
-            </ul>
-            <div className="drawer-foot-links">
-              {MOBILE_FOOTER_LINKS.map(([href, label]) => renderLink(href, label, "drawer-foot-link"))}
-            </div>
+            {MOBILE_GROUPS.map(renderMobileGroup)}
           </nav>
           <section className="drawer-account" aria-labelledby="drawer-account-title">
             <h2 id="drawer-account-title">Account</h2>

@@ -23,6 +23,15 @@ test("light mode ignores old dark preferences and the public drawer keeps only a
   const drawer = page.getByRole("dialog", { name: "Find your place in Epe." });
   await expect(drawer).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath("navigation-drawer.png"), fullPage: false });
+  await expect(drawer.locator(".drawer-group")).toHaveCount(4);
+  for (const group of ["Read", "Community", "Explore", "EPE LAWA"]) {
+    await expect(drawer.getByRole("heading", { name: group, exact: true })).toBeVisible();
+  }
+  expect(await drawer.locator(".drawer-group h2").allTextContents()).toEqual(["Read", "Community", "Explore", "EPE LAWA"]);
+  await expect(drawer.locator('section[aria-labelledby="drawer-read"] a[href="/news"]')).toHaveCount(1);
+  await expect(drawer.locator('section[aria-labelledby="drawer-community"] a[href="/forum"]')).toHaveCount(1);
+  await expect(drawer.locator('section[aria-labelledby="drawer-explore"] a[href="/map"]')).toHaveCount(1);
+  await expect(drawer.locator('section[aria-labelledby="drawer-epe-lawa"] a[href="/photo-credits"]')).toHaveCount(1);
   await expect(drawer.getByRole("link", { name: "Create account" })).toHaveAttribute("href", "/auth");
   await expect(drawer.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/login");
   await expect(drawer.getByText(/Appearance|Member dashboard/i)).toHaveCount(0);

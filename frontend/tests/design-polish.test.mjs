@@ -24,7 +24,11 @@ test("public shell stays light and the all-viewport drawer is account-only", () 
 	assert.doesNotMatch(mastheadActions, /ThemeToggle/);
 	assert.match(header, /renderLink\("\/auth", "Create account", "btn-primary"\)/);
 	assert.match(header, /renderLink\("\/login", "Sign in", "btn-secondary"\)/);
-	assert.match(navCss, /\.site-head__menu\s*\{[^}]*display:inline-flex/);
+  assert.match(navCss, /\.site-head__menu\s*\{[^}]*display:inline-flex/);
+  assert.match(header, /MOBILE_GROUPS\.map\(renderMobileGroup\)/);
+  for (const group of ["Read", "Community", "Explore", "EPE LAWA"]) assert.match(header, new RegExp(`label: "${group}"`));
+  assert.match(navCss, /\.drawer-group ul/);
+  assert.doesNotMatch(navCss, /\.drawer-list|\.drawer-foot-links/);
 	assert.match(header, /<BrandLockup size=\{32\} \/>/);
   assert.doesNotMatch(header + brand + staffBrand + footer, /Epe Division|brand__place|brand-lockup__tagline|showPlace/);
   assert.match(home, /<HeroCarousel\s*\/>/, "homepage logo hero exists");
@@ -34,7 +38,7 @@ test("public shell stays light and the all-viewport drawer is account-only", () 
   assert.match(home, /home-hero__title-line home-hero__title-line--preposition">To<\/span>/);
   assert.match(home, /home-hero__title-line">Home<\/span>/);
   assert.match(home, /From local headlines to the people, places and ideas shaping everyday life in Epe, this is a place to stay informed and feel connected\./);
-  assert.match(home, /href="\/news" className="btn-primary">Read the latest stories/);
+  assert.match(home, /href="\/news" className="btn-primary">Read latest news/);
   assert.doesNotMatch(home, /Explore Epe|href="\/tourism"/);
   assert.doesNotMatch(home, /Stories worth knowing|History worth keeping|Places worth finding|People worth connecting|home-topics/);
   assert.equal(heroManifest.length, 52);

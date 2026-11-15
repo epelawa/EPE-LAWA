@@ -33,7 +33,7 @@ test("homepage presents editorial copy and a news-first CTA in a full-height her
   await openHome(page, request);
 
   await expect(page.getByText("From local headlines to the people, places and ideas shaping everyday life in Epe, this is a place to stay informed and feel connected.")).toBeVisible();
-  await expect(page.getByRole("link", { name: "Read the latest stories", exact: true })).toHaveAttribute("href", "/news");
+  await expect(page.getByRole("link", { name: "Read latest news", exact: true })).toHaveAttribute("href", "/news");
   await expect(page.locator(".home-hero__actions a")).toHaveCount(1);
   await expect(page.getByRole("link", { name: /Explore Epe|Tour Epe/i })).toHaveCount(0);
   await expect(page.locator(".mobile-bottom-nav")).toHaveCount(0);

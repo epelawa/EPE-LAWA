@@ -65,7 +65,7 @@ for (const width of viewportWidths) {
       await newsLink.click();
       await expect(newsLink).toHaveAttribute("aria-current", "page");
     } else {
-      await page.getByRole("link", { name: "Read the latest stories", exact: true }).click();
+      await page.getByRole("link", { name: "Read latest news", exact: true }).click();
     }
 
     await expect(page).toHaveURL(/\/news$/);
@@ -139,7 +139,7 @@ for (const width of [320, 375, 768, 1024] as const) {
     } else {
       const mainNavigation = page.getByRole("navigation", { name: mainNavigationName });
       const newsLink = mainNavigation.getByRole("link", { name: newsLinkName });
-      const target = await newsLink.isVisible() ? newsLink : page.getByRole("link", { name: "Read the latest stories", exact: true });
+      const target = await newsLink.isVisible() ? newsLink : page.getByRole("link", { name: "Read latest news", exact: true });
       await tabUntilFocused(page, target);
       await page.keyboard.press("Enter");
       await expect(page).toHaveURL(/\/news$/);

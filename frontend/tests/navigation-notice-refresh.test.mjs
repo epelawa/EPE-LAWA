@@ -14,8 +14,10 @@ test('navbar groups destinations separately from account actions and keeps drawe
  assert.match(header,/event\.key === "Escape"/);
  assert.match(header,/onOutsideDrawer/);
  assert.match(header,/const DESKTOP_GROUPS =/);
-	 assert.match(header,/const MOBILE_LINKS =/);
-	 assert.match(header,/const MOBILE_FOOTER_LINKS =/);
+ assert.match(header,/const MOBILE_GROUPS =/);
+ for (const group of ["Read", "Community", "Explore", "EPE LAWA"]) assert.match(header,new RegExp(`label: "${group}"`));
+ assert.match(header,/MOBILE_GROUPS\.map\(renderMobileGroup\)/);
+ assert.doesNotMatch(header,/ThemeToggle|Appearance|Member dashboard/);
 });
 test('compact notices retain measured reachability, live regions, clear messages and 44px controls',()=>{
  const css=read('../apps/main/app/notice-refinement.css');

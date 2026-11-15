@@ -73,7 +73,7 @@ test("Breaking news is visible only for a flagged, unexpired published lead", ()
 test("News uses the shared public shell and keeps its cobalt search and route entry points", () => {
   assert.match(header, /const isNewsReference = pathname === "\/news"/);
   assert.match(header, /const DESKTOP_GROUPS =/);
-  assert.match(header, /const MOBILE_LINKS =/);
+  assert.match(header, /const MOBILE_GROUPS =/);
   assert.match(header, /href="\/news\?search=1"/);
   assert.match(headerStyles, /\.site-head--news-reference\s*\{\s*display: block/);
   assert.match(header, /"\/advertise"/);

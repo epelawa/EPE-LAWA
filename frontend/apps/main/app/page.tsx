@@ -24,18 +24,8 @@ export default async function Home() {
             </h1>
             <p className="home-hero__lede">From local headlines to the people, places and ideas shaping everyday life in Epe, this is a place to stay informed and feel connected.</p>
             <div className="home-hero__actions">
-              <Link href="/news" className="btn-primary">Read the latest stories <ArrowRightIcon size={17} aria-hidden="true" /></Link>
+              <Link href="/news" className="btn-primary">Read latest news <ArrowRightIcon size={17} aria-hidden="true" /></Link>
             </div>
-            <nav className="home-hero__quicknav" aria-label="Quick access to EPE LAWA features">
-              <span className="home-hero__quicknav-title">Explore sections</span>
-              <ul>
-                {modules.map((item) => (
-                  <li key={item.href}>
-                    <Link href={item.href}>{item.name}<ArrowUpRightIcon size={14} aria-hidden="true" /></Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
           </div>
         </div>
       </section>
