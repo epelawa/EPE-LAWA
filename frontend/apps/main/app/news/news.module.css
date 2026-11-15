@@ -19,7 +19,6 @@
 .newsSearchForm input:focus-visible { outline:2px solid #16894d; outline-offset:2px; }
 .newsSearchForm button { min-height:48px; }
 .pageHeader { display:grid; gap:10px; min-width:0; }
-.kicker { margin:0; color:#16804a; font-size:.6875rem; font-weight:800; letter-spacing:.13em; }
 .pageTitle { margin:0; text-wrap:balance; color:#0c2e20; font-size:clamp(2rem, 1rem + 2.5vw, 2.875rem); line-height:1.06; letter-spacing:-.05em; }
 .categoryNav { min-width:0; overflow-x:auto; scrollbar-width:thin; scrollbar-color:#c2d1c6 transparent; }
 .categoryList { display:flex; width:max-content; min-width:100%; align-items:center; gap:7px; margin:2px 0 0; padding:0 0 7px; list-style:none; }
@@ -88,7 +87,7 @@
 .discoverCopy > span:last-child { color:#0b7042; font-size:.75rem; font-weight:750; }
 .discoverCard:hover .discoverCopy > span:last-child { text-decoration:underline; text-underline-offset:3px; }
 .popularCard ul { display:flex; flex-wrap:wrap; gap:7px; margin:0; padding:0; list-style:none; }
-.popularCard li a { display:inline-flex; min-height:44px; align-items:center; padding:0 10px; border:1px solid #cfddd3; border-radius:999px; color:#365344; background:#fff; font-size:.6875rem; font-weight:650; text-decoration:none; }
+.popularCard li a { display:inline-flex; min-height:48px; align-items:center; padding:0 10px; border:1px solid #cfddd3; border-radius:999px; color:#365344; background:#fff; font-size:.6875rem; font-weight:650; text-decoration:none; }
 .popularCard li a:hover { border-color:#0b7042; color:#0b4a32; }
 
 /* Article details retain their existing body, comments, sharing and credit content. */
@@ -142,7 +141,7 @@
   .newsAside { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .popularCard { grid-column:1/-1; }
 }
-@media (max-width:760px) {
+@media (max-width:800px) {
   .leadGrid { grid-template-columns:minmax(0,1fr); }
   .featureCard { min-height:20rem; aspect-ratio:1.65; }
   .latestGrid { grid-template-columns:repeat(2,minmax(0,1fr)); }

@@ -36,15 +36,17 @@ test("system-theme selection applies without a toast overlay", async () => {
   assert.match(connectivity, /You’re offline|Service unavailable|Retry/);
 });
 
-test("public theme control is in a reachable drawer, not the masthead", async () => {
+test("public theme control is reachable from the native More disclosure, not a drawer", async () => {
   const header = await read("components/site-header.tsx");
   const baseCss = await read("app/globals.css");
-  const drawerCss = await read("components/navigation-refinement.css");
+  const navCss = await read("components/navigation-refinement.css");
 
   const masthead = header.match(/<div className="masthead-actions">([\s\S]*?)<\/div>/)?.[1] ?? "";
   assert.doesNotMatch(masthead, /ThemeToggle/);
-  assert.match(header, /className="drawer-appearance" role="group" aria-label="Appearance settings"[\s\S]*<ThemeToggle \/>/);
-  assert.match(baseCss, /\.site-head__menu \{ display: inline-flex; \}/);
-  assert.match(drawerCss, /\.drawer-appearance\s*\{[^}]*display: flex/);
-  assert.match(drawerCss, /\.drawer-appearance \.theme-control\s*\{[^}]*width: 58px/);
+  assert.match(header, /<details className="nav-more"/);
+  assert.match(header, /className="nav-more__appearance" role="group" aria-label="Appearance settings"[\s\S]*<ThemeToggle \/>/);
+  assert.doesNotMatch(header, /drawer-appearance|site-head__menu|drawer-root|aria-modal/);
+  assert.match(navCss, /\.site-head \.nav-more__appearance\s*\{[^}]*display:flex/);
+  assert.match(navCss, /\.site-head \.nav-more__appearance \.theme-control\s*\{[^}]*width:58px/);
+  assert.doesNotMatch(baseCss, /\.site-head__menu|\.drawer-root|\.drawer-scrim/);
 });

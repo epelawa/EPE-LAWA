@@ -2,18 +2,27 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const read=p=>readFileSync(new URL(p,import.meta.url),'utf8');
-test('navbar keeps Sign in visible and scrolls menu destinations independently of account actions',()=>{
+
+test('public navbar is global, forest-green, responsive and contains no overlay drawer',()=>{
  const css=read('../apps/main/components/navigation-refinement.css');
+ const global=read('../apps/main/app/globals.css');
  const header=read('../apps/main/components/site-header.tsx');
- assert.match(css,/\.header-signin\s*\{[^}]*display: inline-flex/);
- assert.match(css,/\.drawer-nav\s*\{[^}]*overflow-y: auto/);
- assert.match(css,/\.drawer-account\s*\{[^}]*flex: 0 0 auto/);
-	 assert.match(css,/\.drawer-label\s*\{[^}]*font-size: \.8125rem/);
- assert.match(header,/navigation-refinement\.css/);
- assert.match(header,/aria-modal="true"/);
- assert.match(header,/event\.key === "Escape"/);
- assert.match(header,/onOutsideDrawer/);
+ assert.match(header,/news-utilitybar/);
+ assert.match(header,/aria-label="Utility links"/);
+ assert.match(header,/aria-label="Main navigation"/);
+ assert.match(header,/primaryNavigation\(items\)/);
+ assert.match(header,/<details className="nav-more"/);
+ assert.match(header,/aria-current=\{current\(pathname, item\.href\)/);
+ assert.match(header,/nav-more__appearance[\s\S]*<ThemeToggle \/>/);
+ assert.match(css,/\.site-head\s*\{[^}]*position:sticky/);
+ assert.match(css,/background:#063d2b/);
+ assert.match(css,/\.site-head \.nav-items\s*\{[^}]*overflow-x:auto/);
+ assert.match(css,/\.site-head \.header-signin\s*\{[^}]*display:inline-flex/);
+ assert.match(css,/min-height:44px/);
+ assert.doesNotMatch(header,/site-head__menu|drawer-root|drawer-scrim|aria-modal|drawerOpen/);
+ assert.doesNotMatch(global,/\.site-head__menu|\.drawer-root|\.drawer-scrim/);
 });
+
 test('compact notices retain measured reachability, live regions, clear messages and 44px controls',()=>{
  const css=read('../apps/main/app/notice-refinement.css');
  const source=read('../apps/main/app/connectivity.tsx');

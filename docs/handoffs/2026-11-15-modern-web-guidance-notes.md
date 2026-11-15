@@ -1,23 +1,24 @@
-# Modern Web Guidance — applied checklist for EPE-LAWA News and Admin
+# Modern Web Guidance — applied checklist for EPE-LAWA News, navigation, and Admin
 
-**Source checked:** 2026-11-15. This checklist applies to the current News/cover/Advertise PR and the separate follow-up Admin redesign. It is not an audit or certification of unrelated EPE-LAWA routes.
+**Source checked:** 2026-11-15. This checklist covers the consolidated News, cover, Advertise, shared public navigation, and Admin dashboard work. It is not an audit or certification of unrelated EPE-LAWA routes.
 
 ## Sources
 
 - [GoogleChrome/modern-web-guidance repository](https://github.com/googlechrome/modern-web-guidance): the repository describes a CLI-backed set of modern platform, browser-compatibility, accessibility, performance, privacy and responsive-design guides, with `search`, `retrieve` and `legacy-scan` workflows.
 - [Chrome for Developers: Modern Web Guidance](https://developer.chrome.com/docs/modern-web-guidance): project overview and installation options.
-- [Get started with Modern Web Guidance](https://developer.chrome.com/docs/modern-web-guidance/get-started): explains searching for a guide ID and retrieving its implementation guidance, Baseline compatibility tiers, and the need for fallbacks when a feature is not widely available.
+- [Get started with Modern Web Guidance](https://developer.chrome.com/docs/modern-web-guidance/get-started): explains searching for a guide ID and retrieving implementation guidance, Baseline compatibility tiers, and the need for fallbacks when a feature is not widely available.
 
 The CLI guide IDs consulted include `responsive-design`, `typography`, `css-layout`, `navbar`, `optimize-image-priority`, `forms`, `accessible-error-announcement`, `privacy`, `secure-external-subresources`, and `content-first-noise-reduction`.
 
-## Requirements applied to these PRs
+## Requirements applied
 
-- **Responsive layout and reading:** use intrinsic grid/flex sizing and aspect-ratio media frames; confirm 320 CSS-pixel reflow and larger widths; use unitless line-height, rem-based text sizes, and bounded `clamp()` values that combine relative and viewport units; avoid fixed heights that clip copy; use balanced headline wrapping and readable line lengths.
-- **Cover loading:** mark only the actual LCP lead/hero image `fetchpriority="high"`; never lazy-load that image; keep above-the-fold cards eager where they are actually visible, use normal browser priority for ordinary images, and lazy-load offscreen cards. Omit `fetchpriority="auto"`.
-- **Forms and errors:** keep visible labels, native input constraints and server-side validation; describe fields and errors programmatically; reveal validation after interaction rather than showing premature errors while typing; announce broken-image feedback accessibly. Newsletter and ad intake remain non-collecting while delivery is unavailable.
-- **Privacy and external media:** explain that an external image host receives the visitor’s IP; set `referrerPolicy="no-referrer"` for cover previews and published images; keep document `Referrer-Policy` strict; validate public HTTPS URLs server-side. SRI is not appropriate for owner-supplied mutable image URLs because there is no pinned, known-good image digest; the URLs are images, not executable scripts.
-- **Content and compatibility:** keep the editorial layout stable and avoid intrusive signup prompts; reserve image space; preserve current-page semantics and keyboard focus. Do not make unsupported Anchor Positioning or other limited-availability features a required path.
+- **Responsive reading and layout:** use intrinsic grid/flex sizing and aspect-ratio media frames; verify narrow reflow and enlarged text; use rem-based text, unitless line-height, balanced headlines, bounded `clamp()` sizes and readable line lengths; avoid fixed heights that clip content.
+- **Navigation:** use ordinary same-tab links for primary destinations, mark the current destination with `aria-current="page"`, and put secondary destinations in a native keyboard-operable `<details>/<summary>` disclosure. Escape closes the disclosure and returns focus; pointer-outside closes it; no hamburger, drawer, modal scrim or focus trap is required. Keep the utility bar and responsive primary links visible without relying on unsupported Anchor Positioning.
+- **Admin dashboard:** show only counts returned by the real database and only when the corresponding staff capability is granted. Render an explicit unavailable state when a count cannot be verified instead of inventing a zero; omit mock analytics, sample feed items and private member/order/report details. Keep the existing authorized staff destinations as same-tab actions and reflow the cards at narrower widths.
+- **Cover loading:** prioritize only the actual lead/LCP image; do not lazy-load it. Keep genuinely visible lead cards eager, lazy-load offscreen cards, reserve image space and use full-bleed `object-fit: cover`. Set `referrerPolicy="no-referrer"` for remote cover images and previews.
+- **Forms, errors, and privacy:** keep visible labels, native constraints and server-side validation; associate field errors programmatically and reveal them after interaction; announce failed-image previews accessibly. Restrict automatically loaded external images to exact trusted HTTPS hosts. Newsletter and advertising intake remain non-collecting while delivery and secure intake are unavailable.
+- **Compatibility and motion:** keep the layout usable without newer popover/anchor-positioning features; respect reduced-motion preferences and preserve visible keyboard focus.
 
-## Scope note
+## Current scope note
 
-The shared public navigation is already a keyboard-operable drawer and exposes `aria-current="page"`; this News PR does not replace that shared cross-site interaction model. A native-popover/navigation-tree refactor is a separate, broader project decision. The follow-up Admin PR must use this same guidance while preserving authorized staff actions and same-tab, first-click navigation. Neither PR implies that unrelated pages have been audited or modernized.
+The consolidated feature replaces the public drawer with a global forest-green reference navbar, while preserving the protected Member dashboard link and theme control in the More disclosure. The Admin dashboard redesign uses only capability-gated live queues. Screenshots and release evidence belong to this focused PR. No claim is made that unrelated pages have been audited or modernized.

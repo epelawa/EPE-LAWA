@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "./supabase";
 import { adminHref } from "./admin-path";
 import { isNewsCoverKey } from "../../main/lib/news-covers";
-import { normalizeExternalNewsCoverUrl } from "../../main/lib/news-cover-url.mjs";
+import { normalizeExternalNewsAttributionUrl, normalizeExternalNewsCoverUrl } from "../../main/lib/news-cover-url.mjs";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -56,8 +56,8 @@ function coverFields(formData: FormData, rawCoverKey: string): CoverFields | nul
     !url || rawAlt.length < 1 || rawAlt.length > 500 || rawCredit.length < 1 || rawCredit.length > 300 ||
     rawSource.length > 2048 || rawLicense.length > 2048 || rawCaption.length > 500
   ) return null;
-  const sourceUrl = normalizeExternalNewsCoverUrl(rawSource);
-  const licenseUrl = normalizeExternalNewsCoverUrl(rawLicense);
+  const sourceUrl = normalizeExternalNewsAttributionUrl(rawSource);
+  const licenseUrl = normalizeExternalNewsAttributionUrl(rawLicense);
   if (!sourceUrl || !licenseUrl) return null;
   return {
     coverUrl: url,

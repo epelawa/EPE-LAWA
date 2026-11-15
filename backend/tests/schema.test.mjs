@@ -682,10 +682,19 @@ test('external News covers are safe, attributed, published by version, and switc
 
   await db.exec('set role service_role');
   assert.equal((await rows('select public.news_cover_url_is_safe($1) as valid', [sourceUrl]))[0].valid, true,
-    'the read-only constraint helper remains executable by Supabase service_role');
+    'the clickable attribution URL helper remains executable by Supabase service_role');
+  assert.equal((await rows('select public.news_cover_image_url_is_allowed($1) as valid', ['https://images.unsplash.com/photo-1234567890.jpg']))[0].valid, true,
+    'the cover-image helper accepts an exact approved provider hostname');
+  assert.equal((await rows('select public.news_cover_image_url_is_allowed($1) as valid', ['https://images.unsplash.com.attacker.example/photo.jpg']))[0].valid, false,
+    'the cover-image helper rejects lookalike hostnames');
+  assert.equal((await rows('select public.news_cover_metadata_is_valid(null, $1, $2, $3, $4, $5, null) as valid', [
+    'https://images.example.com/photo.jpg', 'Alt text', 'Photographer', sourceUrl, licenseUrl,
+  ]))[0].valid, false, 'metadata cannot save an unapproved automatically loaded image host');
   await db.exec('reset role');
   assert.match(await asFails(U.editor, `select public.news_cover_url_is_safe('${sourceUrl}')`) ?? '', /permission denied/,
-    'ordinary authenticated users cannot call the internal URL helper directly');
+    'ordinary authenticated users cannot call the internal attribution URL helper directly');
+  assert.match(await asFails(U.editor, "select public.news_cover_image_url_is_allowed('https://images.unsplash.com/photo.jpg')") ?? '', /permission denied/,
+    'ordinary authenticated users cannot call the internal image-host helper directly');
 });
 
 test('an API client cannot edit or delete a published article version', async () => {

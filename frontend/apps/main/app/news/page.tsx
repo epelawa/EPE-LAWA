@@ -75,7 +75,7 @@ function coverUrl(article: ArticleListItem): string | null {
 function NewsError() {
   return <>
     <PageFrame className={`${styles.newsPage} ui-stack`}>
-      <header className={styles.pageHeader}><p className={styles.kicker}>EPE LAWA · NEWSROOM</p><h1 className={styles.pageTitle}>News</h1></header>
+      <header className={styles.pageHeader}><h1 className={styles.pageTitle}>News</h1></header>
       <EmptyPanel title="The newsroom did not load" description="We could not reach the published newsroom, so no stories are shown rather than a guess. Try again in a moment." actions={<Link href="/news" className="btn-secondary">Reload the newsroom</Link>} />
     </PageFrame>
     <NewsFooter />
@@ -142,7 +142,6 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
       </div>
 
       <header className={styles.pageHeader}>
-        <p className={styles.kicker}>EPE LAWA · NEWSROOM</p>
         <h1 className={styles.pageTitle}>{heading}</h1>
         <nav className={styles.categoryNav} aria-label="News categories"><ul className={styles.categoryList}>
           <li><Link href={categoryHref(query, "")} aria-current={!category ? "page" : undefined} className={styles.categoryLink}>All</Link></li>

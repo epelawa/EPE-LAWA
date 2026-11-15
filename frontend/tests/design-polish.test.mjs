@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 
-test("public Appearance switch lives in the all-viewport hamburger drawer", () => {
+test("public reference navbar keeps the real brand and responsive secondary controls", () => {
   const theme = read("frontend/apps/main/components/theme-toggle.tsx");
   const header = read("frontend/apps/main/components/site-header.tsx");
   const brand = read("frontend/apps/main/components/brand.tsx");
@@ -16,6 +16,7 @@ test("public Appearance switch lives in the all-viewport hamburger drawer", () =
   const home = read("frontend/apps/main/app/page.tsx");
   const heroCarousel = read("frontend/apps/main/components/hero-carousel.tsx");
   const css = read("frontend/apps/main/app/globals.css");
+  const navigationCss = read("frontend/apps/main/components/navigation-refinement.css");
   const heroManifest = JSON.parse(read("frontend/apps/main/lib/hero-images.json"));
   const mastheadActions = header.match(/<div className="masthead-actions">([\s\S]*?)<\/div>/)?.[1] ?? "";
 
@@ -23,9 +24,16 @@ test("public Appearance switch lives in the all-viewport hamburger drawer", () =
   assert.match(theme, /aria-pressed=\{theme === "dark"\}/);
   assert.match(theme, /theme-control__thumb/);
   assert.doesNotMatch(mastheadActions, /ThemeToggle/);
-  assert.match(header, /className="drawer-appearance" role="group" aria-label="Appearance settings"[\s\S]*<ThemeToggle \/>/);
-  assert.match(css, /\.site-head__menu \{ display: inline-flex; \}/);
-  assert.match(header, /<BrandLockup size=\{30\} \/>/);
+  assert.match(header, /className="nav-more__appearance" role="group" aria-label="Appearance settings"[\s\S]*<ThemeToggle \/>/);
+  assert.match(header, /news-utilitybar/);
+  assert.match(header, /aria-label="Main navigation"/);
+  assert.match(header, /<details className="nav-more"/);
+  assert.match(header, /<BrandLockup size=\{34\} \/>/);
+  assert.match(navigationCss, /#063d2b/);
+  assert.match(navigationCss, /overflow-x:auto/);
+  assert.match(navigationCss, /min-height:44px/);
+  assert.doesNotMatch(header, /site-head__menu|drawer-root|drawer-scrim|aria-modal|drawerOpen|A shared home for everyone/);
+  assert.doesNotMatch(css + navigationCss, /\.site-head__menu|\.drawer-root|\.drawer-scrim/);
   assert.doesNotMatch(header + brand + staffBrand + footer, /Epe Division|brand__place|brand-lockup__tagline|showPlace/);
   assert.match(home, /<HeroCarousel\s*\/>/, "homepage logo hero exists");
   assert.doesNotMatch(home, /home-hero__brand|BrandLockup/);
@@ -37,10 +45,6 @@ test("public Appearance switch lives in the all-viewport hamburger drawer", () =
   assert.match(heroCarousel, /HERO_SLIDES = heroImages/);
   assert.doesNotMatch(heroCarousel, /Photo by \{slide\.author\}/);
   assert.doesNotMatch(heroCarousel, /Epe Division|The voice of Epe Division/i);
-  assert.match(header, /A shared home for everyone\./);
-  assert.match(header, /addEventListener\("pointerdown", onOutsideDrawer\)/);
-  assert.match(css, /width: min\(215px,max\(150px,calc\(50vw - 10px\)\)\)/);
-  assert.match(css, /\.drawer-account \{ flex-direction: column;/);
 });
 
 test("editorial dot decorations are gone and footer links stay split on mobile", () => {

@@ -38,13 +38,16 @@ test("News feed uses real story links and truthful empty/error states", () => {
   assert.doesNotMatch(page, /featuredHeadline\s*=|sampleStory|mockArticles/);
 });
 
-test("News masthead is visible and uses real EPE-LAWA editorial routes", () => {
-  assert.match(header, /isNewsReference \|\| pathname === "\/advertise"/);
+test("News uses the global forest-green masthead and real navigation routes", () => {
   assert.match(header, /news-utilitybar/);
-  assert.match(headerStyles, /\.site-head--news-reference\s*\{[^}]*display:block/);
+  assert.match(header, /aria-label="Main navigation"/);
+  assert.match(header, /UTILITY_HREFS\.has\(item\.href\)/);
+  assert.match(header, /<details className="nav-more"/);
+  assert.match(headerStyles, /\.site-head\s*\{[^}]*position:sticky/);
+  assert.match(headerStyles, /\.site-head \.masthead-bar/);
   assert.match(headerStyles, /#063d2b/);
-  assert.match(header, /href="\/advertise"/);
-  assert.doesNotMatch(headerStyles, /site-head--news-reference\s*\{\s*display:\s*none/);
+  assert.doesNotMatch(header, /site-head__menu|drawer-root|drawer-scrim/);
+  assert.doesNotMatch(headerStyles, /site-head--news-reference/);
 });
 
 test("News and Advertise use the complete reference-style footer without a duplicate global footer", () => {
@@ -82,6 +85,7 @@ test("News content keeps a responsive editorial grid and accessible 48px control
   assert.match(styles, /@media \(max-width:600px\)/);
   assert.match(styles, /\.categoryLink \{[^}]*min-height:48px/);
   assert.match(styles, /\.searchSummary \{[^}]*min-height:48px/);
+  assert.match(styles, /\.popularCard li a \{[^}]*min-height:48px/);
   assert.match(styles, /\.featureCard \{[^}]*aspect-ratio/);
 });
 
