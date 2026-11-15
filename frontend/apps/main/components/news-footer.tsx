@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createClient } from "../lib/supabase";
 import { BrandLockup } from "./brand";
-import NewsletterUnavailable from "./newsletter-unavailable";
+import NewsletterFooterCard from "./newsletter-footer-card";
 import styles from "./news-footer.module.css";
 
 type NewsCategory = { slug: string; label: string };
@@ -47,11 +47,7 @@ export default async function NewsFooter({ categories }: { categories?: NewsCate
             {links.length ? links.map((category) => <li key={category.slug}><Link href={`/news?category=${encodeURIComponent(category.slug)}`}>{category.label}</Link></li>) : <li><Link href="/news">All News</Link></li>}
           </ul></nav>
         </section>
-        <section className={`${styles.column} ${styles.newsletter}`}>
-          <h2>Newsletter</h2>
-          <p>Newsletter email delivery is not configured.</p>
-          <NewsletterUnavailable id="news-footer-signup" variant="footer" />
-        </section>
+        <NewsletterFooterCard />
       </div>
       <div className={styles.bottom}>
         <span>© {new Date().getFullYear()} EPE LAWA. All rights reserved.</span>

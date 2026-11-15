@@ -49,6 +49,9 @@
       "path": "/news"
     },
     {
+      "path": "/newsletter"
+    },
+    {
       "path": "/privacy"
     },
     {
@@ -122,6 +125,9 @@
     },
     {
       "path": "/news/:slug"
+    },
+    {
+      "path": "/newsletter/unsubscribe"
     },
     {
       "path": "/tourism/:slug"

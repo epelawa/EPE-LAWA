@@ -9,7 +9,6 @@ import { newsArticlePath } from "../../lib/news-urls";
 import { NewspaperIcon } from "../../components/icons";
 import { EmptyPanel, PageFrame, StatusBadge } from "../../components/design-system";
 import NewsFooter from "../../components/news-footer";
-import NewsletterUnavailable from "../../components/newsletter-unavailable";
 import styles from "./news.module.css";
 
 type ArticleListItem = {
@@ -177,7 +176,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
             </>
           ) : <Link href="/" className="btn-secondary">Explore EPE LAWA</Link>}
         />
-      ) : <div className={styles.newsPageGrid}>
+      ) : <div className={`${styles.newsPageGrid} ${categories.length ? "" : styles.newsPageGridSingle}`}>
         <div className={styles.newsMain}>
           <div className={styles.leadGrid}>
             {lead ? <section className={styles.featureSection} aria-label="Lead story">
@@ -247,15 +246,9 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
           {page > 1 || hasOlder ? <nav className={styles.pagination} aria-label="News pages">{page > 1 ? <Link className="btn-secondary" href={pageHref(page - 1, query, category)}>Newer stories</Link> : null}<span className={styles.pageNumber} aria-live="polite">Page {page}</span>{hasOlder ? <Link className="btn-secondary" href={pageHref(page + 1, query, category)}>Older stories</Link> : null}</nav> : null}
         </div>
 
-        <aside className={styles.newsAside} aria-label="News updates and topics">
-          <section className={styles.newsletterCard} aria-labelledby="newsletter-heading">
-            <p className={styles.asideEyebrow}>Stay informed</p>
-            <h2 id="newsletter-heading">EPE LAWA Newsletter</h2>
-            <p className={styles.asideCopy}>Newsletter delivery is not configured, so sign-up is paused.</p>
-            <NewsletterUnavailable id="news-sidebar-signup" />
-          </section>
-          {categories.length ? <section className={styles.popularCard} aria-labelledby="popular-heading"><h2 id="popular-heading">Popular Topics</h2><ul>{categories.slice(0, 8).map((item) => <li key={item.slug}><Link href={categoryHref(query, item.slug)}>{item.label}</Link></li>)}</ul></section> : null}
-        </aside>
+        {categories.length ? <aside className={styles.newsAside} aria-label="Popular topics">
+          <section className={styles.popularCard} aria-labelledby="popular-heading"><h2 id="popular-heading">Popular Topics</h2><ul>{categories.slice(0, 8).map((item) => <li key={item.slug}><Link href={categoryHref(query, item.slug)}>{item.label}</Link></li>)}</ul></section>
+        </aside> : null}
       </div>}
     </PageFrame>
     <NewsFooter categories={categories} />
