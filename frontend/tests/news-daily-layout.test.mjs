@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { currentNewsLayout, NEWS_LAYOUTS, selectNewsLayout } from "../apps/main/lib/news-daily-layout.mjs";
+import { currentNewsLayout, DEFAULT_NEWS_LAYOUT, NEWS_LAYOUTS, selectNewsLayout } from "../apps/main/lib/news-daily-layout.mjs";
 
 const root = new URL("../apps/main/", import.meta.url);
 const page = await readFile(new URL("app/news/page.tsx", root), "utf8");
@@ -12,18 +12,18 @@ const globalStyles = await readFile(new URL("app/globals.css", root), "utf8");
 test("minute bucket maps deterministically to layouts, advances each minute and validates input", () => {
   assert.equal(selectNewsLayout(100), selectNewsLayout(100));
   for (let minute = 0; minute < 20; minute++) assert.notEqual(selectNewsLayout(minute), selectNewsLayout(minute + 1));
-  assert.equal(new Set(NEWS_LAYOUTS).size, 5);
+  assert.equal(new Set(NEWS_LAYOUTS).size, 4);
   assert.throws(() => selectNewsLayout("2026-11-14"), TypeError);
   assert.equal(currentNewsLayout(new Date(300 * 60_000)), selectNewsLayout(300));
 });
 
 test("client frame keeps hydration stable, ticks at minute boundaries, and catches up on visibility", () => {
-  assert.match(page, /const initialLayout = currentNewsLayout\(\)/);
+  assert.match(page, /const initialLayout = DEFAULT_NEWS_LAYOUT/);
   assert.match(page, /<NewsLayoutFrame initialLayout=\{initialLayout\}/);
   assert.match(frame, /useState<Layout>\(initialLayout\)/);
   assert.match(frame, /60_000 - \(Date\.now\(\) % 60_000\)/);
   assert.match(frame, /visibilitychange/);
-  assert.match(frame, /setLayout\(selectNewsLayout\(Math\.floor\(Date\.now\(\) \/ 60_000\)\)\)/);
+  assert.match(frame, /setLayout\(selectNewsLayout\(Math\.floor\(Date\.now\(\) \/ 60_000\) - startedAtMinute\)\)/);
   assert.match(frame, /return \(\) => \{ clear\(\); document\.removeEventListener/);
   assert.ok(frame.includes(`active.closest('form[role="search"]')`));
   assert.doesNotMatch(frame, /closest\("\.newsSearchForm"\)/);
@@ -62,4 +62,13 @@ test("News keeps a cloud-blue canvas, a separated flat mini-nav, and an ink-only
   assert.match(styles, /\.newsNav\s*\{[^}]*gap:10px/);
   assert.match(styles, /\.newsCurrentLink\s*\{[^}]*border-bottom:2px solid hsl\(var\(--foreground\)\)/);
   assert.match(styles, /\.categoryLink\[aria-current="page"\][^}]*color:hsl\(var\(--foreground\)\)/);
+});
+
+test("rejected breaking-ranked never returns and every new visit starts with editorial-rail", () => {
+  assert.equal(DEFAULT_NEWS_LAYOUT, "editorial-rail");
+  assert.deepEqual(NEWS_LAYOUTS, ["editorial-rail", "magazine-sections", "reader-focused", "compact-topical"]);
+  for (let minute = -10000; minute <= 10000; minute++) assert.notEqual(selectNewsLayout(minute), "breaking-ranked");
+  assert.doesNotMatch(styles, /breaking-ranked/);
+  assert.match(page, /const initialLayout = DEFAULT_NEWS_LAYOUT/);
+  assert.match(frame, /const startedAtMinute = Math\.floor\(Date\.now\(\) \/ 60_000\)/);
 });
