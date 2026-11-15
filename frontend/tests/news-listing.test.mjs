@@ -38,6 +38,16 @@ test("News feed uses real story links and truthful empty/error states", () => {
   assert.doesNotMatch(page, /featuredHeadline\s*=|sampleStory|mockArticles/);
 });
 
+test("News reference composition keeps an actionable lead and local-image topic explorer", () => {
+  assert.match(page, /Read full story/);
+  assert.match(page, /aria-labelledby="topics-heading"/);
+  assert.match(page, /topicImages/);
+  assert.match(page, /href=\{categoryHref\(query, item\.slug\)\}/);
+  assert.match(styles, /\.topicGrid \{[^}]*grid-template-columns:repeat\(6/);
+  assert.match(styles, /\.topicImage \{[^}]*border-radius:50%/);
+  assert.match(styles, /\.featureAction \{[^}]*border-radius:999px/);
+});
+
 test("News masthead is visible and uses real EPE-LAWA editorial routes", () => {
   assert.match(header, /isNewsReference \|\| pathname === "\/advertise"/);
   assert.match(header, /news-utilitybar/);

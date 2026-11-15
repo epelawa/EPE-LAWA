@@ -41,10 +41,13 @@
 .featureTitle { display:-webkit-box; text-wrap:balance; overflow:hidden; max-width:22ch; color:#fff; font-size:clamp(1.5625rem, 1rem + 2.5vw, 2.5rem); font-weight:800; line-height:1.08; letter-spacing:-.035em; text-wrap:pretty; -webkit-box-orient:vertical; -webkit-line-clamp:3; }
 .featureSummary { display:-webkit-box; overflow:hidden; max-width:54ch; color:#f1f5f2; font-size:.875rem; line-height:1.5; -webkit-box-orient:vertical; -webkit-line-clamp:2; }
 .featureMeta { color:#e5eee8; font-size:.75rem; line-height:1.45; }
+.featureAction { display:inline-flex; width:max-content; min-height:42px; align-items:center; gap:8px; padding:0 14px; border:1px solid rgb(255 255 255 / .8); border-radius:999px; color:#fff; font-size:.75rem; font-weight:750; }
 .headlineRail { display:grid; align-content:start; gap:12px; min-width:0; padding:16px; border:1px solid var(--news-border); background:#f6f8f6; }
 .sectionHeading { display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding-bottom:10px; border-bottom:2px solid var(--news-green); }
 .sectionHeading h2 { margin:0; text-wrap:balance; color:#17231b; font-size:1.25rem; font-weight:800; letter-spacing:-.03em; }
 .sectionHeading > span { flex:0 0 auto; color:#66756b; font-size:.6875rem; font-weight:700; }
+.sectionLink { flex:0 0 auto; color:#0b7042; font-size:.6875rem; font-weight:800; text-decoration:none; }
+.sectionLink:hover { text-decoration:underline; text-underline-offset:3px; }
 .headlineList { display:grid; gap:0; margin:0; padding:0; list-style:none; }
 .headlineItem { border-bottom:1px solid #dde5df; }
 .headlineItem:last-child { border-bottom:0; }
@@ -68,6 +71,14 @@
 .storyTitle { display:-webkit-box; text-wrap:balance; overflow:hidden; color:#17231b; font-size:.9375rem; font-weight:800; line-height:1.32; -webkit-box-orient:vertical; -webkit-line-clamp:3; }
 .storySummary { display:-webkit-box; overflow:hidden; color:#59685f; font-size:.75rem; line-height:1.5; -webkit-box-orient:vertical; -webkit-line-clamp:3; }
 .storyMeta { color:#6b776e; font-size:.625rem; line-height:1.45; }
+.topicSection { display:grid; gap:14px; min-width:0; }
+.topicGrid { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:14px; margin:0; padding:0; list-style:none; }
+.topicItem { min-width:0; }
+.topicLink { display:grid; justify-items:center; gap:8px; color:#20382a; font-size:.75rem; font-weight:750; line-height:1.25; text-align:center; text-decoration:none; }
+.topicImage { display:block; width:clamp(58px,7vw,82px); aspect-ratio:1; overflow:hidden; border:3px solid #e8f0ea; border-radius:50%; background:#e4eee7; box-shadow:0 0 0 1px #c9d9ce; }
+.topicImage img { display:block; width:100%; height:100%; object-fit:cover; object-position:center; transition:transform 220ms ease; }
+.topicLink:hover .topicImage img { transform:scale(1.06); }
+.topicLabel { max-width:12ch; }
 .storyList { display:grid; gap:0; margin:0; padding:0; list-style:none; }
 .storyRow { border-bottom:1px solid var(--news-border); }
 .storyLink { display:grid; grid-template-columns:112px minmax(0,1fr); align-items:center; gap:14px; min-height:112px; padding:12px 0; color:inherit; text-decoration:none; }
@@ -147,6 +158,7 @@
   .featureCard { min-height:20rem; aspect-ratio:1.65; }
   .latestGrid { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .relatedGrid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .topicGrid { grid-template-columns:repeat(3,minmax(0,1fr)); row-gap:18px; }
 }
 .newsPage .pagination > a { min-height:48px; }
 @media (max-width:600px) {
@@ -158,6 +170,7 @@
   .featureCopy { gap:8px; padding:17px; }
   .featureTitle { font-size:clamp(1.4375rem, .65rem + 4vw, 2rem); }
   .featureSummary { font-size:.75rem; }
+  .featureAction { min-height:40px; }
   .headlineRail { padding:14px; }
   .latestGrid { gap:10px; }
   .storyCardCopy { padding:10px; }
@@ -166,6 +179,7 @@
   .storyThumbnail,.storyThumbnailFallback { width:86px; height:66px; }
   .newsAside { grid-template-columns:minmax(0,1fr); }
   .popularCard { grid-column:auto; }
+  .topicGrid { gap:16px 8px; }
   .article { gap:13px; }
   .articleHero { gap:12px; }
   .articleHeroCopy h1 { font-size:clamp(1.6875rem, .7rem + 4vw, 2.25rem); }
