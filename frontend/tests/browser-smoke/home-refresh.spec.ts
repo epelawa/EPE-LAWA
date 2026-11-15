@@ -76,7 +76,9 @@ async function tabUntilFocused(page: Page, locator: Locator, maxTabs = 40) {
 }
 
 test("home-only nav hiding and public/member destinations stay responsive across nine widths", async ({ browser, request }) => {
-  test.setTimeout(180_000);
+  // This single scenario traverses nine widths and four routes on one dev server.
+  // Preserve all route and viewport assertions while allowing the full journey to finish.
+  test.setTimeout(300_000);
   const context = await browser.newContext({
     baseURL: smokeBaseURL,
     viewport: { width: 320, height: 900 },
