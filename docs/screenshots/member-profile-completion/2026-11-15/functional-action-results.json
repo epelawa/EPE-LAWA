@@ -1,0 +1,51 @@
+[
+  {
+    "scenario": "reserved handle",
+    "metadata_updates": 0,
+    "passed": true
+  },
+  {
+    "scenario": "taken handle",
+    "metadata_updates": 0,
+    "passed": true
+  },
+  {
+    "scenario": "availability failure",
+    "metadata_updates": 0,
+    "passed": true
+  },
+  {
+    "scenario": "fresh unverified session",
+    "metadata_updates": 0,
+    "passed": true
+  },
+  {
+    "scenario": "deleted profile race",
+    "metadata_updates": 0,
+    "passed": true
+  },
+  {
+    "scenario": "existing profile race",
+    "metadata_updates": 0,
+    "passed": true
+  },
+  {
+    "scenario": "profile service failure",
+    "metadata_updates": 0,
+    "passed": true
+  },
+  {
+    "scenario": "unverified route hides form",
+    "passed": true
+  },
+  {
+    "scenario": "bootstrap provider failure hides form",
+    "passed": true
+  },
+  {
+    "scenario": "actual form updates handle only and bootstraps verified profile",
+    "metadata_updates": 1,
+    "other_metadata_unchanged": true,
+    "passed": true
+  }
+]

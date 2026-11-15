@@ -64,6 +64,36 @@ export async function signUp(_state: AuthState, data: FormData): Promise<AuthSta
     return { status: "notice", message: "Your account request was received. If email verification is required, use the code or secure link in the EPE LAWA confirmation email before signing in. Delivery depends on this project’s configured email provider." };
   } catch (error) { return { status: "error", message: mapAuthProviderError(error, "signup") }; }
 }
+export async function completeVerifiedMemberHandle(_state: AuthState, data: FormData): Promise<AuthState> {
+  const handle = normalizeHandle(field(data, "handle"));
+  if (!isValidHandle(handle)) return { status: "error", message: "Choose a handle with 3–24 letters, numbers or underscores.", values: { handle } };
+  try {
+    const supabase = await createClient();
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user || !user.email_confirmed_at) return { status: "error", message: "Your verified sign-in is required. Please sign in again.", values: { handle } };
+    const { data: existing, error: profileError } = await supabase.from("profiles").select("user_id, handle, display_name, deleted_at").eq("user_id", user.id).maybeSingle();
+    if (profileError) return { status: "error", message: "We couldn’t confirm your profile state. No account changes were made; please try again later.", values: { handle } };
+    if (existing) {
+      if (existing.deleted_at) return { status: "error", message: "This profile is unavailable and cannot be reactivated here.", values: { handle } };
+      return { status: "error", message: "A member profile already exists. Refresh the page to continue.", values: { handle } };
+    }
+    const displayName = typeof user.user_metadata?.display_name === "string" ? user.user_metadata.display_name.trim() : "";
+    if (!displayName || displayName.length > 60) return { status: "error", message: "Your profile name needs attention. Contact support; no account changes were made.", values: { handle } };
+    const availability = await checkHandleAvailability(handle);
+    if (availability === "taken") return { status: "error", message: "That handle is already in use. Choose another handle.", values: { handle } };
+    if (availability !== "available") return { status: "error", message: "Handle availability could not be confirmed. No account changes were made; please try again later.", values: { handle } };
+    // Deliberately update only this user-selected profile metadata key.
+    const { error: updateError } = await supabase.auth.updateUser({ data: { handle } });
+    if (updateError) return { status: "error", message: "Your handle could not be saved. Please try again later.", values: { handle } };
+    const { data: created, error: bootstrapError } = await supabase.rpc("bootstrap_verified_member_profile");
+    if (bootstrapError || created !== true) return { status: "error", message: "The handle was saved, but profile setup could not be confirmed. Try again later or contact support.", values: { handle } };
+    redirect("/auth/complete");
+  } catch (error) {
+    if (error && typeof error === "object" && "digest" in error) throw error;
+    return { status: "error", message: "We couldn’t complete profile setup. No further changes were made.", values: { handle } };
+  }
+}
+
 export async function signIn(_state: AuthState, data: FormData): Promise<AuthState> {
   const email = field(data, "email").toLowerCase();
   const password = passwordField(data);

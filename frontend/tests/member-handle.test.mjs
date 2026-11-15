@@ -49,3 +49,28 @@ test("recovery preserves exact anti-enumeration title, body and progress label",
   assert.match(forms, /progress="Step 2 of 2 · Recovery request"/);
   assert.match(actions, /If an account exists for that address, password-reset instructions may be sent\. Delivery depends on this project’s configured email provider\./);
 });
+
+test("completion UI offers recovery only for verified missing profiles with a correctable handle", async () => {
+  const complete = await readFile(new URL("auth/complete/page.tsx", root), "utf8");
+  assert.match(complete, /if \(!user\.email_confirmed_at\)/);
+  assert.match(complete, /if \(!profile\)/);
+  assert.match(complete, /!error && correctableName && \(knownBadHandle \|\| availability === "taken"\)/);
+  assert.match(complete, /if \(profile\?\.deleted_at\) redirect\("\/login"\)/);
+  assert.match(complete, /checkHandleAvailability\(rawHandle\)/);
+});
+
+test("completion action reauthenticates, checks DB availability, and mutates only user-selected handle", async () => {
+  const actions = await readFile(new URL("auth/actions.ts", root), "utf8");
+  const start = actions.indexOf("export async function completeVerifiedMemberHandle");
+  const end = actions.indexOf("export async function signIn", start);
+  const action = actions.slice(start, end);
+  assert.match(action, /supabase\.auth\.getUser\(\)/);
+  assert.match(action, /!user\.email_confirmed_at/);
+  assert.match(action, /profiles"\)\.select/);
+  assert.match(action, /existing\.deleted_at/);
+  assert.match(action, /checkHandleAvailability\(handle\)/);
+  assert.match(action, /availability !== "available"/);
+  assert.match(action, /auth\.updateUser\(\{ data: \{ handle \} \}\)/);
+  assert.match(action, /rpc\("bootstrap_verified_member_profile"\)/);
+  assert.doesNotMatch(action, /email\s*:|password\s*:|role\s*:|is_verified\s*:/);
+});
