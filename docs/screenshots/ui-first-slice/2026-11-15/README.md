@@ -1,14 +1,14 @@
 # EPE LAWA first UI slice — visual and responsive evidence
 
-These screenshots were captured from a local production build of app-code commit [`b447a5afa4e685e23a4503f802c66bd6795e5261`](https://github.com/epelawa/EPE-LAWA/commit/b447a5afa4e685e23a4503f802c66bd6795e5261) in the isolated candidate worktree—not from a deployed environment. The screenshots and this README are evidence-only updates after that application commit; no app source changed afterward.
+These screenshots were captured from a local production build of app-code commit [`b447a5afa4e685e23a4503f802c66bd6795e5261`](https://github.com/epelawa/EPE-LAWA/commit/b447a5afa4e685e23a4503f802c66bd6795e5261) in the isolated candidate worktree—not from a deployed environment. The later evidence-only commits refresh the screenshots and this README; no app source changed after that build SHA.
 
 ## What the browser smoke verified
 
-The production-mode Chromium smoke passed at 320, 375, 600, 767, 768, 800, 960, 1024 and 1440 CSS pixels. There was no horizontal overflow at any width. At 320px the hero copy kept 16px left/right gutters; at 375px it kept 20px gutters. The first “News from Epe” heading cleared the fixed bar by about 20–23px on mobile.
+The production-mode Chromium smoke passed at 320, 375, 600, 767, 768, 800, 960, 1024 and 1440 CSS pixels, with no horizontal overflow. At 320px the hero copy kept 16px left/right gutters; at 375px it kept 20px gutters. The first “News from Epe” heading cleared the fixed bar by about 20–23px on mobile.
 
-From 320px through 767px, the single named mobile navigation landmark exposed exactly four mounted destinations—Home (`/`), News (`/news`), Discover (`/tourism`) and Account (`/dashboard`)—with 56px-tall links. News and Discover showed the correct current state. Starting on `/tourism`, keyboard focus and Enter on the actual News tab navigated to `/news` and set `aria-current="page"`. The mobile drawer exposed Forum under Community; Escape closed it and restored focus to the trigger. At 768px and above the bottom bar was hidden; desktop navigation was visible at 1024px and 1440px.
+From 320px through 767px, the single named mobile navigation landmark exposed exactly four mounted destinations—Home (`/`), News (`/news`), Discover (`/tourism`) and Account (`/dashboard`)—with 56px-tall links. News and Discover showed the correct current state. At 375px, keyboard focus and Enter on the homepage “Read the latest” hero link navigated to `/news`; the mobile News tab also navigated from the homepage by keyboard, and both marked News as current. The same News-tab keyboard activation passed from `/tourism`. The mobile drawer exposed Forum under Community; Escape closed it and restored focus to the trigger. At 768px and above the bottom bar was hidden; desktop navigation was visible at 1024px and 1440px.
 
-These checks cover this UI slice only. They are not a claim that every public route or member/Admin journey is complete.
+These checks cover this UI slice only; they do not establish that every public route or member/Admin journey is complete.
 
 ## Screenshots
 
@@ -20,9 +20,9 @@ These checks cover this UI slice only. They are not a claim that every public ro
 
 ## Verification and review status
 
-On application commit `b447a5afa4e685e23a4503f802c66bd6795e5261`, Node 22.23.5 / pnpm 10.34.9 passed the full workspace typecheck (5/5 packages), both production app builds (2/2), and the full suite (287 passed, 0 failed, 1 skipped). The nine-width browser smoke described above passed, including direct keyboard activation of News and the 320/375px gutter checks. A separate evidence-only commit adds this README and the refreshed PNG captures.
+On app-code commit `b447a5afa4e685e23a4503f802c66bd6795e5261`, Node 22.23.5 / pnpm 10.34.9 passed the workspace typecheck (5/5 packages), both production app builds (2/2), and the full suite (287 passed, 0 failed, 1 skipped). The nine-width browser smoke also passed on the evidence-bearing PR candidate; its expanded 375px run directly checked the two homepage-origin News keyboard paths above. The follow-up commits change only this evidence and screenshots, not app source.
 
-The PR #108 harness is still a draft and has not been edited here. Tester is correcting three locator issues and will rerun the corrected harness against the final PR #109 head; Backend Developer 1’s independent review of that same head is also pending. This local smoke is not a substitute for either review. Keep PR #109 unmerged until those checks complete.
+Tester’s corrected-selector diagnostic on older app SHA `81b2344c7ab19fa3725d27d9eab21ef8ce7c7758` passed 12/13; one 375px homepage News activation timed out and is being checked as a possible locator-versus-behavior issue. That diagnostic predates the gutter fix. The local 375px paths above pass, but the corrected Tester harness still must be rerun against the current exact PR #109 head. Backend Developer 1’s review of that same head is also pending. PR #109 remains draft and must not be merged until those exact-head reviews complete.
 
 ## Repository references
 
