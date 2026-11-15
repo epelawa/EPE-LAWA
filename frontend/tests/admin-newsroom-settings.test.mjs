@@ -1,8 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { readFile } from 'node:fs/promises';
 const root = new URL('../../', import.meta.url);
 const read = (path) => readFile(new URL(path, root), 'utf8');
+const rootPath = fileURLToPath(root);
+const readSync = (path) => readFileSync(resolve(rootPath, path), 'utf8');
 test('newsroom settings are linked from the workspace and setup-incomplete flow', async () => {
   const [newsroom, create, settings] = await Promise.all([
     read('frontend/apps/admin/app/(protected)/newsroom/page.tsx'),
@@ -16,6 +21,20 @@ test('newsroom settings are linked from the workspace and setup-incomplete flow'
   assert.match(settings, /categories"\)\.select\("id,slug,label,description,sort_order,is_active"\)/);
   assert.match(settings, /authors"\)\.select\("id,slug,display_name,bio,photo_key"\)/);
   assert.match(settings, /records are never deleted/);
+});
+test('same-origin newsroom settings route re-exports the canonical page inside the existing staff auth boundary', () => {
+  const wrapperPath = 'frontend/apps/main/app/admin/(protected)/newsroom/settings/page.tsx';
+  const wrapper = readSync(wrapperPath);
+  assert.match(wrapper, /^export \{ default \} from ["']\.\.\/\.\.\/\.\.\/\.\.\/\.\.\/\.\.\/admin\/app\/\(protected\)\/newsroom\/settings\/page["'];?\s*$/);
+  const importPath = wrapper.match(/from\s+["']([^"']+)["']/)?.[1];
+  assert.ok(importPath, 'route default export points to an explicit canonical page');
+  assert.ok(existsSync(resolve(dirname(resolve(rootPath, wrapperPath)), `${importPath}.tsx`)), 'canonical page path resolves');
+  const protectedLayout = readSync('frontend/apps/main/app/admin/(protected)/layout.tsx');
+  assert.match(protectedLayout, /AdminAccessGuard/);
+  assert.match(protectedLayout, /loginPath="\/admin\/login"/);
+  const canonical = readSync('frontend/apps/admin/app/(protected)/newsroom/settings/page.tsx');
+  assert.match(canonical, /p_capability: "article\.publish"/);
+  assert.match(canonical, /!authorized \?/);
 });
 test('reference settings server actions call only validated RPCs and never expose database error text', async () => {
   const [action, migration] = await Promise.all([
