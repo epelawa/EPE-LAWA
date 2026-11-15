@@ -5,6 +5,7 @@ import { createClient } from "../../../../lib/supabase";
 import { createArticle } from "../../../../lib/actions";
 import { adminHref } from "../../../../lib/admin-path";
 import { NEWS_COVERS } from "../../../../../main/lib/news-covers";
+import NewsCoverUrlFields from "../../../../components/news-cover-url-fields";
 
 export const metadata: Metadata = {
   title: "Create article draft",
@@ -36,7 +37,7 @@ export default async function NewArticlePage({
   return (
     <PageFrame className="ui-stack">
       <PageIntro eyebrow="Newsroom · New draft" title="Create article draft" description="Drafts stay private until an authorized publisher chooses Publish. Every publication is checked by the database and recorded in the audit log." actions={<Link href={adminHref("/newsroom")} className={buttonClassName("secondary")}>Back to newsroom</Link>} />
-      {params.error ? <Notice tone="danger" role="alert">{params.error === "invalid" ? "Add a title, body, byline and category, then try again." : "The draft could not be created. Check your access and try again."}</Notice> : null}
+      {params.error ? <Notice tone="danger" role="alert">{params.error === "invalid" ? "Add a title, body, byline and category, then try again." : params.error === "cover" ? "Use one cover source. A linked cover needs a safe HTTPS image URL, alt text, credit, source page and license URL." : "The draft could not be created. Check your access and try again."}</Notice> : null}
       {accessCheckUnavailable || !canCreate || referencesFailed || categories.length === 0 || authors.length === 0 ? (
         <EmptyPanel title={accessCheckUnavailable ? "Newsroom authorization unavailable" : !canCreate ? "Article creation access required" : "Newsroom setup is incomplete"} description={accessCheckUnavailable ? "Your staff access could not be verified. No draft was created. Refresh and retry; if this continues, ask a system administrator to check the authorization service." : !canCreate ? "This staff account does not have the article.create capability." : referencesFailed ? "Categories and bylines could not be verified. No article was created." : "Add at least one active category and one byline before creating an article."} actions={<div className="ui-actions"><Link href={adminHref("/newsroom")} className={buttonClassName("secondary")}>Back to newsroom</Link>{!accessCheckUnavailable && canCreate && !referencesFailed && (categories.length === 0 || authors.length === 0) ? <Link href={adminHref("/newsroom/settings")} className={buttonClassName("primary")}>Manage categories & bylines</Link> : null}</div>} />
       ) : (
@@ -51,6 +52,7 @@ export default async function NewArticlePage({
               <div className="ui-field"><label className="label" htmlFor="authorId">Byline</label><select id="authorId" name="authorId" className="input" required defaultValue=""><option value="" disabled>Select an author</option>{authors.map((author) => <option key={author.id} value={author.id}>{author.display_name}</option>)}</select></div>
             </div>
             <div className="ui-field"><label className="label" htmlFor="ogImageKey">Approved cover (optional)</label><select id="ogImageKey" name="ogImageKey" className="input" defaultValue=""><option value="">No cover</option>{Object.entries(NEWS_COVERS).map(([key, cover]) => <option key={key} value={key}>{cover.title} — {cover.credit}</option>)}</select><p className="ui-meta">Approved, unmodified Commons images only.</p></div>
+            <NewsCoverUrlFields idPrefix="new-cover" />
             <div className="ui-form-grid">
               <div className="ui-field"><label className="label" htmlFor="seoTitle">Search title (optional)</label><input id="seoTitle" name="seoTitle" className="input" maxLength={70} /></div>
               <div className="ui-field"><label className="label" htmlFor="seoDescription">Search description (optional)</label><input id="seoDescription" name="seoDescription" className="input" maxLength={200} /></div>

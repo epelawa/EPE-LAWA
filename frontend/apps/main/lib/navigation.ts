@@ -16,6 +16,7 @@ const items: NavItem[] = [
   { label: "Who is Who", href: "/who-is-who", hint: "People and public office holders" },
   { label: "About", href: "/about", hint: "About EPE LAWA" },
   { label: "Contact", href: "/contact", hint: "Contact the team" },
+  { label: "Advertise", href: "/advertise", hint: "Advertising information" },
 ];
 
 export function mainNavigation(): NavItem[] {
@@ -35,4 +36,5 @@ export const footerNavigation: NavItem[] = [
   { label: "Historical Sites & Tourism", href: "/tourism" },
   { label: "EPE LAWA Radio", href: "/radio" },
   { label: "Who is Who in Epe", href: "/who-is-who" },
+  { label: "Advertise with EPE LAWA", href: "/advertise" },
 ];

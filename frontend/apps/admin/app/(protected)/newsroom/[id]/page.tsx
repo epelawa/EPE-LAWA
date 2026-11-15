@@ -6,6 +6,7 @@ import { createClient } from "../../../../lib/supabase";
 import { publishArticle, reviseArticle, saveDraft, unpublishArticle } from "../../../../lib/actions";
 import { adminHref } from "../../../../lib/admin-path";
 import { NEWS_COVERS, isNewsCoverKey } from "../../../../../main/lib/news-covers";
+import NewsCoverUrlFields from "../../../../components/news-cover-url-fields";
 
 export const metadata: Metadata = { title: "Article workflow", robots: { index: false, follow: false } };
 
@@ -25,6 +26,12 @@ type ArticleVersion = {
   seo_title: string | null;
   seo_description: string | null;
   og_image_key: string | null;
+  cover_url: string | null;
+  cover_alt: string | null;
+  cover_credit: string | null;
+  cover_source_url: string | null;
+  cover_license_url: string | null;
+  cover_caption: string | null;
 };
 
 function bodyForEditor(body: unknown): string {
@@ -45,7 +52,9 @@ function StatusMessage({ query }: { query: Record<string, string | undefined> })
   if (query.unpublished) return <Notice tone="neutral" role="status">Article unpublished.</Notice>;
   if (query.revised) return <Notice tone="success" role="status">A new private revision was created. The existing public version is unchanged.</Notice>;
   if (query.error) {
-    const message = query.error === "save"
+    const message = query.error === "cover"
+      ? "Use one cover source. A linked cover needs a safe HTTPS image URL, alt text, credit, source page and license URL."
+      : query.error === "save"
       ? "The draft could not be saved. It may have changed; reload before trying again."
       : query.error === "published"
         ? "The article was not published. Check article.publish access and reload for revision changes."
@@ -72,8 +81,9 @@ export default async function EditArticlePage({
   const [articleResult, categoryResult, authorResult, createCapability, publishCapability, unpublishCapability] = await Promise.all([
     supabase.from("articles").select(`
       id, slug, revision, current_version_id, published_version_id, published_at,
-      current_version:article_versions!current_version_id(
-        id,title,summary,body,state,version_number,author_id,category_id,created_by,seo_title,seo_description,og_image_key
+        current_version:article_versions!current_version_id(
+        id,title,summary,body,state,version_number,author_id,category_id,created_by,seo_title,seo_description,og_image_key,
+        cover_url,cover_alt,cover_credit,cover_source_url,cover_license_url,cover_caption
       )
     `).eq("id", id).maybeSingle(),
     supabase.from("categories").select("id,label").eq("is_active", true).order("sort_order").limit(100),
@@ -133,6 +143,7 @@ export default async function EditArticlePage({
                 <div className="ui-field"><label className="label" htmlFor="authorId">Byline</label><select id="authorId" name="authorId" className="input" required defaultValue={version.author_id}>{authors.map((author) => <option key={author.id} value={author.id}>{author.display_name}</option>)}</select></div>
               </div>
               <div className="ui-field"><label className="label" htmlFor="ogImageKey">Approved cover (optional)</label><select id="ogImageKey" name="ogImageKey" className="input" defaultValue={isNewsCoverKey(version.og_image_key) ? version.og_image_key : ""}><option value="">No cover</option>{Object.entries(NEWS_COVERS).map(([key, cover]) => <option key={key} value={key}>{cover.title} — {cover.credit}</option>)}</select><p className="ui-meta">Approved, unmodified Commons images only.</p></div>
+              <NewsCoverUrlFields idPrefix="edit-cover" initial={{ url: version.cover_url, alt: version.cover_alt, credit: version.cover_credit, sourceUrl: version.cover_source_url, licenseUrl: version.cover_license_url, caption: version.cover_caption }} />
               <div className="ui-form-grid">
                 <div className="ui-field"><label className="label" htmlFor="seoTitle">Search title</label><input id="seoTitle" name="seoTitle" className="input" maxLength={70} defaultValue={version.seo_title ?? ""} /></div>
                 <div className="ui-field"><label className="label" htmlFor="seoDescription">Search description</label><input id="seoDescription" name="seoDescription" className="input" maxLength={200} defaultValue={version.seo_description ?? ""} /></div>

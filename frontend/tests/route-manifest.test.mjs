@@ -45,6 +45,7 @@ test('public route manifest matches the Next page tree', async () => {
   assert.equal(new Set(manifestPaths).size, manifestPaths.length);
   assert.ok(manifestPaths.includes('/'));
   assert.ok(manifestPaths.includes('/news/:slug'));
+  assert.ok(manifestPaths.includes('/advertise'));
   assert.ok(manifestPaths.includes('/admin/login'));
 
   const expectedPaths = (await pageFiles(appRoot)).map(pageToRoute).filter(Boolean).sort();
