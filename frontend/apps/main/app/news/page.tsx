@@ -40,6 +40,14 @@ export const metadata: Metadata = {
 const PAGE_SIZE = 30;
 const MAX_PAGE = 1000;
 const MAX_CATEGORIES = 100;
+const topicImages = [
+  "/hero/01-epe-epe-jpg.jpg",
+  "/hero/05-epe-aiyetoro-market-at-epe-jpg.jpg",
+  "/hero/09-epe-adesowon-junior-and-senior-grammar-school-ilara-epe-jpg.jpg",
+  "/hero/03-epe-fish-monoment-in-epe-lagos-nigeria-3-jpg.jpg",
+  "/hero/04-epe-iberekodo-beach-epe-lagos-jpg.jpg",
+  "/hero/07-epe-boy-building-a-canoe-jpg.jpg",
+];
 export const dynamic = "force-dynamic";
 
 function isBreakingNow(item: ArticleListItem): boolean {
@@ -162,12 +170,13 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
                   <span className={styles.featureTitle}>{lead.title}</span>
                   {lead.summary ? <span className={styles.featureSummary}>{lead.summary}</span> : null}
                   <span className={styles.featureMeta}>By {lead.author_name}{lead.published_at ? <> · <time dateTime={lead.published_at}>{formatPublishedDate(lead.published_at)}</time></> : null}</span>
+                  <span className={styles.featureAction}>Read full story <span aria-hidden="true">→</span></span>
                 </span>
               </Link>
             </section> : null}
 
             {topHeadlines.length ? <section className={styles.headlineRail} aria-labelledby="top-headlines-heading">
-              <div className={styles.sectionHeading}><h2 id="top-headlines-heading">Top Headlines</h2><span>Latest</span></div>
+              <div className={styles.sectionHeading}><h2 id="top-headlines-heading">Top Headlines</h2><Link href="/news" className={styles.sectionLink}>See all <span aria-hidden="true">→</span></Link></div>
               <ul className={styles.headlineList}>{topHeadlines.map((article) => {
                 const image = coverUrl(article);
                 return <li className={styles.headlineItem} key={article.slug}><Link href={newsArticlePath(article.slug)} className={styles.headlineLink}>
@@ -187,6 +196,16 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
                 <span className={styles.storyCardCopy}><span className={styles.storyCategory}>{article.category_label}</span><span className={styles.storyTitle}>{article.title}</span><span className={styles.storySummary}>{article.summary || ""}</span><span className={styles.storyMeta}>By {article.author_name}{article.published_at ? <> · <time dateTime={article.published_at}>{formatPublishedDate(article.published_at)}</time></> : null}</span></span>
               </Link></li>;
             })}</ul>
+          </section> : null}
+
+          {categories.length ? <section className={styles.topicSection} aria-labelledby="topics-heading">
+            <div className={styles.sectionHeading}><h2 id="topics-heading">Explore Topics</h2><span>Browse the newsroom</span></div>
+            <ul className={styles.topicGrid}>{categories.slice(0, topicImages.length).map((item, index) => <li key={item.slug} className={styles.topicItem}>
+              <Link href={categoryHref(query, item.slug)} className={styles.topicLink} aria-label={`Browse ${item.label} news`}>
+                <span className={styles.topicImage}><img src={topicImages[index]} alt="" loading="lazy" decoding="async" /></span>
+                <span className={styles.topicLabel}>{item.label}</span>
+              </Link>
+            </li>)}</ul>
           </section> : null}
 
           {moreStories.length ? <section className={styles.moreSection} aria-labelledby="more-heading">
