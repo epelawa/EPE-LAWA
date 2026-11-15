@@ -15,7 +15,7 @@ test('missing-table Production baseline restores a private, capability-checked r
    create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
    grant usage on schema public,auth to anon,authenticated;
    create table public.profiles(user_id uuid primary key references auth.users(id));
-   create table public.moderation_actions(id uuid primary key default gen_random_uuid(),moderator_id uuid,target_type text,target_id uuid,action text,reason text,created_at timestamptz default now());
+   create table public.moderation_actions(id uuid primary key default gen_random_uuid(),moderator_id uuid,target_type text check(target_type in ('comment','forum_post','forum_thread','business','business_review','profile')),target_id uuid,action text,reason text,created_at timestamptz default now());
    create table public.audit_events(action text,resource_id uuid);
    create function public.has_capability(text) returns boolean language sql stable security definer set search_path='' as $$select auth.uid()='${moderator}'::uuid and $1='moderation.review'$$;
    create function public.require_capability(text) returns void language plpgsql security definer set search_path='' as $$begin if not public.has_capability($1) then raise exception using errcode='42501',message='denied';end if;end$$;
@@ -44,9 +44,13 @@ test('missing-table Production baseline restores a private, capability-checked r
   assert.equal((await db.query('select state from public.forum_reports where id=$1',[report])).rows[0].state,'actioned');
   assert.equal((await db.query('select state from public.forum_posts where id=$1',[post])).rows[0].state,'hidden');
   await assert.rejects(db.query("select public.forum_report_resolve($1,'dismiss','Synthetic reason')",[report]),/open_report_not_found/);
+  await db.exec('reset role');
+  const second=(await db.query("insert into public.forum_reports(post_id,reporter_id,reason) values($1,$2,'other') returning id",[post,stranger])).rows[0].id;
+  await role(moderator);await db.query("select public.forum_report_resolve($1,'dismiss','Synthetic dismissal reason')",[second]);
+  assert.equal((await db.query('select state from public.forum_reports where id=$1',[second])).rows[0].state,'dismissed');
   await role(null);assert.equal((await db.query('select id from public.forum_posts')).rows.length,0);
   await db.exec('reset role');
-  assert.equal((await db.query("select count(*)::int as count from public.audit_events where action='forum.report.resolve'")).rows[0].count,1);
-  assert.equal((await db.query('select count(*)::int as count from public.moderation_actions')).rows[0].count,1);
+  assert.equal((await db.query("select count(*)::int as count from public.audit_events where action='forum.report.resolve'")).rows[0].count,2);
+  assert.equal((await db.query('select count(*)::int as count from public.moderation_actions')).rows[0].count,2);
  } finally {await db.close();}
 });

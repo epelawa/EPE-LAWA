@@ -29,7 +29,7 @@ test('report resolution is atomic, limited to supported actions, and audited', (
   assert.match(migration, /where r\.id = p_report_id and r\.state = 'open' for update/);
   assert.match(migration, /p_action not in \('hide', 'restore', 'dismiss'\)/);
   assert.match(migration, /public\.forum_post_moderate\(v_post_id, p_action, btrim\(p_reason\)\)/);
-  assert.match(migration, /insert into public\.moderation_actions[\s\S]*?'forum_report'[\s\S]*?'dismiss'/);
+  assert.match(migration, /insert into public\.moderation_actions[\s\S]*?'forum_post'[\s\S]*?'dismiss'/);
   assert.match(migration, /public\.audit_event\('staff', 'forum\.report\.resolve'/);
   assert.match(migration, /grant execute on function public\.forum_report_resolve\(uuid, text, text\) to authenticated/);
   assert.doesNotMatch(migration, /\b(drop\s+table|truncate|delete\s+from)\b/i);

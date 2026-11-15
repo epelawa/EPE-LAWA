@@ -186,7 +186,7 @@ begin
     update public.forum_reports set state = 'dismissed', resolved_by = v_actor, resolved_at = now()
       where id = p_report_id;
     insert into public.moderation_actions (moderator_id, target_type, target_id, action, reason)
-      values (v_actor, 'forum_report', p_report_id, 'dismiss', btrim(p_reason));
+      values (v_actor, 'forum_post', v_post_id, 'dismiss', btrim(p_reason));
   end if;
   perform public.audit_event('staff', 'forum.report.resolve', 'forum_report', p_report_id,
     'success', jsonb_build_object('action', p_action, 'post_id', v_post_id));

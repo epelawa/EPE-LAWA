@@ -15,3 +15,5 @@ Open focused PR, ordinary merge, fresh live prerequisite check, apply the exact 
 ## Blocked / resume
 
 No Production rows, credentials or accounts changed by this branch. Public Forum creation and polls are outside this minimal queue repair; do not claim the entire Forum was provisioned. Resume at ordinary PR and live schema preflight. No reset, DROP, TRUNCATE, data deletion or migration-history rewrite.
+
+Live preflight found moderation_actions.target_type excludes forum_report. Before merge, dismissal audit now records the linked forum_post in moderation_actions and the report ID in audit_events; the Production-shaped fixture includes that exact target constraint and exercises dismissal as well as hide. Focused32 total31pass0fail1skip and full243 total242pass0fail1skip rerun passed.
