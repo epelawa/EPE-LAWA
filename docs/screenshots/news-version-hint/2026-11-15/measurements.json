@@ -1,0 +1,67 @@
+[
+  {
+    "width": 320,
+    "newOptionValues": [
+      "",
+      "epe_welcome_demobebz",
+      "epe_road_benbeezy"
+    ],
+    "selectedOnNew": "epe_welcome_demobebz",
+    "retainedOnEdit": "epe_road_benbeezy",
+    "viewport": 320,
+    "document": 320,
+    "body": 320
+  },
+  {
+    "width": 390,
+    "newOptionValues": [
+      "",
+      "epe_welcome_demobebz",
+      "epe_road_benbeezy"
+    ],
+    "selectedOnNew": "epe_welcome_demobebz",
+    "retainedOnEdit": "epe_road_benbeezy",
+    "viewport": 390,
+    "document": 390,
+    "body": 390
+  },
+  {
+    "width": 430,
+    "newOptionValues": [
+      "",
+      "epe_welcome_demobebz",
+      "epe_road_benbeezy"
+    ],
+    "selectedOnNew": "epe_welcome_demobebz",
+    "retainedOnEdit": "epe_road_benbeezy",
+    "viewport": 430,
+    "document": 430,
+    "body": 430
+  },
+  {
+    "width": 768,
+    "newOptionValues": [
+      "",
+      "epe_welcome_demobebz",
+      "epe_road_benbeezy"
+    ],
+    "selectedOnNew": "epe_welcome_demobebz",
+    "retainedOnEdit": "epe_road_benbeezy",
+    "viewport": 768,
+    "document": 768,
+    "body": 768
+  },
+  {
+    "width": 1440,
+    "newOptionValues": [
+      "",
+      "epe_welcome_demobebz",
+      "epe_road_benbeezy"
+    ],
+    "selectedOnNew": "epe_welcome_demobebz",
+    "retainedOnEdit": "epe_road_benbeezy",
+    "viewport": 1440,
+    "document": 1440,
+    "body": 1440
+  }
+]
