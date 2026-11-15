@@ -275,3 +275,7 @@ PR #80 (schema-test fixture alignment) merged normally; `main` is now `2c11154a1
 ## 2026-11-15 01:18 WAT — Forum explicit anon ACL follow-up
 
 Production default privileges required explicit anon revocation after PR #85; capability checks still protected writes. New additive ACL-only migration and Supabase-default fixture passed full244 total243pass0fail1skip, forced builds2/2 and typechecks5/5. Ordinary PR/application pending; no content/account changes. See `docs/handoffs/2026-11-15-forum-rpc-anon-acl.md`.
+
+## 2026-11-15 01:24 WAT — Radio authoring metadata/RPC repair
+
+The additive live-baseline Radio candidate supplies missing timestamps/revision and rights-aware audited authoring without changing existing station playback/content/status. Combined-main suite246pass0fail1existing skip; forced build2/2/typecheck5/5. Fresh preflight confirms target columns/RPC absent. Ordinary focused PR, recheck/apply and live metadata/ACL verification remain. See `docs/handoffs/2026-11-15-radio-live-authoring.md`.

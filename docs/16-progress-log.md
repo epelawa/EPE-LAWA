@@ -371,3 +371,7 @@ Prepared `20261115010000_forum_moderation_schema_repair.sql` against verified mi
 ## 2026-11-15 01:18 WAT — Forum RPC ACL default-grant regression
 
 Verified explicit Supabase anon grants survive PUBLIC-only revoke. Added forward-only explicit revocation with reproduced default-grant PGlite fixture; full suite243pass0fail1skip, pinned forced build/typecheck passed. Release/application pending.
+
+## 2026-11-15 01:24 WAT — Radio catalogue live-schema candidate
+
+Prepared forward-only20261115010500 migration on29c01dd: timestamps/revision, additive guarded triggers, radio.manage scoped rights-note/audit RPC. Pinned forced build/typecheck pass; full247total246pass0fail1skip. No rows seeded and no UI/player changes. Exact PR/normal merge and Production apply/verification next.
