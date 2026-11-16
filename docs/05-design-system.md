@@ -41,6 +41,7 @@ Use SVG icons only; no emoji. Controls have at least 44px target height. Keyboar
 
 ## Owner-provided motion references: scope, not implementation
 
+The six owner-provided examples are springy button press, pull-to-refresh, rolling number updates, drag-to-reorder, card expand/collapse, and clear success feedback. These are reference/gap notes only—not verified shipped behavior; see [Testing and Acceptance](11-testing-acceptance.md) for current surfaces, tests, accessibility/reduced-motion coverage, state/persistence, and exact gaps.
 
 Do not describe nearby hover, drawer, disclosure, retry, numeric ordering or text-success behavior as the referenced animation. The acceptance evidence, tested surfaces, keyboard/touch alternatives, reduced-motion boundaries, state/persistence and exact gaps are recorded in [Testing and Acceptance](11-testing-acceptance.md). Any future change must be tied to an existing or separately approved surface and verified there; this note does not mark planned behavior as current.
 
