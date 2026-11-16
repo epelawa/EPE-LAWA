@@ -7,7 +7,8 @@ const page = await readFile(new URL("app/news/page.tsx", root), "utf8");
 const article = await readFile(new URL("app/news/[slug]/page.tsx", root), "utf8");
 const styles = await readFile(new URL("app/news/news.module.css", root), "utf8");
 const footer = await readFile(new URL("components/news-footer.tsx", root), "utf8");
-const newsletter = await readFile(new URL("components/newsletter-unavailable.tsx", root), "utf8");
+const newsletterCard = await readFile(new URL("components/newsletter-footer-card.tsx", root), "utf8");
+const newsletterAvailability = await readFile(new URL("components/newsletter-availability-page.tsx", root), "utf8");
 
 test("News has one fixed composition, without a client timer or layout selector", () => {
   assert.doesNotMatch(page, /NewsLayoutFrame|news-daily-layout|data-news-layout|initialLayout/);
@@ -41,10 +42,12 @@ test("editorial text scales with user settings and headlines wrap cleanly", () =
   assert.doesNotMatch(styles, /font-size:[^;}]*clamp\([^)]*vw[^)]*px/);
 });
 
-test("footer categories remain real and newsletter stays non-collecting until delivery exists", () => {
+test("footer categories stay real and shared newsletter paths remain unavailable without collecting data", () => {
   assert.match(footer, /from\("categories"\)/);
   assert.match(footer, /\.eq\("is_active", true\)/);
-  assert.match(newsletter, /disabled/);
-  assert.match(newsletter, /no email address is collected/);
-  assert.doesNotMatch(newsletter, /<form|name="email"|action=/);
+  assert.match(footer, /NewsletterFooterCard/);
+  assert.match(newsletterCard, /No email address is collected here/);
+  assert.match(newsletterCard, /Subscription storage, email delivery, unsubscribe handling and abuse controls are not ready/);
+  assert.doesNotMatch(newsletterCard + newsletterAvailability, /<form|type="email"|name=["']email["']/i);
+  assert.doesNotMatch(newsletterAvailability, /success|subscribed|unsubscribed/i);
 });

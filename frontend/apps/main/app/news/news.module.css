@@ -32,6 +32,7 @@
 .breakingBanner a:hover { color:#294B91; text-decoration:underline; text-underline-offset:3px; }
 .breakingMeta { color:#5C677C; font-size:.6875rem; white-space:nowrap; }
 .newsPageGrid { display:grid; grid-template-columns:minmax(0,1fr) 294px; align-items:start; gap:28px; min-width:0; }
+.newsPageGridSingle { grid-template-columns:minmax(0,1fr); }
 .newsMain { display:grid; align-content:start; gap:28px; min-width:0; }
 .leadGrid { display:grid; grid-template-columns:minmax(0,1.55fr) minmax(250px,.85fr); align-items:stretch; gap:20px; min-width:0; }
 .featureSection { min-width:0; }
@@ -92,10 +93,9 @@
 .pagination { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; padding-top:4px; }
 .pageNumber { color:#5C677C; font-size:.8125rem; font-variant-numeric:tabular-nums; }
 .newsAside { display:grid; align-content:start; gap:16px; min-width:0; }
-.newsletterCard,.popularCard { display:grid; gap:12px; padding:17px; border:1px solid var(--news-border); border-radius:16px; background:#E9EFF9; box-shadow:0 8px 20px rgb(10 16 35 / .04); }
+.popularCard { display:grid; gap:12px; padding:17px; border:1px solid var(--news-border); border-radius:16px; background:#E9EFF9; box-shadow:0 8px 20px rgb(10 16 35 / .04); }
 .asideEyebrow { margin:0; color:#294B91; font-size:.625rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }
-.newsletterCard h2,.popularCard h2 { margin:0; color:#17264A; font-size:1.1875rem; line-height:1.2; letter-spacing:-.025em; }
-.asideCopy { margin:0; color:#5C677C; font-size:.75rem; line-height:1.55; }
+.popularCard h2 { margin:0; color:#17264A; font-size:1.1875rem; line-height:1.2; letter-spacing:-.025em; }
 .discoverCard { display:grid; overflow:hidden; border:1px solid var(--news-border); border-radius:16px; color:inherit; background:#fff; text-decoration:none; }
 .discoverImage { display:block; width:100%; aspect-ratio:1.85; overflow:hidden; background:#E9EFF9; }
 .discoverImage img { display:block; width:100%; height:100%; object-fit:cover; object-position:center; }

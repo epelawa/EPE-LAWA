@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { footerNavigation } from "../lib/navigation";
 import { BrandLockup } from "./brand";
-import NewsletterUnavailable from "./newsletter-unavailable";
+import NewsletterFooterCard from "./newsletter-footer-card";
 
 export default function SiteFooter() {
   const pathname = usePathname() ?? "/";
@@ -43,11 +43,7 @@ export default function SiteFooter() {
               </nav>
             </div>
           </div>
-          <section className="footer-newsletter" aria-labelledby="footer-newsletter-title">
-            <h2 id="footer-newsletter-title">Updates from Epe</h2>
-            <p>Newsletter sign-up is paused while a delivery provider is being configured.</p>
-            <NewsletterUnavailable id="site-footer-newsletter" variant="footer" />
-          </section>
+          <NewsletterFooterCard />
         </div>
         <div className="footer-bottom">
           <span>© {new Date().getFullYear()} EPE LAWA</span>
