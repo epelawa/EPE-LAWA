@@ -109,7 +109,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
   let related: RelatedArticle[] = [];
   let engagement: ArticleEngagement | null = null;
   let signedIn = false;
-  let visibleComments = 0;
+  let visibleComments: number | null = null;
   let saved = false;
   try {
     const supabase = await createClient();
@@ -130,7 +130,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
     else related = (relatedResult.data ?? []) as RelatedArticle[];
     engagement = engagementResult;
     signedIn = Boolean(sessionResult.data?.user);
-    visibleComments = commentCountResult.count ?? 0;
+    visibleComments = commentCountResult.error ? null : commentCountResult.count;
     saved = Boolean(sessionResult.data?.user) && (savedResult.count ?? 0) > 0;
   } catch {
     console.error("published article body client unavailable", { reason: "configuration_or_provider" });

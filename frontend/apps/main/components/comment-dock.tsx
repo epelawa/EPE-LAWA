@@ -19,7 +19,7 @@ export default function CommentDock({
 }: {
   articleId: string;
   slug: string;
-  count: number;
+  count: number | null;
   signedIn: boolean;
   signInHref: string;
 }) {
@@ -30,19 +30,19 @@ export default function CommentDock({
       <button
         type="button"
         className="comment-fab"
-        aria-label={count > 0 ? `Open comments, ${count} so far` : "Open comments"}
+        aria-label={count !== null && count > 0 ? `Open comments, ${count} so far` : "Open comments"}
         aria-haspopup="dialog"
         aria-expanded={open}
         onClick={() => setOpen(true)}
       >
         <MessageCircleIcon size={22} />
-        {count > 0 ? <span className="comment-fab__count" aria-hidden="true">{count > 99 ? "99+" : count}</span> : null}
+        {count !== null && count > 0 ? <span className="comment-fab__count" aria-hidden="true">{count > 99 ? "99+" : count}</span> : null}
       </button>
       <BrandedDialog
         open={open}
         onClose={() => setOpen(false)}
         title="Join the conversation"
-        description={count > 0 ? `${count} ${count === 1 ? "comment" : "comments"} on this story so far.` : "Be the first member to comment on this story."}
+        description={count === null ? "Comment count is currently unavailable." : count > 0 ? `${count} ${count === 1 ? "comment" : "comments"} on this story so far.` : "Be the first member to comment on this story."}
         className="comment-dock__dialog"
       >
         {signedIn ? (

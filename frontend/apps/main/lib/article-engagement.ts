@@ -26,10 +26,10 @@ export async function loadArticleEngagement(
     }
     if (!data) return null;
     const row = data as { view_count: number | string; comment_count: number | string };
-    return {
-      views: Number(row.view_count) || 0,
-      comments: Number(row.comment_count) || 0,
-    };
+    const views = row.view_count == null ? NaN : Number(row.view_count);
+    const comments = row.comment_count == null ? NaN : Number(row.comment_count);
+    if (!Number.isSafeInteger(views) || views < 0 || !Number.isSafeInteger(comments) || comments < 0) return null;
+    return { views, comments };
   } catch {
     return null;
   }

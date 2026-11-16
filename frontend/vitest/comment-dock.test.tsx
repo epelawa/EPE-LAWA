@@ -22,3 +22,17 @@ it("closes the comment dialog before following the read-comments link", () => {
   act(() => root.unmount());
   container.remove();
 });
+it("does not claim to be first when the count is unavailable", () => {
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  act(() => root.render(<CommentDock articleId="test" slug="test" count={null} signedIn={false} signInHref="/login" />));
+  const dialog = container.querySelector("dialog")!;
+  dialog.showModal = function () { this.setAttribute("open", ""); };
+  dialog.close = function () { this.removeAttribute("open"); };
+  act(() => container.querySelector<HTMLButtonElement>(".comment-fab")!.click());
+  expect(dialog.textContent).toContain("Comment count is currently unavailable.");
+  expect(dialog.textContent).not.toContain("Be the first");
+  act(() => root.unmount());
+  container.remove();
+});

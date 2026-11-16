@@ -75,9 +75,9 @@ export async function CommentThread({ articleId, slug, notice }: Props) {
     <header className={styles.commentHeading}>
       <div>
         <p className="ui-eyebrow">Conversation</p>
-        <h2>{visibleCount > 0 ? `Comments (${visibleCount})` : "Comments"}</h2>
+        <h2>{!error && comments.length < 100 && visibleCount > 0 ? `Comments (${visibleCount})` : "Comments"}</h2>
       </div>
-      <span className={styles.commentCountPill} aria-hidden="true"><MessageCircleIcon size={15} /> {visibleCount}</span>
+      {!error && comments.length < 100 ? <span className={styles.commentCountPill} aria-hidden="true"><MessageCircleIcon size={15} /> {visibleCount}</span> : null}
     </header>
     {noticeText ? <Notice tone={alertNotice ? "warning" : "success"} role={alertNotice ? "alert" : "status"}>{noticeText}</Notice> : null}
     {reviewer ? <Panel className="ui-subtle" aria-labelledby="comment-review-title">
