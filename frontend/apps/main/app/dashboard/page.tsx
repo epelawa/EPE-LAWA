@@ -18,17 +18,14 @@ import "../auth/auth.css";
 import {
   BellIcon,
   BookmarkIcon,
-  BuildingIcon,
   CompassIcon,
   HomeIcon,
-  MessageCircleIcon,
   UserIcon,
 } from "../../components/icons";
 import { ACTIVITY_COOKIE, MEMBER_INACTIVITY_MS, isInactiveSince } from "../../lib/session-policy";
 import { isValidHandle, normalizeHandle } from "../../lib/member-handle";
 import {
   decideMemberEntry,
-  MEMBER_SERVICE_LINKS,
   type MemberEntryInput,
   type MemberProfileSnapshot,
 } from "../../lib/member-entry";
@@ -59,12 +56,6 @@ const dashboardTabs = [
   { key: "profile" as const, href: "/dashboard?tab=profile", label: "Profile", Icon: UserIcon },
 ];
 
-const serviceIcons = {
-  "/forum": MessageCircleIcon,
-  "/business-directory/orders": BuildingIcon,
-  "/": CompassIcon,
-} as const;
-
 const notificationKinds: Record<string, string> = {
   comment_reply: "Comment reply",
   forum_reply: "Forum reply",
@@ -78,30 +69,6 @@ function DashboardTabs({ active }: { active: DashboardTab }) {
   return <nav className={styles.tabs} aria-label="Member dashboard">
     {dashboardTabs.map(({ key, href, label, Icon }) => <Link key={key} className={styles.tab} href={href} aria-current={active === key ? "page" : undefined}><Icon size={18} /><span>{label}</span></Link>)}
   </nav>;
-}
-
-function DashboardServices() {
-  return <section className={styles.services} aria-labelledby="services-title">
-    <div className={styles.servicesHeading}>
-      <p className={styles.eyebrow}>Member services</p>
-      <h2 id="services-title">Everything from your account, in one place</h2>
-    </div>
-    <ul className={styles.serviceList}>
-      {MEMBER_SERVICE_LINKS.map((item) => {
-        const Icon = serviceIcons[item.href];
-        return <li key={item.href}>
-          <Link className={styles.serviceLink} href={item.href}>
-            <span className={styles.serviceIcon} aria-hidden="true"><Icon size={20} /></span>
-            <span className={styles.serviceCopy}>
-              <strong>{item.label}</strong>
-              <small>{item.description}</small>
-            </span>
-            <span className={styles.serviceArrow} aria-hidden="true">›</span>
-          </Link>
-        </li>;
-      })}
-    </ul>
-  </section>;
 }
 
 type SavedStory = {
@@ -342,7 +309,6 @@ export default async function MemberDashboardPage({ searchParams }: { searchPara
       <SessionGuard scope="member" timeoutMs={MEMBER_INACTIVITY_MS} signOutAction={signOut} />
       <main className={`${styles.shell} member-dashboard-shell`}>
         <DashboardTabs active={activeTab} />
-        <DashboardServices />
         {!showNewsFeed && activeTab !== "notifications" && activeTab !== "saved" ? <header className={styles.hero}>
           <p className={styles.eyebrow}>Member dashboard</p>
           <h1>Profile</h1>

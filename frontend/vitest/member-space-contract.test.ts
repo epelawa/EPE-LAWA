@@ -36,10 +36,10 @@ describe("post-sign-in destination", () => {
     expect(dashboard).not.toMatch(/from\("profiles"\)\.insert/);
   });
 
-  it("moves the old completion links into the member dashboard", () => {
-    expect(dashboard).toContain("<DashboardServices />");
+  it("moves the member service links into the member menu", () => {
+    expect(dashboard).not.toContain("<DashboardServices />");
+    expect(topbar).toContain("MEMBER_SERVICE_LINKS.map");
     for (const href of ["/forum", "/business-directory/orders", "/"]) {
-      expect(dashboard).toContain(href);
       expect(source("../apps/main/lib/member-entry.ts")).toContain(`href: "${href}"`);
     }
   });

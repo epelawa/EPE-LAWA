@@ -68,6 +68,22 @@ async function limitToLocalOrigins(page: Page) {
   });
 }
 
+test("member services live in the compact menu", async ({ page, request }) => {
+  await setFixtureMode(request, "empty");
+  await page.setViewportSize({ width: 320, height: 800 });
+  await signIn(page);
+  await page.goto("/dashboard?tab=home");
+  await expect(page.getByRole("heading", { name: "Everything from your account, in one place" })).toHaveCount(0);
+  await page.getByRole("button", { name: "Open member menu" }).click();
+  const menu = page.getByRole("dialog", { name: "Your EPE LAWA" });
+  const services = menu.getByRole("navigation", { name: "Member services" });
+  for (const [name, href] of [["Community forum", "/forum"], ["Order requests", "/business-directory/orders"], ["Explore EPE LAWA", "/"]]) {
+    await expect(services.getByRole("link", { name: new RegExp(name) })).toHaveAttribute("href", href);
+  }
+  await page.keyboard.press("Escape");
+  await expect(menu).not.toBeVisible();
+});
+
 test("signed-in dashboard keeps honest empty views and one responsive tab bar", async ({ page, request }, testInfo) => {
   test.setTimeout(90_000);
   await setFixtureMode(request, "empty");
