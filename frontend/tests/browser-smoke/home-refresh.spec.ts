@@ -69,6 +69,13 @@ test("the original cover hero reaches the viewport bottom across phone, tablet a
   await page.addStyleTag({ content: "nextjs-portal { display: none !important; }" });
   for (const [width, height] of [[320, 800], [375, 900], [768, 900], [1024, 768], [1440, 900]]) {
     await page.setViewportSize({ width, height });
+    await expect.poll(
+      () => page.locator(".home-hero__visual").evaluate((hero) => {
+        const rect = hero.getBoundingClientRect();
+        return rect.bottom + window.scrollY - window.innerHeight;
+      }),
+      { message: `hero should cover to the viewport bottom at ${width}px`, timeout: 5_000 },
+    ).toBeGreaterThanOrEqual(-1);
     const bounds = await page.locator(".home-hero__visual").evaluate((hero) => {
       const rect = hero.getBoundingClientRect();
       return { bottom: rect.bottom + window.scrollY, viewportHeight: window.innerHeight, fit: getComputedStyle(hero.querySelector(".home-hero__photo")!).objectFit };
