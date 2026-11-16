@@ -448,3 +448,9 @@ Reworked the public hero so the copy block is genuinely centred (`align-items:ce
 **Validation:** added Vitest 5.1.0 with jsdom and four focused files (member-entry decisions, member-space contract, hero contract, ScrollToTop DOM behaviour) — 21/21 pass. `pnpm test` now runs the legacy `node:test` suite and Vitest; full result 303/301/0 with one documented skip. Both apps typecheck and production-build. `/auth/complete` returns 404 on a local `next start`; `/dashboard` renders and `/` returns the new hero markup.
 
 **Database:** `article_engagement` and `notifications` applied to Production (see above). No article content, accounts or environment variables were changed.
+
+## 2026-11-16 10:30 UTC — Member chrome split, right-aligned controls and a working Saved tab
+
+The member space now looks nothing like the public site. The "Welcome back" card is deleted outright (markup and CSS) on every member tab, the midnight top bar runs edge to edge with its bell/sign-out/menu cluster pinned right, the tab strip is a midnight segmented control with an ice-blue active state, panel cards carry a cobalt left rule, and the mobile bottom nav uses the same midnight surface as the top bar instead of the public white card.
+
+The Saved tab is no longer a placeholder. Additive migration `20261116140000_member_saved_articles.sql` creates `public.saved_articles` (member + article unique pair, cascade deletes, owner-only select/insert/delete policies, anon revoked, `authenticated` granted). `app/dashboard/saved-actions.ts` writes only the caller's row, a save control sits in the published-story hero for signed-in members, and the Saved tab lists real bookmarks with a remove action. Applied to the Production project (`igqmybuiovaxqmrteebd`) as ledger version `20261116095844`; verified with `to_regclass`, three RLS policies and `relrowsecurity = true`, plus the `(article_id)` index the schema suite requires for every foreign key.

@@ -46,8 +46,11 @@ test("signing in lands on the member dashboard and the separate-member chrome re
   assert.match(page, /<SessionGuard scope="member" timeoutMs=\{MEMBER_INACTIVITY_MS\}/);
   assert.match(page, /from\("notifications"\)/);
   assert.match(page, /markNotificationsRead/);
-  assert.match(page, /quickActions/);
-  assert.equal((page.match(/className="btn-(?:primary|secondary)" href="\/dashboard\?tab=/g) ?? []).length >= 3, true);
+  assert.match(page, /DashboardServices/);
+  assert.doesNotMatch(page, /styles\.greeting|styles\.quickActions/);
+  assert.match(page, /<DashboardTabs active=\{activeTab\} \/>/);
+  assert.doesNotMatch(page, /Welcome back/);
+  assert.equal((topbar.match(/href: "\/dashboard\?tab=/g) ?? []).length >= 5, true);
   assert.doesNotMatch(page, /styles\.signOut/);
   assert.match(topbar, /<BellIcon/);
   assert.doesNotMatch(topbar, /SearchIcon/);

@@ -525,6 +525,7 @@ someone else's content.
 | 9 | `marketplace_and_payments` | 8 |
 | 10 | `notifications_and_audit_hardening` | 9 |
 | 11 | `20261116120000_article_engagement` — daily view counter, aggregate view, read-time estimate | member covers |
+| 12 | `20261116140000_member_saved_articles` — member-owned saved stories with owner-only RLS | member saved tab |
 
 Each migration ships with: the SQL, an RLS policy set, a negative test, and a line in the tracker.
 

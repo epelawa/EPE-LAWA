@@ -163,8 +163,8 @@ export const UserIcon = ({ size = 20, className }: { size?: number; className?: 
   </svg>
 );
 
-export const BookmarkIcon = ({ size = 20, className }: { size?: number; className?: string }) => (
-  <svg aria-hidden="true" focusable="false" className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+export const BookmarkIcon = ({ size = 20, className, filled = false }: { size?: number; className?: string; filled?: boolean }) => (
+  <svg aria-hidden="true" focusable="false" className={className} width={size} height={size} viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
     <path d="M6 4.5A2.5 2.5 0 0 1 8.5 2h7A2.5 2.5 0 0 1 18 4.5V21l-6-3.5L6 21V4.5Z" />
   </svg>
 );
