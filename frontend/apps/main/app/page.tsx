@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRightIcon, ArrowUpRightIcon, UsersIcon, RadioIcon, NewsShortcutIcon, ListenShortcutIcon, CompassIcon, BuildingIcon, MessageCircleIcon } from "../components/icons";
+import { ArrowRightIcon, ArrowUpRightIcon, UsersIcon, ListenShortcutIcon, NewsShortcutIcon, CompassIcon, BuildingIcon, MessageCircleIcon, ClockIcon, EyeIcon } from "../components/icons";
 import { formatPublishedDate } from "../lib/dates";
 import { getLatestStories } from "../lib/home-data";
 import "./hero-logo.css";
@@ -30,7 +30,7 @@ export default async function Home() {
 
       <div className="ep-container home-discovery">
         <section className="home-radio" aria-labelledby="home-radio-title">
-          <span className="home-radio__icon" aria-hidden="true"><RadioIcon size={32} /></span>
+          <span className="home-radio__icon" aria-hidden="true"><ListenShortcutIcon size={32} /></span>
           <div><p className="home-radio__eyebrow">EPE LAWA RADIO</p><h2 id="home-radio-title">Radio Lagos 107.5 FM</h2><p>Listen to the station and explore our programmes.</p></div>
           <Link href="/radio" className="home-radio__action">Listen to radio <ArrowRightIcon size={17} aria-hidden="true" /></Link>
         </section>
@@ -64,8 +64,7 @@ export default async function Home() {
                           <img className="home-story-image" src={story.cover.src} alt={story.cover.alt} loading="lazy" decoding="async" referrerPolicy="no-referrer" />
                         </Link>
                         <figcaption>
-                          {story.cover.caption ? <span className="home-story-cover-caption">{story.cover.caption}</span> : null}
-                          <span className="home-story-cover-attribution">Photo: <a href={story.cover.source} target="_blank" rel="noopener noreferrer">{story.cover.credit}</a> · <a href={story.cover.license} target="_blank" rel="noopener noreferrer">License</a></span>
+                          <span className="home-story-cover-caption">Illustrative image. <Link href="/photo-credits#news-photos">Photo credits</Link></span>
                         </figcaption>
                       </figure>
                     ) : (
@@ -77,6 +76,7 @@ export default async function Home() {
                       <span className="home-story-meta">{story.category ?? "News"}{story.publishedAt ? <> <span aria-hidden="true">·</span> <time dateTime={story.publishedAt}>{formatPublishedDate(story.publishedAt)}</time></> : null}</span>
                       <h3><Link href={storyHref}>{story.title}</Link></h3>
                       {story.summary ? <p className="home-story-summary">{story.summary}</p> : null}
+                      {story.engagement ? <div className="home-story-engagement" aria-label="Story engagement"><span><ClockIcon size={14} /> {story.engagement.readMinutes} min read</span><span><EyeIcon size={14} /> {story.engagement.views.toLocaleString("en-NG")} views</span><span><MessageCircleIcon size={14} /> {story.engagement.comments.toLocaleString("en-NG")} comments</span></div> : null}
                       <p className="home-story-byline">{story.authorName ? `By ${story.authorName}` : "Byline unavailable"}</p>
                       <Link className="home-story-read" href={storyHref}>Read story <ArrowUpRightIcon size={16} aria-hidden="true" /></Link>
                     </div>
@@ -97,7 +97,7 @@ export default async function Home() {
       {updates.length > 0 ? <section className="ep-container home-updates" aria-labelledby="updates-title">
         <div className="home-news__heading"><h2 id="updates-title">Latest Updates</h2><Link className="ui-text-link" href="/news">See more <ArrowRightIcon size={17} aria-hidden="true" /></Link></div>
         <ul className="home-updates__list">{updates.map((story) => <li key={story.slug}>
-          <article>{story.cover ? <img src={story.cover.src} alt={story.cover.alt} loading="lazy" decoding="async" referrerPolicy="no-referrer" /> : null}<div><h3><Link href={`/news/${story.slug}`}>{story.title}</Link></h3><p>{story.publishedAt ? <time dateTime={story.publishedAt}>{formatPublishedDate(story.publishedAt)}</time> : null}{story.category ? ` · ${story.category}` : ""}</p>{story.cover ? <p className="home-updates__credit">Photo: <a href={story.cover.source} target="_blank" rel="noopener noreferrer">{story.cover.credit}</a> · <a href={story.cover.license} target="_blank" rel="noopener noreferrer">License</a></p> : null}</div></article>
+          <article>{story.cover ? <img src={story.cover.src} alt={story.cover.alt} loading="lazy" decoding="async" referrerPolicy="no-referrer" /> : null}<div><h3><Link href={`/news/${story.slug}`}>{story.title}</Link></h3><p>{story.publishedAt ? <time dateTime={story.publishedAt}>{formatPublishedDate(story.publishedAt)}</time> : null}{story.category ? ` · ${story.category}` : ""}</p>{story.cover ? <p className="home-updates__credit">Illustrative image. <Link href="/photo-credits#news-photos">Photo credits</Link></p> : null}</div></article>
         </li>)}</ul>
       </section> : null}
 

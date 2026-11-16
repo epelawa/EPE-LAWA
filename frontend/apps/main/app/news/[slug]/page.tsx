@@ -19,6 +19,7 @@ import ArticleShareActions from "../../../components/article-share-actions";
 import SaveArticleButton from "../../../components/save-article-button";
 import { NewspaperIcon } from "../../../components/icons";
 import NewsFooter from "../../../components/news-footer";
+import LayoutVariation from "../../../components/layout-variation";
 import { PageFrame } from "../../../components/design-system";
 import styles from "../news.module.css";
 
@@ -146,7 +147,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
     <>
     <PageFrame className={`${styles.articlePage} ui-stack`}>
       <ArticleViewPing articleId={article.id} />
-      <article className={styles.article}>
+      <LayoutVariation area="article"><article className={styles.article}>
         <header className={styles.articleHero}>
           <div className={styles.articleHeroTop}>
             <Link href="/news" className={styles.heroControl} aria-label="Back to News">
@@ -164,7 +165,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
             <ArticleCoverStats body={body} engagement={engagement} commentCount={commentCount} />
           </div>
         </header>
-        {cover ? <figure className={styles.coverCredit}><figcaption>{cover.caption} <a href={cover.source} target="_blank" rel="noreferrer">{cover.credit}</a> License: <a href={cover.license} target="_blank" rel="noreferrer">CC BY-SA 4.0</a>.</figcaption></figure> : null}
+        {cover ? <p className={styles.coverCredit}>Illustrative image. <Link href="/photo-credits#news-photos">Photo credits</Link></p> : null}
 
         <div className={styles.articleMetaBar} aria-label="Story details">
           <span className={styles.byline}>{article.author_name}</span>
@@ -177,7 +178,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
         <details className={styles.articleExtras}><summary>More story options</summary><OfflineArticleDownload article={{ slug: article.slug, title: article.title, summary: article.summary, publishedAt: article.published_at, author: article.author_name, category: article.category_label, sourceUrl: articleUrl }} /></details>
         {related.length ? <section className={styles.relatedSection} aria-labelledby="related-heading"><div className={styles.sectionHeading}><div><h2 id="related-heading">Related stories</h2></div></div><ul className={styles.relatedGrid}>{related.map((item) => { const relatedCover = selectedNewsCover(item.og_image_key); const relatedImage = relatedCover?.url ?? publicMediaUrl(item.og_image_key); return <li className={styles.relatedCard} key={item.slug}><Link href={newsArticlePath(item.slug)} className={styles.relatedLink}>{relatedImage ? <img className={`${styles.relatedImage} ${relatedCover ? styles.approvedCoverThumb : ""}`} src={relatedImage} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" /> : <span className={styles.relatedImageFallback} aria-hidden="true"><NewspaperIcon size={24} /></span>}<span className={styles.relatedCategory}>{item.category_label}</span><span className={styles.relatedTitle}>{item.title}</span></Link></li>; })}</ul></section> : null}
         <p className={styles.correctionNote}>Correction reporting is not available through this site yet. <Link href="/contact" className="ui-text-link">View contact availability</Link>.</p>
-      </article>
+      </article></LayoutVariation>
     </PageFrame>
     <NewsFooter />
     </>

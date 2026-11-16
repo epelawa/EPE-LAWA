@@ -13,6 +13,7 @@ export type StoryCover = {
 export type LatestStory = {
   slug: string;
   title: string;
+  engagement: { views: number; comments: number; readMinutes: number } | null;
   summary: string | null;
   publishedAt: string | null;
   category: string | null;
@@ -21,6 +22,7 @@ export type LatestStory = {
 };
 
 type PublishedStoryRow = {
+  id: string;
   slug: string;
   title: string;
   summary: string | null;
@@ -54,7 +56,7 @@ export async function getLatestStories(limit = 3): Promise<PublicListResult<Late
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("published_articles")
-      .select("slug,title,summary,published_at,category_label,author_name,og_image_key")
+      .select("id,slug,title,summary,published_at,category_label,author_name,og_image_key")
       .order("published_at", { ascending: false, nullsFirst: false })
       .order("slug", { ascending: true })
       .limit(Math.max(0, Math.min(Math.trunc(limit), 20)));
@@ -64,9 +66,23 @@ export async function getLatestStories(limit = 3): Promise<PublicListResult<Late
       return { state: "error", items: [] };
     }
 
+    const rows = (data ?? []) as PublishedStoryRow[];
+    const engagement = new Map<string, { views: number; comments: number; readMinutes: number }>();
+    const ids = rows.map((row) => row.id).filter(Boolean);
+    if (ids.length) {
+      try {
+        const metrics = await supabase.from("published_article_engagement").select("article_id,view_count,comment_count,read_minutes").in("article_id", ids);
+        if (!metrics.error) for (const metric of metrics.data ?? []) {
+          if (metric.view_count == null || metric.comment_count == null || metric.read_minutes == null) continue;
+          const views = Number(metric.view_count), comments = Number(metric.comment_count), readMinutes = Number(metric.read_minutes);
+          if ([views, comments, readMinutes].every(Number.isFinite)) engagement.set(metric.article_id, { views, comments, readMinutes });
+        }
+      } catch { /* Story content remains available if engagement cannot be loaded. */ }
+    }
     return {
       state: "ok",
-      items: ((data ?? []) as PublishedStoryRow[]).map((row) => ({
+      items: rows.map((row) => ({
+        engagement: engagement.get(row.id) ?? null,
         slug: row.slug,
         title: row.title,
         summary: row.summary,
