@@ -2,6 +2,7 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { adminLoginHref } from "../lib/admin-path";
 import { getAdminAccessForSession } from "../lib/supabase-access";
+import { ACTIVITY_COOKIE, STAFF_INACTIVITY_MS, isInactiveSince } from "../lib/session-policy";
 
 export async function AdminAccessGuard({
   children,
@@ -27,6 +28,12 @@ export async function AdminAccessGuard({
 
   if (!access.allowed || !access.userId) {
     redirect(adminLoginHref(loginPath, requestHeaders.get("x-epe-lawa-admin-route")));
+  }
+  // Staff sessions end after ten hours without recorded activity. The client
+  // guard refreshes this first-party stamp; a stale value blocks the page even
+  // when the tab was suspended before the guard could run.
+  if (isInactiveSince(cookieStore.get(ACTIVITY_COOKIE.staff)?.value, STAFF_INACTIVITY_MS)) {
+    redirect(`${loginPath}?reason=inactivity`);
   }
   return children;
 }

@@ -53,3 +53,20 @@ export async function updateMemberProfile(_state: MemberProfileState, data: Form
     return { status: "error", message: genericError };
   }
 }
+
+/**
+ * Marks the signed-in member's own unread notifications as read.
+ * The database policy limits the update to rows owned by the caller and the
+ * column grant limits the write to `read_at`.
+ */
+export async function markNotificationsRead(): Promise<void> {
+  const supabase = await createClient();
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) redirect("/login?next=%2Fdashboard");
+  await supabase
+    .from("notifications")
+    .update({ read_at: new Date().toISOString() })
+    .eq("user_id", user.id)
+    .is("read_at", null);
+  revalidatePath("/dashboard");
+}

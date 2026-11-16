@@ -94,7 +94,7 @@
 .storyPagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
 .storyPagination > span { color: hsl(var(--muted-foreground)); font-size: 12px; }
 .loadingTabs,.loadingHero,.loadingCard { display: grid; gap: 12px; margin-bottom: 22px; }
-.loadingTabs { grid-template-columns: repeat(4,minmax(0,1fr)); }
+.loadingTabs { grid-template-columns: repeat(5,minmax(0,1fr)); }
 .loadingTabs span,.loadingHero span,.loadingCard span { min-height: 44px; border-radius: 12px; background: linear-gradient(90deg,hsl(var(--secondary)),hsl(var(--card)),hsl(var(--secondary))); background-size: 200% 100%; animation: dashboard-loading 1.4s ease-in-out infinite; }
 .loadingHero span:first-child { width: 140px; min-height: 12px; }
 .loadingHero span:nth-child(2) { width: min(480px,70%); min-height: 42px; }
@@ -118,3 +118,205 @@
 @media (prefers-reduced-motion: reduce) {
   .loadingTabs span,.loadingHero span,.loadingCard span { animation: none; }
 }
+
+/* ---------------------------------------------------------------------------
+   Member chrome
+   The member space is deliberately its own surface: midnight top bar, cloud
+   canvas and cobalt controls. It shares the public layout rhythm but none of
+   the public masthead, footer or drawer.
+--------------------------------------------------------------------------- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 70;
+  border-bottom: 1px solid var(--palette-border);
+  background: var(--palette-midnight);
+  color: var(--palette-cloud);
+  box-shadow: 0 10px 30px rgb(10 16 35 / .18);
+}
+.topbarInner {
+  display: flex;
+  width: min(var(--content-max), calc(100% - var(--gutter) * 2));
+  min-height: 68px;
+  margin-inline: auto;
+  align-items: center;
+  gap: 12px;
+  padding-block: 10px;
+}
+.topbarBrand {
+  display: inline-flex;
+  flex: 0 0 auto;
+  min-height: 44px;
+  align-items: center;
+  text-decoration: none;
+}
+.topbarBrand :global(.brand__mark) {
+  background: rgb(241 244 250 / .12);
+  border: 1px solid rgb(167 197 245 / .28);
+}
+.topbarBrand :global(.brand__name) { color: var(--palette-cloud); }
+.topbarLabel {
+  flex: 1 1 auto;
+  color: var(--palette-silver);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+.topbarActions { display: flex; flex: 0 0 auto; align-items: center; gap: 4px; }
+.topbarForm { display: inline-flex; }
+.iconButton {
+  position: relative;
+  display: inline-grid;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--palette-cloud);
+  text-decoration: none;
+  transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+.iconButton:hover { background: rgb(167 197 245 / .14); border-color: var(--palette-border); }
+.iconButton:focus-visible { outline: 2px solid var(--palette-ice-blue); outline-offset: 2px; }
+.notificationBadge {
+  position: absolute;
+  top: 2px;
+  right: 1px;
+  display: grid;
+  min-width: 19px;
+  height: 19px;
+  padding-inline: 5px;
+  place-items: center;
+  border: 2px solid var(--palette-midnight);
+  border-radius: 999px;
+  background: var(--palette-cobalt);
+  color: var(--palette-midnight);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+}
+.signOutTop {
+  display: inline-flex;
+  width: auto;
+  min-width: 44px;
+  align-items: center;
+  gap: 7px;
+  padding-inline: 12px;
+  border-color: rgb(167 197 245 / .22);
+}
+.signOutLabel { font-size: 12px; font-weight: 700; letter-spacing: .01em; white-space: nowrap; }
+.menuTrigger { border-color: rgb(167 197 245 / .22); }
+.memberMenuIcon { display: grid; grid-template-columns: repeat(2, 6px); gap: 4px; }
+.memberMenuIcon span { width: 6px; height: 6px; border-radius: 2px; background: currentColor; }
+
+.menuIdentity { display: grid; gap: 2px; margin: 0; padding: 12px 14px; border: 1px solid hsl(var(--border)); border-radius: 14px; background: hsl(var(--secondary)); }
+.menuIdentity strong { font-size: 15px; line-height: 1.3; overflow-wrap: anywhere; }
+.menuIdentity span { color: hsl(var(--muted-foreground)); font-size: 12px; }
+.menuNav { display: grid; gap: 4px; }
+.menuLink { display: grid; gap: 2px; min-height: 52px; align-content: center; padding: 9px 13px; border: 1px solid transparent; border-radius: 12px; color: hsl(var(--foreground)); text-decoration: none; }
+.menuLink span { font-size: 14px; font-weight: 700; }
+.menuLink small { color: hsl(var(--muted-foreground)); font-size: 12px; line-height: 1.4; }
+.menuLink:hover { border-color: hsl(var(--border)); background: hsl(var(--secondary)); }
+.menuLink[aria-current="page"] { border-color: hsl(var(--primary)); background: hsl(var(--secondary)); }
+.menuFooter { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .7fr); gap: 10px; margin-top: 6px; }
+.menuFooter > * { min-width: 0; }
+.menuFooter :global(.btn-secondary),
+.menuFooter :global(.btn-primary) { width: 100%; padding-inline: 12px; font-size: 13px; }
+
+/* Greeting + the member's three primary actions. */
+.greeting {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: clamp(20px, 3vw, 30px);
+  padding: clamp(18px, 3vw, 26px);
+  border: 1px solid hsl(var(--border));
+  border-radius: 22px;
+  background:
+    linear-gradient(120deg, hsl(var(--card)) 0%, hsl(var(--card)) 58%, hsl(var(--secondary)) 100%);
+  box-shadow: var(--shadow-1);
+}
+.greeting > div:first-child { display: grid; gap: 5px; min-width: 0; }
+.greetingTitle { color: hsl(var(--foreground)); font-size: clamp(1.3rem, 2.6vw, 1.75rem); font-weight: 600; letter-spacing: -.03em; line-height: 1.2; overflow-wrap: anywhere; }
+.greetingTitle strong { font-weight: 750; }
+.greetingCopy { max-width: 58ch; color: hsl(var(--muted-foreground)); font-size: 13px; line-height: 1.55; }
+.quickActions { display: flex; flex-wrap: wrap; gap: 8px; }
+.quickActions > a { min-height: 44px; padding: 10px 16px; font-size: 13px; }
+.quickBadge { display: inline-grid; min-width: 18px; height: 18px; padding-inline: 5px; place-items: center; border-radius: 999px; background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); font-size: 10px; font-weight: 800; }
+
+/* Notifications view. */
+.notificationsPanel { display: grid; gap: 18px; }
+.notificationsHeading { display: flex; flex-wrap: wrap; align-items: start; justify-content: space-between; gap: 16px; padding-bottom: 14px; border-bottom: 2px solid var(--palette-cobalt); }
+.notificationsHeading > div { display: grid; gap: 5px; min-width: 0; }
+.notificationsHeading h1 { margin: 0; font-size: clamp(1.45rem, 2.6vw, 2rem); line-height: 1.15; }
+.notificationsHeading .helper { margin: 0; }
+.notificationsHeading form { flex: 0 0 auto; }
+.emptyNotifications { display: grid; justify-items: start; gap: 8px; padding: 22px; border: 1px dashed hsl(var(--border)); border-radius: 16px; color: hsl(var(--muted-foreground)); }
+.emptyNotifications h2 { margin: 0; color: hsl(var(--foreground)); font-size: 1.1rem; }
+.emptyNotifications p { max-width: 60ch; font-size: 13px; line-height: 1.6; }
+.notificationList { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.notificationItem { border: 1px solid hsl(var(--border)); border-radius: 16px; background: hsl(var(--card)); overflow: hidden; }
+.notificationItem[data-unread="true"] { border-left: 3px solid var(--palette-cobalt); background: linear-gradient(90deg, hsl(var(--secondary) / .75), hsl(var(--card)) 46%); }
+.notificationItem > a,
+.notificationItem > div,
+.notificationItem > span { display: flex; gap: 12px; align-items: start; padding: 14px 16px; color: inherit; text-decoration: none; }
+.notificationItem > a:hover .notificationTitle { color: hsl(var(--link)); text-decoration: underline; text-underline-offset: 3px; }
+.notificationDot { flex: 0 0 9px; width: 9px; height: 9px; margin-top: 7px; border-radius: 50%; background: hsl(var(--border)); }
+.notificationDot[data-unread="true"] { background: var(--palette-cobalt); box-shadow: 0 0 0 3px rgb(71 127 224 / .18); }
+.notificationCopy { display: grid; gap: 3px; min-width: 0; }
+.notificationTitle { color: hsl(var(--foreground)); font-size: 14px; font-weight: 700; line-height: 1.4; }
+.notificationBody { color: hsl(var(--muted-foreground)); font-size: 13px; line-height: 1.55; }
+.notificationMeta { color: hsl(var(--muted-foreground)); font-size: 11px; }
+
+@media (max-width: 760px) {
+  .topbarLabel { display: none; }
+  .signOutTop { width: 44px; padding: 0; justify-content: center; }
+  .signOutLabel { display: none; }
+  .topbarInner { min-height: 62px; }
+  .greeting { align-items: start; flex-direction: column; }
+  .quickActions { width: 100%; }
+  .quickActions > a { flex: 1 1 150px; justify-content: center; text-align: center; }
+  .notificationsHeading { flex-direction: column; }
+  .menuFooter { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 400px) {
+  .topbarInner { gap: 6px; }
+  .topbarActions { gap: 0; }
+  .quickActions > a { flex-basis: 100%; }
+}
+
+/* Engagement chips sit on the story cover itself: views, read time, comments. */
+.storyImageWrap,
+.breakingImage { position: relative; }
+.storyStats {
+  position: absolute;
+  inset: auto 8px 8px;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  pointer-events: none;
+}
+.storyStat {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 22px;
+  padding: 3px 8px;
+  border: 1px solid rgb(167 197 245 / .24);
+  border-radius: 999px;
+  background: rgb(10 16 35 / .74);
+  color: var(--palette-cloud);
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1.2;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.storyStat svg { flex: 0 0 auto; }

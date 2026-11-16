@@ -4,6 +4,7 @@ import Script from "next/script";
 import "@epelawa/ui/tokens.css";
 import "@epelawa/ui/ui.css";
 import "./globals.css";
+import "./native-controls.css";
 import SiteHeader from "../components/site-header";
 import SiteFooter from "../components/site-footer";
 import { staffNavigation } from "../lib/navigation";

@@ -41,5 +41,7 @@ export default async function CompletePage() {
     if (readError || !profile) return <AccountShell eyebrow="Member account" title="Profile setup needs attention" description="Your profile creation could not be confirmed. Please try again later; you are not yet signed in to member spaces."><form action={signOut}><button className="auth-submit" type="submit">Sign out</button></form></AccountShell>;
   }
   if (profile?.deleted_at) redirect("/login");
-  return <AccountShell eyebrow="Member account" title="You’re signed in" description={`Welcome, ${profile?.display_name ?? "member"}. Your member session is active.`}><div className="ui-stack" style={{marginTop:24}}><Link className="btn-primary" href="/dashboard">Open your member dashboard</Link><Link className="btn-secondary" href="/forum">Visit the community forum</Link><Link className="btn-secondary" href="/business-directory/orders">Your order requests</Link></div><form action={signOut}><button className="auth-submit" type="submit">Sign out</button></form><p className="auth-footnote"><Link href="/">Explore EPE LAWA</Link></p></AccountShell>;
+  // A complete member profile goes straight to the dashboard: signing in should
+  // never park a member on an interstitial "you're signed in" screen.
+  redirect("/dashboard");
 }

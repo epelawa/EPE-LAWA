@@ -219,3 +219,63 @@
 /* The shared light canvas carries the site's quiet linework behind the newsroom. */
 .newsPage,.articlePage { background-color:transparent; }
 .articlePage { --background:220 47.37% 96.27%; }
+
+/* Cover engagement chips: views, read time and comments on the cover itself. */
+.articleCoverFrame { position: relative; }
+.coverStats {
+  position: absolute;
+  inset: auto 12px 12px;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  pointer-events: none;
+}
+.coverStat {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 28px;
+  padding: 4px 10px;
+  border: 1px solid rgb(167 197 245 / .26);
+  border-radius: 999px;
+  background: rgb(10 16 35 / .74);
+  color: var(--palette-cloud);
+  font-size: .6875rem;
+  font-weight: 700;
+  line-height: 1.2;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+@media (max-width: 600px) {
+  .coverStats { inset: auto 8px 8px; gap: 4px; }
+  .coverStat { min-height: 25px; padding: 3px 8px; font-size: .625rem; }
+}
+
+/* Comment section heading and per-comment actions. */
+.commentSection { position: relative; }
+.commentHeading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--palette-royal-steel);
+}
+.commentHeading > div { display: grid; gap: 4px; }
+.commentHeading h2 { margin: 0; color: var(--palette-navy); font-size: clamp(1.35rem, 2.4vw, 1.75rem); line-height: 1.15; }
+.commentCountPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 4px 11px;
+  border: 1px solid var(--news-border);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--palette-royal-steel);
+  font-size: .75rem;
+  font-weight: 750;
+}
+.commentActions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }

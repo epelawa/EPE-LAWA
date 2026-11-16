@@ -16,6 +16,7 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: S
   const query = await searchParams;
   const nextValue = Array.isArray(query.next) ? query.next[0] : query.next;
   const nextPath = safeAdminNextPath(nextValue);
+  const reason = Array.isArray(query.reason) ? query.reason[0] : query.reason;
 
   return (
     <AccountShell
@@ -24,6 +25,7 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: S
       description="Authorised staff only. Sign in to continue."
       fixedViewport
     >
+      {reason === "inactivity" ? <p className="auth-inactivity-notice" role="status">Your staff session ended after ten hours without activity. Sign in again to continue.</p> : null}
       <AdminLoginForm nextPath={nextPath} />
       <nav className="auth-switch auth-switch--staff" aria-label="Account options">
         <span>Not a staff member?</span>
