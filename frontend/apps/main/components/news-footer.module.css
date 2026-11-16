@@ -12,3 +12,21 @@
 .bottom { display:flex; width:min(1220px,calc(100% - 48px)); min-height:52px; margin-inline:auto; align-items:center; justify-content:space-between; gap:12px; border-top:1px solid rgb(255 255 255 / .35); color:#D8E0EF; font-size:.6875rem; }
 @media (max-width:900px) { .inner { grid-template-columns:repeat(2,minmax(0,1fr)); gap:28px; } }
 @media (max-width:520px) { .inner { width:calc(100% - 36px); padding:30px 0 24px; grid-template-columns:1fr; gap:24px; } .bottom { width:calc(100% - 36px); align-items:flex-start; flex-direction:column; justify-content:center; padding:12px 0; } }
+.listingFooter { background:linear-gradient(125deg,#0a1023,#17264a 65%,#213c70); color:#eef4ff; }
+.listingInner { display:grid; width:min(1120px,calc(100% - 48px)); margin:auto; padding:54px 0 44px; grid-template-columns:2fr 1fr 1fr; gap:40px; }
+.listingIdentity p { max-width:32ch; margin:18px 0 22px; color:#c7d5ec; line-height:1.6; }
+.listingIdentity :global(.brand__word),.listingIdentity :global(.brand__name) { color:#fff; }
+.socialLinks { display:flex; flex-wrap:wrap; gap:10px; }
+.socialLinks a { display:inline-flex; align-items:center; min-height:48px; gap:8px; padding:0 15px; border:1px solid rgb(204 220 246 / .3); border-radius:999px; background:rgb(255 255 255 / .08); color:#fff; text-decoration:none; font-size:.85rem; font-weight:700; backdrop-filter:blur(10px); transition:transform .2s,background-color .2s; }
+.socialLinks svg { width:19px; height:19px; }
+.socialLinks a:hover { color:#fff; background:#294b91; transform:translateY(-2px); }
+.listingColumn h2 { margin:0 0 14px; color:#fff; font-size:.9rem; }
+.listingColumn nav { display:grid; }
+.listingColumn a { display:flex; min-height:44px; align-items:center; color:#d1dff3; font-size:.85rem; text-decoration:none; }
+.listingColumn a:hover { color:#fff; text-decoration:underline; text-underline-offset:4px; }
+.listingBottom { display:flex; flex-wrap:wrap; gap:12px 24px; width:min(1120px,calc(100% - 48px)); margin:auto; padding:20px 0; border-top:1px solid rgb(255 255 255 / .2); color:#c7d5ec; font-size:.75rem; }
+.listingBottom a { margin-left:auto; color:#e0eafa; }
+@media(max-width:700px) { .listingInner { grid-template-columns:repeat(2,minmax(0,1fr)); gap:28px; } .listingIdentity { grid-column:1 / -1; } }
+@media(max-width:420px) { .listingInner,.listingBottom { width:calc(100% - 32px); } }
+@media(prefers-reduced-motion:reduce) { .socialLinks a:hover { transform:none; } }
+.listingColumn > p { margin:0 0 10px; color:#c7d5ec; font-size:.85rem; line-height:1.6; }

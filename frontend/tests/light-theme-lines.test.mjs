@@ -7,15 +7,13 @@ const authCss = await readFile(new URL("../apps/main/app/auth/auth.css", import.
 const layout = await readFile(new URL("../apps/main/app/layout.tsx", import.meta.url), "utf8");
 const theme = await readFile(new URL("../apps/main/lib/theme.ts", import.meta.url), "utf8");
 
-const linework = /linear-gradient\(135deg, transparent 49\.85%, rgb\(71 127 224 \/ 0\.025\) 50%, transparent 50\.15%\)[\s\S]*linear-gradient\(45deg, transparent 49\.9%, rgb\(41 75 145 \/ 0\.018\) 50%, transparent 50\.1%\)/;
-
- test("the sitewide canvas is permanently light and carries static linework", () => {
+ test("the sitewide canvas is permanently light and uses a static blue atmosphere", () => {
   const lightBody = css.match(/html\[data-theme="light"\]\s+body\s*\{([^}]*)\}/)?.[1];
   assert.ok(lightBody, "the light body canvas rule exists");
-  assert.match(lightBody, linework);
-  assert.match(lightBody, /background-size:\s*152px 152px, 228px 228px/);
-  assert.match(lightBody, /background-attachment:\s*fixed/);
-  assert.doesNotMatch(lightBody, /position:|z-index:|pointer-events:|animation|transition/);
+  assert.match(lightBody, /radial-gradient\(circle, rgb\(41 75 145/);
+  assert.match(lightBody, /background-size:\s*16px 16px, 16px 16px/);
+  assert.match(lightBody, /background-repeat:\s*repeat, repeat, no-repeat/);
+  assert.doesNotMatch(lightBody, /(?:^|\n)\s*(?:position|z-index|pointer-events|animation|transition):/);
   assert.match(css, /:root\s*\{[\s\S]*color-scheme:\s*light/);
   assert.doesNotMatch(css, /data-theme="dark"|color-scheme:\s*dark/);
   assert.match(layout, /<html\b/);
@@ -25,11 +23,12 @@ const linework = /linear-gradient\(135deg, transparent 49\.85%, rgb\(71 127 224 
   assert.match(theme, /style\.colorScheme="light"/);
 });
 
-test("the account page keeps the original light linework treatment", () => {
+test("the account page uses the same light dotted treatment", () => {
   const authPage = [...authCss.matchAll(/\.auth-page\s*\{([^}]*)\}/g)].map((match) => match[1]).find((block) => block.includes("background-image"));
   assert.ok(authPage, "the account page canvas rule exists");
   assert.match(authPage, /background-color:\s*var\(--palette-cloud\)/);
-  assert.match(authPage, linework);
-  assert.match(authPage, /background-size:\s*152px 152px, 228px 228px/);
+  assert.match(authPage, /radial-gradient\(circle, rgb\(41 75 145/);
+  assert.doesNotMatch(authPage, /linear-gradient/);
+  assert.match(authPage, /background-size:\s*16px 16px, 16px 16px/);
   assert.doesNotMatch(authPage, /data-theme="dark"|color-scheme:\s*dark/);
 });

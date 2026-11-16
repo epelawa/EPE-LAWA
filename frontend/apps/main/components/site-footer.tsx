@@ -4,11 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { footerNavigation } from "../lib/navigation";
 import { BrandLockup } from "./brand";
-import NewsletterFooterCard from "./newsletter-footer-card";
+import NewsletterForm from "./newsletter-form";
 
 export default function SiteFooter() {
   const pathname = usePathname() ?? "/";
-  const isEditorial = pathname === "/news" || pathname.startsWith("/news/") || pathname === "/advertise";
+  const isEditorial = pathname === "/news" || pathname.startsWith("/news/");
   if (isEditorial) return null;
 
   return (
@@ -43,7 +43,11 @@ export default function SiteFooter() {
               </nav>
             </div>
           </div>
-          <NewsletterFooterCard />
+          <section className="footer-newsletter" aria-labelledby="footer-newsletter-title">
+            <h2 id="footer-newsletter-title">Updates from Epe</h2>
+            <p>Reporting and updates from Epe, delivered to your inbox.</p>
+            <NewsletterForm id="site-footer-newsletter" variant="footer" />
+          </section>
         </div>
         <div className="footer-bottom">
           <span>© {new Date().getFullYear()} EPE LAWA</span>

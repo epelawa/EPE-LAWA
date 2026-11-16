@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import heroImages from "../lib/hero-images.json";
 
 type ImageVariant = { src: string; width: number };
@@ -51,13 +51,12 @@ function closestVariant(format: ImageFormat, width: number) {
   );
 }
 
-export default function HeroCarousel() {
+export default function HeroCarousel({ children }: { children: ReactNode }) {
   const [index, setIndex] = useState(Math.min(INITIAL_SLIDE, Math.max(0, slides.length - 1)));
   const photoRef = useRef<HTMLImageElement>(null);
-  const pointerPauseState = useRef<boolean | null>(null);
   const [loadedIndex, setLoadedIndex] = useState(-1);
   const [activeCurrentSrc, setActiveCurrentSrc] = useState("");
-  const [paused, setPaused] = useState(false);
+  const [focused, setFocused] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [pageVisible, setPageVisible] = useState(true);
   const [reducedMotion, setReducedMotion] = useState(false);
@@ -85,17 +84,17 @@ export default function HeroCarousel() {
   }, [index]);
 
   useEffect(() => {
-    if (loadedIndex !== index || !activeCurrentSrc || slides.length < 2 || paused || hovered || !pageVisible || reducedMotion || isConstrainedConnection()) return;
+    if (loadedIndex !== index || !activeCurrentSrc || slides.length < 2 || focused || hovered || !pageVisible || reducedMotion || isConstrainedConnection()) return;
     const timeout = window.setTimeout(() => {
       setActiveCurrentSrc("");
       setLoadedIndex(-1);
       setIndex((current) => (current + 1) % slides.length);
     }, ROTATION_DELAY_MS);
     return () => window.clearTimeout(timeout);
-  }, [loadedIndex, index, activeCurrentSrc, paused, hovered, pageVisible, reducedMotion]);
+  }, [loadedIndex, index, activeCurrentSrc, focused, hovered, pageVisible, reducedMotion]);
 
   useEffect(() => {
-    if (loadedIndex !== index || !activeCurrentSrc || slides.length < 2 || paused || hovered || !pageVisible || reducedMotion || isConstrainedConnection()) return;
+    if (loadedIndex !== index || !activeCurrentSrc || slides.length < 2 || focused || hovered || !pageVisible || reducedMotion || isConstrainedConnection()) return;
     const connection = getNetworkConnection();
     const count = Math.min(slides.length - 1, connection?.effectiveType === "3g" ? 1 : 2);
     const match = activeCurrentSrc.match(/-(\d+)\.(avif|webp)(?:\?.*)?$/i);
@@ -108,52 +107,21 @@ export default function HeroCarousel() {
       image.fetchPriority = "low";
       image.src = closestVariant(nextSlide[formatName], preferredWidth).src;
     }
-  }, [loadedIndex, index, activeCurrentSrc, paused, hovered, pageVisible, reducedMotion]);
+  }, [loadedIndex, index, activeCurrentSrc, focused, hovered, pageVisible, reducedMotion]);
 
   if (!slides.length) return null;
   const slide = slides[index] ?? slides[0];
-  const rotationLabel = paused ? "Resume automatic Epe photo rotation" : "Pause automatic Epe photo rotation";
-  const showRelativeSlide = (offset: number) => {
-    setActiveCurrentSrc("");
-    setLoadedIndex(-1);
-    setIndex((current) => (current + offset + slides.length) % slides.length);
-  };
-
   return (
-    <figure
-      className="home-hero__media"
-      role="group"
-      aria-roledescription="carousel"
-      aria-label="Photographs of Epe"
-      onPointerEnter={(event) => { if (event.pointerType === "mouse") setHovered(true); }}
-      onPointerLeave={(event) => { if (event.pointerType === "mouse") setHovered(false); }}
-      onFocusCapture={() => setPaused(true)}
-    >
-      <button
-        className="home-hero__pause"
-        type="button"
-        aria-label={rotationLabel}
-        title={rotationLabel}
-        onPointerDown={() => { pointerPauseState.current = paused; }}
-        onPointerCancel={() => { pointerPauseState.current = null; }}
-        onClick={(event) => {
-          const wasPaused = event.detail > 0 && pointerPauseState.current !== null ? pointerPauseState.current : paused;
-          pointerPauseState.current = null;
-          setPaused(!wasPaused);
-        }}
-      >
-        {paused ? (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
-        ) : (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 5h4v14H6zm8 0h4v14h-4z" /></svg>
-        )}
-      </button>
-      <button className="home-hero__slide-control home-hero__slide-control--previous" type="button" aria-label="Previous Epe photo" title="Previous Epe photo" onClick={() => showRelativeSlide(-1)}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
-      </button>
-      <button className="home-hero__slide-control home-hero__slide-control--next" type="button" aria-label="Next Epe photo" title="Next Epe photo" onClick={() => showRelativeSlide(1)}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
-      </button>
+    <>
+      <div className="home-hero__visual" onFocusCapture={() => setFocused(true)} onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}>
+        <figure
+          className="home-hero__media"
+          role="group"
+          aria-roledescription="carousel"
+          aria-label="Photographs of Epe"
+          onPointerEnter={(event) => { if (event.pointerType === "mouse") setHovered(true); }}
+          onPointerLeave={(event) => { if (event.pointerType === "mouse") setHovered(false); }}
+        >
       <div className="home-hero__carousel-stage" role="group" aria-roledescription="slide" aria-label={`${index + 1} of ${slides.length}`}>
         <picture>
           <source type="image/avif" srcSet={responsiveSrcSet(slide.avif)} sizes={IMAGE_SIZES} />
@@ -177,6 +145,9 @@ export default function HeroCarousel() {
           />
         </picture>
       </div>
-    </figure>
+        </figure>
+        {children}
+      </div>
+    </>
   );
 }

@@ -12,7 +12,14 @@ test("audio element receives the displayed volume and mute state", () => {
   assert.match(component, /audio\.muted = muted;/);
 });
 
+test("resuming reconnects to the stream rather than playing a paused buffer", () => {
+  const toggle = component.slice(component.indexOf("async function togglePlayback"), component.indexOf("function changeVolume"));
+  assert.ok(toggle.indexOf("audio.load()") > toggle.indexOf("audio.pause()"));
+  assert.ok(toggle.indexOf("audio.load()") < toggle.indexOf("await audio.play()"));
+});
+
 test("playback denial is surfaced as a tap-to-play fallback", () => {
+  assert.match(component, /<audio[\s\S]*autoPlay[\s\S]*playsInline/);
   assert.match(component, /error\.name === "NotAllowedError"/);
   assert.match(component, /setState\(isAutoplayDenial\(error\) \? "blocked" : "unavailable"\)/);
   assert.match(component, /Your browser blocked automatic playback\. Tap Play to listen\./);

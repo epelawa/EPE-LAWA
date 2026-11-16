@@ -3,12 +3,13 @@ import type { createClient } from "../../lib/supabase";
 import { formatPublishedDate } from "../../lib/dates";
 import { selectedNewsCover } from "../../lib/news-covers";
 import { newsArticlePath } from "../../lib/news-urls";
-import { NewspaperIcon } from "../../components/icons";
+import { ClockIcon, EyeIcon, MessageCircleIcon, NewspaperIcon } from "../../components/icons";
 import { StatusBadge } from "../../components/design-system";
 import styles from "./dashboard.module.css";
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
 type PublishedStory = {
+  id: string;
   slug: string;
   title: string;
   summary: string | null;
@@ -26,7 +27,8 @@ type DiscoverResult = QueryResult<PublishedStory> & { categories: QueryResult<Ne
 
 const PAGE_SIZE = 20;
 const MAX_PAGE = 1000;
-const STORY_COLUMNS = "slug,title,summary,published_at,is_breaking,breaking_until,author_name,category_slug,category_label,og_image_key";
+const STORY_COLUMNS = "id,slug,title,summary,published_at,is_breaking,breaking_until,author_name,category_slug,category_label,og_image_key";
+type StoryEngagement = { view_count: number; comment_count: number; read_minutes: number };
 
 function isActiveBreaking(story: PublishedStory, now = Date.now()): boolean {
   return story.is_breaking && typeof story.breaking_until === "string" && new Date(story.breaking_until).getTime() > now;
@@ -130,6 +132,41 @@ async function loadDiscover(client: SupabaseClient, query: string, category: str
   }
 }
 
+async function loadEngagement(client: SupabaseClient, stories: PublishedStory[]): Promise<Map<string, StoryEngagement>> {
+  const map = new Map<string, StoryEngagement>();
+  if (!stories.length) return map;
+  try {
+    const { data, error } = await client
+      .from("published_article_engagement")
+      .select("article_id,view_count,comment_count,read_minutes")
+      .in("article_id", stories.map((story) => story.id));
+    if (error) {
+      console.error("member dashboard story engagement read failed", { code: error.code });
+      return map;
+    }
+    for (const row of (data ?? []) as { article_id: string; view_count: number; comment_count: number; read_minutes: number }[]) {
+      map.set(row.article_id, {
+        view_count: Number(row.view_count) || 0,
+        comment_count: Number(row.comment_count) || 0,
+        read_minutes: Number(row.read_minutes) || 1,
+      });
+    }
+  } catch {
+    // Covers still render; the engagement chips honestly show an unavailable state.
+  }
+  return map;
+}
+
+function StoryStats({ stats }: { stats?: StoryEngagement }) {
+  return <span className={styles.storyStats} role="img" aria-label={stats
+    ? `${stats.view_count} views, ${stats.read_minutes} minute read, ${stats.comment_count} comments`
+    : "Engagement is unavailable for this story"}>
+    <span className={styles.storyStat} title="Unique daily views"><EyeIcon size={13} /><span>{stats ? stats.view_count.toLocaleString("en-NG") : "—"}</span></span>
+    <span className={styles.storyStat} title="Estimated read time"><ClockIcon size={13} /><span>{stats ? `${stats.read_minutes} min` : "—"}</span></span>
+    <span className={styles.storyStat} title="Comments"><MessageCircleIcon size={13} /><span>{stats ? stats.comment_count.toLocaleString("en-NG") : "—"}</span></span>
+  </span>;
+}
+
 function storyImage(story: PublishedStory) {
   const src = selectedNewsCover(story.og_image_key)?.url;
   return src ? <img className={styles.storyImage} src={src} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" /> : <span className={styles.storyImageFallback} aria-hidden="true"><NewspaperIcon size={24} /></span>;
@@ -141,10 +178,10 @@ function StoryMeta({ story }: { story: PublishedStory }) {
   return <span className={styles.storyMeta}>{author ? `By ${author}` : "Byline unavailable"}{date ? <> · <time dateTime={story.published_at ?? undefined}>{date}</time></> : null}</span>;
 }
 
-function StoryCard({ story }: { story: PublishedStory }) {
+function StoryCard({ story, stats }: { story: PublishedStory; stats?: StoryEngagement }) {
   return <li className={styles.storyCard}>
     <Link href={newsArticlePath(story.slug)} className={styles.storyCardLink} aria-label={`Read: ${story.title}`}>
-      <span className={styles.storyImageWrap}>{storyImage(story)}</span>
+      <span className={styles.storyImageWrap}>{storyImage(story)}<StoryStats stats={stats} /></span>
       <span className={styles.storyCardCopy}>
         <span className={styles.storyCategory}>{story.category_label?.trim() || "News"}</span>
         <span className={styles.storyTitle}>{story.title}</span>
@@ -155,9 +192,9 @@ function StoryCard({ story }: { story: PublishedStory }) {
   </li>;
 }
 
-function BreakingStory({ story }: { story: PublishedStory }) {
+function BreakingStory({ story, stats }: { story: PublishedStory; stats?: StoryEngagement }) {
   return <Link href={newsArticlePath(story.slug)} className={styles.breakingStory} aria-label={`Read breaking story: ${story.title}`}>
-    <span className={styles.breakingImage}>{storyImage(story)}</span>
+    <span className={styles.breakingImage}>{storyImage(story)}<StoryStats stats={stats} /></span>
     <span className={styles.breakingCopy}>
       <span className={styles.storyCategory}>{story.category_label?.trim() || "News"}<StatusBadge tone="warning">Breaking</StatusBadge></span>
       <strong>{story.title}</strong>
@@ -185,17 +222,18 @@ function HomeSectionHeading({ id, title, helper, level = "h2" }: { id: string; t
 
 export async function DashboardHomeNews({ client }: { client: SupabaseClient }) {
   const [breaking, recommendations] = await Promise.all([loadBreaking(client), loadRecommendations(client)]);
+  const engagement = await loadEngagement(client, [...breaking.items, ...recommendations.items]);
   return <div className={styles.newsFeed}>
     <section className={styles.feedSection} aria-labelledby="breaking-heading">
       <HomeSectionHeading id="breaking-heading" title="Breaking News" helper="Only stories still marked breaking by the newsroom appear here." level="h1" />
       {breaking.state === "error" ? <ErrorState title="Breaking news is unavailable" href="/dashboard?tab=home" />
-        : breaking.items.length ? <div className={styles.breakingList}>{breaking.items.map((story) => <BreakingStory key={story.slug} story={story} />)}</div>
+        : breaking.items.length ? <div className={styles.breakingList}>{breaking.items.map((story) => <BreakingStory key={story.slug} story={story} stats={engagement.get(story.id)} />)}</div>
         : <p className={styles.feedEmpty}>There are no active breaking stories right now.</p>}
     </section>
     <section className={styles.feedSection} aria-labelledby="recommendations-heading">
       <HomeSectionHeading id="recommendations-heading" title="Recommendations" helper="Recent published stories from the newsroom; not ranked by popularity." />
       {recommendations.state === "error" ? <ErrorState title="Recommendations could not be loaded" href="/dashboard?tab=home" />
-        : recommendations.items.length ? <ul className={styles.storyGrid}>{recommendations.items.map((story) => <StoryCard key={story.slug} story={story} />)}</ul>
+        : recommendations.items.length ? <ul className={styles.storyGrid}>{recommendations.items.map((story) => <StoryCard key={story.slug} story={story} stats={engagement.get(story.id)} />)}</ul>
         : <p className={styles.feedEmpty}>No other recent published stories are available to recommend yet.</p>}
       <Link className={styles.seeAllLink} href="/dashboard?tab=discover">Discover all published stories <span aria-hidden="true">→</span></Link>
     </section>
@@ -209,6 +247,7 @@ export async function DashboardDiscoverNews({ client, query, category, page }: {
   page: number;
 }) {
   const result = await loadDiscover(client, query, category, page);
+  const engagement = await loadEngagement(client, result.items);
   const retryHref = pageHref(page, query, category);
   const categories = result.categories.items;
   return <div className={styles.newsFeed}>
@@ -233,7 +272,7 @@ export async function DashboardDiscoverNews({ client, query, category, page }: {
       {result.state === "error" ? <ErrorState title="Discover stories could not be loaded" href={retryHref} />
         : result.items.length ? <>
           <p className={styles.resultSummary} aria-live="polite">Showing {result.items.length} published {result.items.length === 1 ? "story" : "stories"}{query ? ` matching “${query}”` : ""} on this page.</p>
-          <ul className={styles.storyGrid}>{result.items.map((story) => <StoryCard key={story.slug} story={story} />)}</ul>
+          <ul className={styles.storyGrid}>{result.items.map((story) => <StoryCard key={story.slug} story={story} stats={engagement.get(story.id)} />)}</ul>
           {page > 1 || result.hasOlder ? <nav className={styles.storyPagination} aria-label="Story pages">
             {page > 1 ? <Link className="btn-secondary" href={pageHref(page - 1, query, category)}>Newer stories</Link> : <span />}
             <span aria-live="polite">Page {page}</span>

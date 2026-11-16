@@ -15,8 +15,9 @@ test('approved keys resolve locally and admin validates and passes selected key 
 });
 test('public article renders approved local cover credits and reserves the cover container',()=>{
  const p=read('apps/main/app/news/[slug]/page.tsx'), css=read('apps/main/app/news/news.module.css');
- assert.match(p,/cover\.source/); assert.match(p,/cover\.license/); assert.match(p,/cover\?\.alt/); assert.match(p,/selectedNewsCover\(article\.og_image_key\)/);
- assert.doesNotMatch(p,/cover_url|cover_alt|cover_credit|cover_source_url|cover_license_url|cover_caption/);
+ assert.match(p,/photo-credits#news-photos/); assert.match(p,/Illustrative image/);
+ const credits=read("apps/main/app/photo-credits/page.tsx"); assert.match(credits,/image\.source/); assert.match(credits,/image\.license/); assert.match(p,/publishedCover\?\.alt/); assert.match(p,/selectedNewsCover\(article\.og_image_key\)/);
+ assert.match(p,/cover_url,cover_alt,cover_credit,cover_caption/);
  assert.match(css,/articleHeroImage\.approvedCoverFull[\s\S]*object-fit:cover/); assert.match(css,/approvedCoverThumb \{ object-fit:cover/);
 });
 
@@ -48,8 +49,7 @@ test('approved cover files preserve the exact originally approved bytes', () => 
 });
 
 test('Admin imports resolve and editor preserves current-version image key rather than inventing an articles column', () => {
-  for (const name of ['new', '[id]']) {
-    const file = path.join(root, 'apps/admin/app/(protected)/newsroom', name, 'page.tsx');
+  for (const file of [path.join(root, 'apps/admin/components/news-article-composer.tsx'), path.join(root, 'apps/admin/app/(protected)/newsroom/[id]/page.tsx')]) {
     const source = fs.readFileSync(file, 'utf8');
     const relative = source.match(/from "([^"]+news-covers)"/)[1];
     assert.equal(fs.existsSync(path.resolve(path.dirname(file), relative + '.ts')), true);
@@ -75,13 +75,28 @@ test('public lead covers use approved local keys and images never send a referre
   const listing = read('apps/main/app/news/page.tsx');
   const article = read('apps/main/app/news/[slug]/page.tsx');
   assert.match(listing, /loading="eager" fetchPriority="high"/);
-  assert.match(listing, /className=\{styles\.headlineImage\} src=\{image\} alt="" loading="eager"/);
-  assert.match(listing, /className=\{styles\.storyImage\} src=\{image\} alt="" loading="lazy"/);
+  assert.match(listing, /className=\{styles\.storyImage\} src=\{image\} alt=""/);
   assert.doesNotMatch(listing, /fetchPriority="auto"/);
-  assert.match(listing, /selectedNewsCover\(article\.og_image_key\)\?\.url \?\? publicMediaUrl\(article\.og_image_key\)/);
-  assert.match(article, /selectedNewsCover\(article\.og_image_key\)\?\.url \?\? publicMediaUrl\(article\.og_image_key\)/);
-  assert.doesNotMatch(listing, /cover_url|cover_alt|cover_source_url|cover_license_url/);
-  assert.doesNotMatch(article, /cover_url|cover_alt|cover_source_url|cover_license_url/);
+  assert.match(listing, /publishedNewsCover\(article\)/);
+  assert.match(article, /publishedNewsCover\(article\)/);
+  assert.match(article, /cover_url,cover_alt,cover_credit,cover_caption/);
   assert.match(article, /loading="eager" fetchPriority="high"/);
-  assert.match(article, /referrerPolicy="no-referrer"/);
+  assert.match(read('apps/main/components/news-image.tsx'), /referrerPolicy="no-referrer"/);
+});
+
+test('shared published articles expose an absolute cover image with a branded fallback', () => {
+  const article = read('apps/main/app/news/[slug]/page.tsx');
+  assert.match(article, /new URL\(coverImage, siteUrl\)\.toString\(\)/);
+  assert.match(article, /absoluteUrl\("\/brand-logo.png"\)/);
+  assert.match(article, /images: \[\{ url: image, alt:/);
+  assert.match(article, /twitter: \{ card: "summary_large_image"/);
+});
+
+
+import { publishedNewsCover } from '../apps/main/lib/published-news-cover.ts';
+test('public covers accept safe published external images and reject unsafe or incomplete URLs', () => {
+  assert.deepEqual(publishedNewsCover({ og_image_key: null, cover_url: 'https://images.example.com/photo.jpg', cover_alt: 'A public image' }), { url: 'https://images.example.com/photo.jpg', alt: 'A public image', illustrative: false });
+  assert.equal(publishedNewsCover({ og_image_key: null, cover_url: 'http://images.example.com/photo.jpg', cover_alt: 'Image' }), null);
+  assert.equal(publishedNewsCover({ og_image_key: null, cover_url: 'https://127.0.0.1/a.jpg', cover_alt: 'Image' }), null);
+  assert.equal(publishedNewsCover({ og_image_key: null, cover_url: 'https://images.example.com/photo.jpg', cover_alt: '' }), null);
 });

@@ -22,102 +22,38 @@ async function openHome(page: Page, request: APIRequestContext) {
   await setFixtureMode(request, "empty");
   const response = await page.goto("/");
   expect(response?.status()).toBe(200);
-  await expect(page.getByRole("heading", { level: 1, name: "Epe Closer To Home" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Stay Connected, Stay Informed" })).toBeVisible();
   await waitForHeroImage(page);
   await expect(page.locator(".site-preloader")).toHaveCount(0);
 }
 
-test("homepage presents editorial copy and a news-first CTA in a full-height hero without a bottom bar", async ({ page, request }) => {
-  await page.setViewportSize({ width: 375, height: 900 });
+test("homepage offers compact news, radio and community navigation", async ({ page, request }, testInfo) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await openHome(page, request);
-
-  await expect(page.getByText("From local headlines to the people, places and ideas shaping everyday life in Epe, this is a place to stay informed and feel connected.")).toBeVisible();
-  await expect(page.getByRole("link", { name: "Read latest news", exact: true })).toHaveAttribute("href", "/news");
-  await expect(page.locator(".home-hero__actions a")).toHaveCount(1);
-  await expect(page.getByRole("link", { name: /Explore Epe|Tour Epe/i })).toHaveCount(0);
-  await expect(page.locator(".mobile-bottom-nav")).toHaveCount(0);
-  await expect(page.locator(".home-hero__location, .home-index, .home-discover-grid, .home-hero__quicknav, .home-hero__caption, .home-hero__credit, .home-hero__slide-label, .home-hero__counter")).toHaveCount(0);
-  await expect(page.getByRole("heading", { name: "Explore what matters to you." })).toHaveCount(0);
-
-  const composition = await page.locator(".home-hero__visual").evaluate((hero) => {
-    const image = hero.querySelector(".home-hero__photo");
-    if (!image) throw new Error("hero image is missing");
-    const visual = hero.getBoundingClientRect();
-    const style = getComputedStyle(image);
-    return { heroHeight: visual.height, viewportHeight: window.innerHeight, objectFit: style.objectFit };
-  });
-  expect(composition.heroHeight).toBeGreaterThanOrEqual(composition.viewportHeight * 0.9);
-  expect(composition.objectFit).toBe("cover");
-
-  const carousel = page.locator('[aria-roledescription="carousel"]');
-  await expect(carousel).toHaveCount(1);
-  await expect(carousel.locator('[aria-roledescription="slide"]')).toHaveCount(1);
-  const slide = carousel.locator('[aria-roledescription="slide"]');
-  const photo = carousel.locator(".home-hero__photo");
-  await expect(slide).toHaveAttribute("aria-label", "1 of 54");
-  await expect(photo).toHaveAttribute("alt", "A road in Epe with roadside buildings and open water visible beyond it.");
-  await carousel.getByRole("button", { name: "Next Epe photo" }).focus();
-  await page.keyboard.press("Enter");
-  await expect(slide).toHaveAttribute("aria-label", "2 of 54");
-  await expect(photo).toHaveAttribute("alt", "The fish statue landmark in Epe, Lagos State.");
-});
-
-test("the original cover hero reaches the viewport bottom across phone, tablet and desktop sizes", async ({ page, request }, testInfo) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await openHome(page, request);
-  await page.addStyleTag({ content: "nextjs-portal { display: none !important; }" });
   for (const [width, height] of [[320, 800], [375, 900], [768, 900], [1024, 768], [1440, 900]]) {
     await page.setViewportSize({ width, height });
-    await expect.poll(
-      () => page.locator(".home-hero__visual").evaluate((hero) => {
-        const rect = hero.getBoundingClientRect();
-        return rect.bottom + window.scrollY - window.innerHeight;
-      }),
-      { message: `hero should cover to the viewport bottom at ${width}px`, timeout: 5_000 },
-    ).toBeGreaterThanOrEqual(-1);
-    const bounds = await page.locator(".home-hero__visual").evaluate((hero) => {
-      const rect = hero.getBoundingClientRect();
-      return { bottom: rect.bottom + window.scrollY, viewportHeight: window.innerHeight, fit: getComputedStyle(hero.querySelector(".home-hero__photo")!).objectFit };
-    });
-    expect(bounds.bottom, `hero should cover to the viewport bottom at ${width}px`).toBeGreaterThanOrEqual(bounds.viewportHeight - 1);
-    expect(bounds.fit).toBe("cover");
-    if (width === 1440) await page.screenshot({ path: testInfo.outputPath("homepage-hero-desktop.png") });
-    await page.screenshot({ path: testInfo.outputPath(`homepage-cover-${width}.png`), fullPage: true });
+    await expect(page.getByRole("link", { name: "Read latest news", exact: true })).toHaveAttribute("href", "/news");
+    await expect(page.getByRole("link", { name: /Listen to radio/ }).first()).toHaveAttribute("href", "/radio");
+    await expect(page.getByRole("navigation", { name: "Explore EPE LAWA" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Latest News" })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    await page.screenshot({ path: testInfo.outputPath(`homepage-${width}.png`), fullPage: true });
   }
 });
 
-test("autoplay pauses on focus, stays paused after blur, and resumes only after explicit activation", async ({ browser, request }) => {
-  test.setTimeout(60_000);
-  const context = await browser.newContext({ viewport: { width: 375, height: 900 }, isMobile: true, hasTouch: true });
-  const page = await context.newPage();
+test("hero pauses while keyboard focus is inside and resumes after focus leaves", async ({ page, request }) => {
+  test.setTimeout(40_000);
   await page.emulateMedia({ reducedMotion: "no-preference" });
-  try {
-    await openHome(page, request);
-    const carousel = page.locator('[aria-roledescription="carousel"]');
-    const pause = carousel.locator(".home-hero__pause");
-    await expect(pause).toBeVisible();
-    await expect.poll(() => pause.boundingBox()).toMatchObject({ width: expect.any(Number), height: expect.any(Number) });
-    const touchSize = await pause.boundingBox();
-    expect(touchSize?.width ?? 0).toBeGreaterThanOrEqual(44);
-    expect(touchSize?.height ?? 0).toBeGreaterThanOrEqual(44);
-
-    await pause.focus();
-    const focusedPhoto = await activePhotoKey(page);
-    await page.waitForTimeout(rotationWindowMs);
-    expect(await activePhotoKey(page)).toBe(focusedPhoto);
-
-    await pause.blur();
-    await page.waitForTimeout(rotationWindowMs);
-    expect(await activePhotoKey(page)).toBe(focusedPhoto);
-
-    await pause.focus();
-    await page.keyboard.press("Enter");
-    await page.waitForTimeout(rotationWindowMs + 500);
-    expect(await activePhotoKey(page)).not.toBe(focusedPhoto);
-  } finally {
-    await context.close();
-  }
+  await openHome(page, request);
+  const link = page.getByRole("link", { name: "Read latest news", exact: true });
+  await link.focus();
+  const photo = await activePhotoKey(page);
+  await page.waitForTimeout(rotationWindowMs);
+  expect(await activePhotoKey(page)).toBe(photo);
+  await link.blur();
+  await page.waitForTimeout(rotationWindowMs + 500);
+  expect(await activePhotoKey(page)).not.toBe(photo);
+  await expect(page.locator(".home-photo-control__button")).toHaveCount(0);
 });
 
 test("reduced motion disables hero autoplay while retaining the accessible slide contract", async ({ page, request }) => {
@@ -134,34 +70,18 @@ test("reduced motion disables hero autoplay while retaining the accessible slide
   const initialPhoto = await activePhotoKey(page);
   await page.waitForTimeout(rotationWindowMs);
   expect(await activePhotoKey(page)).toBe(initialPhoto);
-  await expect(page.locator(".home-hero__pause")).toHaveAttribute("aria-label", /pause|resume/i);
+  await expect(page.locator(".home-photo-control__button")).toHaveCount(0);
 });
 
-test("previous and next photo controls are keyboard-revealed without resting overlays", async ({ page, request }) => {
+test("hero photos rotate without controls over the image", async ({ page, request }) => {
   await page.setViewportSize({ width: 1024, height: 768 });
-  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.emulateMedia({ reducedMotion: "no-preference" });
   await openHome(page, request);
-
   const carousel = page.locator('[aria-roledescription="carousel"]');
-  const previous = carousel.getByRole("button", { name: "Previous Epe photo" });
-  const next = carousel.getByRole("button", { name: "Next Epe photo" });
-  await expect(previous).toHaveCount(1);
-  await expect(next).toHaveCount(1);
-  expect(await previous.evaluate((button) => getComputedStyle(button).clipPath)).toContain("inset");
-  expect(await next.evaluate((button) => getComputedStyle(button).clipPath)).toContain("inset");
-
-  const slide = carousel.locator('[aria-roledescription="slide"]');
-  await previous.focus();
-  await expect(previous).toBeFocused();
-  await expect(carousel.locator(".home-hero__pause")).toHaveAttribute("aria-label", "Resume automatic Epe photo rotation");
-  await expect.poll(() => previous.evaluate((button) => getComputedStyle(button).clipPath)).toBe("none");
-  await page.keyboard.press("Enter");
-  await expect(slide).toHaveAttribute("aria-label", "54 of 54");
-
-  await next.focus();
-  await expect.poll(() => next.evaluate((button) => getComputedStyle(button).clipPath)).toBe("none");
-  await page.keyboard.press("Enter");
-  await expect(slide).toHaveAttribute("aria-label", "1 of 54");
+  await expect(carousel.getByRole("button")).toHaveCount(0);
+  const initialPhoto = await activePhotoKey(page);
+  await page.waitForTimeout(rotationWindowMs + 500);
+  expect(await activePhotoKey(page)).not.toBe(initialPhoto);
 });
 
 test("photo credits remain available off-hero for all 52 credited photos and the two originals", async ({ page, request }) => {

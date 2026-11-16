@@ -12,7 +12,9 @@ test("public Radio exposes only the verified Radio Lagos 107.5 player and honest
   const player = read("frontend/apps/main/components/radio-player.tsx");
   const station = read("frontend/apps/main/lib/radio-lagos.ts");
   assert.match(page, /Radio Lagos.*107\.5 FM/);
-  assert.match(page, /Programme information is unavailable/);
+  const programmes = read("frontend/apps/main/app/radio/programmes/page.tsx");
+  assert.match(programmes, /Programme information is unavailable/);
+  assert.match(page, /href="\/radio\/programmes"/);
   assert.doesNotMatch(page, /stream has not been verified|no live status is claimed/i);
   assert.match(station, /id: "nr_7c1cfbb5-f2f3-446c-a5e4-2f417a5d949b"/);
   assert.match(station, /streamUrl: "https:\/\/azstream\.elektranbroadcast\.com\/listen\/radiolagos1075\/radio\.mp3"/);

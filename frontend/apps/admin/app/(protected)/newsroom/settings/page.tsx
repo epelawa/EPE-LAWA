@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Newsroom settings", robots: { index:
 type Category = { id: string; slug: string; label: string; description: string | null; sort_order: number; is_active: boolean };
 type Byline = { id: string; slug: string; display_name: string; bio: string | null; photo_key: string | null };
 const notices: Record<string, string> = {
-  saved: "Changes saved and recorded in the audit log.", invalid: "Check the required fields and allowed formats, then try again.",
+  saved: "Changes saved.", invalid: "Check the required fields and allowed formats, then try again.",
   conflict: "That slug is already in use. Choose a different slug.", failed: "Changes could not be saved. Confirm your staff access and try again.",
 };
 function ResultNotice({ value, label }: { value?: string; label: string }) {

@@ -27,12 +27,14 @@ test("server checks at Continue and rechecks before signup; schema failures fail
   assert.match(forms, /result === "taken" \?/);
 });
 test("profile completion requires verified email and uses scoped bootstrap RPC only", async () => {
-  const complete = await readFile(new URL("auth/complete/page.tsx", root), "utf8");
-  assert.match(complete, /if \(!user\.email_confirmed_at\)/);
-  assert.match(complete, /rpc\("bootstrap_verified_member_profile"\)/);
-  assert.doesNotMatch(complete, /from\("profiles"\)\.insert/);
-  assert.match(complete, /created !== true/);
-  assert.match(complete, /setup is incomplete/);
+  const dashboard = await readFile(new URL("dashboard/page.tsx", root), "utf8");
+  const entry = await readFile(new URL("../apps/main/lib/member-entry.ts", import.meta.url), "utf8");
+  assert.match(dashboard, /email_confirmed_at/);
+  assert.match(dashboard, /rpc\("bootstrap_verified_member_profile"\)/);
+  assert.doesNotMatch(dashboard, /from\("profiles"\)\.insert/);
+  assert.match(dashboard, /created === true/);
+  assert.match(dashboard, /Profile setup needs attention/);
+  assert.match(entry, /if \(!input\.emailConfirmed\) return \{ kind: "unverified" \}/);
 });
 test("bootstrap handles duplicate races with unique constraint and audits only insert", async () => {
   const migration = await readFile(new URL("../../backend/supabase/migrations/20261114190000_member_handle_and_verified_bootstrap.sql", import.meta.url), "utf8");
@@ -51,12 +53,14 @@ test("recovery preserves exact anti-enumeration title, body and progress label",
 });
 
 test("completion UI offers recovery only for verified missing profiles with a correctable handle", async () => {
-  const complete = await readFile(new URL("auth/complete/page.tsx", root), "utf8");
-  assert.match(complete, /if \(!user\.email_confirmed_at\)/);
-  assert.match(complete, /if \(!profile\)/);
-  assert.match(complete, /!error && correctableName && \(knownBadHandle \|\| availability === "taken"\)/);
-  assert.match(complete, /if \(profile\?\.deleted_at\) redirect\("\/login"\)/);
-  assert.match(complete, /checkHandleAvailability\(rawHandle\)/);
+  const dashboard = await readFile(new URL("dashboard/page.tsx", root), "utf8");
+  const entry = await readFile(new URL("../apps/main/lib/member-entry.ts", import.meta.url), "utf8");
+  assert.match(dashboard, /if \(!profile\)/);
+  assert.match(dashboard, /render|<HandleCompletionForm/);
+  assert.match(entry, /if \(input\.rawHandleValid && input\.handleAvailability === "unavailable"\) return \{ kind: "setup-error" \}/);
+  assert.match(entry, /if \(!input\.rawHandleValid \|\| input\.handleAvailability === "taken"\)/);
+  assert.match(dashboard, /if \(profile\.deleted_at\) redirect\("\/login"\)/);
+  assert.match(dashboard, /checkHandleAvailability\(metadataHandle\)/);
 });
 
 test("completion action reauthenticates, checks DB availability, and mutates only user-selected handle", async () => {

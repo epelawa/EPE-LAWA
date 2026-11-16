@@ -61,6 +61,12 @@
       "path": "/radio"
     },
     {
+      "path": "/radio/programmes"
+    },
+    {
+      "path": "/radio/reminders"
+    },
+    {
       "path": "/terms"
     },
     {
@@ -95,9 +101,6 @@
     },
     {
       "path": "/admin/users"
-    },
-    {
-      "path": "/auth/complete"
     },
     {
       "path": "/auth/link-expired"

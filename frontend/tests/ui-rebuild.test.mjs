@@ -9,7 +9,7 @@ function files(dir){return fs.readdirSync(path.join(root,dir),{withFileTypes:tru
 test('every public page has rebuilt editorial or account markup, not the old narrow wrapper',()=>{
   const pages=files('frontend/apps/main/app').filter(f=>f.endsWith('/page.tsx'));
   assert.ok(pages.length>=25);
-  for(const file of pages){const source=read(file);if(file.includes('/app/admin/'))continue;const sharedNewsletterPage=/NewsletterAvailabilityPage/.test(source);assert.ok(/PageFrame|AccountShell|InformationPage|public-home|LinkIssueView|member-dashboard-shell/.test(source)||sharedNewsletterPage,file);if(sharedNewsletterPage)assert.match(read('frontend/apps/main/components/newsletter-availability-page.tsx'),/PageFrame/);assert.doesNotMatch(source,/max-w-md mx-auto px-4 py-12|landing-hero/,file);}
+  for(const file of pages){const source=read(file);if(file.includes('/app/admin/'))continue;assert.match(source,/PageFrame|AccountShell|InformationPage|public-home|LinkIssueView|member-dashboard-shell|className=\{styles\.page\}/,file);assert.doesNotMatch(source,/max-w-md mx-auto px-4 py-12|landing-hero/,file);}
 });
 test('new design scales display roles to 90 percent and retains readable body/control floors',()=>{
   const css=read('frontend/apps/main/app/globals.css');const layout=read('frontend/apps/main/app/layout.tsx');const header=read('frontend/apps/main/components/site-header.tsx');assert.match(css,/--text-display: clamp\(2\.025rem, 4\.8vw, 3\.6rem\)/);assert.match(css,/--text-title: clamp\(1\.25rem, 2\.4vw, 1\.575rem\)/);assert.match(css,/font-size: 16px/);assert.match(css,/min-height: 44px/);assert.match(css,/prefers-reduced-motion/);assert.doesNotMatch(css,/#(?:da251c|ff4a3d|17253a)\b/i);assert.match(css,/:root\s*\{[\s\S]*color-scheme:\s*light/);assert.doesNotMatch(css,/data-theme="dark"|color-scheme:\s*dark/);assert.match(layout,/<html\b/);assert.match(layout,/data-theme="light"/);assert.match(layout,/colorScheme: "light"/);assert.doesNotMatch(header,/ThemeToggle|Appearance|appearance/);
@@ -20,29 +20,22 @@ test('homepage preserves all 52 credited photos and restores its two original he
   const credits=read('docs/hero-image-sources.md');
   const heroCss=read('frontend/apps/main/app/hero-logo.css');
   const manifest=JSON.parse(read('frontend/apps/main/lib/hero-images.json'));
-  assert.match(source,/<HeroCarousel\s*\/>/);
+  assert.match(source,/<HeroCarousel>/);
+  assert.match(source,/Stay Connected/);
+  assert.match(source,/getLatestStories\(7\)/);
+  assert.match(source,/aria-label="Explore EPE LAWA"/);
   assert.equal(manifest.length,54);
   assert.equal(manifest.slice(2).length,52);
   assert.deepEqual(manifest.slice(0,2).map(slide=>slide.slug),['new-epe-road','fish-statue-epe']);
   assert.equal(new Set(manifest.map(slide=>slide.source)).size,54);
   assert.doesNotMatch(source,/home-hero__brand|BrandLockup/);
-  assert.match(source,/home-hero__title-line">Epe<\/span>/);
-  assert.match(source,/home-hero__title-line home-hero__title-line--accent">Closer<\/span>/);
-  assert.match(source,/home-hero__title-line home-hero__title-line--preposition">To<\/span>/);
-  assert.match(source,/home-hero__title-line">Home<\/span>/);
-  assert.match(source,/From local headlines to the people, places and ideas shaping everyday life in Epe, this is a place to stay informed and feel connected\./);
   assert.match(source,/href="\/news" className="btn-primary">Read latest news/);
-  assert.doesNotMatch(source,/Explore Epe|href="\/tourism"/);
-  assert.match(source,/className=\{`home-story-list home-story-list--\$\{stories\.items\.length\}`\}/);
-  assert.match(source,/getLatestStories\(3\)/);
   assert.doesNotMatch(source,/Stories worth knowing|History worth keeping|Places worth finding|People worth connecting/);
   assert.doesNotMatch(carousel,/Epe · Lagos State|Rooted in the community\. Open to everyone\./);
   assert.match(carousel,/setTimeout|setInterval|ROTATION_DELAY/);
   assert.match(carousel,/prefers-reduced-motion/);
-  assert.match(carousel,/home-hero__pause/);
   assert.match(carousel,/aria-roledescription="slide"/);
   assert.doesNotMatch(carousel,/home-hero__caption|home-hero__credit|home-hero__slide-label|home-hero__counter|Photo by <a/);
-  assert.doesNotMatch(source,/home-hero__quicknav|home-hero__location|Epe · Lagos State|home-index|home-discover|Explore what matters to you|Quick access to EPE LAWA features|Explore sections/i);
   assert.match(read('frontend/apps/main/app/photo-credits/page.tsx'),/href=\{image\.licenseUrl\}/);
   assert.match(read('frontend/apps/main/components/site-footer.tsx'),/photo-credits/);
   assert.match(carousel,/HERO_SLIDES = heroImages/);
@@ -83,8 +76,8 @@ test('homepage story cards use published bylines and only fully credited cover i
   assert.match(data,/selectedNewsCover\(row\.og_image_key\)/);
   assert.match(home,/story\.authorName/);
   assert.match(home,/story\.cover\.alt/);
-  assert.match(home,/story\.cover\.source/);
-  assert.match(home,/story\.cover\.license/);
+  assert.match(home,/photo-credits#news-photos/);
+  assert.match(read("frontend/apps/main/app/photo-credits/page.tsx"),/image\.license/);
   assert.match(home,/index === 0 \? "home-story-item home-story-item--lead"/);
   assert.match(home,/home-story-item--support/);
   assert.match(home,/No credited cover image available/);

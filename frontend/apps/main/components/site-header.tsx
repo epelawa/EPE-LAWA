@@ -4,8 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type SyntheticEvent } from "react";
 import type { NavItem } from "../lib/navigation";
-import { ArrowRightIcon, ArrowUpRightIcon, SearchIcon } from "./icons";
+import { ArrowRightIcon, ArrowUpRightIcon } from "./icons";
 import { BrandLockup } from "./brand";
+import RadioReminder from "./radio-reminder";
 import "./navigation-refinement.css";
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input, [tabindex]:not([tabindex="-1"])';
@@ -148,9 +149,9 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
   }, [drawerOpen, closeDrawer]);
 
   return (
-    <header className={`site-head${isNewsReference ? " site-head--news-reference" : ""}`}>
+    <header className={`site-head${isNewsReference ? " site-head--news-reference" : ""}${pathname === "/" ? " site-head--home" : ""}`}>
       <div className="masthead-bar">
-        <Link className="nav-brand" href="/" aria-label="EPE LAWA home"><BrandLockup size={32} /></Link>
+        <Link className="nav-brand" href="/" aria-label="EPE LAWA home"><BrandLockup size={32} />{pathname === "/" ? <span className="home-brand-tagline">The Voice of Epe Division</span> : null}</Link>
         <nav ref={desktopNavRef} className="site-head__nav" aria-label="Primary navigation">
           <ul className="nav-items">
             <li>{renderLink("/news", "News", "nav-link")}</li>
@@ -171,7 +172,7 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
           </ul>
         </nav>
         <div className="masthead-actions">
-          <Link className="btn-icon header-search" href="/news?search=1" aria-label="Search news"><SearchIcon size={19} /></Link>
+          <RadioReminder />
           <Link className="header-signin" href="/login">Sign in</Link>
           <Link className="btn-primary header-cta" href="/auth">Join the community <ArrowRightIcon size={15} aria-hidden="true" /></Link>
           <button
@@ -199,6 +200,7 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
           </div>
           <nav className="drawer-nav" aria-label="All sections">
             {MOBILE_GROUPS.map(renderMobileGroup)}
+            <Link href="/news?search=1" className="drawer-link" onClick={closeDrawer}>Search news</Link>
           </nav>
           <section className="drawer-account" aria-labelledby="drawer-account-title">
             <h2 id="drawer-account-title">Account</h2>

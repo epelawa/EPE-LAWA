@@ -60,7 +60,7 @@ function renderNode(value: unknown, key: string): ReactNode {
   const children = renderChildren(node.content, key);
   switch (type) {
     case "doc":
-      return <span key={key}>{children}</span>;
+      return <div key={key}>{children}</div>;
     case "paragraph":
       return <p key={key}>{children}</p>;
     case "heading": {

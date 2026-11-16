@@ -10,6 +10,13 @@ function normalizeAriaHidden(value?: boolean | string): boolean | undefined {
   return value === true || value === "true";
 }
 
+export const NewsShortcutIcon = ({ size = 24 }: { size?: number }) => (
+  <svg aria-hidden="true" focusable="false" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M5 4h15v15a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7h2"/><path d="M5 4v15a2 2 0 0 1-2 0M8 7h9v4H8zM8 14h9M8 17h6"/></svg>
+);
+export const ListenShortcutIcon = ({ size = 24 }: { size?: number }) => (
+  <svg aria-hidden="true" focusable="false" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="8" width="18" height="12" rx="2"/><path d="m7 8 10-5M15 12h3M15 16h3"/><circle cx="9" cy="14" r="2.5"/></svg>
+);
+
 export const NewspaperIcon = ({ size = 20, className }: { size?: number; className?: string }) => (
   <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <rect x="8" y="2" width="12" height="20" rx="2" ry="2" />
@@ -163,8 +170,46 @@ export const UserIcon = ({ size = 20, className }: { size?: number; className?: 
   </svg>
 );
 
-export const BookmarkIcon = ({ size = 20, className }: { size?: number; className?: string }) => (
-  <svg aria-hidden="true" focusable="false" className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+export const BookmarkIcon = ({ size = 20, className, filled = false }: { size?: number; className?: string; filled?: boolean }) => (
+  <svg aria-hidden="true" focusable="false" className={className} width={size} height={size} viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
     <path d="M6 4.5A2.5 2.5 0 0 1 8.5 2h7A2.5 2.5 0 0 1 18 4.5V21l-6-3.5L6 21V4.5Z" />
+  </svg>
+);
+
+export const BellIcon = ({ size = 20, className }: { size?: number; className?: string }) => (
+  <svg aria-hidden="true" focusable="false" className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 8.6a6 6 0 1 0-12 0c0 5-2.2 6.4-2.2 6.4h16.4S18 13.6 18 8.6Z" />
+    <path d="M10.2 19a2.1 2.1 0 0 0 3.6 0" />
+  </svg>
+);
+
+export const EyeIcon = ({ size = 18, className }: { size?: number; className?: string }) => (
+  <svg aria-hidden="true" focusable="false" className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
+    <circle cx="12" cy="12" r="3.1" />
+  </svg>
+);
+
+export const ClockIcon = ({ size = 18, className }: { size?: number; className?: string }) => (
+  <svg aria-hidden="true" focusable="false" className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7.5V12l3.2 2" />
+  </svg>
+);
+
+export const TrashIcon = ({ size = 18, className }: { size?: number; className?: string }) => (
+  <svg aria-hidden="true" focusable="false" className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 7h16" />
+    <path d="M9.5 7V4.8h5V7" />
+    <path d="M6.4 7l.9 12.2a1.8 1.8 0 0 0 1.8 1.7h5.8a1.8 1.8 0 0 0 1.8-1.7L17.6 7" />
+    <path d="M10.2 11v6M13.8 11v6" />
+  </svg>
+);
+
+export const SignOutIcon = ({ size = 20, className }: { size?: number; className?: string }) => (
+  <svg aria-hidden="true" focusable="false" className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14.5 4.5H6.8A1.8 1.8 0 0 0 5 6.3v11.4a1.8 1.8 0 0 0 1.8 1.8h7.7" />
+    <path d="M17 8.5 20.5 12 17 15.5" />
+    <path d="M10 12h10.2" />
   </svg>
 );

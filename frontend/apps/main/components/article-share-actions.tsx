@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { buildShareCover } from "../lib/share-cover";
 
 type Props = {
   title: string;
+  imageUrl?: string | null;
   url: string;
   className?: string;
   shareButtonClassName?: string;
@@ -18,7 +20,7 @@ function isShareCancelled(error: unknown): boolean {
   return error instanceof Error && error.name === "AbortError";
 }
 
-export default function ArticleShareActions({ title, url, className = "", shareButtonClassName = "", copyButtonClassName = "", feedbackClassName = "", fallbackClassName = "", compact = false, showCopyButton = true }: Props) {
+export default function ArticleShareActions({ title, imageUrl, url, className = "", shareButtonClassName = "", copyButtonClassName = "", feedbackClassName = "", fallbackClassName = "", compact = false, showCopyButton = true }: Props) {
   const [message, setMessage] = useState("");
   const [showManualCopy, setShowManualCopy] = useState(false);
 
@@ -36,15 +38,26 @@ export default function ArticleShareActions({ title, url, className = "", shareB
 
   async function shareArticle() {
     if (navigator.share) {
+      let coverAttached = false;
       try {
+        if (navigator.canShare?.({ files: [new File(["x"], "cover.png", { type: "image/png" })] })) {
+          const cover = await buildShareCover(imageUrl || "/brand-logo.png");
+          if (cover && navigator.canShare({ files: [cover] })) {
+            await navigator.share({ title, text: `${title}\n${url}`, files: [cover] });
+            setMessage("Cover image and article link sent to the share sheet.");
+            coverAttached = true;
+          }
+        }
+        if (coverAttached) return;
         await navigator.share({ title, url });
-        setMessage("Share sheet opened.");
+        setMessage("Link shared. This device or image host did not allow attaching the cover file.");
         return;
       } catch (error) {
         if (isShareCancelled(error)) return;
       }
     }
     await copyPublicUrl();
+    setMessage("The cover image could not be attached. Use the copied link or select it below if clipboard access is unavailable.");
   }
 
   return (

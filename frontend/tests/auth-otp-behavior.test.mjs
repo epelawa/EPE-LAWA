@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { handleResendSignupVerification, handleVerifyEmailOtp } from "../apps/main/lib/auth-otp.ts";
 
-const callback = "https://epelawa.vercel.app/auth/callback?next=%2Fauth%2Fcomplete";
+const callback = "https://epelawa.vercel.app/auth/callback?next=%2Fdashboard";
 
 function form(values) {
   const data = new FormData();
@@ -45,7 +45,7 @@ test("valid signup OTP is passed to Supabase and returns only the fixed completi
   const result = await handleVerifyEmailOtp(form({ email: " MEMBER@Example.com ", token: "123 45678" }), factory.createClient, callback);
 
   assert.deepEqual(received, [{ email: "member@example.com", token: "12345678", type: "signup" }]);
-  assert.deepEqual(result, { redirectTo: "/auth/complete" });
+  assert.deepEqual(result, { redirectTo: "/dashboard" });
   assert.equal(factory.calls(), 1);
 });
 

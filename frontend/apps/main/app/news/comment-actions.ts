@@ -31,6 +31,19 @@ export async function postArticleComment(form: FormData) {
   revalidatePath(`/news/${slug}`);
   back(slug, "submitted");
 }
+export async function deleteArticleComment(form: FormData) {
+  const slug = value(form, "slug");
+  const commentId = value(form, "comment_id");
+  if (!slug || !uuid.test(commentId)) back(slug || "", "invalid-delete");
+  const { db } = await member(slug);
+  // `comment_delete` is the audited, author-only RPC: it blanks the body and
+  // leaves a tombstone so replies remain readable.
+  const { error } = await db.rpc("comment_delete", { p_comment_id: commentId });
+  if (error) back(slug, error.code === "42501" ? "delete-denied" : "delete-unavailable");
+  revalidatePath(`/news/${slug}`);
+  back(slug, "deleted");
+}
+
 export async function reportArticleComment(form: FormData) {
   const slug = value(form, "slug");
   const commentId = value(form, "comment_id");

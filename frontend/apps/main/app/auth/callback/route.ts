@@ -3,7 +3,7 @@ import { authLinkIssueFromParams, authLinkIssuePath, type AuthLinkIssue } from "
 import { createClient } from "../../../lib/supabase";
 
 function safeNext(value: string | null) {
-  return value && value.startsWith("/") && !value.startsWith("//") && !value.includes("\\") ? value : "/auth/complete";
+  return value && value.startsWith("/") && !value.startsWith("//") && !value.includes("\\") ? value : "/dashboard";
 }
 
 function issueRedirect(request: NextRequest, issue: AuthLinkIssue) {

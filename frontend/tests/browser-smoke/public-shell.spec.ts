@@ -8,7 +8,7 @@ const noResultsQuery = "browser-smoke-no-results";
 const mainNavigationName = /^Primary navigation$/;
 const newsLinkName = /News/;
 
-async function setFixtureMode(request: APIRequestContext, mode: "empty" | "error") {
+async function setFixtureMode(request: APIRequestContext, mode: "empty" | "error" | "stories" | "news-many") {
   const response = await request.post(`${fixtureURL}/__smoke__/mode`, { data: { mode } });
   expect(response.ok(), `local fixture should accept mode ${mode}`).toBeTruthy();
 }
@@ -53,8 +53,15 @@ for (const width of viewportWidths) {
     await page.goto("/");
 
     await expect(page.locator("main#main")).toBeVisible();
-    await expect(page.getByRole("heading", { level: 1, name: "Epe Closer To Home" })).toBeVisible();
-    await expect(page.getByRole("heading", { level: 2, name: "Stories from Epe" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Stay Connected, Stay Informed" })).toBeVisible();
+    await expect(page.locator(".home-hero__client-art")).toHaveCount(0);
+    await expect(page.locator(".site-head--home").getByText("The Voice of Epe Division")).toBeVisible();
+    await expect(page.locator(".site-head__menu .menu-lines span")).toHaveCount(2);
+    const background = await page.locator("body").evaluate((body) => ({ image: getComputedStyle(body).backgroundImage, size: getComputedStyle(body).backgroundSize }));
+    expect(background.image).not.toContain("linear-gradient(90deg");
+    expect((background.image.match(/radial-gradient\(circle/g) ?? []).length).toBe(2);
+    expect(background.size).toContain("16px 16px");
+    await expect(page.getByRole("heading", { level: 2, name: "Latest News" })).toBeVisible();
     await expect(page.locator(".mobile-bottom-nav")).toHaveCount(0);
     await captureEvidence(page, "home", width);
     await expectNoHorizontalOverflow(page, `homepage at ${width}px`);
@@ -96,6 +103,65 @@ for (const width of viewportWidths) {
     await expectNoHorizontalOverflow(page, `News error state at ${width}px`);
   });
 }
+
+for (const width of viewportWidths) {
+  test(`populated newsroom works at ${width}px`, async ({ page, request }) => {
+    await setFixtureMode(request, "stories");
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/news");
+    await expect(page.getByRole("heading", { name: "Featured story" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Latest stories" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Smoke fixture: market story" })).toBeVisible();
+    await expect(page.getByRole("region", { name: "Breaking news" })).toBeVisible();
+    await expectNoHorizontalOverflow(page, `populated News at ${width}px`);
+    await page.locator('summary[aria-label="Search headlines"]').click();
+    await page.getByRole("searchbox", { name: "Search headlines" }).fill("market");
+    await page.getByRole("button", { name: "Search", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Smoke fixture: market story" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Smoke fixture: sports story" })).toHaveCount(0);
+    await expectNoHorizontalOverflow(page, `filtered News at ${width}px`);
+  });
+}
+
+for (const width of [320, 375, 768, 1024, 1440] as const) {
+  test(`news groups, linked covers and pagination at ${width}px`, async ({ page, request }) => {
+    await setFixtureMode(request, "news-many");
+    await page.setViewportSize({ width, height: 900 });
+    await page.route("https://images.example.com/**", (route) => route.fulfill({ status: 200, contentType: "image/svg+xml", body: '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" />' }));
+    await page.goto("/news");
+    await expect(page.getByRole("heading", { name: "Test story 1", exact: true })).toBeVisible();
+    await expect(page.getByRole("region", { name: "Sports stories" })).toBeVisible();
+    await expect(page.getByRole("region", { name: "Local News stories" })).toBeVisible();
+    await expect(page.locator('img[src="https://images.example.com/test-cover.jpg"]')).toHaveCount(1);
+    await expect(page.getByRole("link", { name: "Load more news" })).toBeVisible();
+    await expectNoHorizontalOverflow(page, `grouped News at ${width}px`);
+    await page.getByRole("link", { name: "Read: Test story 1" }).click();
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", "https://images.example.com/test-cover.jpg");
+    await expect(page.getByRole("img", { name: "Synthetic cover" })).toBeVisible();
+    await expect(page.getByText("Synthetic article for browser testing.")).toBeVisible();
+    await expect(page.getByText("Second published paragraph.")).toBeVisible();
+    await expect(page.getByText("Final published paragraph.")).toBeVisible();
+    await expect(page.getByText("Photo: Test photographer")).toBeVisible();
+    await page.goto("/news?page=2");
+    await expect(page.getByRole("heading", { name: "Test story 31", exact: true })).toBeVisible();
+  });
+}
+
+test("homepage news link opens the newsroom at the top", async ({ page, request }) => {
+  await setFixtureMode(request, "stories");
+  await page.setViewportSize({ width: 375, height: 800 });
+  await page.goto("/");
+  const link = page.getByRole("link", { name: "Read latest news", exact: true });
+  await link.scrollIntoViewIfNeeded();
+  await link.click();
+  await expect(page).toHaveURL(/\/news$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Latest News" })).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(10);
+  await page.locator("summary").filter({ hasText: "Category" }).click();
+  await page.getByRole("navigation", { name: "News categories", exact: true }).getByRole("link", { name: "Sports" }).click();
+  await expect(page).toHaveURL(/category=sports/);
+  await expect(page.getByRole("heading", { name: "Smoke fixture: sports story" })).toBeVisible();
+});
 
 for (const width of [320, 375, 768, 1024] as const) {
   test(`keyboard navigation and focus behavior at ${width}px`, async ({ page, request }) => {
@@ -200,4 +266,16 @@ test("reduced-motion preference is honored by the public shell", async ({ page, 
   expect(motion.scrollBehavior).toBe("auto");
   expect(maxCssDurationMilliseconds(motion.transitionDuration)).toBeLessThanOrEqual(0.01);
   expect(maxCssDurationMilliseconds(motion.animationDuration)).toBeLessThanOrEqual(0.01);
+});
+
+test("radio reminder bell explains its limits and supports opt-in and opt-out", async ({ page, context }) => {
+  await context.grantPermissions(["notifications"]);
+  await page.goto("/");
+  await page.getByLabel("Radio notification settings").click();
+  await expect(page).toHaveURL(/\/radio\/reminders$/);
+  await expect(page.getByText(/Works only while this site is open/)).toBeVisible();
+  await page.getByRole("button", { name: "Enable alert" }).click();
+  await expect(page.getByRole("button", { name: "Disable alert" })).toBeVisible();
+  await page.getByRole("button", { name: "Disable alert" }).click();
+  await expect(page.getByRole("button", { name: "Enable alert" })).toBeVisible();
 });

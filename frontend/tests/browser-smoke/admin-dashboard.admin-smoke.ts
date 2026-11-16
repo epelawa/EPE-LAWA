@@ -73,7 +73,7 @@ test.afterAll(() => {
   rmSync(appEnvPath);
 });
 
-test("authorized Admin dashboard keeps unavailable counts honest and exposes only verified workflows", async ({ page, request }) => {
+test("authorized Admin dashboard keeps unavailable counts honest without workflow cards", async ({ page, request }) => {
   await setMode(request, "authorized-error");
   await page.emulateMedia({ colorScheme: "light" });
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -92,22 +92,16 @@ test("authorized Admin dashboard keeps unavailable counts honest and exposes onl
   expect(verificationLog).toContain("GET /rest/v1/staff_profiles");
 
   await expect(page.getByRole("heading", { level: 1, name: "Admin dashboard" })).toBeVisible();
-  await expect(page.getByRole("heading", { level: 2, name: "Work queues" })).toBeVisible();
-  await expect(page.getByRole("region", { name: "Workflows available to your role" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Dashboard counts" })).toBeVisible();
   const metricValues = page.locator('[class*="metricValue"]');
   await expect(metricValues).toHaveCount(4);
   await expect(metricValues).toHaveText(["Unavailable", "Unavailable", "Unavailable", "Unavailable"]);
   await expect(page.getByText("Verified count", { exact: true })).toHaveCount(0);
-  await expect(page.getByRole("link", { name: /Create a private draft/ })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Open the newsroom/ })).toHaveAttribute("href", "/admin/newsroom");
-  await expect(page.getByRole("link", { name: /Forum moderation/ })).toHaveAttribute("href", "/admin/moderation/forum");
-  await expect(page.getByRole("link", { name: /History review/ })).toHaveAttribute("href", "/admin/itan-ilu-mi/review");
-  await expect(page.getByRole("link", { name: /Order operations/ })).toHaveAttribute("href", "/admin/orders");
-  await expect(page.getByRole("link", { name: /Staff roles and accounts/ })).toHaveAttribute("href", "/admin/roles");
-  await expect(page.getByText("Counts only, no private records.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Workflows available to your role" })).toHaveCount(0);
+  await expect(page.getByText("Counts only, no private records.")).toHaveCount(0);
   await expectNoHorizontalOverflow(page, 1440);
 
-  const draftLink = page.getByRole("link", { name: /Create a private draft/ }).first();
+  const draftLink = page.getByRole("link", { name: "Create private draft" }).first();
   await tabUntilFocused(page, draftLink);
   await expect(draftLink).toBeFocused();
   await capture(page, "admin-dashboard-desktop-1440x900.png");
@@ -116,7 +110,7 @@ test("authorized Admin dashboard keeps unavailable counts honest and exposes onl
   await page.reload();
   await waitForSitePreloader(page);
   await expect(page.getByRole("heading", { level: 1, name: "Admin dashboard" })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Create a private draft/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Create private draft" })).toBeVisible();
   await expectNoHorizontalOverflow(page, 390);
   await capture(page, "admin-dashboard-mobile-390x844.png");
 });
@@ -130,10 +124,10 @@ test("denied capabilities hide dashboard shortcuts and never expose queue counts
   await expect(page.getByRole("heading", { level: 1, name: "Admin dashboard" })).toBeVisible();
   await expect(page.locator('[class*="metricValue"]')).toHaveText(["Unavailable", "Unavailable", "Unavailable", "Unavailable"]);
   await expect(page.getByText("Access restricted", { exact: true })).toHaveCount(4);
-  await expect(page.getByRole("link", { name: /Create a private draft/ })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Create private draft" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: /Forum moderation/ })).toHaveCount(0);
   await expect(page.getByRole("link", { name: /Staff roles and accounts/ })).toHaveCount(0);
-  await expect(page.getByText("No dashboard shortcuts were confirmed for this request.", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Workflows available to your role" })).toHaveCount(0);
   await expectNoHorizontalOverflow(page, 1440);
 });
 
@@ -145,6 +139,6 @@ test("failed permission checks produce unavailable state, not guessed access or 
   await expect(page.getByRole("heading", { level: 1, name: "Admin dashboard" })).toBeVisible();
   await expect(page.locator('[class*="metricValue"]')).toHaveText(["Unavailable", "Unavailable", "Unavailable", "Unavailable"]);
   await expect(page.getByText("Unavailable", { exact: true })).toHaveCount(8);
-  await expect(page.getByRole("link", { name: /Create a private draft/ })).toHaveCount(0);
-  await expect(page.getByRole("link", { name: /Staff roles and accounts/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Create private draft" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: /Staff roles and accounts/ })).toHaveCount(0);
 });

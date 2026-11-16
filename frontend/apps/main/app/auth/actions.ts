@@ -1,7 +1,9 @@
 "use server";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "../../lib/supabase";
 import { siteUrl } from "../../lib/site";
+import { ACTIVITY_COOKIE, ACTIVITY_COOKIE_MAX_AGE_SECONDS } from "../../lib/session-policy";
 import { mapAuthProviderError } from "./auth-error";
 import { availabilityFromRpc, isValidHandle, normalizeHandle } from "../../lib/member-handle";
 import { handleResendSignupVerification, handleVerifyEmailOtp, type AuthState } from "../../lib/auth-otp";
@@ -58,7 +60,7 @@ export async function signUp(_state: AuthState, data: FormData): Promise<AuthSta
     const supabase = await createClient();
     const { error } = await supabase.auth.signUp({
       email, password,
-      options: { emailRedirectTo: authCallbackUrl("/auth/complete"), data: { handle, display_name: displayName } },
+      options: { emailRedirectTo: authCallbackUrl("/dashboard"), data: { handle, display_name: displayName } },
     });
     if (error) return { status: "error", message: mapAuthProviderError(error, "signup") };
     return { status: "notice", message: "Your account request was received. If email verification is required, use the code or secure link in the EPE LAWA confirmation email before signing in. Delivery depends on this project’s configured email provider." };
@@ -87,7 +89,7 @@ export async function completeVerifiedMemberHandle(_state: AuthState, data: Form
     if (updateError) return { status: "error", message: "Your handle could not be saved. Please try again later.", values: { handle } };
     const { data: created, error: bootstrapError } = await supabase.rpc("bootstrap_verified_member_profile");
     if (bootstrapError || created !== true) return { status: "error", message: "The handle was saved, but profile setup could not be confirmed. Try again later or contact support.", values: { handle } };
-    redirect("/auth/complete");
+    redirect("/dashboard");
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
     return { status: "error", message: "We couldn’t complete profile setup. No further changes were made.", values: { handle } };
@@ -102,9 +104,34 @@ export async function signIn(_state: AuthState, data: FormData): Promise<AuthSta
   if (password.length > 128) return { status: "error", message: "Your password must be no more than 128 characters.", fieldErrors: { password: "Your password must be no more than 128 characters." } };
   try {
     const supabase = await createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return { status: "error", message: mapAuthProviderError(error, "signin") };
-    redirect("/auth/complete");
+    // Sign-in goes straight to the member dashboard for a finished profile;
+    // only accounts that still need a handle or bootstrap see the completion step.
+    const userId = data.user?.id;
+    if (userId) {
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("user_id, deleted_at")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (!profileError && profile && !profile.deleted_at) {
+        try {
+          const cookieStore = await cookies();
+          cookieStore.set(ACTIVITY_COOKIE.member, String(Date.now()), {
+            path: "/",
+            maxAge: ACTIVITY_COOKIE_MAX_AGE_SECONDS,
+            sameSite: "lax",
+            secure: process.env.NODE_ENV === "production",
+            httpOnly: false,
+          });
+        } catch {
+          // The client guard records activity on the dashboard even if this write is refused.
+        }
+        redirect("/dashboard");
+      }
+    }
+    redirect("/dashboard");
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
     return { status: "error", message: mapAuthProviderError(error, "signin") };
@@ -120,7 +147,7 @@ export async function requestPasswordReset(_state: AuthState, data: FormData): P
   } catch { return { status: "error", message: genericError }; }
 }
 export async function resendSignupVerification(_state: AuthState, data: FormData): Promise<AuthState> {
-  return handleResendSignupVerification(data, createClient, authCallbackUrl("/auth/complete"));
+  return handleResendSignupVerification(data, createClient, authCallbackUrl("/dashboard"));
 }
 export async function updatePassword(_state: AuthState, data: FormData): Promise<AuthState> {
   const password = passwordField(data);
@@ -131,18 +158,19 @@ export async function updatePassword(_state: AuthState, data: FormData): Promise
     if (!user) return { status: "error", message: "Your recovery session is missing or expired. Request a new password reset." };
     const { error } = await supabase.auth.updateUser({ password });
     if (error) return { status: "error", message: genericError };
-    redirect("/auth/complete");
+    redirect("/dashboard");
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
     return { status: "error", message: genericError };
   }
 }
 export async function verifyEmailOtp(_state: AuthState, data: FormData): Promise<AuthState> {
-  const outcome = await handleVerifyEmailOtp(data, createClient, authCallbackUrl("/auth/complete"));
+  const outcome = await handleVerifyEmailOtp(data, createClient, authCallbackUrl("/dashboard"));
   if ("redirectTo" in outcome) redirect(outcome.redirectTo);
   return outcome;
 }
 export async function signOut() {
   try { const supabase = await createClient(); await supabase.auth.signOut(); } catch { /* Always return to a signed-out screen. */ }
+  try { (await cookies()).delete(ACTIVITY_COOKIE.member); } catch { /* A missing cookie store must not block sign-out. */ }
   redirect("/login");
 }

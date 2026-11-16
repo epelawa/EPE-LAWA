@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { safeAdminNextPath } from "./admin-path";
+import { ACTIVITY_COOKIE, ACTIVITY_COOKIE_MAX_AGE_SECONDS } from "./session-policy";
 import { signInAdminWithPassword } from "./supabase-access";
 
 export type LoginState = { error?: string };
@@ -29,6 +30,15 @@ export async function signInAdmin(_previous: LoginState, formData: FormData): Pr
     },
   });
   if (!result.allowed) return { error: "Sign-in failed. Check your details or contact an administrator." };
+
+  // Start a fresh staff inactivity window for this sign-in.
+  cookieStore.set(ACTIVITY_COOKIE.staff, String(Date.now()), {
+    path: "/",
+    maxAge: ACTIVITY_COOKIE_MAX_AGE_SECONDS,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    httpOnly: false,
+  });
 
   redirect(safeAdminNextPath(formData.get("next")));
 }

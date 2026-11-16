@@ -1,5 +1,5 @@
 export type AuthState = { status: "idle" | "error" | "notice"; message: string; fieldErrors?: Partial<Record<"email" | "password" | "displayName" | "handle", string>>; values?: { handle?: string } };
-export type EmailOtpOutcome = AuthState | { redirectTo: "/auth/complete" };
+export type EmailOtpOutcome = AuthState | { redirectTo: "/dashboard" };
 
 type SupabaseOtpClient = {
   auth: {
@@ -75,7 +75,7 @@ export async function handleVerifyEmailOtp(
     if (error) {
       return { status: "error", message: "That code could not be verified. Request a new verification email and try again." };
     }
-    return { redirectTo: "/auth/complete" };
+    return { redirectTo: "/dashboard" };
   } catch {
     return { status: "error", message: "We couldn’t complete that request. Check your details and try again." };
   }

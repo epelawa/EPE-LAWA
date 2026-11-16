@@ -15,11 +15,24 @@ type SourceRow = { id: string; record_id: string; citation: string; source_url: 
 const categories = ["community-history", "family-lineage", "cultural-practice", "place-history", "oral-history", "other"] as const;
 const categoryLabels: Record<string, string> = { "community-history": "Community history", "family-lineage": "Family / house lineage", "cultural-practice": "Cultural practice", "place-history": "Place history", "oral-history": "Oral history", other: "Other" };
 
-export default async function ItanIluMiPage({ searchParams }: { searchParams: Promise<{ contribution?: string; q?: string; category?: string }> }) {
+const PAGE_SIZE = 10;
+
+export default async function ItanIluMiPage({ searchParams }: { searchParams: Promise<{ contribution?: string; q?: string; category?: string; page?: string }> }) {
   const params = await searchParams;
   const contributionState = params.contribution;
-  const query = (params.q ?? "").trim().slice(0, 120);
+  const query = typeof params.q === "string" ? params.q.trim().slice(0, 120) : "";
   const category = categories.includes(params.category as typeof categories[number]) ? params.category : "";
+  const page = typeof params.page === "string" && /^\d{1,4}$/.test(params.page) ? Math.min(Math.max(Number(params.page), 1), 1000) : 1;
+  const offset = (page - 1) * PAGE_SIZE;
+  function pageHref(next: number) {
+    const search = new URLSearchParams();
+    if (query) search.set("q", query);
+    if (category) search.set("category", category);
+    if (next > 1) search.set("page", String(next));
+    const suffix = search.toString();
+    return suffix ? `/itan-ilu-mi?${suffix}#archive` : "/itan-ilu-mi#archive";
+  }
+  let hasNext = false;
   let records: RecordRow[] = [];
   let sources: SourceRow[] = [];
   let failed = false;
@@ -31,14 +44,16 @@ export default async function ItanIluMiPage({ searchParams }: { searchParams: Pr
     if (safeQuery) recordQuery = recordQuery.or(`family_name.ilike.%${safeQuery}%,community.ilike.%${safeQuery}%`);
     if (category) recordQuery = recordQuery.eq("category", category);
     const [recordsResult, authResult] = await Promise.all([
-      recordQuery.order("published_at", { ascending: false }).limit(50),
+      recordQuery.order("published_at", { ascending: false }).order("id", { ascending: false }).range(offset, offset + PAGE_SIZE),
       supabase.auth.getUser(),
     ]);
     if (recordsResult.error) {
       console.error("history public read failed", { code: recordsResult.error.code });
       failed = true;
     } else {
-      records = (recordsResult.data ?? []) as RecordRow[];
+      const results = (recordsResult.data ?? []) as RecordRow[];
+      hasNext = results.length > PAGE_SIZE;
+      records = results.slice(0, PAGE_SIZE);
       signedIn = Boolean(authResult.data.user);
       if (records.length) {
         const sourceResult = await supabase.from("history_record_sources").select("id,record_id,citation,source_url").in("record_id", records.map((record) => record.id)).limit(200);
@@ -59,17 +74,18 @@ export default async function ItanIluMiPage({ searchParams }: { searchParams: Pr
     </Notice>
 
     <form method="get" className="ui-toolbar" role="search">
-      <div className="ui-field"><label className="label" htmlFor="history-search">Family name or community</label><input className="input" id="history-search" name="q" maxLength={120} value={query} /></div>
+      <div className="ui-field"><label className="label" htmlFor="history-search">Family name or community</label><input className="input" id="history-search" name="q" maxLength={120} defaultValue={query} /></div>
       <div className="ui-field"><label className="label" htmlFor="history-filter">Category</label><select className="input" id="history-filter" name="category" defaultValue={category}><option value="">All categories</option>{categories.map((item) => <option key={item} value={item}>{categoryLabels[item]}</option>)}</select></div>
       <button className="btn-primary" type="submit">Search published records</button>
     </form>
 
-    {failed ? <EmptyPanel title="History records could not be loaded" description="Please try again later. No archive content is shown while records or source notes cannot be verified." /> : records.length === 0 ? <EmptyPanel title={query || category ? "No published records match" : "No approved history records yet"} description="There are currently no published, source-backed accounts matching this search. We do not fill this space with unverified or invented history." /> : <section className="ui-stack" aria-labelledby="archive-heading">
+    <div id="archive" />
+    {failed ? <EmptyPanel title="History records could not be loaded" description="Please try again later. No archive content is shown while records or source notes cannot be verified." /> : records.length === 0 ? <EmptyPanel title={page > 1 ? "No records on this page" : query || category ? "No published records match" : "No approved history records yet"} description="There are currently no published, source-backed accounts matching this search. We do not fill this space with unverified or invented history." /> : <section className="ui-stack" aria-labelledby="archive-heading">
       <SectionHeading eyebrow="The archive" title="Published accounts" description="Source-backed histories approved for public reading." id="archive-heading" />
       <ol className="ui-list ui-stack-sm">{records.map((record, index) => {
         const recordSources = sources.filter((source) => source.record_id === record.id);
         return <li className="ui-card ui-stack-sm" key={record.id}>
-          <div className="ui-row"><StatusBadge>{categoryLabels[record.category] ?? "Community history"}</StatusBadge><span className="ui-meta">{record.community ? record.community : null}{record.family_name ? `${record.community ? " · " : ""}${record.family_name} family` : null}</span><span className="ui-number" aria-label={`Record ${index + 1}`}>{String(index + 1).padStart(2, "0")}</span></div>
+          <div className="ui-row"><StatusBadge>{categoryLabels[record.category] ?? "Community history"}</StatusBadge><span className="ui-meta">{record.community ? record.community : null}{record.family_name ? `${record.community ? " · " : ""}${record.family_name} family` : null}</span><span className="ui-number" aria-label={`Record ${offset + index + 1}`}>{String(offset + index + 1).padStart(2, "0")}</span></div>
           <h3 className="ui-item-title">{record.title}</h3>
           <div className="ui-prose"><p className="whitespace-pre-wrap">{record.account}</p></div>
           {record.lineage_description ? <div className="ui-subtle ui-card"><h4 className="ui-item-title">Lineage context</h4><p className="ui-prose whitespace-pre-wrap">{record.lineage_description}</p></div> : null}
@@ -79,6 +95,12 @@ export default async function ItanIluMiPage({ searchParams }: { searchParams: Pr
         </li>;
       })}</ol>
     </section>}
+
+    {!failed && (page > 1 || hasNext) ? <nav className="ui-actions" aria-label="History pagination">
+      {page > 1 ? <Link className="btn-secondary" href={pageHref(page - 1)}>Previous page</Link> : null}
+      <span className="ui-meta">Page {page}</span>
+      {hasNext && page < 1000 ? <Link className="btn-secondary" href={pageHref(page + 1)}>Next page</Link> : null}
+    </nav> : null}
 
     <section id="contribute" className="ui-stack" aria-labelledby="contribute-heading">
       <SectionHeading eyebrow="Share a history" title="Contribute an account" description="Submissions and evidence are private. Please identify the source and publication rights; never submit another person’s private contact details. Staff review and verification are required before publication." id="contribute-heading" />

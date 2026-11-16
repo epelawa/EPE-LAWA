@@ -1,5 +1,6 @@
 import "@fontsource-variable/plus-jakarta-sans";
 import "./globals.css";
+import "./native-controls.css";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,7 @@ import { mainNavigation } from "../lib/navigation";
 import { isIndexingAllowed, siteUrl } from "../lib/site";
 import { themeScript } from "../lib/theme";
 import SiteMotion from "../components/site-motion";
+import ScrollToTop from "../components/scroll-to-top";
 import AuthCallbackErrorRouter from "../components/auth-callback-error-router";
 import MobileBottomNav from "../components/mobile-bottom-nav";
 import { createClient } from "../lib/supabase";
@@ -59,6 +61,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <Script strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeScript }} />
         <AuthCallbackErrorRouter />
         <SiteMotion />
+        <ScrollToTop />
         <a className="skip-link" href="#main">
           Skip to content
         </a>

@@ -122,6 +122,9 @@
 .articleHero { display:grid; gap:16px; overflow:visible; border:0; color:#0A1023; background:transparent; }
 .articleHeroTop { display:flex; align-items:center; justify-content:space-between; gap:10px; }
 .heroControl { display:grid; width:48px; height:48px; place-items:center; border:1px solid var(--news-border); border-radius:50%; color:#17264A; background:#fff; }
+.heroControl > button { display:grid; width:100%; height:100%; place-items:center; padding:0; border:0; border-radius:inherit; background:transparent; color:inherit; cursor:pointer; }
+.heroControl > button[aria-pressed="true"] { color:var(--palette-cobalt); }
+.heroControl > button:focus-visible { outline:2px solid var(--palette-cobalt); outline-offset:2px; }
 .heroShareActions { position:relative; display:flex; align-items:center; gap:8px; }
 .heroShareFeedback { position:absolute; z-index:3; top:calc(100% + 6px); right:0; max-width:min(280px,calc(100vw - 40px)); padding:7px 10px; border:1px solid var(--news-border); background:#fff; box-shadow:0 8px 24px rgb(10 16 35 / .14); font-size:.75rem; }
 .shareFallback { color:#5C677C; font-size:.75rem; }
@@ -219,3 +222,135 @@
 /* The shared light canvas carries the site's quiet linework behind the newsroom. */
 .newsPage,.articlePage { background-color:transparent; }
 .articlePage { --background:220 47.37% 96.27%; }
+
+/* Cover engagement chips: views, read time and comments on the cover itself. */
+.articleCoverFrame { position: relative; }
+.coverStats {
+  position: absolute;
+  inset: auto 12px 12px;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  pointer-events: none;
+}
+.coverStat {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 28px;
+  padding: 4px 10px;
+  border: 1px solid rgb(167 197 245 / .26);
+  border-radius: 999px;
+  background: rgb(10 16 35 / .74);
+  color: var(--palette-cloud);
+  font-size: .6875rem;
+  font-weight: 700;
+  line-height: 1.2;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+@media (max-width: 600px) {
+  .coverStats { inset: auto 8px 8px; gap: 4px; }
+  .coverStat { min-height: 25px; padding: 3px 8px; font-size: .625rem; }
+}
+
+/* Comment section heading and per-comment actions. */
+.commentSection { position: relative; }
+.commentHeading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--palette-royal-steel);
+}
+.commentHeading > div { display: grid; gap: 4px; }
+.commentHeading h2 { margin: 0; color: var(--palette-navy); font-size: clamp(1.35rem, 2.4vw, 1.75rem); line-height: 1.15; }
+.commentCountPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 4px 11px;
+  border: 1px solid var(--news-border);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--palette-royal-steel);
+  font-size: .75rem;
+  font-weight: 750;
+}
+.commentActions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
+.articleCoverFrame { border-radius: 18px; }
+.coverCredit { padding: 4px 2px; }
+/* Presentation varies only; article data, attribution and actions remain identical. */
+.articlePage :global([data-layout-variant="1"]) .articleHeroCopy { order: 2; }
+.articlePage :global([data-layout-variant="1"]) .articleCoverFrame { order: 1; }
+.articlePage :global([data-layout-variant="2"]) .articleHeroCopy { padding: 16px 18px; border-radius: 16px; background: #f1f4fa; }
+.articlePage :global([data-layout-variant="3"]) .articleHeroCopy h1 { font-family: Georgia, serif; letter-spacing: -.025em; }
+.articlePage :global([data-layout-variant="3"]) .articleCoverFrame { border-radius: 24px; }
+
+/* Four related editorial compositions, with content and controls in the same DOM order. */
+.articlePage :global([data-layout-variant="1"]) .articleHeroCopy { padding: 8px 0; }
+.articlePage :global([data-layout-variant="2"]) .articleHero { gap: 12px; }
+.articlePage :global([data-layout-variant="2"]) .articleHeroCopy { border-left: 4px solid #477fe0; }
+.articlePage :global([data-layout-variant="2"]) .articleCoverFrame { aspect-ratio: 2 / 1; }
+.articlePage :global([data-layout-variant="2"]) .articleHeroImage { aspect-ratio: 2 / 1; }
+.articlePage :global([data-layout-variant="3"]) .articleHeroCopy { text-align: center; justify-items: center; padding: 12px 0; }
+.articlePage :global([data-layout-variant="3"]) .articleMetaBar { justify-content: center; }
+@media (min-width: 760px) {
+  .articlePage :global([data-layout-variant="2"]) .articleHero { grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); align-items: center; }
+  .articlePage :global([data-layout-variant="2"]) .articleHeroTop { grid-column: 1 / -1; }
+}
+
+.commentComposeToggle { display: flex; align-items: center; min-height: 44px; color: #294b91; font-weight: 700; cursor: pointer; }
+
+/* Public newsroom: a calmer editorial surface and clearer reading hierarchy. */
+.newsPage { background: #fff; border-color: #e0e7f2; box-shadow: 0 18px 56px rgb(10 16 35 / .06); }
+.pageHeader { gap: 12px; }
+.pageDescription { max-width: 58ch; margin: 0; color: #52617a; font-size: .9375rem; line-height: 1.55; }
+.categoryLink { background: #f4f7fc; }
+.headlineRail { background: #f7f9fd; box-shadow: none; }
+.featureCard { border-radius: 22px; }
+.headlineImage, .headlineImageFallback, .storyThumbnail, .storyThumbnailFallback { border-radius: 10px; }
+.storyCard { border-color: #e2e8f1; border-radius: 18px; box-shadow: 0 8px 24px rgb(10 16 35 / .045); }
+.storyCardCopy { gap: 9px; padding: 16px; }
+.storyTitle { line-height: 1.38; }
+
+/* Canonical story URL, but a member-focused reading shell for authenticated users. */
+.memberReadingBar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px max(20px, calc((100% - 960px) / 2)); color: #f1f4fa; background: #0a1023; }
+.memberReadingBar a { display: inline-flex; min-height: 44px; align-items: center; gap: 7px; color: #f1f4fa; font-size: .8125rem; font-weight: 700; text-decoration: none; }
+.memberReadingBar a:hover { text-decoration: underline; }
+.memberReadingLabel { text-align: center; font-size: .75rem; font-weight: 800; letter-spacing: .06em; }
+.memberReadingLabel span { color: #a7c5f5; font-weight: 500; letter-spacing: 0; }
+.memberArticlePage { box-sizing: border-box; padding: clamp(16px, 3vw, 30px); border: 1px solid #dce5f2; border-radius: 24px; box-shadow: 0 16px 44px rgb(10 16 35 / .06); }
+@media (max-width: 600px) {
+  .memberReadingBar { padding-inline: 16px; }
+  .memberReadingLabel span { display: none; }
+  .memberReadingBar a { font-size: .75rem; }
+  .memberArticlePage { width: calc(100% - 24px); margin-top: 12px; margin-bottom: 88px; }
+}
+
+/* Public long-form reading: an editorial header, readable measure and generous rhythm. */
+.publicArticlePage { width: min(1040px, calc(100% - 40px)); margin: 34px auto 72px; }
+.publicArticlePage .article { padding: clamp(20px, 4vw, 48px); border: 1px solid #dce5f1; border-radius: 24px; background: #fff; }
+.publicArticlePage .articleHero { gap: 24px; }
+.publicArticlePage .articleHeroTop { justify-content: flex-start; }
+.publicArticlePage .articleHeroTop > :last-child { margin-left: auto; }
+.publicArticlePage .articleHeroCopy { max-width: 860px; gap: 15px; padding-block: 8px; }
+.publicArticlePage .articleHeroCopy h1 { max-width: 23ch; color: #0a1023; font-size: clamp(2.15rem, 4.6vw, 4.25rem); line-height: 1.08; letter-spacing: -.045em; }
+.articleCategory { width: fit-content; margin: 0; color: #294b91; font-size: .75rem; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
+.articleStandfirst { max-width: 68ch; margin: 0; color: #4b5b72; font-size: clamp(1.0625rem, 1.7vw, 1.25rem); line-height: 1.55; }
+.publicStoryMeta { display: flex; flex-wrap: wrap; gap: 8px 18px; color: #435573; font-size: .875rem; font-weight: 650; }
+.publicArticlePage .articleCoverFrame { border-radius: 16px; }
+.publicArticlePage .coverCredit { margin-top: 10px; }
+.publicArticlePage .articleBody { max-width: 68ch; margin: clamp(28px, 5vw, 52px) auto; color: #263750; font-size: clamp(1.0625rem, 1.2vw, 1.1875rem); line-height: 1.8; }
+.publicArticlePage .relatedSection { margin-top: 40px; padding-top: 30px; }
+@media (min-width: 800px) { .publicArticlePage :global([data-layout-variant="2"]) .articleHero { grid-template-columns: 1fr; } }
+@media (max-width: 620px) { .publicArticlePage { width: calc(100% - 28px); padding: 0; margin-block: 18px 40px; } .publicArticlePage .article { padding: 20px 16px; border-radius: 18px; } .publicArticlePage .articleHero { gap: 17px; } .publicArticlePage .articleHeroCopy h1 { font-size: clamp(2rem, 8vw, 2.7rem); } }
+.readingGuide { display:flex; align-items:center; justify-content:space-between; gap:12px; max-width:760px; margin:28px auto 0; padding:14px 18px; border:1px solid #dbe5f3; border-radius:14px; background:rgb(242 247 255 / .88); color:#294b91; font-size:.75rem; font-weight:800; letter-spacing:.06em; }
+.readingGuide a { color:#294b91; min-height:44px; display:inline-flex; align-items:center; gap:8px; text-decoration:none; letter-spacing:0; }
+.readingGuide a:hover { color:#17264a; text-decoration:underline; text-underline-offset:4px; }
+.articleBody :global(.article-body) p { white-space:pre-line; overflow-wrap:anywhere; }
+.articlePage img[data-news-fallback="true"] { object-fit:contain; padding:clamp(24px, 8%, 80px); background:#edf3fc; }

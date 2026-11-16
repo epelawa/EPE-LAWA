@@ -68,6 +68,22 @@ async function limitToLocalOrigins(page: Page) {
   });
 }
 
+test("member services live in the compact menu", async ({ page, request }) => {
+  await setFixtureMode(request, "empty");
+  await page.setViewportSize({ width: 320, height: 800 });
+  await signIn(page);
+  await page.goto("/dashboard?tab=home");
+  await expect(page.getByRole("heading", { name: "Everything from your account, in one place" })).toHaveCount(0);
+  await page.getByRole("button", { name: "Open member menu" }).click();
+  const menu = page.getByRole("dialog", { name: "Your EPE LAWA" });
+  const services = menu.getByRole("navigation", { name: "Member services" });
+  for (const [name, href] of [["Community forum", "/forum"], ["Order requests", "/business-directory/orders"], ["Explore EPE LAWA", "/"]]) {
+    await expect(services.getByRole("link", { name: new RegExp(name) })).toHaveAttribute("href", href);
+  }
+  await page.keyboard.press("Escape");
+  await expect(menu).not.toBeVisible();
+});
+
 test("signed-in dashboard keeps honest empty views and one responsive tab bar", async ({ page, request }, testInfo) => {
   test.setTimeout(90_000);
   await setFixtureMode(request, "empty");
@@ -98,8 +114,9 @@ test("signed-in dashboard keeps honest empty views and one responsive tab bar", 
   await page.getByRole("link", { name: "Saved", exact: true }).click();
   await expect(page).toHaveURL(/\/dashboard\?tab=saved$/);
   await expectActiveTab(page, "Saved");
-  await expect(page.getByRole("heading", { name: "Saving isn’t available yet" })).toBeVisible();
-  await expect(page.getByText("no saved records are being queried or reported here.")).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Your reading list" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Nothing saved yet" })).toBeVisible();
+  await expect(page.getByText("Stories you save with the bookmark control")).toBeVisible();
 
   await dashboardNavigation(page).getByRole("link", { name: "Profile", exact: true }).click();
   await expect(page).toHaveURL(/\/dashboard\?tab=profile$/);
@@ -135,7 +152,7 @@ test("signed-in dashboard keeps honest empty views and one responsive tab bar", 
   }
 
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1, name: "Epe Closer To Home" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Stay Connected, Stay Informed" })).toBeVisible();
   await expect(page.locator(".mobile-bottom-nav")).toHaveCount(0);
   await expectLocalSupabaseOnly(page);
 
@@ -235,4 +252,60 @@ test("story query failures stay distinct from empty results on both dashboard fe
   await expect(page.getByText(/Story filters are temporarily unavailable/)).toBeVisible();
   await expect(page.getByText("No stories published yet")).toHaveCount(0);
   await expectLocalSupabaseOnly(page);
+});
+
+test("member menu is compact, touch-friendly and navigates on tap", async ({ page, request }) => {
+  await setFixtureMode(request, "empty");
+  await page.setViewportSize({ width: 375, height: 812 });
+  await signIn(page);
+  await page.goto("/dashboard?tab=home");
+  await page.getByRole("button", { name: "Open member menu" }).click();
+  const menu = page.getByRole("dialog", { name: "Your EPE LAWA" });
+  await expect(menu).toBeVisible();
+  const discover = menu.getByRole("link", { name: /Discover/ });
+  const dimensions = await discover.evaluate((element) => ({ height: element.getBoundingClientRect().height, font: Number.parseFloat(getComputedStyle(element.querySelector("span")!).fontSize) }));
+  expect(dimensions.height).toBeGreaterThanOrEqual(44);
+  expect(dimensions.height).toBeLessThan(60);
+  expect(dimensions.font).toBeLessThanOrEqual(14);
+  await discover.click();
+  await expect(menu).not.toBeVisible();
+  await expect(page).toHaveURL(/tab=discover/);
+  await expect(page.getByRole("heading", { name: "Discover", level: 1 })).toBeVisible();
+});
+
+test("signed-in readers stay in member news when opening and leaving a story", async ({ page, request }) => {
+  test.setTimeout(60_000);
+  await setFixtureMode(request, "stories");
+  await signIn(page);
+  await page.setViewportSize({ width: 375, height: 850 });
+  await page.goto("/news?q=market&category=local-news");
+  await expect(page).toHaveURL(/\/dashboard\?tab=discover&q=market&category=local-news/);
+  await page.getByRole("link", { name: "Read: Smoke fixture: market story" }).click();
+  await expect(page).toHaveURL(/\/news\/smoke-market-story/);
+  await expect(page.getByRole("heading", { name: "Smoke fixture: market story" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Member reading navigation" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Back to Discover" })).toHaveAttribute("href", "/dashboard?tab=discover");
+  await expect(page.getByRole("link", { name: "Saved stories" })).toHaveAttribute("href", "/dashboard?tab=saved");
+  await expect(page.locator(".site-head")).toBeHidden();
+  for (const width of [320, 375, 768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 850 });
+    const size = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth, page: document.documentElement.scrollWidth }));
+    expect(size.page, `member article at ${width}px`).toBeLessThanOrEqual(size.viewport + 1);
+    await expect(page.getByRole("link", { name: "Back to Discover" })).toBeVisible();
+  }
+  await page.getByRole("link", { name: "Back to Discover" }).click();
+  await expect(page).toHaveURL(/\/dashboard\?tab=discover/);
+});
+
+test("signed-out story retains public news navigation", async ({ page, request }) => {
+  await setFixtureMode(request, "stories");
+  await page.goto("/news/smoke-market-story");
+  await expect(page.getByRole("heading", { name: "Smoke fixture: market story" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Back to News" })).toHaveAttribute("href", "/news");
+  await expect(page.getByRole("navigation", { name: "Member reading navigation" })).toHaveCount(0);
+  for (const width of [320, 375, 768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 850 });
+    const size = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth }));
+    expect(size.document, `public article at ${width}px`).toBeLessThanOrEqual(size.viewport + 1);
+  }
 });

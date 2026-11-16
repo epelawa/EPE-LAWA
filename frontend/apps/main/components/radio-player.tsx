@@ -42,6 +42,9 @@ export default function RadioPlayer() {
       setState("paused");
       return;
     }
+    // A paused live stream can retain old buffered audio. Reconnect on every
+    // user-initiated resume instead of continuing from the old buffer.
+    audio.load();
     setState("connecting");
     try {
       await audio.play();
@@ -69,6 +72,8 @@ export default function RadioPlayer() {
       <audio
         ref={audioRef}
         preload="none"
+        autoPlay
+        playsInline
         src={RADIO_LAGOS_1075.streamUrl}
         onPlaying={() => setState("playing")}
         onWaiting={() => setState("connecting")}

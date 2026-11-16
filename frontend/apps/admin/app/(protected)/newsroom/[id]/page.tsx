@@ -5,8 +5,14 @@ import { buttonClassName, EmptyPanel, Notice, PageFrame, PageIntro, Panel, Secti
 import { createClient } from "../../../../lib/supabase";
 import { publishArticle, reviseArticle, saveDraft, unpublishArticle } from "../../../../lib/actions";
 import { adminHref } from "../../../../lib/admin-path";
+import { articlePublicationState } from "../../../../lib/article-publication-state";
 import { NEWS_COVERS, isNewsCoverKey } from "../../../../../main/lib/news-covers";
+import NewsroomToast from "../../../../components/newsroom-toast";
 import NewsCoverUrlFields from "../../../../components/news-cover-url-fields";
+import { publishedNewsCover } from "../../../../../main/lib/published-news-cover";
+import { absoluteUrl } from "../../../../../main/lib/site";
+import NewsShareTools from "../../../../components/news-share-tools";
+import { publicNewsArticleUrl } from "../../../../../main/lib/news-urls";
 
 export const metadata: Metadata = { title: "Article workflow", robots: { index: false, follow: false } };
 
@@ -34,7 +40,6 @@ type ArticleVersion = {
   cover_caption: string | null;
 };
 type VersionHistoryItem = { id: string; version_number: number; title: string; state: string; created_at: string; created_by: string | null };
-type AuditHistoryItem = { action: string; outcome: string; created_at: string; metadata: Record<string, unknown> | null };
 
 function bodyForEditor(body: unknown): string {
   if (typeof body === "string") return body;
@@ -54,17 +59,20 @@ function StatusMessage({ query }: { query: Record<string, string | undefined> })
   if (query.unpublished) return <Notice tone="neutral" role="status">Article unpublished.</Notice>;
   if (query.revised) return <Notice tone="success" role="status">A new private revision was created. The existing public version is unchanged.</Notice>;
   if (query.error) {
-    const message = query.error === "cover"
-      ? "Use one cover source. A linked cover needs a safe HTTPS image URL, alt text, credit, source page and license URL."
-      : query.error === "save"
-      ? "The draft could not be saved. It may have changed; reload before trying again."
-      : query.error === "published"
-        ? "The article was not published. Check article.publish access and reload for revision changes."
-        : query.error === "unpublished"
-          ? "The article could not be unpublished. Check the revision and your article.unpublish access."
-          : query.error === "revise"
-            ? "A new private revision could not be created. Check article.create access and reload."
-            : "The requested article action could not be completed.";
+    const message =
+      query.error === "cover"
+        ? "Use one cover source. A linked cover needs a safe HTTPS image URL, alt text, credit, source page and license URL."
+        : query.error === "save"
+          ? "The draft could not be saved. It may have changed; reload before trying again."
+          : query.error === "published"
+            ? "The article was not published. Check article.publish access and reload for revision changes."
+            : query.error === "unpublished"
+              ? "The article could not be unpublished. Check the revision and your article.unpublish access."
+              : query.error === "unpublish_confirmation"
+                ? "Confirm that you want to take down the version currently visible to readers."
+                : query.error === "revise"
+                  ? "A new private revision could not be created. Check article.create access and reload."
+                  : "The requested article action could not be completed.";
     return <Notice tone="danger" role="alert">{message}</Notice>;
   }
   return null;
@@ -80,7 +88,7 @@ export default async function EditArticlePage({
   const [{ id }, query, supabase] = await Promise.all([params, searchParams, createClient()]);
   if (!UUID.test(id)) notFound();
 
-  const [articleResult, categoryResult, authorResult, createCapability, publishCapability, unpublishCapability, versionHistoryResult, auditHistoryResult] = await Promise.all([
+  const [articleResult, categoryResult, authorResult, createCapability, publishCapability, unpublishCapability, versionHistoryResult] = await Promise.all([
     supabase.from("articles").select(`
       id, slug, revision, current_version_id, published_version_id, published_at,
         current_version:article_versions!current_version_id(
@@ -94,7 +102,6 @@ export default async function EditArticlePage({
     supabase.rpc("has_capability", { p_capability: "article.publish" }),
     supabase.rpc("has_capability", { p_capability: "article.unpublish" }),
     supabase.from("article_versions").select("id,version_number,title,state,created_at,created_by").eq("article_id", id).order("version_number", { ascending: false }).limit(100),
-    supabase.from("audit_events").select("action,outcome,created_at,metadata").eq("resource_type", "article").eq("resource_id", id).order("created_at", { ascending: false }).limit(100),
   ]);
   if (articleResult.error) {
     return <PageFrame className="ui-stack"><PageIntro eyebrow="Newsroom" title="Article unavailable" description="Article details could not be verified." /><Notice tone="danger" role="alert"><strong>Article details could not be loaded.</strong><p>No changes were made. Try again in a moment.</p></Notice></PageFrame>;
@@ -118,33 +125,35 @@ export default async function EditArticlePage({
   const canPublish = publishCapability.data === true;
   const canUnpublish = unpublishCapability.data === true;
   const referencesAvailable = !categoryResult.error && !authorResult.error && categories.length > 0 && authors.length > 0;
-  const currentVersionIsPublic = article.published_version_id === article.current_version_id;
-  const olderVersionRemainsPublic = Boolean(article.published_version_id) && !currentVersionIsPublic;
+  const { hasPublishedVersion, currentVersionIsPublic, olderVersionRemainsPublic } = articlePublicationState({
+    currentVersionId: article.current_version_id,
+    publishedVersionId: article.published_version_id,
+  });
   const editablePrivateVersion = (version.state === "draft" || version.state === "review") && canCreate;
   const canCreateRevision = (version.state === "approved" || version.state === "rejected" || version.state === "published") && canCreate;
   const canPublishCurrentVersion = ["draft", "review", "approved", "published"].includes(version.state);
   const displayState = currentVersionIsPublic ? "published" : version.state;
   const displayTone = displayState === "published" || displayState === "approved" ? "success" : displayState === "rejected" ? "danger" : displayState === "review" ? "warning" : "neutral";
   const versionHistory = (versionHistoryResult.data ?? []) as VersionHistoryItem[];
-  const auditHistory = (auditHistoryResult.data ?? []) as AuditHistoryItem[];
 
   return (
     <PageFrame className="ui-stack">
       <PageIntro eyebrow={`Newsroom · Revision ${article.revision}`} title={version.title} description={<>Current version: <StatusBadge tone={displayTone}>{displayState}</StatusBadge>. {currentVersionIsPublic ? "This version is public." : olderVersionRemainsPublic ? "The previously published version remains live; this current version is private." : "No version of this article is public yet."}</>} actions={<Link href={adminHref("/newsroom")} className={buttonClassName("secondary")}>Back to newsroom</Link>} meta={<><span>Revision {article.revision}</span><span>Slug: {article.slug}</span></>} />
-      <StatusMessage query={query} />
+      {Object.keys(query).some((key) => ["created", "saved", "submitted", "reviewed", "published", "unpublished", "revised", "error"].includes(key)) ? <NewsroomToast key={JSON.stringify(query)}><StatusMessage query={query} /></NewsroomToast> : null}
       {article.published_version_id ? <Notice tone="neutral"><Link href={`/news/${article.slug}`} className="ui-text-link">Open public article</Link>{article.published_at ? <span className="ui-meta">Published {new Date(article.published_at).toLocaleDateString("en-NG")}</span> : null}</Notice> : null}
 
+      {currentVersionIsPublic ? <NewsShareTools title={version.title} summary={version.summary} url={publicNewsArticleUrl(article.slug)} imageUrl={publishedNewsCover(version)?.url ? new URL(publishedNewsCover(version)!.url, absoluteUrl("/")).toString() : null} /> : null}
+
       <Panel>
-        <SectionHeading eyebrow="Protected history" title="Revision and audit history" description="Read-only workflow history. Actor identifiers and private article content are not exposed here." />
+        <SectionHeading eyebrow="Protected history" title="Revision history" description="Read-only version history. Publication actions remain recorded in the protected audit log." />
         {versionHistoryResult.error ? <Notice tone="neutral" role="status">Revision history is unavailable for this article right now.</Notice> : versionHistory.length ? <div className="ui-table" role="region" aria-label="Article revision history" tabIndex={0}><table><thead><tr><th scope="col">Version</th><th scope="col">Headline</th><th scope="col">State</th><th scope="col">Created</th></tr></thead><tbody>{versionHistory.map((item) => <tr key={item.id}><td>{item.version_number}</td><td>{item.title}</td><td><StatusBadge tone={item.state === "approved" || item.state === "published" ? "success" : item.state === "rejected" ? "danger" : item.state === "review" ? "warning" : "neutral"}>{item.state}</StatusBadge></td><td><span className="ui-meta">{new Date(item.created_at).toLocaleString("en-NG")}</span></td></tr>)}</tbody></table></div> : <p className="ui-muted">No saved revisions are available.</p>}
-        {auditHistoryResult.error ? <Notice tone="neutral" role="status">Audit history requires the audit.read capability and is not available to this account.</Notice> : auditHistory.length ? <div className="ui-table" role="region" aria-label="Article audit history" tabIndex={0}><table><thead><tr><th scope="col">Action</th><th scope="col">Outcome</th><th scope="col">Recorded</th></tr></thead><tbody>{auditHistory.map((item, index) => <tr key={`${item.created_at}-${item.action}-${index}`}><td>{item.action}</td><td>{item.outcome}</td><td><span className="ui-meta">{new Date(item.created_at).toLocaleString("en-NG")}</span></td></tr>)}</tbody></table></div> : <p className="ui-muted">No audit events are available.</p>}
       </Panel>
 
       {editablePrivateVersion || canCreateRevision ? (
         !referencesAvailable ? <EmptyPanel title="Bylines and categories unavailable" description="The article was not changed. Reload after the reference lists can be verified." /> : (
           <Panel>
             <SectionHeading eyebrow={editablePrivateVersion ? "Private editing" : "New version"} title={editablePrivateVersion ? "Edit current draft" : "Create a private correction"} description="Changes remain private. Publication is a separate, audited action." />
-            <form action={editablePrivateVersion ? saveDraft : reviseArticle} className="ui-stack">
+            <form id="article-editor" action={editablePrivateVersion ? saveDraft : reviseArticle} className="ui-stack">
               <input type="hidden" name="articleId" value={article.id} />
               <input type="hidden" name="revision" value={String(article.revision)} />
               <div className="ui-field"><label className="label" htmlFor="title">Headline</label><input id="title" name="title" className="input" maxLength={200} required defaultValue={version.title} /></div>
@@ -170,9 +179,20 @@ export default async function EditArticlePage({
         <SectionHeading eyebrow="Publication" title="Publish now" description="Publishing makes the current version publicly visible immediately." />
         {canPublish ? <><p className="ui-muted">No second reviewer is required; the database still checks the verified staff session, article.publish capability and current revision, then records the action in the audit log.</p><form action={publishArticle} className="ui-actions"><input type="hidden" name="articleId" value={article.id} /><input type="hidden" name="revision" value={String(article.revision)} /><button className={buttonClassName("primary")} type="submit">Publish now</button></form></> : <p className="ui-muted">This account does not have article.publish access.</p>}
       </Panel> : null}
-      {currentVersionIsPublic ? <Panel>
-        <SectionHeading eyebrow="Publication" title="Public article" description="The current version is visible to readers." />
-        {canUnpublish ? <form action={unpublishArticle} className="ui-actions"><input type="hidden" name="articleId" value={article.id} /><input type="hidden" name="revision" value={String(article.revision)} /><button className={buttonClassName("secondary")} type="submit">Unpublish current article</button></form> : <p className="ui-muted">This account does not have article.unpublish access.</p>}
+      {hasPublishedVersion ? <Panel>
+        <SectionHeading
+          eyebrow="Publication"
+          title="Take down public article"
+          description={olderVersionRemainsPublic
+            ? "An older version remains live while this current version is private. This takes down the version currently visible to readers; it does not publish or change the private draft."
+            : "The current version is visible to readers. This takes it down without deleting any saved versions."}
+        />
+        {canUnpublish ? <form action={unpublishArticle} className="ui-stack">
+          <input type="hidden" name="articleId" value={article.id} />
+          <input type="hidden" name="revision" value={String(article.revision)} />
+          <label className="ui-row"><input type="checkbox" name="confirmUnpublish" value="yes" required /> I confirm taking down the version currently visible to readers.</label>
+          <div className="ui-actions"><button className={buttonClassName("secondary")} type="submit">Unpublish public article</button></div>
+        </form> : <p className="ui-muted">This account does not have article.unpublish access.</p>}
       </Panel> : null}
     </PageFrame>
   );

@@ -4,15 +4,14 @@ import { readFile } from "node:fs/promises";
 
 const root = new URL("../apps/main/", import.meta.url);
 const page = await readFile(new URL("app/news/page.tsx", root), "utf8");
-const styles = await readFile(new URL("app/news/news.module.css", root), "utf8");
+const styles = await readFile(new URL("app/news/listing.module.css", root), "utf8");
 const header = await readFile(new URL("components/site-header.tsx", root), "utf8");
 const headerStyles = await readFile(new URL("components/navigation-refinement.css", root), "utf8");
 const footer = await readFile(new URL("components/site-footer.tsx", root), "utf8");
 const newsFooter = await readFile(new URL("components/news-footer.tsx", root), "utf8");
-const newsletterCard = await readFile(new URL("components/newsletter-footer-card.tsx", root), "utf8");
-const newsletterAvailability = await readFile(new URL("components/newsletter-availability-page.tsx", root), "utf8");
-const signupRoute = await readFile(new URL("app/newsletter/page.tsx", root), "utf8");
-const unsubscribeRoute = await readFile(new URL("app/newsletter/unsubscribe/page.tsx", root), "utf8");
+const newsletter = await readFile(new URL("components/newsletter-form.tsx", root), "utf8");
+const newsletterAction = await readFile(new URL("app/newsletter/actions.ts", root), "utf8");
+const newsletterMailer = await readFile(new URL("lib/newsletter-mailer.ts", root), "utf8");
 const advertise = await readFile(new URL("app/advertise/page.tsx", root), "utf8");
 
 test("News queries only published stories and active real categories", () => {
@@ -21,7 +20,7 @@ test("News queries only published stories and active real categories", () => {
   assert.match(page, /from\("categories"\)/);
   assert.match(page, /\.eq\("is_active", true\)/);
   assert.match(page, /og_image_key/);
-  assert.doesNotMatch(page, /cover_url|cover_alt|cover_source_url|cover_license_url/);
+  assert.match(page, /og_image_key,cover_url,cover_alt/);
   assert.doesNotMatch(page, /from\("articles"\)|service_role/);
 });
 
@@ -38,7 +37,7 @@ test("News retains search, category links and no invented filters", () => {
 test("News feed uses real story links and truthful empty/error states", () => {
   assert.match(page, /newsArticlePath\(lead\.slug\)/);
   assert.match(page, /newsArticlePath\(article\.slug\)/);
-  assert.match(page, /<EmptyPanel title=/);
+  assert.match(page, /<EmptyPanel\s+title=/);
   assert.match(page, /No stories published yet/);
   assert.match(page, /No unpublished stories are shown/);
   assert.doesNotMatch(page, /featuredHeadline\s*=|sampleStory|mockArticles/);
@@ -52,23 +51,18 @@ test("News empty and no-results states provide an explore or reset action", () =
   assert.match(page, /actions=\{needsReset \?/);
 });
 
-test("News reference composition keeps an actionable lead and local-image topic explorer", () => {
+test("News presents a focused newsroom without promotional blocks", () => {
   assert.match(page, /Read full story/);
-  assert.match(page, /aria-labelledby="topics-heading"/);
-  assert.match(page, /topicImages/);
+  assert.match(page, /aria-labelledby="featured-heading"/);
+  assert.match(page, /aria-labelledby="stories-heading"/);
   assert.match(page, /href=\{categoryHref\(query, item\.slug\)\}/);
-  assert.match(styles, /\.topicGrid \{[^}]*grid-template-columns:repeat\(6/);
-  assert.match(styles, /\.topicImage \{[^}]*border-radius:50%/);
-  assert.match(styles, /\.featureAction \{[^}]*border-radius:999px/);
-  assert.match(page, /className=\{styles\.discoverBanner\}/);
-  assert.match(styles, /\.discoverBanner \{[^}]*border-radius:16px/);
-  assert.match(styles, /\.popularCard \{[^}]*border-radius:16px/);
+  assert.doesNotMatch(page, /topicImages|discoverBanner|newsletterCard|popularCard/);
 });
 
 test("Breaking news is visible only for a flagged, unexpired published lead", () => {
   assert.match(page, /function isBreakingNow\(item: ArticleListItem\)/);
   assert.match(page, /breaking_until.*Date\.now\(\)/);
-  assert.match(page, /breakingLead \? <section className=\{styles\.breakingBanner\}/);
+  assert.match(page, /breakingStories\.length \? <section className=\{styles\.breakingBanner\}/);
   assert.match(page, /aria-label="Breaking news"/);
   assert.match(styles, /\.breakingBanner \{/);
 });
@@ -92,17 +86,14 @@ test("News page and editorial footer use the same cobalt and navy identity", asy
   assert.doesNotMatch(newsStyles + footerStyles, /#(?:0b4a32|063d2b|0b7042|16894d)|rgb\(0 69 44|rgb\(10 40 26/);
 });
 
-test("News and Advertise use the editorial footer with the shared newsletter card", () => {
-  assert.match(page, /<NewsFooter categories=\{categories\} \/>/);
-  assert.match(footer, /pathname\.startsWith\("\/news\/"\) \|\| pathname === "\/advertise"/);
+test("News uses its editorial footer without a duplicate global footer", () => {
+  assert.match(page, /<NewsFooter categories=\{categories\} listing \/>/);
+  assert.match(footer, /pathname\.startsWith\("\/news\/"\)/);
   assert.match(footer, /if \(isEditorial\) return null/);
-  for (const heading of ["Quick Links", "Categories"]) assert.ok(newsFooter.includes(heading));
-  assert.match(footer, /NewsletterFooterCard/);
-  assert.match(newsFooter, /NewsletterFooterCard/);
+  for (const heading of ["Quick Links", "Categories", "Newsletter"]) assert.ok(newsFooter.includes(heading));
   assert.match(newsFooter, /href="\/advertise"/);
   assert.match(newsFooter, /Contact availability/);
   assert.match(newsFooter, /from\("categories"\)/);
-  assert.doesNotMatch(page, /newsletter|NewsletterUnavailable/i);
 });
 
 test("public footers and correction links do not imply that unavailable contact intake works", async () => {
@@ -123,41 +114,36 @@ test("public footers and correction links do not imply that unavailable contact 
   assert.doesNotMatch(article, /contact the newsroom/i);
 });
 
-test("Newsletter footer, signup and unsubscribe routes stay unavailable and collect no data", () => {
-  assert.match(newsletterCard, /Unavailable/);
-  assert.match(newsletterCard, /Subscription storage, email delivery, unsubscribe handling and abuse controls are not ready/);
-  assert.match(newsletterCard, /No email address is collected here/);
-  assert.match(newsletterCard, /href="\/newsletter"/);
-  assert.match(newsletterCard, /href="\/newsletter\/unsubscribe"/);
-  assert.match(signupRoute, /mode="signup"/);
-  assert.match(unsubscribeRoute, /mode="unsubscribe"/);
-  assert.match(newsletterAvailability, /no form/);
-  assert.match(newsletterAvailability, /Persistent subscription storage, authorized email delivery, unsubscribe handling and abuse controls/);
-  assert.doesNotMatch(newsletterCard + newsletterAvailability, /<form|type="email"|name=["']email["']/i);
-  assert.doesNotMatch(newsletterAvailability, /success|subscribed|unsubscribed/i);
+test("Newsletter uses the standalone form/action/mailer path and preserves truthful delivery errors", () => {
+  assert.match(newsletter, /useActionState\(subscribeNewsletter/);
+  assert.match(newsletter, /name="email"/);
+  assert.match(newsletterAction, /newsletter_subscribe_request/);
+  assert.match(newsletterAction, /sendNewsletterConfirmation/);
+  assert.match(newsletterMailer, /NEWSLETTER_SMTP_HOST/);
+  assert.match(newsletterMailer, /newsletter\/unsubscribe\?token=/);
+  assert.doesNotMatch(newsletterAction, /auth\.signInWithOtp|auth\.verifyOtp|emailRedirectTo/);
   assert.match(advertise, /does not collect or store contact details/);
   assert.match(advertise, /Enquiries unavailable/);
   assert.doesNotMatch(advertise, /<form|action=|mailto:/);
 });
 
-test("News lead and cards eagerly load above-fold covers that fill their containers", () => {
+test("News lead and cards load covers with appropriate priority", () => {
   assert.match(page, /className=\{styles\.featureImage\}[^>]*loading="eager" fetchPriority="high"/);
-  assert.match(page, /loading="eager" decoding="async" referrerPolicy="no-referrer"/);
-  assert.match(page, /className=\{styles\.headlineImage\} src=\{image\} alt="" loading="eager"/);
-  assert.match(page, /className=\{styles\.storyImage\} src=\{image\} alt="" loading="lazy"/);
-  assert.doesNotMatch(page, /fetchPriority="auto"/);
-  assert.match(styles, /\.featureImage,\.featureImageFallback \{[^}]*object-fit:cover/);
-  assert.match(styles, /\.headlineImage,\.headlineImageFallback \{[^}]*object-fit:cover/);
-  assert.match(styles, /\.storyImage,\.storyImageFallback \{[^}]*object-fit:cover/);
-  assert.doesNotMatch(styles, /object-fit:\s*contain/);
+  assert.match(page, /className=\{styles\.storyImage\} src=\{image\} alt=""/);
+  assert.match(styles, /\.featureImage,\.storyImage \{[^}]*object-fit: cover/);
 });
 
 test("News content keeps a responsive editorial grid and accessible 48px controls", () => {
-  assert.match(styles, /\.newsPageGrid \{[^}]*grid-template-columns:minmax\(0,1fr\) 294px/);
-  assert.match(styles, /@media \(max-width:600px\)/);
-  assert.match(styles, /\.categoryLink \{[^}]*min-height:48px/);
-  assert.match(styles, /\.searchSummary \{[^}]*min-height:48px/);
-  assert.match(styles, /\.featureCard \{[^}]*aspect-ratio/);
+  assert.match(styles, /\.storyGrid \{[^}]*repeat\(3, minmax\(0, 1fr\)\)/);
+  assert.match(styles, /@media \(max-width: 520px\)/);
+  assert.match(styles, /\.categoryLink \{[^}]*min-height: 48px/);
+  assert.match(styles, /\.searchSummary \{[^}]*min-height: 48px/);
+  assert.match(page, /<details className=\{styles\.categoryDropdown\}>/);
+  assert.match(page, /Load more news/);
+  assert.match(page, /View all available news/);
+  assert.match(page, /className=\{styles\.filterTools\}/);
+  assert.match(styles, /\.filterTools \.newsSearchForm input[^}]*border-radius:999px/);
+  assert.match(styles, /@keyframes newsroom-rise/);
 });
 
 test("News pagination remains bounded with deterministic published ordering", () => {
@@ -166,4 +152,12 @@ test("News pagination remains bounded with deterministic published ordering", ()
   assert.match(page, /\.range\(start, start \+ PAGE_SIZE\)/);
   assert.match(page, /\.order\("slug", \{ ascending: true \}\)/);
   assert.match(page, /const hasOlder = rows\.length > PAGE_SIZE/);
+});
+
+
+test("News lists newest stories first and groups later stories by real category", () => {
+  assert.match(page, /remaining\.slice\(0, 6\)/);
+  assert.match(page, /remaining\.slice\(6\)/);
+  assert.match(page, /grouped\.get\(story\.category_slug\)/);
+  assert.match(page, /categoryHref\("", slug\)/);
 });

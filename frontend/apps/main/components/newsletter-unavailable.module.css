@@ -1,0 +1,21 @@
+.signup { display: grid; gap: 8px; min-width: 0; }
+.label { color: var(--palette-navy); font-size: .75rem; font-weight: 700; }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; min-width: 0; }
+.email { box-sizing: border-box; min-width: 0; min-height: 46px; padding: 0 13px; border: 1px solid var(--palette-border); border-radius: 12px; background: hsl(var(--card)); color: hsl(var(--muted-foreground)); font: inherit; font-size: .8125rem; }
+.email::placeholder { color: hsl(var(--muted-foreground)); opacity: 1; }
+.button { min-width: 94px; min-height: 46px; padding: 0 13px; border: 1px solid transparent; border-radius: 999px; background: var(--palette-cobalt); color: var(--palette-midnight); font: inherit; font-size: .8125rem; font-weight: 750; transition: transform .2s ease, filter .2s ease; }
+.button:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(.95); }
+.button:disabled, .email:disabled { cursor: not-allowed; opacity: .84; }
+.note { margin: 0; color: hsl(var(--muted-foreground)); font-size: .6875rem; line-height: 1.5; }
+.success,.error { margin: 0; padding: 8px 10px; border-radius: 10px; font-size: .6875rem; line-height: 1.45; }
+.success { color: #26614a; background: #e7f2eb; }
+.error { color: #a73545; background: #fae9ed; }
+.footer .label { color: var(--palette-cloud); }
+.footer .email { border-color: var(--palette-border); background: rgb(255 255 255 / .96); color: var(--palette-navy); }
+.footer .button { background: var(--palette-cobalt); color: var(--palette-midnight); }
+.footer .note { color: var(--palette-silver); }
+@media (max-width: 420px) { .row { grid-template-columns: minmax(0, 1fr); } .button { width: 100%; } }
+@media (prefers-reduced-motion: reduce) { .button { transition: none; } .button:hover:not(:disabled) { transform: none; } }
+.footer .row { grid-template-columns: minmax(0,1fr); gap:10px; }
+.footer .email { width:100%; min-height:52px; padding-inline:16px; border:1px solid #cbd8e9; border-radius:12px; font-size:.875rem; }
+.footer .button { width:100%; min-height:48px; border-radius:12px; font-size:.875rem; }

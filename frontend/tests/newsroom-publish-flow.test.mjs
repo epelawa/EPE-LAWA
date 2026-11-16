@@ -43,8 +43,9 @@ test("direct publish is capability- and revision-checked server-side, and revali
   assert.match(schema, /'publication_mode',\s*v_publication_mode/);
 });
 
-test("drafts stay private and the public list and article resolve only published_articles", () => {
-  assert.match(createPage, /Create private draft/);
+test("drafts stay private and the public list and article resolve only published_articles", async () => {
+  assert.match(createPage, /<NewsArticleComposer/);
+  assert.match(await read("frontend/apps/admin/components/news-article-composer.tsx"), /Saving creates a private article/);
   assert.match(editPage, /Changes remain private/);
   assert.match(listing, /from\("published_articles"\)/);
   assert.match(listing, /newsArticlePath\(article\.slug\)/);
@@ -58,7 +59,7 @@ test("drafts stay private and the public list and article resolve only published
 test("public News selects only columns verified on published_articles", () => {
   const verifiedColumns = new Set([
     "id", "slug", "published_at", "is_breaking", "breaking_until", "title", "summary", "body",
-    "seo_title", "seo_description", "og_image_key",
+    "seo_title", "seo_description", "og_image_key", "cover_url", "cover_alt", "cover_credit", "cover_caption",
     "author_name", "author_slug", "category_slug", "category_label",
   ]);
   const selections = [...listing.matchAll(/\.from\("published_articles"\)\s*\.select\("([^"]+)"\)/g),
@@ -104,18 +105,19 @@ test("admin current-version joins use stable column hints rather than deployment
     read("frontend/apps/admin/app/(protected)/newsroom/page.tsx"),
     read("frontend/apps/admin/app/(protected)/newsroom/[id]/page.tsx"),
   ]);
-  assert.match(list, /current_version:current_version_id\s*\(/);
+  assert.match(list, /current_version:current_version_id!inner/);
+  assert.match(list, /current_version:current_version_id"/);
   assert.match(editor, /current_version:article_versions!current_version_id\s*\(/);
   for (const source of [list, editor]) {
     assert.doesNotMatch(source, /articles_current_version(?:_fkey|_id_fkey)/);
   }
 });
 
-test("staff Newsroom exposes read-only revision and audit history without actor identifiers", async () => {
+test("staff Newsroom exposes revision history without listing protected audit events", async () => {
   const editor = await read("frontend/apps/admin/app/(protected)/newsroom/[id]/page.tsx");
   assert.match(editor, /from\("article_versions"\)/);
-  assert.match(editor, /from\("audit_events"\)/);
-  assert.match(editor, /Revision and audit history/);
-  assert.match(editor, /audit\.read capability/);
+  assert.doesNotMatch(editor, /from\("audit_events"\)/);
+  assert.match(editor, /Revision history/);
+  assert.match(editor, /protected audit log/);
   assert.doesNotMatch(editor, /actor_id|created_by<\/td>|email_address/);
 });

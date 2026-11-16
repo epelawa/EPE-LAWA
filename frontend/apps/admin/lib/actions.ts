@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "./supabase";
 import { adminHref } from "./admin-path";
+import { hasConfirmedArticleUnpublish } from "./article-publication-state";
 import { isNewsCoverKey } from "../../main/lib/news-covers";
 import { normalizeExternalNewsCoverUrl } from "../../main/lib/news-cover-url.mjs";
 
@@ -254,6 +255,11 @@ export async function publishArticle(formData: FormData): Promise<void> {
   await articleTransition(formData, "article_publish", "published");
 }
 export async function unpublishArticle(formData: FormData): Promise<void> {
+  const articleId = text(formData, "articleId", 64);
+  if (!UUID.test(articleId)) fail("/newsroom?error=invalid");
+  if (!hasConfirmedArticleUnpublish(rawText(formData, "confirmUnpublish"))) {
+    fail(`/newsroom/${articleId}?error=unpublish_confirmation`);
+  }
   await articleTransition(formData, "article_unpublish", "unpublished");
 }
 async function articleTransition(
