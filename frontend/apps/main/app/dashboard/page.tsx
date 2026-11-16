@@ -6,11 +6,13 @@ import AccountShell from "../../components/account-shell";
 import { createClient } from "../../lib/supabase";
 import { checkHandleAvailability, signOut } from "../auth/actions";
 import { markNotificationsRead } from "./actions";
+import { toggleSavedArticle } from "./saved-actions";
 import MemberTopbar from "../../components/member-topbar";
 import SessionGuard from "../../components/session-guard";
 import ProfileEditor from "./profile-editor";
 import HandleCompletionForm from "./handle-completion-form";
 import { DashboardDiscoverNews, DashboardHomeNews, safePage } from "./news-content";
+import { formatPublishedDate } from "../../lib/dates";
 import styles from "./dashboard.module.css";
 import "../auth/auth.css";
 import {
@@ -102,12 +104,82 @@ function DashboardServices() {
   </section>;
 }
 
-function DashboardSaved() {
-  return <section className={`${styles.panel} ${styles.emptyState}`} aria-labelledby="saved-title">
-    <p className={styles.eyebrow}>Saved</p>
-    <h2 id="saved-title">Saving isn’t available yet</h2>
-    <p className={styles.helper}>This account area does not currently provide saved-item storage, so no saved records are being queried or reported here.</p>
-    <Link className="btn-secondary" href="/dashboard?tab=discover">Discover stories</Link>
+type SavedStory = {
+  id: string;
+  slug: string;
+  title: string;
+  summary: string | null;
+  published_at: string | null;
+  category_label: string | null;
+};
+type SavedResult = { state: "ok"; items: SavedStory[] } | { state: "error"; items: SavedStory[] };
+
+async function loadSavedStories(): Promise<SavedResult> {
+  try {
+    const supabase = await createClient();
+    const { data: savedRows, error } = await supabase
+      .from("saved_articles")
+      .select("article_id,created_at")
+      .order("created_at", { ascending: false })
+      .limit(60);
+    if (error) {
+      console.error("saved_articles read failed", { code: error.code });
+      return { state: "error", items: [] };
+    }
+    const ids = (savedRows ?? []).map((row) => (row as { article_id: string }).article_id).filter(Boolean);
+    if (!ids.length) return { state: "ok", items: [] };
+    const { data: stories, error: storyError } = await supabase
+      .from("published_articles")
+      .select("id,slug,title,summary,published_at,category_label")
+      .in("id", ids);
+    if (storyError) {
+      console.error("saved_articles story read failed", { code: storyError.code });
+      return { state: "error", items: [] };
+    }
+    const byId = new Map((stories ?? []).map((story) => [(story as SavedStory).id, story as SavedStory]));
+    const items = ids.map((id) => byId.get(id)).filter((story): story is SavedStory => Boolean(story));
+    return { state: "ok", items };
+  } catch {
+    console.error("saved_articles client unavailable", { reason: "configuration_or_provider" });
+    return { state: "error", items: [] };
+  }
+}
+
+async function DashboardSaved() {
+  const { state, items } = await loadSavedStories();
+  return <section className={styles.panel} aria-labelledby="saved-title">
+    <div className={styles.panelHeading}>
+      <div>
+        <p className={styles.eyebrow}>Saved</p>
+        <h1 id="saved-title">Your reading list</h1>
+      </div>
+      <span className={styles.handle}>{items.length} saved</span>
+    </div>
+    <p className={styles.helper}>Stories you save with the bookmark control on any published article are kept here for your account only.</p>
+    {state === "error"
+      ? <p className={styles.error} role="alert">Your saved stories could not be loaded right now. Nothing is being guessed or substituted.</p>
+      : items.length === 0
+        ? <div className={styles.savedEmpty}>
+          <BookmarkIcon size={30} />
+          <h2>Nothing saved yet</h2>
+          <p className={styles.helper}>Open any published story and use the save control to add it to this list.</p>
+          <Link className="btn-secondary" href="/dashboard?tab=discover">Discover stories</Link>
+        </div>
+        : <ul className={styles.savedGrid}>
+          {items.map((story) => <li className={styles.savedItem} key={story.id}>
+            <span className={styles.savedCopy}>
+              {story.category_label ? <span className={styles.savedCategory}>{story.category_label}</span> : null}
+              <Link className={styles.savedTitle} href={`/news/${story.slug}`}>{story.title}</Link>
+              {story.published_at ? <span className={styles.savedMeta}>{formatPublishedDate(story.published_at) ?? ""}</span> : null}
+            </span>
+            <form action={toggleSavedArticle}>
+              <input type="hidden" name="articleId" value={story.id} />
+              <input type="hidden" name="slug" value={story.slug} />
+              <input type="hidden" name="intent" value="remove" />
+              <button className="btn-secondary" type="submit">Remove</button>
+            </form>
+          </li>)}
+        </ul>}
   </section>;
 }
 
@@ -269,24 +341,12 @@ export default async function MemberDashboardPage({ searchParams }: { searchPara
       <MemberTopbar displayName={profile.display_name} handle={profile.handle} unreadCount={unreadCount} />
       <SessionGuard scope="member" timeoutMs={MEMBER_INACTIVITY_MS} signOutAction={signOut} />
       <main className={`${styles.shell} member-dashboard-shell`}>
-        <section className={styles.greeting} aria-label="Your member space">
-          <div>
-            <p className={styles.eyebrow}>Member dashboard</p>
-            <p className={styles.greetingTitle}>Welcome back, <strong>{profile.display_name}</strong></p>
-            <p className={styles.greetingCopy}>Your news, your notifications and your public profile — all inside the member space.</p>
-          </div>
-          <div className={styles.quickActions}>
-            <Link className="btn-primary" href="/dashboard?tab=discover">Discover stories</Link>
-            <Link className="btn-secondary" href="/dashboard?tab=notifications">Notifications{unreadCount > 0 ? <span className={styles.quickBadge}>{unreadCount}</span> : null}</Link>
-            <Link className="btn-secondary" href="/dashboard?tab=profile">Your profile</Link>
-          </div>
-        </section>
         <DashboardTabs active={activeTab} />
         <DashboardServices />
         {!showNewsFeed && activeTab !== "notifications" ? <header className={styles.hero}>
           <p className={styles.eyebrow}>Member dashboard</p>
           <h1>{activeTab === "saved" ? "Saved" : "Profile"}</h1>
-          <p>{activeTab === "saved" ? "Saved-item storage is not available yet." : "Manage your public profile details."}</p>
+          <p>{activeTab === "saved" ? "Everything you bookmarked, in published order." : "Manage your public profile details."}</p>
         </header> : null}
         {activeTab === "home" ? <DashboardHomeNews client={supabase} />
           : activeTab === "discover" ? <DashboardDiscoverNews client={supabase} query={query} category={category} page={page} />

@@ -16,6 +16,7 @@ import ArticleCoverStats from "../../../components/article-cover-stats";
 import ArticleViewPing from "../../../components/article-view-ping";
 import OfflineArticleDownload from "../../../components/offline-article-download";
 import ArticleShareActions from "../../../components/article-share-actions";
+import SaveArticleButton from "../../../components/save-article-button";
 import { NewspaperIcon } from "../../../components/icons";
 import NewsFooter from "../../../components/news-footer";
 import { PageFrame } from "../../../components/design-system";
@@ -108,13 +109,15 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
   let engagement: ArticleEngagement | null = null;
   let signedIn = false;
   let visibleComments = 0;
+  let saved = false;
   try {
     const supabase = await createClient();
-    const [bodyResult, relatedResult, sessionResult, commentCountResult] = await Promise.all([
+    const [bodyResult, relatedResult, sessionResult, commentCountResult, savedResult] = await Promise.all([
       readPublishedArticleBody(supabase, article.id),
       supabase.from("published_articles").select("slug,title,summary,published_at,og_image_key,category_label").eq("category_slug", article.category_slug).neq("slug", article.slug).order("published_at", { ascending: false, nullsFirst: false }).order("slug", { ascending: true }).limit(3),
       supabase.auth.getUser(),
       supabase.from("comments").select("id", { count: "exact", head: true }).eq("article_id", article.id).eq("state", "visible"),
+      supabase.from("saved_articles").select("id", { count: "exact", head: true }).eq("article_id", article.id),
     ]);
     if (bodyResult.error || !bodyResult.data) {
       console.error("published article body read failed", { code: bodyResult.error?.code ?? "missing_published_version" });
@@ -126,6 +129,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
     engagement = await loadArticleEngagement(supabase, article.id);
     signedIn = Boolean(sessionResult.data?.user);
     visibleComments = commentCountResult.count ?? 0;
+    saved = Boolean(sessionResult.data?.user) && (savedResult.count ?? 0) > 0;
   } catch {
     console.error("published article body client unavailable", { reason: "configuration_or_provider" });
     return <ArticleUnavailable />;
@@ -149,6 +153,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
               <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/><path d="M9 12h12"/></svg>
               <span className="sr-only">Back to News</span>
             </Link>
+            {signedIn ? <SaveArticleButton articleId={article.id} slug={article.slug} saved={saved} className={styles.heroControl} /> : null}
             <ArticleShareActions title={article.title} url={articleUrl} compact showCopyButton={false} className={styles.heroShareActions} shareButtonClassName={styles.heroControl} feedbackClassName={styles.heroShareFeedback} fallbackClassName={styles.shareFallback} />
           </div>
           <div className={styles.articleHeroCopy}>
