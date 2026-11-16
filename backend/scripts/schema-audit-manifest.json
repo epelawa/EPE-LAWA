@@ -290,7 +290,6 @@
       "name": "profiles",
       "columns": [],
       "routeRefs": [
-        "/auth/complete",
         "/dashboard",
         "/forum/thread/[slug]"
       ]

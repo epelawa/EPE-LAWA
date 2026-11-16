@@ -70,13 +70,10 @@ test("member auth routes use a centered branded shell without appearance control
     "auth/page.tsx",
     "forgot-password/page.tsx",
     "auth/new-password/page.tsx",
-    "auth/complete/page.tsx",
   ]) {
     const source = await read(app, route);
     assert.match(source, /<AccountShell\b/, `${route} should use the shared auth shell`);
-    if (route !== "auth/complete/page.tsx") {
     assert.doesNotMatch(source, /ThemeToggle|showThemeToggle|Appearance|appearance/, `${route} should not expose appearance controls`);
-    }
   }
 
   const staffLogin = await read(app, "admin/login/page.tsx");

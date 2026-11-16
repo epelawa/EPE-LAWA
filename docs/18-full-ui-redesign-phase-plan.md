@@ -24,7 +24,7 @@ Release gate: exact-head tests, typecheck, production build, responsive/keyboard
 
 ## Phase 2 — member identity and community participation
 
-**Member routes:** `/login`, `/auth`, `/forgot-password`, `/auth/new-password`, `/auth/callback`, `/auth/complete`, `/auth/verify`, `/auth/link-expired`, `/auth/link-problem`, and `/dashboard`.
+**Member routes:** `/login`, `/auth`, `/forgot-password`, `/auth/new-password`, `/auth/callback`, `/auth/verify`, `/auth/link-expired`, `/auth/link-problem`, and `/dashboard`.
 
 **Community routes/interactions:** `/forum`, `/forum/category/[slug]`, `/forum/thread/[slug]`, `/forum/new`, private contribution behavior on `/itan-ilu-mi`, and comment/reply/report behavior on `/news/[slug]`.
 

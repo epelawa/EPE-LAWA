@@ -94,9 +94,6 @@
       "path": "/admin/users"
     },
     {
-      "path": "/auth/complete"
-    },
-    {
       "path": "/auth/link-expired"
     },
     {

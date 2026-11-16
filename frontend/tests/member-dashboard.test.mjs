@@ -4,12 +4,11 @@ import { readFile } from "node:fs/promises";
 
 const app = new URL("../apps/main/app/", import.meta.url);
 const components = new URL("../apps/main/components/", import.meta.url);
-const [page, action, editor, auth, complete, header, sitemap, globalStyles, footer, newsContent, dashboardCss, dashboardLoading] = await Promise.all([
+const [page, action, editor, auth, header, sitemap, globalStyles, footer, newsContent, dashboardCss, dashboardLoading] = await Promise.all([
   readFile(new URL("dashboard/page.tsx", app), "utf8"),
   readFile(new URL("dashboard/actions.ts", app), "utf8"),
   readFile(new URL("dashboard/profile-editor.tsx", app), "utf8"),
   readFile(new URL("auth/actions.ts", app), "utf8"),
-  readFile(new URL("auth/complete/page.tsx", app), "utf8"),
   readFile(new URL("site-header.tsx", components), "utf8"),
   readFile(new URL("../../../../docs/03-sitemap.md", app), "utf8"),
   readFile(new URL("globals.css", app), "utf8"),
@@ -46,10 +45,10 @@ test("member profile editor updates only the authenticated user's name and handl
   assert.match(editor, /role=\{state\.status === "error" \? "alert" : "status"\}/);
 });
 
-test("sign-in leads members through completion while the public drawer stays account-only", () => {
-	assert.match(auth, /signInWithPassword[\s\S]*?redirect\("\/auth\/complete"\)/);
-	assert.match(complete, /redirect\("\/dashboard"\)/);
-	assert.doesNotMatch(complete, /You’re signed in|Open your member dashboard/);
+test("sign-in leads straight to the dashboard while the public drawer stays account-only", () => {
+	assert.match(auth, /signInWithPassword[\s\S]*?redirect\("\/dashboard"\)/);
+	assert.doesNotMatch(auth, /auth\/complete/);
+	assert.doesNotMatch(page, /You’re signed in|Open your member dashboard/);
 	assert.doesNotMatch(header, /Member dashboard|renderLink\("\/dashboard"/);
 	assert.doesNotMatch(header, /Appearance|ThemeToggle|theme-control/);
 	assert.match(header, /renderLink\("\/auth", "Create account", "btn-primary"\)/);

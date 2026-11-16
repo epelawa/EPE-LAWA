@@ -41,7 +41,7 @@ test("signing in lands on the member dashboard and the separate-member chrome re
     read("frontend/apps/main/app/dashboard/dashboard.module.css"),
   ]);
   assert.match(auth, /signInWithPassword[\s\S]*?redirect\("\/dashboard"\)/);
-  assert.match(auth, /redirect\("\/auth\/complete"\)/);
+  assert.doesNotMatch(auth, /auth\/complete/);
   assert.match(page, /<MemberTopbar/);
   assert.match(page, /<SessionGuard scope="member" timeoutMs=\{MEMBER_INACTIVITY_MS\}/);
   assert.match(page, /from\("notifications"\)/);
