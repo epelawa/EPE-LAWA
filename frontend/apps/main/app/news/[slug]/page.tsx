@@ -145,15 +145,20 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
   const signInHref = `/login?next=${encodeURIComponent(`/news/${article.slug}#comments`)}`;
 
   return (
-    <>
-    <PageFrame className={`${styles.articlePage} ui-stack`}>
+    <div className={signedIn ? "member-reading-mode" : undefined}>
+    {signedIn ? <nav className={styles.memberReadingBar} aria-label="Member reading navigation">
+      <Link href="/dashboard?tab=discover" className={styles.memberReadingBack}>← <span>Discover</span></Link>
+      <span className={styles.memberReadingLabel}>EPE LAWA <span>· Member reading</span></span>
+      <Link href="/dashboard?tab=saved" className={styles.memberReadingSaved}>Saved stories</Link>
+    </nav> : null}
+    <PageFrame className={`${styles.articlePage} ui-stack ${signedIn ? styles.memberArticlePage : ""}`}>
       <ArticleViewPing articleId={article.id} />
       <LayoutVariation area="article"><article className={styles.article}>
         <header className={styles.articleHero}>
           <div className={styles.articleHeroTop}>
-            <Link href="/news" className={styles.heroControl} aria-label="Back to News">
+            <Link href={signedIn ? "/dashboard?tab=discover" : "/news"} className={styles.heroControl} aria-label={signedIn ? "Back to Discover" : "Back to News"}>
               <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/><path d="M9 12h12"/></svg>
-              <span className="sr-only">Back to News</span>
+              <span className="sr-only">{signedIn ? "Back to Discover" : "Back to News"}</span>
             </Link>
             {signedIn ? <SaveArticleButton articleId={article.id} slug={article.slug} saved={saved} className={styles.heroControl} /> : null}
             <ArticleShareActions title={article.title} url={articleUrl} compact showCopyButton={false} className={styles.heroShareActions} shareButtonClassName={styles.heroControl} feedbackClassName={styles.heroShareFeedback} fallbackClassName={styles.shareFallback} />
@@ -181,7 +186,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
         <p className={styles.correctionNote}>Correction reporting is not available through this site yet. <Link href="/contact" className="ui-text-link">View contact availability</Link>.</p>
       </article></LayoutVariation>
     </PageFrame>
-    <NewsFooter />
-    </>
+    {!signedIn ? <NewsFooter /> : null}
+    </div>
   );
 }
