@@ -152,7 +152,7 @@ test("signed-in dashboard keeps honest empty views and one responsive tab bar", 
   }
 
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1, name: "Epe Lawa: Connecting Our People, Our Community" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Stay Connected, Stay Informed" })).toBeVisible();
   await expect(page.locator(".mobile-bottom-nav")).toHaveCount(0);
   await expectLocalSupabaseOnly(page);
 

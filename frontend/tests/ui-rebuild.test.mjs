@@ -20,8 +20,8 @@ test('homepage preserves all 52 credited photos and restores its two original he
   const credits=read('docs/hero-image-sources.md');
   const heroCss=read('frontend/apps/main/app/hero-logo.css');
   const manifest=JSON.parse(read('frontend/apps/main/lib/hero-images.json'));
-  assert.match(source,/<HeroCarousel\s*\/>/);
-  assert.match(source,/Epe Lawa: Connecting/);
+  assert.match(source,/<HeroCarousel>/);
+  assert.match(source,/Stay Connected/);
   assert.match(source,/getLatestStories\(7\)/);
   assert.match(source,/aria-label="Explore EPE LAWA"/);
   assert.equal(manifest.length,54);
@@ -34,7 +34,7 @@ test('homepage preserves all 52 credited photos and restores its two original he
   assert.doesNotMatch(carousel,/Epe · Lagos State|Rooted in the community\. Open to everyone\./);
   assert.match(carousel,/setTimeout|setInterval|ROTATION_DELAY/);
   assert.match(carousel,/prefers-reduced-motion/);
-  assert.match(carousel,/home-hero__pause/);
+  assert.match(carousel,/home-photo-control__button/);
   assert.match(carousel,/aria-roledescription="slide"/);
   assert.doesNotMatch(carousel,/home-hero__caption|home-hero__credit|home-hero__slide-label|home-hero__counter|Photo by <a/);
   assert.match(read('frontend/apps/main/app/photo-credits/page.tsx'),/href=\{image\.licenseUrl\}/);

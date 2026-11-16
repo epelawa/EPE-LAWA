@@ -53,8 +53,8 @@ for (const width of viewportWidths) {
     await page.goto("/");
 
     await expect(page.locator("main#main")).toBeVisible();
-    await expect(page.getByRole("heading", { level: 1, name: "Epe Lawa: Connecting Our People, Our Community" })).toBeVisible();
-    await expect(page.getByRole("heading", { level: 2, name: "Top Stories" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Stay Connected, Stay Informed" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "Latest News" })).toBeVisible();
     await expect(page.locator(".mobile-bottom-nav")).toHaveCount(0);
     await captureEvidence(page, "home", width);
     await expectNoHorizontalOverflow(page, `homepage at ${width}px`);

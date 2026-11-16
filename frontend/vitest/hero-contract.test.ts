@@ -5,7 +5,7 @@ const home = readFileSync(fileURLToPath(new URL("../apps/main/app/page.tsx", imp
 const css = readFileSync(fileURLToPath(new URL("../apps/main/app/home-client-refresh.css", import.meta.url)), "utf8");
 describe("community home", () => {
   it("links to real sections and reads published stories", () => {
-    expect(home).toContain("Epe Lawa: Connecting");
+    expect(home).toContain("Stay Connected");
     expect(home).toContain("getLatestStories(7)");
     expect(home).toContain('aria-label="Explore EPE LAWA"');
     expect(home).toContain('href="/radio"');

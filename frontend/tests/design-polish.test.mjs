@@ -32,8 +32,8 @@ test("public shell stays light and the all-viewport drawer is account-only", () 
   assert.doesNotMatch(navCss, /\.drawer-list|\.drawer-foot-links/);
 	assert.match(header, /<BrandLockup size=\{32\} \/>/);
   assert.doesNotMatch(header + brand + staffBrand + footer, /Epe Division|brand__place|brand-lockup__tagline|showPlace/);
-  assert.match(home, /<HeroCarousel\s*\/>/, "homepage logo hero exists");
-  assert.match(home, /Epe Lawa: Connecting/);
+  assert.match(home, /<HeroCarousel>/, "homepage logo hero exists");
+  assert.match(home, /Stay Connected/);
   assert.doesNotMatch(home, /home-hero__brand|BrandLockup/);
   assert.match(home, /href="\/news" className="btn-primary">Read latest news/);
   assert.doesNotMatch(home, /Stories worth knowing|History worth keeping|Places worth finding|People worth connecting|home-topics/);
@@ -43,13 +43,9 @@ test("public shell stays light and the all-viewport drawer is account-only", () 
   assert.match(heroCarousel, /HERO_SLIDES = heroImages/);
   assert.match(heroCarousel, /setTimeout|setInterval|ROTATION_DELAY/);
   assert.match(heroCarousel, /prefers-reduced-motion/);
-	assert.match(heroCarousel, /home-hero__pause/);
+	assert.match(heroCarousel, /home-photo-control__button/);
 	assert.match(heroCarousel, /onFocusCapture=\{\(\) => setPaused\(true\)\}/);
-	assert.match(heroCarousel, /aria-label="Previous Epe photo"/);
-	assert.match(heroCarousel, /aria-label="Next Epe photo"/);
 	assert.match(heroCarousel, /aria-label=\{rotationLabel\}/);
-  assert.match(read("frontend/apps/main/app/hero-logo.css"), /\.home-hero__slide-control\s*\{[^}]*clip-path:\s*inset\(50%\)/);
-  assert.match(read("frontend/apps/main/app/hero-logo.css"), /\.home-hero__pause\s*\{[^}]*clip-path:\s*inset\(50%\)/);
   assert.match(heroCarousel, /aria-roledescription="slide"/);
   assert.doesNotMatch(heroCarousel, /home-hero__caption|home-hero__credit|home-hero__slide-label|home-hero__counter|Photo by <a/);
   assert.doesNotMatch(heroCarousel, /Epe Division|The voice of Epe Division/i);
