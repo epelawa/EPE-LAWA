@@ -203,6 +203,8 @@ for (const width of [320, 375] as const) {
       await expect(discoverLink).toHaveAttribute("aria-current", "page");
 
       await page.goto("/news");
+      // The shared newsletter card supplies the final footer links; wait for the preloader before hit-testing one.
+      await expect(page.locator(".site-preloader")).toHaveCount(0, { timeout: 15_000 });
       await expect(newsLink).toHaveAttribute("aria-current", "page");
       const lastFooterLink = page.locator("footer a").last();
       await lastFooterLink.scrollIntoViewIfNeeded();
