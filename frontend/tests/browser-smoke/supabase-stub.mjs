@@ -125,6 +125,12 @@ const server = createServer((request, response) => {
       return;
     }
 
+    // Private member data is available only to the isolated fixture session.
+    if ((url.pathname === "/rest/v1/saved_articles" || url.pathname === "/rest/v1/notifications") && isFixtureSession(request)) {
+      respond(response, 200, [], { "content-range": "*/0" });
+      return;
+    }
+
     if (
       url.pathname === "/rest/v1/published_articles" ||
       url.pathname === "/rest/v1/categories"

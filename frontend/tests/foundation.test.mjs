@@ -195,11 +195,8 @@ test('homepage hero gallery is sourced, responsive, eager and resource-aware', a
   const manifest = JSON.parse(await readProjectFile('frontend/apps/main/lib/hero-images.json'));
   const layout = await readProjectFile('frontend/apps/main/app/layout.tsx');
   assert.match(page, /<HeroCarousel\s*\/>/);
+  assert.match(page, /Epe Lawa: Connecting/);
   assert.doesNotMatch(page, /home-hero__brand|BrandLockup/);
-  assert.match(page, /home-hero__title-line">Epe<\/span>/);
-  assert.match(page, /home-hero__title-line home-hero__title-line--accent">Closer<\/span>/);
-  assert.match(page, /home-hero__title-line home-hero__title-line--preposition">To<\/span>/);
-  assert.match(page, /home-hero__title-line">Home<\/span>/);
   assert.match(source, /ROTATION_DELAY_MS\s*=\s*7200/);
   assert.match(source, /window\.setTimeout/);
   assert.match(source, /prefers-reduced-motion/);
