@@ -59,7 +59,7 @@ export default async function ItanIluMiPage({ searchParams }: { searchParams: Pr
     </Notice>
 
     <form method="get" className="ui-toolbar" role="search">
-      <div className="ui-field"><label className="label" htmlFor="history-search">Family name or community</label><input className="input" id="history-search" name="q" maxLength={120} value={query} /></div>
+      <div className="ui-field"><label className="label" htmlFor="history-search">Family name or community</label><input className="input" id="history-search" name="q" maxLength={120} defaultValue={query} /></div>
       <div className="ui-field"><label className="label" htmlFor="history-filter">Category</label><select className="input" id="history-filter" name="category" defaultValue={category}><option value="">All categories</option>{categories.map((item) => <option key={item} value={item}>{categoryLabels[item]}</option>)}</select></div>
       <button className="btn-primary" type="submit">Search published records</button>
     </form>

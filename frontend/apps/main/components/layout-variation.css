@@ -1,0 +1,11 @@
+/* Four restrained, content-preserving editorial treatments; no motion is required to read. */
+.layout-variation { min-width: 0; }
+.layout-variation[data-layout-variant="1"] { --layout-accent: #477fe0; }
+.layout-variation[data-layout-variant="2"] { --layout-accent: #294b91; }
+.layout-variation[data-layout-variant="3"] { --layout-accent: #536d9f; }
+.layout-variation[data-layout-area="member"][data-layout-variant="1"] section { scroll-margin-top: 80px; }
+.layout-variation[data-layout-area="member"][data-layout-variant="2"] { padding: clamp(12px, 2vw, 22px); border-radius: 24px; background: #f7f9fd; }
+.layout-variation[data-layout-area="member"][data-layout-variant="3"] { padding: clamp(12px, 2vw, 22px); border: 1px solid #dbe4f2; border-radius: 24px; background: #fff; }
+.layout-variation[data-layout-area="article"][data-layout-variant="1"] article { border-top: 4px solid var(--layout-accent); padding-top: 16px; }
+.layout-variation[data-layout-area="article"][data-layout-variant="2"] article { padding: clamp(12px, 2vw, 24px); border-radius: 22px; background: #fff; }
+.layout-variation[data-layout-area="article"][data-layout-variant="3"] article { border-top: 4px solid var(--layout-accent); padding-top: 16px; }

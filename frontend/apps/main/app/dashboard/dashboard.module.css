@@ -331,3 +331,22 @@
   .storyCardLink { grid-template-columns: 104px minmax(0, 1fr); }
   .storyImageWrap, .storyImage, .storyImageFallback { min-height: 104px; }
 }
+.profileIdentity { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; padding: 16px; border-radius: 16px; background: #f1f4fa; }
+.profileIdentity h2 { margin: 0 0 5px; font-size: 1.15rem; }
+.profileIdentity .handle { display: inline-block; padding: 0; border: 0; background: transparent; }
+.profileAvatar { display: grid; width: 54px; height: 54px; flex: 0 0 auto; place-items: center; border-radius: 50%; background: #294b91; color: white; font-size: 1.3rem; font-weight: 800; }
+.shell :global([data-layout-variant="1"]) .breakingList { grid-auto-flow: column; grid-auto-columns: minmax(260px, 82%); overflow-x: auto; scroll-snap-type: x proximity; padding-bottom: 8px; }
+.shell :global([data-layout-variant="1"]) .breakingStory { scroll-snap-align: start; }
+.shell :global([data-layout-variant="2"]) .storyCardLink { grid-template-columns: minmax(0, 1fr) 104px; }
+.shell :global([data-layout-variant="2"]) .storyImageWrap { order: 1; }
+.shell :global([data-layout-variant="3"]) .feedSectionHeading :is(h1,h2) { font-family: Georgia, serif; }
+.shell :global([data-layout-variant="3"]) .breakingStory { border-radius: 26px; }
+
+/* Feed arrangements follow the paired editorial treatments on story pages. */
+.shell :global([data-layout-variant="1"]) .storyGrid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); }
+.shell :global([data-layout-variant="1"]) .storyCardLink { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+.shell :global([data-layout-variant="1"]) .storyImageWrap { min-height: 150px; }
+.shell :global([data-layout-variant="2"]) .feedSection { padding: clamp(14px, 2vw, 24px); border-radius: 20px; background: #fff; }
+.shell :global([data-layout-variant="2"]) .feedSectionHeading { border-left: 4px solid #477fe0; padding-left: 12px; }
+.shell :global([data-layout-variant="3"]) .feedSectionHeading { text-align: center; justify-content: center; }
+.shell :global([data-layout-variant="3"]) .storyCard { padding-bottom: 12px; border-bottom: 1px solid hsl(var(--border)); border-radius: 0; }

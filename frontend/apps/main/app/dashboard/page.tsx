@@ -8,6 +8,7 @@ import { checkHandleAvailability, signOut } from "../auth/actions";
 import { markNotificationsRead } from "./actions";
 import { toggleSavedArticle } from "./saved-actions";
 import MemberTopbar from "../../components/member-topbar";
+import LayoutVariation from "../../components/layout-variation";
 import SessionGuard from "../../components/session-guard";
 import ProfileEditor from "./profile-editor";
 import HandleCompletionForm from "./handle-completion-form";
@@ -308,6 +309,7 @@ export default async function MemberDashboardPage({ searchParams }: { searchPara
       <MemberTopbar displayName={profile.display_name} handle={profile.handle} unreadCount={unreadCount} />
       <SessionGuard scope="member" timeoutMs={MEMBER_INACTIVITY_MS} signOutAction={signOut} />
       <main className={`${styles.shell} member-dashboard-shell`}>
+        <LayoutVariation area="member">
         <DashboardTabs active={activeTab} />
         {!showNewsFeed && activeTab !== "notifications" && activeTab !== "saved" ? <header className={styles.hero}>
           <p className={styles.eyebrow}>Member dashboard</p>
@@ -319,11 +321,12 @@ export default async function MemberDashboardPage({ searchParams }: { searchPara
             : activeTab === "notifications" ? <DashboardNotifications notifications={notifications} error={Boolean(notificationsError)} />
               : activeTab === "saved" ? <DashboardSaved /> : <div className={styles.grid}>
                 <section className={styles.panel} aria-labelledby="profile-title">
-                  <div className={styles.panelHeading}><div><p className={styles.eyebrow}>Your details</p><h2 id="profile-title">Public profile</h2></div><span className={styles.handle}>@{profile.handle}</span></div>
+                  <div className={styles.profileIdentity}><span className={styles.profileAvatar} aria-hidden="true">{profile.display_name.trim().slice(0, 1).toUpperCase()}</span><div><h2 id="profile-title">{profile.display_name}</h2><span className={styles.handle}>@{profile.handle}</span></div></div><h2>Public profile</h2>
                   <p className={styles.helper}>Your display name and handle appear beside your posts. Keep private contact details out of your public name.</p>
                   <ProfileEditor displayName={profile.display_name} handle={profile.handle} />
                 </section>
               </div>}
+        </LayoutVariation>
       </main>
     </>
   );

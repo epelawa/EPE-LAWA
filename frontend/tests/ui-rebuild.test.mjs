@@ -76,8 +76,8 @@ test('homepage story cards use published bylines and only fully credited cover i
   assert.match(data,/selectedNewsCover\(row\.og_image_key\)/);
   assert.match(home,/story\.authorName/);
   assert.match(home,/story\.cover\.alt/);
-  assert.match(home,/story\.cover\.source/);
-  assert.match(home,/story\.cover\.license/);
+  assert.match(home,/photo-credits#news-photos/);
+  assert.match(read("frontend/apps/main/app/photo-credits/page.tsx"),/image\.license/);
   assert.match(home,/index === 0 \? "home-story-item home-story-item--lead"/);
   assert.match(home,/home-story-item--support/);
   assert.match(home,/No credited cover image available/);

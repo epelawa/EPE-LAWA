@@ -15,7 +15,8 @@ test('approved keys resolve locally and admin validates and passes selected key 
 });
 test('public article renders approved local cover credits and reserves the cover container',()=>{
  const p=read('apps/main/app/news/[slug]/page.tsx'), css=read('apps/main/app/news/news.module.css');
- assert.match(p,/cover\.source/); assert.match(p,/cover\.license/); assert.match(p,/cover\?\.alt/); assert.match(p,/selectedNewsCover\(article\.og_image_key\)/);
+ assert.match(p,/photo-credits#news-photos/); assert.match(p,/Illustrative image/);
+ const credits=read("apps/main/app/photo-credits/page.tsx"); assert.match(credits,/image\.source/); assert.match(credits,/image\.license/); assert.match(p,/cover\?\.alt/); assert.match(p,/selectedNewsCover\(article\.og_image_key\)/);
  assert.doesNotMatch(p,/cover_url|cover_alt|cover_credit|cover_source_url|cover_license_url|cover_caption/);
  assert.match(css,/articleHeroImage\.approvedCoverFull[\s\S]*object-fit:cover/); assert.match(css,/approvedCoverThumb \{ object-fit:cover/);
 });

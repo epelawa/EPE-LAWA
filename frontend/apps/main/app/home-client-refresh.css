@@ -109,3 +109,16 @@
   .home-story-summary { -webkit-line-clamp: 2; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
 }
 @media (prefers-reduced-motion: reduce) { .home-hero__photo { animation: none; } }
+.home-story-engagement { display: flex; flex-wrap: wrap; gap: 8px 14px; color: #52627b; font-size: 12px; }
+.home-story-engagement span { display: inline-flex; align-items: center; gap: 4px; }
+.home-radio { position: relative; overflow: hidden; box-shadow: 0 16px 32px rgb(10 16 35 / .14); }
+.home-radio__icon { background: rgb(167 197 245 / .18); color: #dbe9ff; }
+.home-shortcuts a { transition: transform 180ms ease, box-shadow 180ms ease; }
+.home-shortcuts a:hover { transform: translateY(-3px); box-shadow: 0 12px 22px rgb(9 33 79 / .22); }
+@media (prefers-reduced-motion: reduce) { .home-shortcuts a { transition: none; } .home-shortcuts a:hover { transform: none; } }
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .home-story-card, .home-updates__list article { animation: home-card-reveal both; animation-timeline: view(); animation-range: entry 0% entry 25%; }
+    @keyframes home-card-reveal { from { opacity: .7; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  }
+}
