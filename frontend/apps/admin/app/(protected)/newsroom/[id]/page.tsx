@@ -5,6 +5,7 @@ import { buttonClassName, EmptyPanel, Notice, PageFrame, PageIntro, Panel, Secti
 import { createClient } from "../../../../lib/supabase";
 import { publishArticle, reviseArticle, saveDraft, unpublishArticle } from "../../../../lib/actions";
 import { adminHref } from "../../../../lib/admin-path";
+import { articlePublicationState } from "../../../../lib/article-publication-state";
 import { NEWS_COVERS, isNewsCoverKey } from "../../../../../main/lib/news-covers";
 import NewsCoverUrlFields from "../../../../components/news-cover-url-fields";
 
@@ -54,17 +55,20 @@ function StatusMessage({ query }: { query: Record<string, string | undefined> })
   if (query.unpublished) return <Notice tone="neutral" role="status">Article unpublished.</Notice>;
   if (query.revised) return <Notice tone="success" role="status">A new private revision was created. The existing public version is unchanged.</Notice>;
   if (query.error) {
-    const message = query.error === "cover"
-      ? "Use one cover source. A linked cover needs a safe HTTPS image URL, alt text, credit, source page and license URL."
-      : query.error === "save"
-      ? "The draft could not be saved. It may have changed; reload before trying again."
-      : query.error === "published"
-        ? "The article was not published. Check article.publish access and reload for revision changes."
-        : query.error === "unpublished"
-          ? "The article could not be unpublished. Check the revision and your article.unpublish access."
-          : query.error === "revise"
-            ? "A new private revision could not be created. Check article.create access and reload."
-            : "The requested article action could not be completed.";
+    const message =
+      query.error === "cover"
+        ? "Use one cover source. A linked cover needs a safe HTTPS image URL, alt text, credit, source page and license URL."
+        : query.error === "save"
+          ? "The draft could not be saved. It may have changed; reload before trying again."
+          : query.error === "published"
+            ? "The article was not published. Check article.publish access and reload for revision changes."
+            : query.error === "unpublished"
+              ? "The article could not be unpublished. Check the revision and your article.unpublish access."
+              : query.error === "unpublish_confirmation"
+                ? "Confirm that you want to take down the version currently visible to readers."
+                : query.error === "revise"
+                  ? "A new private revision could not be created. Check article.create access and reload."
+                  : "The requested article action could not be completed.";
     return <Notice tone="danger" role="alert">{message}</Notice>;
   }
   return null;
@@ -118,8 +122,10 @@ export default async function EditArticlePage({
   const canPublish = publishCapability.data === true;
   const canUnpublish = unpublishCapability.data === true;
   const referencesAvailable = !categoryResult.error && !authorResult.error && categories.length > 0 && authors.length > 0;
-  const currentVersionIsPublic = article.published_version_id === article.current_version_id;
-  const olderVersionRemainsPublic = Boolean(article.published_version_id) && !currentVersionIsPublic;
+  const { hasPublishedVersion, currentVersionIsPublic, olderVersionRemainsPublic } = articlePublicationState({
+    currentVersionId: article.current_version_id,
+    publishedVersionId: article.published_version_id,
+  });
   const editablePrivateVersion = (version.state === "draft" || version.state === "review") && canCreate;
   const canCreateRevision = (version.state === "approved" || version.state === "rejected" || version.state === "published") && canCreate;
   const canPublishCurrentVersion = ["draft", "review", "approved", "published"].includes(version.state);
@@ -170,9 +176,20 @@ export default async function EditArticlePage({
         <SectionHeading eyebrow="Publication" title="Publish now" description="Publishing makes the current version publicly visible immediately." />
         {canPublish ? <><p className="ui-muted">No second reviewer is required; the database still checks the verified staff session, article.publish capability and current revision, then records the action in the audit log.</p><form action={publishArticle} className="ui-actions"><input type="hidden" name="articleId" value={article.id} /><input type="hidden" name="revision" value={String(article.revision)} /><button className={buttonClassName("primary")} type="submit">Publish now</button></form></> : <p className="ui-muted">This account does not have article.publish access.</p>}
       </Panel> : null}
-      {currentVersionIsPublic ? <Panel>
-        <SectionHeading eyebrow="Publication" title="Public article" description="The current version is visible to readers." />
-        {canUnpublish ? <form action={unpublishArticle} className="ui-actions"><input type="hidden" name="articleId" value={article.id} /><input type="hidden" name="revision" value={String(article.revision)} /><button className={buttonClassName("secondary")} type="submit">Unpublish current article</button></form> : <p className="ui-muted">This account does not have article.unpublish access.</p>}
+      {hasPublishedVersion ? <Panel>
+        <SectionHeading
+          eyebrow="Publication"
+          title="Take down public article"
+          description={olderVersionRemainsPublic
+            ? "An older version remains live while this current version is private. This takes down the version currently visible to readers; it does not publish or change the private draft."
+            : "The current version is visible to readers. This takes it down without deleting any saved versions."}
+        />
+        {canUnpublish ? <form action={unpublishArticle} className="ui-stack">
+          <input type="hidden" name="articleId" value={article.id} />
+          <input type="hidden" name="revision" value={String(article.revision)} />
+          <label className="ui-row"><input type="checkbox" name="confirmUnpublish" value="yes" required /> I confirm taking down the version currently visible to readers.</label>
+          <div className="ui-actions"><button className={buttonClassName("secondary")} type="submit">Unpublish public article</button></div>
+        </form> : <p className="ui-muted">This account does not have article.unpublish access.</p>}
       </Panel> : null}
     </PageFrame>
   );
