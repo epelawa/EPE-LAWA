@@ -83,7 +83,7 @@ const server = createServer((request, response) => {
     request.on("end", () => {
       try {
         const value = JSON.parse(body).mode;
-        if (value !== "empty" && value !== "error" && value !== "stories") {
+        if (value !== "empty" && value !== "error" && value !== "stories" && value !== "history") {
           respond(response, 400, { error: "Unsupported fixture mode" });
           return;
         }
@@ -122,6 +122,17 @@ const server = createServer((request, response) => {
 
     if (url.pathname === "/rest/v1/profiles" && isFixtureSession(request)) {
       respond(response, 200, [fixtureProfile], { "content-range": "0-0/1" });
+      return;
+    }
+
+    if (mode === "history" && url.pathname === "/rest/v1/history_records") {
+      const rows = Array.from({ length: 12 }, (_, index) => ({ id: `history-${index + 1}`, title: `Synthetic history ${index + 1}`, account: "Browser fixture only.", published_at: "2026-01-01T00:00:00Z", community: "Test community", category: "community-history", family_name: null, lineage_description: null }));
+      const range = requestRange(url);
+      respond(response, 200, rows.slice(range.start, range.end + 1));
+      return;
+    }
+    if (mode === "history" && url.pathname === "/rest/v1/history_record_sources") {
+      respond(response, 200, []);
       return;
     }
 
