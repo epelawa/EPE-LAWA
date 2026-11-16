@@ -51,7 +51,6 @@ The current canonical production origin is `https://epelawa.vercel.app/`. The ow
 /forgot-password                    MOUNTED  request a password reset
 /auth/new-password                  MOUNTED  set a new password
 /auth/callback                      MOUNTED  Auth callback route handler
-/auth/complete                      MOUNTED  verification completion and profile bootstrap only; completed profiles redirect to /dashboard
 /auth/verify                        MOUNTED  branded email-code verification and resend; noindex
 /auth/link-expired                  MOUNTED  expired-link recovery
 /auth/link-problem                  MOUNTED  generic callback problem

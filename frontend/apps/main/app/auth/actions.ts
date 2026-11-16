@@ -60,7 +60,7 @@ export async function signUp(_state: AuthState, data: FormData): Promise<AuthSta
     const supabase = await createClient();
     const { error } = await supabase.auth.signUp({
       email, password,
-      options: { emailRedirectTo: authCallbackUrl("/auth/complete"), data: { handle, display_name: displayName } },
+      options: { emailRedirectTo: authCallbackUrl("/dashboard"), data: { handle, display_name: displayName } },
     });
     if (error) return { status: "error", message: mapAuthProviderError(error, "signup") };
     return { status: "notice", message: "Your account request was received. If email verification is required, use the code or secure link in the EPE LAWA confirmation email before signing in. Delivery depends on this project’s configured email provider." };
@@ -89,7 +89,7 @@ export async function completeVerifiedMemberHandle(_state: AuthState, data: Form
     if (updateError) return { status: "error", message: "Your handle could not be saved. Please try again later.", values: { handle } };
     const { data: created, error: bootstrapError } = await supabase.rpc("bootstrap_verified_member_profile");
     if (bootstrapError || created !== true) return { status: "error", message: "The handle was saved, but profile setup could not be confirmed. Try again later or contact support.", values: { handle } };
-    redirect("/auth/complete");
+    redirect("/dashboard");
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
     return { status: "error", message: "We couldn’t complete profile setup. No further changes were made.", values: { handle } };
@@ -131,7 +131,7 @@ export async function signIn(_state: AuthState, data: FormData): Promise<AuthSta
         redirect("/dashboard");
       }
     }
-    redirect("/auth/complete");
+    redirect("/dashboard");
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
     return { status: "error", message: mapAuthProviderError(error, "signin") };
@@ -147,7 +147,7 @@ export async function requestPasswordReset(_state: AuthState, data: FormData): P
   } catch { return { status: "error", message: genericError }; }
 }
 export async function resendSignupVerification(_state: AuthState, data: FormData): Promise<AuthState> {
-  return handleResendSignupVerification(data, createClient, authCallbackUrl("/auth/complete"));
+  return handleResendSignupVerification(data, createClient, authCallbackUrl("/dashboard"));
 }
 export async function updatePassword(_state: AuthState, data: FormData): Promise<AuthState> {
   const password = passwordField(data);
@@ -158,14 +158,14 @@ export async function updatePassword(_state: AuthState, data: FormData): Promise
     if (!user) return { status: "error", message: "Your recovery session is missing or expired. Request a new password reset." };
     const { error } = await supabase.auth.updateUser({ password });
     if (error) return { status: "error", message: genericError };
-    redirect("/auth/complete");
+    redirect("/dashboard");
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
     return { status: "error", message: genericError };
   }
 }
 export async function verifyEmailOtp(_state: AuthState, data: FormData): Promise<AuthState> {
-  const outcome = await handleVerifyEmailOtp(data, createClient, authCallbackUrl("/auth/complete"));
+  const outcome = await handleVerifyEmailOtp(data, createClient, authCallbackUrl("/dashboard"));
   if ("redirectTo" in outcome) redirect(outcome.redirectTo);
   return outcome;
 }

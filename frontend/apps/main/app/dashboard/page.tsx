@@ -1,16 +1,35 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import AccountShell from "../../components/account-shell";
 import { createClient } from "../../lib/supabase";
-import { signOut } from "../auth/actions";
+import { checkHandleAvailability, signOut } from "../auth/actions";
 import { markNotificationsRead } from "./actions";
 import MemberTopbar from "../../components/member-topbar";
 import SessionGuard from "../../components/session-guard";
 import ProfileEditor from "./profile-editor";
+import HandleCompletionForm from "./handle-completion-form";
 import { DashboardDiscoverNews, DashboardHomeNews, safePage } from "./news-content";
 import styles from "./dashboard.module.css";
-import { BellIcon, BookmarkIcon, CompassIcon, HomeIcon, UserIcon } from "../../components/icons";
+import "../auth/auth.css";
+import {
+  BellIcon,
+  BookmarkIcon,
+  BuildingIcon,
+  CompassIcon,
+  HomeIcon,
+  MessageCircleIcon,
+  UserIcon,
+} from "../../components/icons";
 import { ACTIVITY_COOKIE, MEMBER_INACTIVITY_MS, isInactiveSince } from "../../lib/session-policy";
+import { isValidHandle, normalizeHandle } from "../../lib/member-handle";
+import {
+  decideMemberEntry,
+  MEMBER_SERVICE_LINKS,
+  type MemberEntryInput,
+  type MemberProfileSnapshot,
+} from "../../lib/member-entry";
 
 export const metadata = {
   title: "Member dashboard",
@@ -38,6 +57,12 @@ const dashboardTabs = [
   { key: "profile" as const, href: "/dashboard?tab=profile", label: "Profile", Icon: UserIcon },
 ];
 
+const serviceIcons = {
+  "/forum": MessageCircleIcon,
+  "/business-directory/orders": BuildingIcon,
+  "/": CompassIcon,
+} as const;
+
 const notificationKinds: Record<string, string> = {
   comment_reply: "Comment reply",
   forum_reply: "Forum reply",
@@ -51,6 +76,30 @@ function DashboardTabs({ active }: { active: DashboardTab }) {
   return <nav className={styles.tabs} aria-label="Member dashboard">
     {dashboardTabs.map(({ key, href, label, Icon }) => <Link key={key} className={styles.tab} href={href} aria-current={active === key ? "page" : undefined}><Icon size={18} /><span>{label}</span></Link>)}
   </nav>;
+}
+
+function DashboardServices() {
+  return <section className={styles.services} aria-labelledby="services-title">
+    <div className={styles.servicesHeading}>
+      <p className={styles.eyebrow}>Member services</p>
+      <h2 id="services-title">Everything from your account, in one place</h2>
+    </div>
+    <ul className={styles.serviceList}>
+      {MEMBER_SERVICE_LINKS.map((item) => {
+        const Icon = serviceIcons[item.href];
+        return <li key={item.href}>
+          <Link className={styles.serviceLink} href={item.href}>
+            <span className={styles.serviceIcon} aria-hidden="true"><Icon size={20} /></span>
+            <span className={styles.serviceCopy}>
+              <strong>{item.label}</strong>
+              <small>{item.description}</small>
+            </span>
+            <span className={styles.serviceArrow} aria-hidden="true">›</span>
+          </Link>
+        </li>;
+      })}
+    </ul>
+  </section>;
 }
 
 function DashboardSaved() {
@@ -105,6 +154,13 @@ function DashboardNotifications({ notifications, error }: { notifications: Notif
   </section>;
 }
 
+function setupScreen({ title, description, children }: { title: string; description: string; children: ReactNode }) {
+  return <AccountShell eyebrow="Member dashboard" title={title} description={description}>
+    {children}
+    <form action={signOut}><button className="btn-secondary" type="submit">Sign out</button></form>
+  </AccountShell>;
+}
+
 export default async function MemberDashboardPage({ searchParams }: { searchParams: Promise<DashboardSearchParams> }) {
   const params = await searchParams;
   const cookieStore = await cookies();
@@ -125,17 +181,78 @@ export default async function MemberDashboardPage({ searchParams }: { searchPara
 
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) redirect("/login?next=%2Fdashboard");
+  if (!user.email_confirmed_at) {
+    return setupScreen({
+      title: "Verify your email to continue",
+      description: "Your member profile is not active yet. Follow the verification link sent to your email, or enter the code from that message.",
+      children: <p className="auth-footnote"><Link href="/auth/verify">Enter a verification code</Link></p>,
+    });
+  }
 
-  const { data: profile, error } = await supabase
+  const initialProfile = await supabase
     .from("profiles")
     .select("user_id, handle, display_name, deleted_at")
     .eq("user_id", user.id)
     .maybeSingle();
+  const error = initialProfile.error;
+  let profile = initialProfile.data as MemberProfileSnapshot | null;
 
   if (error) {
     return <main className={`${styles.shell} member-dashboard-shell`}><section className={styles.unavailable}><p className={styles.eyebrow}>Member dashboard</p><h1>Profile unavailable</h1><p>We couldn’t load your member profile. Your account is still protected; try again later.</p><form action={signOut}><button className="btn-secondary" type="submit">Sign out</button></form></section></main>;
   }
-  if (!profile) redirect("/auth/complete");
+
+  let bootstrap: MemberEntryInput["bootstrap"] = "not-needed";
+  if (!profile) {
+    const { data: created, error: bootstrapError } = await supabase.rpc("bootstrap_verified_member_profile");
+    bootstrap = bootstrapError ? "unavailable" : created === true ? "created" : "failed";
+    if (!bootstrapError && created === true) {
+      const refreshed = await supabase
+        .from("profiles")
+        .select("user_id, handle, display_name, deleted_at")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (refreshed.error) bootstrap = "unavailable";
+      else profile = refreshed.data as MemberProfileSnapshot | null;
+    }
+  }
+
+  if (!profile) {
+    const metadataHandle = typeof user.user_metadata?.handle === "string" ? normalizeHandle(user.user_metadata.handle) : "";
+    const displayName = typeof user.user_metadata?.display_name === "string" ? user.user_metadata.display_name.trim() : "";
+    const rawHandleValid = isValidHandle(metadataHandle);
+    const availability = !error && rawHandleValid ? await checkHandleAvailability(metadataHandle) : "unavailable";
+    const decision = decideMemberEntry({
+      emailConfirmed: Boolean(user.email_confirmed_at),
+      profile: null,
+      bootstrap,
+      displayName,
+      rawHandle: metadataHandle,
+      rawHandleValid,
+      handleAvailability: availability,
+    });
+
+    if (decision.kind === "unverified") {
+      return setupScreen({
+        title: "Verify your email to continue",
+        description: "Your member profile is not active yet. Follow the verification link sent to your email, or enter the code from that message.",
+        children: <p className="auth-footnote"><Link href="/auth/verify">Enter a verification code</Link></p>,
+      });
+    }
+    if (decision.kind === "deleted") redirect("/login");
+    if (decision.kind === "needs-handle") {
+      return setupScreen({
+        title: "Finish your member profile",
+        description: "Choose an available public username. Your verified account is the only thing being updated here.",
+        children: <><HandleCompletionForm initialHandle={decision.initialHandle} note={decision.note} /><p className="auth-footnote"><Link href="/">Explore EPE LAWA</Link></p></>,
+      });
+    }
+    return setupScreen({
+      title: "Profile setup needs attention",
+      description: "Your verified sign-in could not complete profile setup. No member profile was created. Try again, or contact support if this continues.",
+      children: <p className="auth-footnote"><Link href="/dashboard">Try account setup again</Link></p>,
+    });
+  }
+
   if (profile.deleted_at) redirect("/login");
   const showNewsFeed = activeTab === "home" || activeTab === "discover";
 
@@ -165,6 +282,7 @@ export default async function MemberDashboardPage({ searchParams }: { searchPara
           </div>
         </section>
         <DashboardTabs active={activeTab} />
+        <DashboardServices />
         {!showNewsFeed && activeTab !== "notifications" ? <header className={styles.hero}>
           <p className={styles.eyebrow}>Member dashboard</p>
           <h1>{activeTab === "saved" ? "Saved" : "Profile"}</h1>

@@ -6,7 +6,7 @@ const root = new URL("../apps/main/app/", import.meta.url);
 
 test("member auth uses the public Supabase client and validates profile/session through member schema", async () => {
   const actions = await readFile(new URL("auth/actions.ts", root), "utf8");
-  const complete = await readFile(new URL("auth/complete/page.tsx", root), "utf8");
+  const dashboard = await readFile(new URL("dashboard/page.tsx", root), "utf8");
   const callback = await readFile(new URL("auth/callback/route.ts", root), "utf8");
   const serverClient = await readFile(new URL("../lib/supabase.ts", root), "utf8");
   assert.match(actions, /signUp\(/);
@@ -15,15 +15,15 @@ test("member auth uses the public Supabase client and validates profile/session 
   assert.match(actions, /updateUser\(\{ password \}\)/);
   assert.match(actions, /function passwordField\(data: FormData\)[\s\S]*?return typeof value === "string" \? value : ""/);
   assert.equal((actions.match(/const password = passwordField\(data\);/g) ?? []).length, 3, "signup, sign-in and password update must preserve exact passwords");
-  assert.doesNotMatch(actions + complete, /SERVICE_ROLE|service_role/i);
-  assert.match(complete, /email_confirmed_at/);
-  assert.match(complete, /rpc\("bootstrap_verified_member_profile"\)/);
-  assert.doesNotMatch(complete, /from\("profiles"\)\.insert/);
+  assert.doesNotMatch(actions + dashboard, /SERVICE_ROLE|service_role/i);
+  assert.match(dashboard, /email_confirmed_at/);
+  assert.match(dashboard, /rpc\("bootstrap_verified_member_profile"\)/);
+  assert.doesNotMatch(dashboard, /from\("profiles"\)\.insert/);
   assert.match(callback, /exchangeCodeForSession/);
   assert.match(callback, /startsWith\("\/\/"\)/);
   assert.match(serverClient, /createServerClient/);
   assert.match(serverClient, /cookieStore\.set/);
-  assert.match(complete, /supabase\.auth\.getUser\(\)/);
+  assert.match(dashboard, /supabase\.auth\.getUser\(\)/);
 });
 
 test("signup remains guided while member sign-in is one accessible screen", async () => {
@@ -100,13 +100,14 @@ test("email verification uses a branded noindex OTP route and Supabase signup-co
   assert.match(forms, /name="intent" value="verify"/);
   assert.match(forms, /name="intent" value="resend" formNoValidate/);
   assert.match(forms, /one-time code and a secure link/);
-  assert.match(actions, /handleVerifyEmailOtp\(data, createClient, authCallbackUrl\("\/auth\/complete"\)\)/);
+  assert.match(actions, /handleVerifyEmailOtp\(data, createClient, authCallbackUrl\("\/dashboard"\)\)/);
   assert.match(actions, /redirect\(outcome\.redirectTo\)/);
   assert.match(otpLogic, /verifyOtp\(\{ email, token, type: "signup" \}\)/);
   assert.match(actions, /resendSignupVerification/);
   assert.match(otpLogic, /type: "signup"/);
-  assert.match(actions, /authCallbackUrl\("\/auth\/complete"\)/);
+  assert.match(actions, /authCallbackUrl\("\/dashboard"\)/);
   assert.match(otpLogic, /options: \{ emailRedirectTo \}/);
+  assert.doesNotMatch(actions + otpLogic, /auth\/complete/);
   assert.doesNotMatch(actions, /SERVICE_ROLE|service_role/i);
 });
 
