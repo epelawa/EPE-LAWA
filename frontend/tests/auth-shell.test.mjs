@@ -6,7 +6,7 @@ const app = new URL("../apps/main/app/", import.meta.url);
 const components = new URL("../apps/main/components/", import.meta.url);
 const read = (base, path) => readFile(new URL(path, base), "utf8");
 
-test("member auth routes use a centered branded shell without manual theme controls", async () => {
+test("member auth routes use a centered branded shell without appearance controls", async () => {
   const [shell, controls, styles, globalStyles, rootLayout, brand, theme] = await Promise.all([
     read(components, "account-shell.tsx"),
     read(components, "focused-page-controls.tsx"),
@@ -21,12 +21,11 @@ test("member auth routes use a centered branded shell without manual theme contr
   assert.match(shell, /className="auth-frame"/);
   assert.match(shell, /className="auth-art"/);
   assert.match(shell, /className="auth-card"/);
-  assert.match(shell, /<FocusedPageControls showThemeToggle=\{showThemeToggle\}/);
-  assert.match(shell, /showThemeToggle = false/);
-  assert.match(shell, /showThemeToggle\?: boolean/);
+  assert.match(shell, /<FocusedPageControls \/>/);
+  assert.doesNotMatch(shell, /ThemeToggle|showThemeToggle|Appearance|appearance/);
   assert.match(controls, /BrandLockup size=\{32\}/);
   assert.doesNotMatch(brand, /showPlace|Epe Division|brand__place/);
-  assert.match(controls, /showThemeToggle \? <ThemeToggle \/> : null/);
+  assert.doesNotMatch(controls, /ThemeToggle|showThemeToggle|Appearance|appearance/);
   assert.match(styles, /\.auth-page\s*\{[^}]*place-items:\s*center/s);
   assert.match(styles, /body:has\(\.auth-page--fixed-viewport\)\s*\{[^}]*min-height:\s*0;[^}]*overflow:\s*hidden/s);
   assert.match(styles, /body:has\(\.auth-page--fixed-viewport\) \.site-main\s*\{[^}]*height:\s*100vh;[^}]*min-height:\s*0;[^}]*overflow:\s*hidden/s);
@@ -59,7 +58,10 @@ test("member auth routes use a centered branded shell without manual theme contr
   assert.match(globalStyles, /body:has\(\.auth-page\) \.site-footer/);
   assert.match(rootLayout, /themeScript/);
   assert.match(rootLayout, /export const viewport: Viewport = \{ themeColor: "#F1F4FA" \}/);
-  assert.match(theme, /t==="dark"\?"#17264A":"#F1F4FA"/);
+  assert.match(theme, /dataset\.theme="light"/);
+  assert.match(theme, /style\.colorScheme="light"/);
+  assert.match(theme, /localStorage\.removeItem\("epelawa-theme"\)/);
+  assert.doesNotMatch(theme, /matchMedia|prefers-color-scheme|data-theme="dark"|colorScheme="dark"/);
   assert.match(theme, /document\.querySelector\('meta\[name="theme-color"\]'\)/);
   assert.match(rootLayout, /strategy="beforeInteractive"/);
 
@@ -73,7 +75,7 @@ test("member auth routes use a centered branded shell without manual theme contr
     const source = await read(app, route);
     assert.match(source, /<AccountShell\b/, `${route} should use the shared auth shell`);
     if (route !== "auth/complete/page.tsx") {
-      assert.match(source, /showThemeToggle=\{false\}/, `${route} should hide the manual toggle`);
+    assert.doesNotMatch(source, /ThemeToggle|showThemeToggle|Appearance|appearance/, `${route} should not expose appearance controls`);
     }
   }
 
@@ -118,7 +120,7 @@ test("callback issue, 404, and runtime error screens keep shared controls and hi
   assert.match(notFound, /<FocusedPageControls\s*\/>/);
   assert.match(linkIssue, /className="auth-link-issue"/);
   assert.match(linkIssue, /<FocusedPageControls\s*\/>/);
-  assert.match(controls, /showThemeToggle \? <ThemeToggle \/> : null/);
+  assert.doesNotMatch(controls, /ThemeToggle|showThemeToggle|Appearance|appearance/);
 });
 
 test("storage notice is homepage-only and leaves auth screens unobstructed", async () => {
@@ -150,7 +152,7 @@ test("storage notice is homepage-only and leaves auth screens unobstructed", asy
   assert.doesNotMatch(staffForm, /scrollHeight|scrollTop/);
   assert.match(staffForm, /draggable=\{false\}/);
   assert.match(staffForm, /onDragStart=\{\(event\) => event\.preventDefault\(\)\}/);
-  assert.match(banner, /Theme stays on this device\. Sign-in uses essential cookies; optional tracking is off\./);
+  assert.match(banner, /Sign-in uses essential cookies; optional tracking is off\./);
   assert.match(banner, /epelawa_cookie_consent/);
   assert.match(banner, /window\.removeEventListener\("resize", apply\);\s*root\.style\.setProperty\("--storage-notice-height", "0px"\)/);
   assert.doesNotMatch(banner, /role="dialog"/);

@@ -5,16 +5,19 @@ const read=p=>readFileSync(new URL(p,import.meta.url),'utf8');
 test('navbar groups destinations separately from account actions and keeps drawer content scrollable',()=>{
  const css=read('../apps/main/components/navigation-refinement.css');
  const header=read('../apps/main/components/site-header.tsx');
- assert.match(css,/\.header-signin\s*\{[^}]*display: inline-flex/);
- assert.match(css,/\.drawer-nav\s*\{[^}]*overflow-y: auto/);
- assert.match(css,/\.drawer-account\s*\{[^}]*flex: 0 0 auto/);
-	 assert.match(css,/\.drawer-group h2, \.drawer-account h2\s*\{[^}]*font-size: 11px/);
+	 assert.match(css,/\.header-signin\s*\{[^}]*display:inline-flex/);
+	 assert.match(css,/\.drawer-nav\s*\{[^}]*overflow-y:auto/);
+ assert.match(css,/\.drawer-account\s*\{[^}]*flex:\s*0 0 auto/);
+ assert.match(css,/\.drawer-account h2\s*\{[^}]*font-size:\s*11px/);
  assert.match(header,/navigation-refinement\.css/);
  assert.match(header,/aria-modal="true"/);
  assert.match(header,/event\.key === "Escape"/);
  assert.match(header,/onOutsideDrawer/);
  assert.match(header,/const DESKTOP_GROUPS =/);
  assert.match(header,/const MOBILE_GROUPS =/);
+ for (const group of ["Read", "Community", "Explore", "EPE LAWA"]) assert.match(header,new RegExp(`label: "${group}"`));
+ assert.match(header,/MOBILE_GROUPS\.map\(renderMobileGroup\)/);
+ assert.doesNotMatch(header,/ThemeToggle|Appearance|Member dashboard/);
 });
 test('compact notices retain measured reachability, live regions, clear messages and 44px controls',()=>{
  const css=read('../apps/main/app/notice-refinement.css');

@@ -11,7 +11,6 @@ export default function ForgotPasswordPage() {
       eyebrow="Account recovery"
       title="Reset your password"
       description="Enter your email to request a reset link."
-      showThemeToggle={false}
     >
       <ResetForm />
       <nav className="auth-switch" aria-label="Account options">
