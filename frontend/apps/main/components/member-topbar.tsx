@@ -8,6 +8,7 @@ import BrandedDialog from "./branded-dialog";
 import { BrandLockup } from "./brand";
 import { BellIcon, SignOutIcon } from "./icons";
 import styles from "../app/dashboard/dashboard.module.css";
+import { MEMBER_SERVICE_LINKS } from "../lib/member-entry";
 
 const MEMBER_LINKS = [
   { href: "/dashboard?tab=home", tab: "home", label: "Home", hint: "Breaking news and recommendations" },
@@ -95,6 +96,15 @@ export default function MemberTopbar({
             >
               <span>{item.label}</span>
               <small>{item.hint}</small>
+            </Link>
+          ))}
+        </nav>
+        <nav className={styles.menuNav} aria-label="Member services">
+          <p className={styles.menuSectionLabel}>Member services</p>
+          {MEMBER_SERVICE_LINKS.map((item) => (
+            <Link key={item.href} href={item.href} className={styles.menuLink} onClick={() => setMenuOpen(false)}>
+              <span>{item.label}</span>
+              <small>{item.description}</small>
             </Link>
           ))}
         </nav>
