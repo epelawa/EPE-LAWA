@@ -39,6 +39,12 @@ Use a compact floating masthead, complete desktop navigation with a clear More m
 
 Use SVG icons only; no emoji. Controls have at least 44px target height. Keyboard focus is visible; drawers trap focus, close with Escape/outside taps and close on navigation. Motion is brief and respects reduced-motion preferences. Account forms have meaningful pending, validation, error and unavailable states.
 
+## Owner-provided motion references: scope, not implementation
+
+The six supplied examples are references, not evidence that these interactions are shipped or approval to add new surfaces. Map them only to current surfaces: springy press to existing public/shared and Radio controls (no sink-and-spring behavior); pull-to-refresh to the public/admin document boundary (native refresh is suppressed; there is no custom gesture); rolling digits to the `/admin` dashboard metrics (static formatted values); drag-to-reorder to `/admin/newsroom/settings` category cards (numeric Display order only); card expand/collapse to existing native disclosures (no card easing; the navigation drawer is a separate interaction); and success check-draw to existing text/status feedback (no drawn check). None of the six exact reference patterns is verified as implemented by the current source/tests.
+
+Do not describe nearby hover, drawer, disclosure, retry, numeric ordering or text-success behavior as the referenced animation. The acceptance evidence, tested surfaces, keyboard/touch alternatives, reduced-motion boundaries, state/persistence and exact gaps are recorded in [Testing and Acceptance](11-testing-acceptance.md). Any future change must be tied to an existing or separately approved surface and verified there; this note does not mark planned behavior as current.
+
 Appearance follows `prefers-color-scheme` on first visit until the visitor chooses a manual light/dark override, which persists. Keep the public switch in the hamburger drawer at every viewport (not in the masthead), and explain the initial system choice with one dismissible toast only once. Suppress that explanation on focused auth/staff routes and do not let it replace or overlap a connection notice. Auth screens continue to omit the manual switch.
 
 ## Truthful content and unchanged security
