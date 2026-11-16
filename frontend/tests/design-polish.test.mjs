@@ -31,7 +31,8 @@ test("public shell stays light and the all-viewport drawer is account-only", () 
   assert.match(navCss, /\.drawer-group ul/);
   assert.doesNotMatch(navCss, /\.drawer-list|\.drawer-foot-links/);
 	assert.match(header, /<BrandLockup size=\{32\} \/>/);
-  assert.doesNotMatch(header + brand + staffBrand + footer, /Epe Division|brand__place|brand-lockup__tagline|showPlace/);
+  assert.match(header, /pathname === "\/" \? <span className="home-brand-tagline">The Voice of Epe Division<\/span>/);
+  assert.doesNotMatch(brand + staffBrand + footer, /Epe Division|brand__place|brand-lockup__tagline|showPlace/);
   assert.match(home, /<HeroCarousel>/, "homepage logo hero exists");
   assert.match(home, /Stay Connected/);
   assert.doesNotMatch(home, /home-hero__brand|BrandLockup/);

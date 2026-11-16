@@ -148,9 +148,9 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
   }, [drawerOpen, closeDrawer]);
 
   return (
-    <header className={`site-head${isNewsReference ? " site-head--news-reference" : ""}`}>
+    <header className={`site-head${isNewsReference ? " site-head--news-reference" : ""}${pathname === "/" ? " site-head--home" : ""}`}>
       <div className="masthead-bar">
-        <Link className="nav-brand" href="/" aria-label="EPE LAWA home"><BrandLockup size={32} /></Link>
+        <Link className="nav-brand" href="/" aria-label="EPE LAWA home"><BrandLockup size={32} />{pathname === "/" ? <span className="home-brand-tagline">The Voice of Epe Division</span> : null}</Link>
         <nav ref={desktopNavRef} className="site-head__nav" aria-label="Primary navigation">
           <ul className="nav-items">
             <li>{renderLink("/news", "News", "nav-link")}</li>

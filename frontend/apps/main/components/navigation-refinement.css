@@ -96,3 +96,27 @@ body:has(.focused-error-shell) .mobile-bottom-nav,body:has(.auth-link-issue) .mo
   .mobile-bottom-nav__link[aria-current="page"], .mobile-bottom-nav__link[aria-current="location"] { background: #477fe0; color: #0a1023; }
   body:has(.mobile-bottom-nav):not(:has(.focused-error-shell)):not(:has(.auth-link-issue)) { --mobile-nav-clearance: calc(80px + env(safe-area-inset-bottom,0px)); }
 }
+
+/* Home masthead inspired by the client's blue EPE LAWA reference. */
+.site-head--home { border-bottom-color: #294b91; background: linear-gradient(115deg, #104caa, #082667 76%, #0a2053); color: #fff; }
+.site-head--home .nav-brand { position: relative; }
+.site-head--home .brand__name { color: #fff; font-size: 19px; font-weight: 800; letter-spacing: .02em; }
+.site-head--home .home-brand-tagline { position: absolute; left: 47px; top: 35px; color: #ffdf4c; font-size: 10px; font-style: italic; font-weight: 700; white-space: nowrap; }
+.site-head--home .site-head__nav > .nav-items > li > .nav-link,
+.site-head--home .nav-disclosure > summary,
+.site-head--home .header-signin,
+.site-head--home .header-search { color: #fff; }
+.site-head--home .site-head__nav > .nav-items > li > .nav-link:hover,
+.site-head--home .site-head__nav > .nav-items > li > .nav-link[aria-current="page"],
+.site-head--home .nav-disclosure > summary:hover,
+.site-head--home .nav-disclosure > summary[data-active="true"] { color: #fff; background: rgb(255 255 255 / .16); }
+.site-head--home .header-search:hover { background: rgb(255 255 255 / .16); }
+/* Preserve the existing two-line menu icon and its appearance. */
+.site-head--home .site-head__menu { background: #fff; }
+@media (max-width: 960px) {
+  .site-head--home .masthead-bar { position: relative; justify-content: center; }
+  .site-head--home .masthead-actions { position: absolute; inset: 0; margin: 0; pointer-events: none; }
+  .site-head--home .masthead-actions > * { pointer-events: auto; }
+  .site-head--home .site-head__menu { position: absolute; left: 0; top: 50%; transform: translateY(-50%); }
+  .site-head--home .header-search { position: absolute; right: 0; top: 50%; transform: translateY(-50%); }
+}
