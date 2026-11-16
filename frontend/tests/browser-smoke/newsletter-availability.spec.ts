@@ -2,6 +2,7 @@ import { expect, test, type APIRequestContext, type Page } from "@playwright/tes
 
 const fixtureURL = `http://localhost:${process.env.SMOKE_FIXTURE_PORT ?? "54321"}`;
 const footerCardSelector = 'section[aria-labelledby="newsletter-footer-heading"]';
+const smokeBaseURL = process.env.SMOKE_BASE_URL ?? "http://127.0.0.1:3100";
 
 async function setFixtureMode(request: APIRequestContext, mode: "empty") {
   const response = await request.post(`${fixtureURL}/__smoke__/mode`, { data: { mode } });
@@ -55,3 +56,38 @@ test("shared newsletter footer card renders on the homepage and News with unavai
     await expect(card.getByRole("link", { name: "Unsubscribe unavailable" })).toHaveAttribute("href", "/newsletter/unsubscribe");
   }
 });
+
+for (const width of [320, 375] as const) {
+  test(`newsletter footer unsubscribe link remains hit-testable at ${width}px`, async ({ browser, request }) => {
+    await setFixtureMode(request, "empty");
+    const context = await browser.newContext({
+      baseURL: smokeBaseURL,
+      viewport: { width, height: 900 },
+      isMobile: true,
+      hasTouch: true,
+    });
+    const page = await context.newPage();
+
+    try {
+      await page.goto("/news");
+      await expect(page.locator(".site-preloader")).toHaveCount(0, { timeout: 15_000 });
+      const card = page.locator(footerCardSelector);
+      await expect(card).toBeVisible();
+      const lastFooterLink = page.locator("footer a").last();
+      await expect(lastFooterLink).toHaveText("Unsubscribe unavailable");
+      await lastFooterLink.scrollIntoViewIfNeeded();
+
+      const footerLinkIsHitTestable = await lastFooterLink.evaluate((element) => {
+        const bounds = element.getBoundingClientRect();
+        const topmost = document.elementFromPoint(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
+        return topmost === element || element.contains(topmost);
+      });
+      expect(footerLinkIsHitTestable, `newsletter footer link at ${width}px should not sit under an overlay`).toBe(true);
+      await lastFooterLink.click();
+      await expect(page).toHaveURL(/\/newsletter\/unsubscribe$/);
+      await expect(page.getByRole("heading", { level: 1, name: "Newsletter unsubscribe is unavailable." })).toBeVisible();
+    } finally {
+      await context.close();
+    }
+  });
+}

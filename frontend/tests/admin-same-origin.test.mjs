@@ -57,7 +57,7 @@ test("each staff section is mounted at the chosen same-origin /admin path", () =
   assert.match(shellCss, /body:has\(\.admin-shell\) \.site-footer/);
   assert.match(shellCss, /\.brand-lockup__text\s*\{/);
   assert.match(shellCss, /\.ep-button--primary\s*\{/);
-  assert.match(shellCss, /\.theme-toggle__icon\[data-active="true"\]/);
+  assert.doesNotMatch(shellCss, /theme-toggle|appearance/i);
   assert.match(read("frontend/apps/main/app/robots.ts"), /disallow: \["\/admin"\]/);
   assert.equal(adminHref("/newsroom"), "/admin/newsroom");
   assert.equal(staffHref("/newsroom", "/admin"), "/admin/newsroom");

@@ -3,18 +3,9 @@ import { redirect } from "next/navigation";
 import { createClient } from "../../lib/supabase";
 import { signOut } from "../auth/actions";
 import ProfileEditor from "./profile-editor";
+import { DashboardDiscoverNews, DashboardHomeNews, safePage } from "./news-content";
 import styles from "./dashboard.module.css";
-
-const discoverLinks = [
-  ["News", "/news"],
-  ["Ìtàn Ilú Mi", "/itan-ilu-mi"],
-  ["Forum", "/forum"],
-  ["Map & Navigation", "/map"],
-  ["Business Directory", "/business-directory"],
-  ["Tourism", "/tourism"],
-  ["EPE LAWA Radio", "/radio"],
-  ["Who is Who", "/who-is-who"],
-] as const;
+import { BookmarkIcon, CompassIcon, HomeIcon, UserIcon } from "../../components/icons";
 
 export const metadata = {
   title: "Member dashboard",
@@ -22,8 +13,38 @@ export const metadata = {
 };
 export const dynamic = "force-dynamic";
 
-export default async function MemberDashboardPage() {
-  let supabase;
+type DashboardTab = "home" | "discover" | "saved" | "profile";
+type DashboardSearchParams = { tab?: string; q?: string | string[]; category?: string | string[]; page?: string | string[] };
+
+const dashboardTabs = [
+  { key: "home" as const, href: "/dashboard?tab=home", label: "Home", Icon: HomeIcon },
+  { key: "discover" as const, href: "/dashboard?tab=discover", label: "Discover", Icon: CompassIcon },
+  { key: "saved" as const, href: "/dashboard?tab=saved", label: "Saved", Icon: BookmarkIcon },
+  { key: "profile" as const, href: "/dashboard?tab=profile", label: "Profile", Icon: UserIcon },
+];
+
+function DashboardTabs({ active }: { active: DashboardTab }) {
+  return <nav className={styles.tabs} aria-label="Member dashboard">
+    {dashboardTabs.map(({ key, href, label, Icon }) => <Link key={key} className={styles.tab} href={href} aria-current={active === key ? "page" : undefined}><Icon size={18} /><span>{label}</span></Link>)}
+  </nav>;
+}
+
+function DashboardSaved() {
+  return <section className={`${styles.panel} ${styles.emptyState}`} aria-labelledby="saved-title">
+    <p className={styles.eyebrow}>Saved</p>
+    <h2 id="saved-title">Saving isn’t available yet</h2>
+    <p className={styles.helper}>This account area does not currently provide saved-item storage, so no saved records are being queried or reported here.</p>
+    <Link className="btn-secondary" href="/dashboard?tab=discover">Discover stories</Link>
+  </section>;
+}
+
+export default async function MemberDashboardPage({ searchParams }: { searchParams: Promise<DashboardSearchParams> }) {
+  const params = await searchParams;
+  const activeTab: DashboardTab = params.tab === "discover" || params.tab === "saved" || params.tab === "profile" ? params.tab : "home";
+  const query = typeof params.q === "string" ? params.q.trim().slice(0, 100) : "";
+  const category = typeof params.category === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(params.category) ? params.category : "";
+  const page = safePage(typeof params.page === "string" ? params.page : undefined);
+  let supabase: Awaited<ReturnType<typeof createClient>>;
   try {
     supabase = await createClient();
   } catch {
@@ -44,53 +65,26 @@ export default async function MemberDashboardPage() {
   }
   if (!profile) redirect("/auth/complete");
   if (profile.deleted_at) redirect("/login");
+  const showNewsFeed = activeTab === "home" || activeTab === "discover";
 
   return (
     <main className={`${styles.shell} member-dashboard-shell`}>
-      <header className={styles.hero} id="home" tabIndex={-1}>
+      <DashboardTabs active={activeTab} />
+      {!showNewsFeed ? <header className={styles.hero}>
         <p className={styles.eyebrow}>Member dashboard</p>
-        <h1>Welcome, {profile.display_name}.</h1>
-        <p>Manage your public profile and return to your Epe community spaces.</p>
-      </header>
-
-      <section className={styles.discover} id="discover" tabIndex={-1} aria-labelledby="discover-title">
-        <div className={styles.sectionHeading}>
-          <p className={styles.eyebrow}>Explore EPE LAWA</p>
-          <h2 id="discover-title">Discover more of Epe</h2>
-          <p className={styles.helper}>Browse the public news, places, local knowledge and community spaces available on EPE LAWA.</p>
-        </div>
-        <nav aria-label="Discover EPE LAWA">
-          <ul className={styles.discoverLinks}>
-            {discoverLinks.map(([label, href]) => <li key={href}><Link href={href}>{label}<span aria-hidden="true">↗</span></Link></li>)}
-          </ul>
-        </nav>
-      </section>
-
-      <section className={`${styles.panel} ${styles.savedPanel}`} id="saved" tabIndex={-1} aria-labelledby="saved-title">
-        <p className={styles.eyebrow}>Saved for later</p>
-        <h2 id="saved-title">Saved items</h2>
-        <p className={styles.helper}>Saved-item tools are not connected to member accounts yet, so this dashboard cannot display or store saved items.</p>
-      </section>
-
-      <div className={styles.grid}>
-        <section className={styles.panel} id="profile" tabIndex={-1} aria-labelledby="profile-title">
-          <div className={styles.panelHeading}><div><p className={styles.eyebrow}>Your details</p><h2 id="profile-title">Public profile</h2></div><span className={styles.handle}>@{profile.handle}</span></div>
-          <p className={styles.helper}>Your display name and handle appear beside your posts. Keep private contact details out of your public name.</p>
-          <ProfileEditor displayName={profile.display_name} handle={profile.handle} />
-        </section>
-        <aside className={styles.panel} aria-labelledby="spaces-title">
-          <p className={styles.eyebrow}>Your community</p>
-          <h2 id="spaces-title">Member spaces</h2>
-          <nav className={styles.links} aria-label="Member spaces">
-            <Link href="/forum">Visit the community forum <span aria-hidden="true">→</span></Link>
-            <Link href="/forum/new">Start a discussion <span aria-hidden="true">→</span></Link>
-            <Link href="/business-directory/submit">Submit a business listing <span aria-hidden="true">→</span></Link>
-            <Link href="/business-directory/orders">View order requests <span aria-hidden="true">→</span></Link>
-            <Link href="/itan-ilu-mi">Explore Epe history <span aria-hidden="true">→</span></Link>
-          </nav>
-          <form className={styles.signOut} action={signOut}><button className="btn-secondary" type="submit">Sign out</button></form>
-        </aside>
-      </div>
+        <h1>{activeTab === "saved" ? "Saved" : "Profile"}</h1>
+        <p>{activeTab === "saved" ? "Saved-item storage is not available yet." : "Manage your public profile details."}</p>
+      </header> : null}
+      {activeTab === "home" ? <DashboardHomeNews client={supabase} />
+        : activeTab === "discover" ? <DashboardDiscoverNews client={supabase} query={query} category={category} page={page} />
+          : activeTab === "saved" ? <DashboardSaved /> : <div className={styles.grid}>
+            <section className={styles.panel} aria-labelledby="profile-title">
+              <div className={styles.panelHeading}><div><p className={styles.eyebrow}>Your details</p><h2 id="profile-title">Public profile</h2></div><span className={styles.handle}>@{profile.handle}</span></div>
+              <p className={styles.helper}>Your display name and handle appear beside your posts. Keep private contact details out of your public name.</p>
+              <ProfileEditor displayName={profile.display_name} handle={profile.handle} />
+            </section>
+          </div>}
+      <form className={styles.signOut} action={signOut}><button className="btn-secondary" type="submit">Sign out</button></form>
     </main>
   );
 }

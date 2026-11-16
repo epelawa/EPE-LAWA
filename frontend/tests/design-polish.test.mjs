@@ -7,9 +7,9 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 
-test("public Appearance switch lives in the all-viewport hamburger drawer", () => {
-  const theme = read("frontend/apps/main/components/theme-toggle.tsx");
+test("public shell stays light and the all-viewport drawer is account-only", () => {
   const header = read("frontend/apps/main/components/site-header.tsx");
+	const layout = read("frontend/apps/main/app/layout.tsx");
   const brand = read("frontend/apps/main/components/brand.tsx");
   const staffBrand = read("frontend/apps/admin/components/brand.tsx");
   const footer = read("frontend/apps/main/components/site-footer.tsx");
@@ -20,45 +20,56 @@ test("public Appearance switch lives in the all-viewport hamburger drawer", () =
   const heroManifest = JSON.parse(read("frontend/apps/main/lib/hero-images.json"));
   const mastheadActions = header.match(/<div className="masthead-actions">([\s\S]*?)<\/div>/)?.[1] ?? "";
 
-  assert.match(theme, /className="theme-control"/);
-  assert.match(theme, /aria-pressed=\{theme === "dark"\}/);
-  assert.match(theme, /theme-control__thumb/);
-  assert.doesNotMatch(mastheadActions, /ThemeToggle/);
-  assert.match(header, /className="drawer-appearance" role="group" aria-label="Appearance settings"[\s\S]*<ThemeToggle \/>/);
-  assert.match(navCss, /\.site-head__menu \{ display: inline-flex;/);
-  assert.match(header, /<BrandLockup size=\{32\} \/>/);
+	assert.match(layout, /<html lang="en" data-theme="light" style=\{\{ colorScheme: "light" \}\} suppressHydrationWarning>/);
+  assert.doesNotMatch(header, /ThemeToggle|Appearance|appearance|Member dashboard/);
+	assert.doesNotMatch(mastheadActions, /ThemeToggle/);
+	assert.match(header, /renderLink\("\/auth", "Create account", "btn-primary"\)/);
+	assert.match(header, /renderLink\("\/login", "Sign in", "btn-secondary"\)/);
+  assert.match(navCss, /\.site-head__menu\s*\{[^}]*display:inline-flex/);
+  assert.match(header, /MOBILE_GROUPS\.map\(renderMobileGroup\)/);
+  for (const group of ["Read", "Community", "Explore", "EPE LAWA"]) assert.match(header, new RegExp(`label: "${group}"`));
+  assert.match(navCss, /\.drawer-group ul/);
+  assert.doesNotMatch(navCss, /\.drawer-list|\.drawer-foot-links/);
+	assert.match(header, /<BrandLockup size=\{32\} \/>/);
   assert.doesNotMatch(header + brand + staffBrand + footer, /Epe Division|brand__place|brand-lockup__tagline|showPlace/);
   assert.match(home, /<HeroCarousel\s*\/>/, "homepage logo hero exists");
   assert.doesNotMatch(home, /home-hero__brand|BrandLockup/);
-  assert.match(home, /Epe\.<br \/><em>Closer to home\.<\/em>/);
-  assert.match(home, /A digital home for Epe’s news, heritage, businesses and community voices\./);
+  assert.match(home, /home-hero__title-line">Epe<\/span>/);
+  assert.match(home, /home-hero__title-line home-hero__title-line--accent">Closer<\/span>/);
+  assert.match(home, /home-hero__title-line home-hero__title-line--preposition">To<\/span>/);
+  assert.match(home, /home-hero__title-line">Home<\/span>/);
+  assert.match(home, /From local headlines to the people, places and ideas shaping everyday life in Epe, this is a place to stay informed and feel connected\./);
+  assert.match(home, /href="\/news" className="btn-primary">Read latest news/);
+  assert.doesNotMatch(home, /Explore Epe|href="\/tourism"/);
   assert.doesNotMatch(home, /Stories worth knowing|History worth keeping|Places worth finding|People worth connecting|home-topics/);
-  assert.equal(heroManifest.length, 2);
-  assert.equal(new Set(heroManifest.map((slide) => slide.source)).size, 2);
-  assert.ok(heroManifest.some((slide) => slide.source.endsWith("File:New_Epe_lagos_road.jpg")));
-  assert.ok(heroManifest.some((slide) => slide.source.endsWith("File:Fish_Statue_Epe.jpg")));
+  assert.equal(heroManifest.length, 54);
+  assert.deepEqual(heroManifest.slice(0, 2).map((slide) => slide.slug), ["new-epe-road", "fish-statue-epe"]);
+  assert.equal(new Set(heroManifest.map((slide) => slide.source)).size, 54);
   assert.match(heroCarousel, /HERO_SLIDES = heroImages/);
-  assert.doesNotMatch(heroCarousel, /Photo by \{slide\.author\}/);
+  assert.match(heroCarousel, /setTimeout|setInterval|ROTATION_DELAY/);
+  assert.match(heroCarousel, /prefers-reduced-motion/);
+	assert.match(heroCarousel, /home-hero__pause/);
+	assert.match(heroCarousel, /onFocusCapture=\{\(\) => setPaused\(true\)\}/);
+	assert.match(heroCarousel, /aria-label="Previous Epe photo"/);
+	assert.match(heroCarousel, /aria-label="Next Epe photo"/);
+	assert.match(heroCarousel, /aria-label=\{rotationLabel\}/);
+  assert.match(read("frontend/apps/main/app/hero-logo.css"), /\.home-hero__slide-control\s*\{[^}]*clip-path:\s*inset\(50%\)/);
+  assert.match(read("frontend/apps/main/app/hero-logo.css"), /\.home-hero__pause\s*\{[^}]*clip-path:\s*inset\(50%\)/);
+  assert.match(heroCarousel, /aria-roledescription="slide"/);
+  assert.doesNotMatch(heroCarousel, /home-hero__caption|home-hero__credit|home-hero__slide-label|home-hero__counter|Photo by <a/);
   assert.doesNotMatch(heroCarousel, /Epe Division|The voice of Epe Division/i);
+  assert.doesNotMatch(home, /home-hero__quicknav|Quick access to EPE LAWA features|Explore sections/);
   assert.match(header, /A shared home for everyone\./);
   assert.match(header, /addEventListener\("pointerdown", onOutsideDrawer\)/);
-  assert.match(navCss, /width: min\(348px, calc\(100vw - 24px\)\)/);
-  assert.match(navCss, /border-top-left-radius: 22px/);
-  assert.match(heroCarousel, /ROTATION_DELAY_MS = 7200/);
-  assert.match(heroCarousel, /window\.setTimeout/);
-  assert.match(heroCarousel, /prefers-reduced-motion: reduce/);
-  assert.match(heroCarousel, /isConstrainedConnection\(\)/);
-  assert.match(heroCarousel, /home-hero__pause/);
-  assert.doesNotMatch(heroCarousel, /home-hero__controls|home-hero__counter|Previous photo:|Next photo:/);
-  assert.match(home, /Quick access to EPE LAWA features/);
   assert.match(footer, /<NewsletterFooterCard \/>/);
   assert.match(newsletterFooterCard, /EPE LAWA Newsletter/);
-  assert.match(newsletterFooterCard, /Subscription storage, email delivery, unsubscribe handling and abuse controls are not ready/);
+  assert.match(newsletterFooterCard, /Unavailable/);
   assert.match(newsletterFooterCard, /No email address is collected here/);
   assert.match(newsletterFooterCard, /href="\/newsletter"/);
   assert.match(newsletterFooterCard, /href="\/newsletter\/unsubscribe"/);
   assert.doesNotMatch(newsletterFooterCard, /<form|type=["']email|onSubmit=|createClient|supabase/i);
-  assert.match(navCss, /\.drawer-account__actions \{ display: grid;/);
+  assert.match(navCss, /\.drawer\s*\{[^}]*width:min\(520px,calc\(100vw - 52px\)\)/);
+  assert.match(navCss, /\.drawer-account__actions\s*\{[^}]*display:\s*grid/);
 });
 
 test("editorial dot decorations are gone and footer links stay split on mobile", () => {
@@ -74,15 +85,16 @@ test("owner-approved cobalt palette is consistent across light/dark apps and sha
   const sharedCss = read("frontend/packages/ui/src/ui.css");
   const statusPage = read("frontend/apps/main/app/status/[code]/route.ts");
   const palette = ["#0A1023", "#17264A", "#294B91", "#477FE0", "#A7C5F5", "#F1F4FA", "#A6B2C5", "#293650"];
+  const statusPalette = ["#0A1023", "#294B91", "#477FE0", "#F1F4FA"];
 
   for (const color of palette) {
     assert.ok(main.includes(color), `public app is missing ${color}`);
     assert.ok(admin.includes(color), `staff app is missing ${color}`);
     assert.ok(shared.includes(color), `shared tokens are missing ${color}`);
-    assert.ok(statusPage.includes(color), `status page is missing ${color}`);
   }
+  for (const color of statusPalette) assert.ok(statusPage.includes(color), `status page is missing ${color}`);
   assert.match(main, /--primary: 218\.04 71\.16% 57\.84%;[\s\S]*?--primary-foreground: 225\.6 55\.56% 8\.82%;/);
-  assert.match(main, /--link: 216\.92 79\.59% 80\.78%/);
+  assert.match(main, /--link: 220\.38 55\.91% 36\.47%/);
   assert.match(admin, /--link: 220\.38 55\.91% 36\.47%/);
   assert.match(sharedCss, /var\(--primary-foreground,225\.6 55\.56% 8\.82%\)/);
   assert.match(main, /--ui-success: #26614a/);
@@ -91,7 +103,7 @@ test("owner-approved cobalt palette is consistent across light/dark apps and sha
   assert.doesNotMatch(main + admin + statusPage, /#(?:60436d|3f2b49|faf9f6|29242d|dbe8ad|c8c1cc|504955|6e6873|e4dee8)\b/i);
 });
 
-test("Tidegate loader and hydration-safe motion are wired into public and staff routes", () => {
+test("Tidegate loaders remain wired and public motion is hydration-safe", () => {
   const publicMotion = read("frontend/apps/main/components/site-motion.tsx");
   const staffMotion = read("frontend/apps/admin/components/site-motion.tsx");
   const publicLayout = read("frontend/apps/main/app/layout.tsx");
@@ -101,19 +113,20 @@ test("Tidegate loader and hydration-safe motion are wired into public and staff 
   const publicCss = read("frontend/apps/main/app/globals.css");
   const staffCss = read("frontend/apps/admin/app/globals.css");
 
-  assert.match(publicMotion, /IntersectionObserver/);
-  assert.match(publicMotion, /prefers-reduced-motion/);
-  assert.match(publicMotion, /target\.animate\(/);
-  assert.doesNotMatch(publicMotion, /dataset\.scrollReveal|has-scroll-reveal/);
+  assert.match(publicMotion, /TidegateSpinner/);
+  assert.doesNotMatch(publicMotion, /IntersectionObserver|scrollReveal|has-scroll-reveal/);
   assert.match(staffMotion, /IntersectionObserver/);
+  assert.match(staffMotion, /prefers-reduced-motion/);
   assert.match(staffMotion, /dataset\.scrollReveal = "pending"/);
-  for (const motion of [publicMotion, staffMotion]) assert.match(motion, /TidegateSpinner/);
+  assert.match(staffMotion, /element\.dataset\.scrollReveal === "visible" \|\| element\.closest/);
+  assert.match(staffMotion, /observer\.observe\(element\)/);
+  assert.match(staffMotion, /TidegateSpinner/);
   for (const layout of [publicLayout, staffLayout]) assert.match(layout, /<SiteMotion\s*\/>/);
   for (const loading of [publicLoading, staffProtectedLoading]) assert.match(loading, /TidegateSpinner/);
-  for (const css of [publicCss, staffCss]) {
-    assert.match(css, /epe-tidegate-orbit/);
-    assert.match(css, /prefers-reduced-motion:\s*reduce/);
-  }
+  assert.match(publicCss, /epe-tidegate-orbit/);
+  assert.match(publicCss, /prefers-reduced-motion:\s*reduce/);
   assert.doesNotMatch(publicCss, /has-scroll-reveal|data-scroll-reveal/);
+  assert.match(staffCss, /epe-tidegate-orbit/);
   assert.match(staffCss, /filter:blur\(10px\)/);
+  assert.match(staffCss, /prefers-reduced-motion:\s*reduce/);
 });

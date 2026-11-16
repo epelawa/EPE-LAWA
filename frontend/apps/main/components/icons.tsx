@@ -142,12 +142,6 @@ export const VolumeOffIcon = ({ size = 18, className }: { size?: number; classNa
   </svg>
 );
 
-export const BookmarkIcon = ({ size = 20, className }: { size?: number; className?: string }) => (
-  <svg aria-hidden="true" focusable="false" className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M7.25 4h9.5A1.25 1.25 0 0 1 18 5.25V21l-6-3.75L6 21V5.25A1.25 1.25 0 0 1 7.25 4Z" />
-  </svg>
-);
-
 export const HomeIcon = ({ size = 20, className }: { size?: number; className?: string }) => (
   <svg aria-hidden="true" focusable="false" className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
     <path d="m3 10.7 9-7.5 9 7.5" />
@@ -166,5 +160,11 @@ export const UserIcon = ({ size = 20, className }: { size?: number; className?: 
   <svg aria-hidden="true" focusable="false" className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="8" r="3.7" />
     <path d="M4.5 21v-1.3a7.5 7.5 0 0 1 15 0V21Z" />
+  </svg>
+);
+
+export const BookmarkIcon = ({ size = 20, className }: { size?: number; className?: string }) => (
+  <svg aria-hidden="true" focusable="false" className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 4.5A2.5 2.5 0 0 1 8.5 2h7A2.5 2.5 0 0 1 18 4.5V21l-6-3.5L6 21V4.5Z" />
   </svg>
 );

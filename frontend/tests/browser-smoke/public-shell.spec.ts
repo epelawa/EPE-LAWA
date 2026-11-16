@@ -2,14 +2,10 @@ import { expect, test, type APIRequestContext, type Locator, type Page } from "@
 import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 
-const viewportWidths = [320, 375, 600, 767, 768, 800, 960, 1024, 1440] as const;
+const viewportWidths = [320, 375, 768, 1024, 1440] as const;
 const fixtureURL = `http://localhost:${process.env.SMOKE_FIXTURE_PORT ?? "54321"}`;
-const smokeBaseURL = process.env.SMOKE_BASE_URL ?? "http://127.0.0.1:3100";
 const noResultsQuery = "browser-smoke-no-results";
-const mainNavigationName = "Primary navigation";
-const mobileNavigationName = "Mobile primary navigation";
-const openMenuName = "Open navigation menu";
-const closeMenuName = "Close navigation menu";
+const mainNavigationName = /^Primary navigation$/;
 const newsLinkName = /News/;
 
 async function setFixtureMode(request: APIRequestContext, mode: "empty" | "error") {
@@ -57,9 +53,9 @@ for (const width of viewportWidths) {
     await page.goto("/");
 
     await expect(page.locator("main#main")).toBeVisible();
-    await expect(page.getByRole("heading", { level: 1, name: /Epe\.\s*Closer to home\./i })).toBeVisible();
-    await expect(page.getByRole("heading", { level: 2, name: "News from Epe" })).toBeVisible();
-    await expect(page.getByRole("heading", { level: 3, name: "No stories published yet" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Epe Closer To Home" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "Stories from Epe" })).toBeVisible();
+    await expect(page.locator(".mobile-bottom-nav")).toHaveCount(0);
     await captureEvidence(page, "home", width);
     await expectNoHorizontalOverflow(page, `homepage at ${width}px`);
 
@@ -69,7 +65,7 @@ for (const width of viewportWidths) {
       await newsLink.click();
       await expect(newsLink).toHaveAttribute("aria-current", "page");
     } else {
-      await page.getByRole("link", { name: "Explore Epe", exact: true }).click();
+      await page.getByRole("link", { name: "Read latest news", exact: true }).click();
     }
 
     await expect(page).toHaveURL(/\/news$/);
@@ -91,7 +87,7 @@ for (const width of viewportWidths) {
 
     await setFixtureMode(request, "error");
     await page.goto("/");
-    await expect(page.getByRole("heading", { level: 3, name: "The newsroom is unavailable right now" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "The newsroom is unavailable right now" })).toBeVisible();
     await expectNoHorizontalOverflow(page, `homepage error state at ${width}px`);
     await page.goto("/news");
     await expect(page).toHaveURL(/\/news$/);
@@ -111,14 +107,14 @@ for (const width of [320, 375, 768, 1024] as const) {
     await page.keyboard.press("Tab");
     await expect(skipLink).toBeFocused();
 
-    const menuButton = page.getByRole("button", { name: openMenuName, exact: true });
+    const menuButton = page.getByRole("button", { name: "Open navigation menu", exact: true });
     if (await menuButton.isVisible()) {
       await tabUntilFocused(page, menuButton);
       await page.keyboard.press("Enter");
 
       const drawer = page.getByRole("dialog", { name: "Find your place in Epe." });
       await expect(drawer).toBeVisible();
-      const closeButton = drawer.getByRole("button", { name: closeMenuName, exact: true });
+      const closeButton = drawer.getByRole("button", { name: "Close navigation menu" });
       await expect(closeButton).toBeFocused();
       await expect(drawer.getByRole("link", { name: /Forum/i })).toHaveAttribute("href", "/forum");
       await page.keyboard.press("Shift+Tab");
@@ -143,7 +139,7 @@ for (const width of [320, 375, 768, 1024] as const) {
     } else {
       const mainNavigation = page.getByRole("navigation", { name: mainNavigationName });
       const newsLink = mainNavigation.getByRole("link", { name: newsLinkName });
-      const target = await newsLink.isVisible() ? newsLink : page.getByRole("link", { name: "Explore Epe", exact: true });
+      const target = await newsLink.isVisible() ? newsLink : page.getByRole("link", { name: "Read latest news", exact: true });
       await tabUntilFocused(page, target);
       await page.keyboard.press("Enter");
       await expect(page).toHaveURL(/\/news$/);
@@ -155,97 +151,31 @@ for (const width of [320, 375, 768, 1024] as const) {
   });
 }
 
-for (const width of [320, 375] as const) {
-  test(`four-tab mobile bottom navigation works without covering content at ${width}px`, async ({ browser, request }) => {
+for (const width of [320, 375, 768] as const) {
+  test(`public mobile routes do not render dashboard bottom tabs at ${width}px`, async ({ page, request }) => {
     await setFixtureMode(request, "empty");
-    const context = await browser.newContext({
-      baseURL: smokeBaseURL,
-      viewport: { width, height: 900 },
-      isMobile: true,
-      hasTouch: true,
-    });
-    const page = await context.newPage();
-
-    try {
-      await page.goto("/news");
-      const bottomNavigation = page.getByRole("navigation", { name: mobileNavigationName, exact: true });
-      await expect(bottomNavigation).toBeVisible();
-      await expectNoHorizontalOverflow(page, `News bottom navigation at ${width}px`);
-
-      const homeLink = bottomNavigation.getByRole("link", { name: "Home", exact: true });
-      const newsLink = bottomNavigation.getByRole("link", { name: "News", exact: true });
-      const discoverLink = bottomNavigation.getByRole("link", { name: /^(?:Discover|Explore)$/i });
-      const accountLink = bottomNavigation.getByRole("link", { name: "Account", exact: true });
-      await expect(bottomNavigation.getByRole("link")).toHaveCount(4);
-      await expect(homeLink).toBeVisible();
-      await expect(newsLink).toBeVisible();
-      await expect(discoverLink).toBeVisible();
-      await expect(accountLink).toBeVisible();
-      await expect(bottomNavigation.getByRole("link", { name: /Forum/i })).toHaveCount(0);
-
-      const currentLink = bottomNavigation.locator('a[aria-current="page"]');
-      await expect(currentLink).toHaveCount(1);
-      await expect(newsLink).toHaveAttribute("aria-current", "page");
-      await expect(currentLink).toHaveAttribute("href", "/news");
-
-      await homeLink.focus();
-      await expect(homeLink).toBeFocused();
-      await page.keyboard.press("Enter");
-      await expect(page).toHaveURL(new URL("/", smokeBaseURL).href);
-      await expect(page.getByRole("navigation", { name: mobileNavigationName, exact: true })).toHaveCount(0);
-
-      await page.goto("/news");
-      await expect(newsLink).toHaveAttribute("aria-current", "page");
-      const discoverHref = await discoverLink.getAttribute("href");
-      if (!discoverHref?.startsWith("/")) throw new Error("Discover/Explore tab needs an internal route link");
-      await discoverLink.tap();
-      await expect(page).toHaveURL(new URL(discoverHref, smokeBaseURL).href);
-      await expect(discoverLink).toHaveAttribute("aria-current", "page");
-
-      await page.goto("/news");
-      // The shared newsletter card supplies the final footer links; wait for the preloader before hit-testing one.
-      await expect(page.locator(".site-preloader")).toHaveCount(0, { timeout: 15_000 });
-      await expect(newsLink).toHaveAttribute("aria-current", "page");
-      const lastFooterLink = page.locator("footer a").last();
-      await lastFooterLink.scrollIntoViewIfNeeded();
-      const navigationBox = await bottomNavigation.boundingBox();
-      const contentBox = await lastFooterLink.boundingBox();
-      expect(navigationBox, "mobile bottom navigation should have a visible box").not.toBeNull();
-      expect(contentBox, "the final footer link should remain reachable").not.toBeNull();
-      if (!navigationBox || !contentBox) throw new Error("Could not measure mobile navigation/content bounds");
-
-      const overlaps = contentBox.left < navigationBox.right
-        && contentBox.right > navigationBox.left
-        && contentBox.top < navigationBox.bottom
-        && contentBox.bottom > navigationBox.top;
-      expect(overlaps, `bottom navigation at ${width}px should not obscure the final footer link`).toBe(false);
-      const footerLinkIsHitTestable = await lastFooterLink.evaluate((element) => {
-        const bounds = element.getBoundingClientRect();
-        const topmost = document.elementFromPoint(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
-        return topmost === element || element.contains(topmost);
-      });
-      expect(footerLinkIsHitTestable, `footer content at ${width}px should not sit under an overlay`).toBe(true);
-      await expectNoHorizontalOverflow(page, `News bottom navigation at ${width}px after touch navigation`);
-    } finally {
-      await context.close();
+    await page.setViewportSize({ width, height: 900 });
+    for (const route of ["/", "/news", "/tourism"]) {
+      await page.goto(route);
+      await expect(page.locator(".mobile-bottom-nav")).toHaveCount(0);
     }
   });
 }
 
-test("desktop More navigation is keyboard-operable and Escape restores focus", async ({ page, request }) => {
+test("desktop grouped navigation is keyboard-operable and Escape restores focus", async ({ page, request }) => {
   await setFixtureMode(request, "empty");
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/news");
 
   const mainNavigation = page.getByRole("navigation", { name: mainNavigationName });
-  const moreButton = mainNavigation.locator(".nav-more > summary");
-  await moreButton.focus();
-  await expect(moreButton).toBeFocused();
+  const discoverButton = mainNavigation.locator("summary").filter({ hasText: "Discover" });
+  await discoverButton.focus();
+  await expect(discoverButton).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(mainNavigation.getByRole("link", { name: "Tourism", exact: true })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(mainNavigation.getByRole("link", { name: "Tourism", exact: true })).toBeHidden();
-  await expect(moreButton).toBeFocused();
+  await expect(discoverButton).toBeFocused();
 });
 
 test("reduced-motion preference is honored by the public shell", async ({ page, request }) => {

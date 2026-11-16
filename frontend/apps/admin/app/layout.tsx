@@ -34,7 +34,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     if (!(error instanceof Error) || error.message !== "Unauthorized") throw error;
   }
   return (
-    <html lang="en">
+    <html lang="en" data-theme="light" style={{ colorScheme: "light" }} suppressHydrationWarning>
       <body>
         <Script strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeScript }} />
         <SiteMotion />
