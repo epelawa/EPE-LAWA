@@ -272,3 +272,35 @@ test("member menu is compact, touch-friendly and navigates on tap", async ({ pag
   await expect(page).toHaveURL(/tab=discover/);
   await expect(page.getByRole("heading", { name: "Discover", level: 1 })).toBeVisible();
 });
+
+test("signed-in readers stay in member news when opening and leaving a story", async ({ page, request }) => {
+  test.setTimeout(60_000);
+  await setFixtureMode(request, "stories");
+  await signIn(page);
+  await page.setViewportSize({ width: 375, height: 850 });
+  await page.goto("/news?q=market&category=local-news");
+  await expect(page).toHaveURL(/\/dashboard\?tab=discover&q=market&category=local-news/);
+  await page.getByRole("link", { name: "Read: Smoke fixture: market story" }).click();
+  await expect(page).toHaveURL(/\/news\/smoke-market-story/);
+  await expect(page.getByRole("heading", { name: "Smoke fixture: market story" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Member reading navigation" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Back to Discover" })).toHaveAttribute("href", "/dashboard?tab=discover");
+  await expect(page.getByRole("link", { name: "Saved stories" })).toHaveAttribute("href", "/dashboard?tab=saved");
+  await expect(page.locator(".site-head")).toBeHidden();
+  for (const width of [320, 375, 768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 850 });
+    const size = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth, page: document.documentElement.scrollWidth }));
+    expect(size.page, `member article at ${width}px`).toBeLessThanOrEqual(size.viewport + 1);
+    await expect(page.getByRole("link", { name: "Back to Discover" })).toBeVisible();
+  }
+  await page.getByRole("link", { name: "Back to Discover" }).click();
+  await expect(page).toHaveURL(/\/dashboard\?tab=discover/);
+});
+
+test("signed-out story retains public news navigation", async ({ page, request }) => {
+  await setFixtureMode(request, "stories");
+  await page.goto("/news/smoke-market-story");
+  await expect(page.getByRole("heading", { name: "Smoke fixture: market story" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Back to News" })).toHaveAttribute("href", "/news");
+  await expect(page.getByRole("navigation", { name: "Member reading navigation" })).toHaveCount(0);
+});

@@ -391,3 +391,7 @@ html { overscroll-behavior-y: none; }
   .comment-fab { transition: none; }
   .comment-fab:hover { transform: none; }
 }
+
+/* The member reading shell replaces public chrome without changing article URLs. */
+body:has(.member-reading-mode) .site-head,
+body:has(.member-reading-mode) .site-footer { display: none !important; }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { createClient, SupabaseConfigurationError } from "../../lib/supabase";
 import { formatPublishedDate } from "../../lib/dates";
 import { publicMediaUrl } from "../../lib/media";
@@ -102,6 +103,19 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
   try { supabase = await createClient(); }
   catch (error) { if (!(error instanceof SupabaseConfigurationError)) throw error; return <NewsError />; }
 
+  // Members use their Discover feed; direct article links remain canonical and shareable.
+  let member = false;
+  try {
+    const { data, error } = await supabase.auth.getUser();
+    member = !error && Boolean(data.user);
+  } catch { /* Public news remains available when the session cannot be checked. */ }
+  if (member) {
+    const target = new URLSearchParams({ tab: "discover" });
+    if (query) target.set("q", query);
+    if (category) target.set("category", category);
+    redirect(`/dashboard?${target.toString()}`);
+  }
+
   let articleQuery = supabase.from("published_articles")
     .select("slug,title,summary,published_at,is_breaking,breaking_until,author_name,category_slug,category_label,og_image_key")
     .order("published_at", { ascending: false, nullsFirst: false })
@@ -154,6 +168,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
       <header className={styles.pageHeader}>
         <p className={styles.kicker}>EPE LAWA · NEWSROOM</p>
         <h1 className={styles.pageTitle}>{heading}</h1>
+        <p className={styles.pageDescription}>Reporting, stories and updates from Epe and its communities.</p>
         <nav className={styles.categoryNav} aria-label="News categories"><ul className={styles.categoryList}>
           <li><Link href={categoryHref(query, "")} aria-current={!category ? "page" : undefined} className={styles.categoryLink}>All</Link></li>
           {categories.map((item) => <li key={item.slug}><Link href={categoryHref(query, item.slug)} aria-current={category === item.slug ? "page" : undefined} className={styles.categoryLink}>{item.label}</Link></li>)}

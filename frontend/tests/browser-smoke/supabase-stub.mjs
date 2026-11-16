@@ -23,14 +23,17 @@ const fixtureAccessToken = "browser-smoke-access-token";
 function fixtureStories() {
   const now = Date.now();
   return [
-    { slug: "smoke-breaking-story", title: "Smoke fixture: breaking headline", summary: "Synthetic browser-test content only.", published_at: new Date(now - 5 * 60_000).toISOString(), is_breaking: true, breaking_until: new Date(now + 60 * 60_000).toISOString(), author_name: "Browser fixture", category_slug: "local-news", category_label: "Local News", og_image_key: null },
-    { slug: "smoke-market-story", title: "Smoke fixture: market story", summary: "Synthetic searchable story for local browser tests.", published_at: new Date(now - 15 * 60_000).toISOString(), is_breaking: false, breaking_until: null, author_name: "Browser fixture", category_slug: "local-news", category_label: "Local News", og_image_key: null },
-    { slug: "smoke-sports-story", title: "Smoke fixture: sports story", summary: "Synthetic category-filter story for local browser tests.", published_at: new Date(now - 25 * 60_000).toISOString(), is_breaking: false, breaking_until: null, author_name: null, category_slug: "sports", category_label: null, og_image_key: "unapproved/synthetic-cover.jpg" },
+    { id: "00000000-0000-4000-8000-000000000101", slug: "smoke-breaking-story", title: "Smoke fixture: breaking headline", summary: "Synthetic browser-test content only.", published_at: new Date(now - 5 * 60_000).toISOString(), is_breaking: true, breaking_until: new Date(now + 60 * 60_000).toISOString(), author_name: "Browser fixture", category_slug: "local-news", category_label: "Local News", og_image_key: null },
+    { id: "00000000-0000-4000-8000-000000000102", slug: "smoke-market-story", title: "Smoke fixture: market story", summary: "Synthetic searchable story for local browser tests.", published_at: new Date(now - 15 * 60_000).toISOString(), is_breaking: false, breaking_until: null, author_name: "Browser fixture", category_slug: "local-news", category_label: "Local News", og_image_key: null },
+    { id: "00000000-0000-4000-8000-000000000103", slug: "smoke-sports-story", title: "Smoke fixture: sports story", summary: "Synthetic category-filter story for local browser tests.", published_at: new Date(now - 25 * 60_000).toISOString(), is_breaking: false, breaking_until: null, author_name: null, category_slug: "sports", category_label: null, og_image_key: "unapproved/synthetic-cover.jpg" },
   ];
 }
 
 function filteredStories(url) {
   let stories = fixtureStories();
+  const slug = url.searchParams.get("slug");
+  if (slug?.startsWith("eq.")) stories = stories.filter((story) => story.slug === slug.slice(3));
+  if (slug?.startsWith("neq.")) stories = stories.filter((story) => story.slug !== slug.slice(4));
   const breaking = url.searchParams.get("is_breaking");
   if (breaking === "eq.true") stories = stories.filter((story) => story.is_breaking);
   const until = url.searchParams.get("breaking_until");
@@ -109,6 +112,14 @@ const server = createServer((request, response) => {
     return;
   }
 
+  if (mode === "stories" && request.method === "POST" && url.pathname === "/rest/v1/rpc/has_capability") {
+    respond(response, 200, false);
+    return;
+  }
+  if (mode === "stories" && request.method === "HEAD" && ["/rest/v1/comments", "/rest/v1/saved_articles"].includes(url.pathname)) {
+    respond(response, 200, undefined, { "content-range": "*/0" });
+    return;
+  }
   if (request.method === "GET" && url.pathname.startsWith("/rest/v1/")) {
     if (mode === "error" && (url.pathname === "/rest/v1/published_articles" || url.pathname === "/rest/v1/categories")) {
       respond(response, 503, {
@@ -125,6 +136,22 @@ const server = createServer((request, response) => {
       return;
     }
 
+    if (mode === "stories" && url.pathname === "/rest/v1/articles") {
+      respond(response, 200, [{ published_version_id: "fixture-version" }]);
+      return;
+    }
+    if (mode === "stories" && url.pathname === "/rest/v1/article_versions") {
+      respond(response, 200, [{ body: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Synthetic article for browser testing." }] }] } }]);
+      return;
+    }
+    if (mode === "stories" && url.pathname === "/rest/v1/comments") {
+      respond(response, 200, []);
+      return;
+    }
+    if (mode === "stories" && url.pathname === "/rest/v1/published_article_engagement") {
+      respond(response, 200, []);
+      return;
+    }
     if (mode === "history" && url.pathname === "/rest/v1/history_records") {
       const rows = Array.from({ length: 12 }, (_, index) => ({ id: `history-${index + 1}`, title: `Synthetic history ${index + 1}`, account: "Browser fixture only.", published_at: "2026-01-01T00:00:00Z", community: "Test community", category: "community-history", family_name: null, lineage_description: null }));
       const range = requestRange(url);
