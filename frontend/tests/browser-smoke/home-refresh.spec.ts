@@ -29,7 +29,7 @@ async function openHome(page: Page, request: APIRequestContext) {
 
 test("homepage presents editorial copy and a news-first CTA in a full-height hero without a bottom bar", async ({ page, request }) => {
   await page.setViewportSize({ width: 375, height: 900 });
-  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await openHome(page, request);
 
   await expect(page.getByText("From local headlines to the people, places and ideas shaping everyday life in Epe, this is a place to stay informed and feel connected.")).toBeVisible();
@@ -53,6 +53,14 @@ test("homepage presents editorial copy and a news-first CTA in a full-height her
   const carousel = page.locator('[aria-roledescription="carousel"]');
   await expect(carousel).toHaveCount(1);
   await expect(carousel.locator('[aria-roledescription="slide"]')).toHaveCount(1);
+  const slide = carousel.locator('[aria-roledescription="slide"]');
+  const photo = carousel.locator(".home-hero__photo");
+  await expect(slide).toHaveAttribute("aria-label", "1 of 54");
+  await expect(photo).toHaveAttribute("alt", "A road in Epe with roadside buildings and open water visible beyond it.");
+  await carousel.getByRole("button", { name: "Next Epe photo" }).focus();
+  await page.keyboard.press("Enter");
+  await expect(slide).toHaveAttribute("aria-label", "2 of 54");
+  await expect(photo).toHaveAttribute("alt", "The fish statue landmark in Epe, Lagos State.");
 });
 
 test("the original cover hero reaches the viewport bottom across phone, tablet and desktop sizes", async ({ page, request }, testInfo) => {
@@ -141,20 +149,20 @@ test("previous and next photo controls are keyboard-revealed without resting ove
   await expect(carousel.locator(".home-hero__pause")).toHaveAttribute("aria-label", "Resume automatic Epe photo rotation");
   await expect.poll(() => previous.evaluate((button) => getComputedStyle(button).clipPath)).toBe("none");
   await page.keyboard.press("Enter");
-  await expect(slide).toHaveAttribute("aria-label", "2 of 52");
+  await expect(slide).toHaveAttribute("aria-label", "54 of 54");
 
   await next.focus();
   await expect.poll(() => next.evaluate((button) => getComputedStyle(button).clipPath)).toBe("none");
   await page.keyboard.press("Enter");
-  await expect(slide).toHaveAttribute("aria-label", "3 of 52");
+  await expect(slide).toHaveAttribute("aria-label", "1 of 54");
 });
 
-test("photo credits remain available off-hero for all 52 original images", async ({ page, request }) => {
+test("photo credits remain available off-hero for all 52 credited photos and the two originals", async ({ page, request }) => {
   await setFixtureMode(request, "empty");
   await page.goto("/photo-credits");
   await expect(page.getByRole("heading", { level: 1, name: "Photo credits" })).toBeVisible();
   const attributions = page.locator("article[aria-label='Homepage photo attributions']");
   await expect(attributions).toBeVisible();
-  await expect(attributions.getByRole("listitem")).toHaveCount(52);
-  await expect(attributions.locator('a[rel*="license"]')).toHaveCount(52);
+  await expect(attributions.getByRole("listitem")).toHaveCount(54);
+  await expect(attributions.locator('a[rel*="license"]')).toHaveCount(54);
 });

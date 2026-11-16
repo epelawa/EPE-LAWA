@@ -1,8 +1,8 @@
 # Homepage hero image sources
 
-The homepage gallery contains **52 Epe photographs**: the existing ten selected Commons images plus 42 additional, individually licensed Commons photographs from the Epe, Nigeria category and its listed subcategories. The user-facing image is locally stored; modern browsers receive responsive 640px/1280px AVIF or WebP variants, with WebP as the broad-format fallback. Photos are not traced into SVG. No image is cropped during encoding; the editorial landscape hero uses CSS `object-fit: cover`.
+The homepage carousel preserves all **52 credited Commons photographs** and restores the **two original homepage photographs** (54 slides total). The 52 gallery photos use responsive 640px/1280px AVIF or WebP variants, while both original homepage photos retain their optimized local variants. Photos are not traced into SVG. No image is cropped during encoding; the editorial landscape hero uses CSS `object-fit: cover`.
 
-The visible caption identifies the photo author and links to both the original Commons file page and that file’s license. Adapted CC BY-SA images remain attributed and are distributed under the same license. The visitor changes photos manually; there is no autoplay. The selected image loads eagerly and only a small nearby window is prefetched when connection settings allow; the gallery does not request all 52 images at once and skips prefetching on Save-Data and constrained 2G connections.
+The Photo Credits page identifies each photo author and links to both the original Commons file page and its license. Adapted CC BY-SA images remain attributed and are distributed under the same license. Visitors can change photos manually, and automatic rotation respects motion and connection preferences. The selected image loads eagerly and only a small nearby window is prefetched when connection settings allow; the carousel does not request all 54 images at once and skips prefetching on Save-Data and constrained 2G connections.
 
 The owner reports separate image/media rights from Lagos State Government; that claim is owner-provided and was not independently verified in this asset audit. Every image below is included under the individual Wikimedia Commons license shown.
 
@@ -317,3 +317,17 @@ The owner reports separate image/media rights from Lagos State Government; that 
 - Author: Addjimedu
 - License: [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/deed.en)
 - Source: [File:YABA COLLEGE OF TECHNOLOGY, EPE CAMPUS.jpg](https://commons.wikimedia.org/wiki/File:YABA_COLLEGE_OF_TECHNOLOGY,_EPE_CAMPUS.jpg)
+
+## Original homepage photos restored to the carousel
+
+### New Epe road · Epe
+- Optimized local variants: AVIF (`/home-hero/optimized/avif/new-epe-road-640.avif` at 640w; `/home-hero/optimized/avif/new-epe-road-1280.avif` at 1280w); WebP (`/home-hero/optimized/webp/new-epe-road-640.webp` at 640w; `/home-hero/optimized/webp/new-epe-road-1280.webp` at 1280w); JPEG fallback (`/home-hero/optimized/jpg/new-epe-road-1280.jpg`).
+- Author: Joseph Slyboy
+- License: [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.en)
+- Source: [New Epe road · Epe](https://commons.wikimedia.org/wiki/File:New_Epe_lagos_road.jpg)
+
+### Fish statue · Epe
+- Optimized local variants: AVIF (`/home-hero/optimized/avif/fish-statue-epe-640.avif` at 640w; `/home-hero/optimized/avif/fish-statue-epe-1280.avif` at 1280w); WebP (`/home-hero/optimized/webp/fish-statue-epe-640.webp` at 640w; `/home-hero/optimized/webp/fish-statue-epe-1280.webp` at 1280w); JPEG fallback (`/home-hero/optimized/jpg/fish-statue-epe-1280.jpg`).
+- Author: Kwadoskii
+- License: [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.en)
+- Source: [Fish statue · Epe](https://commons.wikimedia.org/wiki/File:Fish_Statue_Epe.jpg)

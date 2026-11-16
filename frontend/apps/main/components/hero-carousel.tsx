@@ -23,7 +23,7 @@ export type HeroSlide = {
 /** Approved local Epe photographs; only the visible image and a small nearby window are requested. */
 export const HERO_SLIDES = heroImages as unknown as readonly HeroSlide[];
 const MAX_HERO_SLIDES = 60;
-const INITIAL_SLIDE = 2;
+const INITIAL_SLIDE = 0;
 const slides = HERO_SLIDES.slice(0, MAX_HERO_SLIDES);
 const IMAGE_SIZES = "100vw";
 const ROTATION_DELAY_MS = 7200;

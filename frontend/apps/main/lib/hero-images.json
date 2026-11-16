@@ -1,5 +1,89 @@
 [
   {
+    "slug": "new-epe-road",
+    "alt": "A road in Epe with roadside buildings and open water visible beyond it.",
+    "label": "New Epe road · Epe",
+    "author": "Joseph Slyboy",
+    "license": "CC BY-SA 4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:New_Epe_lagos_road.jpg",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/deed.en",
+    "width": 4032,
+    "height": 3024,
+    "avif": {
+      "small": {
+        "src": "/home-hero/optimized/avif/new-epe-road-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/home-hero/optimized/avif/new-epe-road-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/home-hero/optimized/webp/new-epe-road-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/home-hero/optimized/webp/new-epe-road-1280.webp",
+        "width": 1280
+      }
+    },
+    "jpg": {
+      "small": {
+        "src": "/home-hero/optimized/jpg/new-epe-road-640.jpg",
+        "width": 640
+      },
+      "large": {
+        "src": "/home-hero/optimized/jpg/new-epe-road-1280.jpg",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/home-hero/optimized/jpg/new-epe-road-1280.jpg"
+  },
+  {
+    "slug": "fish-statue-epe",
+    "alt": "The fish statue landmark in Epe, Lagos State.",
+    "label": "Fish statue · Epe",
+    "author": "Kwadoskii",
+    "license": "CC BY-SA 4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Fish_Statue_Epe.jpg",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/deed.en",
+    "width": 4980,
+    "height": 2801,
+    "avif": {
+      "small": {
+        "src": "/home-hero/optimized/avif/fish-statue-epe-640.avif",
+        "width": 640
+      },
+      "large": {
+        "src": "/home-hero/optimized/avif/fish-statue-epe-1280.avif",
+        "width": 1280
+      }
+    },
+    "webp": {
+      "small": {
+        "src": "/home-hero/optimized/webp/fish-statue-epe-640.webp",
+        "width": 640
+      },
+      "large": {
+        "src": "/home-hero/optimized/webp/fish-statue-epe-1280.webp",
+        "width": 1280
+      }
+    },
+    "jpg": {
+      "small": {
+        "src": "/home-hero/optimized/jpg/fish-statue-epe-640.jpg",
+        "width": 640
+      },
+      "large": {
+        "src": "/home-hero/optimized/jpg/fish-statue-epe-1280.jpg",
+        "width": 1280
+      }
+    },
+    "fallbackSrc": "/home-hero/optimized/jpg/fish-statue-epe-1280.jpg"
+  },
+  {
     "slug": "01-epe-epe-jpg",
     "alt": "Epe landmark sign with fish sculpture",
     "label": "Our place. Our identity.",

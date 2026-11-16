@@ -14,15 +14,17 @@ test('every public page has rebuilt editorial or account markup, not the old nar
 test('new design scales display roles to 90 percent and retains readable body/control floors',()=>{
   const css=read('frontend/apps/main/app/globals.css');const layout=read('frontend/apps/main/app/layout.tsx');const header=read('frontend/apps/main/components/site-header.tsx');assert.match(css,/--text-display: clamp\(2\.025rem, 4\.8vw, 3\.6rem\)/);assert.match(css,/--text-title: clamp\(1\.25rem, 2\.4vw, 1\.575rem\)/);assert.match(css,/font-size: 16px/);assert.match(css,/min-height: 44px/);assert.match(css,/prefers-reduced-motion/);assert.doesNotMatch(css,/#(?:da251c|ff4a3d|17253a)\b/i);assert.match(css,/:root\s*\{[\s\S]*color-scheme:\s*light/);assert.doesNotMatch(css,/data-theme="dark"|color-scheme:\s*dark/);assert.match(layout,/<html\b/);assert.match(layout,/data-theme="light"/);assert.match(layout,/colorScheme: "light"/);assert.doesNotMatch(header,/ThemeToggle|Appearance|appearance/);
 });
-test('homepage preserves the original 52-photo sourced Epe hero without extra overlays or pill blocks',()=>{
+test('homepage preserves all 52 credited photos and restores its two original hero photos',()=>{
   const source=read('frontend/apps/main/app/page.tsx');
   const carousel=read('frontend/apps/main/components/hero-carousel.tsx');
   const credits=read('docs/hero-image-sources.md');
   const heroCss=read('frontend/apps/main/app/hero-logo.css');
   const manifest=JSON.parse(read('frontend/apps/main/lib/hero-images.json'));
   assert.match(source,/<HeroCarousel\s*\/>/);
-  assert.equal(manifest.length,52);
-  assert.equal(new Set(manifest.map(slide=>slide.source)).size,52);
+  assert.equal(manifest.length,54);
+  assert.equal(manifest.slice(2).length,52);
+  assert.deepEqual(manifest.slice(0,2).map(slide=>slide.slug),['new-epe-road','fish-statue-epe']);
+  assert.equal(new Set(manifest.map(slide=>slide.source)).size,54);
   assert.doesNotMatch(source,/home-hero__brand|BrandLockup/);
   assert.match(source,/home-hero__title-line">Epe<\/span>/);
   assert.match(source,/home-hero__title-line home-hero__title-line--accent">Closer<\/span>/);

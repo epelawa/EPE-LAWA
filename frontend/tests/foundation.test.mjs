@@ -236,10 +236,15 @@ test('homepage hero gallery is sourced, responsive, eager and resource-aware', a
   assert.doesNotMatch(styles, /home-hero__caption|home-hero__credit|home-hero__slide-label|home-hero__counter/);
   assert.doesNotMatch(styles, /home-hero__brand/);
   assert.match(styles, /prefers-reduced-motion/);
-  assert.equal(manifest.length, 52);
+  assert.equal(manifest.length, 54);
+  assert.deepEqual(manifest.slice(0, 2).map(({ slug, author, source }) => ({ slug, author, source })), [
+    { slug: 'new-epe-road', author: 'Joseph Slyboy', source: 'https://commons.wikimedia.org/wiki/File:New_Epe_lagos_road.jpg' },
+    { slug: 'fish-statue-epe', author: 'Kwadoskii', source: 'https://commons.wikimedia.org/wiki/File:Fish_Statue_Epe.jpg' },
+  ]);
+  assert.equal(manifest.slice(2).length, 52, 'all existing credited Commons photos must remain');
   assert.match(layout, /<html lang="en" data-theme="light" style=\{\{ colorScheme: "light" \}\} suppressHydrationWarning>/);
-  assert.equal(new Set(manifest.map((slide) => slide.slug)).size, 52);
-  assert.equal(new Set(manifest.map((slide) => slide.source)).size, 52);
+  assert.equal(new Set(manifest.map((slide) => slide.slug)).size, 54);
+  assert.equal(new Set(manifest.map((slide) => slide.source)).size, 54);
   const creditsPage = await readProjectFile('frontend/apps/main/app/photo-credits/page.tsx');
   assert.match(creditsPage, /Photo by \{image\.author\}/);
   assert.match(creditsPage, /href=\{image\.source\}/);
@@ -251,7 +256,7 @@ test('homepage hero gallery is sourced, responsive, eager and resource-aware', a
   assert.deepEqual(manifest.map((slide) => slide.source).sort(), documentedSources);
   const localFiles = new Set();
   for (const slide of manifest) {
-    assert.match(slide.slug, /^\d{2}-epe-/);
+    assert.ok(['new-epe-road', 'fish-statue-epe'].includes(slide.slug) || /^\d{2}-epe-/.test(slide.slug), `unexpected hero slug: ${slide.slug}`);
     assert.ok(['CC0 1.0', 'CC BY-SA 4.0'].includes(slide.license), slide.license);
     assert.match(slide.licenseUrl, /^https:\/\/creativecommons\.org\//);
     assert.ok(credits.includes(`[${slide.license}](${slide.licenseUrl})`), `missing license for ${slide.slug}`);
@@ -268,7 +273,7 @@ test('homepage hero gallery is sourced, responsive, eager and resource-aware', a
       }
     }
   }
-  assert.equal(localFiles.size, 206);
+  assert.equal(localFiles.size, 214);
   assert.doesNotMatch(page, /ui-eyebrow">Epe · Lagos State/);
   assert.doesNotMatch(source, /unsplash|pexels|placeholder/i);
 });

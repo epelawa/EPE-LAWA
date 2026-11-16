@@ -42,8 +42,9 @@ test("public shell stays light and the all-viewport drawer is account-only", () 
   assert.match(home, /href="\/news" className="btn-primary">Read latest news/);
   assert.doesNotMatch(home, /Explore Epe|href="\/tourism"/);
   assert.doesNotMatch(home, /Stories worth knowing|History worth keeping|Places worth finding|People worth connecting|home-topics/);
-  assert.equal(heroManifest.length, 52);
-  assert.equal(new Set(heroManifest.map((slide) => slide.source)).size, 52);
+  assert.equal(heroManifest.length, 54);
+  assert.deepEqual(heroManifest.slice(0, 2).map((slide) => slide.slug), ["new-epe-road", "fish-statue-epe"]);
+  assert.equal(new Set(heroManifest.map((slide) => slide.source)).size, 54);
   assert.match(heroCarousel, /HERO_SLIDES = heroImages/);
   assert.match(heroCarousel, /setTimeout|setInterval|ROTATION_DELAY/);
   assert.match(heroCarousel, /prefers-reduced-motion/);
