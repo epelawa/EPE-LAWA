@@ -54,6 +54,12 @@ for (const width of viewportWidths) {
 
     await expect(page.locator("main#main")).toBeVisible();
     await expect(page.getByRole("heading", { level: 1, name: "Stay Connected, Stay Informed" })).toBeVisible();
+    const artwork = page.locator(".home-hero__client-art img");
+    await expect(artwork).toBeVisible();
+    await expect.poll(() => artwork.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
+    await expect(page.getByRole("link", { name: "visit the radio page" })).toHaveAttribute("href", "/radio");
+    const background = await page.locator("body").evaluate((body) => getComputedStyle(body).backgroundImage);
+    expect((background.match(/linear-gradient\(90deg/g) ?? []).length).toBeGreaterThanOrEqual(2);
     await expect(page.getByRole("heading", { level: 2, name: "Latest News" })).toBeVisible();
     await expect(page.locator(".mobile-bottom-nav")).toHaveCount(0);
     await captureEvidence(page, "home", width);
