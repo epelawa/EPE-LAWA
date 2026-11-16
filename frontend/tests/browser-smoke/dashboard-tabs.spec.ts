@@ -98,8 +98,9 @@ test("signed-in dashboard keeps honest empty views and one responsive tab bar", 
   await page.getByRole("link", { name: "Saved", exact: true }).click();
   await expect(page).toHaveURL(/\/dashboard\?tab=saved$/);
   await expectActiveTab(page, "Saved");
-  await expect(page.getByRole("heading", { name: "Saving isn’t available yet" })).toBeVisible();
-  await expect(page.getByText("no saved records are being queried or reported here.")).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Your reading list" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Nothing saved yet" })).toBeVisible();
+  await expect(page.getByText("Stories you save with the bookmark control")).toBeVisible();
 
   await dashboardNavigation(page).getByRole("link", { name: "Profile", exact: true }).click();
   await expect(page).toHaveURL(/\/dashboard\?tab=profile$/);

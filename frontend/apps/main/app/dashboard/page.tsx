@@ -343,10 +343,10 @@ export default async function MemberDashboardPage({ searchParams }: { searchPara
       <main className={`${styles.shell} member-dashboard-shell`}>
         <DashboardTabs active={activeTab} />
         <DashboardServices />
-        {!showNewsFeed && activeTab !== "notifications" ? <header className={styles.hero}>
+        {!showNewsFeed && activeTab !== "notifications" && activeTab !== "saved" ? <header className={styles.hero}>
           <p className={styles.eyebrow}>Member dashboard</p>
-          <h1>{activeTab === "saved" ? "Saved" : "Profile"}</h1>
-          <p>{activeTab === "saved" ? "Everything you bookmarked, in published order." : "Manage your public profile details."}</p>
+          <h1>Profile</h1>
+          <p>Manage your public profile details.</p>
         </header> : null}
         {activeTab === "home" ? <DashboardHomeNews client={supabase} />
           : activeTab === "discover" ? <DashboardDiscoverNews client={supabase} query={query} category={category} page={page} />
