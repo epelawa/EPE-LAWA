@@ -10,7 +10,6 @@ export default function NewPasswordPage() {
       eyebrow="Account recovery"
       title="Choose a new password"
       description="Set a new password for your account."
-      showThemeToggle={false}
     >
       <NewPasswordForm />
       <nav className="auth-switch" aria-label="Password recovery options">
