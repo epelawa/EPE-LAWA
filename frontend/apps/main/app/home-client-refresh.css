@@ -122,3 +122,9 @@
     @keyframes home-card-reveal { from { opacity: .7; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
   }
 }
+
+/* The supplied artwork complements, rather than replaces, the rotating hero. */
+.home-hero__client-art { margin-block: 24px 8px; text-align: center; }
+.home-hero__client-art img { display: block; width: min(100%, 720px); height: auto; margin-inline: auto; border-radius: 16px; }
+.home-hero__client-art figcaption { max-width: 720px; margin: 8px auto 0; color: #435573; font-size: 13px; line-height: 1.5; }
+.home-hero__client-art figcaption a { color: #294b91; text-decoration: underline; }

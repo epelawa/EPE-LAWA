@@ -26,6 +26,10 @@ export default async function Home() {
             </div>
           </div>
         </HeroCarousel>
+        <figure className="home-hero__client-art ep-container">
+          <img src="/home-hero/epe-lawa-client-artwork.jpg" width="720" height="420" alt="EPE LAWA community artwork featuring Epe, fish and a radio programme" />
+          <figcaption>Community artwork supplied by EPE LAWA. Buttons shown in the artwork are illustrative; <Link href="/radio">visit the radio page</Link> to listen.</figcaption>
+        </figure>
       </section>
 
       <div className="ep-container home-discovery">
