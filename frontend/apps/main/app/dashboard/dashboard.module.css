@@ -306,3 +306,28 @@
 .savedTitle:hover { color: hsl(var(--link)); text-decoration: underline; text-underline-offset: 3px; }
 .savedMeta { color: hsl(var(--muted-foreground)); font-size: 12px; }
 .savedEmpty { display: grid; justify-items: start; gap: 10px; }
+
+/* A calmer, app-like member feed: a featured headline and compact reading list. */
+.newsFeed { gap: clamp(28px, 4vw, 42px); }
+.feedSectionHeading { border-bottom: 1px solid hsl(var(--border)); }
+.breakingStory { position: relative; display: grid; grid-template-columns: 1fr; min-height: 270px; border: 0; background: var(--palette-navy); }
+.breakingImage { grid-area: 1 / 1; min-height: 270px; }
+.breakingImage img, .breakingImage .storyImageFallback { min-height: 270px; }
+.breakingImage::after { position: absolute; inset: 0; content: ""; pointer-events: none; background: linear-gradient(0deg, rgb(10 16 35 / .95), rgb(10 16 35 / .12) 85%); }
+.breakingCopy { position: relative; z-index: 2; grid-area: 1 / 1; align-content: end; padding: clamp(20px, 3vw, 30px); }
+.breakingCopy strong { max-width: 32ch; color: white; font-size: clamp(1.25rem, 2.4vw, 2rem); }
+.breakingCopy .storySummary, .breakingCopy .storyMeta { color: #e4edfb; }
+.breakingCopy .storyCategory { color: white; }
+.breakingImage .storyStats { inset: 10px 10px auto; z-index: 2; }
+.storyCard { border-color: transparent; box-shadow: none; background: transparent; }
+.storyCardLink { grid-template-columns: 120px minmax(0, 1fr); gap: 14px; }
+.storyImageWrap { border-radius: 14px; }
+.storyCardCopy { padding: 6px 0; }
+.searchForm { border-radius: 18px; background: hsl(var(--secondary) / .6); }
+@media (max-width: 760px) {
+  .shell { padding-top: 24px; }
+  .breakingStory, .breakingImage, .breakingImage img, .breakingImage .storyImageFallback { min-height: 230px; max-height: none; }
+  .storyGrid { gap: 16px; }
+  .storyCardLink { grid-template-columns: 104px minmax(0, 1fr); }
+  .storyImageWrap, .storyImage, .storyImageFallback { min-height: 104px; }
+}

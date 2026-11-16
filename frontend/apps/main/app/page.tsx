@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRightIcon, ArrowUpRightIcon, UsersIcon, RadioIcon, NewspaperIcon, CompassIcon, BuildingIcon, MessageCircleIcon } from "../components/icons";
+import { ArrowRightIcon, ArrowUpRightIcon, UsersIcon, RadioIcon, NewsShortcutIcon, ListenShortcutIcon, CompassIcon, BuildingIcon, MessageCircleIcon } from "../components/icons";
 import { formatPublishedDate } from "../lib/dates";
 import { getLatestStories } from "../lib/home-data";
 import "./hero-logo.css";
@@ -36,8 +36,8 @@ export default async function Home() {
         </section>
         <nav className="home-shortcuts" aria-label="Explore EPE LAWA">
           {[
-            { href: "/news", label: "Latest news", Icon: NewspaperIcon },
-            { href: "/radio", label: "Listen to radio", Icon: RadioIcon },
+            { href: "/news", label: "Latest news", Icon: NewsShortcutIcon },
+            { href: "/radio", label: "Listen to radio", Icon: ListenShortcutIcon },
             { href: "/itan-ilu-mi", label: "Community history", Icon: CompassIcon },
             { href: "/forum", label: "Join the conversation", Icon: MessageCircleIcon },
             { href: "/business-directory", label: "Local businesses", Icon: BuildingIcon },

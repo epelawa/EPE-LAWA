@@ -43,9 +43,6 @@ test("public shell stays light and the all-viewport drawer is account-only", () 
   assert.match(heroCarousel, /HERO_SLIDES = heroImages/);
   assert.match(heroCarousel, /setTimeout|setInterval|ROTATION_DELAY/);
   assert.match(heroCarousel, /prefers-reduced-motion/);
-	assert.match(heroCarousel, /home-photo-control__button/);
-	assert.match(heroCarousel, /onFocusCapture=\{\(\) => setPaused\(true\)\}/);
-	assert.match(heroCarousel, /aria-label=\{rotationLabel\}/);
   assert.match(heroCarousel, /aria-roledescription="slide"/);
   assert.doesNotMatch(heroCarousel, /home-hero__caption|home-hero__credit|home-hero__slide-label|home-hero__counter|Photo by <a/);
   assert.doesNotMatch(heroCarousel, /Epe Division|The voice of Epe Division/i);

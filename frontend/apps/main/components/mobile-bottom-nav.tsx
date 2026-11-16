@@ -33,7 +33,7 @@ export default function MobileBottomNav() {
           const current = mobileNavigationCurrentState(pathname, tab.key, searchParams);
           return (
             <li key={tab.key}>
-              <Link className="mobile-bottom-nav__link" href={tab.href} aria-current={current}>
+              <Link className="mobile-bottom-nav__link" href={tab.href} aria-label={tab.label} aria-current={current}>
                 <span className="mobile-bottom-nav__icon" aria-hidden="true"><Icon size={20} /></span>
                 <span className="mobile-bottom-nav__label">{tab.label}</span>
               </Link>

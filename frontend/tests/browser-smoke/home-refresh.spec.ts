@@ -41,37 +41,19 @@ test("homepage offers compact news, radio and community navigation", async ({ pa
   }
 });
 
-test("autoplay can be paused outside the image and resumed by keyboard", async ({ browser, request }) => {
-  test.setTimeout(60_000);
-  const context = await browser.newContext({ viewport: { width: 375, height: 900 }, isMobile: true, hasTouch: true });
-  const page = await context.newPage();
+test("hero pauses while keyboard focus is inside and resumes after focus leaves", async ({ page, request }) => {
+  test.setTimeout(40_000);
   await page.emulateMedia({ reducedMotion: "no-preference" });
-  try {
-    await openHome(page, request);
-    const carousel = page.locator('[aria-roledescription="carousel"]');
-    const pause = page.locator(".home-photo-control__button");
-    await expect(pause).toBeVisible();
-    await expect.poll(() => pause.boundingBox()).toMatchObject({ width: expect.any(Number), height: expect.any(Number) });
-    const touchSize = await pause.boundingBox();
-    expect(touchSize?.width ?? 0).toBeGreaterThanOrEqual(44);
-    expect(touchSize?.height ?? 0).toBeGreaterThanOrEqual(44);
-
-    await pause.click();
-    const focusedPhoto = await activePhotoKey(page);
-    await page.waitForTimeout(rotationWindowMs);
-    expect(await activePhotoKey(page)).toBe(focusedPhoto);
-
-    await pause.blur();
-    await page.waitForTimeout(rotationWindowMs);
-    expect(await activePhotoKey(page)).toBe(focusedPhoto);
-
-    await pause.focus();
-    await page.keyboard.press("Enter");
-    await page.waitForTimeout(rotationWindowMs + 500);
-    expect(await activePhotoKey(page)).not.toBe(focusedPhoto);
-  } finally {
-    await context.close();
-  }
+  await openHome(page, request);
+  const link = page.getByRole("link", { name: "Read latest news", exact: true });
+  await link.focus();
+  const photo = await activePhotoKey(page);
+  await page.waitForTimeout(rotationWindowMs);
+  expect(await activePhotoKey(page)).toBe(photo);
+  await link.blur();
+  await page.waitForTimeout(rotationWindowMs + 500);
+  expect(await activePhotoKey(page)).not.toBe(photo);
+  await expect(page.locator(".home-photo-control__button")).toHaveCount(0);
 });
 
 test("reduced motion disables hero autoplay while retaining the accessible slide contract", async ({ page, request }) => {
@@ -88,7 +70,7 @@ test("reduced motion disables hero autoplay while retaining the accessible slide
   const initialPhoto = await activePhotoKey(page);
   await page.waitForTimeout(rotationWindowMs);
   expect(await activePhotoKey(page)).toBe(initialPhoto);
-  await expect(page.locator(".home-photo-control__button")).toBeDisabled();
+  await expect(page.locator(".home-photo-control__button")).toHaveCount(0);
 });
 
 test("hero photos rotate without controls over the image", async ({ page, request }) => {

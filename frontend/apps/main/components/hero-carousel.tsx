@@ -54,10 +54,9 @@ function closestVariant(format: ImageFormat, width: number) {
 export default function HeroCarousel({ children }: { children: ReactNode }) {
   const [index, setIndex] = useState(Math.min(INITIAL_SLIDE, Math.max(0, slides.length - 1)));
   const photoRef = useRef<HTMLImageElement>(null);
-  const pointerPauseState = useRef<boolean | null>(null);
   const [loadedIndex, setLoadedIndex] = useState(-1);
   const [activeCurrentSrc, setActiveCurrentSrc] = useState("");
-  const [paused, setPaused] = useState(false);
+  const [focused, setFocused] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [pageVisible, setPageVisible] = useState(true);
   const [reducedMotion, setReducedMotion] = useState(false);
@@ -85,17 +84,17 @@ export default function HeroCarousel({ children }: { children: ReactNode }) {
   }, [index]);
 
   useEffect(() => {
-    if (loadedIndex !== index || !activeCurrentSrc || slides.length < 2 || paused || hovered || !pageVisible || reducedMotion || isConstrainedConnection()) return;
+    if (loadedIndex !== index || !activeCurrentSrc || slides.length < 2 || focused || hovered || !pageVisible || reducedMotion || isConstrainedConnection()) return;
     const timeout = window.setTimeout(() => {
       setActiveCurrentSrc("");
       setLoadedIndex(-1);
       setIndex((current) => (current + 1) % slides.length);
     }, ROTATION_DELAY_MS);
     return () => window.clearTimeout(timeout);
-  }, [loadedIndex, index, activeCurrentSrc, paused, hovered, pageVisible, reducedMotion]);
+  }, [loadedIndex, index, activeCurrentSrc, focused, hovered, pageVisible, reducedMotion]);
 
   useEffect(() => {
-    if (loadedIndex !== index || !activeCurrentSrc || slides.length < 2 || paused || hovered || !pageVisible || reducedMotion || isConstrainedConnection()) return;
+    if (loadedIndex !== index || !activeCurrentSrc || slides.length < 2 || focused || hovered || !pageVisible || reducedMotion || isConstrainedConnection()) return;
     const connection = getNetworkConnection();
     const count = Math.min(slides.length - 1, connection?.effectiveType === "3g" ? 1 : 2);
     const match = activeCurrentSrc.match(/-(\d+)\.(avif|webp)(?:\?.*)?$/i);
@@ -108,14 +107,13 @@ export default function HeroCarousel({ children }: { children: ReactNode }) {
       image.fetchPriority = "low";
       image.src = closestVariant(nextSlide[formatName], preferredWidth).src;
     }
-  }, [loadedIndex, index, activeCurrentSrc, paused, hovered, pageVisible, reducedMotion]);
+  }, [loadedIndex, index, activeCurrentSrc, focused, hovered, pageVisible, reducedMotion]);
 
   if (!slides.length) return null;
   const slide = slides[index] ?? slides[0];
-  const rotationLabel = reducedMotion ? "Photo rotation paused for reduced motion" : paused ? "Resume automatic Epe photo rotation" : "Pause automatic Epe photo rotation";
   return (
     <>
-      <div className="home-hero__visual" onFocusCapture={() => setPaused(true)}>
+      <div className="home-hero__visual" onFocusCapture={() => setFocused(true)} onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}>
         <figure
           className="home-hero__media"
           role="group"
@@ -149,17 +147,6 @@ export default function HeroCarousel({ children }: { children: ReactNode }) {
       </div>
         </figure>
         {children}
-      </div>
-      <div className="ep-container home-photo-control">
-        <button className="home-photo-control__button" type="button" aria-label={rotationLabel} disabled={reducedMotion}
-          onPointerDown={() => { pointerPauseState.current = paused; }}
-          onPointerCancel={() => { pointerPauseState.current = null; }}
-          onClick={(event) => {
-            const wasPaused = event.detail > 0 && pointerPauseState.current !== null ? pointerPauseState.current : paused;
-            pointerPauseState.current = null;
-            setPaused(!wasPaused);
-          }}
-        >{reducedMotion ? "Photos paused for reduced motion" : paused ? "Resume photos" : "Pause photos"}</button>
       </div>
     </>
   );

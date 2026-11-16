@@ -87,3 +87,25 @@
   .home-shortcuts a, .home-shortcuts a:last-child { min-height: 108px; border: 0; font-size: 12px; }
   .home-radio { min-height: 0; padding: 22px; }
 }
+
+/* A compact, editorial reading surface, with credits retained alongside images. */
+.home-hero__photo { animation: home-photo-slide-in 850ms cubic-bezier(.22,.7,.2,1) both; }
+@keyframes home-photo-slide-in { from { opacity: .45; transform: translateX(7%) scale(1.04); } to { opacity: 1; transform: translateX(0) scale(1); } }
+.public-home .home-news { padding-block: 30px 24px; }
+.home-story-list { gap: 14px; }
+.home-story-list--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.home-story-list--3 .home-story-item--lead { grid-row: auto; }
+.home-story-card { border: 1px solid #dce4f0; border-radius: 18px; box-shadow: 0 8px 24px rgb(10 16 35 / .05); }
+.home-story-copy { gap: 8px; padding: 16px 18px 18px; }
+.home-story-card h3, .home-story-item--lead .home-story-card h3 { font-size: clamp(1.05rem, 1.7vw, 1.35rem); line-height: 1.32; }
+.home-story-summary { font-size: 13px; }
+.home-story-meta { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+.home-story-read { min-height: 36px; }
+.home-story-cover figcaption { padding: 8px 14px 0; font-size: 10px; }
+@media (max-width: 700px) {
+  .home-story-list--1, .home-story-list--2, .home-story-list--3 { grid-template-columns: minmax(0, 1fr); }
+  .home-story-cover-link, .home-story-item--lead .home-story-cover-link, .home-story-item--support .home-story-cover-link { aspect-ratio: 2 / 1; }
+  .home-story-copy { padding: 13px 16px 16px; }
+  .home-story-summary { -webkit-line-clamp: 2; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
+}
+@media (prefers-reduced-motion: reduce) { .home-hero__photo { animation: none; } }
