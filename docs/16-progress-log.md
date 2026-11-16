@@ -445,6 +445,6 @@ Story covers now show a read-time estimate, real de-duplicated daily views and t
 
 Reworked the public hero so the copy block is genuinely centred (`align-items:center`/`justify-content:center`, no `margin-top:auto` on the CTA), with staggered title-line, lede and CTA entrances, a slow photographic drift, balanced text and a fully pill-shaped white-text CTA. Added `ScrollToTop`, mounted in the root layout, which resets new pathnames and browser back/forward while leaving dashboard tab query changes untouched.
 
-**Validation:** added Vitest 3.2.4 with jsdom and four focused files (member-entry decisions, member-space contract, hero contract, ScrollToTop DOM behaviour) — 21/21 pass. `pnpm test` now runs the legacy `node:test` suite and Vitest; full result 303/301/0 with one documented skip. Both apps typecheck and production-build. `/auth/complete` returns 404 on a local `next start`; `/dashboard` renders and `/` returns the new hero markup.
+**Validation:** added Vitest 5.1.0 with jsdom and four focused files (member-entry decisions, member-space contract, hero contract, ScrollToTop DOM behaviour) — 21/21 pass. `pnpm test` now runs the legacy `node:test` suite and Vitest; full result 303/301/0 with one documented skip. Both apps typecheck and production-build. `/auth/complete` returns 404 on a local `next start`; `/dashboard` renders and `/` returns the new hero markup.
 
 **Database:** `article_engagement` and `notifications` applied to Production (see above). No article content, accounts or environment variables were changed.
