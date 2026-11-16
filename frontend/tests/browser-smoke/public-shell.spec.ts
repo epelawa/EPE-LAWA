@@ -51,7 +51,6 @@ function maxCssDurationMilliseconds(value: string): number {
 
 for (const width of viewportWidths) {
   test(`public homepage, News, no-results/error states, and overflow at ${width}px`, async ({ page, request }) => {
-    test.setTimeout(60_000);
     await setFixtureMode(request, "empty");
     await page.setViewportSize({ width, height: 900 });
     await page.emulateMedia({ reducedMotion: "no-preference" });
@@ -70,9 +69,7 @@ for (const width of viewportWidths) {
       await newsLink.click();
       await expect(newsLink).toHaveAttribute("aria-current", "page");
     } else {
-      const latestNewsLink = page.getByRole("link", { name: "Read the latest", exact: true });
-      await expect(latestNewsLink).toHaveAttribute("href", "/news");
-      await latestNewsLink.click();
+      await page.getByRole("link", { name: "Explore Epe", exact: true }).click();
     }
 
     await expect(page).toHaveURL(/\/news$/);
@@ -93,14 +90,12 @@ for (const width of viewportWidths) {
     await expectNoHorizontalOverflow(page, `News no-results state at ${width}px`);
 
     await setFixtureMode(request, "error");
-    // The rendered error-state assertions below are the readiness contract;
-    // do not wait for unrelated dev-time resources to fire the full load event.
-    await page.goto("/", { waitUntil: "commit" });
+    await page.goto("/");
     await expect(page.getByRole("heading", { level: 3, name: "The newsroom is unavailable right now" })).toBeVisible();
     await expectNoHorizontalOverflow(page, `homepage error state at ${width}px`);
-    await page.goto("/news", { waitUntil: "commit" });
+    await page.goto("/news");
     await expect(page).toHaveURL(/\/news$/);
-    await expect(page.getByRole("heading", { level: 1, name: "News" })).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole("heading", { level: 1, name: "News" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "The newsroom did not load" })).toBeVisible();
     await expectNoHorizontalOverflow(page, `News error state at ${width}px`);
   });
@@ -148,9 +143,7 @@ for (const width of [320, 375, 768, 1024] as const) {
     } else {
       const mainNavigation = page.getByRole("navigation", { name: mainNavigationName });
       const newsLink = mainNavigation.getByRole("link", { name: newsLinkName });
-      const latestNewsLink = page.getByRole("link", { name: "Read the latest", exact: true });
-      if (!await newsLink.isVisible()) await expect(latestNewsLink).toHaveAttribute("href", "/news");
-      const target = await newsLink.isVisible() ? newsLink : latestNewsLink;
+      const target = await newsLink.isVisible() ? newsLink : page.getByRole("link", { name: "Explore Epe", exact: true });
       await tabUntilFocused(page, target);
       await page.keyboard.press("Enter");
       await expect(page).toHaveURL(/\/news$/);
@@ -210,7 +203,6 @@ for (const width of [320, 375] as const) {
       await expect(discoverLink).toHaveAttribute("aria-current", "page");
 
       await page.goto("/news");
-      await expect(page.locator(".site-preloader")).toHaveCount(0, { timeout: 15_000 });
       await expect(newsLink).toHaveAttribute("aria-current", "page");
       const lastFooterLink = page.locator("footer a").last();
       await lastFooterLink.scrollIntoViewIfNeeded();
@@ -238,20 +230,20 @@ for (const width of [320, 375] as const) {
   });
 }
 
-test("desktop Discover disclosure is keyboard-operable and Escape restores focus", async ({ page, request }) => {
+test("desktop More navigation is keyboard-operable and Escape restores focus", async ({ page, request }) => {
   await setFixtureMode(request, "empty");
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/news");
 
   const mainNavigation = page.getByRole("navigation", { name: mainNavigationName });
-  const discoverButton = mainNavigation.locator(".nav-disclosure > summary").filter({ hasText: /^Discover/ });
-  await discoverButton.focus();
-  await expect(discoverButton).toBeFocused();
+  const moreButton = mainNavigation.locator(".nav-more > summary");
+  await moreButton.focus();
+  await expect(moreButton).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(mainNavigation.getByRole("link", { name: "Tourism", exact: true })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(mainNavigation.getByRole("link", { name: "Tourism", exact: true })).toBeHidden();
-  await expect(discoverButton).toBeFocused();
+  await expect(moreButton).toBeFocused();
 });
 
 test("reduced-motion preference is honored by the public shell", async ({ page, request }) => {
