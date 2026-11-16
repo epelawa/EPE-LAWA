@@ -1286,7 +1286,8 @@ test('atomic publication and recoverable soft-delete enforce capabilities, audit
   try {
     // PGlite 0.5.14 exposes one embedded instance per db, without a connect/pool
     // API. Promise.all here exercises same-instance expected-revision CAS, not a
-    // two-session FOR UPDATE row-lock race; that still needs isolated PostgreSQL CI.
+    // two-session FOR UPDATE row-lock race. The opt-in PostgreSQL test covers that
+    // race against the real migrations using two independently observed backends.
     duplicateDeletes = await Promise.allSettled([
       db.query('select public.article_soft_delete($1, $2)', [articleId, initialRevision]),
       db.query('select public.article_soft_delete($1, $2)', [articleId, initialRevision]),
