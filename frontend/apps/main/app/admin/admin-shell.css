@@ -184,22 +184,6 @@ body:has(.admin-shell):has(.focused-error-shell) .site-main {
   background: hsl(var(--secondary));
 }
 
-.admin-shell .theme-toggle {
-  position: relative;
-}
-
-.admin-shell .theme-toggle__icon {
-  position: absolute;
-  display: grid;
-  place-items: center;
-  opacity: 0;
-  transition: opacity 160ms ease;
-}
-
-.admin-shell .theme-toggle__icon[data-active="true"] {
-  opacity: 1;
-}
-
 .admin-shell .admin-nav {
   margin-top: 12px;
   padding-top: 10px;

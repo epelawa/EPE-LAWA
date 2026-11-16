@@ -39,46 +39,34 @@ export const footerNavigation: NavItem[] = [
   { label: "Advertise with EPE LAWA", href: "/advertise" },
 ];
 
-export type MobileNavigationKey = "home" | "news" | "discover" | "account";
+export type MobileNavigationKey = "home" | "discover" | "saved" | "profile";
 export type MobileNavigationCurrent = "page" | "location" | undefined;
-export type DashboardNavigationKey = "dashboardHome" | "dashboardDiscover" | "dashboardSaved" | "dashboardProfile";
 
-const mobileNavigationHrefs: Record<MobileNavigationKey, string> = {
-  home: "/",
-  news: "/news",
-  discover: "/tourism",
-  account: "/dashboard",
-};
-const mobileDiscoverRoutes = ["/map", "/business-directory", "/tourism", "/radio"];
-const mobileNavigationExcludedRoutes = ["/admin", "/auth", "/login", "/forgot-password", "/status"];
-
-function routeMatches(pathname: string, route: string): boolean {
-  return route === "/" ? pathname === "/" : pathname === route || pathname.startsWith(`${route}/`);
+function dashboardTab(search: string | URLSearchParams | undefined): string | undefined {
+  if (!search) return undefined;
+  const params = typeof search === "string" ? new URLSearchParams(search) : search;
+  return params.get("tab") ?? undefined;
 }
 
-export function mobileNavigationCurrentState(pathname: string, key: MobileNavigationKey): MobileNavigationCurrent {
-  if (routeMatches(pathname, mobileNavigationHrefs[key])) return "page";
-  if (key === "discover" && mobileDiscoverRoutes.some((route) => routeMatches(pathname, route))) return "location";
+function isNewsArticlePath(pathname: string): boolean {
+  return /^\/news\/[^/]+\/?$/.test(pathname);
+}
+
+export function mobileNavigationCurrentState(
+  pathname: string,
+  key: MobileNavigationKey,
+  search?: string | URLSearchParams,
+): MobileNavigationCurrent {
+  if (isNewsArticlePath(pathname)) return key === "discover" ? "location" : undefined;
+  if (pathname !== "/dashboard") return undefined;
+  const tab = dashboardTab(search);
+  if (key === "home" && tab !== "discover" && tab !== "saved" && tab !== "profile") return "page";
+  if (key === "discover" && tab === "discover") return "page";
+  if (key === "saved" && tab === "saved") return "page";
+  if (key === "profile" && tab === "profile") return "page";
   return undefined;
 }
 
-const dashboardNavigationTargets: Record<DashboardNavigationKey, string> = {
-  dashboardHome: "#home",
-  dashboardDiscover: "#discover",
-  dashboardSaved: "#saved",
-  dashboardProfile: "#profile",
-};
-
-export function dashboardNavigationCurrentState(
-  pathname: string,
-  hash: string,
-  key: DashboardNavigationKey,
-): MobileNavigationCurrent {
-  if (!routeMatches(pathname, "/dashboard")) return undefined;
-  const currentHash = hash || "#home";
-  return currentHash === dashboardNavigationTargets[key] ? "page" : undefined;
-}
-
 export function shouldRenderMobileNavigation(pathname: string): boolean {
-  return pathname !== "/" && !mobileNavigationExcludedRoutes.some((route) => routeMatches(pathname, route));
+  return pathname === "/dashboard" || isNewsArticlePath(pathname);
 }

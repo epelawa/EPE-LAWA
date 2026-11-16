@@ -6,14 +6,12 @@ export default function AccountShell({
   title,
   description,
   children,
-  showThemeToggle = false,
   fixedViewport = false,
 }: {
   eyebrow: string;
   title: string;
   description: string;
   children: ReactNode;
-  showThemeToggle?: boolean;
   fixedViewport?: boolean;
 }) {
   return (
@@ -23,7 +21,7 @@ export default function AccountShell({
           <span className="auth-art__shape auth-art__shape--left" aria-hidden="true" />
           <span className="auth-art__shape auth-art__shape--right" aria-hidden="true" />
           <span className="auth-art__texture" aria-hidden="true" />
-          <FocusedPageControls showThemeToggle={showThemeToggle} />
+          <FocusedPageControls />
           <div className="auth-art__heading">
             <p className="auth-art__eyebrow">{eyebrow}</p>
             <h1 id="auth-title">{title}</h1>

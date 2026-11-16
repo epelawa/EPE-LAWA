@@ -11,7 +11,6 @@ export default function LoginPage() {
       eyebrow="Member sign in"
       title="Welcome back"
       description="Access your EPE LAWA member account."
-      showThemeToggle={false}
       fixedViewport
     >
       <SignInForm />
