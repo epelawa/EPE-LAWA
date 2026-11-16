@@ -75,7 +75,11 @@ This is a static source/test inventory at commit `d8de649de710fd6accec5bffe3f1f6
 
 ## Homepage and mobile-navigation checks
 
-Within public routes, verify that only `/` omits the mobile bottom navigation; News, Discover and Account retain the accessible four-tab set. On authenticated `/dashboard`, verify Home, Discover, Saved and Profile each reach an actual section and announce the active destination. The homepage carousel must use source-attributed local Epe photos, show no slide controls by default, provide a keyboard-focus pause control, and stop on hover/focus, hidden tabs, reduced-motion preference or data-saver/2G connections. The newsletter stays visibly unavailable and non-submitting until an approved provider and its privacy/consent safeguards are configured.
+Within public routes, verify that only `/` omits the mobile bottom navigation; News, Discover and Account retain the accessible four-tab set. On authenticated `/dashboard`, verify Home, Discover, Saved and Profile each reach an actual section and announce the active destination.
+
+**Carousel acceptance:** Use source-attributed local Epe photos. Keep the pause/resume control hidden at rest and reveal it on keyboard focus. Hover and focus stop rotation; focus must latch the pause after focus leaves until the visitor explicitly activates Resume—blur alone must not restart rotation. Also stop rotation for hidden tabs, reduced-motion preference and data-saver/2G connections.
+
+**Current implementation and test evidence:** `frontend/apps/main/components/hero-carousel.tsx` currently pauses while hovered or focused (`hovered || focused`) and clears focus state on blur, so focus alone does not latch a pause until explicit restart. `frontend/tests/foundation.test.mjs` checks source-level hover/focus pause wiring and the semantic pause button. `frontend/tests/browser-smoke/home-refresh.spec.ts` verifies automatic rotation, the control hidden at rest and revealed on keyboard focus, and explicit pause stability during a 7.4-second wait. These tests do not verify that focus remains latched after blur until explicit Resume; treat that behavior as required but unverified until directly tested. The newsletter stays visibly unavailable and non-submitting until an approved provider and its privacy/consent safeguards are configured.
 
 ## Security negatives
 

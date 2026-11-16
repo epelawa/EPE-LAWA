@@ -4,7 +4,7 @@
 
 ## A new visual system, not a reskin
 
-The owner superseded the earlier Fig & Limestone palette with EPE-LAWA’s cobalt system. Use the colors below with original EPE-LAWA branding; the palette reference contributes colors only, never its copy, logos or product language. The interface uses locally bundled Plus Jakarta Sans under the SIL Open Font License as a legally usable, close alternative to Codec Pro; it is not the commercial Codec Pro font. The homepage uses the supplied official logo in its hero, followed by clear entry points, the eight-section community index, genuine reporting and a complete footer.
+The owner superseded the earlier Fig & Limestone palette with EPE-LAWA’s cobalt system. Use the colors below with original EPE-LAWA branding; the palette reference contributes colors only, never its copy, logos or product language. The interface uses locally bundled Plus Jakarta Sans under the SIL Open Font License as a legally usable, close alternative to Codec Pro; it is not the commercial Codec Pro font. The homepage uses the supplied official logo in its hero, followed by concise entry points, genuine reporting and a complete footer; do not add a separate eight-section community index or “Explore Sections” block/pills.
 
 [Sckooly](https://sckooly.app/) remains the primary structure reference. [GetQuant](https://getquant.app/) informs restraint, spacing and clear product hierarchy; [JĀSĀB](https://jasab.vercel.app/) informs editorial rhythm and calm navigation. All three were inspected in the browser before designing. Do not copy their content, logos, code or assets. Use the supplied EPE-LAWA brand mark, project-root reference images and original art. The generated lagoon illustration is editorial artwork, not a documentary photograph or evidence about a real location.
 
@@ -12,16 +12,16 @@ The owner superseded the earlier Fig & Limestone palette with EPE-LAWA’s cobal
 
 | Token | Value | Role |
 | --- | --- | --- |
-| Midnight | `#0A1023` | Dark canvas and high-contrast text on cobalt actions |
-| Navy | `#17264A` | Dark cards and editorial panels |
+| Midnight | `#0A1023` | Primary text and high-contrast labels on light surfaces |
+| Navy | `#17264A` | Deep text and emphasis on light cards |
 | Royal Steel | `#294B91` | Readable links and secondary emphasis on light surfaces |
 | Cobalt | `#477FE0` | Primary actions and active navigation |
-| Ice Blue | `#A7C5F5` | Restrained dark-surface links, focus and accents |
+| Ice Blue | `#A7C5F5` | Focus and non-text accents on light surfaces |
 | Cloud | `#F1F4FA` | Main light canvas and near-white surfaces |
-| Silver | `#A6B2C5` | Supporting copy on dark navy surfaces |
-| Border | `#293650` | Dark-theme separators; light separators use a pale tint |
+| Silver | `#A6B2C5` | Non-text secondary accents; not small text on Cloud |
+| Border | `#293650` | Visible outlines and separators on light surfaces |
 
-Use semantic tokens and explicit dark-mode variants. Light mode uses Cloud backgrounds, Midnight text, near-white cards, cobalt controls with Midnight labels, and Royal Steel for small links. Dark mode uses Midnight backgrounds, Navy cards, Cloud text, cobalt controls with Midnight labels, Ice Blue for restrained links/focus, and Silver for supporting copy. Use a pale derived border on light surfaces and stronger input outlines. Cobalt with white text is only 3.9:1; Midnight on cobalt is 4.84:1. Avoid Ice Blue or Silver as small text on Cloud. Success, warning and danger colors remain reserved for real statuses, which must also include text. Check rendered contrast, including hover and focus states.
+Use one fixed light visual treatment on every route. Cloud is the canvas; use Midnight text, near-white cards, cobalt actions with Midnight labels, and Royal Steel for small links; use Navy as deep text/emphasis on light surfaces. Keep Ice Blue and Silver to non-text accents/focus only where contrast is verified, and never use them for small text on Cloud. Use the Border token for clear outlines and separators on light surfaces. Cobalt with white text is only 3.9:1; Midnight on cobalt is 4.84:1. Success, warning and danger colors remain reserved for real statuses, which must also include text. Check rendered contrast, including hover and focus states.
 
 ## Compact, readable typography
 
@@ -31,7 +31,7 @@ Scale the previous display hierarchy to approximately 90%, rather than shrinking
 
 Use the owner-provided `266649.jpg` as a composition reference only: a soft textured light canvas, cobalt abstract art panel with the EPE-LAWA mark and heading, an overlapping rounded white form card, compact pill fields, clear password visibility control, strong rounded action, legal links and an account-switch link. Replace all source-brand wording with original EPE-LAWA copy and retain the approved cobalt palette. Keep Google sign-in disabled and labeled Coming Soon until its provider is configured. Preserve validation, step order, callback/recovery actions and Supabase-backed server actions.
 
-Focused auth cards, the member dashboard, staff screens and error screens omit the public footer; focused auth also omits the manual theme switch while preserving saved theme preference. At 320/375px and short viewport heights, cards fit without page scroll and the fixed storage notice remains visible without intersecting form controls. The line-grid texture is light-mode only; dark mode remains a saved user preference.
+Focused auth cards, the member dashboard, staff screens and error screens omit the public footer and use the same light visual treatment; do not add theme controls or persist a theme preference. At 320/375px and short viewport heights, cards fit without page scroll and the fixed storage notice remains visible without intersecting form controls. Use the line-grid texture on the light canvas only.
 
 ## Layout and interaction
 
@@ -41,11 +41,10 @@ Use SVG icons only; no emoji. Controls have at least 44px target height. Keyboar
 
 ## Owner-provided motion references: scope, not implementation
 
-The six supplied examples are references, not evidence that these interactions are shipped or approval to add new surfaces. Map them only to current surfaces: springy press to existing public/shared and Radio controls (no sink-and-spring behavior); pull-to-refresh to the public/admin document boundary (native refresh is suppressed; there is no custom gesture); rolling digits to the `/admin` dashboard metrics (static formatted values); drag-to-reorder to `/admin/newsroom/settings` category cards (numeric Display order only); card expand/collapse to existing native disclosures (no card easing; the navigation drawer is a separate interaction); and success check-draw to existing text/status feedback (no drawn check). None of the six exact reference patterns is verified as implemented by the current source/tests.
 
 Do not describe nearby hover, drawer, disclosure, retry, numeric ordering or text-success behavior as the referenced animation. The acceptance evidence, tested surfaces, keyboard/touch alternatives, reduced-motion boundaries, state/persistence and exact gaps are recorded in [Testing and Acceptance](11-testing-acceptance.md). Any future change must be tied to an existing or separately approved surface and verified there; this note does not mark planned behavior as current.
 
-Appearance follows `prefers-color-scheme` on first visit until the visitor chooses a manual light/dark override, which persists. Keep the public switch in the hamburger drawer at every viewport (not in the masthead), and explain the initial system choice with one dismissible toast only once. Suppress that explanation on focused auth/staff routes and do not let it replace or overlap a connection notice. Auth screens continue to omit the manual switch.
+Use the same fixed light appearance on every route, independent of `prefers-color-scheme`. Do not persist a system or user color-theme preference, render an Appearance/theme toggle anywhere (including the public drawer), or show a first-visit theme-selection toast.
 
 ## Truthful content and unchanged security
 
