@@ -16,17 +16,16 @@ export default async function Home() {
   return (
     <div className="public-home">
       <section className="home-hero" aria-labelledby="home-title">
-        <div className="home-hero__visual">
-          <HeroCarousel />
+        <HeroCarousel>
           <div className="home-hero__content ep-container">
             <p className="home-hero__eyebrow">EPE DIVISION</p>
-            <h1 id="home-title">Epe Lawa: Connecting<br />Our People, Our Community</h1>
-            <p className="home-hero__lede">News <span aria-hidden="true">·</span> Radio <span aria-hidden="true">·</span> Culture <span aria-hidden="true">·</span> Community</p>
+            <h1 id="home-title">Stay Connected,<br />Stay Informed</h1>
+            <p className="home-hero__lede">Your community, your stories, your Epe.</p>
             <div className="home-hero__actions">
               <Link href="/news" className="btn-primary">Read latest news <ArrowRightIcon size={17} aria-hidden="true" /></Link>
             </div>
           </div>
-        </div>
+        </HeroCarousel>
       </section>
 
       <div className="ep-container home-discovery">
@@ -49,7 +48,7 @@ export default async function Home() {
 
       <section className="ep-container home-news" aria-labelledby="latest-title">
         <div className="home-news__heading">
-          <div><h2 id="latest-title">Top Stories</h2></div>
+          <div><h2 id="latest-title">Latest News</h2></div>
           <Link className="ui-text-link" href="/news">View all news <ArrowRightIcon size={17} aria-hidden="true" /></Link>
         </div>
         {stories.state === "ok" && topStories.length > 0 ? (

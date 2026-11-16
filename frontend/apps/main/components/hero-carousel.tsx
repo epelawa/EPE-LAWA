@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import heroImages from "../lib/hero-images.json";
 
 type ImageVariant = { src: string; width: number };
@@ -51,7 +51,7 @@ function closestVariant(format: ImageFormat, width: number) {
   );
 }
 
-export default function HeroCarousel() {
+export default function HeroCarousel({ children }: { children: ReactNode }) {
   const [index, setIndex] = useState(Math.min(INITIAL_SLIDE, Math.max(0, slides.length - 1)));
   const photoRef = useRef<HTMLImageElement>(null);
   const pointerPauseState = useRef<boolean | null>(null);
@@ -112,48 +112,18 @@ export default function HeroCarousel() {
 
   if (!slides.length) return null;
   const slide = slides[index] ?? slides[0];
-  const rotationLabel = paused ? "Resume automatic Epe photo rotation" : "Pause automatic Epe photo rotation";
-  const showRelativeSlide = (offset: number) => {
-    setActiveCurrentSrc("");
-    setLoadedIndex(-1);
-    setIndex((current) => (current + offset + slides.length) % slides.length);
-  };
-
+  const rotationLabel = reducedMotion ? "Photo rotation paused for reduced motion" : paused ? "Resume automatic Epe photo rotation" : "Pause automatic Epe photo rotation";
   return (
-    <figure
-      className="home-hero__media"
-      role="group"
-      aria-roledescription="carousel"
-      aria-label="Photographs of Epe"
-      onPointerEnter={(event) => { if (event.pointerType === "mouse") setHovered(true); }}
-      onPointerLeave={(event) => { if (event.pointerType === "mouse") setHovered(false); }}
-      onFocusCapture={() => setPaused(true)}
-    >
-      <button
-        className="home-hero__pause"
-        type="button"
-        aria-label={rotationLabel}
-        title={rotationLabel}
-        onPointerDown={() => { pointerPauseState.current = paused; }}
-        onPointerCancel={() => { pointerPauseState.current = null; }}
-        onClick={(event) => {
-          const wasPaused = event.detail > 0 && pointerPauseState.current !== null ? pointerPauseState.current : paused;
-          pointerPauseState.current = null;
-          setPaused(!wasPaused);
-        }}
-      >
-        {paused ? (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
-        ) : (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 5h4v14H6zm8 0h4v14h-4z" /></svg>
-        )}
-      </button>
-      <button className="home-hero__slide-control home-hero__slide-control--previous" type="button" aria-label="Previous Epe photo" title="Previous Epe photo" onClick={() => showRelativeSlide(-1)}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
-      </button>
-      <button className="home-hero__slide-control home-hero__slide-control--next" type="button" aria-label="Next Epe photo" title="Next Epe photo" onClick={() => showRelativeSlide(1)}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
-      </button>
+    <>
+      <div className="home-hero__visual" onFocusCapture={() => setPaused(true)}>
+        <figure
+          className="home-hero__media"
+          role="group"
+          aria-roledescription="carousel"
+          aria-label="Photographs of Epe"
+          onPointerEnter={(event) => { if (event.pointerType === "mouse") setHovered(true); }}
+          onPointerLeave={(event) => { if (event.pointerType === "mouse") setHovered(false); }}
+        >
       <div className="home-hero__carousel-stage" role="group" aria-roledescription="slide" aria-label={`${index + 1} of ${slides.length}`}>
         <picture>
           <source type="image/avif" srcSet={responsiveSrcSet(slide.avif)} sizes={IMAGE_SIZES} />
@@ -177,6 +147,20 @@ export default function HeroCarousel() {
           />
         </picture>
       </div>
-    </figure>
+        </figure>
+        {children}
+      </div>
+      <div className="ep-container home-photo-control">
+        <button className="home-photo-control__button" type="button" aria-label={rotationLabel} disabled={reducedMotion}
+          onPointerDown={() => { pointerPauseState.current = paused; }}
+          onPointerCancel={() => { pointerPauseState.current = null; }}
+          onClick={(event) => {
+            const wasPaused = event.detail > 0 && pointerPauseState.current !== null ? pointerPauseState.current : paused;
+            pointerPauseState.current = null;
+            setPaused(!wasPaused);
+          }}
+        >{reducedMotion ? "Photos paused for reduced motion" : paused ? "Resume photos" : "Pause photos"}</button>
+      </div>
+    </>
   );
 }

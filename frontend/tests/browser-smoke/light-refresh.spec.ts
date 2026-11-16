@@ -71,7 +71,7 @@ test("phone hero copy and CTA remain visible above the cookie notice", async ({ 
   await page.setViewportSize({ width: 375, height: 900 });
   await page.goto("/");
   const hero = page.locator(".home-hero__visual");
-  const title = page.getByRole("heading", { level: 1, name: "Epe Lawa: Connecting Our People, Our Community" });
+  const title = page.getByRole("heading", { level: 1, name: "Stay Connected, Stay Informed" });
   const actions = page.locator(".home-hero__actions");
   const notice = page.getByRole("region", { name: "Storage notice" });
   await expect(notice).toBeVisible();
@@ -83,7 +83,7 @@ test("phone hero copy and CTA remain visible above the cookie notice", async ({ 
 
 });
 
-test("connection panel precedes the footer and hero controls remain hidden until keyboard focus", async ({ page, request }, testInfo) => {
+test("connection panel precedes the footer and hero images have no overlay controls", async ({ page, request }, testInfo) => {
   await request.post(`${fixtureURL}/__smoke__/mode`, { data: { mode: "empty" } });
   await page.emulateMedia({ reducedMotion: "reduce" });
   for (const [width, height] of [[320, 800], [375, 900], [768, 900], [1440, 900]]) {
@@ -102,14 +102,9 @@ test("connection panel precedes the footer and hero controls remain hidden until
     });
     expect(relation).toBeTruthy();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
-    const pause = page.locator(".home-hero__pause");
-    const previous = page.getByRole("button", { name: "Previous Epe photo" });
-    const next = page.getByRole("button", { name: "Next Epe photo" });
-    for (const control of [pause, previous, next]) {
-      expect(await control.evaluate((el) => getComputedStyle(el).clipPath)).toBe("none");
-    }
+    const pause = page.locator(".home-photo-control__button");
+    await expect(pause).toBeDisabled();
+    await expect(page.locator(".home-hero__media button")).toHaveCount(0);
     await page.screenshot({ path: testInfo.outputPath(`home-light-${width}.png`), fullPage: true });
-    await pause.focus();
-    expect(await pause.evaluate((el) => getComputedStyle(el).clipPath)).toBe("none");
   }
 });
