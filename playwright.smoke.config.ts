@@ -49,9 +49,6 @@ export default defineConfig({
     baseURL,
     browserName: "chromium",
     headless: true,
-    launchOptions: process.env.CHROMIUM_PATH
-      ? { executablePath: process.env.CHROMIUM_PATH, args: ["--no-sandbox"] }
-      : undefined,
     viewport: { width: 1280, height: 900 },
     actionTimeout: 10_000,
     trace: "retain-on-failure",

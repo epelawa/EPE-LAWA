@@ -60,7 +60,7 @@
 .drawer-root { position: fixed; inset: 0; z-index: 90; height: 100dvh; visibility: hidden; pointer-events: none; opacity: 0; transition: opacity var(--dur-base) var(--ease-out), visibility var(--dur-base); }
 .drawer-root[data-open="true"] { visibility: visible; pointer-events: auto; opacity: 1; }
 .drawer-scrim { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: rgb(10 16 35 / .42); }
-.drawer { position: absolute; top: 0; right: 0; bottom: 0; display: flex; width: min(348px, calc(100vw - 24px)); flex-direction: column; overflow: hidden; padding: 22px clamp(18px, 4vw, 28px); border-left: 1px solid hsl(var(--border)); border-top-left-radius: 22px; border-bottom-left-radius: 22px; background: hsl(var(--card)); box-shadow: var(--shadow-2); transform: translateX(18px); transition: transform var(--dur-base) var(--ease-out); }
+.drawer { position: absolute; top: 0; right: 0; bottom: 0; display: flex; width: min(380px, calc(100vw - 20px)); flex-direction: column; overflow: hidden; padding: 22px clamp(18px, 4vw, 28px); border-left: 1px solid hsl(var(--border)); background: hsl(var(--card)); box-shadow: var(--shadow-2); transform: translateX(18px); transition: transform var(--dur-base) var(--ease-out); }
 .drawer-root[data-open="true"] .drawer { transform: translateX(0); }
 .drawer-heading { display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 15px; border-bottom: 1px solid hsl(var(--border)); }
 .drawer-heading > div { display: grid; gap: 4px; }

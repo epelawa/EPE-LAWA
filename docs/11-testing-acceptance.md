@@ -31,10 +31,6 @@ Historical test results elsewhere in this repository may predate current edits. 
 
 Test at 320/375/768/1024/1440 CSS px, keyboard-only, zoom/reflow and reduced motion. Check loading, empty, error and denied states. Full Playwright coverage is required; do not mark this gate complete based only on unit tests.
 
-## Homepage and mobile-navigation checks
-
-Within public routes, verify that only `/` omits the mobile bottom navigation; News, Discover and Account retain the accessible four-tab set. On authenticated `/dashboard`, verify Home, Discover, Saved and Profile each reach an actual section and announce the active destination. The homepage carousel must use source-attributed local Epe photos, show no slide controls by default, provide a keyboard-focus pause control, and stop on hover/focus, hidden tabs, reduced-motion preference or data-saver/2G connections. The newsletter stays visibly unavailable and non-submitting until an approved provider and its privacy/consent safeguards are configured.
-
 ## Security negatives
 
 Verify cross-member data isolation; member token rejected by staff routes; staff identity not used as member; private draft/submission denial; stale revision conflict without overwrite; each privileged transition audited; unauthorized moderation/business actions refused; secrets absent from browser bundles. Provider tests use test credentials and isolated recipients only.

@@ -33,16 +33,6 @@ export default async function Home() {
               <Link href="/tourism" className="btn-primary">Explore Epe <ArrowRightIcon size={17} aria-hidden="true" /></Link>
               <Link href="/news" className="home-hero__secondary">Read the latest <ArrowRightIcon size={17} aria-hidden="true" /></Link>
             </div>
-            <nav className="home-hero__quicknav" aria-label="Quick access to EPE LAWA features">
-              <span className="home-hero__quicknav-title">Explore sections</span>
-              <ul>
-                {modules.map((item) => (
-                  <li key={item.href}>
-                    <Link href={item.href}>{item.name}<ArrowUpRightIcon size={14} aria-hidden="true" /></Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
           </div>
         </div>
       </section>
