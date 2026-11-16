@@ -51,11 +51,12 @@ The current canonical production origin is `https://epelawa.vercel.app/`. The ow
 /forgot-password                    MOUNTED  request a password reset
 /auth/new-password                  MOUNTED  set a new password
 /auth/callback                      MOUNTED  Auth callback route handler
-/auth/complete                      MOUNTED  branded verification completion and profile bootstrap
+/auth/complete                      MOUNTED  verification completion and profile bootstrap only; completed profiles redirect to /dashboard
 /auth/verify                        MOUNTED  branded email-code verification and resend; noindex
 /auth/link-expired                  MOUNTED  expired-link recovery
 /auth/link-problem                  MOUNTED  generic callback problem
-/dashboard                          MOUNTED  private member dashboard and profile settings; noindex
+/dashboard                          MOUNTED  private member dashboard (Home, Discover, Notifications, Saved, Profile); noindex
+/api/news/view                      MOUNTED  POST-only, de-duplicated daily article view counter
 /status/[code]                      MOUNTED  designed status/error route; not navigation
 
 /llms.txt                           MOUNTED  machine-readable site summary
@@ -65,7 +66,11 @@ The current canonical production origin is `https://epelawa.vercel.app/`. The ow
 
 `/advertise` and `/photo-credits` are present in the source route tree and public navigation; their omission from earlier route lists was a documentation gap. Their indexing status must follow the actual explicit sitemap/robots configuration and any owner decision, not be inferred from being mounted. No contact, advertising, newsletter, or correction/takedown form should claim to collect or deliver data until its provider, privacy, retention, abuse-control, and end-to-end contracts are verified.
 
-`/dashboard` is the canonical member account center. It requires a verified member session, is excluded from indexing, and exposes only the signed-in member’s profile settings and links to existing member spaces. Profile edits are limited to the member’s own display name and handle under the database’s own-row RLS policy.
+`/dashboard` is the canonical member account center. It requires a verified member session, is excluded from indexing, and exposes only the signed-in member’s profile settings, notifications and published-story views. Signing in lands on the dashboard directly; the completion screen remains only for accounts that still need a handle or profile bootstrap.
+
+The member space has its own chrome rather than the public masthead: a midnight member top bar with the notification bell in place of the public search icon, a sign-out control at the top, and a four-dot menu that opens a branded modal menu. There is no public footer anywhere on the member space. Story covers show the real unique daily view count, the estimated read time and the visible comment count; the view counter is de-duplicated per browser key per UTC day and never exposes the key. Members can delete their own comments through a branded confirmation dialog (`comment_delete`), leaving a tombstone so replies remain readable.
+
+Inactivity: member sessions end after **one week** without activity; staff sessions end after **ten hours**. The client guard warns briefly before signing out, and the server also refuses a stale activity stamp so a suspended tab cannot resume indefinitely.
 
 ---
 
@@ -109,7 +114,7 @@ Rules for the header:
 
 - A destination appears only when the route is built. No greyed-out links, no "coming soon".
 - On mobile, the existing accessible drawer uses a labelled trigger, `aria-expanded`, modal dialog semantics, keyboard focus handling, Escape and outside-close behavior.
-- The mobile bottom bar has exactly four tabs: **Home**, **News**, **Discover**, and **Account**, linking to `/`, `/news`, `/tourism`, and `/dashboard`. Links use `aria-current` for the current page/section, remain keyboard/touch accessible, respect safe-area insets, and reserve page space so content is not obscured. It is hidden on focused sign-in, staff/Admin and system-status routes.
+- The member mobile bottom bar has exactly four tabs: **Home**, **Discover**, **Saved**, and **Profile**, linking to the matching `/dashboard?tab=…` views. Links use `aria-current` for the current page/section, remain keyboard/touch accessible, respect safe-area insets, and reserve page space so content is not obscured. It is hidden on focused sign-in, staff/Admin and system-status routes.
 - Forum stays in the existing drawer under **Community**; do not add a fifth bottom tab. The Discover tab remains the four-tab destination and marks mounted discovery routes as the current section.
 - The current section is marked with `aria-current`, not just colour.
 

@@ -1,5 +1,6 @@
 import "@fontsource-variable/plus-jakarta-sans";
 import "./globals.css";
+import "./native-controls.css";
 
 export const dynamic = "force-dynamic";
 

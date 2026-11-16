@@ -191,6 +191,28 @@ comment_reports(id uuid pk, comment_id → comments, reporter_id → profiles, r
 One-level threading: `parent_id` must reference a comment with `parent_id is null` — enforced by a
 trigger, because RLS cannot express it.
 
+### 4.1 Article engagement (member covers)
+
+```sql
+article_views(
+  id bigint identity pk,
+  article_id uuid not null → articles,
+  viewer_key text not null check (viewer_key ~ '^[a-f0-9]{32}$'),
+  viewed_on date not null default (now() at time zone 'utc')::date,
+  created_at timestamptz not null default now(),
+  unique (article_id, viewer_key, viewed_on)
+)
+```
+
+`viewer_key` is a random value kept in the reader's browser; it is not an account id, IP address or
+other personal identifier. Rows are written only by the `record_article_view(uuid, text)` definer
+function, which refuses drafts and de-duplicates per viewer per UTC day. The table has RLS enabled
+and no `anon`/`authenticated` grants.
+
+`published_article_engagement` is the only read surface: article id, slug, total views, visible
+comment count, and an estimated read time derived from the published JSON body at 220 words per
+minute. Individual viewer keys never leave the database.
+
 ---
 
 ## 5. Forum
@@ -502,6 +524,7 @@ someone else's content.
 | 8 | `business_directory` | 7 |
 | 9 | `marketplace_and_payments` | 8 |
 | 10 | `notifications_and_audit_hardening` | 9 |
+| 11 | `20261116120000_article_engagement` — daily view counter, aggregate view, read-time estimate | member covers |
 
 Each migration ships with: the SQL, an RLS policy set, a negative test, and a line in the tracker.
 

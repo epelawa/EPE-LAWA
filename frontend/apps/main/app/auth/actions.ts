@@ -1,7 +1,9 @@
 "use server";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "../../lib/supabase";
 import { siteUrl } from "../../lib/site";
+import { ACTIVITY_COOKIE, ACTIVITY_COOKIE_MAX_AGE_SECONDS } from "../../lib/session-policy";
 import { mapAuthProviderError } from "./auth-error";
 import { availabilityFromRpc, isValidHandle, normalizeHandle } from "../../lib/member-handle";
 import { handleResendSignupVerification, handleVerifyEmailOtp, type AuthState } from "../../lib/auth-otp";
@@ -102,8 +104,33 @@ export async function signIn(_state: AuthState, data: FormData): Promise<AuthSta
   if (password.length > 128) return { status: "error", message: "Your password must be no more than 128 characters.", fieldErrors: { password: "Your password must be no more than 128 characters." } };
   try {
     const supabase = await createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return { status: "error", message: mapAuthProviderError(error, "signin") };
+    // Sign-in goes straight to the member dashboard for a finished profile;
+    // only accounts that still need a handle or bootstrap see the completion step.
+    const userId = data.user?.id;
+    if (userId) {
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("user_id, deleted_at")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (!profileError && profile && !profile.deleted_at) {
+        try {
+          const cookieStore = await cookies();
+          cookieStore.set(ACTIVITY_COOKIE.member, String(Date.now()), {
+            path: "/",
+            maxAge: ACTIVITY_COOKIE_MAX_AGE_SECONDS,
+            sameSite: "lax",
+            secure: process.env.NODE_ENV === "production",
+            httpOnly: false,
+          });
+        } catch {
+          // The client guard records activity on the dashboard even if this write is refused.
+        }
+        redirect("/dashboard");
+      }
+    }
     redirect("/auth/complete");
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
@@ -144,5 +171,6 @@ export async function verifyEmailOtp(_state: AuthState, data: FormData): Promise
 }
 export async function signOut() {
   try { const supabase = await createClient(); await supabase.auth.signOut(); } catch { /* Always return to a signed-out screen. */ }
+  try { (await cookies()).delete(ACTIVITY_COOKIE.member); } catch { /* A missing cookie store must not block sign-out. */ }
   redirect("/login");
 }

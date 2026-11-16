@@ -48,7 +48,8 @@ test("member profile editor updates only the authenticated user's name and handl
 
 test("sign-in leads members through completion while the public drawer stays account-only", () => {
 	assert.match(auth, /signInWithPassword[\s\S]*?redirect\("\/auth\/complete"\)/);
-	assert.match(complete, /href="\/dashboard"/);
+	assert.match(complete, /redirect\("\/dashboard"\)/);
+	assert.doesNotMatch(complete, /You’re signed in|Open your member dashboard/);
 	assert.doesNotMatch(header, /Member dashboard|renderLink\("\/dashboard"/);
 	assert.doesNotMatch(header, /Appearance|ThemeToggle|theme-control/);
 	assert.match(header, /renderLink\("\/auth", "Create account", "btn-primary"\)/);

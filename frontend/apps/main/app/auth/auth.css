@@ -413,3 +413,16 @@ body:has(.auth-page--fixed-viewport) .site-main { height: 100vh; min-height: 0; 
 @media (max-width: 480px) {
   .auth-switch--member { flex-wrap: nowrap; gap: 0 3px; font-size: 11px; }
 }
+
+/* Inactivity sign-out notice on the branded sign-in card. */
+.auth-inactivity-notice {
+  margin: 0 0 14px;
+  padding: 11px 13px;
+  border: 1px solid hsl(var(--border));
+  border-left: 3px solid var(--palette-cobalt);
+  border-radius: 12px;
+  background: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+  font-size: 13px;
+  line-height: 1.55;
+}

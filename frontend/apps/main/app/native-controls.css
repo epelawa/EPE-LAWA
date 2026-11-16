@@ -1,0 +1,358 @@
+/*
+ * EPE LAWA — branded native controls.
+ *
+ * Every control the browser draws for us (select menus, date/time pickers,
+ * checkboxes, radios, file pickers, range sliders, details disclosures,
+ * scrollbars and modal <dialog> surfaces) is restyled here so a member never
+ * drops into an unbranded OS widget. Keep this file in sync with
+ * `frontend/apps/admin/app/native-controls.css`.
+ */
+
+/* Select: remove the OS arrow, draw the EPE chevron, keep the label readable. */
+select:not([multiple]) {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 46px;
+  background-color: hsl(var(--card));
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23477FE0' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 15px 15px;
+  cursor: pointer;
+  text-overflow: ellipsis;
+}
+select:not([multiple]):hover { border-color: hsl(var(--link)); }
+select:not([multiple]):focus-visible { border-color: hsl(var(--ring)); }
+select:disabled { opacity: .6; cursor: not-allowed; }
+select option {
+  padding: 10px 12px;
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  font-size: 1rem;
+}
+select[multiple] {
+  min-height: 136px;
+  padding: 8px;
+  background: hsl(var(--card));
+}
+select[multiple] option {
+  padding: 7px 9px;
+  border-radius: 8px;
+}
+select[multiple] option:checked {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+/* Checkboxes and radios: a real EPE mark instead of the platform chrome. */
+input[type="checkbox"],
+input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-grid;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
+  place-content: center;
+  border: 1.5px solid hsl(var(--input));
+  border-radius: 6px;
+  background-color: hsl(var(--card));
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 12px 12px;
+  cursor: pointer;
+  vertical-align: middle;
+  transition: background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+}
+input[type="radio"] { border-radius: 50%; }
+input[type="checkbox"]:hover,
+input[type="radio"]:hover { border-color: hsl(var(--link)); }
+input[type="checkbox"]:checked {
+  border-color: hsl(var(--primary));
+  background-color: hsl(var(--primary));
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%230A1023' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4.5 12.5 5 5 10-11'/%3E%3C/svg%3E");
+}
+input[type="checkbox"]:indeterminate {
+  border-color: hsl(var(--primary));
+  background-color: hsl(var(--primary));
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%230A1023' stroke-width='3.2' stroke-linecap='round'%3E%3Cpath d='M5 12h14'/%3E%3C/svg%3E");
+}
+input[type="radio"]:checked {
+  border-color: hsl(var(--primary));
+  background-color: hsl(var(--card));
+  background-image: radial-gradient(circle, hsl(var(--primary)) 0 46%, transparent 47%);
+  background-size: 100% 100%;
+}
+input[type="checkbox"]:disabled,
+input[type="radio"]:disabled { opacity: .55; cursor: not-allowed; }
+input[type="checkbox"]:focus-visible,
+input[type="radio"]:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 3px;
+}
+label:has(> input[type="checkbox"]),
+label:has(> input[type="radio"]) { cursor: pointer; }
+
+/* File pickers get an EPE action instead of the browser's grey button. */
+input[type="file"] {
+  padding: 9px 12px;
+  cursor: pointer;
+}
+input[type="file"]::file-selector-button {
+  min-height: 36px;
+  margin-right: 12px;
+  padding: 7px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+input[type="file"]::-webkit-file-upload-button {
+  min-height: 36px;
+  margin-right: 12px;
+  padding: 7px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Date/time pickers: keep the native panel, brand the trigger. */
+input[type="date"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="time"] { position: relative; }
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: .62;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+input[type="month"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
+input[type="search"]::-webkit-search-cancel-button { cursor: pointer; }
+
+/* Range: the radio volume control and any future sliders. */
+input[type="range"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 32px;
+  background: transparent;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: hsl(var(--secondary));
+}
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: -7px;
+  border: 3px solid hsl(var(--card));
+  border-radius: 50%;
+  background: hsl(var(--primary));
+  box-shadow: 0 1px 5px rgb(10 16 35 / .28);
+}
+input[type="range"]::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: hsl(var(--secondary));
+}
+input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border: 3px solid hsl(var(--card));
+  border-radius: 50%;
+  background: hsl(var(--primary));
+}
+input[type="range"]:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 3px; }
+
+/* Disclosures stop looking like a raw native triangle. */
+details > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  list-style: none;
+}
+details > summary::-webkit-details-marker { display: none; }
+details > summary::after {
+  content: "";
+  flex: 0 0 auto;
+  width: 9px;
+  height: 9px;
+  margin-right: 3px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  opacity: .68;
+  transform: rotate(45deg);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+details[open] > summary::after { transform: rotate(-135deg); }
+
+/* Scrollbars on member surfaces. */
+* { scrollbar-width: thin; scrollbar-color: hsl(var(--input) / .5) transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: hsl(var(--input) / .45);
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--input) / .7);
+  background-clip: padding-box;
+}
+
+/* Branded modal dialog. Used by comment deletion, the member session guard
+   and the floating comment sheet so no native alert/confirm is ever shown. */
+.ui-dialog {
+  width: min(520px, calc(100vw - 32px));
+  max-width: none;
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  color: hsl(var(--foreground));
+}
+.ui-dialog::backdrop {
+  background: rgb(10 16 35 / .58);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+}
+.ui-dialog[open] { animation: epe-dialog-in 200ms var(--ease-out); }
+.ui-dialog__surface {
+  display: grid;
+  max-height: calc(100dvh - 32px);
+  overflow: hidden;
+  border: 1px solid hsl(var(--border));
+  border-radius: 24px;
+  background: hsl(var(--card));
+  box-shadow: 0 30px 80px rgb(10 16 35 / .3);
+}
+.ui-dialog__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 22px 0;
+}
+.ui-dialog__head > div { display: grid; gap: 6px; min-width: 0; }
+.ui-dialog__title {
+  margin: 0;
+  color: hsl(var(--foreground));
+  font-size: 1.15rem;
+  font-weight: 650;
+  line-height: 1.25;
+}
+.ui-dialog__description {
+  margin: 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 14px;
+  line-height: 1.55;
+}
+.ui-dialog__close {
+  display: inline-grid;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  color: hsl(var(--foreground));
+}
+.ui-dialog__close:hover { background: hsl(var(--secondary)); }
+.ui-dialog__body {
+  display: grid;
+  gap: 14px;
+  overflow-y: auto;
+  padding: 18px 22px 22px;
+  overscroll-behavior: contain;
+}
+.ui-dialog__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  margin: 4px 0 0;
+}
+.ui-dialog__actions > * { min-height: 44px; }
+.btn-danger {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 22px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--ui-danger);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 650;
+  text-decoration: none;
+  cursor: pointer;
+}
+.btn-danger:hover { filter: brightness(.94); }
+.btn-danger:focus-visible {
+  outline: 2px solid var(--ui-danger);
+  outline-offset: 3px;
+}
+@keyframes epe-dialog-in {
+  from { opacity: 0; transform: translateY(12px) scale(.985); }
+}
+@media (max-width: 600px) {
+  .ui-dialog {
+    width: calc(100vw - 20px);
+    margin: auto auto 10px;
+  }
+  .ui-dialog__surface { border-radius: 22px 22px 16px 16px; }
+  .ui-dialog__head { padding: 20px 18px 0; }
+  .ui-dialog__body { padding: 16px 18px 18px; }
+  .ui-dialog__actions { flex-direction: column-reverse; }
+  .ui-dialog__actions > * { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-dialog[open] { animation: none; }
+  input[type="checkbox"],
+  input[type="radio"],
+  details > summary::after { transition: none; }
+}
+
+/* Autofill would otherwise paint a platform yellow over the EPE surface. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill {
+  -webkit-text-fill-color: hsl(var(--foreground));
+  -webkit-box-shadow: 0 0 0 1000px hsl(var(--card)) inset;
+  caret-color: hsl(var(--foreground));
+}
+input:disabled,
+textarea:disabled,
+select:disabled { background-color: hsl(var(--secondary)); color: hsl(var(--muted-foreground)); }

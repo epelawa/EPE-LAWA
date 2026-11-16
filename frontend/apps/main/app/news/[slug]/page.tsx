@@ -9,7 +9,11 @@ import { readPublishedArticleBody } from "../../../lib/published-article-body";
 import { selectedNewsCover } from "../../../lib/news-covers";
 import { formatPublishedDate } from "../../../lib/dates";
 import { ArticleBody } from "../../../lib/editorial-body";
+import { loadArticleEngagement, type ArticleEngagement } from "../../../lib/article-engagement";
 import { CommentThread } from "../comment-thread";
+import CommentDock from "../../../components/comment-dock";
+import ArticleCoverStats from "../../../components/article-cover-stats";
+import ArticleViewPing from "../../../components/article-view-ping";
 import OfflineArticleDownload from "../../../components/offline-article-download";
 import ArticleShareActions from "../../../components/article-share-actions";
 import { NewspaperIcon } from "../../../components/icons";
@@ -101,11 +105,16 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
   const article = result.article;
   let body: unknown;
   let related: RelatedArticle[] = [];
+  let engagement: ArticleEngagement | null = null;
+  let signedIn = false;
+  let visibleComments = 0;
   try {
     const supabase = await createClient();
-    const [bodyResult, relatedResult] = await Promise.all([
+    const [bodyResult, relatedResult, sessionResult, commentCountResult] = await Promise.all([
       readPublishedArticleBody(supabase, article.id),
       supabase.from("published_articles").select("slug,title,summary,published_at,og_image_key,category_label").eq("category_slug", article.category_slug).neq("slug", article.slug).order("published_at", { ascending: false, nullsFirst: false }).order("slug", { ascending: true }).limit(3),
+      supabase.auth.getUser(),
+      supabase.from("comments").select("id", { count: "exact", head: true }).eq("article_id", article.id).eq("state", "visible"),
     ]);
     if (bodyResult.error || !bodyResult.data) {
       console.error("published article body read failed", { code: bodyResult.error?.code ?? "missing_published_version" });
@@ -114,6 +123,9 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
     body = bodyResult.data.body;
     if (relatedResult.error) console.error("related published articles read failed", { code: relatedResult.error.code });
     else related = (relatedResult.data ?? []) as RelatedArticle[];
+    engagement = await loadArticleEngagement(supabase, article.id);
+    signedIn = Boolean(sessionResult.data?.user);
+    visibleComments = commentCountResult.count ?? 0;
   } catch {
     console.error("published article body client unavailable", { reason: "configuration_or_provider" });
     return <ArticleUnavailable />;
@@ -123,10 +135,13 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
   const cover = selectedNewsCover(article.og_image_key);
   const imageUrl = cover?.url ?? publicMediaUrl(article.og_image_key);
   const date = formatPublishedDate(article.published_at);
+  const commentCount = engagement?.comments ?? visibleComments;
+  const signInHref = `/login?next=${encodeURIComponent(`/news/${article.slug}#comments`)}`;
 
   return (
     <>
     <PageFrame className={`${styles.articlePage} ui-stack`}>
+      <ArticleViewPing articleId={article.id} />
       <article className={styles.article}>
         <header className={styles.articleHero}>
           <div className={styles.articleHeroTop}>
@@ -139,7 +154,10 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
           <div className={styles.articleHeroCopy}>
             <h1>{article.title}</h1>
           </div>
-          <div className={styles.articleCoverFrame}>{imageUrl ? <img className={`${styles.articleHeroImage} ${cover ? styles.approvedCoverFull : ""}`} src={imageUrl} alt={cover?.alt ?? ""} loading="eager" fetchPriority="high" decoding="async" referrerPolicy="no-referrer" /> : <span className={styles.articleHeroFallback} aria-hidden="true" />}</div>
+          <div className={styles.articleCoverFrame}>
+            {imageUrl ? <img className={`${styles.articleHeroImage} ${cover ? styles.approvedCoverFull : ""}`} src={imageUrl} alt={cover?.alt ?? ""} loading="eager" fetchPriority="high" decoding="async" referrerPolicy="no-referrer" /> : <span className={styles.articleHeroFallback} aria-hidden="true" />}
+            <ArticleCoverStats body={body} engagement={engagement} commentCount={commentCount} />
+          </div>
         </header>
         {cover ? <figure className={styles.coverCredit}><figcaption>{cover.caption} <a href={cover.source} target="_blank" rel="noreferrer">{cover.credit}</a> License: <a href={cover.license} target="_blank" rel="noreferrer">CC BY-SA 4.0</a>.</figcaption></figure> : null}
 
@@ -150,6 +168,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
 
         <div className={`ui-prose ${styles.articleBody}`} data-offline-article-body><ArticleBody body={body} /></div>
         <CommentThread articleId={article.id} slug={article.slug} notice={notice.comments} />
+        <CommentDock articleId={article.id} slug={article.slug} count={commentCount} signedIn={signedIn} signInHref={signInHref} />
         <details className={styles.articleExtras}><summary>More story options</summary><OfflineArticleDownload article={{ slug: article.slug, title: article.title, summary: article.summary, publishedAt: article.published_at, author: article.author_name, category: article.category_label, sourceUrl: articleUrl }} /></details>
         {related.length ? <section className={styles.relatedSection} aria-labelledby="related-heading"><div className={styles.sectionHeading}><div><h2 id="related-heading">Related stories</h2></div></div><ul className={styles.relatedGrid}>{related.map((item) => { const relatedCover = selectedNewsCover(item.og_image_key); const relatedImage = relatedCover?.url ?? publicMediaUrl(item.og_image_key); return <li className={styles.relatedCard} key={item.slug}><Link href={newsArticlePath(item.slug)} className={styles.relatedLink}>{relatedImage ? <img className={`${styles.relatedImage} ${relatedCover ? styles.approvedCoverThumb : ""}`} src={relatedImage} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" /> : <span className={styles.relatedImageFallback} aria-hidden="true"><NewspaperIcon size={24} /></span>}<span className={styles.relatedCategory}>{item.category_label}</span><span className={styles.relatedTitle}>{item.title}</span></Link></li>; })}</ul></section> : null}
         <p className={styles.correctionNote}>Correction reporting is not available through this site yet. <Link href="/contact" className="ui-text-link">View contact availability</Link>.</p>
