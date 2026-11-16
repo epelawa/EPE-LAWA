@@ -102,8 +102,7 @@ test("connection panel precedes the footer and hero images have no overlay contr
     });
     expect(relation).toBeTruthy();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
-    const pause = page.locator(".home-photo-control__button");
-    await expect(pause).toBeDisabled();
+    await expect(page.locator(".home-photo-control__button")).toHaveCount(0);
     await expect(page.locator(".home-hero__media button")).toHaveCount(0);
     await page.screenshot({ path: testInfo.outputPath(`home-light-${width}.png`), fullPage: true });
   }

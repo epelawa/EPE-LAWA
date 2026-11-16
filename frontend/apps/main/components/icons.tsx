@@ -10,6 +10,13 @@ function normalizeAriaHidden(value?: boolean | string): boolean | undefined {
   return value === true || value === "true";
 }
 
+export const NewsShortcutIcon = ({ size = 24 }: { size?: number }) => (
+  <svg aria-hidden="true" focusable="false" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M5 4h15v15a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7h2"/><path d="M5 4v15a2 2 0 0 1-2 0M8 7h9v4H8zM8 14h9M8 17h6"/></svg>
+);
+export const ListenShortcutIcon = ({ size = 24 }: { size?: number }) => (
+  <svg aria-hidden="true" focusable="false" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="8" width="18" height="12" rx="2"/><path d="m7 8 10-5M15 12h3M15 16h3"/><circle cx="9" cy="14" r="2.5"/></svg>
+);
+
 export const NewspaperIcon = ({ size = 20, className }: { size?: number; className?: string }) => (
   <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <rect x="8" y="2" width="12" height="20" rx="2" ry="2" />

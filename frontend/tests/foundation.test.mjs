@@ -201,10 +201,8 @@ test('homepage hero gallery is sourced, responsive, eager and resource-aware', a
   assert.match(source, /window\.setTimeout/);
   assert.match(source, /prefers-reduced-motion/);
   assert.match(source, /visibilitychange/);
-  assert.match(source, /home-photo-control__button/);
   assert.match(source, /aria-roledescription="carousel"/);
   assert.match(source, /aria-roledescription="slide"/);
-  assert.match(source, /aria-label=\{rotationLabel\}/);
   assert.match(source, /onFocusCapture|focus/);
   assert.doesNotMatch(source, /home-hero__caption|home-hero__credit|home-hero__slide-label|home-hero__counter|Photo by <a/);
   assert.match(source, /key=\{slide\.slug\}/);
