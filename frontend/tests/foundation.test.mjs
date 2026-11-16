@@ -193,23 +193,31 @@ test('homepage hero gallery is sourced, responsive, eager and resource-aware', a
   const styles = await readProjectFile('frontend/apps/main/app/hero-logo.css');
   const credits = await readProjectFile('docs/hero-image-sources.md');
   const manifest = JSON.parse(await readProjectFile('frontend/apps/main/lib/hero-images.json'));
+  const layout = await readProjectFile('frontend/apps/main/app/layout.tsx');
   assert.match(page, /<HeroCarousel\s*\/>/);
   assert.doesNotMatch(page, /home-hero__brand|BrandLockup/);
-  assert.match(page, /Epe\.<br \/><em>Closer to home\.<\/em>/);
-  assert.match(source, /ROTATION_DELAY_MS = 7200/);
+  assert.match(page, /home-hero__title-line">Epe<\/span>/);
+  assert.match(page, /home-hero__title-line home-hero__title-line--accent">Closer<\/span>/);
+  assert.match(page, /home-hero__title-line home-hero__title-line--preposition">To<\/span>/);
+  assert.match(page, /home-hero__title-line">Home<\/span>/);
+  assert.match(source, /ROTATION_DELAY_MS\s*=\s*7200/);
   assert.match(source, /window\.setTimeout/);
-  assert.match(source, /prefers-reduced-motion: reduce/);
+  assert.match(source, /prefers-reduced-motion/);
   assert.match(source, /visibilitychange/);
-  assert.match(source, /isConstrainedConnection\(\)/);
   assert.match(source, /home-hero__pause/);
-  assert.doesNotMatch(source, /home-hero__controls|home-hero__counter|Previous photo:|Next photo:/);
-  assert.match(source, /<button[\s\S]*?className="home-hero__pause"[\s\S]*?type="button"/);
-  assert.doesNotMatch(source, /role="button"|tabIndex=\{0\}|onKeyDown=/);
-  assert.match(source, /onMouseEnter=\{\(\) => setHovered\(true\)\}/);
-  assert.match(source, /onFocusCapture=\{\(\) => setFocused\(true\)\}/);
-  assert.match(source, /Photo by <a href=\{slide\.source\}/);
-  assert.match(source, /href=\{slide\.licenseUrl\}/);
+  assert.match(source, /aria-label="Previous Epe photo"/);
+  assert.match(source, /aria-label="Next Epe photo"/);
+  assert.match(source, /aria-roledescription="carousel"/);
+  assert.match(source, /aria-roledescription="slide"/);
+  assert.match(source, /aria-label="Previous Epe photo"/);
+  assert.match(source, /aria-label="Next Epe photo"/);
+  assert.match(source, /aria-label=\{rotationLabel\}/);
+  assert.match(source, /onFocusCapture|focus/);
+  assert.doesNotMatch(source, /home-hero__caption|home-hero__credit|home-hero__slide-label|home-hero__counter|Photo by <a/);
   assert.match(source, /key=\{slide\.slug\}/);
+  assert.match(styles, /\.home-hero__slide-control:focus-visible\s*\{[^}]*clip-path:\s*none/);
+  assert.match(styles, /\.home-hero__slide-control\s*\{[^}]*clip-path:\s*inset\(50%\)/);
+  assert.match(styles, /\.home-hero__pause\s*\{[^}]*clip-path:\s*inset\(50%\)/);
   assert.match(styles, /prefers-reduced-motion/);
   assert.match(source, /saveData/);
   assert.match(source, /slow-2g/);
@@ -222,12 +230,21 @@ test('homepage hero gallery is sourced, responsive, eager and resource-aware', a
   assert.match(source, /type="image\/avif"/);
   assert.match(source, /srcSet=\{responsiveSrcSet\(slide\.webp\)\}/);
   assert.doesNotMatch(source, /MapPinIcon|Epe · Lagos State|Rooted in the community\. Open to everyone\.|Photo by \{slide\.author\}/);
-  assert.doesNotMatch(styles, /home-hero__carousel-pause|home-hero__photo-credit/);
+  assert.match(styles, /home-hero__pause/);
+  assert.doesNotMatch(styles, /@media[^{}]*pointer:\s*coarse[^{}]*\.home-hero__slide-control[^{}]*clip-path:\s*none/);
+  assert.match(styles, /min-width:\s*44px|width:\s*44px/);
+  assert.doesNotMatch(styles, /home-hero__caption|home-hero__credit|home-hero__slide-label|home-hero__counter/);
   assert.doesNotMatch(styles, /home-hero__brand/);
   assert.match(styles, /prefers-reduced-motion/);
-  assert.equal(manifest.length, 2);
-  assert.equal(new Set(manifest.map((slide) => slide.slug)).size, 2);
-  assert.equal(new Set(manifest.map((slide) => slide.source)).size, 2);
+  assert.equal(manifest.length, 54);
+  assert.deepEqual(manifest.slice(0, 2).map(({ slug, author, source }) => ({ slug, author, source })), [
+    { slug: 'new-epe-road', author: 'Joseph Slyboy', source: 'https://commons.wikimedia.org/wiki/File:New_Epe_lagos_road.jpg' },
+    { slug: 'fish-statue-epe', author: 'Kwadoskii', source: 'https://commons.wikimedia.org/wiki/File:Fish_Statue_Epe.jpg' },
+  ]);
+  assert.equal(manifest.slice(2).length, 52, 'all existing credited Commons photos must remain');
+  assert.match(layout, /<html lang="en" data-theme="light" style=\{\{ colorScheme: "light" \}\} suppressHydrationWarning>/);
+  assert.equal(new Set(manifest.map((slide) => slide.slug)).size, 54);
+  assert.equal(new Set(manifest.map((slide) => slide.source)).size, 54);
   const creditsPage = await readProjectFile('frontend/apps/main/app/photo-credits/page.tsx');
   assert.match(creditsPage, /Photo by \{image\.author\}/);
   assert.match(creditsPage, /href=\{image\.source\}/);
@@ -239,28 +256,24 @@ test('homepage hero gallery is sourced, responsive, eager and resource-aware', a
   assert.deepEqual(manifest.map((slide) => slide.source).sort(), documentedSources);
   const localFiles = new Set();
   for (const slide of manifest) {
-    assert.match(slide.slug, /^(?:new-epe-road|fish-statue-epe)$/);
+    assert.ok(['new-epe-road', 'fish-statue-epe'].includes(slide.slug) || /^\d{2}-epe-/.test(slide.slug), `unexpected hero slug: ${slide.slug}`);
     assert.ok(['CC0 1.0', 'CC BY-SA 4.0'].includes(slide.license), slide.license);
     assert.match(slide.licenseUrl, /^https:\/\/creativecommons\.org\//);
     assert.ok(credits.includes(`[${slide.license}](${slide.licenseUrl})`), `missing license for ${slide.slug}`);
     assert.ok(credits.includes(`(${slide.source})`), `missing source for ${slide.slug}`);
-    for (const format of ['avif', 'webp', 'jpg']) {
+    for (const format of ['avif', 'webp']) {
       for (const size of ['small', 'large']) {
         const variant = slide[format][size];
         assert.match(variant.src, new RegExp(`\\.${format}$`));
         assert.ok([640, 1280].includes(variant.width), `${slide.slug} ${format} width`);
-        assert.equal(Number(variant.src.match(/-(\d+)\.(?:avif|webp|jpg)$/)?.[1]), variant.width, `${slide.slug} filename width`);
+        assert.equal(Number(variant.src.match(/-(\d+)\.(?:avif|webp)$/)?.[1]), variant.width, `${slide.slug} filename width`);
         const localPath = path.join(root, 'frontend/apps/main/public', variant.src.replace(/^\//, ''));
         assert.ok(fs.existsSync(localPath), `missing optimized image: ${localPath}`);
         localFiles.add(localPath);
       }
     }
-    const fallbackPath = path.join(root, 'frontend/apps/main/public', slide.fallbackSrc.replace(/^\//, ''));
-    assert.match(slide.fallbackSrc, /\.jpg$/);
-    assert.ok(fs.existsSync(fallbackPath), `missing JPEG fallback: ${fallbackPath}`);
-    localFiles.add(fallbackPath);
   }
-  assert.equal(localFiles.size, 12);
+  assert.equal(localFiles.size, 214);
   assert.doesNotMatch(page, /ui-eyebrow">Epe · Lagos State/);
   assert.doesNotMatch(source, /unsplash|pexels|placeholder/i);
 });

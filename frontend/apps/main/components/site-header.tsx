@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type SyntheticEvent } from "react";
 import type { NavItem } from "../lib/navigation";
 import { ArrowRightIcon, ArrowUpRightIcon, SearchIcon } from "./icons";
-import ThemeToggle from "./theme-toggle";
 import { BrandLockup } from "./brand";
 import "./navigation-refinement.css";
 
@@ -59,6 +58,16 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
     const item = navItem(href, label);
     return <Link className={className} href={item.href} aria-current={isCurrent(pathname, item.href) ? "page" : undefined} key={item.href}>{item.label}</Link>;
   };
+
+  const renderMobileGroup = (group: typeof MOBILE_GROUPS[number]) => (
+    <section className="drawer-group" key={group.label} aria-labelledby={`drawer-${group.label.toLowerCase().replaceAll(" ", "-")}`}>
+      <h2 id={`drawer-${group.label.toLowerCase().replaceAll(" ", "-")}`}>{group.label}</h2>
+      <ul>{group.routes.map(([href, label]) => {
+        const item = navItem(href, label);
+        return <li key={href}><Link className="drawer-link" href={item.href} aria-current={isCurrent(pathname, item.href) ? "page" : undefined}>{label}</Link></li>;
+      })}</ul>
+    </section>
+  );
 
   useEffect(() => {
     if (previousPath.current === pathname) return;
@@ -138,13 +147,6 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
     return () => document.removeEventListener("pointerdown", onOutsideDrawer);
   }, [drawerOpen, closeDrawer]);
 
-  const renderMobileGroup = (group: typeof MOBILE_GROUPS[number]) => (
-    <section className="drawer-group" key={group.label} aria-labelledby={`drawer-${group.label.toLowerCase().replaceAll(" ", "-")}`}>
-      <h2 id={`drawer-${group.label.toLowerCase().replaceAll(" ", "-")}`}>{group.label}</h2>
-      <ul>{group.routes.map(([href, label]) => <li key={href}>{renderLink(href, label, "drawer-link")}</li>)}</ul>
-    </section>
-  );
-
   return (
     <header className={`site-head${isNewsReference ? " site-head--news-reference" : ""}`}>
       <div className="masthead-bar">
@@ -198,14 +200,9 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
           <nav className="drawer-nav" aria-label="All sections">
             {MOBILE_GROUPS.map(renderMobileGroup)}
           </nav>
-          <div className="drawer-appearance" role="group" aria-label="Appearance settings">
-            <span className="drawer-appearance__label">Appearance</span>
-            <ThemeToggle />
-          </div>
           <section className="drawer-account" aria-labelledby="drawer-account-title">
             <h2 id="drawer-account-title">Account</h2>
             <div className="drawer-account__actions">
-              {renderLink("/dashboard", "Member dashboard", "btn-secondary")}
               {renderLink("/auth", "Create account", "btn-primary")}
               {renderLink("/login", "Sign in", "btn-secondary")}
             </div>

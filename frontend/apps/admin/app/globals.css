@@ -18,6 +18,13 @@
  }
  * { border-color:hsl(var(--border)); } html { scroll-behavior:smooth; scroll-padding-top:160px; } body { display:flex; flex-direction:column; min-height:100vh; margin:0; background:hsl(var(--background)); color:hsl(var(--foreground)); font-family:"Plus Jakarta Sans Variable",ui-sans-serif,system-ui,sans-serif; font-size:16px; line-height:1.65; -webkit-font-smoothing:antialiased; } h1,h2,h3 { letter-spacing:-.035em; line-height:1.2; font-weight:600; text-wrap:balance; } h2 { font-size:1.35rem; } h3 { font-size:1.125rem; } p,dd,td { overflow-wrap:anywhere; } button,input,textarea,select { font:inherit; } button,summary { cursor:pointer; } button { min-height:44px; } button:disabled { cursor:not-allowed; opacity:.55; } :where(a,button,input,textarea,select,summary,[tabindex]):focus-visible { outline:2px solid hsl(var(--ring)); outline-offset:4px; } input:not([type=checkbox]):not([type=radio]):not([type=hidden]),select,textarea { width:100%; min-height:48px; padding:11px 14px; border:1px solid hsl(var(--input)); border-radius:12px; background:hsl(var(--card)); color:hsl(var(--foreground)); font-size:16px; line-height:1.5; } textarea { min-height:120px; resize:vertical; } input[type=checkbox],input[type=radio] { width:18px; height:18px; accent-color:hsl(var(--primary)); } label { font-size:14px; font-weight:600; } summary { min-height:44px; padding-block:10px; } img { max-width:100%; } a { text-underline-offset:4px; }
 }
+html[data-theme="light"] body {
+  background-image:
+    linear-gradient(135deg, transparent 49.85%, rgb(71 127 224 / 0.025) 50%, transparent 50.15%),
+    linear-gradient(45deg, transparent 49.9%, rgb(41 75 145 / 0.018) 50%, transparent 50.1%);
+  background-size: 152px 152px, 228px 228px;
+  background-attachment: fixed;
+}
 .site-main { flex:1; padding:40px 0 72px; }
 .ui-page { width:min(1120px,calc(100% - 48px)); margin-inline:auto; }
 .ui-page-intro { display:flex; justify-content:space-between; align-items:flex-end; gap:24px; padding-bottom:28px; border-bottom:1px solid hsl(var(--border)); margin-bottom:28px; }

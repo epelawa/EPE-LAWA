@@ -10,7 +10,6 @@ export default function RegisterPage() {
       eyebrow="EPE LAWA members"
       title="Create an account"
       description="Join the EPE LAWA community."
-      showThemeToggle={false}
     >
       <SignUpForm />
       <p className="auth-legal">

@@ -3,7 +3,7 @@ function escapeHtml(value) {
     "&": "&amp;",
     "<": "&lt;",
     ">": "&gt;",
-    '"': "&quot;",
+    "\"": "&quot;",
     "'": "&#39;",
   })[character]);
 }
@@ -40,7 +40,6 @@ export function buildOfflineArticleHtml(article, bodyText) {
     .filter(Boolean)
     .map(escapeHtml)
     .join(" · ");
-
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -49,7 +48,7 @@ export function buildOfflineArticleHtml(article, bodyText) {
 <meta name="color-scheme" content="light">
 <title>${escapeHtml(article.title)} · EPE LAWA offline copy</title>
 <style>
-:root{color-scheme:light;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#0a1023;background:#f1f4fa}*{box-sizing:border-box}body{margin:0;padding:32px 16px;line-height:1.7}main{max-width:760px;margin:0 auto;padding:clamp(22px,5vw,48px);background:#fff;border:1px solid #d9e1ef;border-radius:24px;box-shadow:0 18px 48px rgba(23,38,74,.08)}.brand{margin:0 0 28px;color:#294b91;font-size:12px;font-weight:800;letter-spacing:.16em}.label{color:#477fe0;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}h1{margin:.4em 0 .35em;font-size:clamp(30px,6vw,48px);line-height:1.12;letter-spacing:-.03em}.summary{font-size:1.12rem;font-weight:600;color:#294b91}.meta{color:#65738d;font-size:.9rem}.story{margin:32px 0}.story p{margin:0 0 1.2em}.note{border-top:1px solid #d9e1ef;padding-top:18px;color:#65738d;font-size:.9rem}.note p{margin:.5em 0} @media(prefers-color-scheme:dark){:root{color-scheme:light}}
+:root{color-scheme:light;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#0A1023;background:#F1F4FA}*{box-sizing:border-box}body{margin:0;padding:32px 16px;line-height:1.7}main{max-width:760px;margin:0 auto;padding:clamp(22px,5vw,48px);background:#fff;border:1px solid #D9E0EC;border-radius:24px;box-shadow:0 18px 48px rgba(10,16,35,.08)}.brand{margin:0 0 28px;color:#294B91;font-size:12px;font-weight:800;letter-spacing:.16em}.label{color:#294B91;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}h1{margin:.4em 0 .35em;font-size:clamp(30px,6vw,48px);line-height:1.12;letter-spacing:-.03em}.summary{font-size:1.12rem;font-weight:600;color:#17264A}.meta{color:#5C677C;font-size:.9rem}.story{margin:32px 0}.story p{margin:0 0 1.2em}.note{border-top:1px solid #D9E0EC;padding-top:18px;color:#5C677C;font-size:.9rem}.note p{margin:.5em 0}a{color:#294B91}
 </style>
 </head>
 <body>
