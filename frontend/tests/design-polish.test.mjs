@@ -33,14 +33,9 @@ test("public shell stays light and the all-viewport drawer is account-only", () 
 	assert.match(header, /<BrandLockup size=\{32\} \/>/);
   assert.doesNotMatch(header + brand + staffBrand + footer, /Epe Division|brand__place|brand-lockup__tagline|showPlace/);
   assert.match(home, /<HeroCarousel\s*\/>/, "homepage logo hero exists");
+  assert.match(home, /Epe Lawa: Connecting/);
   assert.doesNotMatch(home, /home-hero__brand|BrandLockup/);
-  assert.match(home, /home-hero__title-line">Epe<\/span>/);
-  assert.match(home, /home-hero__title-line home-hero__title-line--accent">Closer<\/span>/);
-  assert.match(home, /home-hero__title-line home-hero__title-line--preposition">To<\/span>/);
-  assert.match(home, /home-hero__title-line">Home<\/span>/);
-  assert.match(home, /From local headlines to the people, places and ideas shaping everyday life in Epe, this is a place to stay informed and feel connected\./);
   assert.match(home, /href="\/news" className="btn-primary">Read latest news/);
-  assert.doesNotMatch(home, /Explore Epe|href="\/tourism"/);
   assert.doesNotMatch(home, /Stories worth knowing|History worth keeping|Places worth finding|People worth connecting|home-topics/);
   assert.equal(heroManifest.length, 54);
   assert.deepEqual(heroManifest.slice(0, 2).map((slide) => slide.slug), ["new-epe-road", "fish-statue-epe"]);

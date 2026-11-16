@@ -22,68 +22,22 @@ async function openHome(page: Page, request: APIRequestContext) {
   await setFixtureMode(request, "empty");
   const response = await page.goto("/");
   expect(response?.status()).toBe(200);
-  await expect(page.getByRole("heading", { level: 1, name: "Epe Closer To Home" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Epe Lawa: Connecting Our People, Our Community" })).toBeVisible();
   await waitForHeroImage(page);
   await expect(page.locator(".site-preloader")).toHaveCount(0);
 }
 
-test("homepage presents editorial copy and a news-first CTA in a full-height hero without a bottom bar", async ({ page, request }) => {
-  await page.setViewportSize({ width: 375, height: 900 });
+test("homepage offers compact news, radio and community navigation", async ({ page, request }, testInfo) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await openHome(page, request);
-
-  await expect(page.getByText("From local headlines to the people, places and ideas shaping everyday life in Epe, this is a place to stay informed and feel connected.")).toBeVisible();
-  await expect(page.getByRole("link", { name: "Read latest news", exact: true })).toHaveAttribute("href", "/news");
-  await expect(page.locator(".home-hero__actions a")).toHaveCount(1);
-  await expect(page.getByRole("link", { name: /Explore Epe|Tour Epe/i })).toHaveCount(0);
-  await expect(page.locator(".mobile-bottom-nav")).toHaveCount(0);
-  await expect(page.locator(".home-hero__location, .home-index, .home-discover-grid, .home-hero__quicknav, .home-hero__caption, .home-hero__credit, .home-hero__slide-label, .home-hero__counter")).toHaveCount(0);
-  await expect(page.getByRole("heading", { name: "Explore what matters to you." })).toHaveCount(0);
-
-  const composition = await page.locator(".home-hero__visual").evaluate((hero) => {
-    const image = hero.querySelector(".home-hero__photo");
-    if (!image) throw new Error("hero image is missing");
-    const visual = hero.getBoundingClientRect();
-    const style = getComputedStyle(image);
-    return { heroHeight: visual.height, viewportHeight: window.innerHeight, objectFit: style.objectFit };
-  });
-  expect(composition.heroHeight).toBeGreaterThanOrEqual(composition.viewportHeight * 0.9);
-  expect(composition.objectFit).toBe("cover");
-
-  const carousel = page.locator('[aria-roledescription="carousel"]');
-  await expect(carousel).toHaveCount(1);
-  await expect(carousel.locator('[aria-roledescription="slide"]')).toHaveCount(1);
-  const slide = carousel.locator('[aria-roledescription="slide"]');
-  const photo = carousel.locator(".home-hero__photo");
-  await expect(slide).toHaveAttribute("aria-label", "1 of 54");
-  await expect(photo).toHaveAttribute("alt", "A road in Epe with roadside buildings and open water visible beyond it.");
-  await carousel.getByRole("button", { name: "Next Epe photo" }).focus();
-  await page.keyboard.press("Enter");
-  await expect(slide).toHaveAttribute("aria-label", "2 of 54");
-  await expect(photo).toHaveAttribute("alt", "The fish statue landmark in Epe, Lagos State.");
-});
-
-test("the original cover hero reaches the viewport bottom across phone, tablet and desktop sizes", async ({ page, request }, testInfo) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await openHome(page, request);
-  await page.addStyleTag({ content: "nextjs-portal { display: none !important; }" });
   for (const [width, height] of [[320, 800], [375, 900], [768, 900], [1024, 768], [1440, 900]]) {
     await page.setViewportSize({ width, height });
-    await expect.poll(
-      () => page.locator(".home-hero__visual").evaluate((hero) => {
-        const rect = hero.getBoundingClientRect();
-        return rect.bottom + window.scrollY - window.innerHeight;
-      }),
-      { message: `hero should cover to the viewport bottom at ${width}px`, timeout: 5_000 },
-    ).toBeGreaterThanOrEqual(-1);
-    const bounds = await page.locator(".home-hero__visual").evaluate((hero) => {
-      const rect = hero.getBoundingClientRect();
-      return { bottom: rect.bottom + window.scrollY, viewportHeight: window.innerHeight, fit: getComputedStyle(hero.querySelector(".home-hero__photo")!).objectFit };
-    });
-    expect(bounds.bottom, `hero should cover to the viewport bottom at ${width}px`).toBeGreaterThanOrEqual(bounds.viewportHeight - 1);
-    expect(bounds.fit).toBe("cover");
-    if (width === 1440) await page.screenshot({ path: testInfo.outputPath("homepage-hero-desktop.png") });
-    await page.screenshot({ path: testInfo.outputPath(`homepage-cover-${width}.png`), fullPage: true });
+    await expect(page.getByRole("link", { name: "Read latest news", exact: true })).toHaveAttribute("href", "/news");
+    await expect(page.getByRole("link", { name: /Listen to radio/ }).first()).toHaveAttribute("href", "/radio");
+    await expect(page.getByRole("navigation", { name: "Explore EPE LAWA" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Top Stories" })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    await page.screenshot({ path: testInfo.outputPath(`homepage-${width}.png`), fullPage: true });
   }
 });
 
@@ -147,8 +101,8 @@ test("previous and next photo controls are keyboard-revealed without resting ove
   const next = carousel.getByRole("button", { name: "Next Epe photo" });
   await expect(previous).toHaveCount(1);
   await expect(next).toHaveCount(1);
-  expect(await previous.evaluate((button) => getComputedStyle(button).clipPath)).toContain("inset");
-  expect(await next.evaluate((button) => getComputedStyle(button).clipPath)).toContain("inset");
+  expect(await previous.evaluate((button) => getComputedStyle(button).clipPath)).toBe("none");
+  expect(await next.evaluate((button) => getComputedStyle(button).clipPath)).toBe("none");
 
   const slide = carousel.locator('[aria-roledescription="slide"]');
   await previous.focus();

@@ -1,14 +1,17 @@
 import Link from "next/link";
-import { ArrowRightIcon, ArrowUpRightIcon, UsersIcon } from "../components/icons";
+import { ArrowRightIcon, ArrowUpRightIcon, UsersIcon, RadioIcon, NewspaperIcon, CompassIcon, BuildingIcon, MessageCircleIcon } from "../components/icons";
 import { formatPublishedDate } from "../lib/dates";
 import { getLatestStories } from "../lib/home-data";
 import "./hero-logo.css";
 import "./connection-panel.css";
+import "./home-client-refresh.css";
 import CookieBanner from "../components/cookie-banner";
 import HeroCarousel from "../components/hero-carousel";
 
 export default async function Home() {
-  const stories = await getLatestStories(3);
+  const stories = await getLatestStories(7);
+  const topStories = stories.items.slice(0, 3);
+  const updates = stories.items.slice(3);
 
   return (
     <div className="public-home">
@@ -16,13 +19,9 @@ export default async function Home() {
         <div className="home-hero__visual">
           <HeroCarousel />
           <div className="home-hero__content ep-container">
-            <h1 id="home-title">
-              <span className="home-hero__title-line">Epe</span>
-              <span className="home-hero__title-line home-hero__title-line--accent">Closer</span>
-              <span className="home-hero__title-line home-hero__title-line--preposition">To</span>
-              <span className="home-hero__title-line">Home</span>
-            </h1>
-            <p className="home-hero__lede">From local headlines to the people, places and ideas shaping everyday life in Epe, this is a place to stay informed and feel connected.</p>
+            <p className="home-hero__eyebrow">EPE DIVISION</p>
+            <h1 id="home-title">Epe Lawa: Connecting<br />Our People, Our Community</h1>
+            <p className="home-hero__lede">News <span aria-hidden="true">·</span> Radio <span aria-hidden="true">·</span> Culture <span aria-hidden="true">·</span> Community</p>
             <div className="home-hero__actions">
               <Link href="/news" className="btn-primary">Read latest news <ArrowRightIcon size={17} aria-hidden="true" /></Link>
             </div>
@@ -30,14 +29,32 @@ export default async function Home() {
         </div>
       </section>
 
+      <div className="ep-container home-discovery">
+        <section className="home-radio" aria-labelledby="home-radio-title">
+          <span className="home-radio__icon" aria-hidden="true"><RadioIcon size={32} /></span>
+          <div><p className="home-radio__eyebrow">EPE LAWA RADIO</p><h2 id="home-radio-title">Radio Lagos 107.5 FM</h2><p>Listen to the station and explore our programmes.</p></div>
+          <Link href="/radio" className="home-radio__action">Listen to radio <ArrowRightIcon size={17} aria-hidden="true" /></Link>
+        </section>
+        <nav className="home-shortcuts" aria-label="Explore EPE LAWA">
+          {[
+            { href: "/news", label: "Latest news", Icon: NewspaperIcon },
+            { href: "/radio", label: "Listen to radio", Icon: RadioIcon },
+            { href: "/itan-ilu-mi", label: "Community history", Icon: CompassIcon },
+            { href: "/forum", label: "Join the conversation", Icon: MessageCircleIcon },
+            { href: "/business-directory", label: "Local businesses", Icon: BuildingIcon },
+            { href: "/advertise", label: "Advertise with us", Icon: UsersIcon },
+          ].map(({ href, label, Icon }) => <Link href={href} key={href}><span aria-hidden="true"><Icon size={25} /></span><span>{label}</span></Link>)}
+        </nav>
+      </div>
+
       <section className="ep-container home-news" aria-labelledby="latest-title">
         <div className="home-news__heading">
-          <div><p className="ui-eyebrow">The latest</p><h2 id="latest-title">Stories from Epe</h2></div>
-          <Link className="ui-text-link" href="/news">All stories <ArrowRightIcon size={17} aria-hidden="true" /></Link>
+          <div><h2 id="latest-title">Top Stories</h2></div>
+          <Link className="ui-text-link" href="/news">View all news <ArrowRightIcon size={17} aria-hidden="true" /></Link>
         </div>
-        {stories.state === "ok" && stories.items.length > 0 ? (
-          <ul className={`home-story-list home-story-list--${stories.items.length}`}>
-            {stories.items.map((story, index) => {
+        {stories.state === "ok" && topStories.length > 0 ? (
+          <ul className={`home-story-list home-story-list--${topStories.length}`}>
+            {topStories.map((story, index) => {
               const storyHref = `/news/${story.slug}`;
               return (
                 <li key={story.slug} className={index === 0 ? "home-story-item home-story-item--lead" : "home-story-item home-story-item--support"}>
@@ -77,6 +94,13 @@ export default async function Home() {
           </div>
         )}
       </section>
+
+      {updates.length > 0 ? <section className="ep-container home-updates" aria-labelledby="updates-title">
+        <div className="home-news__heading"><h2 id="updates-title">Latest Updates</h2><Link className="ui-text-link" href="/news">See more <ArrowRightIcon size={17} aria-hidden="true" /></Link></div>
+        <ul className="home-updates__list">{updates.map((story) => <li key={story.slug}>
+          <article>{story.cover ? <img src={story.cover.src} alt={story.cover.alt} loading="lazy" decoding="async" referrerPolicy="no-referrer" /> : null}<div><h3><Link href={`/news/${story.slug}`}>{story.title}</Link></h3><p>{story.publishedAt ? <time dateTime={story.publishedAt}>{formatPublishedDate(story.publishedAt)}</time> : null}{story.category ? ` · ${story.category}` : ""}</p>{story.cover ? <p className="home-updates__credit">Photo: <a href={story.cover.source} target="_blank" rel="noopener noreferrer">{story.cover.credit}</a> · <a href={story.cover.license} target="_blank" rel="noopener noreferrer">License</a></p> : null}</div></article>
+        </li>)}</ul>
+      </section> : null}
 
       <section className="ep-container home-community connection-panel" aria-labelledby="community-title">
         <div>
