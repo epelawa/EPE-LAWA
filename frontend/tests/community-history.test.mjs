@@ -28,7 +28,8 @@ test('history migration separates private contributions from public records and 
 test('history page reads bounded public records and keeps empty/error states distinct', async () => {
   const page = await readFile(pagePath, 'utf8');
   assert.match(page, /from\("history_records"\)\.select\("id,title,account,published_at,community,category,family_name,lineage_description"\)/);
-  assert.match(page, /\.limit\(50\)/);
+  assert.match(page, /\.range\(offset, offset \+ PAGE_SIZE\)/);
+  assert.match(page, /aria-label="History pagination"/);
   assert.match(page, /No approved history records yet/);
   assert.match(page, /History records could not be loaded/);
   assert.match(page, /Submissions and evidence are private/);

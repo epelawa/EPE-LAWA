@@ -9,12 +9,12 @@ const theme = await readFile(new URL("../apps/main/lib/theme.ts", import.meta.ur
 
 const linework = /linear-gradient\(135deg, transparent 49\.85%, rgb\(71 127 224 \/ 0\.025\) 50%, transparent 50\.15%\)[\s\S]*linear-gradient\(45deg, transparent 49\.9%, rgb\(41 75 145 \/ 0\.018\) 50%, transparent 50\.1%\)/;
 
- test("the sitewide canvas is permanently light and carries static linework", () => {
+ test("the sitewide canvas is permanently light and uses a static blue atmosphere", () => {
   const lightBody = css.match(/html\[data-theme="light"\]\s+body\s*\{([^}]*)\}/)?.[1];
   assert.ok(lightBody, "the light body canvas rule exists");
-  assert.match(lightBody, linework);
-  assert.match(lightBody, /background-size:\s*152px 152px, 228px 228px/);
-  assert.match(lightBody, /background-attachment:\s*fixed/);
+  assert.match(lightBody, /radial-gradient\(ellipse 55% 340px/);
+  assert.match(lightBody, /background-size:\s*100% 100%/);
+  assert.match(lightBody, /background-repeat:\s*no-repeat/);
   assert.doesNotMatch(lightBody, /position:|z-index:|pointer-events:|animation|transition/);
   assert.match(css, /:root\s*\{[\s\S]*color-scheme:\s*light/);
   assert.doesNotMatch(css, /data-theme="dark"|color-scheme:\s*dark/);

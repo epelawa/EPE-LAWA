@@ -19,7 +19,7 @@ export default function CommentDock({
 }: {
   articleId: string;
   slug: string;
-  count: number;
+  count: number | null;
   signedIn: boolean;
   signInHref: string;
 }) {
@@ -30,19 +30,19 @@ export default function CommentDock({
       <button
         type="button"
         className="comment-fab"
-        aria-label={count > 0 ? `Open comments, ${count} so far` : "Open comments"}
+        aria-label={count !== null && count > 0 ? `Open comments, ${count} so far` : "Open comments"}
         aria-haspopup="dialog"
         aria-expanded={open}
         onClick={() => setOpen(true)}
       >
         <MessageCircleIcon size={22} />
-        {count > 0 ? <span className="comment-fab__count" aria-hidden="true">{count > 99 ? "99+" : count}</span> : null}
+        {count !== null && count > 0 ? <span className="comment-fab__count" aria-hidden="true">{count > 99 ? "99+" : count}</span> : null}
       </button>
       <BrandedDialog
         open={open}
         onClose={() => setOpen(false)}
         title="Join the conversation"
-        description={count > 0 ? `${count} ${count === 1 ? "comment" : "comments"} on this story so far.` : "Be the first member to comment on this story."}
+        description={count === null ? "Comment count is currently unavailable." : count > 0 ? `${count} ${count === 1 ? "comment" : "comments"} on this story so far.` : "Be the first member to comment on this story."}
         className="comment-dock__dialog"
       >
         {signedIn ? (
@@ -62,7 +62,7 @@ export default function CommentDock({
             />
             <p className="comment-dock__guidance">Comments follow community guidelines. You can delete your own comment later.</p>
             <div className="ui-dialog__actions">
-              <a className="btn-secondary" href="#comments">Read all comments</a>
+              <a className="btn-secondary" href="#comments" onClick={() => setOpen(false)}>Read all comments</a>
               <button className="btn-primary" type="submit">Post comment</button>
             </div>
           </form>
@@ -70,7 +70,7 @@ export default function CommentDock({
           <div className="comment-dock__signed-out">
             <p>Sign in with an active member account to post a comment.</p>
             <div className="ui-dialog__actions">
-              <a className="btn-secondary" href="#comments">Read comments</a>
+              <a className="btn-secondary" href="#comments" onClick={() => setOpen(false)}>Read comments</a>
               <a className="btn-primary" href={signInHref}>Sign in to comment</a>
             </div>
           </div>

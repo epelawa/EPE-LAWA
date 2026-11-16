@@ -44,11 +44,11 @@ function CommentText({ comment, noun = "comment" }: { comment: CommentRow; noun?
 
 export async function CommentThread({ articleId, slug, notice }: Props) {
   const db = await createClient();
-  const [{ data: { user } }, { data, error }] = await Promise.all([
+  const [{ data: { user } }, { data, error }, { data: canReview }] = await Promise.all([
     db.auth.getUser(),
     db.from("comments").select("id,parent_id,body,state,created_at").eq("article_id", articleId).order("created_at", { ascending: true }).limit(100),
+    db.rpc("has_capability", { p_capability: "moderation.review" }),
   ]);
-  const { data: canReview } = await db.rpc("has_capability", { p_capability: "moderation.review" });
   const reviewer = canReview === true;
   const { data: reportRows } = reviewer
     ? await db.from("comment_reports").select("id,comment_id,reason,note,created_at").eq("state", "open").order("created_at", { ascending: true }).limit(50)
@@ -75,9 +75,9 @@ export async function CommentThread({ articleId, slug, notice }: Props) {
     <header className={styles.commentHeading}>
       <div>
         <p className="ui-eyebrow">Conversation</p>
-        <h2>{visibleCount > 0 ? `Comments (${visibleCount})` : "Comments"}</h2>
+        <h2>{!error && comments.length < 100 && visibleCount > 0 ? `Comments (${visibleCount})` : "Comments"}</h2>
       </div>
-      <span className={styles.commentCountPill} aria-hidden="true"><MessageCircleIcon size={15} /> {visibleCount}</span>
+      {!error && comments.length < 100 ? <span className={styles.commentCountPill} aria-hidden="true"><MessageCircleIcon size={15} /> {visibleCount}</span> : null}
     </header>
     {noticeText ? <Notice tone={alertNotice ? "warning" : "success"} role={alertNotice ? "alert" : "status"}>{noticeText}</Notice> : null}
     {reviewer ? <Panel className="ui-subtle" aria-labelledby="comment-review-title">
@@ -125,7 +125,7 @@ export async function CommentThread({ articleId, slug, notice }: Props) {
         <button className="btn-primary w-fit" type="submit">Post reply</button>
       </form> : null}
     </li>)}</ol> : null}
-    {user ? <Panel className={styles.commentComposerPanel}>
+    {user ? <details className={styles.commentComposerPanel}><summary className={styles.commentComposeToggle}>Write a comment</summary>
       <form action={postArticleComment} className={styles.commentComposer}>
         <input type="hidden" name="slug" value={slug} /><input type="hidden" name="article_id" value={articleId} />
         <label className="sr-only" htmlFor="new-comment">Write a comment</label>
@@ -133,7 +133,7 @@ export async function CommentThread({ articleId, slug, notice }: Props) {
         <button className={styles.commentSubmit} type="submit" aria-label="Post comment" title="Post comment"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4 20-7Z" /><path d="M22 2 11 13" /></svg></button>
       </form>
       <p id="comment-guidance" className={styles.commentGuidance}>Comments follow community guidelines. You can delete your own comment at any time.</p>
-    </Panel> : <Panel className={styles.commentSignIn}>
+    </details> : <Panel className={styles.commentSignIn}>
       <Link className={styles.commentSignInLink} aria-label="Sign in to comment" href={`/login?next=${encodeURIComponent(`/news/${slug}#comments`)}`}>
         <span>Sign in to comment…</span>
         <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4 20-7Z" /><path d="M22 2 11 13" /></svg>

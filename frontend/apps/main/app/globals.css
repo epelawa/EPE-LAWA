@@ -106,13 +106,14 @@
   .label { display: block; margin-bottom: 7px; font-size: 14px; font-weight: 600; }
 }
 
-/* Quiet EPE-blue linework stays behind content across the light canvas. */
+/* Original, lightweight blue atmospheric canvas behind the light surfaces. */
 html[data-theme="light"] body {
   background-image:
-    linear-gradient(135deg, transparent 49.85%, rgb(71 127 224 / 0.025) 50%, transparent 50.15%),
-    linear-gradient(45deg, transparent 49.9%, rgb(41 75 145 / 0.018) 50%, transparent 50.1%);
-  background-size: 152px 152px, 228px 228px;
-  background-attachment: fixed;
+    radial-gradient(ellipse 55% 340px at 8% 5%, rgb(167 197 245 / .28), transparent 75%),
+    radial-gradient(ellipse 45% 420px at 93% 24%, rgb(71 127 224 / .11), transparent 75%),
+    linear-gradient(180deg, #f8faff, #f1f4fa 75%);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
 }
 
 /* Layout and reusable editorial language. */

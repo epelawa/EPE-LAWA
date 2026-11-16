@@ -35,3 +35,18 @@ test("history search remains editable", async ({ page }) => {
   await page.getByRole("button", { name: "Search published records" }).click();
   await expect(page).toHaveURL(/q=updated/);
 });
+
+
+test("history pagination keeps the selected search and returns to the first page", async ({ page, request }) => {
+  const fixture = `http://localhost:${process.env.SMOKE_FIXTURE_PORT ?? "54321"}`;
+  expect((await request.post(`${fixture}/__smoke__/mode`, { data: { mode: "history" } })).ok()).toBeTruthy();
+  await page.goto("/itan-ilu-mi?category=community-history");
+  await expect(page.getByRole("heading", { name: "Synthetic history 1", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Synthetic history 11", exact: true })).toHaveCount(0);
+  await page.getByRole("link", { name: "Next page" }).click();
+  await expect(page).toHaveURL(/category=community-history&page=2/);
+  await expect(page.getByRole("heading", { name: "Synthetic history 11", exact: true })).toBeVisible();
+  await page.getByRole("link", { name: "Previous page" }).click();
+  await expect(page.getByRole("heading", { name: "Synthetic history 1", exact: true })).toBeVisible();
+  await request.post(`${fixture}/__smoke__/mode`, { data: { mode: "empty" } });
+});

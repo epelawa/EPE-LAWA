@@ -109,16 +109,17 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
   let related: RelatedArticle[] = [];
   let engagement: ArticleEngagement | null = null;
   let signedIn = false;
-  let visibleComments = 0;
+  let visibleComments: number | null = null;
   let saved = false;
   try {
     const supabase = await createClient();
-    const [bodyResult, relatedResult, sessionResult, commentCountResult, savedResult] = await Promise.all([
+    const [bodyResult, relatedResult, sessionResult, commentCountResult, savedResult, engagementResult] = await Promise.all([
       readPublishedArticleBody(supabase, article.id),
       supabase.from("published_articles").select("slug,title,summary,published_at,og_image_key,category_label").eq("category_slug", article.category_slug).neq("slug", article.slug).order("published_at", { ascending: false, nullsFirst: false }).order("slug", { ascending: true }).limit(3),
       supabase.auth.getUser(),
       supabase.from("comments").select("id", { count: "exact", head: true }).eq("article_id", article.id).eq("state", "visible"),
       supabase.from("saved_articles").select("id", { count: "exact", head: true }).eq("article_id", article.id),
+      loadArticleEngagement(supabase, article.id),
     ]);
     if (bodyResult.error || !bodyResult.data) {
       console.error("published article body read failed", { code: bodyResult.error?.code ?? "missing_published_version" });
@@ -127,9 +128,9 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
     body = bodyResult.data.body;
     if (relatedResult.error) console.error("related published articles read failed", { code: relatedResult.error.code });
     else related = (relatedResult.data ?? []) as RelatedArticle[];
-    engagement = await loadArticleEngagement(supabase, article.id);
+    engagement = engagementResult;
     signedIn = Boolean(sessionResult.data?.user);
-    visibleComments = commentCountResult.count ?? 0;
+    visibleComments = commentCountResult.error ? null : commentCountResult.count;
     saved = Boolean(sessionResult.data?.user) && (savedResult.count ?? 0) > 0;
   } catch {
     console.error("published article body client unavailable", { reason: "configuration_or_provider" });
