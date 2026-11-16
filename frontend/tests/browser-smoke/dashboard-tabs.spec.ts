@@ -253,3 +253,22 @@ test("story query failures stay distinct from empty results on both dashboard fe
   await expect(page.getByText("No stories published yet")).toHaveCount(0);
   await expectLocalSupabaseOnly(page);
 });
+
+test("member menu is compact, touch-friendly and navigates on tap", async ({ page, request }) => {
+  await setFixtureMode(request, "empty");
+  await page.setViewportSize({ width: 375, height: 812 });
+  await signIn(page);
+  await page.goto("/dashboard?tab=home");
+  await page.getByRole("button", { name: "Open member menu" }).click();
+  const menu = page.getByRole("dialog", { name: "Your EPE LAWA" });
+  await expect(menu).toBeVisible();
+  const discover = menu.getByRole("link", { name: /Discover/ });
+  const dimensions = await discover.evaluate((element) => ({ height: element.getBoundingClientRect().height, font: Number.parseFloat(getComputedStyle(element.querySelector("span")!).fontSize) }));
+  expect(dimensions.height).toBeGreaterThanOrEqual(44);
+  expect(dimensions.height).toBeLessThan(60);
+  expect(dimensions.font).toBeLessThanOrEqual(14);
+  await discover.click();
+  await expect(menu).not.toBeVisible();
+  await expect(page).toHaveURL(/tab=discover/);
+  await expect(page.getByRole("heading", { name: "Discover", level: 1 })).toBeVisible();
+});

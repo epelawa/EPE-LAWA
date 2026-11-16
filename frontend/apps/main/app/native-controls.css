@@ -356,3 +356,12 @@ textarea:-webkit-autofill {
 input:disabled,
 textarea:disabled,
 select:disabled { background-color: hsl(var(--secondary)); color: hsl(var(--muted-foreground)); }
+
+/* Member menu stays compact without shrinking its 44px touch targets. */
+.member-menu-dialog .ui-dialog__head { padding: 14px 16px 0; gap: 8px; }
+.member-menu-dialog .ui-dialog__head > div { gap: 3px; }
+.member-menu-dialog .ui-dialog__title { font-size: 1rem; }
+.member-menu-dialog .ui-dialog__description { font-size: 12px; line-height: 1.4; }
+.member-menu-dialog .ui-dialog__body { gap: 8px; padding: 10px 16px 16px; }
+.member-menu-dialog[open] { animation-duration: 100ms; }
+@media (prefers-reduced-motion: reduce) { .member-menu-dialog[open] { animation: none; } }

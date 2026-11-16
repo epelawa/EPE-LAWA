@@ -62,7 +62,7 @@ export default function CommentDock({
             />
             <p className="comment-dock__guidance">Comments follow community guidelines. You can delete your own comment later.</p>
             <div className="ui-dialog__actions">
-              <a className="btn-secondary" href="#comments">Read all comments</a>
+              <a className="btn-secondary" href="#comments" onClick={() => setOpen(false)}>Read all comments</a>
               <button className="btn-primary" type="submit">Post comment</button>
             </div>
           </form>
@@ -70,7 +70,7 @@ export default function CommentDock({
           <div className="comment-dock__signed-out">
             <p>Sign in with an active member account to post a comment.</p>
             <div className="ui-dialog__actions">
-              <a className="btn-secondary" href="#comments">Read comments</a>
+              <a className="btn-secondary" href="#comments" onClick={() => setOpen(false)}>Read comments</a>
               <a className="btn-primary" href={signInHref}>Sign in to comment</a>
             </div>
           </div>
