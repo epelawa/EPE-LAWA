@@ -194,9 +194,10 @@ body:has(.auth-link-issue) .site-main {
   padding-left: max(16px, env(safe-area-inset-left));
   background-color: var(--palette-cloud);
   background-image:
-    linear-gradient(135deg, transparent 49.85%, rgb(71 127 224 / 0.025) 50%, transparent 50.15%),
-    linear-gradient(45deg, transparent 49.9%, rgb(41 75 145 / 0.018) 50%, transparent 50.1%);
-  background-size: 152px 152px, 228px 228px;
+    radial-gradient(circle, rgb(41 75 145 / .20) 1px, transparent 1.2px),
+    radial-gradient(circle, rgb(71 127 224 / .11) 1px, transparent 1.2px);
+  background-size: 16px 16px, 16px 16px;
+  background-position: 0 0, 8px 8px;
 }
 /* Avoid combining the body's legacy 100vh minimum with dynamic viewport-sized auth content. */
 body:has(.auth-page--fixed-viewport) { height: 100vh; min-height: 0; overflow: hidden; }
