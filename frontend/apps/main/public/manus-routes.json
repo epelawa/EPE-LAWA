@@ -58,6 +58,12 @@
       "path": "/radio"
     },
     {
+      "path": "/radio/programmes"
+    },
+    {
+      "path": "/radio/reminders"
+    },
+    {
       "path": "/terms"
     },
     {

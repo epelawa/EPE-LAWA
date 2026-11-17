@@ -2,7 +2,7 @@
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
-import RadioReminder from "../apps/main/components/radio-reminder";
+import RadioReminder, { RadioReminderSettings } from "../apps/main/components/radio-reminder";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 afterEach(() => { localStorage.clear(); vi.useRealTimers(); vi.unstubAllGlobals(); });
@@ -23,7 +23,7 @@ it("asks permission only when opted in and sends at the flyer time while open", 
   const container = document.createElement("div");
   document.body.append(container);
   const root = createRoot(container);
-  await act(async () => root.render(<RadioReminder />));
+  await act(async () => root.render(<><RadioReminder /><RadioReminderSettings /></>));
   expect(MockNotification.requestPermission).not.toHaveBeenCalled();
   await act(async () => { container.querySelector("button")!.click(); });
   expect(MockNotification.requestPermission).toHaveBeenCalledOnce();
