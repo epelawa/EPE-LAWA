@@ -42,6 +42,9 @@ export default function RadioPlayer() {
       setState("paused");
       return;
     }
+    // A paused live stream can retain old buffered audio. Reconnect on every
+    // user-initiated resume instead of continuing from the old buffer.
+    audio.load();
     setState("connecting");
     try {
       await audio.play();
