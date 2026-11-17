@@ -331,3 +331,21 @@
   .memberReadingBar a { font-size: .75rem; }
   .memberArticlePage { width: calc(100% - 24px); margin-top: 12px; margin-bottom: 88px; }
 }
+
+/* Public long-form reading: an editorial header, readable measure and generous rhythm. */
+.publicArticlePage { width: min(1040px, calc(100% - 40px)); margin: 34px auto 72px; }
+.publicArticlePage .article { padding: clamp(20px, 4vw, 48px); border: 1px solid #dce5f1; border-radius: 24px; background: #fff; }
+.publicArticlePage .articleHero { gap: 24px; }
+.publicArticlePage .articleHeroTop { justify-content: flex-start; }
+.publicArticlePage .articleHeroTop > :last-child { margin-left: auto; }
+.publicArticlePage .articleHeroCopy { max-width: 860px; gap: 15px; padding-block: 8px; }
+.publicArticlePage .articleHeroCopy h1 { max-width: 23ch; color: #0a1023; font-size: clamp(2.15rem, 4.6vw, 4.25rem); line-height: 1.08; letter-spacing: -.045em; }
+.articleCategory { width: fit-content; margin: 0; color: #294b91; font-size: .75rem; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
+.articleStandfirst { max-width: 68ch; margin: 0; color: #4b5b72; font-size: clamp(1.0625rem, 1.7vw, 1.25rem); line-height: 1.55; }
+.publicStoryMeta { display: flex; flex-wrap: wrap; gap: 8px 18px; color: #435573; font-size: .875rem; font-weight: 650; }
+.publicArticlePage .articleCoverFrame { border-radius: 16px; }
+.publicArticlePage .coverCredit { margin-top: 10px; }
+.publicArticlePage .articleBody { max-width: 68ch; margin: clamp(28px, 5vw, 52px) auto; color: #263750; font-size: clamp(1.0625rem, 1.2vw, 1.1875rem); line-height: 1.8; }
+.publicArticlePage .relatedSection { margin-top: 40px; padding-top: 30px; }
+@media (min-width: 800px) { .publicArticlePage :global([data-layout-variant="2"]) .articleHero { grid-template-columns: 1fr; } }
+@media (max-width: 620px) { .publicArticlePage { width: calc(100% - 28px); padding: 0; margin-block: 18px 40px; } .publicArticlePage .article { padding: 20px 16px; border-radius: 18px; } .publicArticlePage .articleHero { gap: 17px; } .publicArticlePage .articleHeroCopy h1 { font-size: clamp(2rem, 8vw, 2.7rem); } }

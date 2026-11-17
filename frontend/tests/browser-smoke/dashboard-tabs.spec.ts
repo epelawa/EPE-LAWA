@@ -303,4 +303,9 @@ test("signed-out story retains public news navigation", async ({ page, request }
   await expect(page.getByRole("heading", { name: "Smoke fixture: market story" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Back to News" })).toHaveAttribute("href", "/news");
   await expect(page.getByRole("navigation", { name: "Member reading navigation" })).toHaveCount(0);
+  for (const width of [320, 375, 768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 850 });
+    const size = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth }));
+    expect(size.document, `public article at ${width}px`).toBeLessThanOrEqual(size.viewport + 1);
+  }
 });

@@ -31,15 +31,17 @@ test('public Radio player uses only the verified Radio Lagos 107.5 FM record and
 });
 
 test('public Radio page renders only database-backed programme, schedule and archive records',async()=>{
- const page=await read('frontend/apps/main/app/radio/page.tsx');
+ const page=await read('frontend/apps/main/app/radio/programmes/page.tsx');
+ const listen=await read('frontend/apps/main/app/radio/page.tsx');
  for(const table of ['programmes','radio_schedule','episodes']) assert.match(page,new RegExp(`from\\(["']${table}["']\\)`));
  assert.match(page,/No programmes published yet/);
  assert.match(page,/No schedule published yet/);
 	 assert.match(page,/No published episodes available/);
- assert.match(page,/<RadioPlayer/);
-	 assert.match(page,/EPE LAWA RADIO · 107\.5 FM/);
-	 assert.match(page,/title="Listen live"/);
- assert.doesNotMatch(page,/Live stream not yet available|Stream availability is not verified/);
+ assert.match(listen,/<RadioPlayer/);
+ assert.match(listen,/EPE LAWA RADIO/);
+ assert.match(listen,/<h1>Listen live/);
+ assert.match(listen,/href="\/radio\/programmes"/);
+ assert.doesNotMatch(listen,/Live stream not yet available|Stream availability is not verified/);
 });
 
 test('Radio admin distinguishes failed data reads from empty catalogues',async()=>{

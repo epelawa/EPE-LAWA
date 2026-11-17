@@ -151,7 +151,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
       <span className={styles.memberReadingLabel}>EPE LAWA <span>· Member reading</span></span>
       <Link href="/dashboard?tab=saved" className={styles.memberReadingSaved}>Saved stories</Link>
     </nav> : null}
-    <PageFrame className={`${styles.articlePage} ui-stack ${signedIn ? styles.memberArticlePage : ""}`}>
+    <PageFrame className={`${styles.articlePage} ui-stack ${signedIn ? styles.memberArticlePage : styles.publicArticlePage}`}>
       <ArticleViewPing articleId={article.id} />
       <LayoutVariation area="article"><article className={styles.article}>
         <header className={styles.articleHero}>
@@ -164,7 +164,10 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
             <ArticleShareActions title={article.title} url={articleUrl} compact showCopyButton={false} className={styles.heroShareActions} shareButtonClassName={styles.heroControl} feedbackClassName={styles.heroShareFeedback} fallbackClassName={styles.shareFallback} />
           </div>
           <div className={styles.articleHeroCopy}>
+            {!signedIn ? <p className={styles.articleCategory}>{article.category_label}</p> : null}
             <h1>{article.title}</h1>
+            {!signedIn && article.summary ? <p className={styles.articleStandfirst}>{article.summary}</p> : null}
+            {!signedIn ? <div className={styles.publicStoryMeta}><span>By {article.author_name}</span>{date ? <time dateTime={article.published_at ?? undefined}>{date}</time> : null}</div> : null}
           </div>
           <div className={styles.articleCoverFrame}>
             {imageUrl ? <img className={`${styles.articleHeroImage} ${cover ? styles.approvedCoverFull : ""}`} src={imageUrl} alt={cover?.alt ?? ""} loading="eager" fetchPriority="high" decoding="async" referrerPolicy="no-referrer" /> : <span className={styles.articleHeroFallback} aria-hidden="true" />}
@@ -173,10 +176,10 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
         </header>
         {cover ? <p className={styles.coverCredit}>Illustrative image. <Link href="/photo-credits#news-photos">Photo credits</Link></p> : null}
 
-        <div className={styles.articleMetaBar} aria-label="Story details">
+        {signedIn ? <div className={styles.articleMetaBar} aria-label="Story details">
           <span className={styles.byline}>{article.author_name}</span>
           {date ? <time dateTime={article.published_at ?? undefined}>{date}</time> : null}
-        </div>
+        </div> : null}
 
         <div className={`ui-prose ${styles.articleBody}`} data-offline-article-body><ArticleBody body={body} /></div>
         <CommentThread articleId={article.id} slug={article.slug} notice={notice.comments} />

@@ -28,3 +28,23 @@
     margin: 6px 0 8px;
   }
 }
+
+.listeningPage { width: min(1080px, calc(100% - 40px)); margin: 34px auto 72px; padding: 0; }
+.intro { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: clamp(28px, 5vw, 64px); border: 1px solid #d9e3f1; border-radius: 28px; background: linear-gradient(125deg, #f7faff, #e7effb); }
+.introCopy { max-width: 650px; }
+.eyebrow { margin: 0; color: #294b91; font-size: 12px; font-weight: 800; letter-spacing: .12em; }
+.eyebrow span { padding-inline: 6px; color: #8ea3c5; }
+.intro h1 { margin: 12px 0 14px; color: #0a1023; font-size: clamp(3rem, 7vw, 5.6rem); line-height: 1; letter-spacing: -.065em; }
+.intro h1 span { color: #477fe0; }
+.introCopy > p:last-child { max-width: 46ch; margin: 0; color: #435573; font-size: clamp(16px, 1.6vw, 19px); }
+.introMark { display: grid; flex: 0 0 140px; height: 140px; place-items: center; border: 1px solid #bdd0ee; border-radius: 50%; background: #fff; color: #294b91; }
+.playerWrap { margin-top: 20px; }
+.explore { display: grid; grid-template-columns: minmax(180px, .7fr) minmax(0, 1.3fr); gap: 24px; margin-top: 48px; }
+.explore h2 { margin: 8px 0 0; color: #17264a; font-size: clamp(24px, 3vw, 34px); letter-spacing: -.04em; }
+.links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.links a { display: flex; min-height: 110px; align-items: center; justify-content: space-between; gap: 12px; padding: 20px; border: 1px solid #d9e3f1; border-radius: 18px; background: #fff; color: #17264a; text-decoration: none; }
+.links a:hover { border-color: #477fe0; }
+.links a:focus-visible { outline: 3px solid #477fe0; outline-offset: 3px; }
+.links strong, .links small { display: block; }
+.links small { margin-top: 6px; color: #53627a; line-height: 1.4; }
+@media (max-width: 620px) { .listeningPage { width: calc(100% - 28px); margin-block: 20px 48px; } .intro { padding: 28px 22px; } .introMark { flex-basis: 58px; height: 58px; } .introMark svg { width: 30px; height: 30px; } .explore { grid-template-columns: 1fr; gap: 16px; margin-top: 32px; } .links { grid-template-columns: 1fr; } .links a { min-height: 84px; } }

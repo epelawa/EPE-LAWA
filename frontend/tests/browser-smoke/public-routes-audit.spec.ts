@@ -50,3 +50,27 @@ test("history pagination keeps the selected search and returns to the first page
   await expect(page.getByRole("heading", { name: "Synthetic history 1", exact: true })).toBeVisible();
   await request.post(`${fixture}/__smoke__/mode`, { data: { mode: "empty" } });
 });
+
+test("radio keeps listening separate from listings and reminder settings", async ({ page, request, context }) => {
+  const fixture = `http://localhost:${process.env.SMOKE_FIXTURE_PORT ?? "54321"}`;
+  await request.post(`${fixture}/__smoke__/mode`, { data: { mode: "empty" } });
+  await context.grantPermissions(["notifications"]);
+  for (const width of [320, 375, 768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 850 });
+    await page.goto("/radio");
+    await expect(page.getByRole("heading", { name: "Listen live." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Schedule", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: /Programmes & archive/ })).toHaveAttribute("href", "/radio/programmes");
+    const size = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth }));
+    expect(size.document).toBeLessThanOrEqual(size.viewport + 1);
+  }
+  await page.getByRole("link", { name: /Programmes & archive/ }).click();
+  await expect(page).toHaveURL(/\/radio\/programmes$/);
+  await expect(page.getByRole("heading", { name: "Programmes and archive" })).toBeVisible();
+  await page.getByRole("link", { name: "Radio notification settings" }).click();
+  await expect(page).toHaveURL(/\/radio\/reminders$/);
+  await expect(page.getByText(/Works only while this site is open/)).toBeVisible();
+  await page.getByRole("button", { name: "Enable alert" }).click();
+  await expect(page.getByRole("button", { name: "Disable alert" })).toBeVisible();
+  await page.getByRole("button", { name: "Disable alert" }).click();
+});
