@@ -199,8 +199,8 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
             <button className="btn-icon" type="button" aria-label="Close navigation menu" onClick={closeDrawer}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg></button>
           </div>
           <nav className="drawer-nav" aria-label="All sections">
-            <Link href="/news?search=1" className="drawer-link" onClick={closeDrawer}>Search news</Link>
             {MOBILE_GROUPS.map(renderMobileGroup)}
+            <Link href="/news?search=1" className="drawer-link" onClick={closeDrawer}>Search news</Link>
           </nav>
           <section className="drawer-account" aria-labelledby="drawer-account-title">
             <h2 id="drawer-account-title">Account</h2>
