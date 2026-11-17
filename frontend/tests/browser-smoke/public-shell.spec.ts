@@ -57,8 +57,10 @@ for (const width of viewportWidths) {
     await expect(page.locator(".home-hero__client-art")).toHaveCount(0);
     await expect(page.locator(".site-head--home").getByText("The Voice of Epe Division")).toBeVisible();
     await expect(page.locator(".site-head__menu .menu-lines span")).toHaveCount(2);
-    const background = await page.locator("body").evaluate((body) => getComputedStyle(body).backgroundImage);
-    expect((background.match(/linear-gradient\(90deg/g) ?? []).length).toBeGreaterThanOrEqual(2);
+    const background = await page.locator("body").evaluate((body) => ({ image: getComputedStyle(body).backgroundImage, size: getComputedStyle(body).backgroundSize }));
+    expect(background.image).not.toContain("linear-gradient(90deg");
+    expect((background.image.match(/radial-gradient\(circle/g) ?? []).length).toBe(2);
+    expect(background.size).toContain("16px 16px");
     await expect(page.getByRole("heading", { level: 2, name: "Latest News" })).toBeVisible();
     await expect(page.locator(".mobile-bottom-nav")).toHaveCount(0);
     await captureEvidence(page, "home", width);
