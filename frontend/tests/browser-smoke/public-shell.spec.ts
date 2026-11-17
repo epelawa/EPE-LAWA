@@ -206,3 +206,14 @@ test("reduced-motion preference is honored by the public shell", async ({ page, 
   expect(maxCssDurationMilliseconds(motion.transitionDuration)).toBeLessThanOrEqual(0.01);
   expect(maxCssDurationMilliseconds(motion.animationDuration)).toBeLessThanOrEqual(0.01);
 });
+
+test("radio reminder bell explains its limits and supports opt-in and opt-out", async ({ page, context }) => {
+  await context.grantPermissions(["notifications"]);
+  await page.goto("/");
+  await page.getByLabel("Radio notification settings").click();
+  await expect(page.getByText(/Reminders work only while this site is open/)).toBeVisible();
+  await page.getByRole("button", { name: "Enable open-page reminder" }).click();
+  await expect(page.getByRole("button", { name: "Turn reminder off" })).toBeVisible();
+  await page.getByRole("button", { name: "Turn reminder off" }).click();
+  await expect(page.getByRole("button", { name: "Enable open-page reminder" })).toBeVisible();
+});
