@@ -211,9 +211,10 @@ test("radio reminder bell explains its limits and supports opt-in and opt-out", 
   await context.grantPermissions(["notifications"]);
   await page.goto("/");
   await page.getByLabel("Radio notification settings").click();
-  await expect(page.getByText(/Reminders work only while this site is open/)).toBeVisible();
-  await page.getByRole("button", { name: "Enable open-page reminder" }).click();
-  await expect(page.getByRole("button", { name: "Turn reminder off" })).toBeVisible();
-  await page.getByRole("button", { name: "Turn reminder off" }).click();
-  await expect(page.getByRole("button", { name: "Enable open-page reminder" })).toBeVisible();
+  await expect(page).toHaveURL(/\/radio\/reminders$/);
+  await expect(page.getByText(/Works only while this site is open/)).toBeVisible();
+  await page.getByRole("button", { name: "Enable alert" }).click();
+  await expect(page.getByRole("button", { name: "Disable alert" })).toBeVisible();
+  await page.getByRole("button", { name: "Disable alert" }).click();
+  await expect(page.getByRole("button", { name: "Enable alert" })).toBeVisible();
 });
