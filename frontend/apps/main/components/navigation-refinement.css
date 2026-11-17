@@ -120,3 +120,15 @@ body:has(.focused-error-shell) .mobile-bottom-nav,body:has(.auth-link-issue) .mo
   .site-head--home .site-head__menu { position: absolute; left: 0; top: 50%; transform: translateY(-50%); }
   .site-head--home .header-search { position: absolute; right: 0; top: 50%; transform: translateY(-50%); }
 }
+
+.radio-reminder { position: relative; }
+.radio-reminder summary { list-style: none; cursor: pointer; }
+.radio-reminder summary::-webkit-details-marker { display: none; }
+.radio-reminder__panel { position: absolute; z-index: 75; top: calc(100% + 8px); right: 0; width: min(330px, calc(100vw - 32px)); padding: 18px; border: 1px solid hsl(var(--border)); border-radius: 14px; background: hsl(var(--card)); color: hsl(var(--foreground)); box-shadow: var(--shadow-2); }
+.radio-reminder__panel p { margin: 8px 0; font-size: 13px; line-height: 1.5; }
+.radio-reminder__panel button { margin-top: 6px; }
+.site-head--home .header-notification { color: #fff; }
+.site-head--home .header-notification:hover { background: rgb(255 255 255 / .16); }
+@media (max-width: 960px) {
+  .site-head--home .radio-reminder { position: absolute; right: 0; top: 50%; transform: translateY(-50%); }
+}
