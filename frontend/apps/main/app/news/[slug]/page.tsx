@@ -18,7 +18,7 @@ import ArticleViewPing from "../../../components/article-view-ping";
 import OfflineArticleDownload from "../../../components/offline-article-download";
 import ArticleShareActions from "../../../components/article-share-actions";
 import SaveArticleButton from "../../../components/save-article-button";
-import { NewspaperIcon } from "../../../components/icons";
+import NewsImage from "../../../components/news-image";
 import NewsFooter from "../../../components/news-footer";
 import LayoutVariation from "../../../components/layout-variation";
 import { PageFrame } from "../../../components/design-system";
@@ -84,7 +84,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const title = article.seo_title || article.title;
   const description = article.seo_description || article.summary || undefined;
   const coverImage = publishedNewsCover(article)?.url ?? null;
-  const image = coverImage ? new URL(coverImage, siteUrl).toString() : absoluteUrl("/share.png");
+  const image = coverImage ? new URL(coverImage, siteUrl).toString() : absoluteUrl("/brand-logo.png");
   const articleUrl = publicNewsArticleUrl(article.slug);
   return {
     title,
@@ -170,7 +170,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
               <span className="sr-only">{signedIn ? "Back to Discover" : "Back to News"}</span>
             </Link>
             {signedIn ? <SaveArticleButton articleId={article.id} slug={article.slug} saved={saved} className={styles.heroControl} /> : null}
-            <ArticleShareActions title={article.title} url={articleUrl} compact showCopyButton={false} className={styles.heroShareActions} shareButtonClassName={styles.heroControl} feedbackClassName={styles.heroShareFeedback} fallbackClassName={styles.shareFallback} />
+            <ArticleShareActions title={article.title} imageUrl={imageUrl} url={articleUrl} compact showCopyButton={false} className={styles.heroShareActions} shareButtonClassName={styles.heroControl} feedbackClassName={styles.heroShareFeedback} fallbackClassName={styles.shareFallback} />
           </div>
           <div className={styles.articleHeroCopy}>
             {!signedIn ? <p className={styles.articleCategory}>{article.category_label}</p> : null}
@@ -179,7 +179,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
             {!signedIn ? <div className={styles.publicStoryMeta}><span>By {article.author_name}</span>{date ? <time dateTime={article.published_at ?? undefined}>{date}</time> : null}</div> : null}
           </div>
           <div className={styles.articleCoverFrame}>
-            {imageUrl ? <img className={`${styles.articleHeroImage} ${cover ? styles.approvedCoverFull : ""}`} src={imageUrl} alt={publishedCover?.alt ?? ""} loading="eager" fetchPriority="high" decoding="async" referrerPolicy="no-referrer" /> : <span className={styles.articleHeroFallback} aria-hidden="true" />}
+            <NewsImage className={`${styles.articleHeroImage} ${cover ? styles.approvedCoverFull : ""}`} src={imageUrl} alt={publishedCover?.alt ?? ""} loading="eager" fetchPriority="high" />
             <ArticleCoverStats body={body} engagement={engagement} commentCount={commentCount} />
           </div>
         </header>
@@ -195,7 +195,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
         <CommentThread articleId={article.id} slug={article.slug} notice={notice.comments} />
         <CommentDock articleId={article.id} slug={article.slug} count={commentCount} signedIn={signedIn} signInHref={signInHref} />
         <details className={styles.articleExtras}><summary>More story options</summary><OfflineArticleDownload article={{ slug: article.slug, title: article.title, summary: article.summary, publishedAt: article.published_at, author: article.author_name, category: article.category_label, sourceUrl: articleUrl }} /></details>
-        {related.length ? <section className={styles.relatedSection} aria-labelledby="related-heading"><div className={styles.sectionHeading}><div><h2 id="related-heading">Related stories</h2></div></div><ul className={styles.relatedGrid}>{related.map((item) => { const relatedCover = selectedNewsCover(item.og_image_key); const relatedImage = publishedNewsCover(item)?.url; return <li className={styles.relatedCard} key={item.slug}><Link href={newsArticlePath(item.slug)} className={styles.relatedLink}>{relatedImage ? <img className={`${styles.relatedImage} ${relatedCover ? styles.approvedCoverThumb : ""}`} src={relatedImage} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" /> : <span className={styles.relatedImageFallback} aria-hidden="true"><NewspaperIcon size={24} /></span>}<span className={styles.relatedCategory}>{item.category_label}</span><span className={styles.relatedTitle}>{item.title}</span></Link></li>; })}</ul></section> : null}
+        {related.length ? <section className={styles.relatedSection} aria-labelledby="related-heading"><div className={styles.sectionHeading}><div><h2 id="related-heading">Related stories</h2></div></div><ul className={styles.relatedGrid}>{related.map((item) => { const relatedCover = selectedNewsCover(item.og_image_key); const relatedImage = publishedNewsCover(item)?.url; return <li className={styles.relatedCard} key={item.slug}><Link href={newsArticlePath(item.slug)} className={styles.relatedLink}><NewsImage className={`${styles.relatedImage} ${relatedCover ? styles.approvedCoverThumb : ""}`} src={relatedImage} alt="" /><span className={styles.relatedCategory}>{item.category_label}</span><span className={styles.relatedTitle}>{item.title}</span></Link></li>; })}</ul></section> : null}
         <p className={styles.correctionNote}>Correction reporting is not available through this site yet. <Link href="/contact" className="ui-text-link">View contact availability</Link>.</p>
       </article></LayoutVariation>
     </PageFrame>

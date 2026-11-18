@@ -129,3 +129,4 @@
 }
 .categoryMore { display:inline-flex; min-height:44px; align-items:center; gap:8px; color:#294b91; font-size:.875rem; font-weight:750; text-decoration:none; }
 .categoryMore:hover { color:#17264a; text-decoration:underline; text-underline-offset:4px; }
+.newsPage img[data-news-fallback="true"] { object-fit:contain; padding:clamp(24px, 8%, 64px); background:#edf3fc; }

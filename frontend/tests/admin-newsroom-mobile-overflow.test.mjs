@@ -9,7 +9,9 @@ const [page, styles] = await Promise.all([
 ]);
 
 test("Admin newsroom table is a keyboard-accessible, bounded horizontal scroller", () => {
-  assert.match(page, /className="ui-table admin-newsroom-table"[^>]*role="region"[^>]*aria-label="Articles list; scroll horizontally to see all columns"[^>]*tabIndex=\{0\}/);
+  assert.match(page, /className=\{`ui-table admin-newsroom-table \$\{styles\.table\}`\}[^>]*role="region"[^>]*aria-label="Articles list; scroll horizontally to see all columns"[^>]*tabIndex=\{0\}/);
+  assert.match(page, /className=\{styles\.cards\}/);
+  assert.match(page, /Edit article/);
   assert.match(styles, /\.admin-newsroom-list\s*\{\s*min-width:0;/);
   assert.match(styles, /\.admin-newsroom-table\s*\{[^}]*width:100%;[^}]*min-width:0;[^}]*overflow-x:auto;/);
   assert.match(styles, /\.admin-newsroom-table table\s*\{\s*min-width:680px;/);

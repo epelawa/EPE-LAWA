@@ -20,8 +20,8 @@ it("copies a caption and public link with selected hashtags", async () => {
   const root = createRoot(container);
   const writeText = vi.fn().mockResolvedValue(undefined);
   Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
-  act(() => root.render(<NewsShareTools title="Epe schools" summary="Community update" url="https://example.test/news/story" />));
-  expect(container.textContent).toContain("Apps choose whether to display");
+  act(() => root.render(<NewsShareTools title="Epe schools" summary="Community update" url="https://example.test/news/story" imageUrl={null} />));
+  expect(container.textContent).toContain("When supported, the cover is attached");
   const buttons = [...container.querySelectorAll("button")];
   await act(async () => { buttons.find((button) => button.textContent === "Copy caption and link")!.click(); });
   expect(writeText).toHaveBeenCalledWith(expect.stringContaining("https://example.test/news/story"));
