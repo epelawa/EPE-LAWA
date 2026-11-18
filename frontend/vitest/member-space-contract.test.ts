@@ -23,7 +23,7 @@ describe("post-sign-in destination", () => {
     expect(dashboard).not.toContain("/auth/complete");
 
     expect(auth).toMatch(/signInWithPassword[\s\S]*?redirect\("\/dashboard"\)/);
-    expect(callback).toContain('? value : "/dashboard"');
+    expect(callback).toContain('safeAuthNext(params.get("next"))');
     expect(otp).toContain('{ redirectTo: "/dashboard" }');
     expect(manifest.routes.map((route: { path: string }) => route.path)).not.toContain("/auth/complete");
   });

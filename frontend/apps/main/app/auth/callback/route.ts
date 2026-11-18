@@ -1,10 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { authLinkIssueFromParams, authLinkIssuePath, type AuthLinkIssue } from "../../../lib/auth-link-errors";
 import { createClient } from "../../../lib/supabase";
-
-function safeNext(value: string | null) {
-  return value && value.startsWith("/") && !value.startsWith("//") && !value.includes("\\") ? value : "/dashboard";
-}
+import { safeAuthNext } from "../../../lib/safe-auth-next";
 
 function issueRedirect(request: NextRequest, issue: AuthLinkIssue) {
   return NextResponse.redirect(new URL(authLinkIssuePath(issue), request.url));
@@ -23,7 +20,7 @@ export async function GET(request: NextRequest) {
   if (callbackIssue) return issueRedirect(request, callbackIssue);
 
   const code = params.get("code");
-  const destination = safeNext(params.get("next"));
+  const destination = safeAuthNext(params.get("next"));
   if (!code) return issueRedirect(request, "problem");
 
   try {

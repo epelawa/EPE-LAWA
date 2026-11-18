@@ -18,7 +18,7 @@ export default function NewsletterSignupPage() {
       <PageIntro
         eyebrow="EPE LAWA NEWSLETTER"
         title="Keep up with Epe."
-        description="Sign-up is temporarily unavailable while subscription security is improved. Existing unsubscribe links remain available."
+        description={process.env.NEWSLETTER_SIGNUP_ENABLED === "true" ? "Confirm your email to receive reporting and community updates." : "Sign-up is temporarily unavailable while subscription security is improved. Existing unsubscribe links remain available."}
       />
       <Panel className="ui-stack">
         <NewsletterForm id="newsletter-page-signup" />
