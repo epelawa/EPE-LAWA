@@ -3,6 +3,10 @@ import { createClient } from "../lib/supabase";
 import { BrandLockup } from "./brand";
 import NewsletterForm from "./newsletter-form";
 import styles from "./news-footer.module.css";
+import { MOBILE_GROUPS, MOBILE_EXTRA_LINKS } from "../lib/mobile-navigation";
+
+const quickLinks: ReadonlyArray<readonly [string, string]> = [["/", "Home"], ...MOBILE_GROUPS.flatMap(group => [...group.routes] as ReadonlyArray<readonly [string, string]>), ...MOBILE_EXTRA_LINKS];
+function QuickLinks() { return <nav aria-label="Quick links"><ul className={styles.quickLinks}>{quickLinks.map(([href, label]) => <li key={href}><Link href={href}>{label}</Link></li>)}</ul></nav>; }
 
 type NewsCategory = { slug: string; label: string };
 
@@ -35,7 +39,7 @@ export default async function NewsFooter({ categories, listing = false }: { cate
           <a href="https://www.youtube.com/@EPE_LAWA" target="_blank" rel="noopener noreferrer" aria-label="EPE LAWA on YouTube (opens in a new tab)"><svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M21.6 7.2a2.7 2.7 0 0 0-1.9-1.9C18 4.8 12 4.8 12 4.8s-6 0-7.7.5a2.7 2.7 0 0 0-1.9 1.9A28 28 0 0 0 2 12a28 28 0 0 0 .4 4.8 2.7 2.7 0 0 0 1.9 1.9c1.7.5 7.7.5 7.7.5s6 0 7.7-.5a2.7 2.7 0 0 0 1.9-1.9A28 28 0 0 0 22 12a28 28 0 0 0-.4-4.8ZM10 15.4V8.6l5.8 3.4L10 15.4Z"/></svg> YouTube ↗</a>
         </div>
       </section>
-      <section className={styles.listingColumn}><h2>Explore</h2><nav aria-label="News footer links"><Link href="/news">Latest news</Link><Link href="/radio">Listen to radio</Link><Link href="/about">About EPE LAWA</Link><Link href="/contact">Contact availability</Link></nav></section>
+      <section className={`${styles.listingColumn} ${styles.listingQuick}`}><h2>Quick Links</h2><QuickLinks /></section>
       <section className={styles.listingColumn}><h2>Browse topics</h2><nav aria-label="News footer categories">{links.length ? links.slice(0, 8).map((category) => <Link key={category.slug} href={`/news?category=${encodeURIComponent(category.slug)}`}>{category.label}</Link>) : <Link href="/news">All news</Link>}</nav></section>
       <section className={styles.listingNewsletter} aria-labelledby="footer-newsletter-heading"><h2 id="footer-newsletter-heading">Subscribe to our newsletter</h2><p>Stories and updates from Epe, straight to your inbox.</p><NewsletterForm id="news-listing-signup" variant="footer" /></section>
     </div>
@@ -50,12 +54,7 @@ export default async function NewsFooter({ categories, listing = false }: { cate
         </section>
         <section className={styles.column}>
           <h2>Quick Links</h2>
-          <nav aria-label="Quick links"><ul>
-            <li><Link href="/">Home</Link></li>
-            <li><Link href="/about">About Us</Link></li>
-            <li><Link href="/contact">Contact availability</Link></li>
-            <li><Link href="/advertise">Advertise</Link></li>
-          </ul></nav>
+          <QuickLinks />
         </section>
         <section className={styles.column}>
           <h2>Categories</h2>
@@ -65,7 +64,7 @@ export default async function NewsFooter({ categories, listing = false }: { cate
         </section>
         <section className={`${styles.column} ${styles.newsletter}`}>
           <h2>Newsletter</h2>
-          <p>Newsletter sign-up is temporarily paused.</p>
+          <p>Stories and updates from Epe, straight to your inbox.</p>
           <NewsletterForm id="news-footer-signup" variant="footer" />
         </section>
       </div>
