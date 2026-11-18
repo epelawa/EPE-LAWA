@@ -192,6 +192,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
 
         <div className={styles.readingGuide}><span>THE STORY</span><a href="#comments">Join the conversation <span aria-hidden="true">↗</span></a></div>
         <div className={`ui-prose ${styles.articleBody}`} data-offline-article-body><ArticleBody body={body} /></div>
+        <p className={styles.articleAuthorCredit}><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="m4 20 4.3-1 10.2-10.2a2.1 2.1 0 0 0-3-3L5.3 16 4 20Z" /><path d="m13.8 7.2 3 3" /><path d="M4 20h4" /></svg><span><strong>Brought to you by</strong> {article.author_name}</span></p>
         <CommentThread articleId={article.id} slug={article.slug} notice={notice.comments} />
         <CommentDock articleId={article.id} slug={article.slug} count={commentCount} signedIn={signedIn} signInHref={signInHref} />
         <details className={styles.articleExtras}><summary>More story options</summary><OfflineArticleDownload article={{ slug: article.slug, title: article.title, summary: article.summary, publishedAt: article.published_at, author: article.author_name, category: article.category_label, sourceUrl: articleUrl }} /></details>

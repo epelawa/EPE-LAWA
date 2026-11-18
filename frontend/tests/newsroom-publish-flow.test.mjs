@@ -54,6 +54,8 @@ test("drafts stay private and the public list and article resolve only published
   assert.match(article, /\.eq\("slug", slug\)/);
   assert.match(article, /if \(!data\) return \{ status: "missing" \}/);
   assert.doesNotMatch(article, /service_role|SUPABASE_SERVICE/);
+  assert.match(article, /Brought to you by/);
+  assert.match(article, /article\.author_name/);
 });
 
 test("public News selects only columns verified on published_articles", () => {
