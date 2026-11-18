@@ -351,3 +351,5 @@
 .shell :global([data-layout-variant="2"]) .feedSectionHeading { border-left: 4px solid #477fe0; padding-left: 12px; }
 .shell :global([data-layout-variant="3"]) .feedSectionHeading { text-align: center; justify-content: center; }
 .shell :global([data-layout-variant="3"]) .storyCard { padding-bottom: 12px; border-bottom: 1px solid hsl(var(--border)); border-radius: 0; }
+/* Distinguish the logo from a photographic cover when the image is missing or fails. */
+.storyImage[data-news-fallback="true"] { object-fit:contain; padding:24px; background:#edf3fc; }

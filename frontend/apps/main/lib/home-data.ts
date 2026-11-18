@@ -1,13 +1,10 @@
 import { createClient } from "./supabase";
-import { selectedNewsCover } from "./news-covers";
+import { publishedNewsCover } from "./published-news-cover";
 
 export type StoryCover = {
   src: string;
   alt: string;
-  caption: string | null;
-  credit: string;
-  source: string;
-  license: string;
+  illustrative: boolean;
 };
 
 export type LatestStory = {
@@ -30,6 +27,8 @@ type PublishedStoryRow = {
   category_label: string | null;
   author_name: string | null;
   og_image_key: string | null;
+  cover_url: string | null;
+  cover_alt: string | null;
 };
 
 export type PublicListResult<T> =
@@ -37,17 +36,8 @@ export type PublicListResult<T> =
   | { state: "error"; items: [] };
 
 function creditedCover(row: PublishedStoryRow): StoryCover | null {
-  const approved = selectedNewsCover(row.og_image_key);
-  if (!approved) return null;
-
-  return {
-    src: approved.url,
-    alt: approved.alt,
-    caption: approved.caption,
-    credit: approved.credit,
-    source: approved.source,
-    license: approved.license,
-  };
+  const cover = publishedNewsCover(row);
+  return cover ? { src: cover.url, alt: cover.alt, illustrative: cover.illustrative } : null;
 }
 
 /** Read only the verified public article projection; errors never masquerade as an empty newsroom. */
@@ -56,7 +46,7 @@ export async function getLatestStories(limit = 3): Promise<PublicListResult<Late
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("published_articles")
-      .select("id,slug,title,summary,published_at,category_label,author_name,og_image_key")
+      .select("id,slug,title,summary,published_at,category_label,author_name,og_image_key,cover_url,cover_alt")
       .order("published_at", { ascending: false, nullsFirst: false })
       .order("slug", { ascending: true })
       .limit(Math.max(0, Math.min(Math.trunc(limit), 20)));

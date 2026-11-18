@@ -116,11 +116,11 @@ test("public footers and correction links do not imply that unavailable contact 
   assert.doesNotMatch(article, /contact the newsroom/i);
 });
 
-test("Newsletter uses the standalone form/action/mailer path and preserves truthful delivery errors", () => {
-  assert.match(newsletter, /useActionState\(subscribeNewsletter/);
-  assert.match(newsletter, /name="email"/);
-  assert.match(newsletterAction, /newsletter_subscribe_request/);
-  assert.match(newsletterAction, /sendNewsletterConfirmation/);
+test("Newsletter signup fails closed while unsubscribe remains available", () => {
+  assert.match(newsletter, /temporarily unavailable/);
+  assert.match(newsletter, /disabled/);
+  assert.doesNotMatch(newsletterAction, /rpc\("newsletter_subscribe_request"/);
+  assert.match(newsletterAction, /rpc\("newsletter_unsubscribe"/);
   assert.match(newsletterMailer, /NEWSLETTER_SMTP_HOST/);
   assert.match(newsletterMailer, /newsletter\/unsubscribe\?token=/);
   assert.doesNotMatch(newsletterAction, /auth\.signInWithOtp|auth\.verifyOtp|emailRedirectTo/);

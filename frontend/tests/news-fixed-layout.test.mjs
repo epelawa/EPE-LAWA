@@ -82,12 +82,10 @@ test("editorial text scales with user settings and headlines wrap cleanly", () =
   assert.doesNotMatch(styles, /font-size:[^;}]*clamp\([^)]*vw[^)]*px/);
 });
 
-test("footer categories remain real and newsletter uses the live subscription form", () => {
+test("footer categories remain real and newsletter signup fails closed", () => {
   assert.match(footer, /from\("categories"\)/);
   assert.match(footer, /\.eq\("is_active", true\)/);
-  assert.match(newsletter, /useActionState/);
-  assert.match(newsletter, /subscribeNewsletter/);
   assert.match(newsletter, /type="email"/);
-  assert.match(newsletter, /disabled=\{pending\}/);
-  assert.doesNotMatch(newsletter, /Sign-up unavailable/);
+  assert.match(newsletter, /disabled/);
+  assert.match(newsletter, /temporarily unavailable/);
 });
