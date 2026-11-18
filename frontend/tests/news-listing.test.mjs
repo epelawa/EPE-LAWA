@@ -86,9 +86,9 @@ test("News page and editorial footer use the same cobalt and navy identity", asy
   assert.doesNotMatch(newsStyles + footerStyles, /#(?:0b4a32|063d2b|0b7042|16894d)|rgb\(0 69 44|rgb\(10 40 26/);
 });
 
-test("News and Advertise use the complete reference-style footer without a duplicate global footer", () => {
+test("News uses its editorial footer without a duplicate global footer", () => {
   assert.match(page, /<NewsFooter categories=\{categories\} listing \/>/);
-  assert.match(footer, /pathname\.startsWith\("\/news\/"\) \|\| pathname === "\/advertise"/);
+  assert.match(footer, /pathname\.startsWith\("\/news\/"\)/);
   assert.match(footer, /if \(isEditorial\) return null/);
   for (const heading of ["Quick Links", "Categories", "Newsletter"]) assert.ok(newsFooter.includes(heading));
   assert.match(newsFooter, /href="\/advertise"/);

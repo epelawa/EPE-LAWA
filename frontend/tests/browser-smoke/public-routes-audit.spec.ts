@@ -20,11 +20,12 @@ for (const width of [320, 1440]) {
   });
 }
 
-test("newsletter clearly remains disabled and collects no address", async ({ page }) => {
+test("newsletter offers signup on home and radio reminders", async ({ page }) => {
   await page.goto("/");
-  const note = page.getByText("Sign-up is paused; no email address is collected.").first();
-  await expect(note).toBeVisible();
-  await expect(page.getByRole("button", { name: "Subscribe" }).first()).toBeDisabled();
+  await expect(page.getByLabel("Email address").first()).toBeEnabled();
+  await expect(page.getByRole("button", { name: "Subscribe" }).first()).toBeEnabled();
+  await page.goto("/radio/reminders");
+  await expect(page.getByRole("button", { name: "Subscribe" }).first()).toBeEnabled();
 });
 
 test("history search remains editable", async ({ page }) => {
