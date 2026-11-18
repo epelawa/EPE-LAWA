@@ -1,0 +1,5 @@
+-- Production auth.users.email is varchar; the RPC declares a text result.
+create or replace function public.staff_role_staff_directory(p_search text default '',p_limit integer default 50) returns table(user_id uuid,email text,email_verified boolean,is_active boolean,role_ids uuid[]) language plpgsql stable security definer set search_path='' as $$ begin
+ if auth.uid() is null or not public.staff_roles_authorized() then raise exception using errcode='42501',message='role_management_forbidden'; end if;
+ return query select p.user_id,u.email::text,u.email_confirmed_at is not null,p.is_active,coalesce(array_agg(a.role_id) filter(where a.role_id is not null),'{}'::uuid[]) from public.staff_profiles p join auth.users u on u.id=p.user_id left join public.staff_role_assignments a on a.user_id=p.user_id where coalesce(p_search,'')='' or u.email ilike '%'||left(trim(p_search),100)||'%' group by p.user_id,u.email,u.email_confirmed_at,p.is_active order by lower(u.email) limit least(greatest(coalesce(p_limit,50),1),100);
+end; $$;
