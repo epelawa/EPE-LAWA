@@ -1,4 +1,4 @@
--- SOURCE ONLY — NOT APPLIED. Requires explicit owner review and a separate migration gate.
+-- Applied to production as remote migration 20261118081756 after owner approval.
 -- No roles/accounts/assignments are seeded. Only verified active info.epelawa@gmail.com
 -- can manage; roles cannot grant role-management authority.
 begin;
