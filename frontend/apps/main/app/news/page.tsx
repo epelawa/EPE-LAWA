@@ -6,7 +6,7 @@ import { formatPublishedDate } from "../../lib/dates";
 import { publishedNewsCover } from "../../lib/published-news-cover";
 import { absoluteUrl } from "../../lib/site";
 import { newsArticlePath } from "../../lib/news-urls";
-import { NewspaperIcon } from "../../components/icons";
+import NewsImage from "../../components/news-image";
 import { EmptyPanel, PageFrame, StatusBadge } from "../../components/design-system";
 import NewsFooter from "../../components/news-footer";
 import styles from "./listing.module.css";
@@ -197,7 +197,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
           <div className={styles.sectionHeading}><h2 id="featured-heading">Featured story</h2><span>From the newsroom</span></div>
           <article className={styles.featureCard}>
             <Link href={newsArticlePath(lead.slug)} className={styles.featureMedia} tabIndex={-1} aria-hidden="true">
-              {coverUrl(lead) ? <img className={styles.featureImage} src={coverUrl(lead) ?? undefined} alt="" loading="eager" fetchPriority="high" decoding="async" referrerPolicy="no-referrer" /> : <span className={styles.imageFallback}><NewspaperIcon size={40} /></span>}
+              <NewsImage className={styles.featureImage} src={coverUrl(lead)} alt="" loading="eager" fetchPriority="high" />
             </Link>
             <div className={styles.featureCopy}>
               <div className={styles.categoryLabel}>{lead.category_label}{isBreakingNow(lead) ? <StatusBadge tone="warning">Breaking</StatusBadge> : null}</div>
@@ -214,7 +214,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
             const image = coverUrl(article);
             return <li key={article.slug}><article className={styles.storyCard}>
               <Link href={newsArticlePath(article.slug)} className={styles.storyMedia} tabIndex={-1} aria-hidden="true">
-                {image ? <img className={styles.storyImage} src={image} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" /> : <span className={styles.imageFallback}><NewspaperIcon size={28} /></span>}
+                <NewsImage className={styles.storyImage} src={image} alt="" />
               </Link>
               <div className={styles.storyCopy}>
                 <div className={styles.categoryLabel}>{article.category_label}{isBreakingNow(article) ? <StatusBadge tone="warning">Breaking</StatusBadge> : null}</div>
@@ -230,7 +230,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
           <ul className={styles.storyGrid}>{group.stories.map((article) => {
             const image = coverUrl(article);
             return <li key={article.slug}><article className={styles.storyCard}>
-              <Link href={newsArticlePath(article.slug)} className={styles.storyMedia} tabIndex={-1} aria-hidden="true">{image ? <img className={styles.storyImage} src={image} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" /> : <span className={styles.imageFallback}><NewspaperIcon size={28} /></span>}</Link>
+              <Link href={newsArticlePath(article.slug)} className={styles.storyMedia} tabIndex={-1} aria-hidden="true"><NewsImage className={styles.storyImage} src={image} alt="" /></Link>
               <div className={styles.storyCopy}><div className={styles.categoryLabel}>{article.category_label}{isBreakingNow(article) ? <StatusBadge tone="warning">Breaking</StatusBadge> : null}</div><h3 className={styles.storyTitle}><Link href={newsArticlePath(article.slug)}>{article.title}</Link></h3>{article.summary ? <p className={styles.storySummary}>{article.summary}</p> : null}<p className={styles.storyMeta}>By {article.author_name}{article.published_at ? <> <span aria-hidden="true">·</span> <time dateTime={article.published_at}>{formatPublishedDate(article.published_at)}</time></> : null}</p></div>
             </article></li>;
           })}</ul>

@@ -75,19 +75,19 @@ test('public lead covers use approved local keys and images never send a referre
   const listing = read('apps/main/app/news/page.tsx');
   const article = read('apps/main/app/news/[slug]/page.tsx');
   assert.match(listing, /loading="eager" fetchPriority="high"/);
-  assert.match(listing, /className=\{styles\.storyImage\} src=\{image\} alt="" loading="lazy"/);
+  assert.match(listing, /className=\{styles\.storyImage\} src=\{image\} alt=""/);
   assert.doesNotMatch(listing, /fetchPriority="auto"/);
   assert.match(listing, /publishedNewsCover\(article\)/);
   assert.match(article, /publishedNewsCover\(article\)/);
   assert.match(article, /cover_url,cover_alt,cover_credit,cover_caption/);
   assert.match(article, /loading="eager" fetchPriority="high"/);
-  assert.match(article, /referrerPolicy="no-referrer"/);
+  assert.match(read('apps/main/components/news-image.tsx'), /referrerPolicy="no-referrer"/);
 });
 
 test('shared published articles expose an absolute cover image with a branded fallback', () => {
   const article = read('apps/main/app/news/[slug]/page.tsx');
   assert.match(article, /new URL\(coverImage, siteUrl\)\.toString\(\)/);
-  assert.match(article, /absoluteUrl\("\/share.png"\)/);
+  assert.match(article, /absoluteUrl\("\/brand-logo.png"\)/);
   assert.match(article, /images: \[\{ url: image, alt:/);
   assert.match(article, /twitter: \{ card: "summary_large_image"/);
 });

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import styles from "./newsroom-list.module.css";
 import { createClient } from "../../../lib/supabase";
 import { adminHref } from "../../../lib/admin-path";
 import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge, buttonClassName } from "@epelawa/ui";
@@ -46,7 +47,8 @@ export default async function NewsroomPage({ searchParams }: { searchParams: Pro
   if (state === "published") query = query.not("published_version_id", "is", null);
   else if (state) query = query.filter("current_version.state", "eq", state);
 
-  const { data, error } = await query;
+  const [{ data, error }, editCapability] = await Promise.all([query, supabase.rpc("has_capability", { p_capability: "article.create" })]);
+  const canEdit = !editCapability.error && editCapability.data === true;
   if (error) {
     return <PageFrame className="ui-stack"><PageIntro eyebrow="Staff workspace" title="Newsroom" description="Manage private drafts and published versions." /><Notice tone="danger" role="alert"><strong>Articles could not be loaded.</strong><p>The newsroom could not verify article data. Try again in a moment.</p></Notice></PageFrame>;
   }
@@ -63,7 +65,7 @@ export default async function NewsroomPage({ searchParams }: { searchParams: Pro
 
   return (
     <PageFrame className="ui-stack">
-      <PageIntro eyebrow="Staff workspace · Editorial" title="Newsroom" description="Save privately, then publish immediately when the final version is ready. Publication requires verified staff access and is recorded in the audit log." actions={<div className="ui-actions"><Link href={adminHref("/newsroom/settings")} className={buttonClassName("secondary")}>Categories & bylines</Link><Link href={adminHref("/newsroom/new")} className={buttonClassName("primary")}>Create draft</Link></div>} />
+      <PageIntro eyebrow="Staff workspace · Editorial" title="Newsroom" description="Save privately, then publish immediately when the final version is ready. Publication requires verified staff access and is recorded in the audit log." actions={<div className="ui-actions"><Link href={adminHref("/newsroom/settings")} className={buttonClassName("secondary")}>Categories & bylines</Link><Link href={adminHref("/newsroom/new")} className={buttonClassName("primary")}>Upload an article</Link></div>} />
       <Panel className="ui-grid ui-grid--3" aria-label="Newsroom counts">
         <div><p className="ui-number">{drafts}</p><p className="ui-muted">Private drafts</p></div>
         <div><p className="ui-number">{readyToPublish}</p><p className="ui-muted">Versions ready to publish</p></div>
@@ -75,16 +77,23 @@ export default async function NewsroomPage({ searchParams }: { searchParams: Pro
           <Link href={adminHref("/newsroom")} aria-current={!state ? "page" : undefined}>All</Link>
           {states.map((item) => <Link key={item} href={adminHref(`/newsroom?state=${item}`)} aria-current={state === item ? "page" : undefined}>{item[0].toUpperCase() + item.slice(1)}</Link>)}
         </nav>
-        {articles.length ? <Panel className="ui-table admin-newsroom-table" role="region" aria-label="Articles list; scroll horizontally to see all columns" tabIndex={0}><table><thead><tr><th scope="col">Article</th><th scope="col">State</th><th scope="col">Revision</th><th scope="col">Slug</th><th scope="col">Updated</th><th scope="col"><span className="sr-only">Action</span></th></tr></thead><tbody>
+        {articles.length ? <Panel className={`ui-table admin-newsroom-table ${styles.table}`} role="region" aria-label="Articles list; scroll horizontally to see all columns" tabIndex={0}><table><thead><tr><th scope="col">Article</th><th scope="col">State</th><th scope="col">Revision</th><th scope="col">Slug</th><th scope="col">Updated</th><th scope="col"><span className="sr-only">Action</span></th></tr></thead><tbody>
           {articles.map((article) => {
             const version = article.current_version;
             const hasPublicVersion = Boolean(article.published_version_id);
             const currentVersionIsPublic = Boolean(article.current_version_id && article.published_version_id === article.current_version_id);
             const displayState = currentVersionIsPublic ? "published" : version?.state ?? "unknown";
             const tone = displayState === "published" || displayState === "approved" ? "success" : displayState === "rejected" ? "danger" : displayState === "review" ? "warning" : "neutral";
-            return <tr key={article.id}><td><Link href={adminHref(`/newsroom/${article.id}`)} className="ui-item-title">{version?.title || "Untitled article"}</Link></td><td><StatusBadge tone={tone}>{displayState}</StatusBadge>{hasPublicVersion && !currentVersionIsPublic ? <span className="ui-meta">Earlier version is public</span> : null}</td><td>{article.revision}</td><td><span className="ui-meta">{article.slug}</span></td><td><span className="ui-meta">{new Date(article.updated_at).toLocaleDateString("en-NG")}</span></td><td><Link href={adminHref(`/newsroom/${article.id}`)} className={buttonClassName("secondary")}>Open</Link></td></tr>;
+            return <tr key={article.id}><td><Link href={adminHref(`/newsroom/${article.id}`)} className="ui-item-title">{version?.title || "Untitled article"}</Link></td><td><StatusBadge tone={tone}>{displayState}</StatusBadge>{hasPublicVersion && !currentVersionIsPublic ? <span className="ui-meta">Earlier version is public</span> : null}</td><td>{article.revision}</td><td><span className="ui-meta">{article.slug}</span></td><td><span className="ui-meta">{new Date(article.updated_at).toLocaleDateString("en-NG")}</span></td><td><Link href={adminHref(`/newsroom/${article.id}`)} className={buttonClassName("secondary")}>Open</Link>{canEdit ? <Link href={`${adminHref(`/newsroom/${article.id}`)}#article-editor`} className={buttonClassName("secondary")}>Edit</Link> : null}</td></tr>;
           })}
-        </tbody></table></Panel> : <EmptyPanel title={state ? `No ${state} articles` : "No articles yet"} description={state ? "No article currently matches this state." : "Create a private draft to begin. Nothing appears publicly until a publisher explicitly publishes it."} actions={!state ? <Link href={adminHref("/newsroom/new")} className={buttonClassName("primary")}>Create draft</Link> : undefined} />}
+        </tbody></table></Panel> : null}
+        {articles.length ? <ul className={styles.cards} aria-label="Articles list">{articles.map((article) => {
+          const version = article.current_version;
+          const currentIsPublic = Boolean(article.current_version_id && article.published_version_id === article.current_version_id);
+          const stateLabel = currentIsPublic ? "published" : version?.state ?? "unknown";
+          const tone = stateLabel === "published" || stateLabel === "approved" ? "success" : stateLabel === "rejected" ? "danger" : stateLabel === "review" ? "warning" : "neutral";
+          return <li key={article.id} className={styles.card}><h3 className={styles.title}>{version?.title || "Untitled article"}</h3><div className={styles.meta}><StatusBadge tone={tone}>{stateLabel}</StatusBadge><span>Revision {article.revision}</span><time dateTime={article.updated_at}>Updated {new Date(article.updated_at).toLocaleDateString("en-NG")}</time></div>{article.published_version_id && !currentIsPublic ? <span className="ui-meta">Earlier version is public</span> : null}<div className={styles.actions}><Link href={adminHref(`/newsroom/${article.id}`)} className={buttonClassName("secondary")}>Open article</Link>{canEdit ? <Link href={`${adminHref(`/newsroom/${article.id}`)}#article-editor`} className={buttonClassName("secondary")}>Edit article</Link> : null}</div></li>;
+        })}</ul> : <EmptyPanel title={state ? `No ${state} articles` : "No articles yet"} description={state ? "No article currently matches this state." : "Create a private draft to begin. Nothing appears publicly until a publisher explicitly publishes it."} actions={!state ? <Link href={adminHref("/newsroom/new")} className={buttonClassName("primary")}>Upload an article</Link> : undefined} />}
       </section>
     </PageFrame>
   );

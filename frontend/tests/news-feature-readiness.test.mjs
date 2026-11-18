@@ -56,7 +56,7 @@ test('News metadata, compact share actions and related cards use the canonical s
   assert.match(article, /url: articleUrl/);
   assert.match(article, /publicNewsArticleUrl\(article\.slug\)/);
   assert.match(article, /newsArticlePath\(item\.slug\)/);
-  assert.match(article, /ArticleShareActions title=\{article\.title\} url=\{articleUrl\}/);
+  assert.match(article, /ArticleShareActions title=\{article\.title\} imageUrl=\{imageUrl\} url=\{articleUrl\}/);
   assert.match(article, /className=\{styles\.articleHeroCopy\}/);
   assert.doesNotMatch(article, /estimateReadMinutes|Published story|Share on WhatsApp/);
   assert.match(article, /Related stories/);

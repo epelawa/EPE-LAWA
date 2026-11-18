@@ -18,14 +18,14 @@ test("News has one fixed composition, without a client timer or layout selector"
 
 test("the lead image and top headline covers eagerly load and fill their containers", () => {
   assert.match(page, /className=\{styles\.featureImage\}[^>]*loading="eager" fetchPriority="high"/);
-  assert.match(page, /className=\{styles\.storyImage\} src=\{image\} alt="" loading="lazy"/);
+  assert.match(page, /className=\{styles\.storyImage\} src=\{image\} alt=""/);
   assert.doesNotMatch(page, /fetchPriority="auto"/);
   assert.match(page, /<search className=\{styles\.searchRegion\} aria-label="Search published stories">/);
   assert.match(listingStyles, /\.featureImage,\.storyImage \{[^}]*object-fit: cover/);
 });
 
 test("article hero cover eagerly loads, never lazily, and uses full-container cover fit", () => {
-  assert.match(article, /loading="eager" fetchPriority="high" decoding="async" referrerPolicy="no-referrer"/);
+  assert.match(article, /loading="eager" fetchPriority="high"/);
   assert.match(article, /className=\{styles\.articleCoverFrame\}/);
   assert.doesNotMatch(article, /articleHeroImage[^\n]*loading="lazy"/);
   assert.match(styles, /\.articleHeroImage,\.articleHeroFallback \{[^}]*object-fit:cover/);

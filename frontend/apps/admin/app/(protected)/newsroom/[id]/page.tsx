@@ -8,6 +8,8 @@ import { adminHref } from "../../../../lib/admin-path";
 import { articlePublicationState } from "../../../../lib/article-publication-state";
 import { NEWS_COVERS, isNewsCoverKey } from "../../../../../main/lib/news-covers";
 import NewsCoverUrlFields from "../../../../components/news-cover-url-fields";
+import { publishedNewsCover } from "../../../../../main/lib/published-news-cover";
+import { absoluteUrl } from "../../../../../main/lib/site";
 import NewsShareTools from "../../../../components/news-share-tools";
 import { publicNewsArticleUrl } from "../../../../../main/lib/news-urls";
 
@@ -142,7 +144,7 @@ export default async function EditArticlePage({
       <StatusMessage query={query} />
       {article.published_version_id ? <Notice tone="neutral"><Link href={`/news/${article.slug}`} className="ui-text-link">Open public article</Link>{article.published_at ? <span className="ui-meta">Published {new Date(article.published_at).toLocaleDateString("en-NG")}</span> : null}</Notice> : null}
 
-      {currentVersionIsPublic ? <NewsShareTools title={version.title} summary={version.summary} url={publicNewsArticleUrl(article.slug)} /> : null}
+      {currentVersionIsPublic ? <NewsShareTools title={version.title} summary={version.summary} url={publicNewsArticleUrl(article.slug)} imageUrl={publishedNewsCover(version)?.url ? new URL(publishedNewsCover(version)!.url, absoluteUrl("/")).toString() : null} /> : null}
 
       <Panel>
         <SectionHeading eyebrow="Protected history" title="Revision and audit history" description="Read-only workflow history. Actor identifiers and private article content are not exposed here." />
@@ -154,7 +156,7 @@ export default async function EditArticlePage({
         !referencesAvailable ? <EmptyPanel title="Bylines and categories unavailable" description="The article was not changed. Reload after the reference lists can be verified." /> : (
           <Panel>
             <SectionHeading eyebrow={editablePrivateVersion ? "Private editing" : "New version"} title={editablePrivateVersion ? "Edit current draft" : "Create a private correction"} description="Changes remain private. Publication is a separate, audited action." />
-            <form action={editablePrivateVersion ? saveDraft : reviseArticle} className="ui-stack">
+            <form id="article-editor" action={editablePrivateVersion ? saveDraft : reviseArticle} className="ui-stack">
               <input type="hidden" name="articleId" value={article.id} />
               <input type="hidden" name="revision" value={String(article.revision)} />
               <div className="ui-field"><label className="label" htmlFor="title">Headline</label><input id="title" name="title" className="input" maxLength={200} required defaultValue={version.title} /></div>

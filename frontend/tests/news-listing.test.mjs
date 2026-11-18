@@ -129,7 +129,7 @@ test("Newsletter uses the standalone form/action/mailer path and preserves truth
 
 test("News lead and cards load covers with appropriate priority", () => {
   assert.match(page, /className=\{styles\.featureImage\}[^>]*loading="eager" fetchPriority="high"/);
-  assert.match(page, /className=\{styles\.storyImage\} src=\{image\} alt="" loading="lazy"/);
+  assert.match(page, /className=\{styles\.storyImage\} src=\{image\} alt=""/);
   assert.match(styles, /\.featureImage,\.storyImage \{[^}]*object-fit: cover/);
 });
 
