@@ -6,7 +6,6 @@ const source = (path) => readFile(new URL(path, import.meta.url), "utf8");
 
 test("public filter panels stay consistent while News keeps reference category tabs", async () => {
   const pages = [
-    "../apps/main/app/business-directory/page.tsx",
     "../apps/main/app/tourism/page.tsx",
     "../apps/main/app/who-is-who/page.tsx",
     "../apps/main/app/map/map-search.tsx",

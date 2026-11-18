@@ -19,11 +19,7 @@ export async function reviewBusiness(formData: FormData): Promise<void> {
   if (!/^[0-9a-f-]{36}$/i.test(id) || !["reviewing", "published", "rejected"].includes(status) || note.length < 5 || note.length > 1000 || (status === "published" && (evidence.length < 10 || evidence.length > 2000))) {
     redirect(adminHref("/business-review?error=invalid"));
   }
-  if (status === "published") {
-    const { error } = await db.rpc("business_verify", { p_business_id: id, p_note: evidence });
-    if (error) redirect(adminHref("/business-review?error=verification-failed"));
-  }
-  const { error } = await db.rpc("business_set_status", { p_business_id: id, p_status: status, p_note: note });
+  const { error } = await db.rpc("business_review_decide", { p_business_id:id, p_status:status, p_note:note, p_evidence:evidence || null });
   if (error) redirect(adminHref("/business-review?error=action-failed"));
   revalidatePath(adminHref("/business-review"));
   revalidatePath("/business-directory");
