@@ -27,7 +27,7 @@ describe("newsletter server actions", () => {
     expect(mocks.rpc).not.toHaveBeenCalled(); expect(mocks.send).not.toHaveBeenCalled();
   });
   it("limits requests before storing and sends a token whose hash is stored", async () => {
-    expect((await subscribeNewsletter(idle, signup())).status).toBe("success");
+    expect(await subscribeNewsletter(idle, signup())).toEqual({status:"success",message:"Please check your email for a confirmation link to proceed with your request."});
     expect(mocks.rpc.mock.calls[0]).toEqual(["form_rate_limit", { p_scope: "newsletter", p_fingerprint: fingerprint }]);
     const pending = mocks.rpc.mock.calls[1][1];
     const message = mocks.send.mock.calls[0][0];
