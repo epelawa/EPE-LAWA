@@ -38,10 +38,6 @@ function isActiveBreaking(story: PublishedStory, now = Date.now()): boolean {
   return story.is_breaking && typeof story.breaking_until === "string" && new Date(story.breaking_until).getTime() > now;
 }
 
-function escapeLike(value: string): string {
-  return value.replace(/[\\%_]/g, "\\$&");
-}
-
 function safePage(value: string | undefined): number {
   if (!value || !/^\d{1,6}$/.test(value)) return 1;
   const page = Number(value);
@@ -107,11 +103,10 @@ async function loadDiscover(client: SupabaseClient, query: string, category: str
     let articleQuery = client.from("published_articles").select(STORY_COLUMNS)
       .order("published_at", { ascending: false, nullsFirst: false })
       .order("slug", { ascending: true });
-    if (query) articleQuery = articleQuery.ilike("title", `%${escapeLike(query)}%`);
     if (category) articleQuery = articleQuery.eq("category_slug", category);
 
     const [articleResult, categoryResult] = await Promise.all([
-      articleQuery.range(start, start + PAGE_SIZE),
+      query ? client.rpc("search_published_news", { p_query: query, p_category: category, p_offset: start }).select(STORY_COLUMNS).limit(PAGE_SIZE + 1) : articleQuery.range(start, start + PAGE_SIZE),
       client.from("categories").select("slug,label").eq("is_active", true)
         .order("sort_order", { ascending: true }).order("label", { ascending: true }).limit(100),
     ]);
@@ -258,11 +253,11 @@ export async function DashboardDiscoverNews({ client, query, category, page }: {
   return <div className={styles.newsFeed}>
     <section className={styles.feedSection} aria-labelledby="discover-stories-heading">
       <HomeSectionHeading id="discover-stories-heading" title="Discover" helper="Search and browse only stories published by the EPE LAWA newsroom." level="h1" />
-      <form action="/dashboard" method="get" role="search" aria-label="Search published story headlines" className={styles.searchForm}>
+      <form action="/dashboard" method="get" role="search" aria-label="Search published stories" className={styles.searchForm}>
         <input type="hidden" name="tab" value="discover" />
         <label className={styles.searchField}>
-          <span>Search headlines</span>
-          <input type="search" name="q" maxLength={100} defaultValue={query} placeholder="Search published headlines" />
+          <span>Search stories, topics and authors</span>
+          <input type="search" name="q" maxLength={100} defaultValue={query} placeholder="Search stories, topics and authors" />
         </label>
         <label className={styles.searchField}>
           <span>Category</span>
@@ -285,7 +280,7 @@ export async function DashboardDiscoverNews({ client, query, category, page }: {
           </nav> : null}
         </> : <div className={styles.feedEmpty}>
           <h3>{query || category ? "No matching published stories" : "No stories published yet"}</h3>
-          <p>{query || category ? "Try another headline or category. Unpublished newsroom content is never included here." : "When a story is published, it will appear here with its category and byline."}</p>
+          <p>{query || category ? "Try another search or category. Unpublished newsroom content is never included here." : "When a story is published, it will appear here with its category and byline."}</p>
           {query || category ? <Link className="btn-secondary" href="/dashboard?tab=discover">Clear search and filters</Link> : null}
         </div>}
     </section>

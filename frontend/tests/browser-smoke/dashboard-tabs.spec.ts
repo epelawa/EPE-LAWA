@@ -106,7 +106,7 @@ test("signed-in dashboard keeps honest empty views and one responsive tab bar", 
   await expectActiveTab(page, "Discover");
   await expect(page.getByRole("heading", { level: 1, name: "Discover" })).toBeVisible();
   await expect(page.getByText("No stories published yet")).toBeVisible();
-  await page.getByLabel("Search headlines").fill("nonexistent fixture title");
+  await page.getByLabel("Search stories, topics and authors").fill("nonexistent fixture title");
   await page.getByRole("button", { name: "Search stories" }).click();
   await expect(page).toHaveURL(/tab=discover&q=nonexistent\+fixture\+title/);
   await expect(page.getByRole("heading", { name: "No matching published stories" })).toBeVisible();
@@ -194,13 +194,16 @@ test("signed-in Home and Discover render and filter only published story records
   await expect(page.getByRole("link", { name: "Read: Smoke fixture: sports story" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Local News", exact: true }).first()).toBeVisible();
 
-  await page.getByLabel("Search headlines").fill("market");
+  await page.getByLabel("Search stories, topics and authors").fill("market");
   await page.getByLabel("Category").selectOption("local-news");
   await page.getByRole("button", { name: "Search stories" }).click();
   await expect(page).toHaveURL(/\/dashboard\?tab=discover&q=market&category=local-news$/);
   await expect(page.getByRole("link", { name: "Read: Smoke fixture: market story" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Read: Smoke fixture: sports story" })).toHaveCount(0);
   await expect(page.getByText(/Showing 1 published story matching “market” on this page\./)).toBeVisible();
+  await page.getByLabel("Search stories, topics and authors").fill("searchable");
+  await page.getByRole("button", { name: "Search stories" }).click();
+  await expect(page.getByRole("link", { name: "Read: Smoke fixture: market story" })).toBeVisible();
   await expectLocalSupabaseOnly(page);
   expect(hydrationErrors).toEqual([]);
 });
