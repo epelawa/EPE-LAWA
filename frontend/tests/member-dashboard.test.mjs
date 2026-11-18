@@ -22,7 +22,7 @@ test("member dashboard is session-gated, noindex and only reads the signed-in me
   assert.equal((page.match(/<main className=\{`\$\{styles\.shell\} member-dashboard-shell`\}/g) ?? []).length, 3, "all dashboard render states must hide the shared footer");
   assert.match(globalStyles, /body:has\(\.member-dashboard-shell\) \.site-footer\s*\{\s*display:\s*none;\s*\}/);
   assert.match(globalStyles, /body:has\(\.auth-page\) \.site-footer/);
-  assert.match(footer, /footerNavigation\.map/);
+  assert.match(footer, /pathname === "\/dashboard" \|\| pathname\.startsWith\("\/dashboard\/"\)/);
   assert.match(page, /robots:\s*\{\s*index:\s*false,\s*follow:\s*false\s*\}/);
   assert.match(page, /supabase\.auth\.getUser\(\)/);
   assert.match(page, /redirect\("\/login\?next=%2Fdashboard"\)/);

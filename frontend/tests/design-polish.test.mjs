@@ -13,6 +13,7 @@ test("public shell stays light and the all-viewport drawer is account-only", () 
 	const brand = read("frontend/apps/main/components/brand.tsx");
   const staffBrand = read("frontend/apps/admin/components/brand.tsx");
   const footer = read("frontend/apps/main/components/site-footer.tsx");
+  const newsFooter = read("frontend/apps/main/components/news-footer.tsx");
   const newsletter = read("frontend/apps/main/components/newsletter-form.tsx");
   const home = read("frontend/apps/main/app/page.tsx");
   const heroCarousel = read("frontend/apps/main/components/hero-carousel.tsx");
@@ -50,8 +51,8 @@ test("public shell stays light and the all-viewport drawer is account-only", () 
   assert.doesNotMatch(home, /home-hero__quicknav|Quick access to EPE LAWA features|Explore sections/);
   assert.match(header, /A shared home for everyone\./);
   assert.match(header, /addEventListener\("pointerdown", onOutsideDrawer\)/);
-  assert.match(footer, /<NewsletterForm id="site-footer-newsletter" variant="footer" \/>/);
-  assert.doesNotMatch(footer, /Newsletter sign-up is paused/);
+  assert.match(newsFooter, /<NewsletterForm id="news-listing-signup" variant="footer" \/>/);
+  assert.doesNotMatch(newsFooter, /Newsletter sign-up is paused/);
   assert.match(newsletter, /<form/);
   assert.match(newsletter, /action=\{action\}/);
   assert.match(navCss, /\.drawer\s*\{[^}]*width:min\(520px,calc\(100vw - 52px\)\)/);
