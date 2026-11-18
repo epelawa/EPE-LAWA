@@ -9,6 +9,8 @@ import { checkHandleAvailability, signOut } from "../auth/actions";
 import { markNotificationsRead } from "./actions";
 import { toggleSavedArticle } from "./saved-actions";
 import MemberTopbar from "../../components/member-topbar";
+import DashboardSwipe from "../../components/dashboard-swipe";
+import type { DashboardTab } from "../../lib/dashboard-swipe";
 import LayoutVariation from "../../components/layout-variation";
 import SessionGuard from "../../components/session-guard";
 import ProfileEditor from "./profile-editor";
@@ -38,7 +40,6 @@ export const metadata = {
 };
 export const dynamic = "force-dynamic";
 
-type DashboardTab = "home" | "discover" | "saved" | "profile" | "notifications";
 type DashboardSearchParams = { tab?: string; q?: string | string[]; category?: string | string[]; page?: string | string[] };
 type NotificationRow = {
   id: string;
@@ -314,6 +315,7 @@ export default async function MemberDashboardPage({ searchParams }: { searchPara
       <main className={`${styles.shell} member-dashboard-shell`}>
         <LayoutVariation area="member">
         <DashboardTabs active={activeTab} />
+        <DashboardSwipe active={activeTab}>
         {!showNewsFeed && activeTab !== "notifications" && activeTab !== "saved" ? <header className={styles.hero}>
           <p className={styles.eyebrow}>Member dashboard</p>
           <h1>Profile</h1>
@@ -329,6 +331,7 @@ export default async function MemberDashboardPage({ searchParams }: { searchPara
                   <ProfileEditor displayName={profile.display_name} handle={profile.handle} />
                 </section>
               </div>}
+        </DashboardSwipe>
         </LayoutVariation>
       </main>
     </>
