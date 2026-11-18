@@ -1,0 +1,15 @@
+# Business directory repair investigation
+
+Production project `igqmybuiovaxqmrteebd`, checked 2026-11-18: the business categories, businesses, photos, reviews, verifications and published view are all absent. The production catalogue also lacks `public.slugify`, used by the business submit function in `20261102200011_business_directory.sql`. The member, media and moderation tables, capability and audit helpers and the citext type exist. The production migration ledger does not contain the business migration. No inference can be made that a previous attempted submission was stored; no business table exists to search.
+
+Do not replay the old migration as-is. Important blockers:
+
+- `business_submit` depends on missing `slugify`, does not enforce verified email in the database, and has no per-member abuse limit. Its check-then-insert slug allocation has a concurrency race.
+- The old schema makes member reviews visible by default. A separate migration changes reviews to pending and adds moderation; this dependency must be included or reviews could bypass moderation.
+- Direct owner UPDATE permits changes to already-published content without a new staff review.
+- Verification and publication are separate RPC calls. The first can succeed and the second fail, leaving verification records on an unpublished listing. Prefer a single atomic decision RPC with capability checks, row lock, validation, audit and verification.
+- The public directory currently treats unavailable sponsorship data as a fatal read error. It is unsafe simply to drop sponsored labels; decide how to surface unavailability without mislabelling paid content. Products and sponsorship schema are independently missing from production and should not be bulk replayed.
+- Production uses role-based as well as direct capability grants. The review page now checks the effective `has_capability` helper, rather than only direct grants.
+- The form retains entered values after server errors while the page stays open; it does not persist them across refresh or navigation.
+
+A safe forward migration must be reviewed against the actual live catalog, limit grants/RLS, make verified-user and review requirements enforceable at the database boundary, test anonymous/member/banned/staff/unauthorised paths and concurrency, and be rehearsed on a production-like non-production Postgres database with a recovery plan. The available Supabase branch listing currently contains only the production default branch. No production business schema or real submission was changed in this investigation. Do not delete or blanket-replay the distinct historical migrations.

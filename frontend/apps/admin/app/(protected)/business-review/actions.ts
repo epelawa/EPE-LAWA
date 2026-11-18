@@ -16,7 +16,7 @@ export async function reviewBusiness(formData: FormData): Promise<void> {
   const status = value(formData, "status");
   const note = value(formData, "note");
   const evidence = value(formData, "evidence");
-  if (!/^[0-9a-f-]{36}$/i.test(id) || !["reviewing", "published", "rejected"].includes(status) || note.length < 5 || note.length > 2000 || (status === "published" && evidence.length < 10)) {
+  if (!/^[0-9a-f-]{36}$/i.test(id) || !["reviewing", "published", "rejected"].includes(status) || note.length < 5 || note.length > 1000 || (status === "published" && (evidence.length < 10 || evidence.length > 2000))) {
     redirect(adminHref("/business-review?error=invalid"));
   }
   if (status === "published") {

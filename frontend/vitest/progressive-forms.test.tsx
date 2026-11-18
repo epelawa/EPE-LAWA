@@ -57,3 +57,16 @@ it("article editing validates steps and preserves revision and fields while navi
  await act(async()=>button(el,"Back").click());await act(async()=>button(el,"Back").click());expect((el.querySelector('[name="title"]') as HTMLInputElement).value).toBe('Headline');
  expect(save).not.toHaveBeenCalled();await act(async()=>root.unmount());el.remove();
 });
+it("business form retains entered details after a server error", async () => {
+ const { submitBusiness } = await import("../apps/main/app/business-directory/submit/actions");
+ vi.mocked(submitBusiness).mockResolvedValueOnce({status:"error",message:"Could not save"});
+ const el=document.createElement("div");document.body.append(el);const root=createRoot(el);
+ await act(async()=>root.render(<BusinessForm categories={[{id:"food",label:"Food"}]} />));
+ await act(async()=>{setValue(el.querySelector('[name="name"]')!,"Epe Shop");setValue(el.querySelector('[name="category_id"]')!,"food");button(el,"Continue").click();});
+ await act(async()=>{setValue(el.querySelector('[name="phone"]')!,"+234 800 123 4567");});
+ await act(async()=>{el.querySelector("form")!.requestSubmit();});
+ expect(el.querySelector('[role="alert"]')?.textContent).toContain("Could not save");
+ expect((el.querySelector('[name="name"]') as HTMLInputElement).value).toBe("Epe Shop");
+ expect((el.querySelector('[name="phone"]') as HTMLInputElement).value).toBe("+234 800 123 4567");
+ await act(async()=>root.unmount());el.remove();
+});
