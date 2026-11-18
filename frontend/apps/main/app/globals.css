@@ -394,3 +394,5 @@ html { overscroll-behavior-y: none; }
 
 /* Member reading keeps a focused footer-free layout. */
 body:has(.member-reading-mode) .site-footer { display: none !important; }
+/* Keep the editorial newsroom free from the site's decorative dot texture. */
+body:has([class*="listing_newsPage"]) { background:#f9fafc; background-image:none; }

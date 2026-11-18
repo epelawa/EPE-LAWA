@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import NewsNavigationReset from "../../components/news-navigation-reset";
-import NewsFilterClose from "../../components/news-filter-close";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient, SupabaseConfigurationError } from "../../lib/supabase";
@@ -49,7 +48,6 @@ export const dynamic = "force-dynamic";
 function isBreakingNow(item: ArticleListItem): boolean {
   return item.is_breaking && !!item.breaking_until && new Date(item.breaking_until).getTime() > Date.now();
 }
-function escapeLike(value: string): string { return value.replace(/[\\%_]/g, "\\$&"); }
 function safePage(value: string | string[] | undefined): number {
   if (typeof value !== "string" || !/^\d{1,6}$/.test(value)) return 1;
   const page = Number(value);
@@ -88,7 +86,6 @@ function NewsError() {
 export default async function NewsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const params = await searchParams;
   const query = typeof params.q === "string" ? params.q.trim().slice(0, 100) : "";
-  const searchOpen = query.length > 0 || params.search === "1";
   const category = safeCategory(params.category);
   const page = safePage(params.page);
   const hasSearchOrCategory = Boolean(query || category);
@@ -115,7 +112,6 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
     .select("slug,title,summary,published_at,is_breaking,breaking_until,author_name,category_slug,category_label,og_image_key,cover_url,cover_alt")
     .order("published_at", { ascending: false, nullsFirst: false })
     .order("slug", { ascending: true });
-  if (query) articleQuery = articleQuery.ilike("title", `%${escapeLike(query)}%`);
   if (category) articleQuery = articleQuery.eq("category_slug", category);
 
   const now = Date.now();
@@ -124,7 +120,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
     ? supabase.from("published_articles").select("slug,title,published_at,breaking_until").eq("is_breaking", true).gt("breaking_until", new Date(now).toISOString()).order("published_at", { ascending: false, nullsFirst: false }).order("slug", { ascending: true }).limit(10)
     : Promise.resolve({ data: [], error: null });
   const [articleResult, categoryResult, breakingResult] = await Promise.all([
-    articleQuery.range(start, start + PAGE_SIZE),
+    query ? supabase.rpc("search_published_news", { p_query: query, p_category: category, p_offset: start }).select("slug,title,summary,published_at,is_breaking,breaking_until,author_name,category_slug,category_label,og_image_key,cover_url,cover_alt") : articleQuery.range(start, start + PAGE_SIZE),
     supabase.from("categories").select("slug,label").eq("is_active", true).order("sort_order", { ascending: true }).order("label", { ascending: true }).limit(MAX_CATEGORIES),
     breakingQuery,
   ]);
@@ -152,7 +148,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
     group.stories.push(story);
     grouped.set(story.category_slug, group);
   }
-  const heading = category ? categories.find((item) => item.slug === category)?.label ?? "News" : query ? "Search results" : "Latest News";
+  const heading = category ? categories.find((item) => item.slug === category)?.label ?? "News" : query ? "Search results" : "News from Epe.";
 
   return <>
     <PageFrame className={`${styles.newsPage} ui-stack`}>
@@ -161,44 +157,28 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
         <div className={styles.headingCopy}>
           <p className={styles.kicker}>EPE LAWA <span aria-hidden="true">/</span> NEWSROOM</p>
           <h1 className={styles.pageTitle}>{heading}</h1>
-          <p className={styles.pageDescription}>Reporting, stories and updates from Epe and its communities.</p>
+          <p className={styles.pageDescription}>The latest stories, developments and voices shaping Epe Division.</p>
         </div>
       </header>
 
-      <div className={styles.filterBar}>
-        <div><strong>Explore the newsroom</strong><span>Browse published reporting by topic</span></div>
-        <div className={styles.filterTools}>
-          <details className={styles.searchToggle} open={searchOpen || undefined}>
-            <summary className={styles.searchSummary} aria-label="Search headlines" title="Search headlines">
-              <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg>
-              <span>Search</span>
-            </summary>
-            <search className={styles.searchRegion} aria-label="Search published stories">
-              <form action="/news" method="get" className={styles.newsSearchForm}>
-                <label className="sr-only" htmlFor="news-query">Search headlines</label>
-                <input id="news-query" name="q" type="search" maxLength={100} defaultValue={query} placeholder="Search headlines" />
-                {category ? <input type="hidden" name="category" value={category} /> : null}
-                <button type="submit" className="btn-secondary">Search</button>
-              </form>
-            </search>
-          </details>
-          <NewsFilterClose><nav className={styles.categoryNav} aria-label="News categories">
-            <details className={styles.categoryDropdown}>
-              <summary className={styles.categorySummary}><span><small>Category</small>{categories.find((item) => item.slug === category)?.label ?? "All news"}</span><span aria-hidden="true">⌄</span></summary>
-              <ul className={styles.categoryList}>
-                <li><Link href={categoryHref(query, "")} aria-current={!category ? "page" : undefined} className={styles.categoryLink}>All</Link></li>
-                {categories.map((item) => <li key={item.slug}><Link href={categoryHref(query, item.slug)} aria-current={category === item.slug ? "page" : undefined} className={styles.categoryLink}>{item.label}</Link></li>)}
-              </ul>
-            </details>
-          </nav></NewsFilterClose>
-        </div>
+      <div className={styles.editorialControls}>
+        <form action="/news" method="get" role="search" className={styles.editorialSearch}>
+          <label className="sr-only" htmlFor="news-query">Search stories, topics and authors</label>
+          <input id="news-query" name="q" type="search" maxLength={100} defaultValue={query} placeholder="Search news, topics and authors…" />
+          {category ? <input type="hidden" name="category" value={category} /> : null}
+          <button type="submit">Search</button>
+        </form>
+        <nav className={styles.editorialTabs} aria-label="News categories">
+          <Link href={categoryHref(query, "")} aria-current={!category ? "page" : undefined}>All news</Link>
+          {categories.map(item => <Link key={item.slug} href={categoryHref(query,item.slug)} aria-current={category === item.slug ? "page" : undefined}>{item.label}</Link>)}
+        </nav>
       </div>
 
       {breakingResult.error ? <p role="status">Breaking news is unavailable right now.</p> : <BreakingNewsBanner stories={breakingStories} initialTime={now} />}
 
       {articles.length === 0 ? <EmptyPanel
         title={category ? "No published stories in this category" : query ? "No matching stories" : "No stories published yet"}
-        description={category ? "There are no published stories in this category yet." : query ? "Try a different headline search. No unpublished stories are shown." : "When the newsroom publishes a story, it will appear here with its byline, date and category."}
+        description={category ? "There are no published stories in this category yet." : query ? "Try a different search. No unpublished stories are shown." : "When the newsroom publishes a story, it will appear here with its byline, date and category."}
         actions={needsReset ? <><Link href="/news" className="btn-secondary">{hasSearchOrCategory ? "Clear search and filters" : "Back to latest stories"}</Link><Link href="/" className="btn-secondary">Explore EPE LAWA</Link></> : <Link href="/" className="btn-secondary">Explore EPE LAWA</Link>}
       /> : <>
         {lead ? <section className={styles.featureSection} aria-labelledby="featured-heading">
@@ -217,7 +197,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
           </article>
         </section> : null}
         {latest.length ? <section className={styles.storiesSection} aria-labelledby="stories-heading">
-          <div className={styles.sectionHeading}><h2 id="stories-heading">{lead ? "Latest stories" : "Stories"}</h2><span>{articles.length} on this page</span></div>
+          <div className={styles.sectionHeading}><h2 id="stories-heading">{lead ? "Latest reports" : "Stories"}</h2><span>{articles.length} on this page</span></div>
           <ul className={styles.storyGrid}>{latest.map((article) => {
             const image = coverUrl(article);
             return <li key={article.slug}><article className={styles.storyCard}>

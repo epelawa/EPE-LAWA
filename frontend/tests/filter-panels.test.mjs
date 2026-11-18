@@ -19,9 +19,9 @@ test("public filter panels stay consistent while News keeps reference category t
     assert.match(page, /role="search"/, path);
   }
   const news = await source("../apps/main/app/news/page.tsx");
-  assert.match(news, /<search className=\{styles\.searchRegion\} aria-label="Search published stories">/);
-  assert.match(news, /categoryNav/);
-  assert.match(news, /aria-label="Search headlines"/);
+  assert.match(news, /role="search"/);
+  assert.match(news, /editorialTabs/);
+  assert.match(news, /Search stories, topics and authors/);
   assert.doesNotMatch(news, /FilterIcon|filter-panel|Filter news/i);
   const icons = await source("../apps/main/components/icons.tsx");
   assert.match(icons, /export const FilterIcon[\s\S]*?<svg aria-hidden="true"/);

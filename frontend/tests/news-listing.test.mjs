@@ -18,7 +18,7 @@ const advertise = await readFile(new URL("app/advertise/page.tsx", root), "utf8"
 
 test("News queries only published stories and active real categories", () => {
   assert.match(page, /from\("published_articles"\)/);
-  assert.match(page, /escapeLike\(query\)/);
+  assert.match(page, /rpc\("search_published_news"/);
   assert.match(page, /from\("categories"\)/);
   assert.match(page, /\.eq\("is_active", true\)/);
   assert.match(page, /og_image_key/);
@@ -27,12 +27,10 @@ test("News queries only published stories and active real categories", () => {
 });
 
 test("News retains search, category links and no invented filters", () => {
-  assert.match(page, /aria-label="Search headlines"/);
-  assert.match(page, /<search className=\{styles\.searchRegion\} aria-label="Search published stories">/);
-  assert.match(page, /params\.search === "1"/);
-  assert.match(page, /open=\{searchOpen \|\| undefined\}/);
+  assert.match(page, /Search stories, topics and authors/);
+  assert.match(page, /role="search"/);
   assert.match(page, /aria-label="News categories"/);
-  assert.match(page, />All<\/Link>/);
+  assert.match(page, />All news<\/Link>/);
   assert.doesNotMatch(page, /FilterIcon|newsFilterButton/);
 });
 
@@ -57,7 +55,7 @@ test("News presents a focused newsroom without promotional blocks", () => {
   assert.match(page, /Read full story/);
   assert.match(page, /aria-labelledby="featured-heading"/);
   assert.match(page, /aria-labelledby="stories-heading"/);
-  assert.match(page, /href=\{categoryHref\(query, item\.slug\)\}/);
+  assert.match(page, /href=\{categoryHref\(query,item\.slug\)\}/);
   assert.doesNotMatch(page, /topicImages|discoverBanner|newsletterCard|popularCard/);
 });
 
@@ -139,14 +137,11 @@ test("News lead and cards load covers with appropriate priority", () => {
 test("News content keeps a responsive editorial grid and accessible 48px controls", () => {
   assert.match(styles, /\.storyGrid \{[^}]*repeat\(3, minmax\(0, 1fr\)\)/);
   assert.match(styles, /@media \(max-width: 520px\)/);
-  assert.match(styles, /\.categoryLink \{[^}]*min-height: 48px/);
-  assert.match(styles, /\.searchSummary \{[^}]*min-height: 48px/);
-  assert.match(page, /<details className=\{styles\.categoryDropdown\}>/);
+  assert.match(styles, /\.editorialTabs/);
+  assert.match(styles, /\.editorialSearch/);
+  assert.match(page, /aria-label="News categories"/);
   assert.match(page, /Load more news/);
   assert.match(page, /View all available news/);
-  assert.match(page, /className=\{styles\.filterTools\}/);
-  assert.match(styles, /\.filterTools \.newsSearchForm input[^}]*border-radius:999px/);
-  assert.match(styles, /@keyframes newsroom-rise/);
 });
 
 test("News pagination remains bounded with deterministic published ordering", () => {

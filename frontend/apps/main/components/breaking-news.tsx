@@ -3,7 +3,6 @@
 import { Fragment, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { newsArticlePath } from "../lib/news-urls";
-import { formatPublishedDate } from "../lib/dates";
 import { StatusBadge } from "./design-system";
 import styles from "../app/news/listing.module.css";
 
@@ -37,7 +36,7 @@ export function BreakingNewsBanner({ stories, initialTime }: { stories: Breaking
   if (!active.length) return null;
   return <section className={styles.breakingBanner} aria-label="Breaking news">
     <span className={styles.breakingLabel}><span aria-hidden="true" className={styles.liveDot} /> Breaking news</span>
-    <ul>{active.map(story => <li key={story.slug}><Link href={newsArticlePath(story.slug)}>{story.title}</Link>{story.published_at ? <time dateTime={story.published_at}>{formatPublishedDate(story.published_at)}</time> : null}</li>)}</ul>
+    <ul>{active.map(story => <li key={story.slug}><Link href={newsArticlePath(story.slug)}>{story.title}</Link>{story.published_at ? <time dateTime={story.published_at}>{new Date(story.published_at).toUTCString()}</time> : null}</li>)}</ul>
   </section>;
 }
 

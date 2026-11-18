@@ -142,3 +142,29 @@
 .filterTools .newsSearchForm input { min-height:48px; padding:10px 16px; line-height:1.4; }
 .filterTools .newsSearchForm button { min-height:48px; }
 @media(max-width:760px) { .filterTools > div:last-child { flex:1 1 auto; } .filterTools .searchToggle[open] { flex:1 1 auto; } }
+/* Editorial newsroom: clean, compact and led by real reporting. */
+.newsPage { width:min(1200px,calc(100% - 40px)); gap:24px; margin:24px auto 64px; padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; }
+.pageHeader { padding:4px 0 18px; border-bottom:1px solid #ccd8e8; }
+.kicker { margin-bottom:8px; font-size:.7rem; }
+.pageTitle { font-size:clamp(2rem,3.6vw,3rem); line-height:1.1; }
+.pageDescription { margin-top:8px; }
+.editorialControls { display:grid; gap:12px; }
+.editorialSearch { display:flex; width:min(100%,600px); gap:8px; }
+.editorialSearch input { min-width:0; min-height:46px; flex:1; padding:10px 14px; border:1px solid #c7d5e8; border-radius:6px; background:#fff; color:#17264a; font:inherit; }
+.editorialSearch button { min-height:46px; padding:0 18px; border:0; border-radius:6px; background:#173c78; color:#fff; font:inherit; font-weight:750; cursor:pointer; }
+.editorialTabs { display:flex; align-items:center; gap:6px; overflow-x:auto; border-bottom:1px solid #d6dfeb; scrollbar-width:thin; }
+.editorialTabs a { display:flex; flex:none; align-items:center; min-height:44px; padding:0 13px; border-bottom:3px solid transparent; color:#405575; font-size:.875rem; font-weight:750; text-decoration:none; white-space:nowrap; }
+.editorialTabs a[aria-current="page"] { color:#173c78; border-bottom-color:#174e9e; }
+.breakingBanner { align-items:center; flex-wrap:nowrap; gap:12px; padding:8px 12px; border:1px solid #dce4f0; border-radius:6px; background:#f5f8fc; }
+.breakingLabel { flex:none; color:#ae2727; font-size:.7rem; padding:0; }
+.liveDot { background:#c32f33; box-shadow:0 0 0 3px #c32f3320; }
+.breakingBanner ul { display:flex; min-width:0; overflow-x:auto; gap:18px; }
+.breakingBanner li { flex:none; max-width:min(600px,75vw); gap:4px 10px; }
+.breakingBanner a { flex:0 1 auto; font-size:.84rem; }
+.breakingBanner time { white-space:nowrap; color:#53627a; }
+.featureCard { border:0; border-radius:0; border-bottom:1px solid #d5dfeb; background:#fff; }
+.storyCard { border:0; border-radius:0; border-bottom:1px solid #d5dfeb; background:transparent; }
+.storyCopy { padding:15px 0 20px; }
+.featureCopy { padding:clamp(20px,3vw,36px); }
+@media (hover:hover) { .storyCard:hover { transform:none; box-shadow:none; } }
+@media(max-width:520px) { .newsPage { width:calc(100% - 28px); gap:20px; margin:16px auto 40px; padding:0; }.pageHeader { padding-bottom:15px; }.breakingBanner { gap:8px; }.breakingLabel { font-size:.65rem; }.featureCopy { padding:18px 0; }.storyGrid { gap:20px; } }
