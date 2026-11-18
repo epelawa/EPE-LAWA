@@ -30,3 +30,4 @@
 @media(max-width:700px) { .listingInner { grid-template-columns:repeat(2,minmax(0,1fr)); gap:28px; } .listingIdentity { grid-column:1 / -1; } }
 @media(max-width:420px) { .listingInner,.listingBottom { width:calc(100% - 32px); } }
 @media(prefers-reduced-motion:reduce) { .socialLinks a:hover { transform:none; } }
+.listingColumn > p { margin:0 0 10px; color:#c7d5ec; font-size:.85rem; line-height:1.6; }

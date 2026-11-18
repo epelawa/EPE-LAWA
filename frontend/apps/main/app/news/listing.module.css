@@ -130,3 +130,13 @@
 .categoryMore { display:inline-flex; min-height:44px; align-items:center; gap:8px; color:#294b91; font-size:.875rem; font-weight:750; text-decoration:none; }
 .categoryMore:hover { color:#17264a; text-decoration:underline; text-underline-offset:4px; }
 .newsPage img[data-news-fallback="true"] { object-fit:contain; padding:clamp(24px, 8%, 64px); background:#edf3fc; }
+/* Compact, balanced search and category controls */
+.filterBar { border:1px solid #d6e3f4; border-radius:18px; background:#f6f9fe; }
+.filterTools { align-items:center; }
+.filterTools > div:last-child { min-width:0; }
+.filterTools .searchSummary,.filterTools .categorySummary { min-height:44px; display:flex; align-items:center; justify-content:center; gap:8px; padding:0 15px; border:1px solid #c9d9ed; border-radius:12px; background:#fff; color:#17264a; line-height:1.25; }
+.filterTools .categorySummary { justify-content:space-between; }
+.categorySummary span:first-child { display:flex; align-items:center; gap:7px; }
+.filterTools .newsSearchForm input { min-height:48px; padding:10px 16px; line-height:1.4; }
+.filterTools .newsSearchForm button { min-height:48px; }
+@media(max-width:760px) { .filterTools > div:last-child { flex:1 1 auto; } .filterTools .searchToggle[open] { flex:1 1 auto; } }

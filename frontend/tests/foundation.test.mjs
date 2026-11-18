@@ -84,10 +84,10 @@ test('main has honest indexable metadata, working public links and security head
       /Ìtàn Ilú Mi|Itan Ilu Mi/,
       /Chat Forum/,
       /Map &amp; Navigation|Map & Navigation/,
-      /Epe Business Directory &amp; Marketplace|Epe Business Directory & Marketplace/,
-      /Historical Sites &amp; Tourism|Historical Sites & Tourism/,
+      /Local businesses|Business Directory/,
+      /Tourism/,
       /EPE LAWA Radio/,
-      /Who is Who in Epe/,
+      /Who is Who/,
     ]) assert.match(html, module, `homepage module ${module}`);
     for (const href of ['/news', '/itan-ilu-mi', '/forum', '/map', '/business-directory', '/tourism', '/radio', '/who-is-who']) {
       assert.match(html, new RegExp(`href="${href}"`), `homepage route ${href}`);

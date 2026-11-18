@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import NewsNavigationReset from "../../components/news-navigation-reset";
+import NewsFilterClose from "../../components/news-filter-close";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient, SupabaseConfigurationError } from "../../lib/supabase";
@@ -146,6 +149,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
 
   return <>
     <PageFrame className={`${styles.newsPage} ui-stack`}>
+      <Suspense fallback={null}><NewsNavigationReset /></Suspense>
       <header className={styles.pageHeader}>
         <div className={styles.headingCopy}>
           <p className={styles.kicker}>EPE LAWA <span aria-hidden="true">/</span> NEWSROOM</p>
@@ -171,7 +175,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
               </form>
             </search>
           </details>
-          <nav className={styles.categoryNav} aria-label="News categories">
+          <NewsFilterClose><nav className={styles.categoryNav} aria-label="News categories">
             <details className={styles.categoryDropdown}>
               <summary className={styles.categorySummary}><span><small>Category</small>{categories.find((item) => item.slug === category)?.label ?? "All news"}</span><span aria-hidden="true">⌄</span></summary>
               <ul className={styles.categoryList}>
@@ -179,7 +183,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
                 {categories.map((item) => <li key={item.slug}><Link href={categoryHref(query, item.slug)} aria-current={category === item.slug ? "page" : undefined} className={styles.categoryLink}>{item.label}</Link></li>)}
               </ul>
             </details>
-          </nav>
+          </nav></NewsFilterClose>
         </div>
       </div>
 
