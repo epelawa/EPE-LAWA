@@ -21,6 +21,9 @@ const nextConfig: NextConfig = {
         { key: "Access-Control-Allow-Origin", value: siteUrl },
       ],
     }, {
+      source: "/admin/settings",
+      headers: [{ key: "Cache-Control", value: "private, no-store, max-age=0, must-revalidate" }],
+    }, {
       source: "/map",
       // The map requests location only after an explicit user action. All other
       // routes keep the deny-by-default policy above; camera/microphone stay off.
