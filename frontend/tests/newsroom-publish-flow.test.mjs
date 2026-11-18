@@ -112,11 +112,11 @@ test("admin current-version joins use stable column hints rather than deployment
   }
 });
 
-test("staff Newsroom exposes read-only revision and audit history without actor identifiers", async () => {
+test("staff Newsroom exposes revision history without listing protected audit events", async () => {
   const editor = await read("frontend/apps/admin/app/(protected)/newsroom/[id]/page.tsx");
   assert.match(editor, /from\("article_versions"\)/);
-  assert.match(editor, /from\("audit_events"\)/);
-  assert.match(editor, /Revision and audit history/);
-  assert.match(editor, /audit\.read capability/);
+  assert.doesNotMatch(editor, /from\("audit_events"\)/);
+  assert.match(editor, /Revision history/);
+  assert.match(editor, /protected audit log/);
   assert.doesNotMatch(editor, /actor_id|created_by<\/td>|email_address/);
 });

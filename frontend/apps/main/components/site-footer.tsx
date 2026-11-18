@@ -8,7 +8,7 @@ import NewsletterUnavailable from "./newsletter-unavailable";
 
 export default function SiteFooter() {
   const pathname = usePathname() ?? "/";
-  const isEditorial = pathname === "/news" || pathname.startsWith("/news/") || pathname === "/advertise";
+  const isEditorial = pathname === "/" || pathname === "/news" || pathname.startsWith("/news/") || pathname === "/advertise";
   if (isEditorial) return null;
 
   return (

@@ -16,3 +16,6 @@
 .footer .note { color: var(--palette-silver); }
 @media (max-width: 420px) { .row { grid-template-columns: minmax(0, 1fr); } .button { width: 100%; } }
 @media (prefers-reduced-motion: reduce) { .button { transition: none; } .button:hover:not(:disabled) { transform: none; } }
+.footer .row { grid-template-columns: minmax(0,1fr); gap:10px; }
+.footer .email { width:100%; min-height:52px; padding-inline:16px; border:1px solid #cbd8e9; border-radius:12px; font-size:.875rem; }
+.footer .button { width:100%; min-height:48px; border-radius:12px; font-size:.875rem; }
