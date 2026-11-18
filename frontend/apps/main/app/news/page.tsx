@@ -11,7 +11,6 @@ import { absoluteUrl } from "../../lib/site";
 import { newsArticlePath } from "../../lib/news-urls";
 import NewsImage from "../../components/news-image";
 import { EmptyPanel, PageFrame, StatusBadge } from "../../components/design-system";
-import NewsFooter from "../../components/news-footer";
 import styles from "./listing.module.css";
 
 type ArticleListItem = {
@@ -81,7 +80,6 @@ function NewsError() {
       <header className={styles.pageHeader}><p className={styles.kicker}>EPE LAWA · NEWSROOM</p><h1 className={styles.pageTitle}>News</h1></header>
       <EmptyPanel title="The newsroom did not load" description="We could not reach the published newsroom, so no stories are shown rather than a guess. Try again in a moment." actions={<Link href="/news" className="btn-secondary">Reload the newsroom</Link>} />
     </PageFrame>
-    <NewsFooter listing />
   </>;
 }
 
@@ -242,6 +240,5 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
       </>}
       {page > 1 || hasOlder || hasSearchOrCategory ? <nav className={styles.pagination} aria-label="News pages">{page > 1 ? <Link className="btn-secondary" href={pageHref(page - 1, query, category)}>Newer stories</Link> : null}<span className={styles.pageNumber} aria-live="polite">Page {page}</span>{hasOlder ? <Link className="btn-secondary" href={pageHref(page + 1, query, category)}>Load more news</Link> : null}{hasSearchOrCategory || page > 1 ? <Link className={`${styles.viewAll} btn-primary`} href="/news">View all available news</Link> : null}</nav> : null}
     </PageFrame>
-    <NewsFooter categories={categories} listing />
   </>;
 }

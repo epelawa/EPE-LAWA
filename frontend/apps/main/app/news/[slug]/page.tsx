@@ -19,7 +19,6 @@ import OfflineArticleDownload from "../../../components/offline-article-download
 import ArticleShareActions from "../../../components/article-share-actions";
 import SaveArticleButton from "../../../components/save-article-button";
 import NewsImage from "../../../components/news-image";
-import NewsFooter from "../../../components/news-footer";
 import LayoutVariation from "../../../components/layout-variation";
 import { PageFrame } from "../../../components/design-system";
 import styles from "../news.module.css";
@@ -103,7 +102,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 function ArticleUnavailable() {
-  return <><PageFrame className={`${styles.articlePage} ui-stack`}><div className="ui-empty"><h1>This story did not load</h1><p className="ui-muted">The newsroom could not reach the published story, so no article text is shown rather than a guess. Try again in a moment.</p><Link href="/news" className="btn-secondary">Back to News</Link></div></PageFrame><NewsFooter listing /></>;
+  return <PageFrame className={`${styles.articlePage} ui-stack`}><div className="ui-empty"><h1>This story did not load</h1><p className="ui-muted">The newsroom could not reach the published story, so no article text is shown rather than a guess. Try again in a moment.</p><Link href="/news" className="btn-secondary">Back to News</Link></div></PageFrame>;
 }
 
 export default async function ArticlePage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ comments?: string }> }) {
@@ -200,7 +199,6 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
         <p className={styles.correctionNote}>Correction reporting is not available through this site yet. <Link href="/contact" className="ui-text-link">View contact availability</Link>.</p>
       </article></LayoutVariation>
     </PageFrame>
-    {!signedIn ? <NewsFooter listing /> : null}
     </div>
   );
 }

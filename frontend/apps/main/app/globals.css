@@ -205,6 +205,8 @@ body:has(.focused-error-shell) .site-main { display: grid; min-height: 100dvh; p
 .ui-empty > .ui-muted { max-width: 52ch; font-size: 14px; }
 .ui-empty__mark { width: 42px; height: 42px; border: 1px solid hsl(var(--border)); border-radius: 14px; background: hsl(var(--secondary)); transform: rotate(-8deg); }
 .ui-empty__icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 16px; background: hsl(var(--secondary)); color: hsl(var(--primary)); }
+.not-found-mark { display: grid; width: min(100%, 220px); min-height: 140px; margin: 0 auto 22px; place-items: center; border: 1px solid hsl(var(--border)); border-radius: 24px; background: linear-gradient(145deg, hsl(var(--secondary)), hsl(var(--card))); color: hsl(var(--primary)); }
+.not-found-mark svg { max-width: 100%; height: auto; }
 .ui-text-link,.ui-back-link { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; color: hsl(var(--link)); font-size: 14px; font-weight: 600; text-decoration: none; }
 .ui-text-link:hover,.ui-back-link:hover { text-decoration: underline; }
 .ui-link-card { display: block; transition: border-color var(--dur-base), transform var(--dur-base); }
