@@ -349,3 +349,6 @@
 .publicArticlePage .relatedSection { margin-top: 40px; padding-top: 30px; }
 @media (min-width: 800px) { .publicArticlePage :global([data-layout-variant="2"]) .articleHero { grid-template-columns: 1fr; } }
 @media (max-width: 620px) { .publicArticlePage { width: calc(100% - 28px); padding: 0; margin-block: 18px 40px; } .publicArticlePage .article { padding: 20px 16px; border-radius: 18px; } .publicArticlePage .articleHero { gap: 17px; } .publicArticlePage .articleHeroCopy h1 { font-size: clamp(2rem, 8vw, 2.7rem); } }
+.readingGuide { display:flex; align-items:center; justify-content:space-between; gap:12px; max-width:760px; margin:28px auto 0; padding:14px 18px; border:1px solid #dbe5f3; border-radius:14px; background:rgb(242 247 255 / .88); color:#294b91; font-size:.75rem; font-weight:800; letter-spacing:.06em; }
+.readingGuide a { color:#294b91; min-height:44px; display:inline-flex; align-items:center; gap:8px; text-decoration:none; letter-spacing:0; }
+.readingGuide a:hover { color:#17264a; text-decoration:underline; text-underline-offset:4px; }

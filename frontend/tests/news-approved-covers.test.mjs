@@ -85,3 +85,11 @@ test('public lead covers use approved local keys and images never send a referre
   assert.match(article, /loading="eager" fetchPriority="high"/);
   assert.match(article, /referrerPolicy="no-referrer"/);
 });
+
+test('shared published articles expose an absolute cover image with a branded fallback', () => {
+  const article = read('apps/main/app/news/[slug]/page.tsx');
+  assert.match(article, /new URL\(coverImage, siteUrl\)\.toString\(\)/);
+  assert.match(article, /absoluteUrl\("\/share.png"\)/);
+  assert.match(article, /images: \[\{ url: image, alt:/);
+  assert.match(article, /twitter: \{ card: "summary_large_image"/);
+});

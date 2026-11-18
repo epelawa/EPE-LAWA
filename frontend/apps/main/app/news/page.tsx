@@ -128,7 +128,8 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
   const articles = rows.slice(0, PAGE_SIZE);
   const hasOlder = rows.length > PAGE_SIZE && page < MAX_PAGE;
   const categories = (categoryResult.data?.length ? categoryResult.data : fallbackCategories(articles)) as NewsCategory[];
-  const breakingLead = page === 1 ? articles.find(isBreakingNow) : undefined;
+  const breakingStories = page === 1 ? articles.filter(isBreakingNow) : [];
+  const breakingLead = breakingStories[0];
   const lead = page === 1 ? (breakingLead ?? articles[0] ?? null) : null;
   const remaining = lead ? articles.filter((article) => article.slug !== lead.slug) : articles;
   const heading = category ? categories.find((item) => item.slug === category)?.label ?? "News" : query ? "Search results" : "Latest News";
@@ -157,15 +158,22 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
         </details>
       </header>
 
-      <nav className={styles.categoryNav} aria-label="News categories"><ul className={styles.categoryList}>
-        <li><Link href={categoryHref(query, "")} aria-current={!category ? "page" : undefined} className={styles.categoryLink}>All</Link></li>
-        {categories.map((item) => <li key={item.slug}><Link href={categoryHref(query, item.slug)} aria-current={category === item.slug ? "page" : undefined} className={styles.categoryLink}>{item.label}</Link></li>)}
-      </ul></nav>
+      <div className={styles.filterBar}>
+        <div><strong>Explore the newsroom</strong><span>Browse published reporting by topic</span></div>
+        <nav className={styles.categoryNav} aria-label="News categories">
+          <details className={styles.categoryDropdown}>
+            <summary className={styles.categorySummary}><span><small>Category</small>{categories.find((item) => item.slug === category)?.label ?? "All news"}</span><span aria-hidden="true">⌄</span></summary>
+            <ul className={styles.categoryList}>
+              <li><Link href={categoryHref(query, "")} aria-current={!category ? "page" : undefined} className={styles.categoryLink}>All</Link></li>
+              {categories.map((item) => <li key={item.slug}><Link href={categoryHref(query, item.slug)} aria-current={category === item.slug ? "page" : undefined} className={styles.categoryLink}>{item.label}</Link></li>)}
+            </ul>
+          </details>
+        </nav>
+      </div>
 
-      {breakingLead ? <section className={styles.breakingBanner} aria-label="Breaking news">
-        <span className={styles.breakingLabel}>Breaking</span>
-        <Link href={newsArticlePath(breakingLead.slug)}>{breakingLead.title}</Link>
-        {breakingLead.published_at ? <time dateTime={breakingLead.published_at}>{formatPublishedDate(breakingLead.published_at)}</time> : null}
+      {breakingStories.length ? <section className={styles.breakingBanner} aria-label="Breaking news">
+        <span className={styles.breakingLabel}><span aria-hidden="true" className={styles.liveDot} /> Breaking news</span>
+        <ul>{breakingStories.map((story) => <li key={story.slug}><Link href={newsArticlePath(story.slug)}>{story.title}</Link>{story.published_at ? <time dateTime={story.published_at}>{formatPublishedDate(story.published_at)}</time> : null}</li>)}</ul>
       </section> : null}
 
       {articles.length === 0 ? <EmptyPanel
@@ -189,7 +197,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
           </article>
         </section> : null}
         {remaining.length ? <section className={styles.storiesSection} aria-labelledby="stories-heading">
-          <div className={styles.sectionHeading}><h2 id="stories-heading">{lead ? "More stories" : "Stories"}</h2><span>{articles.length} on this page</span></div>
+          <div className={styles.sectionHeading}><h2 id="stories-heading">{lead ? "Latest stories" : "Stories"}</h2><span>{articles.length} on this page</span></div>
           <ul className={styles.storyGrid}>{remaining.map((article) => {
             const image = coverUrl(article);
             return <li key={article.slug}><article className={styles.storyCard}>
@@ -208,6 +216,6 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
       </>}
       {page > 1 || hasOlder ? <nav className={styles.pagination} aria-label="News pages">{page > 1 ? <Link className="btn-secondary" href={pageHref(page - 1, query, category)}>Newer stories</Link> : null}<span className={styles.pageNumber} aria-live="polite">Page {page}</span>{hasOlder ? <Link className="btn-secondary" href={pageHref(page + 1, query, category)}>Older stories</Link> : null}</nav> : null}
     </PageFrame>
-    <NewsFooter categories={categories} />
+    <NewsFooter categories={categories} listing />
   </>;
 }

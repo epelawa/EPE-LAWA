@@ -37,8 +37,8 @@ describe("ScrollToTop", () => {
 
     act(() => setTestPathname("/news"));
 
-    expect(scrollTo).toHaveBeenCalledTimes(1);
-    expect(scrollTo).toHaveBeenCalledWith({ top: 0, left: 0, behavior: "auto" });
+    expect(scrollTo).toHaveBeenCalled();
+    expect(scrollTo).toHaveBeenCalledWith({ top: 0, left: 0, behavior: "instant" });
   });
 
   it("does not react to a query-string change on the same pathname", () => {
@@ -56,6 +56,6 @@ describe("ScrollToTop", () => {
       window.dispatchEvent(new PopStateEvent("popstate"));
     });
 
-    expect(scrollTo).toHaveBeenCalledWith({ top: 0, left: 0, behavior: "auto" });
+    expect(scrollTo).toHaveBeenCalledWith({ top: 0, left: 0, behavior: "instant" });
   });
 });

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import { createClient } from "../../../lib/supabase";
 import { newsArticlePath, publicNewsArticleUrl } from "../../../lib/news-urls";
+import { absoluteUrl, siteUrl } from "../../../lib/site";
 import { publicMediaUrl } from "../../../lib/media";
 import { readPublishedArticleBody } from "../../../lib/published-article-body";
 import { selectedNewsCover } from "../../../lib/news-covers";
@@ -76,7 +77,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const article = result.article;
   const title = article.seo_title || article.title;
   const description = article.seo_description || article.summary || undefined;
-  const image = selectedNewsCover(article.og_image_key)?.url ?? publicMediaUrl(article.og_image_key);
+  const coverImage = selectedNewsCover(article.og_image_key)?.url ?? publicMediaUrl(article.og_image_key);
+  const image = coverImage ? new URL(coverImage, siteUrl).toString() : absoluteUrl("/share.png");
   const articleUrl = publicNewsArticleUrl(article.slug);
   return {
     title,
@@ -88,9 +90,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description,
       url: articleUrl,
       publishedTime: article.published_at ?? undefined,
-      images: image ? [{ url: image, alt: article.title }] : undefined,
+      images: [{ url: image, alt: coverImage ? article.title : "EPE LAWA — The Voice of Epe Division" }],
     },
-    twitter: { card: image ? "summary_large_image" : "summary", title, description, images: image ? [image] : undefined },
+    twitter: { card: "summary_large_image", title, description, images: [image] },
   };
 }
 
@@ -181,6 +183,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
           {date ? <time dateTime={article.published_at ?? undefined}>{date}</time> : null}
         </div> : null}
 
+        <div className={styles.readingGuide}><span>THE STORY</span><a href="#comments">Join the conversation <span aria-hidden="true">↗</span></a></div>
         <div className={`ui-prose ${styles.articleBody}`} data-offline-article-body><ArticleBody body={body} /></div>
         <CommentThread articleId={article.id} slug={article.slug} notice={notice.comments} />
         <CommentDock articleId={article.id} slug={article.slug} count={commentCount} signedIn={signedIn} signInHref={signInHref} />
