@@ -4,13 +4,14 @@ import { readFile } from 'node:fs/promises';
 const read = (path) => readFile(new URL(`../apps/main/${path}`, import.meta.url), 'utf8');
 
 test('shared public footer and paused signup render consistently across home, News, article and radio routes', async () => {
-  const [footer, layout, navigation, home, advertise, listing, article, radio] = await Promise.all(['components/news-footer.tsx','app/layout.tsx','lib/navigation.ts','app/page.tsx','app/advertise/page.tsx','app/news/page.tsx','app/news/[slug]/page.tsx','app/radio/reminders/page.tsx'].map(read));
+  const [footer, layout, navigation, home, advertise, listing, article, radio, menu] = await Promise.all(['components/news-footer.tsx','app/layout.tsx','lib/navigation.ts','app/page.tsx','app/advertise/page.tsx','app/news/page.tsx','app/news/[slug]/page.tsx','app/radio/reminders/page.tsx','lib/mobile-navigation.ts'].map(read));
   for (const href of ['/news','/radio','/itan-ilu-mi','/forum','/who-is-who','/map','/business-directory','/tourism','/advertise']) assert.ok(navigation.includes(`href: "${href}"`), href);
-  for (const href of ['/about','/contact','/photo-credits','/privacy','/terms']) assert.ok(footer.includes(`href="${href}"`), href);
+  for (const href of ['/about','/contact','/photo-credits','/privacy','/terms']) assert.ok(menu.includes(`"${href}"`), href);
   assert.match(layout, /<NewsFooter listing\s*\/>/);
   assert.match(footer, /<NewsletterForm id="news-listing-signup"/);
-  assert.match(footer, /A thoughtful roundup of local reporting, community stories/);
-  assert.match(footer, /sign-up is temporarily paused/);
+  assert.match(footer, /MOBILE_GROUPS\.flatMap/);
+  assert.match(footer, /MOBILE_EXTRA_LINKS/);
+  assert.equal((footer.match(/<QuickLinks \/>/g) ?? []).length, 2);
   assert.doesNotMatch(home + advertise + listing + article + radio, /<NewsFooter/);
 });
 

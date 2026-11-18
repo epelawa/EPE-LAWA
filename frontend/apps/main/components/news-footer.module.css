@@ -38,3 +38,11 @@
 .listingNewsletter h2 { margin:0; color:#fff; font-size:clamp(1.45rem,3vw,2rem); line-height:1.2; }
 .listingNewsletter > p { margin:0; color:#c7d5ec; font-size:.9rem; line-height:1.5; }
 .listingNewsletter form,.listingNewsletter > div { width:min(100%,760px); }
+
+/* The shared menu is kept in sync with the drawer and wraps on small screens. */
+.listingQuick { min-width:0; }
+.listingQuick .quickLinks { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 16px; list-style:none; padding:0; margin:0; }
+.listingColumn a { overflow-wrap:anywhere; }
+.listingInner { grid-template-columns:minmax(200px,1fr) minmax(300px,1.8fr) minmax(140px,.7fr); }
+@media(max-width:700px) { .listingInner { grid-template-columns:1fr; } .listingIdentity { grid-column:auto; } }
+@media(max-width:340px) { .listingQuick .quickLinks { grid-template-columns:1fr; } }

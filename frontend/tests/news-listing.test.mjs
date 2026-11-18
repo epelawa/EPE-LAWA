@@ -6,6 +6,7 @@ const root = new URL("../apps/main/", import.meta.url);
 const page = await readFile(new URL("app/news/page.tsx", root), "utf8");
 const styles = await readFile(new URL("app/news/listing.module.css", root), "utf8");
 const header = await readFile(new URL("components/site-header.tsx", root), "utf8");
+const mobileNavigation = await readFile(new URL("lib/mobile-navigation.ts", root), "utf8");
 const headerStyles = await readFile(new URL("components/navigation-refinement.css", root), "utf8");
 const footer = await readFile(new URL("components/site-footer.tsx", root), "utf8");
 const newsFooter = await readFile(new URL("components/news-footer.tsx", root), "utf8");
@@ -69,9 +70,9 @@ test("Breaking news is visible only for a flagged, unexpired published lead", ()
 });
 
 test("News uses the shared public shell and keeps its cobalt search and route entry points", () => {
-  assert.match(header, /const isNewsReference = pathname === "\/news"/);
+  assert.match(header, /site-head site-head--home/);
   assert.match(header, /const DESKTOP_GROUPS =/);
-  assert.match(header, /const MOBILE_GROUPS =/);
+  assert.match(header, /import \{ MOBILE_GROUPS \}/);
   assert.match(header, /href="\/news\?search=1"/);
   assert.match(headerStyles, /\.site-head--news-reference\s*\{\s*display: block/);
   assert.match(header, /"\/advertise"/);
@@ -94,8 +95,8 @@ test("News uses the shared editorial footer once and protected routes do not sho
   assert.match(footer, /pathname\.startsWith\("\/dashboard\/"\)/);
   assert.match(footer, /if \(isProtected\) return null/);
   for (const heading of ["Quick Links", "Categories", "Newsletter"]) assert.ok(newsFooter.includes(heading));
-  assert.match(newsFooter, /href="\/advertise"/);
-  assert.match(newsFooter, /Contact availability/);
+  assert.match(mobileNavigation, /"\/advertise"/);
+  assert.match(mobileNavigation, /"\/contact", "Contact"/);
   assert.match(newsFooter, /from\("categories"\)/);
 });
 
@@ -104,7 +105,7 @@ test("public footers and correction links do not imply that unavailable contact 
   const article = await readFile(new URL("app/news/[slug]/page.tsx", root), "utf8");
   const informationPage = await readFile(new URL("components/information-page.tsx", root), "utf8");
   const errorPage = await readFile(new URL("app/error.tsx", root), "utf8");
-  assert.match(newsFooter, /Contact availability/);
+  assert.match(mobileNavigation, /"\/contact", "Contact"/);
   assert.doesNotMatch(newsFooter, /Messages are not accepted yet|Contact the team|Have something to share\?/);
   assert.match(informationPage, /Contact availability/);
   assert.doesNotMatch(informationPage, /Contact the team/);

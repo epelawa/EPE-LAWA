@@ -9,6 +9,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 
 test("public shell stays light and the all-viewport drawer is account-only", () => {
   const header = read("frontend/apps/main/components/site-header.tsx");
+  const menu = read("frontend/apps/main/lib/mobile-navigation.ts");
 	const layout = read("frontend/apps/main/app/layout.tsx");
 	const brand = read("frontend/apps/main/components/brand.tsx");
   const staffBrand = read("frontend/apps/admin/components/brand.tsx");
@@ -28,11 +29,11 @@ test("public shell stays light and the all-viewport drawer is account-only", () 
 	assert.match(header, /renderLink\("\/login", "Sign in", "btn-secondary"\)/);
   assert.match(navCss, /\.site-head__menu\s*\{[^}]*display:inline-flex/);
   assert.match(header, /MOBILE_GROUPS\.map\(renderMobileGroup\)/);
-  for (const group of ["Read", "Community", "Explore", "EPE LAWA"]) assert.match(header, new RegExp(`label: "${group}"`));
+  for (const group of ["Read", "Community", "Explore", "EPE LAWA"]) assert.match(menu, new RegExp(`label: "${group}"`));
   assert.match(navCss, /\.drawer-group ul/);
   assert.doesNotMatch(navCss, /\.drawer-list|\.drawer-foot-links/);
 	assert.match(header, /<BrandLockup size=\{32\} \/>/);
-  assert.match(header, /pathname === "\/" \? <span className="home-brand-tagline">The Voice of Epe Division<\/span>/);
+  assert.match(header, /<span className="home-brand-tagline">The Voice of Epe Division<\/span>/);
   assert.doesNotMatch(brand + staffBrand + footer, /Epe Division|brand__place|brand-lockup__tagline|showPlace/);
   assert.match(home, /<HeroCarousel>/, "homepage logo hero exists");
   assert.match(home, /Stay Connected/);
@@ -52,10 +53,10 @@ test("public shell stays light and the all-viewport drawer is account-only", () 
   assert.match(header, /A shared home for everyone\./);
   assert.match(header, /addEventListener\("pointerdown", onOutsideDrawer\)/);
   assert.match(newsFooter, /<NewsletterForm id="news-listing-signup" variant="footer" \/>/);
-  assert.match(newsFooter, /Newsletter sign-up is temporarily paused/);
+  assert.match(newsFooter, /Stories and updates from Epe/);
   assert.match(newsletter, /temporarily unavailable/);
   assert.match(newsletter, /disabled/);
-  assert.match(navCss, /\.drawer\s*\{[^}]*width:min\(520px,calc\(100vw - 52px\)\)/);
+  assert.match(navCss, /\.drawer\s*\{[^}]*width:min\(380px,calc\(100vw - 72px\)\)/);
   assert.match(navCss, /\.drawer-account__actions\s*\{[^}]*display:\s*grid/);
 });
 

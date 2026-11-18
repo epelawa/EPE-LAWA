@@ -1,0 +1,8 @@
+.step { display:grid; gap:18px; }
+.step h2 { margin:0; font-size:1.15rem; }
+.step[hidden], .actions [hidden] { display:none !important; }
+.progress { display:grid; gap:8px; color:#294b91; font-size:.875rem; font-weight:700; }
+.progress p { margin:0; }
+.progress [role="progressbar"] { height:8px; overflow:hidden; border-radius:999px; background:#e4ecf8; }
+.progress [role="progressbar"] span { display:block; height:100%; border-radius:inherit; background:#477fe0; }
+.actions { display:flex; flex-wrap:wrap; gap:10px; }
