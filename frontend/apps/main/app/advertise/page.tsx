@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageFrame } from "../../components/design-system";
-import NewsFooter from "../../components/news-footer";
 import { pageMetadata } from "../../lib/metadata";
 import styles from "./advertise.module.css";
 
@@ -39,7 +38,6 @@ export default function AdvertisePage() {
           </div>
         </section>
       </PageFrame>
-      <NewsFooter />
     </>
   );
 }

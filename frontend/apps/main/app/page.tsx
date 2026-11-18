@@ -7,7 +7,6 @@ import "./connection-panel.css";
 import "./home-client-refresh.css";
 import CookieBanner from "../components/cookie-banner";
 import HeroCarousel from "../components/hero-carousel";
-import NewsFooter from "../components/news-footer";
 
 export default async function Home() {
   const stories = await getLatestStories(7);
@@ -115,7 +114,6 @@ export default async function Home() {
         <span className="connection-panel__icon" aria-hidden="true"><UsersIcon size={96} /></span>
       </section>
       <CookieBanner />
-      <NewsFooter listing />
     </div>
   );
 }

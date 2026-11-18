@@ -1,0 +1,5 @@
+.art { position:relative; display:grid; place-items:center; width:144px; height:144px; margin:0 auto 24px; border-radius:50%; background:linear-gradient(145deg,#f5f9ff,#dbe9ff); }
+.art svg { width:116px; height:116px; position:relative; }
+.orbit { position:absolute; inset:8px; border:1px dashed #a7c5f5; border-radius:50%; }
+@media (prefers-reduced-motion:no-preference) { .orbit { animation:turn 18s linear infinite; } }
+@keyframes turn { to { transform:rotate(360deg); } }

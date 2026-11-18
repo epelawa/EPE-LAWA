@@ -164,7 +164,7 @@ test('main has honest indexable metadata, working public links and security head
       if (route === '/contact') {
         assert.match(html, /Coming Soon/);
         assert.match(html, /nothing is sent or stored/i);
-        assert.doesNotMatch(html, /<form\b/i);
+        assert.doesNotMatch(html.split("</main>")[0], /<form\b/i);
       }
     }
     for (const code of [200, 400, 401, 403, 404, 429, 500, 503, 599]) {

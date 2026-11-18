@@ -81,7 +81,7 @@ function NewsError() {
       <header className={styles.pageHeader}><p className={styles.kicker}>EPE LAWA · NEWSROOM</p><h1 className={styles.pageTitle}>News</h1></header>
       <EmptyPanel title="The newsroom did not load" description="We could not reach the published newsroom, so no stories are shown rather than a guess. Try again in a moment." actions={<Link href="/news" className="btn-secondary">Reload the newsroom</Link>} />
     </PageFrame>
-    <NewsFooter />
+    <NewsFooter listing />
   </>;
 }
 
