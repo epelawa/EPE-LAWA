@@ -142,33 +142,35 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
           <h1 className={styles.pageTitle}>{heading}</h1>
           <p className={styles.pageDescription}>Reporting, stories and updates from Epe and its communities.</p>
         </div>
-        <details className={styles.searchToggle} open={searchOpen || undefined}>
-          <summary className={styles.searchSummary} aria-label="Search headlines" title="Search headlines">
-            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg>
-            <span>Search stories</span>
-          </summary>
-          <search className={styles.searchRegion} aria-label="Search published stories">
-            <form action="/news" method="get" className={styles.newsSearchForm}>
-              <label className="sr-only" htmlFor="news-query">Search headlines</label>
-              <input id="news-query" name="q" type="search" maxLength={100} defaultValue={query} placeholder="Search headlines" />
-              {category ? <input type="hidden" name="category" value={category} /> : null}
-              <button type="submit" className="btn-secondary">Search</button>
-            </form>
-          </search>
-        </details>
       </header>
 
       <div className={styles.filterBar}>
         <div><strong>Explore the newsroom</strong><span>Browse published reporting by topic</span></div>
-        <nav className={styles.categoryNav} aria-label="News categories">
-          <details className={styles.categoryDropdown}>
-            <summary className={styles.categorySummary}><span><small>Category</small>{categories.find((item) => item.slug === category)?.label ?? "All news"}</span><span aria-hidden="true">⌄</span></summary>
-            <ul className={styles.categoryList}>
-              <li><Link href={categoryHref(query, "")} aria-current={!category ? "page" : undefined} className={styles.categoryLink}>All</Link></li>
-              {categories.map((item) => <li key={item.slug}><Link href={categoryHref(query, item.slug)} aria-current={category === item.slug ? "page" : undefined} className={styles.categoryLink}>{item.label}</Link></li>)}
-            </ul>
+        <div className={styles.filterTools}>
+          <details className={styles.searchToggle} open={searchOpen || undefined}>
+            <summary className={styles.searchSummary} aria-label="Search headlines" title="Search headlines">
+              <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg>
+              <span>Search</span>
+            </summary>
+            <search className={styles.searchRegion} aria-label="Search published stories">
+              <form action="/news" method="get" className={styles.newsSearchForm}>
+                <label className="sr-only" htmlFor="news-query">Search headlines</label>
+                <input id="news-query" name="q" type="search" maxLength={100} defaultValue={query} placeholder="Search headlines" />
+                {category ? <input type="hidden" name="category" value={category} /> : null}
+                <button type="submit" className="btn-secondary">Search</button>
+              </form>
+            </search>
           </details>
-        </nav>
+          <nav className={styles.categoryNav} aria-label="News categories">
+            <details className={styles.categoryDropdown}>
+              <summary className={styles.categorySummary}><span><small>Category</small>{categories.find((item) => item.slug === category)?.label ?? "All news"}</span><span aria-hidden="true">⌄</span></summary>
+              <ul className={styles.categoryList}>
+                <li><Link href={categoryHref(query, "")} aria-current={!category ? "page" : undefined} className={styles.categoryLink}>All</Link></li>
+                {categories.map((item) => <li key={item.slug}><Link href={categoryHref(query, item.slug)} aria-current={category === item.slug ? "page" : undefined} className={styles.categoryLink}>{item.label}</Link></li>)}
+              </ul>
+            </details>
+          </nav>
+        </div>
       </div>
 
       {breakingStories.length ? <section className={styles.breakingBanner} aria-label="Breaking news">
@@ -214,7 +216,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
           })}</ul>
         </section> : null}
       </>}
-      {page > 1 || hasOlder ? <nav className={styles.pagination} aria-label="News pages">{page > 1 ? <Link className="btn-secondary" href={pageHref(page - 1, query, category)}>Newer stories</Link> : null}<span className={styles.pageNumber} aria-live="polite">Page {page}</span>{hasOlder ? <Link className="btn-secondary" href={pageHref(page + 1, query, category)}>Older stories</Link> : null}</nav> : null}
+      {page > 1 || hasOlder || hasSearchOrCategory ? <nav className={styles.pagination} aria-label="News pages">{page > 1 ? <Link className="btn-secondary" href={pageHref(page - 1, query, category)}>Newer stories</Link> : null}<span className={styles.pageNumber} aria-live="polite">Page {page}</span>{hasOlder ? <Link className="btn-secondary" href={pageHref(page + 1, query, category)}>Load more news</Link> : null}{hasSearchOrCategory || page > 1 ? <Link className={`${styles.viewAll} btn-primary`} href="/news">View all available news</Link> : null}</nav> : null}
     </PageFrame>
     <NewsFooter categories={categories} listing />
   </>;
