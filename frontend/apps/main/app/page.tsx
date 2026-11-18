@@ -7,6 +7,7 @@ import "./connection-panel.css";
 import "./home-client-refresh.css";
 import CookieBanner from "../components/cookie-banner";
 import HeroCarousel from "../components/hero-carousel";
+import NewsImage from "../components/news-image";
 
 export default async function Home() {
   const stories = await getLatestStories(7);
@@ -58,20 +59,12 @@ export default async function Home() {
               return (
                 <li key={story.slug} className={index === 0 ? "home-story-item home-story-item--lead" : "home-story-item home-story-item--support"}>
                   <article className="home-story-card">
-                    {story.cover ? (
-                      <figure className="home-story-cover">
-                        <Link className="home-story-cover-link" href={storyHref} aria-label={`Read story: ${story.title}`}>
-                          <img className="home-story-image" src={story.cover.src} alt={story.cover.alt} loading="lazy" decoding="async" referrerPolicy="no-referrer" />
-                        </Link>
-                        <figcaption>
-                          <span className="home-story-cover-caption">Illustrative image. <Link href="/photo-credits#news-photos">Photo credits</Link></span>
-                        </figcaption>
-                      </figure>
-                    ) : (
-                      <div className="home-story-cover home-story-cover--unavailable">
-                        <span>No credited cover image available.</span>
-                      </div>
-                    )}
+                    <figure className="home-story-cover">
+                      <Link className="home-story-cover-link" href={storyHref} aria-label={`Read story: ${story.title}`}>
+                        <NewsImage className="home-story-image" src={story.cover?.src} alt={story.cover?.alt ?? "EPE LAWA logo"} loading="lazy" />
+                      </Link>
+                      {story.cover ? <figcaption><span className="home-story-cover-caption">Illustrative image. <Link href="/photo-credits#news-photos">Photo credits</Link></span></figcaption> : null}
+                    </figure>
                     <div className="home-story-copy">
                       <span className="home-story-meta">{story.category ?? "News"}{story.publishedAt ? <> <span aria-hidden="true">·</span> <time dateTime={story.publishedAt}>{formatPublishedDate(story.publishedAt)}</time></> : null}</span>
                       <h3><Link href={storyHref}>{story.title}</Link></h3>
@@ -97,7 +90,7 @@ export default async function Home() {
       {updates.length > 0 ? <section className="ep-container home-updates" aria-labelledby="updates-title">
         <div className="home-news__heading"><h2 id="updates-title">Latest Updates</h2><Link className="ui-text-link" href="/news">See more <ArrowRightIcon size={17} aria-hidden="true" /></Link></div>
         <ul className="home-updates__list">{updates.map((story) => <li key={story.slug}>
-          <article>{story.cover ? <img src={story.cover.src} alt={story.cover.alt} loading="lazy" decoding="async" referrerPolicy="no-referrer" /> : null}<div><h3><Link href={`/news/${story.slug}`}>{story.title}</Link></h3><p>{story.publishedAt ? <time dateTime={story.publishedAt}>{formatPublishedDate(story.publishedAt)}</time> : null}{story.category ? ` · ${story.category}` : ""}</p>{story.cover ? <p className="home-updates__credit">Illustrative image. <Link href="/photo-credits#news-photos">Photo credits</Link></p> : null}</div></article>
+          <article><NewsImage className="home-update-image" src={story.cover?.src} alt={story.cover?.alt ?? "EPE LAWA logo"} loading="lazy" /><div><h3><Link href={`/news/${story.slug}`}>{story.title}</Link></h3><p>{story.publishedAt ? <time dateTime={story.publishedAt}>{formatPublishedDate(story.publishedAt)}</time> : null}{story.category ? ` · ${story.category}` : ""}</p>{story.cover ? <p className="home-updates__credit">Illustrative image. <Link href="/photo-credits#news-photos">Photo credits</Link></p> : null}</div></article>
         </li>)}</ul>
       </section> : null}
 

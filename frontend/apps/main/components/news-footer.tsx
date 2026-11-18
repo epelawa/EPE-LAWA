@@ -25,7 +25,7 @@ async function readActiveCategories(): Promise<NewsCategory[]> {
 
 export default async function NewsFooter({ categories, listing = false }: { categories?: NewsCategory[]; listing?: boolean }) {
   const links = categories ?? await readActiveCategories();
-  if (listing) return <footer className={styles.listingFooter} aria-label="EPE LAWA news footer">
+  if (listing) return <footer className={`${styles.listingFooter} site-footer`} aria-label="EPE LAWA news footer">
     <div className={styles.listingInner}>
       <section className={styles.listingIdentity}>
         <Link className={styles.brandLink} href="/" aria-label="EPE LAWA home"><BrandLockup size={42} /></Link>
@@ -37,7 +37,7 @@ export default async function NewsFooter({ categories, listing = false }: { cate
       </section>
       <section className={styles.listingColumn}><h2>Explore</h2><nav aria-label="News footer links"><Link href="/news">Latest news</Link><Link href="/radio">Listen to radio</Link><Link href="/about">About EPE LAWA</Link><Link href="/contact">Contact availability</Link></nav></section>
       <section className={styles.listingColumn}><h2>Browse topics</h2><nav aria-label="News footer categories">{links.length ? links.slice(0, 8).map((category) => <Link key={category.slug} href={`/news?category=${encodeURIComponent(category.slug)}`}>{category.label}</Link>) : <Link href="/news">All news</Link>}</nav></section>
-      <section className={styles.listingColumn}><h2>Newsletter</h2><p>Reporting and updates from Epe.</p><NewsletterForm id="news-listing-signup" variant="footer" /></section>
+      <section className={styles.listingColumn}><h2>Newsletter</h2><p>A thoughtful roundup of local reporting, community stories and useful updates from Epe. Subscribe with your email and use the unsubscribe link in any issue to leave whenever you like.</p><NewsletterForm id="news-listing-signup" variant="footer" /></section>
     </div>
     <div className={styles.listingBottom}><span>© {new Date().getFullYear()} EPE LAWA</span><span>Rooted in Epe. Connected everywhere.</span><Link href="/photo-credits">Photo credits</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link></div>
   </footer>;

@@ -37,7 +37,7 @@ test('homepage preserves all 52 credited photos and restores its two original he
   assert.match(carousel,/aria-roledescription="slide"/);
   assert.doesNotMatch(carousel,/home-hero__caption|home-hero__credit|home-hero__slide-label|home-hero__counter|Photo by <a/);
   assert.match(read('frontend/apps/main/app/photo-credits/page.tsx'),/href=\{image\.licenseUrl\}/);
-  assert.match(read('frontend/apps/main/components/site-footer.tsx'),/photo-credits/);
+  assert.match(read('frontend/apps/main/components/news-footer.tsx'),/photo-credits/);
   assert.match(carousel,/HERO_SLIDES = heroImages/);
   assert.doesNotMatch(carousel,/Photo by \{slide\.author\}/);
   assert.match(credits,/CC BY-SA 4\.0|CC0 1\.0/);
@@ -69,18 +69,19 @@ test('every admin page has actual rebuilt markup and complete workflow navigatio
 test('homepage story cards use published bylines and only fully credited cover images',()=>{
   const data=read('frontend/apps/main/lib/home-data.ts');
   const home=read('frontend/apps/main/app/page.tsx');
+  const newsImage=read('frontend/apps/main/components/news-image.tsx');
   const styles=read('frontend/apps/main/app/hero-logo.css');
   assert.match(data,/author_name,og_image_key/);
   assert.doesNotMatch(data,/cover_url|cover_alt|cover_credit|cover_source_url|cover_license_url|cover_caption/);
   assert.doesNotMatch(data,/publicMediaUrl/);
   assert.match(data,/selectedNewsCover\(row\.og_image_key\)/);
   assert.match(home,/story\.authorName/);
-  assert.match(home,/story\.cover\.alt/);
+  assert.match(home,/story\.cover\?\.alt \?\? "EPE LAWA logo"/);
+  assert.match(newsImage,/data-news-fallback=\{fallback \? "true" : undefined\}/);
   assert.match(home,/photo-credits#news-photos/);
   assert.match(read("frontend/apps/main/app/photo-credits/page.tsx"),/image\.license/);
   assert.match(home,/index === 0 \? "home-story-item home-story-item--lead"/);
   assert.match(home,/home-story-item--support/);
-  assert.match(home,/No credited cover image available/);
   assert.match(home,/Byline unavailable/);
   assert.match(styles,/\.home-story-cover-link \{[^}]*aspect-ratio:\s*16\s*\/\s*10/);
   assert.match(styles,/\.home-story-list--3 \{[^}]*grid-template-columns:\s*minmax\(0,\s*2fr\)\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);

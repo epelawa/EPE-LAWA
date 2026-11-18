@@ -39,6 +39,7 @@
 .home-updates__list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 24px; margin: 0; padding: 0; list-style: none; }
 .home-updates__list article { display: flex; gap: 14px; padding: 12px; border: 1px solid #dce3ee; border-radius: 12px; background: #fff; }
 .home-updates__list img { width: 110px; height: 86px; flex: 0 0 auto; border-radius: 8px; object-fit: cover; }
+.home-updates__list img[data-news-fallback="true"] { object-fit: contain; padding: 14px; background: #edf3fc; }
 .home-updates__list h3 { margin: 0; font-size: 15px; line-height: 1.4; }
 .home-updates__list h3 a { color: #17264a; text-decoration: none; }
 .home-updates__list h3 a:hover { text-decoration: underline; }

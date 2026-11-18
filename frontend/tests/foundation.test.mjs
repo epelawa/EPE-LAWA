@@ -236,7 +236,7 @@ test('homepage hero gallery is sourced, responsive, eager and resource-aware', a
   assert.match(creditsPage, /Photo by \{image\.author\}/);
   assert.match(creditsPage, /href=\{image\.source\}/);
   assert.match(creditsPage, /href=\{image\.licenseUrl\}/);
-  const footer = await readProjectFile('frontend/apps/main/components/site-footer.tsx');
+  const footer = await readProjectFile('frontend/apps/main/components/news-footer.tsx');
   assert.match(footer, /href="\/photo-credits">Photo credits/);
 
   const documentedSources = [...credits.matchAll(/- Source: \[[^\]]+\]\((https:\/\/commons\.wikimedia\.org\/wiki\/[^)]+)\)/g)].map((match) => match[1]).sort();

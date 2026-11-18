@@ -9,6 +9,7 @@ const header = await readFile(new URL("components/site-header.tsx", root), "utf8
 const headerStyles = await readFile(new URL("components/navigation-refinement.css", root), "utf8");
 const footer = await readFile(new URL("components/site-footer.tsx", root), "utf8");
 const newsFooter = await readFile(new URL("components/news-footer.tsx", root), "utf8");
+const layout = await readFile(new URL("app/layout.tsx", root), "utf8");
 const newsletter = await readFile(new URL("components/newsletter-form.tsx", root), "utf8");
 const newsletterAction = await readFile(new URL("app/newsletter/actions.ts", root), "utf8");
 const newsletterMailer = await readFile(new URL("lib/newsletter-mailer.ts", root), "utf8");
@@ -86,10 +87,12 @@ test("News page and editorial footer use the same cobalt and navy identity", asy
   assert.doesNotMatch(newsStyles + footerStyles, /#(?:0b4a32|063d2b|0b7042|16894d)|rgb\(0 69 44|rgb\(10 40 26/);
 });
 
-test("News uses its editorial footer without a duplicate global footer", () => {
-  assert.match(page, /<NewsFooter categories=\{categories\} listing \/>/);
-  assert.match(footer, /pathname\.startsWith\("\/news\/"\)/);
-  assert.match(footer, /if \(isEditorial\) return null/);
+test("News uses the shared editorial footer once and protected routes do not show it", () => {
+  assert.doesNotMatch(page, /<NewsFooter/);
+  assert.match(layout, /<SiteFooter><NewsFooter listing \/><\/SiteFooter>/);
+  assert.match(footer, /pathname\.startsWith\("\/admin\/"\)/);
+  assert.match(footer, /pathname\.startsWith\("\/dashboard\/"\)/);
+  assert.match(footer, /if \(isProtected\) return null/);
   for (const heading of ["Quick Links", "Categories", "Newsletter"]) assert.ok(newsFooter.includes(heading));
   assert.match(newsFooter, /href="\/advertise"/);
   assert.match(newsFooter, /Contact availability/);
@@ -101,9 +104,8 @@ test("public footers and correction links do not imply that unavailable contact 
   const article = await readFile(new URL("app/news/[slug]/page.tsx", root), "utf8");
   const informationPage = await readFile(new URL("components/information-page.tsx", root), "utf8");
   const errorPage = await readFile(new URL("app/error.tsx", root), "utf8");
-  assert.match(footer, /Contact availability/);
-  assert.match(footer, /Messages are not accepted yet/);
-  assert.doesNotMatch(footer, /Contact the team|Have something to share\?/);
+  assert.match(newsFooter, /Contact availability/);
+  assert.doesNotMatch(newsFooter, /Messages are not accepted yet|Contact the team|Have something to share\?/);
   assert.match(informationPage, /Contact availability/);
   assert.doesNotMatch(informationPage, /Contact the team/);
   assert.match(errorPage, /View contact availability/);
