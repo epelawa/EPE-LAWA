@@ -1,9 +1,20 @@
 # EPE LAWA — Canonical Project Status & Full UI Implementation Checklist
 
-- **Status snapshot:** 15 November 2026, 19:27 WAT (UTC+01:00)
+- **Status snapshot:** 18 November 2026, 06:01 WAT (UTC+01:00)
 - **Repository:** [`epelawa/EPE-LAWA`](https://github.com/epelawa/EPE-LAWA)
-- **Verified `main` SHA:** `433082acaafc72fc300f5be385c100af7afc1df7`
+- **Verified `main` SHA:** `43eae784de7880d993be21673219c265d031adcf`
 - **Purpose:** one current status and acceptance checklist for the complete product redesign. Refresh the snapshot after material merges or new test evidence.
+
+## Current verified snapshot — 18 November 2026
+
+- Current `main` is merge commit [`43eae784de7880d993be21673219c265d031adcf`](https://github.com/epelawa/EPE-LAWA/commit/43eae784de7880d993be21673219c265d031adcf), from [PR #154](https://github.com/epelawa/EPE-LAWA/pull/154). GitHub reports that account `epelawa` merged it at 2026-11-18 04:57:06Z; the assistant did not issue a merge command.
+- PR #154 unified the public newsletter footer across homepage, News, article-slug, and radio reminder pages; removed duplicate page-local News footers; added the branded SVG 404 state and homepage story-card logo fallback; fixed protected-dashboard footer leakage and narrow-screen News filter overflow; and updated regression tests.
+- Exact-head browser smoke passed ([run #44240056909](https://github.com/epelawa/EPE-LAWA/actions/runs/44240056909)) on PR head `8da2a0313aa63c83e2fce78f028d7b64ae0c5664`. The local affected regression set passed **34/34** and `git diff --check` passed.
+- [CI run #44240056915](https://github.com/epelawa/EPE-LAWA/actions/runs/44240056915) reported zero test failures; typecheck, build, and CodeQL completed successfully. **The verify job is still failed**, solely at `pnpm audit --audit-level=high`: one high-severity picomatch ReDoS advisory, [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf), through `.>vitest>picomatch` and `admin>tailwindcss>chokidar>anymatch>picomatch`. Do not claim an all-green CI run, suppress the audit, or treat the merge as proof the vulnerability is resolved.
+- No Production deployment was verified. PR #154 made no Supabase schema, migration, user-content, or production-setting changes.
+- The owner-requested backlog remains open; see the [18 November continuation handoff](handoffs/2026-11-18-shared-footer-and-newsroom-backlog.md) for the detailed next-work queue: real visitor/country analytics, scheduled publication, Admin settings/password/social links, progressive newsroom forms and recovery, safe provider-link parsing, top-of-screen toasts, action-history presentation, and secure deletion. Preserve the underlying audit records and existing publishing authorization while implementing these changes.
+
+The detailed status table and open-PR records that follow were written for the **15 November snapshot** and are retained as history; they are not current PR/check status.
 
 > **Owner’s target:** a coherent, professional, production-grade redesign of the whole relevant product—public pages, member/auth interfaces, Admin, forms, and end-to-end journeys—along with a stronger, better-organized codebase. The current work is only a first slice. Improve the existing system deliberately; do not rush a wholesale rewrite or discard its security and data boundaries.
 
@@ -14,7 +25,7 @@
 - **Pending / blocked** means no sufficient evidence is recorded, a test is unresolved, or an owner/provider/legal/data decision is needed. It does **not** assert that no code exists.
 - A route in the source tree, a passing focused test, a green deployment check, or an HTTP 200 response is not by itself end-to-end acceptance.
 
-## Where the project is now
+## Historical snapshot — 15 November 2026 (superseded by the current snapshot above)
 
 | Area | Verified state | What it means |
 |---|---|---|
@@ -42,7 +53,9 @@
 | Newsroom / preview availability | The current snapshot does not establish whether Newsroom is available in the exact preview or Production, whether its real content/data path is operational, or whether the #112 preview is accessible for independent visual review. Vercel Preview Comments passing does not itself establish reviewer access. | **Unresolved; do not label Newsroom available or #112 visually accepted.** Verify the route and real content/service state, and provide a reviewable exact-head preview; present an honest unavailable/empty state until verified. |
 | Production, scope, and operations | Main `433082…` has a bounded local synthetic PGlite rehearsal (40 migration files; 28/29 schema tests passed, 1 intentional skip) but no Supabase backup/restore, live ledger/data, Production runtime, or real-provider proof. Production deployment SHA, live journeys, custom-domain DNS/TLS, and provider operation remain unverified. | No Production schema/data/ledger/settings changes or hosted Supabase resources were made. Keep Production, scope, legal, provider, domain, and data blockers explicit. |
 
-## What is done—and what is not
+## Historical done/unfinished checklist — 15 November 2026
+
+> This checklist is retained as historical scope and acceptance guidance. Its PR states, SHA references, and UI status below are stale; use the 18 November snapshot and continuation handoff for current status.
 
 ### Evidence-backed done
 

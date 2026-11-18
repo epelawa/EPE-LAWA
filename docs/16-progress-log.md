@@ -1,7 +1,7 @@
 # EPE-LAWA — Timestamped Progress Log
 
 **Time zone:** Africa/Lagos (UTC+01:00).
-**Last scope update:** 2026-11-07.
+**Last scope update:** 2026-11-18.
 
 ## Current scope and rules
 
@@ -454,3 +454,10 @@ Reworked the public hero so the copy block is genuinely centred (`align-items:ce
 The member space now looks nothing like the public site. The "Welcome back" card is deleted outright (markup and CSS) on every member tab, the midnight top bar runs edge to edge with its bell/sign-out/menu cluster pinned right, the tab strip is a midnight segmented control with an ice-blue active state, panel cards carry a cobalt left rule, and the mobile bottom nav uses the same midnight surface as the top bar instead of the public white card.
 
 The Saved tab is no longer a placeholder. Additive migration `20261116140000_member_saved_articles.sql` creates `public.saved_articles` (member + article unique pair, cascade deletes, owner-only select/insert/delete policies, anon revoked, `authenticated` granted). `app/dashboard/saved-actions.ts` writes only the caller's row, a save control sits in the published-story hero for signed-in members, and the Saved tab lists real bookmarks with a remove action. Applied to the Production project (`igqmybuiovaxqmrteebd`) as ledger version `20261116095844`; verified with `to_regclass`, three RLS policies and `relrowsecurity = true`, plus the `(article_id)` index the schema suite requires for every foreign key.
+
+
+## 2026-11-18 06:02 WAT — Shared public footer and continuation handoff
+
+- Current `main` is `43eae784de7880d993be21673219c265d031adcf`, PR #154’s merge commit. GitHub reports account `epelawa` merged PR #154 at 04:57:06Z; the assistant did not issue a merge command. The change unified the newsletter footer on homepage, News listing, article-slug and radio reminder pages; removed duplicate News footers; added the SVG 404 and homepage story-card logo fallback; fixed protected-dashboard footer leakage and narrow News filter overflow.
+- Exact-head browser smoke passed ([run #44240056909](https://github.com/epelawa/EPE-LAWA/actions/runs/44240056909)). Local affected tests passed 34/34. CI run #44240056915 reported zero test failures and successful typecheck/build/CodeQL, but the verify job failed at the dependency audit because of one high-severity picomatch ReDoS advisory, [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf). No audit suppression or waiver was added; do not claim CI is all green. Production deployment was not verified; this PR made no Supabase schema, migration, user-content, or production-setting changes.
+- The owner’s broad follow-up remains pending: real visitor/country analytics, scheduled publication, Admin settings/password/social links, progressive article forms/modal upload/draft recovery, safe provider URL detection, top-of-screen toasts, removal of noisy action-history presentation while retaining durable audit records, and secure permanent deletion. See [`docs/handoffs/2026-11-18-shared-footer-and-newsroom-backlog.md`](handoffs/2026-11-18-shared-footer-and-newsroom-backlog.md) and the current snapshot in [`docs/18-project-status-implementation-checklist.md`](18-project-status-implementation-checklist.md). Resolve the security, privacy, retention, publication and metadata/cover-field decisions in that handoff before implementing high-impact behavior.
