@@ -8,7 +8,7 @@ const noResultsQuery = "browser-smoke-no-results";
 const mainNavigationName = /^Primary navigation$/;
 const newsLinkName = /News/;
 
-async function setFixtureMode(request: APIRequestContext, mode: "empty" | "error" | "stories") {
+async function setFixtureMode(request: APIRequestContext, mode: "empty" | "error" | "stories" | "news-many") {
   const response = await request.post(`${fixtureURL}/__smoke__/mode`, { data: { mode } });
   expect(response.ok(), `local fixture should accept mode ${mode}`).toBeTruthy();
 }
@@ -120,6 +120,30 @@ for (const width of viewportWidths) {
     await expect(page.getByRole("heading", { name: "Smoke fixture: market story" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Smoke fixture: sports story" })).toHaveCount(0);
     await expectNoHorizontalOverflow(page, `filtered News at ${width}px`);
+  });
+}
+
+for (const width of [320, 375, 768, 1024, 1440] as const) {
+  test(`news groups, linked covers and pagination at ${width}px`, async ({ page, request }) => {
+    await setFixtureMode(request, "news-many");
+    await page.setViewportSize({ width, height: 900 });
+    await page.route("https://images.example.com/**", (route) => route.fulfill({ status: 200, contentType: "image/svg+xml", body: '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" />' }));
+    await page.goto("/news");
+    await expect(page.getByRole("heading", { name: "Test story 1", exact: true })).toBeVisible();
+    await expect(page.getByRole("region", { name: "Sports stories" })).toBeVisible();
+    await expect(page.getByRole("region", { name: "Local News stories" })).toBeVisible();
+    await expect(page.locator('img[src="https://images.example.com/test-cover.jpg"]')).toHaveCount(1);
+    await expect(page.getByRole("link", { name: "Load more news" })).toBeVisible();
+    await expectNoHorizontalOverflow(page, `grouped News at ${width}px`);
+    await page.getByRole("link", { name: "Read: Test story 1" }).click();
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", "https://images.example.com/test-cover.jpg");
+    await expect(page.getByRole("img", { name: "Synthetic cover" })).toBeVisible();
+    await expect(page.getByText("Synthetic article for browser testing.")).toBeVisible();
+    await expect(page.getByText("Second published paragraph.")).toBeVisible();
+    await expect(page.getByText("Final published paragraph.")).toBeVisible();
+    await expect(page.getByText("Photo: Test photographer")).toBeVisible();
+    await page.goto("/news?page=2");
+    await expect(page.getByRole("heading", { name: "Test story 31", exact: true })).toBeVisible();
   });
 }
 

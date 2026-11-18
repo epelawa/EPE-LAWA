@@ -20,7 +20,7 @@ test("News queries only published stories and active real categories", () => {
   assert.match(page, /from\("categories"\)/);
   assert.match(page, /\.eq\("is_active", true\)/);
   assert.match(page, /og_image_key/);
-  assert.doesNotMatch(page, /cover_url|cover_alt|cover_source_url|cover_license_url/);
+  assert.match(page, /og_image_key,cover_url,cover_alt/);
   assert.doesNotMatch(page, /from\("articles"\)|service_role/);
 });
 
@@ -152,4 +152,12 @@ test("News pagination remains bounded with deterministic published ordering", ()
   assert.match(page, /\.range\(start, start \+ PAGE_SIZE\)/);
   assert.match(page, /\.order\("slug", \{ ascending: true \}\)/);
   assert.match(page, /const hasOlder = rows\.length > PAGE_SIZE/);
+});
+
+
+test("News lists newest stories first and groups later stories by real category", () => {
+  assert.match(page, /remaining\.slice\(0, 6\)/);
+  assert.match(page, /remaining\.slice\(6\)/);
+  assert.match(page, /grouped\.get\(story\.category_slug\)/);
+  assert.match(page, /categoryHref\("", slug\)/);
 });

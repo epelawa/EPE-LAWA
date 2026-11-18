@@ -352,3 +352,4 @@
 .readingGuide { display:flex; align-items:center; justify-content:space-between; gap:12px; max-width:760px; margin:28px auto 0; padding:14px 18px; border:1px solid #dbe5f3; border-radius:14px; background:rgb(242 247 255 / .88); color:#294b91; font-size:.75rem; font-weight:800; letter-spacing:.06em; }
 .readingGuide a { color:#294b91; min-height:44px; display:inline-flex; align-items:center; gap:8px; text-decoration:none; letter-spacing:0; }
 .readingGuide a:hover { color:#17264a; text-decoration:underline; text-underline-offset:4px; }
+.articleBody :global(.article-body) p { white-space:pre-line; overflow-wrap:anywhere; }

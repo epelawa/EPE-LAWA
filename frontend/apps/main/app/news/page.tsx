@@ -3,8 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient, SupabaseConfigurationError } from "../../lib/supabase";
 import { formatPublishedDate } from "../../lib/dates";
-import { publicMediaUrl } from "../../lib/media";
-import { selectedNewsCover } from "../../lib/news-covers";
+import { publishedNewsCover } from "../../lib/published-news-cover";
 import { absoluteUrl } from "../../lib/site";
 import { newsArticlePath } from "../../lib/news-urls";
 import { NewspaperIcon } from "../../components/icons";
@@ -23,6 +22,8 @@ type ArticleListItem = {
   category_slug: string;
   category_label: string;
   og_image_key: string | null;
+  cover_url: string | null;
+  cover_alt: string | null;
 };
 type NewsCategory = { slug: string; label: string };
 type SearchParams = { q?: string | string[]; page?: string | string[]; category?: string | string[]; search?: string | string[] };
@@ -68,7 +69,7 @@ function fallbackCategories(articles: ArticleListItem[]): NewsCategory[] {
   return [...labels].map(([slug, label]) => ({ slug, label }));
 }
 function coverUrl(article: ArticleListItem): string | null {
-  return selectedNewsCover(article.og_image_key)?.url ?? publicMediaUrl(article.og_image_key);
+  return publishedNewsCover(article)?.url ?? null;
 }
 
 function NewsError() {
@@ -108,7 +109,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
   }
 
   let articleQuery = supabase.from("published_articles")
-    .select("slug,title,summary,published_at,is_breaking,breaking_until,author_name,category_slug,category_label,og_image_key")
+    .select("slug,title,summary,published_at,is_breaking,breaking_until,author_name,category_slug,category_label,og_image_key,cover_url,cover_alt")
     .order("published_at", { ascending: false, nullsFirst: false })
     .order("slug", { ascending: true });
   if (query) articleQuery = articleQuery.ilike("title", `%${escapeLike(query)}%`);
@@ -132,6 +133,15 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
   const breakingLead = breakingStories[0];
   const lead = page === 1 ? (breakingLead ?? articles[0] ?? null) : null;
   const remaining = lead ? articles.filter((article) => article.slug !== lead.slug) : articles;
+  // Keep the newest stories together first; only group the rest of this page by their actual category.
+  const showCategories = !hasSearchOrCategory && page === 1;
+  const latest = showCategories ? remaining.slice(0, 6) : remaining;
+  const grouped = new Map<string, { label: string; stories: ArticleListItem[] }>();
+  if (showCategories) for (const story of remaining.slice(6)) {
+    const group = grouped.get(story.category_slug) ?? { label: story.category_label || "News", stories: [] };
+    group.stories.push(story);
+    grouped.set(story.category_slug, group);
+  }
   const heading = category ? categories.find((item) => item.slug === category)?.label ?? "News" : query ? "Search results" : "Latest News";
 
   return <>
@@ -198,9 +208,9 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
             </div>
           </article>
         </section> : null}
-        {remaining.length ? <section className={styles.storiesSection} aria-labelledby="stories-heading">
+        {latest.length ? <section className={styles.storiesSection} aria-labelledby="stories-heading">
           <div className={styles.sectionHeading}><h2 id="stories-heading">{lead ? "Latest stories" : "Stories"}</h2><span>{articles.length} on this page</span></div>
-          <ul className={styles.storyGrid}>{remaining.map((article) => {
+          <ul className={styles.storyGrid}>{latest.map((article) => {
             const image = coverUrl(article);
             return <li key={article.slug}><article className={styles.storyCard}>
               <Link href={newsArticlePath(article.slug)} className={styles.storyMedia} tabIndex={-1} aria-hidden="true">
@@ -215,6 +225,16 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
             </article></li>;
           })}</ul>
         </section> : null}
+        {[...grouped].map(([slug, group]) => <section className={styles.storiesSection} aria-label={`${group.label} stories`} key={slug}>
+          <div className={styles.sectionHeading}><h2>{group.label}</h2><Link className={styles.categoryMore} href={categoryHref("", slug)}>More in {group.label} <span aria-hidden="true">→</span></Link></div>
+          <ul className={styles.storyGrid}>{group.stories.map((article) => {
+            const image = coverUrl(article);
+            return <li key={article.slug}><article className={styles.storyCard}>
+              <Link href={newsArticlePath(article.slug)} className={styles.storyMedia} tabIndex={-1} aria-hidden="true">{image ? <img className={styles.storyImage} src={image} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" /> : <span className={styles.imageFallback}><NewspaperIcon size={28} /></span>}</Link>
+              <div className={styles.storyCopy}><div className={styles.categoryLabel}>{article.category_label}{isBreakingNow(article) ? <StatusBadge tone="warning">Breaking</StatusBadge> : null}</div><h3 className={styles.storyTitle}><Link href={newsArticlePath(article.slug)}>{article.title}</Link></h3>{article.summary ? <p className={styles.storySummary}>{article.summary}</p> : null}<p className={styles.storyMeta}>By {article.author_name}{article.published_at ? <> <span aria-hidden="true">·</span> <time dateTime={article.published_at}>{formatPublishedDate(article.published_at)}</time></> : null}</p></div>
+            </article></li>;
+          })}</ul>
+        </section>)}
       </>}
       {page > 1 || hasOlder || hasSearchOrCategory ? <nav className={styles.pagination} aria-label="News pages">{page > 1 ? <Link className="btn-secondary" href={pageHref(page - 1, query, category)}>Newer stories</Link> : null}<span className={styles.pageNumber} aria-live="polite">Page {page}</span>{hasOlder ? <Link className="btn-secondary" href={pageHref(page + 1, query, category)}>Load more news</Link> : null}{hasSearchOrCategory || page > 1 ? <Link className={`${styles.viewAll} btn-primary`} href="/news">View all available news</Link> : null}</nav> : null}
     </PageFrame>
