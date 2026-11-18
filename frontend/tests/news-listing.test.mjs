@@ -9,7 +9,9 @@ const header = await readFile(new URL("components/site-header.tsx", root), "utf8
 const headerStyles = await readFile(new URL("components/navigation-refinement.css", root), "utf8");
 const footer = await readFile(new URL("components/site-footer.tsx", root), "utf8");
 const newsFooter = await readFile(new URL("components/news-footer.tsx", root), "utf8");
-const newsletter = await readFile(new URL("components/newsletter-unavailable.tsx", root), "utf8");
+const newsletter = await readFile(new URL("components/newsletter-form.tsx", root), "utf8");
+const newsletterAction = await readFile(new URL("app/newsletter/actions.ts", root), "utf8");
+const newsletterMailer = await readFile(new URL("lib/newsletter-mailer.ts", root), "utf8");
 const advertise = await readFile(new URL("app/advertise/page.tsx", root), "utf8");
 
 test("News queries only published stories and active real categories", () => {
@@ -112,10 +114,14 @@ test("public footers and correction links do not imply that unavailable contact 
   assert.doesNotMatch(article, /contact the newsroom/i);
 });
 
-test("Newsletter and advertising states do not pretend to accept or deliver submissions", () => {
-  assert.match(newsletter, /disabled/);
-  assert.match(newsletter, /no email address is collected/);
-  assert.doesNotMatch(newsletter, /<form|action=|name="email"/);
+test("Newsletter uses the standalone form/action/mailer path and preserves truthful delivery errors", () => {
+  assert.match(newsletter, /useActionState\(subscribeNewsletter/);
+  assert.match(newsletter, /name="email"/);
+  assert.match(newsletterAction, /newsletter_subscribe_request/);
+  assert.match(newsletterAction, /sendNewsletterConfirmation/);
+  assert.match(newsletterMailer, /NEWSLETTER_SMTP_HOST/);
+  assert.match(newsletterMailer, /newsletter\/unsubscribe\?token=/);
+  assert.doesNotMatch(newsletterAction, /auth\.signInWithOtp|auth\.verifyOtp|emailRedirectTo/);
   assert.match(advertise, /does not collect or store contact details/);
   assert.match(advertise, /Enquiries unavailable/);
   assert.doesNotMatch(advertise, /<form|action=|mailto:/);
@@ -133,6 +139,11 @@ test("News content keeps a responsive editorial grid and accessible 48px control
   assert.match(styles, /\.categoryLink \{[^}]*min-height: 48px/);
   assert.match(styles, /\.searchSummary \{[^}]*min-height: 48px/);
   assert.match(page, /<details className=\{styles\.categoryDropdown\}>/);
+  assert.match(page, /Load more news/);
+  assert.match(page, /View all available news/);
+  assert.match(page, /className=\{styles\.filterTools\}/);
+  assert.match(styles, /\.filterTools \.newsSearchForm input[^}]*border-radius:999px/);
+  assert.match(styles, /@keyframes newsroom-rise/);
 });
 
 test("News pagination remains bounded with deterministic published ordering", () => {

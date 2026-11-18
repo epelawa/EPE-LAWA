@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createClient } from "../lib/supabase";
 import { BrandLockup } from "./brand";
-import NewsletterUnavailable from "./newsletter-unavailable";
+import NewsletterForm from "./newsletter-form";
 import styles from "./news-footer.module.css";
 
 type NewsCategory = { slug: string; label: string };
@@ -37,6 +37,7 @@ export default async function NewsFooter({ categories, listing = false }: { cate
       </section>
       <section className={styles.listingColumn}><h2>Explore</h2><nav aria-label="News footer links"><Link href="/news">Latest news</Link><Link href="/radio">Listen to radio</Link><Link href="/about">About EPE LAWA</Link><Link href="/contact">Contact availability</Link></nav></section>
       <section className={styles.listingColumn}><h2>Browse topics</h2><nav aria-label="News footer categories">{links.length ? links.slice(0, 8).map((category) => <Link key={category.slug} href={`/news?category=${encodeURIComponent(category.slug)}`}>{category.label}</Link>) : <Link href="/news">All news</Link>}</nav></section>
+      <section className={styles.listingColumn}><h2>Newsletter</h2><p>Reporting and updates from Epe.</p><NewsletterForm id="news-listing-signup" variant="footer" /></section>
     </div>
     <div className={styles.listingBottom}><span>© {new Date().getFullYear()} EPE LAWA</span><span>Rooted in Epe. Connected everywhere.</span><Link href="/privacy">Privacy</Link></div>
   </footer>;
@@ -64,8 +65,8 @@ export default async function NewsFooter({ categories, listing = false }: { cate
         </section>
         <section className={`${styles.column} ${styles.newsletter}`}>
           <h2>Newsletter</h2>
-          <p>Newsletter email delivery is not configured.</p>
-          <NewsletterUnavailable id="news-footer-signup" variant="footer" />
+          <p>Reporting and updates from Epe, delivered with a simple unsubscribe link.</p>
+          <NewsletterForm id="news-footer-signup" variant="footer" />
         </section>
       </div>
       <div className={styles.bottom}>
