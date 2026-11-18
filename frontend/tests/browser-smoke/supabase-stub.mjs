@@ -92,7 +92,7 @@ const server = createServer((request, response) => {
     request.on("end", () => {
       try {
         const value = JSON.parse(body).mode;
-        if (value !== "empty" && value !== "error" && value !== "stories" && value !== "news-many" && value !== "news-many-breaking" && value !== "history") {
+        if (value !== "empty" && value !== "error" && value !== "stories" && value !== "ranking" && value !== "news-many" && value !== "news-many-breaking" && value !== "history") {
           respond(response, 400, { error: "Unsupported fixture mode" });
           return;
         }
@@ -118,11 +118,11 @@ const server = createServer((request, response) => {
     return;
   }
 
-  if ((mode === "stories" || mode === "news-many" || mode === "news-many-breaking") && request.method === "POST" && url.pathname === "/rest/v1/rpc/has_capability") {
+  if ((mode === "stories" || mode === "ranking" || mode === "news-many" || mode === "news-many-breaking") && request.method === "POST" && url.pathname === "/rest/v1/rpc/has_capability") {
     respond(response, 200, false);
     return;
   }
-  if ((mode === "stories" || mode === "news-many" || mode === "news-many-breaking") && request.method === "HEAD" && ["/rest/v1/comments", "/rest/v1/saved_articles"].includes(url.pathname)) {
+  if ((mode === "stories" || mode === "ranking" || mode === "news-many" || mode === "news-many-breaking") && request.method === "HEAD" && ["/rest/v1/comments", "/rest/v1/saved_articles"].includes(url.pathname)) {
     respond(response, 200, undefined, { "content-range": "*/0" });
     return;
   }
@@ -142,20 +142,21 @@ const server = createServer((request, response) => {
       return;
     }
 
-    if ((mode === "stories" || mode === "news-many" || mode === "news-many-breaking") && url.pathname === "/rest/v1/articles") {
+    if ((mode === "stories" || mode === "ranking" || mode === "news-many" || mode === "news-many-breaking") && url.pathname === "/rest/v1/articles") {
       respond(response, 200, [{ published_version_id: "fixture-version" }]);
       return;
     }
-    if ((mode === "stories" || mode === "news-many" || mode === "news-many-breaking") && url.pathname === "/rest/v1/article_versions") {
+    if ((mode === "stories" || mode === "ranking" || mode === "news-many" || mode === "news-many-breaking") && url.pathname === "/rest/v1/article_versions") {
       respond(response, 200, [{ body: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Synthetic article for browser testing." }] }, { type: "paragraph", content: [{ type: "text", text: "Second published paragraph." }] }, { type: "paragraph", content: [{ type: "text", text: "Final published paragraph." }] }] } }]);
       return;
     }
-    if ((mode === "stories" || mode === "news-many" || mode === "news-many-breaking") && url.pathname === "/rest/v1/comments") {
+    if ((mode === "stories" || mode === "ranking" || mode === "news-many" || mode === "news-many-breaking") && url.pathname === "/rest/v1/comments") {
       respond(response, 200, []);
       return;
     }
-    if ((mode === "stories" || mode === "news-many" || mode === "news-many-breaking") && url.pathname === "/rest/v1/published_article_engagement") {
-      respond(response, 200, []);
+    if ((mode === "stories" || mode === "ranking" || mode === "news-many" || mode === "news-many-breaking") && url.pathname === "/rest/v1/published_article_engagement") {
+      const items = mode === "ranking" ? fixtureStories().map((story, index) => ({ article_id: story.id, view_count: [50, 3, 17][index], comment_count: 0, read_minutes: 1 })) : [];
+      respond(response, 200, items);
       return;
     }
     if (mode === "history" && url.pathname === "/rest/v1/history_records") {
@@ -179,12 +180,12 @@ const server = createServer((request, response) => {
       url.pathname === "/rest/v1/published_articles" ||
       url.pathname === "/rest/v1/categories"
     ) {
-      if ((mode === "stories" || mode === "news-many" || mode === "news-many-breaking") && url.pathname === "/rest/v1/published_articles") {
+      if ((mode === "stories" || mode === "ranking" || mode === "news-many" || mode === "news-many-breaking") && url.pathname === "/rest/v1/published_articles") {
         const items = filteredStories(url);
         respond(response, 200, items, { "content-range": `0-${Math.max(0, items.length - 1)}/${items.length}` });
         return;
       }
-      if ((mode === "stories" || mode === "news-many" || mode === "news-many-breaking") && url.pathname === "/rest/v1/categories") {
+      if ((mode === "stories" || mode === "ranking" || mode === "news-many" || mode === "news-many-breaking") && url.pathname === "/rest/v1/categories") {
         respond(response, 200, [{ slug: "local-news", label: "Local News" }, { slug: "sports", label: "Sports" }], { "content-range": "0-1/2" });
         return;
       }

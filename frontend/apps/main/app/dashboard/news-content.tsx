@@ -5,6 +5,7 @@ import { publishedNewsCover } from "../../lib/published-news-cover";
 import NewsImage from "../../components/news-image";
 import { ExpiringBreakingList } from "../../components/breaking-news";
 import { newsArticlePath } from "../../lib/news-urls";
+import { rankRecentStories } from "../../lib/recommendation-ranking";
 import { ClockIcon, EyeIcon, MessageCircleIcon } from "../../components/icons";
 import { StatusBadge } from "../../components/design-system";
 import styles from "./dashboard.module.css";
@@ -90,12 +91,12 @@ async function loadRecommendations(client: SupabaseClient): Promise<QueryResult<
   try {
     const { data, error } = await client.from("published_articles").select(STORY_COLUMNS)
       .order("published_at", { ascending: false, nullsFirst: false })
-      .order("slug", { ascending: true }).limit(8);
+      .order("slug", { ascending: true }).limit(50);
     if (error) {
       console.error("member dashboard recommendations read failed", { code: error.code });
       return { state: "error", items: [] };
     }
-    return { state: "ok", items: ((data ?? []) as PublishedStory[]).filter((story) => !isActiveBreaking(story)).slice(0, 4) };
+    return { state: "ok", items: ((data ?? []) as PublishedStory[]).filter((story) => !isActiveBreaking(story)) };
   } catch {
     return { state: "error", items: [] };
   }
@@ -149,11 +150,10 @@ async function loadEngagement(client: SupabaseClient, stories: PublishedStory[])
       return map;
     }
     for (const row of (data ?? []) as { article_id: string; view_count: number; comment_count: number; read_minutes: number }[]) {
-      map.set(row.article_id, {
-        view_count: Number(row.view_count) || 0,
-        comment_count: Number(row.comment_count) || 0,
-        read_minutes: Number(row.read_minutes) || 1,
-      });
+      if ([row.view_count, row.comment_count, row.read_minutes].some(value => value == null || (typeof value === "string" && !/^\d+$/.test(value)))) continue;
+      const viewCount = Number(row.view_count), commentCount = Number(row.comment_count), readMinutes = Number(row.read_minutes);
+      if (![viewCount, commentCount, readMinutes].every(Number.isSafeInteger) || viewCount < 0 || commentCount < 0 || readMinutes < 1) continue;
+      map.set(row.article_id, { view_count: viewCount, comment_count: commentCount, read_minutes: readMinutes });
     }
   } catch {
     // Covers still render; the engagement chips honestly show an unavailable state.
@@ -227,6 +227,7 @@ function HomeSectionHeading({ id, title, helper, level = "h2" }: { id: string; t
 export async function DashboardHomeNews({ client }: { client: SupabaseClient }) {
   const [breaking, recommendations] = await Promise.all([loadBreaking(client), loadRecommendations(client)]);
   const engagement = await loadEngagement(client, [...breaking.items, ...recommendations.items]);
+  const recommended = rankRecentStories(recommendations.items, engagement);
   return <div className={styles.newsFeed}>
     <section className={styles.feedSection} aria-labelledby="breaking-heading">
       <HomeSectionHeading id="breaking-heading" title="Breaking News" helper="Only stories still marked breaking by the newsroom appear here." level="h1" />
@@ -235,9 +236,10 @@ export async function DashboardHomeNews({ client }: { client: SupabaseClient }) 
         : <p className={styles.feedEmpty}>There are no active breaking stories right now.</p>}
     </section>
     <section className={styles.feedSection} aria-labelledby="recommendations-heading">
-      <HomeSectionHeading id="recommendations-heading" title="Recommendations" helper="Recent published stories from the newsroom; not ranked by popularity." />
+      <HomeSectionHeading id="recommendations-heading" title="Recommendations" />
+      {recommendations.state === "ok" && recommendations.items.length ? <p className={styles.resultSummary} role="status">{recommended.ranked ? "Most viewed among the latest 50 stories, excluding breaking news" : "Latest stories · view ranking temporarily unavailable"}</p> : null}
       {recommendations.state === "error" ? <ErrorState title="Recommendations could not be loaded" href="/dashboard?tab=home" />
-        : recommendations.items.length ? <ul className={styles.storyGrid}>{recommendations.items.map((story) => <StoryCard key={story.slug} story={story} stats={engagement.get(story.id)} />)}</ul>
+        : recommendations.items.length ? <ul className={styles.storyGrid}>{recommended.items.map((story) => <StoryCard key={story.slug} story={story} stats={engagement.get(story.id)} />)}</ul>
         : <p className={styles.feedEmpty}>No other recent published stories are available to recommend yet.</p>}
       <Link className={styles.seeAllLink} href="/dashboard?tab=discover">Discover all published stories <span aria-hidden="true">→</span></Link>
     </section>
