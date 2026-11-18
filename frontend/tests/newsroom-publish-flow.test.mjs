@@ -123,3 +123,17 @@ test("staff Newsroom exposes revision history without listing protected audit ev
   assert.match(editor, /protected audit log/);
   assert.doesNotMatch(editor, /actor_id|created_by<\/td>|email_address/);
 });
+
+test("breaking controls use published pointers and guarded revision RPC with bounded durations", async () => {
+  const migration = await read("backend/supabase/migrations/20261118060000_restore_article_set_breaking.sql");
+  assert.match(editPage, /hasPublishedVersion \? <Panel>[\s\S]*?title="Breaking news"/);
+  assert.match(editPage, /canPublish \? <div className="ui-stack">/);
+  assert.match(editPage, /action=\{setArticleBreaking\}/);
+  assert.match(actions, /\["1", "6", "24", "48"\]\.includes\(duration\)/);
+  assert.match(actions, /supabase\.rpc\("article_set_breaking"/);
+  assert.match(actions, /p_expected_revision: revision, p_breaking:/);
+  assert.match(migration, /require_capability\('article\.publish'\)/);
+  assert.match(migration, /v_revision is distinct from p_expected_revision/);
+  assert.match(migration, /v_published is null/);
+  assert.match(migration, /audit_event\('staff', 'article\.set_breaking'/);
+});

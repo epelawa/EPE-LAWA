@@ -289,3 +289,32 @@ async function articleTransition(
   revalidatePath("/");
   redirect(adminHref(`/newsroom/${articleId}?${outcome}=1`));
 }
+
+/** Mark only an already-public story. Expiry is computed server-side from an allowed duration. */
+export async function setArticleBreaking(formData: FormData): Promise<void> {
+  const articleId = text(formData, "articleId", 64);
+  const revision = Number(text(formData, "revision", 24));
+  const operation = text(formData, "operation", 16);
+  const duration = text(formData, "duration", 8);
+  if (!UUID.test(articleId) || !Number.isSafeInteger(revision) || revision < 1) fail("/newsroom?error=invalid");
+  if (operation !== "enable" && operation !== "disable") fail(`/newsroom/${articleId}?error=breaking`);
+  if (operation === "enable" && !["1", "6", "24", "48"].includes(duration)) fail(`/newsroom/${articleId}?error=breaking`);
+  const until = operation === "enable" ? new Date(Date.now() + Number(duration) * 60 * 60 * 1000).toISOString() : null;
+  let errorCode: string | null = null;
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("article_set_breaking", {
+      p_article_id: articleId, p_expected_revision: revision, p_breaking: operation === "enable", p_until: until,
+    });
+    if (error) errorCode = error.code;
+  } catch (error) { errorCode = queryErrorCode(error); }
+  if (errorCode) {
+    console.error("article breaking update failed", { code: errorCode });
+    fail(`/newsroom/${articleId}?error=breaking`);
+  }
+  revalidatePath(adminHref(`/newsroom/${articleId}`));
+  revalidatePath(adminHref("/newsroom"));
+  revalidatePath("/news");
+  revalidatePath("/dashboard");
+  redirect(adminHref(`/newsroom/${articleId}?breaking=1`));
+}

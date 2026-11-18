@@ -184,7 +184,8 @@ test("signed-in Home and Discover render and filter only published story records
   const missingMetadata = page.getByRole("link", { name: "Read: Smoke fixture: sports story" });
   await expect(missingMetadata.getByText("Byline unavailable")).toBeVisible();
   await expect(missingMetadata.getByText("News", { exact: true })).toBeVisible();
-  await expect(missingMetadata.locator("img")).toHaveCount(0);
+  await expect(missingMetadata.locator("img")).toHaveAttribute("data-news-fallback", "true");
+  await expect(missingMetadata.locator("img")).toHaveAttribute("src", "/brand-logo.png");
   await expect(page.locator("#recommendations-heading").locator("..")
     .getByText("Smoke fixture: breaking headline")).toHaveCount(0);
 

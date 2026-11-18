@@ -59,3 +59,14 @@ test("direct news entry and query filters retain their selected search", async (
   await expect(category.locator("summary")).toContainText("Sports");
   await expect(category.locator("details")).not.toHaveAttribute("open", "");
 });
+
+test("breaking banner includes an older active story beyond the first page, but not an expired one", async ({ page, request }) => {
+  await request.post(`${fixtureURL}/__smoke__/mode`, { data: { mode: "news-many-breaking" } });
+  await page.setViewportSize({ width: 375, height: 800 });
+  await page.goto("/news");
+  const breaking = page.getByRole("region", { name: "Breaking news" });
+  await expect(breaking.getByRole("link", { name: "Test story 34" })).toBeVisible();
+  await expect(breaking.getByRole("link", { name: "Test story 35" })).toHaveCount(0);
+  await page.goto("/news?category=local-news");
+  await expect(page.getByRole("region", { name: "Breaking news" })).toHaveCount(0);
+});
