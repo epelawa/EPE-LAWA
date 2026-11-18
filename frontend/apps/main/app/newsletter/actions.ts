@@ -33,7 +33,7 @@ export async function subscribeNewsletter(_previous: NewsletterState = idleState
     if (result === "invalid") return { status: "error", message: "Enter a valid email address and agree to receive the newsletter." };
     if (result === "limited") return { status: "error", message: "Too many requests. Please try again later." };
     if (result === "unavailable") return { status: "error", message: "We couldn’t process your request. Please try again later." };
-    return { status: "success", message: "If your request can be processed, check your email for a confirmation link." };
+    return { status: "success", message: "Please check your email for a confirmation link to proceed with your request." };
   } catch { return { status: "error", message: "We couldn’t process your request. Please try again later." }; }
 }
 

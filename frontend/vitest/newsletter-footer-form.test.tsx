@@ -14,3 +14,12 @@ it("uses the subscribe button as an explicit consent action, with a visible noti
  input.value="reader@example.invalid"; const data=new FormData(form,button);expect(data.get("email")).toBe("reader@example.invalid");expect(data.get("consent")).toBe("yes");
  act(()=>root.unmount());el.remove();
 });
+
+it("uses the same consent action on the newsletter page",async()=>{
+ const el=document.createElement("div");document.body.append(el);const root=createRoot(el);
+ await act(async()=>root.render(<NewsletterActiveForm id="page-test" variant="card"/>));
+ const form=el.querySelector("form")!,button=el.querySelector("button")!;
+ expect(el.querySelector("input[type=checkbox]")).toBeNull();expect(el.querySelector("#page-test-consent")!.textContent).toContain("agree to receive");
+ expect(new FormData(form,button).get("consent")).toBe("yes");
+ act(()=>root.unmount());el.remove();
+});
