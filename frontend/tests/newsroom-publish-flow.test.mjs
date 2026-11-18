@@ -43,8 +43,9 @@ test("direct publish is capability- and revision-checked server-side, and revali
   assert.match(schema, /'publication_mode',\s*v_publication_mode/);
 });
 
-test("drafts stay private and the public list and article resolve only published_articles", () => {
-  assert.match(createPage, /Create private draft/);
+test("drafts stay private and the public list and article resolve only published_articles", async () => {
+  assert.match(createPage, /<NewsArticleComposer/);
+  assert.match(await read("frontend/apps/admin/components/news-article-composer.tsx"), /Saving creates a private article/);
   assert.match(editPage, /Changes remain private/);
   assert.match(listing, /from\("published_articles"\)/);
   assert.match(listing, /newsArticlePath\(article\.slug\)/);

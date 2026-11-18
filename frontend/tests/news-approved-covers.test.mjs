@@ -49,8 +49,7 @@ test('approved cover files preserve the exact originally approved bytes', () => 
 });
 
 test('Admin imports resolve and editor preserves current-version image key rather than inventing an articles column', () => {
-  for (const name of ['new', '[id]']) {
-    const file = path.join(root, 'apps/admin/app/(protected)/newsroom', name, 'page.tsx');
+  for (const file of [path.join(root, 'apps/admin/components/news-article-composer.tsx'), path.join(root, 'apps/admin/app/(protected)/newsroom/[id]/page.tsx')]) {
     const source = fs.readFileSync(file, 'utf8');
     const relative = source.match(/from "([^"]+news-covers)"/)[1];
     assert.equal(fs.existsSync(path.resolve(path.dirname(file), relative + '.ts')), true);
