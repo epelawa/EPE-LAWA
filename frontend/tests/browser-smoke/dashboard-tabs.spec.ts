@@ -21,7 +21,7 @@ const fixtureSession = {
   },
 };
 
-type FixtureMode = "empty" | "error" | "stories";
+type FixtureMode = "empty" | "error" | "stories" | "ranking";
 
 async function setFixtureMode(request: APIRequestContext, mode: FixtureMode) {
   const response = await request.post(`${fixtureURL}/__smoke__/mode`, { data: { mode } });
@@ -309,4 +309,22 @@ test("signed-out story retains public news navigation", async ({ page, request }
     const size = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth }));
     expect(size.document, `public article at ${width}px`).toBeLessThanOrEqual(size.viewport + 1);
   }
+});
+
+
+test("recommendations use real recent view totals and fall back honestly when unavailable", async ({ page, request }) => {
+  await signIn(page);
+  await setFixtureMode(request, "ranking");
+  await page.goto("/dashboard?tab=home");
+  const section = page.locator("section").filter({ has: page.locator("#recommendations-heading") });
+  await expect(section.getByText("Most viewed among the latest 50 stories, excluding breaking news")).toBeVisible();
+  const stories = section.locator("li");
+  await expect(stories).toHaveCount(2);
+  await expect(stories.nth(0)).toContainText("Smoke fixture: sports story");
+  await expect(stories.nth(1)).toContainText("Smoke fixture: market story");
+  await expect(section.getByText("Recent published stories from the newsroom; not ranked by popularity.")).toHaveCount(0);
+  await setFixtureMode(request, "stories");
+  await page.reload();
+  await expect(section.getByText("Latest stories · view ranking temporarily unavailable")).toBeVisible();
+  await expect(stories.nth(0)).toContainText("Smoke fixture: market story");
 });
