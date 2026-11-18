@@ -72,6 +72,8 @@ export default function RadioPlayer() {
       <audio
         ref={audioRef}
         preload="none"
+        autoPlay
+        playsInline
         src={RADIO_LAGOS_1075.streamUrl}
         onPlaying={() => setState("playing")}
         onWaiting={() => setState("connecting")}

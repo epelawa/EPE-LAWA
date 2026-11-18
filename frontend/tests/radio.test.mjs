@@ -27,7 +27,7 @@ test('public Radio player uses only the verified Radio Lagos 107.5 FM record and
 	 assert.match(player,/VolumeOnIcon/);
 	 assert.doesNotMatch(player,/<audio[^>]*\bcontrols\b/i);
 	 assert.doesNotMatch(player,/NAIJA_RADIO_API_KEY|NEXT_PUBLIC|Puzzofme|Naija Radio API/);
-	 assert.doesNotMatch(player,/autoPlay/);
+		 assert.match(player,/autoPlay/);
 });
 
 test('public Radio page renders only database-backed programme, schedule and archive records',async()=>{
@@ -39,8 +39,11 @@ test('public Radio page renders only database-backed programme, schedule and arc
 	 assert.match(page,/No published episodes available/);
  assert.match(listen,/<RadioPlayer/);
  assert.match(listen,/EPE LAWA RADIO/);
- assert.match(listen,/<h1>Listen live/);
- assert.match(listen,/href="\/radio\/programmes"/);
+	 assert.match(listen,/<h1[^>]*>Listen live/);
+	 assert.match(listen,/href="\/radio\/programmes"/);
+	 assert.match(listen,/const listeningPerks = \[/);
+	 assert.equal((listen.match(/\["/g) ?? []).length, 20);
+	 assert.match(listen,/href="\/radio\/reminders"/);
  assert.doesNotMatch(listen,/Live stream not yet available|Stream availability is not verified/);
 });
 

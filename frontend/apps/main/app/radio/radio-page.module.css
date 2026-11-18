@@ -48,3 +48,32 @@
 .links strong, .links small { display: block; }
 .links small { margin-top: 6px; color: #53627a; line-height: 1.4; }
 @media (max-width: 620px) { .listeningPage { width: calc(100% - 28px); margin-block: 20px 48px; } .intro { padding: 28px 22px; } .introMark { flex-basis: 58px; height: 58px; } .introMark svg { width: 30px; height: 30px; } .explore { grid-template-columns: 1fr; gap: 16px; margin-top: 32px; } .links { grid-template-columns: 1fr; } .links a { min-height: 84px; } }
+
+/* Listening desk redesign */
+.hero { position:relative; display:grid; grid-template-columns:minmax(0,1fr) 220px; gap:28px; overflow:hidden; padding:clamp(32px,6vw,72px); border:1px solid #cbdccf; border-radius:30px; background:linear-gradient(125deg,#f5fbf5 0%,#e4f0e5 62%,#c8e0cd 100%); }
+.hero::after { position:absolute; right:-100px; bottom:-170px; width:420px; height:420px; border:1px solid rgb(38 97 74 / .14); border-radius:50%; content:""; pointer-events:none; }
+.hero .introCopy { position:relative; z-index:1; }
+.hero .introCopy > p:last-child { max-width:52ch; }
+.heroSide { position:relative; z-index:1; display:grid; align-content:center; justify-items:center; gap:16px; }
+.introMark { display:grid; width:154px; height:154px; place-items:center; border:1px solid #94bca0; border-radius:50%; background:#fff; color:#26614a; box-shadow:0 18px 44px rgb(38 97 74 / .14); }
+.signal { display:inline-flex; flex-direction:column; align-items:center; gap:3px; color:#26614a; font-size:.7rem; font-weight:800; letter-spacing:.14em; line-height:1.25; text-align:center; }
+.signal strong { font-size:1.05rem; letter-spacing:-.02em; }
+.heroActions { display:flex; flex-wrap:wrap; gap:10px; margin-top:24px; }
+.playerWrap { scroll-margin-top:24px; }
+.perksSection { display:grid; gap:24px; margin-top:54px; padding-top:42px; border-top:1px solid #d8e3da; }
+.sectionIntro { display:grid; gap:8px; max-width:620px; }
+.sectionIntro h2 { margin:0; color:#173b2a; font-size:clamp(1.8rem,4vw,3rem); letter-spacing:-.055em; line-height:1.08; }
+.sectionIntro > p:last-child { color:#526b5c; line-height:1.65; }
+.perksGrid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin:0; padding:0; list-style:none; }
+.perksGrid li { display:grid; grid-template-columns:auto 1fr; gap:10px; min-height:128px; padding:16px; border:1px solid #d8e3da; border-radius:16px; background:#fff; transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease; }
+.perksGrid li:hover { transform:translateY(-3px); border-color:#8fbd9d; box-shadow:0 12px 24px rgb(38 97 74 / .09); }
+.perkNumber { color:#6f9b7b; font-size:.7rem; font-weight:850; letter-spacing:.08em; }
+.perksGrid h3 { margin:0; color:#173b2a; font-size:.9rem; letter-spacing:-.02em; }
+.perksGrid p { margin:6px 0 0; color:#607267; font-size:.78rem; line-height:1.45; }
+.explore { margin-top:54px; }
+.links { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.links a:hover { border-color:#6fa47e; background:#f4faf5; }
+@media (max-width:900px) { .perksGrid { grid-template-columns:repeat(3,minmax(0,1fr)); } .links { grid-template-columns:1fr; } }
+@media (max-width:620px) { .hero { grid-template-columns:1fr; gap:22px; padding:28px 22px; } .heroSide { grid-template-columns:auto 1fr; justify-content:start; justify-items:start; } .introMark { width:74px; height:74px; } .introMark svg { width:34px; height:34px; } .signal { align-items:start; text-align:left; } .perksSection,.explore { margin-top:36px; padding-top:30px; } .perksGrid { grid-template-columns:repeat(2,minmax(0,1fr)); } .perksGrid li { min-height:142px; padding:13px; } }
+@media (max-width:390px) { .perksGrid { grid-template-columns:1fr; } }
+@media (prefers-reduced-motion:reduce) { .perksGrid li { transition:none; } .perksGrid li:hover { transform:none; } }

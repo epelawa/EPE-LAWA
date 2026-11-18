@@ -19,6 +19,7 @@ test("resuming reconnects to the stream rather than playing a paused buffer", ()
 });
 
 test("playback denial is surfaced as a tap-to-play fallback", () => {
+  assert.match(component, /<audio[\s\S]*autoPlay[\s\S]*playsInline/);
   assert.match(component, /error\.name === "NotAllowedError"/);
   assert.match(component, /setState\(isAutoplayDenial\(error\) \? "blocked" : "unavailable"\)/);
   assert.match(component, /Your browser blocked automatic playback\. Tap Play to listen\./);
