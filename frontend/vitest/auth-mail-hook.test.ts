@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createHmac } from "node:crypto";
-import { deliverAuthMessage, renderAuthMessages, verifyAuthMail } from "../apps/main/lib/auth-mail-hook";
+import { authMailConfig, deliverResendAuthMessage, renderAuthMessages, verifyAuthMail } from "../apps/main/lib/auth-mail-hook";
 import { POST } from "../apps/main/app/api/auth/send-email/route";
 const secret = `whsec_${Buffer.alloc(32, 42).toString("base64")}`;
 const payload = { user: { email: "reader@example.invalid", new_email: "new@example.invalid" }, email_data: { token: "12345678", token_hash: "a".repeat(64), redirect_to: "https://site.example/auth/callback?next=%2Fdashboard", email_action_type: "signup", token_new: "", token_hash_new: "" } };
@@ -35,10 +35,10 @@ describe("auth email hook", () => {
   it("sends through the fixed provider and fails on rejection", async () => {
     const fetcher = vi.fn().mockResolvedValue(new Response("{}", { status: 200 }));
     const message = render(payload)[0];
-    await deliverAuthMessage(message, { apiKey: "synthetic-key", from: "EPE LAWA <auth@example.invalid>" }, fetcher);
+    await deliverResendAuthMessage(message, { apiKey: "synthetic-key", from: "EPE LAWA <auth@example.invalid>" }, fetcher);
     expect(fetcher.mock.calls[0][0]).toBe("https://api.resend.com/emails");
     expect(fetcher.mock.calls[0][1].headers["Idempotency-Key"]).toBe(message.idempotencyKey);
-    await expect(deliverAuthMessage(message, { apiKey: "synthetic", from: "auth@example.invalid" }, vi.fn().mockResolvedValue(new Response("bad", { status: 403 })))).rejects.toThrow();
+    await expect(deliverResendAuthMessage(message, { apiKey: "synthetic", from: "auth@example.invalid" }, vi.fn().mockResolvedValue(new Response("bad", { status: 403 })))).rejects.toThrow();
   });
   it("rejects forged requests before contacting the provider and returns provider errors", async () => {
     vi.stubEnv("AUTH_EMAIL_HOOK_SECRET", secret); vi.stubEnv("RESEND_API_KEY", "synthetic"); vi.stubEnv("AUTH_EMAIL_FROM", "auth@example.invalid"); vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://project.example"); vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://site.example");

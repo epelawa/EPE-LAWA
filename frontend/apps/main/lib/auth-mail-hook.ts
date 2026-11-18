@@ -1,5 +1,6 @@
 import { Webhook } from "standardwebhooks";
 import { createHash } from "node:crypto";
+import nodemailer from "nodemailer";
 
 type Message = { to: string; subject: string; text: string; html: string; idempotencyKey: string };
 type RecordValue = Record<string, unknown>;
@@ -53,7 +54,7 @@ export function renderAuthMessages(payload: unknown, projectUrl: string, allowed
   return [make(newEmail, data.token || data.token_new, data.token_hash)];
 }
 
-export async function deliverAuthMessage(message: Message, config: { apiKey: string; from: string }, fetcher: typeof fetch = fetch): Promise<void> {
+export async function deliverResendAuthMessage(message: Message, config: { apiKey: string; from: string }, fetcher: typeof fetch = fetch): Promise<void> {
   if (!config.apiKey || !config.from || /[\r\n]/.test(config.from)) throw new Error("missing mail configuration");
   const response = await fetcher("https://api.resend.com/emails", {
     method: "POST", headers: { Authorization: `Bearer ${config.apiKey}`, "Content-Type": "application/json", "Idempotency-Key": message.idempotencyKey },
@@ -61,4 +62,38 @@ export async function deliverAuthMessage(message: Message, config: { apiKey: str
     signal: AbortSignal.timeout(8000),
   });
   if (!response.ok) throw new Error("mail provider rejected request");
+}
+
+export type AuthMailConfig =
+  | { kind: "gmail"; user: string; password: string; from: string }
+  | { kind: "resend"; apiKey: string; from: string };
+
+/** Choose Gmail when configured; only use Resend when Gmail is wholly absent.
+ * Partial Gmail configuration is an error, not permission to change providers. */
+export function authMailConfig(env: NodeJS.ProcessEnv): AuthMailConfig {
+  const from = env.AUTH_EMAIL_FROM?.trim();
+  const user = env.AUTH_GMAIL_USER?.trim();
+  const password = env.AUTH_GMAIL_APP_PASSWORD;
+  if (!from || /[\r\n]/.test(from)) throw new Error("missing sender");
+  if (user || password) {
+    if (!user || !password || /[\r\n]/.test(user)) throw new Error("incomplete Gmail configuration");
+    return { kind: "gmail", user, password, from };
+  }
+  if (!env.RESEND_API_KEY?.trim()) throw new Error("missing mail provider");
+  return { kind: "resend", apiKey: env.RESEND_API_KEY.trim(), from };
+}
+
+/** SMTP has no provider-level idempotency guarantee. Never fall back after a
+ * send error: the server might already have accepted the message. */
+export async function deliverAuthMessage(message: Message, config: AuthMailConfig): Promise<void> {
+  if (config.kind === "resend") return deliverResendAuthMessage(message, config);
+  const transport = nodemailer.createTransport({
+    host: "smtp.gmail.com", port: 465, secure: true,
+    auth: { user: config.user, pass: config.password },
+    connectionTimeout: 8000, greetingTimeout: 8000, socketTimeout: 8000,
+  });
+  try {
+    const result = await transport.sendMail({ from: config.from, to: message.to, subject: message.subject, text: message.text, html: message.html });
+    if (!result.accepted.length || result.rejected.length) throw new Error("mail provider rejected request");
+  } finally { transport.close(); }
 }
