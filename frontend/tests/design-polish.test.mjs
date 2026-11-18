@@ -52,9 +52,9 @@ test("public shell stays light and the all-viewport drawer is account-only", () 
   assert.match(header, /A shared home for everyone\./);
   assert.match(header, /addEventListener\("pointerdown", onOutsideDrawer\)/);
   assert.match(newsFooter, /<NewsletterForm id="news-listing-signup" variant="footer" \/>/);
-  assert.doesNotMatch(newsFooter, /Newsletter sign-up is paused/);
-  assert.match(newsletter, /<form/);
-  assert.match(newsletter, /action=\{action\}/);
+  assert.match(newsFooter, /Newsletter sign-up is temporarily paused/);
+  assert.match(newsletter, /temporarily unavailable/);
+  assert.match(newsletter, /disabled/);
   assert.match(navCss, /\.drawer\s*\{[^}]*width:min\(520px,calc\(100vw - 52px\)\)/);
   assert.match(navCss, /\.drawer-account__actions\s*\{[^}]*display:\s*grid/);
 });

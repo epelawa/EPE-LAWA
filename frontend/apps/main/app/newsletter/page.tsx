@@ -6,7 +6,7 @@ import { pageMetadata } from "../../lib/metadata";
 export const metadata: Metadata = {
   ...pageMetadata({
     title: "EPE LAWA Newsletter",
-    description: "Subscribe to reporting and community updates from Epe.",
+    description: "Newsletter information and subscription management.",
     path: "/newsletter",
   }),
   robots: { index: false, follow: true },
@@ -18,7 +18,7 @@ export default function NewsletterSignupPage() {
       <PageIntro
         eyebrow="EPE LAWA NEWSLETTER"
         title="Keep up with Epe."
-        description="Get reporting and community updates in your inbox. Subscribe once, and unsubscribe from any newsletter email whenever you choose."
+        description="Sign-up is temporarily unavailable while subscription security is improved. Existing unsubscribe links remain available."
       />
       <Panel className="ui-stack">
         <NewsletterForm id="newsletter-page-signup" />

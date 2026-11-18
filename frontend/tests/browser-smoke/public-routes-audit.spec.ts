@@ -20,12 +20,12 @@ for (const width of [320, 1440]) {
   });
 }
 
-test("newsletter offers signup on home and radio reminders", async ({ page }) => {
+test("newsletter signup is paused on home and radio reminders", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByLabel("Email address").first()).toBeEnabled();
-  await expect(page.getByRole("button", { name: "Subscribe" }).first()).toBeEnabled();
+  await expect(page.getByLabel("Email address").first()).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Subscribe" }).first()).toBeDisabled();
   await page.goto("/radio/reminders");
-  await expect(page.getByRole("button", { name: "Subscribe" }).first()).toBeEnabled();
+  await expect(page.getByRole("button", { name: "Subscribe" }).first()).toBeDisabled();
 });
 
 test("history search remains editable", async ({ page }) => {

@@ -1,9 +1,10 @@
 import Link from "next/link";
 import type { createClient } from "../../lib/supabase";
 import { formatPublishedDate } from "../../lib/dates";
-import { selectedNewsCover } from "../../lib/news-covers";
+import { publishedNewsCover } from "../../lib/published-news-cover";
+import NewsImage from "../../components/news-image";
 import { newsArticlePath } from "../../lib/news-urls";
-import { ClockIcon, EyeIcon, MessageCircleIcon, NewspaperIcon } from "../../components/icons";
+import { ClockIcon, EyeIcon, MessageCircleIcon } from "../../components/icons";
 import { StatusBadge } from "../../components/design-system";
 import styles from "./dashboard.module.css";
 
@@ -20,6 +21,8 @@ type PublishedStory = {
   category_slug: string | null;
   category_label: string | null;
   og_image_key: string | null;
+  cover_url: string | null;
+  cover_alt: string | null;
 };
 type NewsCategory = { slug: string; label: string };
 type QueryResult<T> = { state: "ok"; items: T[] } | { state: "error"; items: T[] };
@@ -27,7 +30,7 @@ type DiscoverResult = QueryResult<PublishedStory> & { categories: QueryResult<Ne
 
 const PAGE_SIZE = 20;
 const MAX_PAGE = 1000;
-const STORY_COLUMNS = "id,slug,title,summary,published_at,is_breaking,breaking_until,author_name,category_slug,category_label,og_image_key";
+const STORY_COLUMNS = "id,slug,title,summary,published_at,is_breaking,breaking_until,author_name,category_slug,category_label,og_image_key,cover_url,cover_alt";
 type StoryEngagement = { view_count: number; comment_count: number; read_minutes: number };
 
 function isActiveBreaking(story: PublishedStory, now = Date.now()): boolean {
@@ -168,8 +171,8 @@ function StoryStats({ stats }: { stats?: StoryEngagement }) {
 }
 
 function storyImage(story: PublishedStory) {
-  const src = selectedNewsCover(story.og_image_key)?.url;
-  return src ? <img className={styles.storyImage} src={src} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" /> : <span className={styles.storyImageFallback} aria-hidden="true"><NewspaperIcon size={24} /></span>;
+  const cover = publishedNewsCover(story);
+  return <NewsImage className={styles.storyImage} src={cover?.url} alt="" />;
 }
 
 function StoryMeta({ story }: { story: PublishedStory }) {
