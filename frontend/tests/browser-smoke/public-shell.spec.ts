@@ -8,7 +8,7 @@ const noResultsQuery = "browser-smoke-no-results";
 const mainNavigationName = /^Primary navigation$/;
 const newsLinkName = /News/;
 
-async function setFixtureMode(request: APIRequestContext, mode: "empty" | "error") {
+async function setFixtureMode(request: APIRequestContext, mode: "empty" | "error" | "stories") {
   const response = await request.post(`${fixtureURL}/__smoke__/mode`, { data: { mode } });
   expect(response.ok(), `local fixture should accept mode ${mode}`).toBeTruthy();
 }
@@ -101,6 +101,25 @@ for (const width of viewportWidths) {
     await expect(page.getByRole("heading", { level: 1, name: "News" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "The newsroom did not load" })).toBeVisible();
     await expectNoHorizontalOverflow(page, `News error state at ${width}px`);
+  });
+}
+
+for (const width of viewportWidths) {
+  test(`populated newsroom works at ${width}px`, async ({ page, request }) => {
+    await setFixtureMode(request, "stories");
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/news");
+    await expect(page.getByRole("heading", { name: "Featured story" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "More stories" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Smoke fixture: market story" })).toBeVisible();
+    await expect(page.getByRole("region", { name: "Breaking news" })).toBeVisible();
+    await expectNoHorizontalOverflow(page, `populated News at ${width}px`);
+    await page.locator('summary[aria-label="Search headlines"]').click();
+    await page.getByRole("searchbox", { name: "Search headlines" }).fill("market");
+    await page.getByRole("button", { name: "Search", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Smoke fixture: market story" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Smoke fixture: sports story" })).toHaveCount(0);
+    await expectNoHorizontalOverflow(page, `filtered News at ${width}px`);
   });
 }
 

@@ -10,8 +10,7 @@ import { newsArticlePath } from "../../lib/news-urls";
 import { NewspaperIcon } from "../../components/icons";
 import { EmptyPanel, PageFrame, StatusBadge } from "../../components/design-system";
 import NewsFooter from "../../components/news-footer";
-import NewsletterUnavailable from "../../components/newsletter-unavailable";
-import styles from "./news.module.css";
+import styles from "./listing.module.css";
 
 type ArticleListItem = {
   slug: string;
@@ -40,14 +39,6 @@ export const metadata: Metadata = {
 const PAGE_SIZE = 30;
 const MAX_PAGE = 1000;
 const MAX_CATEGORIES = 100;
-const topicImages = [
-  "/hero/01-epe-epe-jpg.jpg",
-  "/hero/05-epe-aiyetoro-market-at-epe-jpg.jpg",
-  "/hero/09-epe-adesowon-junior-and-senior-grammar-school-ilara-epe-jpg.jpg",
-  "/hero/03-epe-fish-monoment-in-epe-lagos-nigeria-3-jpg.jpg",
-  "/hero/04-epe-iberekodo-beach-epe-lagos-jpg.jpg",
-  "/hero/07-epe-boy-building-a-canoe-jpg.jpg",
-];
 export const dynamic = "force-dynamic";
 
 function isBreakingNow(item: ArticleListItem): boolean {
@@ -140,19 +131,20 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
   const breakingLead = page === 1 ? articles.find(isBreakingNow) : undefined;
   const lead = page === 1 ? (breakingLead ?? articles[0] ?? null) : null;
   const remaining = lead ? articles.filter((article) => article.slug !== lead.slug) : articles;
-  const topHeadlines = remaining.slice(0, 4);
-  const latestStories = remaining.slice(4, 7);
-  const moreStories = remaining.slice(7);
   const heading = category ? categories.find((item) => item.slug === category)?.label ?? "News" : query ? "Search results" : "Latest News";
 
   return <>
     <PageFrame className={`${styles.newsPage} ui-stack`}>
-      <div className={styles.newsTopBar}>
-        <p className={styles.publisherStamp}><span className={styles.publisherDot} aria-hidden="true" />Reporting and community information from Epe</p>
+      <header className={styles.pageHeader}>
+        <div className={styles.headingCopy}>
+          <p className={styles.kicker}>EPE LAWA <span aria-hidden="true">/</span> NEWSROOM</p>
+          <h1 className={styles.pageTitle}>{heading}</h1>
+          <p className={styles.pageDescription}>Reporting, stories and updates from Epe and its communities.</p>
+        </div>
         <details className={styles.searchToggle} open={searchOpen || undefined}>
           <summary className={styles.searchSummary} aria-label="Search headlines" title="Search headlines">
             <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg>
-            <span>Search</span>
+            <span>Search stories</span>
           </summary>
           <search className={styles.searchRegion} aria-label="Search published stories">
             <form action="/news" method="get" className={styles.newsSearchForm}>
@@ -163,115 +155,58 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
             </form>
           </search>
         </details>
-      </div>
-
-      <header className={styles.pageHeader}>
-        <p className={styles.kicker}>EPE LAWA · NEWSROOM</p>
-        <h1 className={styles.pageTitle}>{heading}</h1>
-        <p className={styles.pageDescription}>Reporting, stories and updates from Epe and its communities.</p>
-        <nav className={styles.categoryNav} aria-label="News categories"><ul className={styles.categoryList}>
-          <li><Link href={categoryHref(query, "")} aria-current={!category ? "page" : undefined} className={styles.categoryLink}>All</Link></li>
-          {categories.map((item) => <li key={item.slug}><Link href={categoryHref(query, item.slug)} aria-current={category === item.slug ? "page" : undefined} className={styles.categoryLink}>{item.label}</Link></li>)}
-        </ul></nav>
       </header>
+
+      <nav className={styles.categoryNav} aria-label="News categories"><ul className={styles.categoryList}>
+        <li><Link href={categoryHref(query, "")} aria-current={!category ? "page" : undefined} className={styles.categoryLink}>All</Link></li>
+        {categories.map((item) => <li key={item.slug}><Link href={categoryHref(query, item.slug)} aria-current={category === item.slug ? "page" : undefined} className={styles.categoryLink}>{item.label}</Link></li>)}
+      </ul></nav>
 
       {breakingLead ? <section className={styles.breakingBanner} aria-label="Breaking news">
         <span className={styles.breakingLabel}>Breaking</span>
         <Link href={newsArticlePath(breakingLead.slug)}>{breakingLead.title}</Link>
-        <span className={styles.breakingMeta}>Published {formatPublishedDate(breakingLead.published_at)}</span>
+        {breakingLead.published_at ? <time dateTime={breakingLead.published_at}>{formatPublishedDate(breakingLead.published_at)}</time> : null}
       </section> : null}
 
-      {articles.length === 0 ? (
-        <EmptyPanel
-          title={category ? "No published stories in this category" : query ? "No matching stories" : "No stories published yet"}
-          description={category ? "There are no published stories in this category yet." : query ? "Try a different headline search. No unpublished stories are shown." : "When the newsroom publishes a story, it will appear here with its byline, date and category."}
-          actions={needsReset ? (
-            <>
-              <Link href="/news" className="btn-secondary">{hasSearchOrCategory ? "Clear search and filters" : "Back to latest stories"}</Link>
-              <Link href="/" className="btn-secondary">Explore EPE LAWA</Link>
-            </>
-          ) : <Link href="/" className="btn-secondary">Explore EPE LAWA</Link>}
-        />
-      ) : <div className={styles.newsPageGrid}>
-        <div className={styles.newsMain}>
-          <div className={styles.leadGrid}>
-            {lead ? <section className={styles.featureSection} aria-label="Lead story">
-              <Link href={newsArticlePath(lead.slug)} className={styles.featureCard} aria-label={`Read: ${lead.title}`}>
-                {coverUrl(lead) ? <img className={styles.featureImage} src={coverUrl(lead) ?? undefined} alt="" loading="eager" fetchPriority="high" decoding="async" referrerPolicy="no-referrer" /> : <span className={styles.featureImageFallback} aria-hidden="true"><NewspaperIcon size={42} /></span>}
-                <span className={styles.featureShade} aria-hidden="true" />
-                <span className={styles.featureCopy}>
-                  <span className={styles.featureCategory}>{lead.category_label}{isBreakingNow(lead) ? <StatusBadge tone="warning">Breaking</StatusBadge> : null}</span>
-                  <span className={styles.featureTitle}>{lead.title}</span>
-                  {lead.summary ? <span className={styles.featureSummary}>{lead.summary}</span> : null}
-                  <span className={styles.featureMeta}>By {lead.author_name}{lead.published_at ? <> · <time dateTime={lead.published_at}>{formatPublishedDate(lead.published_at)}</time></> : null}</span>
-                  <span className={styles.featureAction}>Read full story <span aria-hidden="true">→</span></span>
-                </span>
+      {articles.length === 0 ? <EmptyPanel
+        title={category ? "No published stories in this category" : query ? "No matching stories" : "No stories published yet"}
+        description={category ? "There are no published stories in this category yet." : query ? "Try a different headline search. No unpublished stories are shown." : "When the newsroom publishes a story, it will appear here with its byline, date and category."}
+        actions={needsReset ? <><Link href="/news" className="btn-secondary">{hasSearchOrCategory ? "Clear search and filters" : "Back to latest stories"}</Link><Link href="/" className="btn-secondary">Explore EPE LAWA</Link></> : <Link href="/" className="btn-secondary">Explore EPE LAWA</Link>}
+      /> : <>
+        {lead ? <section className={styles.featureSection} aria-labelledby="featured-heading">
+          <div className={styles.sectionHeading}><h2 id="featured-heading">Featured story</h2><span>From the newsroom</span></div>
+          <article className={styles.featureCard}>
+            <Link href={newsArticlePath(lead.slug)} className={styles.featureMedia} tabIndex={-1} aria-hidden="true">
+              {coverUrl(lead) ? <img className={styles.featureImage} src={coverUrl(lead) ?? undefined} alt="" loading="eager" fetchPriority="high" decoding="async" referrerPolicy="no-referrer" /> : <span className={styles.imageFallback}><NewspaperIcon size={40} /></span>}
+            </Link>
+            <div className={styles.featureCopy}>
+              <div className={styles.categoryLabel}>{lead.category_label}{isBreakingNow(lead) ? <StatusBadge tone="warning">Breaking</StatusBadge> : null}</div>
+              <h3 className={styles.featureTitle}><Link href={newsArticlePath(lead.slug)}>{lead.title}</Link></h3>
+              {lead.summary ? <p className={styles.featureSummary}>{lead.summary}</p> : null}
+              <p className={styles.storyMeta}>By {lead.author_name}{lead.published_at ? <> <span aria-hidden="true">·</span> <time dateTime={lead.published_at}>{formatPublishedDate(lead.published_at)}</time></> : null}</p>
+              <Link href={newsArticlePath(lead.slug)} className={styles.readLink} aria-label={`Read: ${lead.title}`}>Read full story <span aria-hidden="true">→</span></Link>
+            </div>
+          </article>
+        </section> : null}
+        {remaining.length ? <section className={styles.storiesSection} aria-labelledby="stories-heading">
+          <div className={styles.sectionHeading}><h2 id="stories-heading">{lead ? "More stories" : "Stories"}</h2><span>{articles.length} on this page</span></div>
+          <ul className={styles.storyGrid}>{remaining.map((article) => {
+            const image = coverUrl(article);
+            return <li key={article.slug}><article className={styles.storyCard}>
+              <Link href={newsArticlePath(article.slug)} className={styles.storyMedia} tabIndex={-1} aria-hidden="true">
+                {image ? <img className={styles.storyImage} src={image} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" /> : <span className={styles.imageFallback}><NewspaperIcon size={28} /></span>}
               </Link>
-            </section> : null}
-
-            {topHeadlines.length ? <section className={styles.headlineRail} aria-labelledby="top-headlines-heading">
-              <div className={styles.sectionHeading}><h2 id="top-headlines-heading">Top Headlines</h2><Link href="/news" className={styles.sectionLink}>See all <span aria-hidden="true">→</span></Link></div>
-              <ul className={styles.headlineList}>{topHeadlines.map((article) => {
-                const image = coverUrl(article);
-                return <li className={styles.headlineItem} key={article.slug}><Link href={newsArticlePath(article.slug)} className={styles.headlineLink}>
-                  {image ? <img className={styles.headlineImage} src={image} alt="" loading="eager" decoding="async" referrerPolicy="no-referrer" /> : <span className={styles.headlineImageFallback} aria-hidden="true"><NewspaperIcon size={18} /></span>}
-                  <span className={styles.headlineCopy}><span className={styles.headlineCategory}>{article.category_label}{isBreakingNow(article) ? <StatusBadge tone="warning">Breaking</StatusBadge> : null}</span><span className={styles.headlineTitle}>{article.title}</span><span className={styles.headlineMeta}>{formatPublishedDate(article.published_at)}</span></span>
-                </Link></li>;
-              })}</ul>
-            </section> : null}
-          </div>
-
-          {latestStories.length ? <section className={styles.latestSection} aria-labelledby="latest-heading">
-            <div className={styles.sectionHeading}><h2 id="latest-heading">Latest Stories</h2><span>{articles.length} stories loaded</span></div>
-            <ul className={styles.latestGrid}>{latestStories.map((article) => {
-              const image = coverUrl(article);
-              return <li className={styles.storyCard} key={article.slug}><Link href={newsArticlePath(article.slug)} className={styles.storyCardLink}>
-                <span className={styles.storyImageWrap}>{image ? <img className={styles.storyImage} src={image} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" /> : <span className={styles.storyImageFallback} aria-hidden="true"><NewspaperIcon size={28} /></span>}</span>
-                <span className={styles.storyCardCopy}><span className={styles.storyCategory}>{article.category_label}</span><span className={styles.storyTitle}>{article.title}</span><span className={styles.storySummary}>{article.summary || ""}</span><span className={styles.storyMeta}>By {article.author_name}{article.published_at ? <> · <time dateTime={article.published_at}>{formatPublishedDate(article.published_at)}</time></> : null}</span></span>
-              </Link></li>;
-            })}</ul>
-          </section> : null}
-
-          <Link className={styles.discoverBanner} href="/tourism">
-            <span className={styles.discoverBannerImage}><img src="/epe-iberekodo-beach.jpg" alt="Iberekodo Beach in Epe" loading="lazy" decoding="async" /></span>
-            <span className={styles.discoverBannerShade} aria-hidden="true" />
-            <span className={styles.discoverBannerCopy}><span className={styles.asideEyebrow}>Discover Epe</span><strong>Discover the Beauty of Epe</strong><span>Explore the culture, history, people and opportunities of Epe.</span><span className={styles.discoverBannerAction}>Explore Epe <span aria-hidden="true">→</span></span></span>
-          </Link>
-
-          {categories.length ? <section className={styles.topicSection} aria-labelledby="topics-heading">
-            <div className={styles.sectionHeading}><h2 id="topics-heading">Explore Topics</h2><span>Browse the newsroom</span></div>
-            <ul className={styles.topicGrid}>{categories.slice(0, topicImages.length).map((item, index) => <li key={item.slug} className={styles.topicItem}>
-              <Link href={categoryHref(query, item.slug)} className={styles.topicLink} aria-label={`Browse ${item.label} news`}>
-                <span className={styles.topicImage}><img src={topicImages[index]} alt="" loading="lazy" decoding="async" /></span>
-                <span className={styles.topicLabel}>{item.label}</span>
-              </Link>
-            </li>)}</ul>
-          </section> : null}
-
-          {moreStories.length ? <section className={styles.moreSection} aria-labelledby="more-heading">
-            <div className={styles.sectionHeading}><h2 id="more-heading">More Stories</h2></div>
-            <ul className={styles.storyList}>{moreStories.map((article) => {
-              const image = coverUrl(article);
-              return <li className={styles.storyRow} key={article.slug}><Link href={newsArticlePath(article.slug)} className={styles.storyLink}>
-                {image ? <img className={styles.storyThumbnail} src={image} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" /> : <span className={styles.storyThumbnailFallback} aria-hidden="true"><NewspaperIcon size={22} /></span>}
-                <span className={styles.storyCopy}><span className={styles.storyCategory}>{article.category_label}{isBreakingNow(article) ? <StatusBadge tone="warning">Breaking</StatusBadge> : null}</span><span className={styles.storyTitle}>{article.title}</span><span className={styles.storyMeta}>By {article.author_name}{article.published_at ? <> · <time dateTime={article.published_at}>{formatPublishedDate(article.published_at)}</time></> : null}</span></span>
-              </Link></li>;
-            })}</ul>
-          </section> : null}
-
-          {page > 1 || hasOlder ? <nav className={styles.pagination} aria-label="News pages">{page > 1 ? <Link className="btn-secondary" href={pageHref(page - 1, query, category)}>Newer stories</Link> : null}<span className={styles.pageNumber} aria-live="polite">Page {page}</span>{hasOlder ? <Link className="btn-secondary" href={pageHref(page + 1, query, category)}>Older stories</Link> : null}</nav> : null}
-        </div>
-
-        <aside className={styles.newsAside} aria-label="News updates and topics">
-          <section className={styles.newsletterCard} aria-labelledby="newsletter-heading">
-            <p className={styles.asideEyebrow}>Stay informed</p>
-            <h2 id="newsletter-heading">EPE LAWA Newsletter</h2>
-            <p className={styles.asideCopy}>Newsletter delivery is not configured, so sign-up is paused.</p>
-            <NewsletterUnavailable id="news-sidebar-signup" />
-          </section>
-          {categories.length ? <section className={styles.popularCard} aria-labelledby="popular-heading"><h2 id="popular-heading">Popular Topics</h2><ul>{categories.slice(0, 8).map((item) => <li key={item.slug}><Link href={categoryHref(query, item.slug)}>{item.label}</Link></li>)}</ul></section> : null}
-        </aside>
-      </div>}
+              <div className={styles.storyCopy}>
+                <div className={styles.categoryLabel}>{article.category_label}{isBreakingNow(article) ? <StatusBadge tone="warning">Breaking</StatusBadge> : null}</div>
+                <h3 className={styles.storyTitle}><Link href={newsArticlePath(article.slug)}>{article.title}</Link></h3>
+                {article.summary ? <p className={styles.storySummary}>{article.summary}</p> : null}
+                <p className={styles.storyMeta}>By {article.author_name}{article.published_at ? <> <span aria-hidden="true">·</span> <time dateTime={article.published_at}>{formatPublishedDate(article.published_at)}</time></> : null}</p>
+              </div>
+            </article></li>;
+          })}</ul>
+        </section> : null}
+      </>}
+      {page > 1 || hasOlder ? <nav className={styles.pagination} aria-label="News pages">{page > 1 ? <Link className="btn-secondary" href={pageHref(page - 1, query, category)}>Newer stories</Link> : null}<span className={styles.pageNumber} aria-live="polite">Page {page}</span>{hasOlder ? <Link className="btn-secondary" href={pageHref(page + 1, query, category)}>Older stories</Link> : null}</nav> : null}
     </PageFrame>
     <NewsFooter categories={categories} />
   </>;

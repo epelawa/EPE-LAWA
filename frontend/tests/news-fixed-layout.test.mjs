@@ -6,6 +6,7 @@ const root = new URL("../apps/main/", import.meta.url);
 const page = await readFile(new URL("app/news/page.tsx", root), "utf8");
 const article = await readFile(new URL("app/news/[slug]/page.tsx", root), "utf8");
 const styles = await readFile(new URL("app/news/news.module.css", root), "utf8");
+const listingStyles = await readFile(new URL("app/news/listing.module.css", root), "utf8");
 const footer = await readFile(new URL("components/news-footer.tsx", root), "utf8");
 const newsletter = await readFile(new URL("components/newsletter-unavailable.tsx", root), "utf8");
 
@@ -17,12 +18,10 @@ test("News has one fixed composition, without a client timer or layout selector"
 
 test("the lead image and top headline covers eagerly load and fill their containers", () => {
   assert.match(page, /className=\{styles\.featureImage\}[^>]*loading="eager" fetchPriority="high"/);
-  assert.match(page, /className=\{styles\.headlineImage\}[^>]*loading="eager"/);
   assert.match(page, /className=\{styles\.storyImage\} src=\{image\} alt="" loading="lazy"/);
   assert.doesNotMatch(page, /fetchPriority="auto"/);
   assert.match(page, /<search className=\{styles\.searchRegion\} aria-label="Search published stories">/);
-  assert.match(styles, /\.featureImage,\.featureImageFallback \{[^}]*position:absolute; inset:0;[^}]*object-fit:cover/);
-  assert.match(styles, /\.headlineImage,\.headlineImageFallback \{[^}]*object-fit:cover/);
+  assert.match(listingStyles, /\.featureImage,\.storyImage \{[^}]*object-fit: cover/);
 });
 
 test("article hero cover eagerly loads, never lazily, and uses full-container cover fit", () => {

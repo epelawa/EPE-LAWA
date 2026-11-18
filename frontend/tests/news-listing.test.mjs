@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 
 const root = new URL("../apps/main/", import.meta.url);
 const page = await readFile(new URL("app/news/page.tsx", root), "utf8");
-const styles = await readFile(new URL("app/news/news.module.css", root), "utf8");
+const styles = await readFile(new URL("app/news/listing.module.css", root), "utf8");
 const header = await readFile(new URL("components/site-header.tsx", root), "utf8");
 const headerStyles = await readFile(new URL("components/navigation-refinement.css", root), "utf8");
 const footer = await readFile(new URL("components/site-footer.tsx", root), "utf8");
@@ -35,7 +35,7 @@ test("News retains search, category links and no invented filters", () => {
 test("News feed uses real story links and truthful empty/error states", () => {
   assert.match(page, /newsArticlePath\(lead\.slug\)/);
   assert.match(page, /newsArticlePath\(article\.slug\)/);
-  assert.match(page, /<EmptyPanel title=/);
+  assert.match(page, /<EmptyPanel\s+title=/);
   assert.match(page, /No stories published yet/);
   assert.match(page, /No unpublished stories are shown/);
   assert.doesNotMatch(page, /featuredHeadline\s*=|sampleStory|mockArticles/);
@@ -49,17 +49,12 @@ test("News empty and no-results states provide an explore or reset action", () =
   assert.match(page, /actions=\{needsReset \?/);
 });
 
-test("News reference composition keeps an actionable lead and local-image topic explorer", () => {
+test("News presents a focused newsroom without promotional blocks", () => {
   assert.match(page, /Read full story/);
-  assert.match(page, /aria-labelledby="topics-heading"/);
-  assert.match(page, /topicImages/);
+  assert.match(page, /aria-labelledby="featured-heading"/);
+  assert.match(page, /aria-labelledby="stories-heading"/);
   assert.match(page, /href=\{categoryHref\(query, item\.slug\)\}/);
-  assert.match(styles, /\.topicGrid \{[^}]*grid-template-columns:repeat\(6/);
-  assert.match(styles, /\.topicImage \{[^}]*border-radius:50%/);
-  assert.match(styles, /\.featureAction \{[^}]*border-radius:999px/);
-  assert.match(page, /className=\{styles\.discoverBanner\}/);
-  assert.match(styles, /\.discoverBanner \{[^}]*border-radius:16px/);
-  assert.match(styles, /\.newsletterCard,.popularCard \{[^}]*border-radius:16px/);
+  assert.doesNotMatch(page, /topicImages|discoverBanner|newsletterCard|popularCard/);
 });
 
 test("Breaking news is visible only for a flagged, unexpired published lead", () => {
@@ -126,24 +121,17 @@ test("Newsletter and advertising states do not pretend to accept or deliver subm
   assert.doesNotMatch(advertise, /<form|action=|mailto:/);
 });
 
-test("News lead and cards eagerly load above-fold covers that fill their containers", () => {
+test("News lead and cards load covers with appropriate priority", () => {
   assert.match(page, /className=\{styles\.featureImage\}[^>]*loading="eager" fetchPriority="high"/);
-  assert.match(page, /loading="eager" decoding="async" referrerPolicy="no-referrer"/);
-  assert.match(page, /className=\{styles\.headlineImage\} src=\{image\} alt="" loading="eager"/);
   assert.match(page, /className=\{styles\.storyImage\} src=\{image\} alt="" loading="lazy"/);
-  assert.doesNotMatch(page, /fetchPriority="auto"/);
-  assert.match(styles, /\.featureImage,\.featureImageFallback \{[^}]*object-fit:cover/);
-  assert.match(styles, /\.headlineImage,\.headlineImageFallback \{[^}]*object-fit:cover/);
-  assert.match(styles, /\.storyImage,\.storyImageFallback \{[^}]*object-fit:cover/);
-  assert.doesNotMatch(styles, /object-fit:\s*contain/);
+  assert.match(styles, /\.featureImage,\.storyImage \{[^}]*object-fit: cover/);
 });
 
 test("News content keeps a responsive editorial grid and accessible 48px controls", () => {
-  assert.match(styles, /\.newsPageGrid \{[^}]*grid-template-columns:minmax\(0,1fr\) 294px/);
-  assert.match(styles, /@media \(max-width:600px\)/);
-  assert.match(styles, /\.categoryLink \{[^}]*min-height:48px/);
-  assert.match(styles, /\.searchSummary \{[^}]*min-height:48px/);
-  assert.match(styles, /\.featureCard \{[^}]*aspect-ratio/);
+  assert.match(styles, /\.storyGrid \{[^}]*repeat\(3, minmax\(0, 1fr\)\)/);
+  assert.match(styles, /@media \(max-width: 520px\)/);
+  assert.match(styles, /\.categoryLink \{[^}]*min-height: 48px/);
+  assert.match(styles, /\.searchSummary \{[^}]*min-height: 48px/);
 });
 
 test("News pagination remains bounded with deterministic published ordering", () => {
