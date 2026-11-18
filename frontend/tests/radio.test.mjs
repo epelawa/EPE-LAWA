@@ -16,7 +16,10 @@ test('radio page uses direct Lagos stream and a server-side Guts lookup', async(
  assert.match(player,/src=\{station\.streamUrl\}/);
  assert.match(player,/Radio Lagos/); assert.match(player,/Guts FM/);
  assert.match(lookup,/NAIJA_RADIO_API_KEY/); assert.doesNotMatch(player,/NAIJA_RADIO_API_KEY/);
- assert.doesNotMatch(page,/listeningPerks|Better Listening Desk/);
+ assert.doesNotMatch(page,/listeningPerks|Better Listening Desk|styles\.hero/);
+ assert.match(player,/src="\/brand-logo.png"/);
+ assert.match(player,/className=\{styles\.playButton\}/);
+ assert.ok(page.indexOf("<RadioPlayer") < page.indexOf("Keep exploring"));
  assert.match(page,/href="\/radio\/programmes"/); assert.match(page,/href="\/radio\/reminders"/);
 });
 

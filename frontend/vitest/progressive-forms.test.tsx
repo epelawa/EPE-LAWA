@@ -38,3 +38,22 @@ it("article composer starts with the story and retains it across validated steps
  await act(async()=>button(el,"Back").click());expect(section(2).hidden).toBe(false);
  await act(async()=>root.unmount());el.remove();
 });
+
+import ProgressiveEditor from "../apps/admin/components/progressive-editor";
+it("article editing validates steps and preserves revision and fields while navigating", async () => {
+ const el=document.createElement("div");document.body.append(el);const root=createRoot(el);const save=vi.fn();
+ await act(async()=>root.render(<ProgressiveEditor action={save} articleId="article-id" revision="7" submitLabel="Save private draft" intent="save" steps={[
+  {title:"Story",content:<label>Headline<input name="title" required defaultValue="" /></label>},
+  {title:"Settings",content:<label>Category<input name="categoryId" required defaultValue="news" /></label>},
+  {title:"Cover",content:<label>Alt<input name="alt" defaultValue="" /></label>},
+ ]}/>));
+ const section=(n:number)=>el.querySelector<HTMLElement>(`[data-editor-step="${n}"]`)!;
+ expect(section(0).hidden).toBe(false);expect(section(1).hidden).toBe(true);
+ await act(async()=>button(el,"Continue").click());expect(section(0).hidden).toBe(false);
+ await act(async()=>{setValue(el.querySelector('[name="title"]')!,"Headline");button(el,"Continue").click();});expect(section(1).hidden).toBe(false);
+ await act(async()=>button(el,"Continue").click());expect(section(2).hidden).toBe(false);
+ expect(el.querySelector('[role="progressbar"]')?.getAttribute('aria-valuenow')).toBe('100');
+ expect(new FormData(el.querySelector('form')!).get('revision')).toBe('7');
+ await act(async()=>button(el,"Back").click());await act(async()=>button(el,"Back").click());expect((el.querySelector('[name="title"]') as HTMLInputElement).value).toBe('Headline');
+ expect(save).not.toHaveBeenCalled();await act(async()=>root.unmount());el.remove();
+});

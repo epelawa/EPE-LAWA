@@ -1,4 +1,5 @@
 import AuthorPicker from "../../../../components/author-picker";
+import ProgressiveEditor from "../../../../components/progressive-editor";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -159,24 +160,27 @@ export default async function EditArticlePage({
         !referencesAvailable ? <EmptyPanel title="Bylines and categories unavailable" description="The article was not changed. Reload after the reference lists can be verified." /> : (
           <Panel>
             <SectionHeading eyebrow={editablePrivateVersion ? "Private editing" : "New version"} title={editablePrivateVersion ? "Edit current draft" : "Create a private correction"} description="Changes remain private. Publication is a separate, audited action." />
-            <form id="article-editor" action={editablePrivateVersion ? saveDraft : reviseArticle} className="ui-stack">
-              <input type="hidden" name="articleId" value={article.id} />
-              <input type="hidden" name="revision" value={String(article.revision)} />
+            <ProgressiveEditor action={editablePrivateVersion ? saveDraft : reviseArticle} articleId={article.id} revision={String(article.revision)} submitLabel={editablePrivateVersion ? "Save private draft" : "Create private correction draft"} intent={editablePrivateVersion ? "save" : undefined} steps={[
+              { title: "Story details", content: <>
               <div className="ui-field"><label className="label" htmlFor="title">Headline</label><input id="title" name="title" className="input" maxLength={200} required defaultValue={version.title} /></div>
               <div className="ui-field"><label className="label" htmlFor="summary">Summary</label><textarea id="summary" name="summary" className="input" rows={3} maxLength={1000} defaultValue={version.summary ?? ""} /></div>
               <div className="ui-field"><label className="label" htmlFor="body">Article body</label><textarea id="body" name="body" className="input" rows={14} maxLength={100000} required defaultValue={bodyForEditor(version.body)} /><p className="ui-meta">Use plain text with a blank line between paragraphs, or the structured document already shown.</p></div>
+              </> },
+              { title: "Category and author", content: <>
               <div className="ui-form-grid">
                 <div className="ui-field"><label className="label" htmlFor="categoryId">Category</label><select id="categoryId" name="categoryId" className="input" required defaultValue={version.category_id}>{categories.map((category) => <option key={category.id} value={category.id}>{category.label}</option>)}</select></div>
                 <div className="ui-field"><AuthorPicker authors={authors} initialId={version.author_id} /></div>
               </div>
+              </> },
+              { title: "Cover and search", content: <>
               <div className="ui-field"><label className="label" htmlFor="ogImageKey">Approved cover (optional)</label><select id="ogImageKey" name="ogImageKey" className="input" defaultValue={isNewsCoverKey(version.og_image_key) ? version.og_image_key : ""}><option value="">No cover</option>{Object.entries(NEWS_COVERS).map(([key, cover]) => <option key={key} value={key}>{cover.title} — {cover.credit}</option>)}</select><p className="ui-meta">Approved, unmodified Commons images only.</p></div>
               <NewsCoverUrlFields idPrefix="edit-cover" initial={{ url: version.cover_url, alt: version.cover_alt, credit: version.cover_credit, sourceUrl: version.cover_source_url, licenseUrl: version.cover_license_url, caption: version.cover_caption }} />
               <div className="ui-form-grid">
                 <div className="ui-field"><label className="label" htmlFor="seoTitle">Search title</label><input id="seoTitle" name="seoTitle" className="input" maxLength={70} defaultValue={version.seo_title ?? ""} /></div>
                 <div className="ui-field"><label className="label" htmlFor="seoDescription">Search description</label><input id="seoDescription" name="seoDescription" className="input" maxLength={200} defaultValue={version.seo_description ?? ""} /></div>
               </div>
-              <div className="ui-actions">{editablePrivateVersion ? <button className={buttonClassName("primary")} type="submit" name="intent" value="save">Save private draft</button> : <button className={buttonClassName("primary")} type="submit">Create private correction draft</button>}</div>
-            </form>
+              </> },
+            ]} />
           </Panel>
         )
       ) : <EmptyPanel title="This version is read-only" description="Your current access does not allow editing this version or creating a private correction." />}

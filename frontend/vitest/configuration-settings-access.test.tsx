@@ -15,7 +15,7 @@ describe("deployment settings authorization", () => {
   it("shows only checklist metadata after primary administrator authorization", async () => {
     mock.rpc.mockResolvedValue({ data: true, error: null });
     const markup = renderToStaticMarkup(await SettingsPage());
-    expect(markup).toContain("AUTH_EMAIL_FROM"); expect(markup).toContain("Not set"); expect(mock.rpc).toHaveBeenCalledWith("staff_roles_authorized");
+    expect(markup).toContain("AUTH_EMAIL_FROM"); expect(markup).toContain("Not set"); expect(markup).not.toContain("Sender guidance"); expect(markup).toContain("not verified"); expect(mock.rpc).toHaveBeenCalledWith("staff_roles_authorized");
   });
   it("fails closed on authorization exception", async () => {
     mock.createClient.mockRejectedValue(new Error("offline"));
