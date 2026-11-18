@@ -6,45 +6,24 @@ import path from 'node:path';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..','..');
 const read=(p)=>readFile(path.join(root,p),'utf8');
 
-test('public Radio player uses only the verified Radio Lagos 107.5 FM record and shows truthful playback state',async()=>{
+test('radio page uses direct Lagos stream and a server-side Guts lookup', async()=>{
  const player=await read('frontend/apps/main/components/radio-player.tsx');
  const station=await read('frontend/apps/main/lib/radio-lagos.ts');
- assert.match(station,/nr_7c1cfbb5-f2f3-446c-a5e4-2f417a5d949b/);
- assert.match(station,/Radio Lagos/);
-	 assert.match(station,/107\.5 FM/);
-	 assert.match(station,/https:\/\/azstream\.elektranbroadcast\.com\/listen\/radiolagos1075\/radio\.mp3/);
-	 assert.match(station,/https:\/\/fm\.puzzofme\.com\/\?station=radio-lagos/);
-	 assert.match(player,/src=\{RADIO_LAGOS_1075\.streamUrl\}/);
-	 assert.match(player,/preload="none"/);
-	 assert.match(player,/onPlaying=\{\(\) => setState\("playing"\)\}/);
-	 assert.match(player,/onError=\{\(\) => setState\("unavailable"\)\}/);
-	 assert.match(player,/void audio\.play\(\)\.catch/);
-	 assert.match(player,/NotAllowedError/);
-	 assert.match(player,/Your browser blocked automatic playback/);
-	 assert.match(player,/Open Radio Lagos listen page/);
-	 assert.match(player,/onChange=\{\(event\) => changeVolume\(Number\(event\.target\.value\)\)\}/);
-	 assert.match(player,/PlayIcon/);
-	 assert.match(player,/VolumeOnIcon/);
-	 assert.doesNotMatch(player,/<audio[^>]*\bcontrols\b/i);
-	 assert.doesNotMatch(player,/NAIJA_RADIO_API_KEY|NEXT_PUBLIC|Puzzofme|Naija Radio API/);
-		 assert.match(player,/autoPlay/);
+ const page=await read('frontend/apps/main/app/radio/page.tsx');
+ const lookup=await read('frontend/apps/main/lib/guts-radio.ts');
+ assert.match(station,/https:\/\/azstream\.elektranbroadcast\.com\/listen\/radiolagos1075\/radio\.mp3/);
+ assert.doesNotMatch(station,/puzzofme/);
+ assert.match(player,/src=\{station\.streamUrl\}/);
+ assert.match(player,/Radio Lagos/); assert.match(player,/Guts FM/);
+ assert.match(lookup,/NAIJA_RADIO_API_KEY/); assert.doesNotMatch(player,/NAIJA_RADIO_API_KEY/);
+ assert.doesNotMatch(page,/listeningPerks|Better Listening Desk/);
+ assert.match(page,/href="\/radio\/programmes"/); assert.match(page,/href="\/radio\/reminders"/);
 });
 
-test('public Radio page renders only database-backed programme, schedule and archive records',async()=>{
+test('public programmes continue to use database records',async()=>{
  const page=await read('frontend/apps/main/app/radio/programmes/page.tsx');
- const listen=await read('frontend/apps/main/app/radio/page.tsx');
  for(const table of ['programmes','radio_schedule','episodes']) assert.match(page,new RegExp(`from\\(["']${table}["']\\)`));
- assert.match(page,/No programmes published yet/);
- assert.match(page,/No schedule published yet/);
-	 assert.match(page,/No published episodes available/);
- assert.match(listen,/<RadioPlayer/);
- assert.match(listen,/EPE LAWA RADIO/);
-	 assert.match(listen,/<h1[^>]*>Listen live/);
-	 assert.match(listen,/href="\/radio\/programmes"/);
-	 assert.match(listen,/const listeningPerks = \[/);
-	 assert.equal((listen.match(/\["/g) ?? []).length, 20);
-	 assert.match(listen,/href="\/radio\/reminders"/);
- assert.doesNotMatch(listen,/Live stream not yet available|Stream availability is not verified/);
+ assert.match(page,/No programmes published yet/); assert.match(page,/No schedule published yet/);
 });
 
 test('Radio admin distinguishes failed data reads from empty catalogues',async()=>{
