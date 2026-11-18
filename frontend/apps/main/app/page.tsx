@@ -8,6 +8,7 @@ import "./home-client-refresh.css";
 import CookieBanner from "../components/cookie-banner";
 import HeroCarousel from "../components/hero-carousel";
 import NewsImage from "../components/news-image";
+import ArticleByline from "../components/article-byline";
 import { BreakingBadge } from "../components/breaking-news";
 
 export default async function Home() {
@@ -72,7 +73,7 @@ export default async function Home() {
                       <h3><Link href={storyHref}>{story.title}</Link></h3>
                       {story.summary ? <p className="home-story-summary">{story.summary}</p> : null}
                       {story.engagement ? <div className="home-story-engagement" aria-label="Story engagement"><span><ClockIcon size={14} /> {story.engagement.readMinutes} min read</span><span><EyeIcon size={14} /> {story.engagement.views.toLocaleString("en-NG")} views</span><span><MessageCircleIcon size={14} /> {story.engagement.comments.toLocaleString("en-NG")} comments</span></div> : null}
-                      <p className="home-story-byline">{story.authorName ? `By ${story.authorName}` : "Byline unavailable"}</p>
+                      <p className="home-story-byline">{story.authorName ? <ArticleByline name={story.authorName} /> : "Byline unavailable"}</p>
                       <Link className="home-story-read" href={storyHref}>Read story <ArrowUpRightIcon size={16} aria-hidden="true" /></Link>
                     </div>
                   </article>
