@@ -7,5 +7,4 @@ export const RADIO_LAGOS_1075 = {
   state: "Lagos",
   countryCode: "NG",
   streamUrl: "https://azstream.elektranbroadcast.com/listen/radiolagos1075/radio.mp3",
-  listenUrl: "https://fm.puzzofme.com/?station=radio-lagos",
 } as const;

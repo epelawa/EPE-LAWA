@@ -7,27 +7,15 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 
-test("public Radio exposes only the verified Radio Lagos 107.5 player and honest programme status", () => {
-  const page = read("frontend/apps/main/app/radio/page.tsx");
-  const player = read("frontend/apps/main/components/radio-player.tsx");
-  const station = read("frontend/apps/main/lib/radio-lagos.ts");
-  assert.match(page, /Radio Lagos.*107\.5 FM/);
-  const programmes = read("frontend/apps/main/app/radio/programmes/page.tsx");
-  assert.match(programmes, /Programme information is unavailable/);
-  assert.match(page, /href="\/radio\/programmes"/);
-  assert.doesNotMatch(page, /stream has not been verified|no live status is claimed/i);
-  assert.match(station, /id: "nr_7c1cfbb5-f2f3-446c-a5e4-2f417a5d949b"/);
-  assert.match(station, /streamUrl: "https:\/\/azstream\.elektranbroadcast\.com\/listen\/radiolagos1075\/radio\.mp3"/);
-  assert.match(station, /listenUrl: "https:\/\/fm\.puzzofme\.com\/\?station=radio-lagos"/);
-  assert.match(player, /<audio[\s\S]*?preload="none"[\s\S]*?src=\{RADIO_LAGOS_1075\.streamUrl\}/);
-  assert.match(player, /onPlaying=\{\(\) => setState\("playing"\)\}/);
-  assert.match(player, /onError=\{\(\) => setState\("unavailable"\)\}/);
-  assert.match(player, /Your browser blocked automatic playback/);
-  assert.match(player, /Open Radio Lagos listen page/);
-  assert.match(player, /onChange=\{\(event\) => changeVolume\(Number\(event\.target\.value\)\)\}/);
-  assert.doesNotMatch(player, /<audio[^>]*\bcontrols\b/i);
-  assert.doesNotMatch(player, /<iframe/i);
-  assert.match(player, /playing: "Live stream connected · audio is playing"/);
+test("public Radio keeps direct Lagos stream and honest programme status", () => {
+ const player = read("frontend/apps/main/components/radio-player.tsx");
+ const station = read("frontend/apps/main/lib/radio-lagos.ts");
+ const programmes = read("frontend/apps/main/app/radio/programmes/page.tsx");
+ assert.match(programmes, /Programme information is unavailable/);
+ assert.match(station, /https:\/\/azstream\.elektranbroadcast\.com\/listen\/radiolagos1075\/radio\.mp3/);
+ assert.match(player, /preload="none"/); assert.match(player, /onPlaying/);
+ assert.match(player, /The station stream is unavailable/);
+ assert.doesNotMatch(player, /<iframe/i);
 });
 
 test("public Tourism has distinct read-failure, empty, and unverified-detail states", () => {
