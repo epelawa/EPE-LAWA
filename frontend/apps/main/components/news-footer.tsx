@@ -25,7 +25,7 @@ async function readActiveCategories(): Promise<NewsCategory[]> {
 
 export default async function NewsFooter({ categories, listing = false }: { categories?: NewsCategory[]; listing?: boolean }) {
   const links = categories ?? await readActiveCategories();
-  if (listing) return <footer className={styles.listingFooter} aria-label="EPE LAWA news footer">
+  if (listing) return <footer className={`${styles.listingFooter} site-footer`} aria-label="EPE LAWA news footer">
     <div className={styles.listingInner}>
       <section className={styles.listingIdentity}>
         <Link className={styles.brandLink} href="/" aria-label="EPE LAWA home"><BrandLockup size={42} /></Link>

@@ -11,6 +11,7 @@ import Script from "next/script";
 import Connectivity from "./connectivity";
 import SiteHeader from "../components/site-header";
 import NewsFooter from "../components/news-footer";
+import SiteFooter from "../components/site-footer";
 import { mainNavigation } from "../lib/navigation";
 import { isIndexingAllowed, siteUrl } from "../lib/site";
 import { themeScript } from "../lib/theme";
@@ -69,7 +70,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <main id="main" className="site-main" tabIndex={-1}>
           {children}
         </main>
-        <NewsFooter listing />
+        <SiteFooter><NewsFooter listing /></SiteFooter>
         <AuthenticatedMobileNavigation />
         <Connectivity />
 
