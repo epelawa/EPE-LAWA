@@ -105,7 +105,8 @@ test("admin current-version joins use stable column hints rather than deployment
     read("frontend/apps/admin/app/(protected)/newsroom/page.tsx"),
     read("frontend/apps/admin/app/(protected)/newsroom/[id]/page.tsx"),
   ]);
-  assert.match(list, /current_version:current_version_id\s*\(/);
+  assert.match(list, /current_version:current_version_id!inner/);
+  assert.match(list, /current_version:current_version_id"/);
   assert.match(editor, /current_version:article_versions!current_version_id\s*\(/);
   for (const source of [list, editor]) {
     assert.doesNotMatch(source, /articles_current_version(?:_fkey|_id_fkey)/);

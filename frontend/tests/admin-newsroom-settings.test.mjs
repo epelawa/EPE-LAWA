@@ -8,13 +8,13 @@ const root = new URL('../../', import.meta.url);
 const read = (path) => readFile(new URL(path, root), 'utf8');
 const rootPath = fileURLToPath(root);
 const readSync = (path) => readFileSync(resolve(rootPath, path), 'utf8');
-test('newsroom settings are linked from the workspace and setup-incomplete flow', async () => {
+test('newsroom settings remain available through the setup-incomplete flow', async () => {
   const [newsroom, create, settings] = await Promise.all([
     read('frontend/apps/admin/app/(protected)/newsroom/page.tsx'),
     read('frontend/apps/admin/app/(protected)/newsroom/new/page.tsx'),
     read('frontend/apps/admin/app/(protected)/newsroom/settings/page.tsx'),
   ]);
-  assert.match(newsroom, /href=\{adminHref\("\/newsroom\/settings"\)\}/);
+  assert.doesNotMatch(newsroom, /href=\{adminHref\("\/newsroom\/settings"\)\}/);
   assert.match(create, /Manage categories & bylines/);
   assert.match(create, /categories\.length === 0 \|\| authors\.length === 0/);
   assert.match(settings, /p_capability: "article\.publish"/);
