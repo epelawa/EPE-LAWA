@@ -32,3 +32,9 @@
 @media(max-width:420px) { .listingInner,.listingBottom { width:calc(100% - 32px); } }
 @media(prefers-reduced-motion:reduce) { .socialLinks a:hover { transform:none; } }
 .listingColumn > p { margin:0 0 10px; color:#c7d5ec; font-size:.85rem; line-height:1.6; }
+
+/* The newsletter is a full-width feature rather than another footer column. */
+.listingNewsletter { grid-column: 1 / -1; display:grid; justify-items:center; gap:12px; width:100%; min-width:0; padding:clamp(20px,4vw,38px) 0 8px; text-align:center; }
+.listingNewsletter h2 { margin:0; color:#fff; font-size:clamp(1.45rem,3vw,2rem); line-height:1.2; }
+.listingNewsletter > p { margin:0; color:#c7d5ec; font-size:.9rem; line-height:1.5; }
+.listingNewsletter form,.listingNewsletter > div { width:min(100%,760px); }
