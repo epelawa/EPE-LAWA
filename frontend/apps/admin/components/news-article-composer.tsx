@@ -45,6 +45,7 @@ export default function NewsArticleComposer({ categories, authors, recoveryActor
   const previewDialog = useRef<HTMLDialogElement>(null);
   const previewButton = useRef<HTMLButtonElement>(null);
   const form = useRef<HTMLFormElement>(null);
+  const [previewImageFailed, setPreviewImageFailed] = useState(false);
   const [preview, setPreview] = useState({ title: "", summary: "", body: "", category: "", author: "", image: "", imageAlt: "", illustrative: false });
   function showPreview() {
     if (!form.current) return;
@@ -52,6 +53,7 @@ export default function NewsArticleComposer({ categories, authors, recoveryActor
     const get = (key: string) => String(data.get(key) ?? "").trim();
     const selected = selectedNewsCover(get("ogImageKey"));
     const linked = normalizeExternalNewsCoverUrl(get("coverUrl"));
+    setPreviewImageFailed(false);
     setPreview({ title: get("title"), summary: get("summary"), body: get("body"), category: categories.find((item) => item.id === get("categoryId"))?.label ?? "", author: authorName, image: selected ? absoluteUrl(selected.url) : linked ?? "", imageAlt: selected?.alt ?? get("coverAlt"), illustrative: Boolean(selected) });
     previewDialog.current?.showModal();
   }
@@ -99,7 +101,7 @@ export default function NewsArticleComposer({ categories, authors, recoveryActor
     {enhanced && <div className={styles.stepActions}>{step > 1 && <button className={styles.chooseAuthor} type="button" onClick={() => move(step - 1)}>Back</button>}{step < 3 && <button className={styles.submit} type="button" onClick={next}>Continue →</button>}</div>}
     <dialog ref={previewDialog} className={`${styles.dialog} ${styles.previewDialog}`} aria-labelledby="preview-title" onClose={() => previewButton.current?.focus()}>
       <div className={styles.dialogHeader}><div><span className={styles.eyebrow}>PRIVATE PREVIEW</span><h2 id="preview-title">Review your article</h2><p>This preview stays in your browser and has not been published.</p></div><button type="button" className={styles.close} aria-label="Close preview" onClick={() => previewDialog.current?.close()}>×</button></div>
-      <article className={styles.previewStory}><p className={styles.eyebrow}>{preview.category || "No category selected"}</p><h3>{preview.title || "Untitled article"}</h3>{preview.summary ? <p className={styles.previewSummary}>{preview.summary}</p> : null}<p className={styles.previewByline}>By {preview.author || "No author selected"}</p>{preview.image ? <><img src={preview.image} alt={preview.imageAlt} referrerPolicy="no-referrer" />{preview.illustrative ? <small>Illustrative image</small> : null}</> : <p className={styles.previewPlaceholder}>No cover selected</p>}<div className={styles.previewBody}>{preview.body ? preview.body.split(/\n\s*\n/).map((paragraph, index) => <p key={index}>{paragraph}</p>) : <p>No story content yet.</p>}</div></article>
+      <article className={styles.previewStory}><p className={styles.eyebrow}>{preview.category || "No category selected"}</p><h3>{preview.title || "Untitled article"}</h3>{preview.summary ? <p className={styles.previewSummary}>{preview.summary}</p> : null}<p className={styles.previewByline}>By {preview.author || "No author selected"}</p>{preview.image && !previewImageFailed ? <><img src={preview.image} alt={preview.imageAlt} referrerPolicy="no-referrer" onError={() => setPreviewImageFailed(true)} />{preview.illustrative ? <small>Illustrative image</small> : null}</> : <div className={styles.previewPlaceholder}><img src="/brand-logo.png" alt="EPE LAWA logo" /><p>{previewImageFailed ? "The cover preview could not load. The EPE LAWA logo is shown as a fallback." : "No cover selected. The EPE LAWA logo is used as a fallback."}</p></div>}<div className={styles.previewBody}>{preview.body ? preview.body.split(/\n\s*\n/).map((paragraph, index) => <p key={index}>{paragraph}</p>) : <p>No story content yet.</p>}</div></article>
       <section className={styles.suggestedTags}><h3>Suggested hashtags</h3><p>Keyword suggestions for review; they are not saved or added to the article.</p><div>{suggestNewsHashtags(`${preview.title} ${preview.summary} ${preview.body} ${preview.category}`).length ? suggestNewsHashtags(`${preview.title} ${preview.summary} ${preview.body} ${preview.category}`).map((tag) => <span key={tag}>#{tag}</span>) : <span>No matching suggestions yet</span>}</div></section>
     </dialog>
 

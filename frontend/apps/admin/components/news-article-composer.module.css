@@ -64,3 +64,4 @@
 .progress [role="progressbar"] span { display:block; height:100%; border-radius:inherit; background:#477fe0; }
 .stepActions { display:flex; flex-wrap:wrap; gap:10px; justify-content:flex-end; }
 .layout:has([data-composer-step][hidden]) { grid-template-columns:1fr; }
+.previewPlaceholder img { width:min(120px, 100%); max-height:120px; margin:0 auto 12px; object-fit:contain; }

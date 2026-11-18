@@ -116,3 +116,12 @@ it("browser recovery restores controlled article body and author after refresh",
  expect((el.querySelector('#title') as HTMLInputElement).value).toBe("Recovered title");expect((el.querySelector('#body') as HTMLTextAreaElement).value).toBe("Recovered body");expect((el.querySelector('#authorId') as HTMLSelectElement).value).toBe("author");
  await act(async()=>root.unmount());el.remove();sessionStorage.clear();vi.useRealTimers();
 });
+it("article preview shows the branded fallback when no cover is selected", async () => {
+ const original=HTMLDialogElement.prototype.showModal;HTMLDialogElement.prototype.showModal=function(){this.setAttribute('open','');};
+ const el=document.createElement('div');document.body.append(el);const root=createRoot(el);
+ try {
+  await act(async()=>root.render(<NewsArticleComposer categories={[{id:'news',label:'News'}]} authors={[{id:'author',display_name:'Author'}]} />));
+  await act(async()=>button(el,'Preview article').click());
+  const dialog=el.querySelector('dialog')!;expect(dialog.querySelector('img')?.getAttribute('src')).toBe('/brand-logo.png');expect(dialog.textContent).toContain('No cover selected');
+ } finally {await act(async()=>root.unmount());el.remove();HTMLDialogElement.prototype.showModal=original;}
+});
