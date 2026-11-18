@@ -23,3 +23,7 @@ The current frontend is a partial Phase 1 discovery redesign. It depends on the 
 ## Rehearsal attempt
 
 Supabase branch creation was attempted for the business candidate, but the provider returned `entitlement_required`: branching requires Pro or above. The production ledger and absent business relations were rechecked; the required helper signatures exist. No migration was applied. A restored production-like staging database and a verified recovery plan are still required; PGlite's stubbed tests do not establish production safety. Do not bulk-apply the divergent historical migrations.
+
+## Further security review
+
+The live definitions of `is_member_active`, `is_member_banned`, `has_capability`, `require_capability` and `audit_event` and audit event checks were inspected; their signatures match the candidate, and the four candidate function names are absent in production. The local PGlite candidate test now also exercises a banned member, a staff account required to change its password, restricted owner-column access, audit entries, and rollback of both verification and publication when audit fails. These tests still use simplified auth/capability tables and do not test Supabase/PostgREST or concurrency. No production migration was applied. A production-like restored staging environment and a confirmed backup/recovery procedure are still unavailable; Supabase's branch feature is plan-restricted. An existing authorized staging environment or independent review and restoration plan is needed before proceeding.

@@ -105,6 +105,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
     const target = new URLSearchParams({ tab: "discover" });
     if (query) target.set("q", query);
     if (category) target.set("category", category);
+    if (page > 1) target.set("page", String(page));
     redirect(`/dashboard?${target.toString()}`);
   }
 

@@ -119,6 +119,7 @@ const server = createServer((request, response) => {
   }
 
   if (request.method === "POST" && url.pathname === "/rest/v1/rpc/search_published_news") {
+    if (mode === "error") { respond(response,503,{code:"SMOKE503",message:"Search unavailable"}); return; }
     let body=""; request.on("data",chunk=>{body+=chunk.toString()});
     request.on("end",()=>{try {const input=JSON.parse(body);const needle=String(input.p_query ?? "").toLowerCase();let rows = ["stories","ranking","news-many","news-many-breaking"].includes(mode) ? filteredStories(new URL("http://localhost")) : []; rows=rows.filter(row=>(!input.p_category || row.category_slug===input.p_category) && [row.title,row.summary,row.author_name,row.category_label].some(value=>String(value ?? "").toLowerCase().includes(needle)));respond(response,200,rows.slice(input.p_offset ?? 0,(input.p_offset ?? 0)+31));} catch {respond(response,400,{error:"Invalid request"});}});return;
   }
