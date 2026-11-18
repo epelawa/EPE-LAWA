@@ -1,0 +1,10 @@
+import {beforeEach,expect,it,vi} from "vitest";
+import {renderToStaticMarkup} from "react-dom/server";
+const m=vi.hoisted(()=>({create:vi.fn(),result:{data:[] as unknown[],error:null as unknown},cats:{data:[] as unknown[],error:null as unknown}}));
+vi.mock("../apps/main/lib/supabase",()=>({createClient:m.create}));
+vi.mock("next/link",()=>({default:({children,href,...rest}:{children:React.ReactNode;href:string})=><a href={href} {...rest}>{children}</a>}));
+import Page from "../apps/main/app/business-directory/page";
+beforeEach(()=>{m.result={data:[],error:null};m.cats={data:[],error:null};m.create.mockResolvedValue({rpc:()=>{const q:Record<string,unknown>={select:()=>q,then:(resolve:(v:unknown)=>void)=>resolve(m.result)};return q;},from:(table:string)=>{const q:Record<string,unknown>={};for(const k of ["select","order","range","ilike","eq","limit"])q[k]=()=>q;q.then=(resolve:(v:unknown)=>void)=>resolve(table==='published_businesses'?m.result:m.cats);return q;}});});
+it("distinguishes a failed query from an empty directory",async()=>{const log=vi.spyOn(console,"error").mockImplementation(()=>{});m.result.error={code:'missing'};const html=renderToStaticMarkup(await Page({searchParams:Promise.resolve({q:'shops'})}));expect(html).toContain('We couldn’t load the directory');expect(html).toContain('Try again');expect(html).not.toContain('No businesses match');log.mockRestore();});
+it("shows truthful empty state and real category links",async()=>{m.cats.data=[{slug:'trades',label:'Trades'}];const html=renderToStaticMarkup(await Page({searchParams:Promise.resolve({})}));expect(html).toContain('No businesses are published yet');expect(html).toContain('Trades');expect(html).toContain('category=trades');});
+it("only shows a verified badge for a verified listing",async()=>{m.result.data=[{id:'1',slug:'shop',name:'Real Shop',category_label:'Trades',description:null,area:'Epe',address:null,phone:null,whatsapp:null,is_verified:false}];const html=renderToStaticMarkup(await Page({searchParams:Promise.resolve({})}));expect(html).toContain('Real Shop');expect(html).not.toContain('Verified');expect(html).toContain('/business-directory/shop');});

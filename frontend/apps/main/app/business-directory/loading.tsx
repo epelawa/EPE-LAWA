@@ -1,0 +1,2 @@
+import styles from "./directory.module.css";
+export default function Loading() {return <div className={styles.page} role="status" aria-live="polite"><header className={styles.hero}><div><p className={styles.eyebrow}>EPE LAWA · BUSINESS DIRECTORY</p><h1>Discover businesses in Epe.</h1><p>Loading local businesses…</p></div></header><div className={styles.grid} aria-hidden="true">{[1,2,3].map(i=><div className={styles.card} key={i}><div className={styles.cardArtwork}/><div className={styles.cardBody}>Loading…</div></div>)}</div></div>}

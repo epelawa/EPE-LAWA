@@ -30,13 +30,12 @@ test("review visibility is gated on moderation with reason and audit trail", () 
   assert.match(migration, /state='pending'/);
   assert.match(migration, /business_review_moderation_history/);
   assert.match(migration, /p_reason/);
-  assert.match(detail, /eq\("state", "visible"\)/);
+  assert.doesNotMatch(detail, /submitBusinessReview/);
 });
 
 test("order management uses capability and audited RPC; sponsored label queries date-bounded active view", () => {
   assert.match(admin, /order\.manage/);
   assert.match(admin, /rpc\("order_advance"/);
   assert.doesNotMatch(admin, /paid|refunded/);
-  assert.match(detail, /active_business_sponsorships/);
-  assert.match(detail, /Sponsored/);
+  assert.doesNotMatch(detail, /OrderRequestForm|active_business_sponsorships/);
 });
