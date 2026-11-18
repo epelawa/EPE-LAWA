@@ -5,7 +5,6 @@ import { publishedNewsCover } from "../../lib/published-news-cover";
 import NewsImage from "../../components/news-image";
 import { ExpiringBreakingList } from "../../components/breaking-news";
 import { newsArticlePath } from "../../lib/news-urls";
-import { rankRecentStories } from "../../lib/recommendation-ranking";
 import { ClockIcon, EyeIcon, MessageCircleIcon } from "../../components/icons";
 import { StatusBadge } from "../../components/design-system";
 import styles from "./dashboard.module.css";
@@ -227,7 +226,7 @@ function HomeSectionHeading({ id, title, helper, level = "h2" }: { id: string; t
 export async function DashboardHomeNews({ client }: { client: SupabaseClient }) {
   const [breaking, recommendations] = await Promise.all([loadBreaking(client), loadRecommendations(client)]);
   const engagement = await loadEngagement(client, [...breaking.items, ...recommendations.items]);
-  const recommended = rankRecentStories(recommendations.items, engagement);
+  const recommended = recommendations.items.slice(0, 4);
   return <div className={styles.newsFeed}>
     <section className={styles.feedSection} aria-labelledby="breaking-heading">
       <HomeSectionHeading id="breaking-heading" title="Breaking News" helper="Only stories still marked breaking by the newsroom appear here." level="h1" />
@@ -237,9 +236,9 @@ export async function DashboardHomeNews({ client }: { client: SupabaseClient }) 
     </section>
     <section className={styles.feedSection} aria-labelledby="recommendations-heading">
       <HomeSectionHeading id="recommendations-heading" title="Recommendations" />
-      {recommendations.state === "ok" && recommendations.items.length ? <p className={styles.resultSummary} role="status">{recommended.ranked ? "Most viewed among the latest 50 stories, excluding breaking news" : "Latest stories · view ranking temporarily unavailable"}</p> : null}
+      {recommendations.state === "ok" && recommendations.items.length ? <p className={styles.resultSummary} role="status">Latest stories, excluding breaking news</p> : null}
       {recommendations.state === "error" ? <ErrorState title="Recommendations could not be loaded" href="/dashboard?tab=home" />
-        : recommendations.items.length ? <ul className={styles.storyGrid}>{recommended.items.map((story) => <StoryCard key={story.slug} story={story} stats={engagement.get(story.id)} />)}</ul>
+        : recommendations.items.length ? <ul className={styles.storyGrid}>{recommended.map((story) => <StoryCard key={story.slug} story={story} stats={engagement.get(story.id)} />)}</ul>
         : <p className={styles.feedEmpty}>No other recent published stories are available to recommend yet.</p>}
       <Link className={styles.seeAllLink} href="/dashboard?tab=discover">Discover all published stories <span aria-hidden="true">→</span></Link>
     </section>
