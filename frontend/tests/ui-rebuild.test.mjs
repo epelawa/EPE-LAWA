@@ -22,7 +22,7 @@ test('homepage preserves all 52 credited photos and restores its two original he
   const manifest=JSON.parse(read('frontend/apps/main/lib/hero-images.json'));
   assert.match(source,/<HeroCarousel>/);
   assert.match(source,/Stay Connected/);
-  assert.match(source,/getLatestStories\(7\)/);
+  assert.match(source,/getLatestStories\(3\)/);
   assert.match(source,/aria-label="Explore EPE LAWA"/);
   assert.equal(manifest.length,54);
   assert.equal(manifest.slice(2).length,52);

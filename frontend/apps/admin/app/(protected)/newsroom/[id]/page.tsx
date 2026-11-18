@@ -190,7 +190,7 @@ export default async function EditArticlePage({
         {canPublish ? <><p className="ui-muted">No second reviewer is required; the database still checks the verified staff session, article.publish capability and current revision, then records the action in the audit log.</p><form action={publishArticle} className="ui-actions"><input type="hidden" name="articleId" value={article.id} /><input type="hidden" name="revision" value={String(article.revision)} /><button className={buttonClassName("primary")} type="submit">Publish now</button></form></> : <p className="ui-muted">This account does not have article.publish access.</p>}
       </Panel> : null}
       {hasPublishedVersion ? <Panel>
-        <SectionHeading eyebrow="Publication" title="Breaking news" description="Mark the version currently visible to readers. The label expires automatically and never publishes a private revision." />
+        <SectionHeading eyebrow="Publication" title="Breaking news" description="Mark the version currently visible to readers. You can mark multiple published stories: each appears independently in the breaking-news ticker until its own expiry. This never publishes a private revision." />
         {article.is_breaking && article.breaking_until && new Date(article.breaking_until).getTime() > Date.now()
           ? <p className="ui-muted">Breaking until <time dateTime={article.breaking_until}>{new Date(article.breaking_until).toUTCString()}</time>.</p>
           : <p className="ui-muted">Not currently marked as breaking.</p>}

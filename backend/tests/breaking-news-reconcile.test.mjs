@@ -48,4 +48,12 @@ test('only a published article, valid flag and future finite expiry with exact r
   assert.equal(cleared.is_breaking, false); assert.equal(Number(cleared.revision), 3); assert.equal(cleared.breaking_until, null);
   assert.equal((await db.query('select count(*)::int as n from public.audit_log')).rows[0].n, 2);
 });
+test('multiple published stories can be breaking at the same time', async () => {
+ const second='00000000-0000-4000-8000-000000000004';
+ await db.query("insert into public.articles(id,revision,published_version_id) values ($1,1,$2)",[second,published]);
+ await db.exec('set role authenticated');
+ await setBreaking(published,true,future,3); await setBreaking(second,true,future,1);
+ await db.exec('reset role');
+ assert.equal((await db.query('select count(*)::int n from public.articles where is_breaking=true')).rows[0].n,2);
+});
 test.after(() => db.close());
