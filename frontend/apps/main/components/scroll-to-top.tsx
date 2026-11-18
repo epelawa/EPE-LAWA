@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 
 /**
  * Every route starts at the top of the page.
@@ -17,12 +17,17 @@ export default function ScrollToTop() {
   const pathname = usePathname();
   const lastPathname = useRef(pathname ?? "/");
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
+  useLayoutEffect(() => {
     const current = pathname ?? "/";
-    if (current === lastPathname.current) return;
+    const changed = current !== lastPathname.current;
     lastPathname.current = current;
-    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    // Fragment links (including comment links) intentionally keep their target.
+    if (window.location.hash || (!changed && current !== "/news")) return;
+    const reset = () => window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    reset();
+    // Next's own navigation scroll can run after React commits the new route.
+    const frame = window.requestAnimationFrame(reset);
+    return () => window.cancelAnimationFrame(frame);
   }, [pathname]);
 
   useEffect(() => {
@@ -30,7 +35,7 @@ export default function ScrollToTop() {
     const previous = "scrollRestoration" in history ? history.scrollRestoration : null;
     if (previous) history.scrollRestoration = "manual";
 
-    const reset = () => window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    const reset = () => { if (!window.location.hash) window.scrollTo({ top: 0, left: 0, behavior: "instant" }); };
     // `popstate` fires for back/forward. The animation frame lets the browser
     // finish its own restoration pass before we override it.
     const onPopState = () => window.requestAnimationFrame(reset);

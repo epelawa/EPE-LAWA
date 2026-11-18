@@ -60,7 +60,7 @@ test("News presents a focused newsroom without promotional blocks", () => {
 test("Breaking news is visible only for a flagged, unexpired published lead", () => {
   assert.match(page, /function isBreakingNow\(item: ArticleListItem\)/);
   assert.match(page, /breaking_until.*Date\.now\(\)/);
-  assert.match(page, /breakingLead \? <section className=\{styles\.breakingBanner\}/);
+  assert.match(page, /breakingStories\.length \? <section className=\{styles\.breakingBanner\}/);
   assert.match(page, /aria-label="Breaking news"/);
   assert.match(styles, /\.breakingBanner \{/);
 });
@@ -85,7 +85,7 @@ test("News page and editorial footer use the same cobalt and navy identity", asy
 });
 
 test("News and Advertise use the complete reference-style footer without a duplicate global footer", () => {
-  assert.match(page, /<NewsFooter categories=\{categories\} \/>/);
+  assert.match(page, /<NewsFooter categories=\{categories\} listing \/>/);
   assert.match(footer, /pathname\.startsWith\("\/news\/"\) \|\| pathname === "\/advertise"/);
   assert.match(footer, /if \(isEditorial\) return null/);
   for (const heading of ["Quick Links", "Categories", "Newsletter"]) assert.ok(newsFooter.includes(heading));
@@ -132,6 +132,7 @@ test("News content keeps a responsive editorial grid and accessible 48px control
   assert.match(styles, /@media \(max-width: 520px\)/);
   assert.match(styles, /\.categoryLink \{[^}]*min-height: 48px/);
   assert.match(styles, /\.searchSummary \{[^}]*min-height: 48px/);
+  assert.match(page, /<details className=\{styles\.categoryDropdown\}>/);
 });
 
 test("News pagination remains bounded with deterministic published ordering", () => {

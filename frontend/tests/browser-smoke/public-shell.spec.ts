@@ -110,7 +110,7 @@ for (const width of viewportWidths) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/news");
     await expect(page.getByRole("heading", { name: "Featured story" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "More stories" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Latest stories" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Smoke fixture: market story" })).toBeVisible();
     await expect(page.getByRole("region", { name: "Breaking news" })).toBeVisible();
     await expectNoHorizontalOverflow(page, `populated News at ${width}px`);
@@ -122,6 +122,22 @@ for (const width of viewportWidths) {
     await expectNoHorizontalOverflow(page, `filtered News at ${width}px`);
   });
 }
+
+test("homepage news link opens the newsroom at the top", async ({ page, request }) => {
+  await setFixtureMode(request, "stories");
+  await page.setViewportSize({ width: 375, height: 800 });
+  await page.goto("/");
+  const link = page.getByRole("link", { name: "Read latest news", exact: true });
+  await link.scrollIntoViewIfNeeded();
+  await link.click();
+  await expect(page).toHaveURL(/\/news$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Latest News" })).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(10);
+  await page.locator("summary").filter({ hasText: "Category" }).click();
+  await page.getByRole("navigation", { name: "News categories", exact: true }).getByRole("link", { name: "Sports" }).click();
+  await expect(page).toHaveURL(/category=sports/);
+  await expect(page.getByRole("heading", { name: "Smoke fixture: sports story" })).toBeVisible();
+});
 
 for (const width of [320, 375, 768, 1024] as const) {
   test(`keyboard navigation and focus behavior at ${width}px`, async ({ page, request }) => {
