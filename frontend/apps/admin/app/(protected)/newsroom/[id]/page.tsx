@@ -8,6 +8,8 @@ import { adminHref } from "../../../../lib/admin-path";
 import { articlePublicationState } from "../../../../lib/article-publication-state";
 import { NEWS_COVERS, isNewsCoverKey } from "../../../../../main/lib/news-covers";
 import NewsCoverUrlFields from "../../../../components/news-cover-url-fields";
+import NewsShareTools from "../../../../components/news-share-tools";
+import { publicNewsArticleUrl } from "../../../../../main/lib/news-urls";
 
 export const metadata: Metadata = { title: "Article workflow", robots: { index: false, follow: false } };
 
@@ -139,6 +141,8 @@ export default async function EditArticlePage({
       <PageIntro eyebrow={`Newsroom · Revision ${article.revision}`} title={version.title} description={<>Current version: <StatusBadge tone={displayTone}>{displayState}</StatusBadge>. {currentVersionIsPublic ? "This version is public." : olderVersionRemainsPublic ? "The previously published version remains live; this current version is private." : "No version of this article is public yet."}</>} actions={<Link href={adminHref("/newsroom")} className={buttonClassName("secondary")}>Back to newsroom</Link>} meta={<><span>Revision {article.revision}</span><span>Slug: {article.slug}</span></>} />
       <StatusMessage query={query} />
       {article.published_version_id ? <Notice tone="neutral"><Link href={`/news/${article.slug}`} className="ui-text-link">Open public article</Link>{article.published_at ? <span className="ui-meta">Published {new Date(article.published_at).toLocaleDateString("en-NG")}</span> : null}</Notice> : null}
+
+      {currentVersionIsPublic ? <NewsShareTools title={version.title} summary={version.summary} url={publicNewsArticleUrl(article.slug)} /> : null}
 
       <Panel>
         <SectionHeading eyebrow="Protected history" title="Revision and audit history" description="Read-only workflow history. Actor identifiers and private article content are not exposed here." />

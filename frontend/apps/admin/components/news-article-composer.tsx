@@ -5,7 +5,10 @@ import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import { createArticle } from "../lib/actions";
 import { adminHref } from "../lib/admin-path";
-import { NEWS_COVERS } from "../../main/lib/news-covers";
+import { absoluteUrl } from "../../main/lib/site";
+import { normalizeExternalNewsCoverUrl } from "../../main/lib/news-cover-url.mjs";
+import { suggestNewsHashtags } from "../lib/news-hashtags";
+import { NEWS_COVERS, selectedNewsCover } from "../../main/lib/news-covers";
 import NewsCoverUrlFields from "./news-cover-url-fields";
 import styles from "./news-article-composer.module.css";
 
@@ -20,11 +23,24 @@ export default function NewsArticleComposer({ categories, authors }: { categorie
   const [body, setBody] = useState("");
   const [author, setAuthor] = useState("");
   const authorDialog = useRef<HTMLDialogElement>(null);
+  const previewDialog = useRef<HTMLDialogElement>(null);
+  const previewButton = useRef<HTMLButtonElement>(null);
+  const form = useRef<HTMLFormElement>(null);
+  const [preview, setPreview] = useState({ title: "", summary: "", body: "", category: "", author: "", image: "", imageAlt: "", illustrative: false });
+  function showPreview() {
+    if (!form.current) return;
+    const data = new FormData(form.current);
+    const get = (key: string) => String(data.get(key) ?? "").trim();
+    const selected = selectedNewsCover(get("ogImageKey"));
+    const linked = normalizeExternalNewsCoverUrl(get("coverUrl"));
+    setPreview({ title: get("title"), summary: get("summary"), body: get("body"), category: categories.find((item) => item.id === get("categoryId"))?.label ?? "", author: authors.find((item) => item.id === get("authorId"))?.display_name ?? "", image: selected ? absoluteUrl(selected.url) : linked ?? "", imageAlt: selected?.alt ?? get("coverAlt"), illustrative: Boolean(selected) });
+    previewDialog.current?.showModal();
+  }
   const authorButton = useRef<HTMLButtonElement>(null);
   const wordCount = body.trim() ? body.trim().split(/\s+/u).length : 0;
   const readingMinutes = Math.max(1, Math.ceil(wordCount / 200));
 
-  return <form action={createArticle} className={styles.composer}>
+  return <form ref={form} action={createArticle} className={styles.composer}>
     <div className={styles.intro}><div><span className={styles.eyebrow}>THE NEWSROOM / COMPOSE</span><h2>Tell the story</h2><p>Write in plain text, choose the people and topic behind the story, then save your work.</p></div><div className={styles.introBadge}>New article</div></div>
     <div className={styles.layout}>
       <div className={styles.mainColumn}>
@@ -46,9 +62,14 @@ export default function NewsArticleComposer({ categories, authors }: { categorie
           <div className={styles.field}><label htmlFor="categoryId">Category <span>Required</span></label><select id="categoryId" name="categoryId" required defaultValue=""><option value="" disabled>Choose a category</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.label}</option>)}</select><small>To add a new category, visit <Link href={adminHref("/newsroom/settings")}>newsroom settings</Link>.</small></div>
           <div className={styles.field}><label htmlFor="authorId">Author <span>Required</span></label><select id="authorId" name="authorId" required value={author} onChange={(event) => setAuthor(event.currentTarget.value)}><option value="" disabled>Choose an author</option>{authors.map((item) => <option key={item.id} value={item.id}>{item.display_name}</option>)}</select><button ref={authorButton} className={styles.chooseAuthor} type="button" onClick={() => authorDialog.current?.showModal()}>Browse authors</button></div>
         </section>
-        <section className={styles.publishInfo}><strong>Before you publish</strong><p>Saving creates a private article. An authorized publisher can review and publish it from the next screen.</p><SaveButton /><Link href={adminHref("/newsroom")}>Cancel and return</Link></section>
+        <section className={styles.publishInfo}><strong>Before you publish</strong><p>Saving creates a private article. An authorized publisher can review and publish it from the next screen.</p><button ref={previewButton} className={styles.chooseAuthor} type="button" onClick={showPreview}>Preview article</button><SaveButton /><Link href={adminHref("/newsroom")}>Cancel and return</Link></section>
       </aside>
     </div>
+    <dialog ref={previewDialog} className={`${styles.dialog} ${styles.previewDialog}`} aria-labelledby="preview-title" onClose={() => previewButton.current?.focus()}>
+      <div className={styles.dialogHeader}><div><span className={styles.eyebrow}>PRIVATE PREVIEW</span><h2 id="preview-title">Review your article</h2><p>This preview stays in your browser and has not been published.</p></div><button type="button" className={styles.close} aria-label="Close preview" onClick={() => previewDialog.current?.close()}>×</button></div>
+      <article className={styles.previewStory}><p className={styles.eyebrow}>{preview.category || "No category selected"}</p><h3>{preview.title || "Untitled article"}</h3>{preview.summary ? <p className={styles.previewSummary}>{preview.summary}</p> : null}<p className={styles.previewByline}>By {preview.author || "No author selected"}</p>{preview.image ? <><img src={preview.image} alt={preview.imageAlt} referrerPolicy="no-referrer" />{preview.illustrative ? <small>Illustrative image</small> : null}</> : <p className={styles.previewPlaceholder}>No cover selected</p>}<div className={styles.previewBody}>{preview.body ? preview.body.split(/\n\s*\n/).map((paragraph, index) => <p key={index}>{paragraph}</p>) : <p>No story content yet.</p>}</div></article>
+      <section className={styles.suggestedTags}><h3>Suggested hashtags</h3><p>Keyword suggestions for review; they are not saved or added to the article.</p><div>{suggestNewsHashtags(`${preview.title} ${preview.summary} ${preview.body} ${preview.category}`).length ? suggestNewsHashtags(`${preview.title} ${preview.summary} ${preview.body} ${preview.category}`).map((tag) => <span key={tag}>#{tag}</span>) : <span>No matching suggestions yet</span>}</div></section>
+    </dialog>
     <dialog ref={authorDialog} className={styles.dialog} aria-labelledby="author-dialog-title" onClose={() => authorButton.current?.focus()}>
       <div className={styles.dialogHeader}><div><span className={styles.eyebrow}>BYLINE</span><h2 id="author-dialog-title">Choose an author</h2><p>Select a newsroom byline for this story.</p></div><button type="button" className={styles.close} aria-label="Close author selection" onClick={() => authorDialog.current?.close()}>×</button></div>
       <div className={styles.authorList}>{authors.map((item) => <button type="button" className={styles.authorOption} key={item.id} aria-pressed={author === item.id} onClick={() => { setAuthor(item.id); authorDialog.current?.close(); }}><span className={styles.avatar} aria-hidden="true">{(item.display_name ?? "A").slice(0, 1).toUpperCase()}</span><span>{item.display_name}</span>{author === item.id ? <span className={styles.selected}>Selected</span> : null}</button>)}</div>
