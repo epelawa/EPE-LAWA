@@ -12,6 +12,7 @@ import { createClient } from "../lib/supabase";
 import { siteUrl } from "../lib/site";
 import { themeScript } from "../lib/theme";
 import SiteMotion from "../components/site-motion";
+import FloatingSupport from "../../main/components/floating-support";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -43,6 +44,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <SiteHeader items={navigation} />
         <main className="site-main" id="skip-target" tabIndex={-1} aria-label="Admin workspace content">{children}</main>
         <SiteFooter />
+        <FloatingSupport href={`${siteUrl}/support`} />
       </body>
     </html>
   );
