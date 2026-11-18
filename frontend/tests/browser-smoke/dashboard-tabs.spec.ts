@@ -312,19 +312,19 @@ test("signed-out story retains public news navigation", async ({ page, request }
 });
 
 
-test("recommendations use real recent view totals and fall back honestly when unavailable", async ({ page, request }) => {
+test("recommendations stay newest first regardless of view totals", async ({ page, request }) => {
   await signIn(page);
   await setFixtureMode(request, "ranking");
   await page.goto("/dashboard?tab=home");
   const section = page.locator("section").filter({ has: page.locator("#recommendations-heading") });
-  await expect(section.getByText("Most viewed among the latest 50 stories, excluding breaking news")).toBeVisible();
+  await expect(section.getByText("Latest stories, excluding breaking news")).toBeVisible();
   const stories = section.locator("li");
   await expect(stories).toHaveCount(2);
-  await expect(stories.nth(0)).toContainText("Smoke fixture: sports story");
-  await expect(stories.nth(1)).toContainText("Smoke fixture: market story");
+  await expect(stories.nth(0)).toContainText("Smoke fixture: market story");
+  await expect(stories.nth(1)).toContainText("Smoke fixture: sports story");
   await expect(section.getByText("Recent published stories from the newsroom; not ranked by popularity.")).toHaveCount(0);
   await setFixtureMode(request, "stories");
   await page.reload();
-  await expect(section.getByText("Latest stories · view ranking temporarily unavailable")).toBeVisible();
+  await expect(section.getByText("Latest stories, excluding breaking news")).toBeVisible();
   await expect(stories.nth(0)).toContainText("Smoke fixture: market story");
 });
