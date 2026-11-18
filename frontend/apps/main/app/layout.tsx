@@ -10,6 +10,7 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import Connectivity from "./connectivity";
 import SiteHeader from "../components/site-header";
+import FloatingSupport from "../components/floating-support";
 import NewsFooter from "../components/news-footer";
 import SiteFooter from "../components/site-footer";
 import { mainNavigation } from "../lib/navigation";
@@ -75,6 +76,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <SiteFooter><NewsFooter listing /></SiteFooter>
         <AuthenticatedMobileNavigation />
         <Connectivity />
+        <FloatingSupport />
 
         {/* `components/notification-prompt.tsx` is intentionally NOT mounted.
             It asks for browser notification permission, then registers `/sw.js`

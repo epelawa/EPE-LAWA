@@ -10,11 +10,12 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default function PrivacyPage() {
+  const intake = process.env.ENQUIRY_INTAKE_ENABLED === "true";
   return (
     <InformationPage title="Privacy notice" description="What you share, what stays private, and which request channels are currently available.">
       <p className="legal-date"><strong>Last updated:</strong> 12 November 2026</p>
       <h2>Reading the public site</h2>
-      <p>You can browse public pages without a member account. Your theme choice and the dismissal of the storage notice are saved in your browser. No optional analytics tool, advertising pixel or social tracking script is enabled.</p>
+      <p>You can browse public pages without a member account. Your theme choice, the dismissal of the storage notice and the position of the support button are saved in your browser. No optional analytics tool, advertising pixel or social tracking script is enabled.</p>
 
       <h2>Member accounts and session cookies</h2>
       <p>Creating an account uses your email address, password, display name and handle. Authentication is handled by Supabase. Signing in uses essential session cookies so the site can recognise your session. Your password is not published.</p>
@@ -29,16 +30,16 @@ export default function PrivacyPage() {
       <p>The platform uses hosting and database/authentication providers to operate the service. These providers may process technical information needed to serve pages, secure accounts and investigate failures.</p>
 
       <h2>Contacting the team</h2>
-      <p>A secure contact channel is not currently available. The Contact page is a status page; it does not send or store messages. Do not submit personal or sensitive information there or assume a request has been received.</p>
+      <p>{intake ? "Contact and support forms store your name, email and message privately for authorised staff review. Advertising enquiries also collect contact numbers. Avoid including sensitive information. We attempt to send an acknowledgement by email, but delivery is not guaranteed." : "Contact and support forms are currently unavailable; no message can be submitted through them."}</p>
 
       <h2>Retention, corrections and deletion</h2>
-      <p>Information is kept for the purpose it was provided, subject to account, moderation, security and record-keeping needs. A fixed retention period has not been published. Dedicated access, correction and deletion request intake is not currently available through the site. The <Link href="/contact">Contact page</Link> shows this limitation; it does not accept messages.</p>
+      <p>Information is kept for the purpose it was provided, subject to account, moderation, security and record-keeping needs. A fixed retention period has not been published. The <Link href="/contact">Contact page</Link> shows whether the enquiry channel is available. Requests are reviewed by staff; submission does not guarantee a particular outcome.</p>
 
       <h2>Children</h2>
-      <p>This site is not directed at children under 13. A secure contact or report channel for child-safety concerns is not currently enabled; do not share a child’s private information in public areas.</p>
+      <p>This site is not directed at children under 13. Do not share a child’s private information in public areas. The contact page shows the current availability of the private enquiry channel.</p>
 
       <h2>Changes and questions</h2>
-      <p>Changes to this notice will be published on this page. The <Link href="/contact">Contact page</Link> shows current availability, but questions and privacy requests cannot yet be submitted through it.</p>
+      <p>Changes to this notice will be published on this page. The <Link href="/contact">Contact page</Link> shows current enquiry availability.</p>
     </InformationPage>
   );
 }

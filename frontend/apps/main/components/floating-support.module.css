@@ -1,0 +1,5 @@
+.widget { position:fixed; right:12px; bottom:84px; z-index:50; display:flex; align-items:stretch; border:1px solid #8eb9ff; border-radius:999px; overflow:hidden; background:#103363; color:#fff; box-shadow:0 5px 18px #001b3d55; }
+.handle { min-width:44px; min-height:44px; border:0; border-right:1px solid #ffffff55; background:transparent; color:inherit; font-size:1.2rem; cursor:grab; touch-action:none; }
+.handle:active { cursor:grabbing; }
+.link { display:flex; align-items:center; padding:0 16px; color:#fff; font-weight:700; text-decoration:none; }
+.widget :where(button,a):focus-visible { outline:3px solid #fff; outline-offset:-4px; }
