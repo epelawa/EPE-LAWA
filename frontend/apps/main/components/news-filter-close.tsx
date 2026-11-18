@@ -1,10 +1,23 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
-/** Close the menu immediately, including when the selected category is already active. */
+/** Keep the native disclosure keyboard accessible while dismissing it predictably. */
 export default function NewsFilterClose({ children }: { children: ReactNode }) {
-  return <div onClick={(event) => {
+  const root = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const dismissOutside = (event: PointerEvent) => {
+      const container = root.current;
+      if (!container || !(event.target instanceof Node) || container.contains(event.target)) return;
+      const details = container.querySelector("details");
+      if (details) details.open = false;
+    };
+    document.addEventListener("pointerdown", dismissOutside);
+    return () => document.removeEventListener("pointerdown", dismissOutside);
+  }, []);
+
+  return <div ref={root} onClick={(event) => {
     const target = event.target;
     if (!(target instanceof Element) || !target.closest("a")) return;
     const details = target.closest("details");
