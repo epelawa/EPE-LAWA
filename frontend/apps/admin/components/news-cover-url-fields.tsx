@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { normalizeExternalNewsCoverUrl } from "../../main/lib/news-cover-url.mjs";
 import styles from "./news-cover-url-fields.module.css";
 
@@ -14,6 +14,7 @@ type InitialCover = {
 };
 
 export default function NewsCoverUrlFields({ idPrefix, initial = {} }: { idPrefix: string; initial?: InitialCover }) {
+  const fieldset = useRef<HTMLFieldSetElement>(null);
   const [url, setUrl] = useState(initial.url ?? "");
   const [urlTouched, setUrlTouched] = useState(false);
   const [previewFailed, setPreviewFailed] = useState(false);
@@ -22,8 +23,33 @@ export default function NewsCoverUrlFields({ idPrefix, initial = {} }: { idPrefi
   const invalidUrl = hasUrl && !normalizedPreview && urlTouched;
   const labelId = (name: string) => `${idPrefix}-${name}`;
 
+  // Keep browser validation in sync with the same one-cover and HTTPS rules
+  // enforced by the server. Never silently discard a selected source or credit.
+  useEffect(() => {
+    const root = fieldset.current;
+    const form = root?.form;
+    if (!root || !form) return;
+    const approved = form.elements.namedItem("ogImageKey");
+    const cover = root.querySelector<HTMLInputElement>('[name="coverUrl"]');
+    const source = root.querySelector<HTMLInputElement>('[name="coverSourceUrl"]');
+    const license = root.querySelector<HTMLInputElement>('[name="coverLicenseUrl"]');
+    if (!(approved instanceof HTMLSelectElement) || !cover || !source || !license) return;
+    function validate() {
+      const linked = cover!.value.trim();
+      cover!.setCustomValidity(linked && approved instanceof HTMLSelectElement && approved.value ? "Choose one cover source: clear this URL or the approved cover." : linked && !normalizeExternalNewsCoverUrl(linked) ? "Use a public HTTPS image URL without credentials or a private host." : "");
+      for (const field of [source!, license!]) {
+        const value = field.value.trim();
+        field.setCustomValidity(linked && value && !normalizeExternalNewsCoverUrl(value) ? "Use a public HTTPS URL without credentials or a private host." : "");
+      }
+    }
+    form.addEventListener("input", validate);
+    form.addEventListener("change", validate);
+    validate();
+    return () => { form.removeEventListener("input", validate); form.removeEventListener("change", validate); cover.setCustomValidity(""); source.setCustomValidity(""); license.setCustomValidity(""); };
+  }, []);
+
   return (
-    <fieldset className={`${styles.root} ui-stack`}>
+    <fieldset ref={fieldset} className={`${styles.root} ui-stack`}>
       <legend className={`label ${styles.legend}`}>Or link a cover image</legend>
       <p className="ui-meta">An EPE LAWA image-storage bucket is not configured, so direct uploads are unavailable. Paste a publicly accessible HTTPS image link; provide its alt text, credit, source and license. Choose either this link or an approved cover above; clear this URL before switching. The browser requests the image directly, so its host can see visitors’ IP addresses; page referrers are not sent. Use only a trusted public image host: obvious private/local hosts are rejected, but a domain’s DNS can change later.</p>
       <div className="ui-field">
