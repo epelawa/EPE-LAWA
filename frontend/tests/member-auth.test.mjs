@@ -20,7 +20,7 @@ test("member auth uses the public Supabase client and validates profile/session 
   assert.match(dashboard, /rpc\("bootstrap_verified_member_profile"\)/);
   assert.doesNotMatch(dashboard, /from\("profiles"\)\.insert/);
   assert.match(callback, /exchangeCodeForSession/);
-  assert.match(callback, /startsWith\("\/\/"\)/);
+  assert.match(callback, /safeAuthNext\(params\.get\("next"\)\)/);
   assert.match(serverClient, /createServerClient/);
   assert.match(serverClient, /cookieStore\.set/);
   assert.match(dashboard, /supabase\.auth\.getUser\(\)/);
