@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRightIcon, ArrowUpRightIcon, UsersIcon, ListenShortcutIcon, NewsShortcutIcon, CompassIcon, BuildingIcon, MessageCircleIcon, ClockIcon, EyeIcon } from "../components/icons";
 import { formatPublishedDate } from "../lib/dates";
-import { getLatestStories } from "../lib/home-data";
+import { getLatestStories, getHomeBreakingStories } from "../lib/home-data";
 import "./hero-logo.css";
 import "./connection-panel.css";
 import "./home-client-refresh.css";
@@ -9,13 +9,13 @@ import CookieBanner from "../components/cookie-banner";
 import HeroCarousel from "../components/hero-carousel";
 import NewsImage from "../components/news-image";
 import ArticleByline from "../components/article-byline";
+import { HomeBreakingTicker } from "../components/home-breaking-ticker";
 import { BreakingBadge } from "../components/breaking-news";
 
 export default async function Home() {
-  const stories = await getLatestStories(7);
   const renderedAt = Date.now();
+  const [stories, breaking] = await Promise.all([getLatestStories(3), getHomeBreakingStories(renderedAt)]);
   const topStories = stories.items.slice(0, 3);
-  const updates = stories.items.slice(3);
 
   return (
     <div className="public-home">
@@ -31,6 +31,8 @@ export default async function Home() {
           </div>
         </HeroCarousel>
       </section>
+
+      {breaking.state === "ok" ? <HomeBreakingTicker stories={breaking.items} initialTime={renderedAt} /> : null}
 
       <div className="ep-container home-discovery">
         <section className="home-radio" aria-labelledby="home-radio-title">
@@ -89,13 +91,6 @@ export default async function Home() {
           </div>
         )}
       </section>
-
-      {updates.length > 0 ? <section className="ep-container home-updates" aria-labelledby="updates-title">
-        <div className="home-news__heading"><h2 id="updates-title">Latest Updates</h2><Link className="ui-text-link" href="/news">See more <ArrowRightIcon size={17} aria-hidden="true" /></Link></div>
-        <ul className="home-updates__list">{updates.map((story) => <li key={story.slug}>
-          <article><NewsImage className="home-update-image" src={story.cover?.src} alt={story.cover?.alt ?? "EPE LAWA logo"} loading="lazy" /><div><h3><Link href={`/news/${story.slug}`}>{story.title}</Link></h3><p>{story.publishedAt ? <time dateTime={story.publishedAt}>{formatPublishedDate(story.publishedAt)}</time> : null}{story.category ? ` · ${story.category}` : ""}</p>{story.cover?.illustrative ? <p className="home-updates__credit">Illustrative image. <Link href="/photo-credits#news-photos">Photo credits</Link></p> : null}</div></article>
-        </li>)}</ul>
-      </section> : null}
 
       <section className="ep-container home-community connection-panel" aria-labelledby="community-title">
         <div>

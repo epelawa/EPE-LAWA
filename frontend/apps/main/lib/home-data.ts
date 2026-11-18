@@ -50,24 +50,13 @@ export async function getLatestStories(limit = 3): Promise<PublicListResult<Late
     const count = Math.max(0, Math.min(Math.trunc(limit), 20));
     if (!count) return { state: "ok", items: [] };
     const columns = "id,slug,title,summary,published_at,is_breaking,breaking_until,category_label,author_name,og_image_key,cover_url,cover_alt";
-    const now = new Date().toISOString();
-    // Query independently of recency: a still-active breaking story may be older
-    // than the latest page. Both queries use the published-only projection.
-    const [latest, breaking] = await Promise.all([
-      supabase.from("published_articles").select(columns)
-        .order("published_at", { ascending: false, nullsFirst: false }).order("slug", { ascending: true }).limit(count),
-      supabase.from("published_articles").select(columns).eq("is_breaking", true).gt("breaking_until", now)
-        .order("published_at", { ascending: false, nullsFirst: false }).order("slug", { ascending: true }).limit(1),
-    ]);
+    const latest = await supabase.from("published_articles").select(columns)
+      .order("published_at", { ascending: false, nullsFirst: false }).order("slug", { ascending: true }).limit(count);
     if (latest.error) {
       console.error("homepage published_articles read failed", { code: latest.error.code });
       return { state: "error", items: [] };
     }
-    if (breaking.error) console.error("homepage breaking story read failed", { code: breaking.error.code });
-    const latestRows = (latest.data ?? []) as PublishedStoryRow[];
-    const active = (breaking.data ?? []) as PublishedStoryRow[];
-    const lead = active.find(row => row.is_breaking && row.breaking_until && Date.parse(row.breaking_until) > Date.now());
-    const rows = (lead ? [lead, ...latestRows.filter(row => row.id !== lead.id)] : latestRows).slice(0, count);
+    const rows = (latest.data ?? []) as PublishedStoryRow[];
     const engagement = new Map<string, { views: number; comments: number; readMinutes: number }>();
     const ids = rows.map((row) => row.id).filter(Boolean);
     if (ids.length) {
@@ -97,4 +86,17 @@ export async function getLatestStories(limit = 3): Promise<PublicListResult<Late
   } catch {
     return { state: "error", items: [] };
   }
+}
+
+export type HomeBreakingStory = { slug: string; title: string; published_at: string | null; breaking_until: string | null };
+/** Breaking stories are independent of the latest-three list and may be older. */
+export async function getHomeBreakingStories(now: number): Promise<PublicListResult<HomeBreakingStory>> {
+  try {
+    const supabase = await createClient();
+    const result = await supabase.from("published_articles").select("slug,title,published_at,breaking_until")
+      .eq("is_breaking", true).gt("breaking_until", new Date(now).toISOString())
+      .order("published_at", { ascending:false, nullsFirst:false }).order("slug", {ascending:true}).limit(20);
+    if (result.error) { console.error("homepage breaking news read failed", {code:result.error.code}); return {state:"error",items:[]}; }
+    return {state:"ok",items:(result.data ?? []) as HomeBreakingStory[]};
+  } catch { return {state:"error",items:[]}; }
 }
