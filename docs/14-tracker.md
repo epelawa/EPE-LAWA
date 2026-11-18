@@ -1,6 +1,6 @@
 # EPE-LAWA — Implementation Tracker
 
-**Last checked:** 2026-11-18 06:01 WAT.
+**Last checked:** 2026-11-18 06:09 WAT.
 
 **Verified repository `main` baseline:** `43eae784de7880d993be21673219c265d031adcf` (PR #154 merge). The Production deployment for this SHA was not verified.
 **Scope:** The eight client-approved web modules plus cross-cutting member auth, staff access, publishing, privacy, accessibility, email and audit. Native mobile remains out of scope.

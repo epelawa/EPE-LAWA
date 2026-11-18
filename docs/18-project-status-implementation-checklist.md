@@ -1,6 +1,6 @@
 # EPE LAWA — Canonical Project Status & Full UI Implementation Checklist
 
-- **Status snapshot:** 18 November 2026, 06:01 WAT (UTC+01:00)
+- **Status snapshot:** 18 November 2026, 06:09 WAT (UTC+01:00)
 - **Repository:** [`epelawa/EPE-LAWA`](https://github.com/epelawa/EPE-LAWA)
 - **Verified `main` SHA:** `43eae784de7880d993be21673219c265d031adcf`
 - **Purpose:** one current status and acceptance checklist for the complete product redesign. Refresh the snapshot after material merges or new test evidence.
@@ -8,11 +8,11 @@
 ## Current verified snapshot — 18 November 2026
 
 - Current `main` is merge commit [`43eae784de7880d993be21673219c265d031adcf`](https://github.com/epelawa/EPE-LAWA/commit/43eae784de7880d993be21673219c265d031adcf), from [PR #154](https://github.com/epelawa/EPE-LAWA/pull/154). GitHub reports that account `epelawa` merged it at 2026-11-18 04:57:06Z; the assistant did not issue a merge command.
-- PR #154 unified the public newsletter footer across homepage, News, article-slug, and radio reminder pages; removed duplicate page-local News footers; added the branded SVG 404 state and homepage story-card logo fallback; fixed protected-dashboard footer leakage and narrow-screen News filter overflow; and updated regression tests.
-- Exact-head browser smoke passed ([run #44240056909](https://github.com/epelawa/EPE-LAWA/actions/runs/44240056909)) on PR head `8da2a0313aa63c83e2fce78f028d7b64ae0c5664`. The local affected regression set passed **34/34** and `git diff --check` passed.
-- [CI run #44240056915](https://github.com/epelawa/EPE-LAWA/actions/runs/44240056915) reported zero test failures; typecheck, build, and CodeQL completed successfully. **The verify job is still failed**, solely at `pnpm audit --audit-level=high`: one high-severity picomatch ReDoS advisory, [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf), through `.>vitest>picomatch` and `admin>tailwindcss>chokidar>anymatch>picomatch`. Do not claim an all-green CI run, suppress the audit, or treat the merge as proof the vulnerability is resolved.
+- PR #154 completed: ~~shared newsletter footer across homepage, News listing, article slugs and radio reminders; removal of duplicate News-local footers; branded SVG 404 state; homepage story-card logo fallback; protected-dashboard footer isolation; and narrow-screen News overflow fix.~~
+- Exact-head browser smoke passed ([run #44240056909](https://github.com/epelawa/EPE-LAWA/actions/runs/44240056909)) on PR head `8da2a0313aa63c83e2fce78f028d7b64ae0c5664`. ~~The affected local regression set passed 34/34 and `git diff --check` passed.~~
+- [CI run #44240056915](https://github.com/epelawa/EPE-LAWA/actions/runs/44240056915): ~~test stage (0 failures), typecheck, build, and CodeQL passed.~~ **The verify job is still failed** at `pnpm audit --audit-level=high`: one high-severity picomatch ReDoS advisory, [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf), through `.>vitest>picomatch` and `admin>tailwindcss>chokidar>anymatch>picomatch`. Do not claim an all-green CI run, suppress the audit, or treat the merge as proof the vulnerability is resolved.
 - No Production deployment was verified. PR #154 made no Supabase schema, migration, user-content, or production-setting changes.
-- The owner-requested backlog remains open; see the [18 November continuation handoff](handoffs/2026-11-18-shared-footer-and-newsroom-backlog.md) for the detailed next-work queue: real visitor/country analytics, scheduled publication, Admin settings/password/social links, progressive newsroom forms and recovery, safe provider-link parsing, top-of-screen toasts, action-history presentation, and secure deletion. Preserve the underlying audit records and existing publishing authorization while implementing these changes.
+- Owner-requested backlog remains open. The [18 November continuation handoff](handoffs/2026-11-18-shared-footer-and-newsroom-backlog.md) now lists the uncompleted News navigation/UX and sharing work, full-page/control/form audit, progressive newsroom editor/media/publication requirements, Admin settings and toasts, account validation/OTP decisions, analytics, deletion, and ten optional feature suggestions. Preserve audit records, authorization, privacy, and data integrity.
 
 The detailed status table and open-PR records that follow were written for the **15 November snapshot** and are retained as history; they are not current PR/check status.
 
