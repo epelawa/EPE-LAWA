@@ -1,3 +1,4 @@
+import { NotificationSoundSettings } from "../../components/notification-sound";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { cookies } from "next/headers";
@@ -168,6 +169,7 @@ function DashboardNotifications({ notifications, error }: { notifications: Notif
       </div>
       {unread > 0 ? <form action={markNotificationsRead}><button className="btn-secondary" type="submit">Mark all as read</button></form> : <span className={styles.handle}>All read</span>}
     </header>
+    <NotificationSoundSettings />
     {error
       ? <p className={styles.error} role="alert">Notifications could not be loaded right now. Nothing is being guessed or substituted.</p>
       : notifications.length === 0

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { BellIcon } from "./icons";
 import { radioReminderKey } from "../lib/radio-reminder";
+import { NOTIFICATION_SOUND_EVENT } from "../lib/notification-sound";
+import { NotificationSoundSettings } from "./notification-sound";
 
 const OPT_IN = "epe-radio-open-page-reminder";
 const LAST_SENT = "epe-radio-last-open-page-reminder";
@@ -20,6 +22,7 @@ export default function RadioReminder() {
         const notification = new Notification("EPE LAWA Radio", { body: "EPE LAWA on Radio Lagos: Thursday at 1:30 pm Lagos time." });
         notification.onclick = () => { window.focus(); window.location.assign("/radio"); notification.close(); };
         localStorage.setItem(LAST_SENT, key);
+        window.dispatchEvent(new CustomEvent(NOTIFICATION_SOUND_EVENT, { detail: { type: NOTIFICATION_SOUND_EVENT, id: `radio_${key.replace(/[^a-zA-Z0-9_-]/g, "_")}` } }));
       } catch { /* Unsupported browser, blocked storage or notification failure. */ }
     };
     check();
@@ -62,5 +65,6 @@ export function RadioReminderSettings() {
     <p className="ui-muted">Works only while this site is open; a suspended page can miss an alert. Background push is not available.</p>
     <button type="button" className="btn-secondary" onClick={enabled ? disable : () => void enable()}>{enabled ? "Disable alert" : "Enable alert"}</button>
     {message ? <p role="status">{message}</p> : null}
+    <NotificationSoundSettings />
   </div>;
 }
