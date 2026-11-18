@@ -63,8 +63,8 @@ test("News presents a focused newsroom without promotional blocks", () => {
 test("Breaking news is visible only for a flagged, unexpired published lead", () => {
   assert.match(page, /function isBreakingNow\(item: ArticleListItem\)/);
   assert.match(page, /breaking_until.*Date\.now\(\)/);
-  assert.match(page, /breakingStories\.length \? <section className=\{styles\.breakingBanner\}/);
-  assert.match(page, /aria-label="Breaking news"/);
+  assert.match(page, /<BreakingNewsBanner stories=\{breakingStories\}/);
+  assert.match(page, /\.eq\("is_breaking", true\)\.gt\("breaking_until"/);
   assert.match(styles, /\.breakingBanner \{/);
 });
 

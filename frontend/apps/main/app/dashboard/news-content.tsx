@@ -3,6 +3,7 @@ import type { createClient } from "../../lib/supabase";
 import { formatPublishedDate } from "../../lib/dates";
 import { publishedNewsCover } from "../../lib/published-news-cover";
 import NewsImage from "../../components/news-image";
+import { ExpiringBreakingList } from "../../components/breaking-news";
 import { newsArticlePath } from "../../lib/news-urls";
 import { ClockIcon, EyeIcon, MessageCircleIcon } from "../../components/icons";
 import { StatusBadge } from "../../components/design-system";
@@ -230,7 +231,7 @@ export async function DashboardHomeNews({ client }: { client: SupabaseClient }) 
     <section className={styles.feedSection} aria-labelledby="breaking-heading">
       <HomeSectionHeading id="breaking-heading" title="Breaking News" helper="Only stories still marked breaking by the newsroom appear here." level="h1" />
       {breaking.state === "error" ? <ErrorState title="Breaking news is unavailable" href="/dashboard?tab=home" />
-        : breaking.items.length ? <div className={styles.breakingList}>{breaking.items.map((story) => <BreakingStory key={story.slug} story={story} stats={engagement.get(story.id)} />)}</div>
+        : breaking.items.length ? <ExpiringBreakingList className={styles.breakingList} emptyClassName={styles.feedEmpty} initialTime={Date.now()} items={breaking.items.map((story) => ({ id: story.id, until: story.breaking_until, content: <BreakingStory story={story} stats={engagement.get(story.id)} /> }))} />
         : <p className={styles.feedEmpty}>There are no active breaking stories right now.</p>}
     </section>
     <section className={styles.feedSection} aria-labelledby="recommendations-heading">

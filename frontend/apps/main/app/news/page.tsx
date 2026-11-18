@@ -10,7 +10,8 @@ import { publishedNewsCover } from "../../lib/published-news-cover";
 import { absoluteUrl } from "../../lib/site";
 import { newsArticlePath } from "../../lib/news-urls";
 import NewsImage from "../../components/news-image";
-import { EmptyPanel, PageFrame, StatusBadge } from "../../components/design-system";
+import { BreakingBadge, BreakingNewsBanner } from "../../components/breaking-news";
+import { EmptyPanel, PageFrame } from "../../components/design-system";
 import styles from "./listing.module.css";
 
 type ArticleListItem = {
@@ -116,9 +117,15 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
   if (query) articleQuery = articleQuery.ilike("title", `%${escapeLike(query)}%`);
   if (category) articleQuery = articleQuery.eq("category_slug", category);
 
-  const [articleResult, categoryResult] = await Promise.all([
+  const now = Date.now();
+  // The banner is independent of pagination: older flagged stories can still be breaking.
+  const breakingQuery = page === 1 && !hasSearchOrCategory
+    ? supabase.from("published_articles").select("slug,title,published_at,breaking_until").eq("is_breaking", true).gt("breaking_until", new Date(now).toISOString()).order("published_at", { ascending: false, nullsFirst: false }).order("slug", { ascending: true }).limit(10)
+    : Promise.resolve({ data: [], error: null });
+  const [articleResult, categoryResult, breakingResult] = await Promise.all([
     articleQuery.range(start, start + PAGE_SIZE),
     supabase.from("categories").select("slug,label").eq("is_active", true).order("sort_order", { ascending: true }).order("label", { ascending: true }).limit(MAX_CATEGORIES),
+    breakingQuery,
   ]);
   if (articleResult.error) {
     console.error("published_articles list read failed", { code: articleResult.error.code });
@@ -130,8 +137,9 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
   const articles = rows.slice(0, PAGE_SIZE);
   const hasOlder = rows.length > PAGE_SIZE && page < MAX_PAGE;
   const categories = (categoryResult.data?.length ? categoryResult.data : fallbackCategories(articles)) as NewsCategory[];
-  const breakingStories = page === 1 ? articles.filter(isBreakingNow) : [];
-  const breakingLead = breakingStories[0];
+  if (breakingResult.error) console.error("breaking stories read failed", { code: breakingResult.error.code });
+  const breakingStories = breakingResult.data ?? [];
+  const breakingLead = page === 1 ? articles.find(isBreakingNow) : null;
   const lead = page === 1 ? (breakingLead ?? articles[0] ?? null) : null;
   const remaining = lead ? articles.filter((article) => article.slug !== lead.slug) : articles;
   // Keep the newest stories together first; only group the rest of this page by their actual category.
@@ -185,10 +193,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
         </div>
       </div>
 
-      {breakingStories.length ? <section className={styles.breakingBanner} aria-label="Breaking news">
-        <span className={styles.breakingLabel}><span aria-hidden="true" className={styles.liveDot} /> Breaking news</span>
-        <ul>{breakingStories.map((story) => <li key={story.slug}><Link href={newsArticlePath(story.slug)}>{story.title}</Link>{story.published_at ? <time dateTime={story.published_at}>{formatPublishedDate(story.published_at)}</time> : null}</li>)}</ul>
-      </section> : null}
+      {breakingResult.error ? <p role="status">Breaking news is unavailable right now.</p> : <BreakingNewsBanner stories={breakingStories} initialTime={now} />}
 
       {articles.length === 0 ? <EmptyPanel
         title={category ? "No published stories in this category" : query ? "No matching stories" : "No stories published yet"}
@@ -202,7 +207,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
               <NewsImage className={styles.featureImage} src={coverUrl(lead)} alt="" loading="eager" fetchPriority="high" />
             </Link>
             <div className={styles.featureCopy}>
-              <div className={styles.categoryLabel}>{lead.category_label}{isBreakingNow(lead) ? <StatusBadge tone="warning">Breaking</StatusBadge> : null}</div>
+              <div className={styles.categoryLabel}>{lead.category_label}{lead.is_breaking ? <BreakingBadge until={lead.breaking_until} initialTime={now} /> : null}</div>
               <h3 className={styles.featureTitle}><Link href={newsArticlePath(lead.slug)}>{lead.title}</Link></h3>
               {lead.summary ? <p className={styles.featureSummary}>{lead.summary}</p> : null}
               <p className={styles.storyMeta}>By {lead.author_name}{lead.published_at ? <> <span aria-hidden="true">·</span> <time dateTime={lead.published_at}>{formatPublishedDate(lead.published_at)}</time></> : null}</p>
@@ -219,7 +224,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
                 <NewsImage className={styles.storyImage} src={image} alt="" />
               </Link>
               <div className={styles.storyCopy}>
-                <div className={styles.categoryLabel}>{article.category_label}{isBreakingNow(article) ? <StatusBadge tone="warning">Breaking</StatusBadge> : null}</div>
+                <div className={styles.categoryLabel}>{article.category_label}{article.is_breaking ? <BreakingBadge until={article.breaking_until} initialTime={now} /> : null}</div>
                 <h3 className={styles.storyTitle}><Link href={newsArticlePath(article.slug)}>{article.title}</Link></h3>
                 {article.summary ? <p className={styles.storySummary}>{article.summary}</p> : null}
                 <p className={styles.storyMeta}>By {article.author_name}{article.published_at ? <> <span aria-hidden="true">·</span> <time dateTime={article.published_at}>{formatPublishedDate(article.published_at)}</time></> : null}</p>
@@ -233,7 +238,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
             const image = coverUrl(article);
             return <li key={article.slug}><article className={styles.storyCard}>
               <Link href={newsArticlePath(article.slug)} className={styles.storyMedia} tabIndex={-1} aria-hidden="true"><NewsImage className={styles.storyImage} src={image} alt="" /></Link>
-              <div className={styles.storyCopy}><div className={styles.categoryLabel}>{article.category_label}{isBreakingNow(article) ? <StatusBadge tone="warning">Breaking</StatusBadge> : null}</div><h3 className={styles.storyTitle}><Link href={newsArticlePath(article.slug)}>{article.title}</Link></h3>{article.summary ? <p className={styles.storySummary}>{article.summary}</p> : null}<p className={styles.storyMeta}>By {article.author_name}{article.published_at ? <> <span aria-hidden="true">·</span> <time dateTime={article.published_at}>{formatPublishedDate(article.published_at)}</time></> : null}</p></div>
+              <div className={styles.storyCopy}><div className={styles.categoryLabel}>{article.category_label}{article.is_breaking ? <BreakingBadge until={article.breaking_until} initialTime={now} /> : null}</div><h3 className={styles.storyTitle}><Link href={newsArticlePath(article.slug)}>{article.title}</Link></h3>{article.summary ? <p className={styles.storySummary}>{article.summary}</p> : null}<p className={styles.storyMeta}>By {article.author_name}{article.published_at ? <> <span aria-hidden="true">·</span> <time dateTime={article.published_at}>{formatPublishedDate(article.published_at)}</time></> : null}</p></div>
             </article></li>;
           })}</ul>
         </section>)}
