@@ -19,6 +19,14 @@ describe("auth delivery provider selection", () => {
     expect(mock.sendMail).toHaveBeenCalledWith(expect.objectContaining({ to: message.to, text: message.text }));
     expect(mock.close).toHaveBeenCalledOnce();
   });
+  it("accepts only Gmail SMTP with encrypted ports", async () => {
+    mock.sendMail.mockResolvedValue({ accepted: [message.to], rejected: [] });
+    const config = authMailConfig({ ...gmail, AUTH_GMAIL_SMTP_HOST: "smtp.gmail.com", AUTH_GMAIL_SMTP_PORT: "587" });
+    await deliverAuthMessage(message, config);
+    expect(mock.createTransport).toHaveBeenCalledWith(expect.objectContaining({ host: "smtp.gmail.com", port: 587, secure: false, requireTLS: true }));
+    expect(() => authMailConfig({ ...gmail, AUTH_GMAIL_SMTP_HOST: "evil.example" })).toThrow();
+    expect(() => authMailConfig({ ...gmail, AUTH_GMAIL_SMTP_PORT: "25" })).toThrow();
+  });
   it("fails on SMTP error or rejection without sending through Resend", async () => {
     const fetcher = vi.spyOn(globalThis, "fetch");
     mock.sendMail.mockRejectedValueOnce(new Error("transport failure"));

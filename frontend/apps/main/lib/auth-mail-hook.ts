@@ -65,7 +65,7 @@ export async function deliverResendAuthMessage(message: Message, config: { apiKe
 }
 
 export type AuthMailConfig =
-  | { kind: "gmail"; user: string; password: string; from: string }
+  | { kind: "gmail"; user: string; password: string; from: string; host: "smtp.gmail.com"; port: 465 | 587 }
   | { kind: "resend"; apiKey: string; from: string };
 
 /** Choose Gmail when configured; only use Resend when Gmail is wholly absent.
@@ -77,7 +77,10 @@ export function authMailConfig(env: NodeJS.ProcessEnv): AuthMailConfig {
   if (!from || /[\r\n]/.test(from)) throw new Error("missing sender");
   if (user || password) {
     if (!user || !password || /[\r\n]/.test(user)) throw new Error("incomplete Gmail configuration");
-    return { kind: "gmail", user, password, from };
+    const host = env.AUTH_GMAIL_SMTP_HOST?.trim() || "smtp.gmail.com";
+    const port = env.AUTH_GMAIL_SMTP_PORT?.trim() || "465";
+    if (host !== "smtp.gmail.com" || (port !== "465" && port !== "587")) throw new Error("invalid Gmail SMTP configuration");
+    return { kind: "gmail", user, password, from, host, port: port === "465" ? 465 : 587 };
   }
   if (!env.RESEND_API_KEY?.trim()) throw new Error("missing mail provider");
   return { kind: "resend", apiKey: env.RESEND_API_KEY.trim(), from };
@@ -88,7 +91,7 @@ export function authMailConfig(env: NodeJS.ProcessEnv): AuthMailConfig {
 export async function deliverAuthMessage(message: Message, config: AuthMailConfig): Promise<void> {
   if (config.kind === "resend") return deliverResendAuthMessage(message, config);
   const transport = nodemailer.createTransport({
-    host: "smtp.gmail.com", port: 465, secure: true,
+    host: config.host, port: config.port, secure: config.port === 465, requireTLS: true,
     auth: { user: config.user, pass: config.password },
     connectionTimeout: 8000, greetingTimeout: 8000, socketTimeout: 8000,
   });
