@@ -127,3 +127,5 @@
   .featureCard,.storyCard { animation:none; }
   .storyCard:hover,.searchSummary:hover,.categorySummary:hover,.readLink:hover,.newsPage :global(.btn-secondary):hover { transform:none; }
 }
+.categoryMore { display:inline-flex; min-height:44px; align-items:center; gap:8px; color:#294b91; font-size:.875rem; font-weight:750; text-decoration:none; }
+.categoryMore:hover { color:#17264a; text-decoration:underline; text-underline-offset:4px; }

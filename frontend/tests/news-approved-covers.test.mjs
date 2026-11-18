@@ -16,8 +16,8 @@ test('approved keys resolve locally and admin validates and passes selected key 
 test('public article renders approved local cover credits and reserves the cover container',()=>{
  const p=read('apps/main/app/news/[slug]/page.tsx'), css=read('apps/main/app/news/news.module.css');
  assert.match(p,/photo-credits#news-photos/); assert.match(p,/Illustrative image/);
- const credits=read("apps/main/app/photo-credits/page.tsx"); assert.match(credits,/image\.source/); assert.match(credits,/image\.license/); assert.match(p,/cover\?\.alt/); assert.match(p,/selectedNewsCover\(article\.og_image_key\)/);
- assert.doesNotMatch(p,/cover_url|cover_alt|cover_credit|cover_source_url|cover_license_url|cover_caption/);
+ const credits=read("apps/main/app/photo-credits/page.tsx"); assert.match(credits,/image\.source/); assert.match(credits,/image\.license/); assert.match(p,/publishedCover\?\.alt/); assert.match(p,/selectedNewsCover\(article\.og_image_key\)/);
+ assert.match(p,/cover_url,cover_alt,cover_credit,cover_caption/);
  assert.match(css,/articleHeroImage\.approvedCoverFull[\s\S]*object-fit:cover/); assert.match(css,/approvedCoverThumb \{ object-fit:cover/);
 });
 
@@ -77,10 +77,9 @@ test('public lead covers use approved local keys and images never send a referre
   assert.match(listing, /loading="eager" fetchPriority="high"/);
   assert.match(listing, /className=\{styles\.storyImage\} src=\{image\} alt="" loading="lazy"/);
   assert.doesNotMatch(listing, /fetchPriority="auto"/);
-  assert.match(listing, /selectedNewsCover\(article\.og_image_key\)\?\.url \?\? publicMediaUrl\(article\.og_image_key\)/);
-  assert.match(article, /selectedNewsCover\(article\.og_image_key\)\?\.url \?\? publicMediaUrl\(article\.og_image_key\)/);
-  assert.doesNotMatch(listing, /cover_url|cover_alt|cover_source_url|cover_license_url/);
-  assert.doesNotMatch(article, /cover_url|cover_alt|cover_source_url|cover_license_url/);
+  assert.match(listing, /publishedNewsCover\(article\)/);
+  assert.match(article, /publishedNewsCover\(article\)/);
+  assert.match(article, /cover_url,cover_alt,cover_credit,cover_caption/);
   assert.match(article, /loading="eager" fetchPriority="high"/);
   assert.match(article, /referrerPolicy="no-referrer"/);
 });
@@ -91,4 +90,13 @@ test('shared published articles expose an absolute cover image with a branded fa
   assert.match(article, /absoluteUrl\("\/share.png"\)/);
   assert.match(article, /images: \[\{ url: image, alt:/);
   assert.match(article, /twitter: \{ card: "summary_large_image"/);
+});
+
+
+import { publishedNewsCover } from '../apps/main/lib/published-news-cover.ts';
+test('public covers accept safe published external images and reject unsafe or incomplete URLs', () => {
+  assert.deepEqual(publishedNewsCover({ og_image_key: null, cover_url: 'https://images.example.com/photo.jpg', cover_alt: 'A public image' }), { url: 'https://images.example.com/photo.jpg', alt: 'A public image', illustrative: false });
+  assert.equal(publishedNewsCover({ og_image_key: null, cover_url: 'http://images.example.com/photo.jpg', cover_alt: 'Image' }), null);
+  assert.equal(publishedNewsCover({ og_image_key: null, cover_url: 'https://127.0.0.1/a.jpg', cover_alt: 'Image' }), null);
+  assert.equal(publishedNewsCover({ og_image_key: null, cover_url: 'https://images.example.com/photo.jpg', cover_alt: '' }), null);
 });

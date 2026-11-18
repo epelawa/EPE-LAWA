@@ -31,6 +31,12 @@ function fixtureStories() {
 
 function filteredStories(url) {
   let stories = fixtureStories();
+  if (mode === "news-many") stories = Array.from({ length: 35 }, (_, index) => ({
+    id: `00000000-0000-4000-8000-${String(index + 201).padStart(12, "0")}`, slug: `test-story-${index + 1}`, title: `Test story ${index + 1}`,
+    summary: "Synthetic browser-test content only.", published_at: new Date(Date.now() - index * 60000).toISOString(), is_breaking: false, breaking_until: null,
+    author_name: "Browser fixture", category_slug: index % 2 ? "sports" : "local-news", category_label: index % 2 ? "Sports" : "Local News",
+    og_image_key: null, cover_url: index === 0 ? "https://images.example.com/test-cover.jpg" : null, cover_alt: index === 0 ? "Synthetic cover" : null, cover_credit: index === 0 ? "Test photographer" : null, cover_caption: null,
+  }));
   const slug = url.searchParams.get("slug");
   if (slug?.startsWith("eq.")) stories = stories.filter((story) => story.slug === slug.slice(3));
   if (slug?.startsWith("neq.")) stories = stories.filter((story) => story.slug !== slug.slice(4));
@@ -86,7 +92,7 @@ const server = createServer((request, response) => {
     request.on("end", () => {
       try {
         const value = JSON.parse(body).mode;
-        if (value !== "empty" && value !== "error" && value !== "stories" && value !== "history") {
+        if (value !== "empty" && value !== "error" && value !== "stories" && value !== "news-many" && value !== "history") {
           respond(response, 400, { error: "Unsupported fixture mode" });
           return;
         }
@@ -112,11 +118,11 @@ const server = createServer((request, response) => {
     return;
   }
 
-  if (mode === "stories" && request.method === "POST" && url.pathname === "/rest/v1/rpc/has_capability") {
+  if ((mode === "stories" || mode === "news-many") && request.method === "POST" && url.pathname === "/rest/v1/rpc/has_capability") {
     respond(response, 200, false);
     return;
   }
-  if (mode === "stories" && request.method === "HEAD" && ["/rest/v1/comments", "/rest/v1/saved_articles"].includes(url.pathname)) {
+  if ((mode === "stories" || mode === "news-many") && request.method === "HEAD" && ["/rest/v1/comments", "/rest/v1/saved_articles"].includes(url.pathname)) {
     respond(response, 200, undefined, { "content-range": "*/0" });
     return;
   }
@@ -136,19 +142,19 @@ const server = createServer((request, response) => {
       return;
     }
 
-    if (mode === "stories" && url.pathname === "/rest/v1/articles") {
+    if ((mode === "stories" || mode === "news-many") && url.pathname === "/rest/v1/articles") {
       respond(response, 200, [{ published_version_id: "fixture-version" }]);
       return;
     }
-    if (mode === "stories" && url.pathname === "/rest/v1/article_versions") {
-      respond(response, 200, [{ body: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Synthetic article for browser testing." }] }] } }]);
+    if ((mode === "stories" || mode === "news-many") && url.pathname === "/rest/v1/article_versions") {
+      respond(response, 200, [{ body: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Synthetic article for browser testing." }] }, { type: "paragraph", content: [{ type: "text", text: "Second published paragraph." }] }, { type: "paragraph", content: [{ type: "text", text: "Final published paragraph." }] }] } }]);
       return;
     }
-    if (mode === "stories" && url.pathname === "/rest/v1/comments") {
+    if ((mode === "stories" || mode === "news-many") && url.pathname === "/rest/v1/comments") {
       respond(response, 200, []);
       return;
     }
-    if (mode === "stories" && url.pathname === "/rest/v1/published_article_engagement") {
+    if ((mode === "stories" || mode === "news-many") && url.pathname === "/rest/v1/published_article_engagement") {
       respond(response, 200, []);
       return;
     }
@@ -173,12 +179,12 @@ const server = createServer((request, response) => {
       url.pathname === "/rest/v1/published_articles" ||
       url.pathname === "/rest/v1/categories"
     ) {
-      if (mode === "stories" && url.pathname === "/rest/v1/published_articles") {
+      if ((mode === "stories" || mode === "news-many") && url.pathname === "/rest/v1/published_articles") {
         const items = filteredStories(url);
         respond(response, 200, items, { "content-range": `0-${Math.max(0, items.length - 1)}/${items.length}` });
         return;
       }
-      if (mode === "stories" && url.pathname === "/rest/v1/categories") {
+      if ((mode === "stories" || mode === "news-many") && url.pathname === "/rest/v1/categories") {
         respond(response, 200, [{ slug: "local-news", label: "Local News" }, { slug: "sports", label: "Sports" }], { "content-range": "0-1/2" });
         return;
       }
