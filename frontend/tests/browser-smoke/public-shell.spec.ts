@@ -76,14 +76,12 @@ for (const width of viewportWidths) {
     }
 
     await expect(page).toHaveURL(/\/news$/);
-    await expect(page.getByRole("heading", { level: 1, name: "Latest News" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "News from Epe." })).toBeVisible();
     await expect(page.getByRole("heading", { name: "No stories published yet" })).toBeVisible();
     await captureEvidence(page, "news", width);
     await expectNoHorizontalOverflow(page, `News empty state at ${width}px`);
 
-    const searchToggle = page.locator('summary[aria-label="Search headlines"]');
-    await searchToggle.click();
-    const search = page.getByRole("searchbox", { name: "Search headlines" });
+    const search = page.getByRole("searchbox", { name: "Search stories, topics and authors" });
     await expect(search).toBeVisible();
     await search.fill(noResultsQuery);
     await page.getByRole("button", { name: "Search", exact: true }).click();
@@ -110,12 +108,11 @@ for (const width of viewportWidths) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/news");
     await expect(page.getByRole("heading", { name: "Featured story" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Latest stories" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Latest reports" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Smoke fixture: market story" })).toBeVisible();
     await expect(page.getByRole("region", { name: "Breaking news" })).toBeVisible();
     await expectNoHorizontalOverflow(page, `populated News at ${width}px`);
-    await page.locator('summary[aria-label="Search headlines"]').click();
-    await page.getByRole("searchbox", { name: "Search headlines" }).fill("market");
+    await page.getByRole("searchbox", { name: "Search stories, topics and authors" }).fill("market");
     await page.getByRole("button", { name: "Search", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Smoke fixture: market story" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Smoke fixture: sports story" })).toHaveCount(0);
@@ -155,9 +152,8 @@ test("homepage news link opens the newsroom at the top", async ({ page, request 
   await link.scrollIntoViewIfNeeded();
   await link.click();
   await expect(page).toHaveURL(/\/news$/);
-  await expect(page.getByRole("heading", { level: 1, name: "Latest News" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "News from Epe." })).toBeVisible();
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(10);
-  await page.locator("summary").filter({ hasText: "Category" }).click();
   await page.getByRole("navigation", { name: "News categories", exact: true }).getByRole("link", { name: "Sports" }).click();
   await expect(page).toHaveURL(/category=sports/);
   await expect(page.getByRole("heading", { name: "Smoke fixture: sports story" })).toBeVisible();
@@ -198,7 +194,7 @@ for (const width of [320, 375, 768, 1024] as const) {
       await page.keyboard.press("Enter");
 
       await expect(page).toHaveURL(/\/news$/);
-      await expect(page.getByRole("heading", { level: 1, name: "Latest News" })).toBeVisible();
+      await expect(page.getByRole("heading", { level: 1, name: "News from Epe." })).toBeVisible();
       await expect(drawer).toBeHidden();
       await expect(menuButton).toBeFocused();
       await expect(page.locator('.drawer-nav a[href="/news"]')).toHaveAttribute("aria-current", "page");
@@ -209,7 +205,7 @@ for (const width of [320, 375, 768, 1024] as const) {
       await tabUntilFocused(page, target);
       await page.keyboard.press("Enter");
       await expect(page).toHaveURL(/\/news$/);
-      await expect(page.getByRole("heading", { level: 1, name: "Latest News" })).toBeVisible();
+      await expect(page.getByRole("heading", { level: 1, name: "News from Epe." })).toBeVisible();
       if (await newsLink.isVisible()) await expect(newsLink).toHaveAttribute("aria-current", "page");
     }
 

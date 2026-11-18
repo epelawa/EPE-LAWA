@@ -357,3 +357,5 @@
 .readingGuide a:hover { color:#17264a; text-decoration:underline; text-underline-offset:4px; }
 .articleBody :global(.article-body) p { white-space:pre-line; overflow-wrap:anywhere; }
 .articlePage img[data-news-fallback="true"] { object-fit:contain; padding:clamp(24px, 8%, 80px); background:#edf3fc; }
+.shareLinks { display:flex; flex-wrap:wrap; align-items:center; gap:14px; padding:16px 0; border-top:1px solid #d9e3f0; }
+.shareLinks a,.shareLinks button { color:#214c8d; font:inherit; font-weight:700; }
