@@ -1,13 +1,19 @@
 # EPE-LAWA — Implementation Tracker
 
-**Last checked:** 2026-11-13 23:52 WAT.
+**Last checked:** 2026-11-18 06:09 WAT.
 
-**Production code baseline:** `main` at `203d7cae923a50dff7633a7ced8e77324bfcc06b` (normal PR #48 merge; includes PRs #44–#46, the 52-photo homepage gallery, system theme and Newsroom).
+**Verified repository `main` baseline:** `43eae784de7880d993be21673219c265d031adcf` (PR #154 merge). The Production deployment for this SHA was not verified.
 **Scope:** The eight client-approved web modules plus cross-cutting member auth, staff access, publishing, privacy, accessibility, email and audit. Native mobile remains out of scope.
 
 A route existing, a preview building, or a button being visible is not proof that a complete workflow works. Mark a capability complete only with named current evidence.
 
-## Current release snapshot — 2026-11-13 23:52 WAT
+## Current continuation snapshot — 2026-11-18
+
+PR #154 unified the public newsletter footer, branded the 404 and homepage image fallback, and fixed the mobile News filter overflow and protected-dashboard footer display. The exact-head browser smoke passed; CI tests, typecheck, build and CodeQL passed, but the CI verify job remains blocked by one high-severity picomatch advisory (`GHSA-fc5q-39xc-vjpf`). Do not mark CI fully green. Current status and the complete owner-requested follow-up queue are recorded in [`docs/18-project-status-implementation-checklist.md`](18-project-status-implementation-checklist.md) and [`docs/handoffs/2026-11-18-shared-footer-and-newsroom-backlog.md`](handoffs/2026-11-18-shared-footer-and-newsroom-backlog.md).
+
+The tracker entries below are dated historical snapshots as of 13 November and earlier; refresh them before using their PR states or Production claims.
+
+## Historical release snapshot — 2026-11-13 23:52 WAT (superseded)
 
 - PRs #44, #45, #46 and #48 are **MERGED** normally. Current `main` is `203d7cae923a50dff7633a7ced8e77324bfcc06b`; Vercel Production deployment `dpl_52yiTmDzdZwjPiXW357TeSwhNfAN` is **READY** for that exact production-target SHA. The public `/auth/verify` route displays the branded code-entry screen. No email or verification code was used; hosted template configuration, sender authentication and actual delivery remain unverified. The canonical News page still shows an honest empty state; no synthetic story was written to Production. The owner-requested “Epe · Lagos State” post-hero line remains in the homepage baseline.
 - PR #45’s system-theme drawer change is merged; its responsive QA and capture notes remain in `docs/screenshots/pr45-system-theme/`.
