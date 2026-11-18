@@ -8,9 +8,11 @@ import "./home-client-refresh.css";
 import CookieBanner from "../components/cookie-banner";
 import HeroCarousel from "../components/hero-carousel";
 import NewsImage from "../components/news-image";
+import { BreakingBadge } from "../components/breaking-news";
 
 export default async function Home() {
   const stories = await getLatestStories(7);
+  const renderedAt = Date.now();
   const topStories = stories.items.slice(0, 3);
   const updates = stories.items.slice(3);
 
@@ -66,7 +68,7 @@ export default async function Home() {
                       {story.cover?.illustrative ? <figcaption><span className="home-story-cover-caption">Illustrative image. <Link href="/photo-credits#news-photos">Photo credits</Link></span></figcaption> : null}
                     </figure>
                     <div className="home-story-copy">
-                      <span className="home-story-meta">{story.category ?? "News"}{story.publishedAt ? <> <span aria-hidden="true">·</span> <time dateTime={story.publishedAt}>{formatPublishedDate(story.publishedAt)}</time></> : null}</span>
+                      <span className="home-story-meta">{story.category ?? "News"} {story.breakingUntil ? <BreakingBadge until={story.breakingUntil} initialTime={renderedAt} /> : null}{story.publishedAt ? <> <span aria-hidden="true">·</span> <time dateTime={story.publishedAt}>{formatPublishedDate(story.publishedAt)}</time></> : null}</span>
                       <h3><Link href={storyHref}>{story.title}</Link></h3>
                       {story.summary ? <p className="home-story-summary">{story.summary}</p> : null}
                       {story.engagement ? <div className="home-story-engagement" aria-label="Story engagement"><span><ClockIcon size={14} /> {story.engagement.readMinutes} min read</span><span><EyeIcon size={14} /> {story.engagement.views.toLocaleString("en-NG")} views</span><span><MessageCircleIcon size={14} /> {story.engagement.comments.toLocaleString("en-NG")} comments</span></div> : null}

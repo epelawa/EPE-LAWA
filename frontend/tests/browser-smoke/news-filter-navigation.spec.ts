@@ -70,3 +70,24 @@ test("breaking banner includes an older active story beyond the first page, but 
   await page.goto("/news?category=local-news");
   await expect(page.getByRole("region", { name: "Breaking news" })).toHaveCount(0);
 });
+
+test("homepage leads with an older active breaking story without duplicating it", async ({ page, request }) => {
+  await request.post(`${fixtureURL}/__smoke__/mode`, { data: { mode: "news-many-breaking" } });
+  await page.setViewportSize({ width: 375, height: 800 });
+  await page.goto("/");
+  const lead = page.locator(".home-story-card").first();
+  await expect(lead.getByRole("heading", { name: "Test story 34" })).toBeVisible();
+  await expect(lead.getByText("Breaking", { exact: true })).toBeVisible();
+  await expect(lead.getByRole("link", { name: "Test story 34", exact: true })).toHaveAttribute("href", "/news/test-story-34");
+  await expect(page.locator(".home-story-card").getByRole("heading", { name: "Test story 34" })).toHaveCount(1);
+  await expect(page.locator(".home-story-card").getByRole("heading", { name: "Test story 35" })).toHaveCount(0);
+});
+
+test("homepage does not duplicate a breaking story that is also among latest stories", async ({ page, request }) => {
+  await request.post(`${fixtureURL}/__smoke__/mode`, { data: { mode: "stories" } });
+  await page.goto("/");
+  const cards = page.locator(".home-story-card");
+  await expect(cards.first().getByRole("heading", { name: "Smoke fixture: breaking headline" })).toBeVisible();
+  await expect(cards.getByRole("heading", { name: "Smoke fixture: breaking headline" })).toHaveCount(1);
+  await expect(cards.first().getByText("Breaking", { exact: true })).toBeVisible();
+});
