@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import EnquiryForm from "../../components/enquiry-form";
 import { pageMetadata } from "../../lib/metadata";
 import { PageFrame, PageIntro, Panel, SectionHeading, StatusBadge, Notice } from "../../components/design-system";
 
@@ -10,6 +11,7 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default function ContactPage() {
+  if (process.env.ENQUIRY_INTAKE_ENABLED === "true") return <PageFrame className="ui-stack"><PageIntro eyebrow="Contact" title="Contact EPE LAWA" description="Send the team a message or report a correction." /><Panel className="ui-stack"><h2>General enquiry</h2><EnquiryForm kind="contact" /></Panel><Panel className="ui-stack"><h2>Request a correction</h2><EnquiryForm kind="correction" /></Panel></PageFrame>;
   return (
     <PageFrame className="ui-stack">
       <PageIntro

@@ -27,6 +27,7 @@ export function staffNavigation(canManageStaff: boolean): NavItem[] {
   return canManageStaff
     ? [...sectionPages,
       { label: "Settings", href: "/settings", hint: "Deployment configuration and setup" },
+      { label: "Enquiries", href: "/enquiries", hint: "Private messages and corrections" },
       { label: "Roles", href: "/roles", hint: "Configure staff roles and capabilities" },
       { label: "Staff users", href: "/users", hint: "Invite and manage staff accounts" },
     ]

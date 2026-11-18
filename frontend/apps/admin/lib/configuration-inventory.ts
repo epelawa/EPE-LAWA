@@ -16,6 +16,7 @@ export const CONFIGURATION: readonly Spec[] = [
   { name: "AUTH_GMAIL_SMTP_PORT", group: "Email", guide: "Use 465 for implicit TLS or 587 for required STARTTLS; the default is 465.", optional: true },
   { name: "AUTH_EMAIL_HOOK_SECRET", group: "Email", guide: "For the custom Auth hook, set the matching Supabase Standard Webhooks signing secret. Generate 32 random bytes locally, base64 encode and prefix whsec_. Never post it in chat." },
   { name: "RESEND_API_KEY", group: "Email", guide: "Optional alternative: create an API key in Resend, verify a sender domain and remove both Gmail credentials to select Resend.", optional: true },
+  { name: "ENQUIRY_INTAKE_ENABLED", group: "Forms", guide: "Leave unset until private staff access, monitored Gmail alerts, retention and delivery are ready.", optional: true },
   { name: "FORM_RATE_SECRET", group: "Forms", guide: "For newsletter intake, generate a separate random secret of at least 32 bytes and store it as sensitive. Do not reuse the Auth hook secret." },
   { name: "NEWSLETTER_SIGNUP_ENABLED", group: "Forms", guide: "Leave unset until rate limiting, retention, monitoring and real inbox tests are complete. A value of true alone does not establish readiness.", optional: true },
   { name: "NEXT_PUBLIC_R2_PUBLIC_BASE_URL", group: "Storage", guide: "Use the authorized public HTTPS base URL for your R2 bucket when public media is configured.", optional: true },

@@ -21,7 +21,7 @@ const nextConfig: NextConfig = {
         { key: "Access-Control-Allow-Origin", value: siteUrl },
       ],
     }, {
-      source: "/admin/settings",
+      source: "/admin/:path*",
       headers: [{ key: "Cache-Control", value: "private, no-store, max-age=0, must-revalidate" }],
     }, {
       source: "/map",
