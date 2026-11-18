@@ -22,3 +22,10 @@ test('error page includes accessible retry and decorative artwork with reduced m
   assert.match(page, /onClick=\{\(\) => reset\(\)\}/);
   assert.match(styles, /prefers-reduced-motion:no-preference/);
 });
+
+test('mobile footer presents quick links and topics in three columns with wrapping and touch targets', async () => {
+  const css = await read('components/news-footer.module.css');
+  assert.match(css, /\.listingQuick \.quickLinks, \.column nav ul \{ grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
+  assert.match(css, /\.listingColumn:not\(\.listingQuick\) nav \{ grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
+  assert.match(css, /min-height:44px; padding:5px 0; font-size:\.8rem; line-height:1\.3; overflow-wrap:anywhere/);
+});
