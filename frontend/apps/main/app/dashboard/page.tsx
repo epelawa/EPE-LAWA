@@ -64,6 +64,7 @@ const notificationKinds: Record<string, string> = {
   radio_live: "Radio",
   order_status: "Order",
   moderation: "Moderation",
+  admin_message: "EPE LAWA message",
 };
 
 function DashboardTabs({ active }: { active: DashboardTab }) {
