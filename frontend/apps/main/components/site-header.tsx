@@ -33,7 +33,6 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const desktopNavRef = useRef<HTMLElement>(null);
   const previousPath = useRef(pathname);
-  const isNewsReference = pathname === "/news" || pathname.startsWith("/news/");
   const navItem = useCallback((href: string, fallbackLabel: string): NavItem =>
     items.find((item) => item.href === href) ?? { label: fallbackLabel, href }, [items]);
 
@@ -149,9 +148,9 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
   }, [drawerOpen, closeDrawer]);
 
   return (
-    <header className={`site-head${isNewsReference ? " site-head--news-reference" : ""}${pathname === "/" ? " site-head--home" : ""}`}>
+    <header className="site-head site-head--home">
       <div className="masthead-bar">
-        <Link className="nav-brand" href="/" aria-label="EPE LAWA home"><BrandLockup size={32} />{pathname === "/" ? <span className="home-brand-tagline">The Voice of Epe Division</span> : null}</Link>
+        <Link className="nav-brand" href="/" aria-label="EPE LAWA home"><BrandLockup size={32} /><span className="home-brand-tagline">The Voice of Epe Division</span></Link>
         <nav ref={desktopNavRef} className="site-head__nav" aria-label="Primary navigation">
           <ul className="nav-items">
             <li>{renderLink("/news", "News", "nav-link")}</li>

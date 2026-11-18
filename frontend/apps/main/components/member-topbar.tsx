@@ -5,7 +5,6 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { signOut } from "../app/auth/actions";
 import BrandedDialog from "./branded-dialog";
-import { BrandLockup } from "./brand";
 import { BellIcon, SignOutIcon } from "./icons";
 import styles from "../app/dashboard/dashboard.module.css";
 import { MEMBER_SERVICE_LINKS } from "../lib/member-entry";
@@ -19,10 +18,8 @@ const MEMBER_LINKS = [
 ] as const;
 
 /**
- * The member top bar is deliberately not the public masthead: it is a compact
- * midnight chrome with a notification bell (replacing the public search icon),
- * a top-right sign-out control and a four-dot menu that opens a branded modal
- * rather than the public site drawer.
+ * Secondary member controls below the shared public masthead. The notification
+ * bell, sign-out control and member menu remain available in the dashboard.
  */
 export default function MemberTopbar({
   displayName,
@@ -39,11 +36,8 @@ export default function MemberTopbar({
   const activeTab = pathname === "/dashboard" ? searchParams.get("tab") ?? "home" : "";
 
   return (
-    <header className={styles.topbar} data-member-topbar>
+    <div className={styles.topbar} data-member-topbar>
       <div className={styles.topbarInner}>
-        <Link className={styles.topbarBrand} href="/" aria-label="EPE LAWA home">
-          <BrandLockup size={30} />
-        </Link>
         <p className={styles.topbarLabel}>Member space</p>
         <div className={styles.topbarActions}>
           <Link
@@ -115,6 +109,6 @@ export default function MemberTopbar({
           </form>
         </div>
       </BrandedDialog>
-    </header>
+    </div>
   );
 }

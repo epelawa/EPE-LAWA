@@ -121,17 +121,13 @@ html[data-theme="light"] body {
 /* Layout and reusable editorial language. */
 .site-main { flex: 1; width: 100%; }
 body:has(.member-dashboard-shell) .site-footer { display: none; }
-/* The member space is its own chrome: no public masthead, its own midnight bar. */
+/* Member workspace keeps its own background and controls below the shared masthead. */
 html body:has(.member-dashboard-shell) { background: var(--palette-cloud); background-image: radial-gradient(1200px 420px at 50% -12%, rgb(71 127 224 / .16), transparent 70%); }
-body:has(.member-dashboard-shell) .site-head { display: none !important; }
-body:has(.auth-page) .site-head,
 body:has(.auth-page) .site-footer,
-body:has(.auth-link-issue) .site-head,
 body:has(.auth-link-issue) .site-footer,
-body:has(.focused-error-shell) .site-head,
 body:has(.focused-error-shell) .site-footer { display: none !important; }
 body:has(.auth-page) .site-main,
-body:has(.focused-error-shell) .site-main { display: grid; min-height: 100dvh; place-items: center; }
+body:has(.focused-error-shell) .site-main { display: grid; min-height: calc(100dvh - 72px); place-items: center; }
 .focused-page-controls { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .focused-page-controls__brand { display: inline-flex; min-height: 44px; align-items: center; text-decoration: none; }
 .focused-error-shell .focused-page-controls { margin-bottom: 28px; }
@@ -396,6 +392,5 @@ html { overscroll-behavior-y: none; }
   .comment-fab:hover { transform: none; }
 }
 
-/* The member reading shell replaces public chrome without changing article URLs. */
-body:has(.member-reading-mode) .site-head,
+/* Member reading keeps a focused footer-free layout. */
 body:has(.member-reading-mode) .site-footer { display: none !important; }

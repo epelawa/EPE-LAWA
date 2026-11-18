@@ -20,6 +20,7 @@ import ScrollToTop from "../components/scroll-to-top";
 import AuthCallbackErrorRouter from "../components/auth-callback-error-router";
 import MobileBottomNav from "../components/mobile-bottom-nav";
 import { createClient } from "../lib/supabase";
+import { NotificationSoundListener } from "../components/notification-sound";
 
 const description =
   "News, community history, local discussion, maps, local business, tourism, radio and Who-is-Who for Epe Division.";
@@ -62,6 +63,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <Script strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeScript }} />
         <AuthCallbackErrorRouter />
         <SiteMotion />
+        <NotificationSoundListener />
         <ScrollToTop />
         <a className="skip-link" href="#main">
           Skip to content
