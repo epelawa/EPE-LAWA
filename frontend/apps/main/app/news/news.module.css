@@ -140,6 +140,9 @@
 .byline { color:#293650; font-size:.8125rem; font-weight:750; }
 .articleBody { max-width:70ch; margin-inline:auto; }
 .articleBody>:first-child { margin-top:0; }.articleBody>:last-child { margin-bottom:0; }
+.articleAuthorCredit { display:flex; align-items:center; gap:10px; max-width:68ch; margin:28px auto 0; padding:16px 0; border-top:1px solid var(--news-border); border-bottom:1px solid var(--news-border); color:#5C677C; font-size:.875rem; line-height:1.5; }
+.articleAuthorCredit svg { width:20px; height:20px; flex:0 0 auto; color:#294B91; }
+.articleAuthorCredit strong { color:#14213D; font-weight:800; }
 .articleExtras { padding-top:10px; border-top:1px solid var(--news-border); }
 .articleExtras summary { display:flex; min-height:48px; align-items:center; color:#294B91; font-size:.8125rem; font-weight:700; cursor:pointer; }
 .articleTags { display:flex; flex-wrap:wrap; gap:8px; margin:0; padding:0; list-style:none; }
