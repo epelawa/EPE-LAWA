@@ -1,9 +1,8 @@
+import NewsletterActiveForm from "./newsletter-active-form";
 import styles from "./newsletter-unavailable.module.css";
-
 type Props = { id: string; variant?: "card" | "footer" };
-
-/** Signup is paused until mailbox verification and abuse controls are ready. */
 export default function NewsletterForm({ id, variant = "card" }: Props) {
+  if (process.env.NEWSLETTER_SIGNUP_ENABLED === "true") return <NewsletterActiveForm id={id} variant={variant} />;
   const noteId = `${id}-status`;
   return <div className={`${styles.signup} ${variant === "footer" ? styles.footer : ""}`}>
     <label className={styles.label} htmlFor={`${id}-email`}>Email address</label>

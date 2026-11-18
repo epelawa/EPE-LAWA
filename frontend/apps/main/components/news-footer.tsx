@@ -37,7 +37,7 @@ export default async function NewsFooter({ categories, listing = false }: { cate
       </section>
       <section className={styles.listingColumn}><h2>Explore</h2><nav aria-label="News footer links"><Link href="/news">Latest news</Link><Link href="/radio">Listen to radio</Link><Link href="/about">About EPE LAWA</Link><Link href="/contact">Contact availability</Link></nav></section>
       <section className={styles.listingColumn}><h2>Browse topics</h2><nav aria-label="News footer categories">{links.length ? links.slice(0, 8).map((category) => <Link key={category.slug} href={`/news?category=${encodeURIComponent(category.slug)}`}>{category.label}</Link>) : <Link href="/news">All news</Link>}</nav></section>
-      <section className={styles.listingColumn}><h2>Newsletter</h2><p>A thoughtful roundup of local reporting, community stories and useful updates from Epe. Newsletter sign-up is temporarily paused.</p><NewsletterForm id="news-listing-signup" variant="footer" /><Link href="/newsletter/unsubscribe">Manage subscription</Link></section>
+      <section className={styles.listingColumn}><h2>Newsletter</h2><p>A thoughtful roundup of local reporting, community stories and useful updates from Epe.</p><NewsletterForm id="news-listing-signup" variant="footer" /><Link href="/newsletter/unsubscribe">Manage subscription</Link></section>
     </div>
     <div className={styles.listingBottom}><span>© {new Date().getFullYear()} EPE LAWA</span><span>Rooted in Epe. Connected everywhere.</span><Link href="/photo-credits">Photo credits</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link></div>
   </footer>;
