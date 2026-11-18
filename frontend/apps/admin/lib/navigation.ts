@@ -17,6 +17,7 @@ const sectionPages: NavItem[] = [
   { label: "Tourism", href: "/tourism", hint: "Tourism submissions" },
   { label: "Radio", href: "/radio", hint: "Programmes, rights, episodes and schedule", primary: true },
   { label: "People", href: "/people", hint: "Who is Who records" },
+  { label: "Enquiries", href: "/enquiries", hint: "Restricted private messages and corrections" },
 ];
 
 export function mainNavigation(): NavItem[] {
@@ -27,7 +28,6 @@ export function staffNavigation(canManageStaff: boolean): NavItem[] {
   return canManageStaff
     ? [...sectionPages,
       { label: "Settings", href: "/settings", hint: "Deployment configuration and setup" },
-      { label: "Enquiries", href: "/enquiries", hint: "Private messages and corrections" },
       { label: "Roles", href: "/roles", hint: "Configure staff roles and capabilities" },
       { label: "Staff users", href: "/users", hint: "Invite and manage staff accounts" },
     ]
