@@ -1,0 +1,10 @@
+# Newsletter and private enquiries — in progress
+
+Two **unapplied** forward-only candidate migrations add isolated database primitives, not working public forms:
+
+- `20261119010000_newsletter_verified_requests.sql` stores pending hashed confirmation and unsubscribe tokens, with service-role-only request/confirmation RPCs, a per-address cooldown surviving confirmation, single-use and expiry checks, and no replacement of an existing active subscriber's unsubscribe token. Successful proof invalidates other pending tokens for that address. It reports `already_active` to the trusted server so it must not send a new unusable unsubscribe token. PGlite tests use only synthetic addresses/tokens.
+- `20261119011000_private_enquiries.sql` is a service-role-only private intake table and validated submit RPC for contact, advertising and correction enquiries. Client roles cannot read or submit directly. It intentionally does not grant staff access pending a reviewed capability and privacy policy.
+
+These are not connected to public forms and were not applied to production. Still needed: trusted server actions with consent, cryptographically random high-entropy tokens, proof via explicit POST (email link scanners must not subscribe on GET), safe generic responses, reliable provider delivery and failure handling, trusted distributed IP/global abuse controls, purge/retention, monitored staff intake, privacy disclosure, authorized staff access/audit, accessibility and responsive tests, complete concurrency/security review, production-schema reconciliation and end-to-end inbox tests. Per-address cooldown alone cannot prevent bulk abuse. Pending rows/cooldowns require a controlled retention job. Do not use the old unauthenticated signup RPC, or reopen the UI on the strength of these tests.
+
+Vercel preview deployment `dpl_4bCnzBg2SwWNLYuVxXJMc4LjDv5W` for commit `d995e19` is READY/STAGED. This confirms a preview build only: placeholders are not credentials, the Auth hook is not configured, no SMTP delivery is verified, and Supabase's existing Auth email remains active.
