@@ -5,7 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buttonClassName, EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "@epelawa/ui";
 import { createClient } from "../../../../lib/supabase";
-import { publishArticle, reviseArticle, saveDraft, setArticleBreaking, unpublishArticle } from "../../../../lib/actions";
+import { publishArticle, reviseArticle, saveDraft, reviseArticleWithFeedback, saveDraftWithFeedback, setArticleBreaking, unpublishArticle } from "../../../../lib/actions";
 import { adminHref } from "../../../../lib/admin-path";
 import { articlePublicationState } from "../../../../lib/article-publication-state";
 import { NEWS_COVERS, isNewsCoverKey } from "../../../../../main/lib/news-covers";
@@ -63,7 +63,9 @@ function StatusMessage({ query }: { query: Record<string, string | undefined> })
   if (query.revised) return <Notice tone="success" role="status">A new private revision was created. The existing public version is unchanged.</Notice>;
   if (query.error) {
     const message =
-      query.error === "breaking"
+      query.error === "uncertain"
+        ? "We could not confirm whether your changes were saved. Check the article and its revision before trying again."
+        : query.error === "breaking"
         ? "Breaking status could not be updated. Check publication access, expiry and revision, then reload and try again."
         : query.error === "cover"
         ? "Use one cover source. A linked cover needs a safe HTTPS image URL, alt text, credit, source page and license URL."
@@ -93,7 +95,7 @@ export default async function EditArticlePage({
   const [{ id }, query, supabase] = await Promise.all([params, searchParams, createClient()]);
   if (!UUID.test(id)) notFound();
 
-  const [articleResult, categoryResult, authorResult, createCapability, publishCapability, unpublishCapability, versionHistoryResult] = await Promise.all([
+  const [articleResult, categoryResult, authorResult, createCapability, publishCapability, unpublishCapability, versionHistoryResult, sessionResult] = await Promise.all([
     supabase.from("articles").select(`
       id, slug, revision, current_version_id, published_version_id, published_at, is_breaking, breaking_until,
         current_version:article_versions!current_version_id(
@@ -107,6 +109,7 @@ export default async function EditArticlePage({
     supabase.rpc("has_capability", { p_capability: "article.publish" }),
     supabase.rpc("has_capability", { p_capability: "article.unpublish" }),
     supabase.from("article_versions").select("id,version_number,title,state,created_at,created_by").eq("article_id", id).order("version_number", { ascending: false }).limit(100),
+    supabase.auth.getUser(),
   ]);
   if (articleResult.error) {
     return <PageFrame className="ui-stack"><PageIntro eyebrow="Newsroom" title="Article unavailable" description="Article details could not be verified." /><Notice tone="danger" role="alert"><strong>Article details could not be loaded.</strong><p>No changes were made. Try again in a moment.</p></Notice></PageFrame>;
@@ -160,7 +163,7 @@ export default async function EditArticlePage({
         !referencesAvailable ? <EmptyPanel title="Bylines and categories unavailable" description="The article was not changed. Reload after the reference lists can be verified." /> : (
           <Panel>
             <SectionHeading eyebrow={editablePrivateVersion ? "Private editing" : "New version"} title={editablePrivateVersion ? "Edit current draft" : "Create a private correction"} description="Changes remain private. Publication is a separate, audited action." />
-            <ProgressiveEditor action={editablePrivateVersion ? saveDraft : reviseArticle} articleId={article.id} revision={String(article.revision)} submitLabel={editablePrivateVersion ? "Save private draft" : "Create private correction draft"} intent={editablePrivateVersion ? "save" : undefined} steps={[
+            <ProgressiveEditor action={editablePrivateVersion ? saveDraft : reviseArticle} feedbackAction={editablePrivateVersion ? saveDraftWithFeedback : reviseArticleWithFeedback} recoveryActor={sessionResult.error ? undefined : sessionResult.data.user?.id} articleId={article.id} revision={String(article.revision)} submitLabel={editablePrivateVersion ? "Save private draft" : "Create private correction draft"} intent={editablePrivateVersion ? "save" : undefined} steps={[
               { title: "Story details", content: <>
               <div className="ui-field"><label className="label" htmlFor="title">Headline</label><input id="title" name="title" className="input" maxLength={200} required defaultValue={version.title} /></div>
               <div className="ui-field"><label className="label" htmlFor="summary">Summary</label><textarea id="summary" name="summary" className="input" rows={3} maxLength={1000} defaultValue={version.summary ?? ""} /></div>
