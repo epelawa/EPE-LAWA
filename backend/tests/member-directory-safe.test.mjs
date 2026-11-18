@@ -1,0 +1,23 @@
+import { test, after } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { PGlite } from '@electric-sql/pglite';
+const db = new PGlite();
+const owner='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', member='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', staff='cccccccc-cccc-4ccc-8ccc-cccccccccccc';
+await db.exec(`create role anon; create role authenticated; create schema auth;
+create table auth.users(id uuid primary key,email varchar(255));
+create function auth.uid() returns uuid language sql as $$ select nullif(current_setting('test.uid',true),'')::uuid $$;
+create table public.staff_profiles(user_id uuid primary key,is_active boolean,must_change_password boolean);
+create table public.profiles(user_id uuid primary key,handle text,display_name text,created_at timestamptz default now(),deleted_at timestamptz);
+create function public.staff_roles_authorized() returns boolean language sql as $$ select auth.uid()='${owner}'::uuid $$;
+insert into auth.users values ('${owner}','owner@example.invalid'),('${member}','member@example.invalid'),('${staff}','staff@example.invalid');
+insert into public.staff_profiles values ('${owner}',true,false),('${staff}',true,false);
+insert into public.profiles(user_id,handle,display_name) values ('${member}','member','Member'),('${staff}','staff','Staff');`);
+await db.exec(await readFile(new URL('../supabase/migrations/20261119100000_member_directory_safe.sql',import.meta.url),'utf8'));
+test('member directory is restricted and excludes staff',async()=>{
+ const grants=(await db.query("select has_function_privilege('anon','public.admin_member_list(text,integer)','execute') anon, has_function_privilege('authenticated','public.admin_member_list(text,integer)','execute') auth")).rows[0];assert.deepEqual(grants,{anon:false,auth:true});
+ await db.query("select set_config('test.uid',$1,false)",[member]); await assert.rejects(db.query("select * from public.admin_member_list('',0)"),e=>e.code==='42501');
+ await db.query("select set_config('test.uid',$1,false)",[owner]); const data=await db.query("select handle from public.admin_member_list('',0)"); assert.deepEqual(data.rows,[{handle:'member'}]);
+ await db.exec(`update public.staff_profiles set must_change_password=true where user_id='${owner}'`); await assert.rejects(db.query("select * from public.admin_member_list('',0)"),e=>e.code==='42501');
+});
+after(async()=>db.close());

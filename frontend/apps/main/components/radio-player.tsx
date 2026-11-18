@@ -47,7 +47,11 @@ export default function RadioPlayer() {
  return <section className={styles.player} aria-labelledby="radio-player-title">
   <div className={styles.topline}><div><p className={styles.eyebrow}>EPE LAWA / RADIO</p><h1 id="radio-player-title">Your listening space</h1></div><span className={styles.topBadge}>LIVE RADIO</span></div>
   <div className={styles.nowPlaying}>
-   <div className={styles.artwork}><img src="/brand-logo.png" alt="EPE LAWA" width="116" height="100" /></div>
+   <div className={`${styles.artworkStage} ${state === "playing" ? styles.artworkPlaying : ""}`}>
+    <div className={`${styles.wave} ${styles.waveLeft}`} aria-hidden="true">{[0,1,2,3,4].map(i=><span key={i} />)}</div>
+    <div className={styles.artwork}><img src="/brand-logo.png" alt="EPE LAWA" width="116" height="100" /></div>
+    <div className={`${styles.wave} ${styles.waveRight}`} aria-hidden="true">{[0,1,2,3,4].map(i=><span key={i} />)}</div>
+   </div>
    <span className={styles.onAir}><span className={`${styles.liveDot} ${state==="playing" ? styles.connected : ""}`} aria-hidden="true" />{state==="playing" ? "PLAYING" : !station || state==="offline" || state==="unavailable" || state==="blocked" ? "NOT CONNECTED" : state==="connecting" || state==="slow" ? "CONNECTING" : "READY TO LISTEN"}</span>
    <h2>{station?.name ?? "Guts FM"}</h2><p className={styles.frequency}>{station?.frequency ?? "104.9 FM"}</p>
    <p className={styles.status} role="status" aria-live="polite">{station ? status : loadingGuts ? "Looking up Guts FM…" : gutsReason === "not_found" ? "No usable Guts FM stream was found in the Naija Radio catalogue." : "Guts FM is temporarily unavailable in this player. Please try again later."}</p>
