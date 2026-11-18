@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useFormStatus } from "react-dom";
 import Link from "next/link";
-import { createArticle } from "../lib/actions";
+import { useRouter } from "next/navigation";
+import { createArticle, createArticleWithFeedback } from "../lib/actions";
 import { adminHref } from "../lib/admin-path";
 import { absoluteUrl } from "../../main/lib/site";
 import { normalizeExternalNewsCoverUrl } from "../../main/lib/news-cover-url.mjs";
@@ -11,18 +12,23 @@ import { suggestNewsHashtags } from "../lib/news-hashtags";
 import { NEWS_COVERS, selectedNewsCover } from "../../main/lib/news-covers";
 import NewsCoverUrlFields from "./news-cover-url-fields";
 import AuthorPicker from "./author-picker";
+import SessionRecovery, { clearSessionRecovery } from "./session-recovery";
 import styles from "./news-article-composer.module.css";
 
 type Option = { id: string; label?: string; display_name?: string };
 
-function SaveButton() {
+function SaveButton({saving, blocked}: {saving: boolean; blocked: boolean}) {
   const { pending } = useFormStatus();
-  return <button className={styles.submit} type="submit" disabled={pending}>{pending ? "Saving article…" : "Save article"}<span aria-hidden="true"> →</span></button>;
+  return <button className={styles.submit} type="submit" disabled={pending || saving || blocked}>{pending || saving ? "Saving article…" : "Save article"}<span aria-hidden="true"> →</span></button>;
 }
 
-export default function NewsArticleComposer({ categories, authors }: { categories: Option[]; authors: Option[] }) {
+export default function NewsArticleComposer({ categories, authors, recoveryActor }: { categories: Option[]; authors: Option[]; recoveryActor?: string }) {
+  const router = useRouter();
   const [body, setBody] = useState("");
   const [step, setStep] = useState(1);
+  const [saving, startSaving] = useTransition();
+  const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState<{status: "error" | "uncertain"; message: string} | null>(null);
   const [enhanced, setEnhanced] = useState(false);
   useEffect(() => setEnhanced(true), []);
   function move(target: number) {
@@ -52,7 +58,19 @@ export default function NewsArticleComposer({ categories, authors }: { categorie
   const wordCount = body.trim() ? body.trim().split(/\s+/u).length : 0;
   const readingMinutes = Math.max(1, Math.ceil(wordCount / 200));
 
-  return <form ref={form} action={createArticle} className={styles.composer} onKeyDown={(event) => { if (enhanced && step < 3 && event.key === "Enter" && event.target instanceof HTMLInputElement) { event.preventDefault(); next(); } }} onInvalid={(event) => { const target = event.target as HTMLElement; const section = target.closest<HTMLElement>("[data-composer-step]"); const invalidStep = Number(section?.dataset.composerStep); if (enhanced && invalidStep && invalidStep !== step) { move(invalidStep); requestAnimationFrame(() => target.focus()); } }}>
+  return <form ref={form} action={createArticle} className={styles.composer} onSubmit={(event) => {
+    if (!enhanced) return;
+    event.preventDefault();
+    if (saving || saved || saveError?.status === "uncertain") return;
+    const data = new FormData(event.currentTarget);
+    setSaveError(null);
+    startSaving(async () => {
+      try { const result = await createArticleWithFeedback(data); if (result.status === "success") { setSaved(true); clearSessionRecovery(recoveryActor, "new"); router.push(adminHref(`/newsroom/${result.articleId}?created=1`)); } else setSaveError(result); }
+      catch { setSaveError({ status: "uncertain", message: "We could not confirm whether the article was saved. Check the newsroom list before trying again to avoid a duplicate." }); }
+    });
+  }} onKeyDown={(event) => { if (enhanced && step < 3 && event.key === "Enter" && event.target instanceof HTMLInputElement) { event.preventDefault(); next(); } }} onInvalid={(event) => { const target = event.target as HTMLElement; const section = target.closest<HTMLElement>("[data-composer-step]"); const invalidStep = Number(section?.dataset.composerStep); if (enhanced && invalidStep && invalidStep !== step) { move(invalidStep); requestAnimationFrame(() => target.focus()); } }}>
+    {saveError && <div role="alert" className="ui-notice"><p>{saveError.message}</p>{saveError.status === "uncertain" && <><Link href={adminHref("/newsroom")} target="_blank" rel="noopener noreferrer">Check the newsroom list in a new tab</Link><button type="button" className="btn-secondary" onClick={() => setSaveError(null)}>I checked; allow another attempt</button></>}</div>}
+    <SessionRecovery form={form} actor={recoveryActor} article="new" revision="new" saved={saved} />
     <div className={styles.intro}><div><span className={styles.eyebrow}>THE NEWSROOM / COMPOSE</span><h2>Tell the story</h2><p>Write in plain text, choose the people and topic behind the story, then save your work.</p></div><div className={styles.introBadge}>New article</div></div>
     {enhanced && <div className={styles.progress} aria-live="polite"><p>Step {step} of 3 · {Math.round(step / 3 * 100)}%</p><div role="progressbar" aria-label="Article form progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(step / 3 * 100)}><span style={{ width: `${step / 3 * 100}%` }} /></div></div>}
     <div className={styles.layout}>
@@ -75,7 +93,7 @@ export default function NewsArticleComposer({ categories, authors }: { categorie
           <div className={styles.field}><label htmlFor="categoryId">Category <span>Required</span></label><select id="categoryId" name="categoryId" required defaultValue=""><option value="" disabled>Choose a category</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.label}</option>)}</select><small>To add a new category, visit <Link href={adminHref("/newsroom/settings")}>newsroom settings</Link>.</small></div>
           <div className={styles.field}><AuthorPicker authors={authors} onChange={(_id, name) => setAuthorName(name)} /></div>
         </section>
-        <section className={styles.publishInfo}><strong>Before you publish</strong><p>Saving creates a private article. An authorized publisher can review and publish it from the next screen.</p><button ref={previewButton} className={styles.chooseAuthor} type="button" onClick={showPreview}>Preview article</button><SaveButton /><Link href={adminHref("/newsroom")}>Cancel and return</Link></section>
+        <section className={styles.publishInfo}><strong>Before you publish</strong><p>Saving creates a private article. An authorized publisher can review and publish it from the next screen.</p><button ref={previewButton} className={styles.chooseAuthor} type="button" onClick={showPreview}>Preview article</button><SaveButton saving={saving || saved} blocked={saveError?.status === "uncertain"} /><Link href={adminHref("/newsroom")}>Cancel and return</Link></section>
       </aside>
     </div>
     {enhanced && <div className={styles.stepActions}>{step > 1 && <button className={styles.chooseAuthor} type="button" onClick={() => move(step - 1)}>Back</button>}{step < 3 && <button className={styles.submit} type="button" onClick={next}>Continue →</button>}</div>}
