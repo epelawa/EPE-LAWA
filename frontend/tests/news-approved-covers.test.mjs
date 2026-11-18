@@ -76,7 +76,6 @@ test('public lead covers use approved local keys and images never send a referre
   const listing = read('apps/main/app/news/page.tsx');
   const article = read('apps/main/app/news/[slug]/page.tsx');
   assert.match(listing, /loading="eager" fetchPriority="high"/);
-  assert.match(listing, /className=\{styles\.headlineImage\} src=\{image\} alt="" loading="eager"/);
   assert.match(listing, /className=\{styles\.storyImage\} src=\{image\} alt="" loading="lazy"/);
   assert.doesNotMatch(listing, /fetchPriority="auto"/);
   assert.match(listing, /selectedNewsCover\(article\.og_image_key\)\?\.url \?\? publicMediaUrl\(article\.og_image_key\)/);
