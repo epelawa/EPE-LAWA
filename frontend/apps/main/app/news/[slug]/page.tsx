@@ -19,6 +19,7 @@ import OfflineArticleDownload from "../../../components/offline-article-download
 import ArticleShareActions from "../../../components/article-share-actions";
 import SaveArticleButton from "../../../components/save-article-button";
 import NewsImage from "../../../components/news-image";
+import ArticleByline from "../../../components/article-byline";
 import LayoutVariation from "../../../components/layout-variation";
 import { PageFrame } from "../../../components/design-system";
 import styles from "../news.module.css";
@@ -175,7 +176,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
             {!signedIn ? <p className={styles.articleCategory}>{article.category_label}</p> : null}
             <h1>{article.title}</h1>
             {!signedIn && article.summary ? <p className={styles.articleStandfirst}>{article.summary}</p> : null}
-            {!signedIn ? <div className={styles.publicStoryMeta}><span>By {article.author_name}</span>{date ? <time dateTime={article.published_at ?? undefined}>{date}</time> : null}</div> : null}
+            {!signedIn ? <div className={styles.publicStoryMeta}><ArticleByline name={article.author_name} />{date ? <time dateTime={article.published_at ?? undefined}>{date}</time> : null}</div> : null}
           </div>
           <div className={styles.articleCoverFrame}>
             <NewsImage className={`${styles.articleHeroImage} ${cover ? styles.approvedCoverFull : ""}`} src={imageUrl} alt={publishedCover?.alt ?? ""} loading="eager" fetchPriority="high" />
@@ -185,7 +186,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
         {cover ? <p className={styles.coverCredit}>Illustrative image. <Link href="/photo-credits#news-photos">Photo credits</Link></p> : article.cover_credit && imageUrl ? <p className={styles.coverCredit}>{article.cover_caption ? `${article.cover_caption} · ` : ""}Photo: {article.cover_credit}</p> : null}
 
         {signedIn ? <div className={styles.articleMetaBar} aria-label="Story details">
-          <span className={styles.byline}>{article.author_name}</span>
+          <span className={styles.byline}><ArticleByline name={article.author_name} /></span>
           {date ? <time dateTime={article.published_at ?? undefined}>{date}</time> : null}
         </div> : null}
 

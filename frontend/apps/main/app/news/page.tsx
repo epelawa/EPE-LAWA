@@ -10,6 +10,7 @@ import { publishedNewsCover } from "../../lib/published-news-cover";
 import { absoluteUrl } from "../../lib/site";
 import { newsArticlePath } from "../../lib/news-urls";
 import NewsImage from "../../components/news-image";
+import ArticleByline from "../../components/article-byline";
 import { BreakingBadge, BreakingNewsBanner } from "../../components/breaking-news";
 import { EmptyPanel, PageFrame } from "../../components/design-system";
 import styles from "./listing.module.css";
@@ -210,7 +211,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
               <div className={styles.categoryLabel}>{lead.category_label}{lead.is_breaking ? <BreakingBadge until={lead.breaking_until} initialTime={now} /> : null}</div>
               <h3 className={styles.featureTitle}><Link href={newsArticlePath(lead.slug)}>{lead.title}</Link></h3>
               {lead.summary ? <p className={styles.featureSummary}>{lead.summary}</p> : null}
-              <p className={styles.storyMeta}>By {lead.author_name}{lead.published_at ? <> <span aria-hidden="true">·</span> <time dateTime={lead.published_at}>{formatPublishedDate(lead.published_at)}</time></> : null}</p>
+              <p className={styles.storyMeta}><ArticleByline name={lead.author_name} />{lead.published_at ? <> <span aria-hidden="true">·</span> <time dateTime={lead.published_at}>{formatPublishedDate(lead.published_at)}</time></> : null}</p>
               <Link href={newsArticlePath(lead.slug)} className={styles.readLink} aria-label={`Read: ${lead.title}`}>Read full story <span aria-hidden="true">→</span></Link>
             </div>
           </article>
@@ -227,7 +228,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
                 <div className={styles.categoryLabel}>{article.category_label}{article.is_breaking ? <BreakingBadge until={article.breaking_until} initialTime={now} /> : null}</div>
                 <h3 className={styles.storyTitle}><Link href={newsArticlePath(article.slug)}>{article.title}</Link></h3>
                 {article.summary ? <p className={styles.storySummary}>{article.summary}</p> : null}
-                <p className={styles.storyMeta}>By {article.author_name}{article.published_at ? <> <span aria-hidden="true">·</span> <time dateTime={article.published_at}>{formatPublishedDate(article.published_at)}</time></> : null}</p>
+                <p className={styles.storyMeta}><ArticleByline name={article.author_name} />{article.published_at ? <> <span aria-hidden="true">·</span> <time dateTime={article.published_at}>{formatPublishedDate(article.published_at)}</time></> : null}</p>
               </div>
             </article></li>;
           })}</ul>
@@ -238,7 +239,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
             const image = coverUrl(article);
             return <li key={article.slug}><article className={styles.storyCard}>
               <Link href={newsArticlePath(article.slug)} className={styles.storyMedia} tabIndex={-1} aria-hidden="true"><NewsImage className={styles.storyImage} src={image} alt="" /></Link>
-              <div className={styles.storyCopy}><div className={styles.categoryLabel}>{article.category_label}{article.is_breaking ? <BreakingBadge until={article.breaking_until} initialTime={now} /> : null}</div><h3 className={styles.storyTitle}><Link href={newsArticlePath(article.slug)}>{article.title}</Link></h3>{article.summary ? <p className={styles.storySummary}>{article.summary}</p> : null}<p className={styles.storyMeta}>By {article.author_name}{article.published_at ? <> <span aria-hidden="true">·</span> <time dateTime={article.published_at}>{formatPublishedDate(article.published_at)}</time></> : null}</p></div>
+              <div className={styles.storyCopy}><div className={styles.categoryLabel}>{article.category_label}{article.is_breaking ? <BreakingBadge until={article.breaking_until} initialTime={now} /> : null}</div><h3 className={styles.storyTitle}><Link href={newsArticlePath(article.slug)}>{article.title}</Link></h3>{article.summary ? <p className={styles.storySummary}>{article.summary}</p> : null}<p className={styles.storyMeta}><ArticleByline name={article.author_name} />{article.published_at ? <> <span aria-hidden="true">·</span> <time dateTime={article.published_at}>{formatPublishedDate(article.published_at)}</time></> : null}</p></div>
             </article></li>;
           })}</ul>
         </section>)}
