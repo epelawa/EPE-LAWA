@@ -1,7 +1,7 @@
 "use server";
 import { formAdminClient, formClientKey } from "../../lib/form-server";
 import { authMailConfig, deliverAuthMessage } from "../../lib/auth-mail-hook";
-export type EnquiryState = { status: "idle" | "success" | "error"; message: string };
+export type EnquiryState = { status: "idle" | "success" | "error"; message: string; ticket?: string; acknowledgement?: "accepted" | "unavailable" };
 const value = (f: FormData, n: string) => typeof f.get(n) === "string" ? (f.get(n) as string).trim() : "";
 export async function submitEnquiry(_prev: EnquiryState, form: FormData): Promise<EnquiryState> {
   if (process.env.ENQUIRY_INTAKE_ENABLED !== "true") return { status: "error", message: "Enquiries are temporarily unavailable." };
@@ -17,9 +17,12 @@ export async function submitEnquiry(_prev: EnquiryState, form: FormData): Promis
     const key = await formClientKey(), db = formAdminClient();
     const limit = await db.rpc("form_rate_limit", { p_scope:"enquiry", p_fingerprint:key });
     if (limit.error || limit.data !== true) return { status:"error", message:"We couldn’t accept your enquiry. Please try again later." };
-    const result = await db.rpc("private_enquiry_submit", { p_kind:kind === "support" ? "contact" : kind, p_name:name, p_email:email, p_message:storedMessage });
-    if (result.error || !result.data) throw new Error("intake unavailable");
+    let result;
+    try { result = await db.rpc("private_enquiry_submit", { p_kind:kind === "support" ? "contact" : kind, p_name:name, p_email:email, p_message:storedMessage }); }
+    catch { return { status:"error", message:"We couldn’t confirm whether your enquiry was saved. Please contact support before trying again to avoid a duplicate." }; }
+    if (result.error || !result.data) return { status:"error", message:"We couldn’t confirm whether your enquiry was saved. Please contact support before trying again to avoid a duplicate." };
     const ticket = kind === "support" && typeof result.data === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(result.data) ? result.data : null;
+    if (kind === "support" && !ticket) return { status:"error", message:"We couldn’t confirm your ticket number. Please contact support before trying again to avoid a duplicate." };
     // No sender details or message content leave the private staff queue in this notification.
     try {
       const config = authMailConfig(process.env);
@@ -27,11 +30,13 @@ export async function submitEnquiry(_prev: EnquiryState, form: FormData): Promis
       await deliverAuthMessage({ to:config.user, subject:"New EPE LAWA enquiry", text:"A new enquiry is waiting in the private staff workspace.", html:"<p>A new enquiry is waiting in the private staff workspace.</p>", idempotencyKey:`enquiry/${result.data}` }, config);
     } catch { console.error("Enquiry notification delivery unavailable; check the staff queue."); }
     // An acknowledgement is best-effort and never changes whether the enquiry was saved.
+    let acknowledgementStatus: "accepted" | "unavailable" = "unavailable";
     try {
       const config = authMailConfig(process.env);
       const acknowledgement = `Thank you for contacting EPE LAWA. Our team will get back to you soon.${ticket ? ` Your support ticket number is ${ticket}. Please keep it for reference.` : ""}`;
       await deliverAuthMessage({ to:email, subject:ticket ? "Your EPE LAWA support ticket" : "We received your EPE LAWA enquiry", text:acknowledgement, html:`<p>${acknowledgement}</p>`, idempotencyKey:`enquiry-ack/${result.data}` }, config);
+      acknowledgementStatus = "accepted";
     } catch { console.error("Enquiry acknowledgement delivery unavailable."); }
-    return { status:"success", message:ticket ? `Your support request has been received. Your ticket number is ${ticket}. Please keep it for reference. Our team will get back to you soon.` : "Your enquiry has been received. Our team will get back to you soon." };
+    return { status:"success", message:ticket ? `Your support request has been received. Your ticket number is ${ticket}. Please keep it for reference. Our team will get back to you soon.` : "Your enquiry has been received. Our team will get back to you soon.", ...(ticket ? { ticket, acknowledgement: acknowledgementStatus } : {}) };
   } catch { return { status:"error", message:"We couldn’t accept your enquiry. Please try again later." }; }
 }

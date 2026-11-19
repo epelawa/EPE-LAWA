@@ -76,7 +76,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <SiteFooter><NewsFooter listing /></SiteFooter>
         <AuthenticatedMobileNavigation />
         <Connectivity />
-        <FloatingSupport />
+        <FloatingSupport enabled={process.env.ENQUIRY_INTAKE_ENABLED === "true"} />
 
         {/* `components/notification-prompt.tsx` is intentionally NOT mounted.
             It asks for browser notification permission, then registers `/sw.js`
