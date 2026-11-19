@@ -44,7 +44,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <SiteHeader items={navigation} />
         <main className="site-main" id="skip-target" tabIndex={-1} aria-label="Admin workspace content">{children}</main>
         <SiteFooter />
-        <FloatingSupport href={`${siteUrl}/support`} />
+        <FloatingSupport href={`${siteUrl}/support`} privacyHref={`${siteUrl}/privacy`} enabled={process.env.ENQUIRY_INTAKE_ENABLED === "true"} />
       </body>
     </html>
   );
