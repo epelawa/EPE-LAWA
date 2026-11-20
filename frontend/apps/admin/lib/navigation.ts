@@ -32,6 +32,7 @@ export function staffNavigation(canManageStaff: boolean): NavItem[] {
       { label: "Broadcast", href: "/broadcast", hint: "Notify verified members" },
       { label: "Roles", href: "/roles", hint: "Configure staff roles and capabilities" },
       { label: "Staff users", href: "/users", hint: "Invite and manage staff accounts" },
+      { label: "Backups", href: "/backups", hint: "Database backups and restore in R2" },
     ]
     : sectionPages;
 }

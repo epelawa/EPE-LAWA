@@ -713,3 +713,22 @@ Every section of the master audit (§0-§12) is mapped below. No section was lef
 
 Additional coverage beyond the audit: Owner decisions O1-O14 in the DECISIONS NEEDED FROM OWNER section (O1 and the final-gate pending-context check added from the PR #192 task context).
 
+---
+
+## Chunk 10 — Admin redesign, R2 backup workspace and audit doc (2026-11-20)
+
+Owner-directed execution phase. Branch `feat/admin-backup-redesign`; docs branch `docs/master-audit`; a11y branch `fix/a11y-touch-targets` (merged as PR #194, merge commit `5c3067690ba62d7588608ce183f106086a539c85`).
+
+- [x] Ship the verified a11y/responsive fixes as PR #194 — evidence: `gh pr view 194 --repo epelawa/EPE-LAWA --json state,mergeCommit` → `MERGED`, merge commit `5c30676`; `git ls-tree -r --name-only origin/main` lists all six changed CSS files.
+- [x] Put the full 970-line master audit under version control — evidence: commit `7b7a25b` on `docs/master-audit`, blob `610f6d2643ea6485f0f1e977b2fae00cc9dd1232` identical local vs `origin/docs/master-audit`, PR #195 OPEN. File: `docs/19-master-audit.md`. Secret-pattern scan found no credential values.
+- [x] Confirm CI-pin and checklist commits reached main — evidence: `git merge-base --is-ancestor` exit 0 for `4f2f3cb`, `be1dc61` and `3fda8ef` against `origin/main`.
+- [x] Redesign admin shared masthead and dashboard landing in cobalt palette — evidence: `frontend/apps/admin/app/globals.css` (masthead accent bar + label chip), `frontend/apps/admin/app/(protected)/page.tsx`, `frontend/apps/admin/app/admin-dashboard.module.css`. SVG icons only; 44px touch targets; reduced-motion rule retained.
+- [x] Add R2 backup/restore workspace with strict gates — evidence: `backend/supabase/migrations/20261120170000_system_backup_capabilities.sql` (capability vocabulary only, no grants), `frontend/apps/admin/lib/backup-r2.ts` + `backup-dispatch.ts` (`import "server-only"`), `frontend/apps/admin/app/(protected)/backups/actions.ts` (fresh `has_capability`, exact-key type-to-confirm, automatic pre-restore snapshot, `audit_event`), `components/backup-controls.tsx`, `.github/workflows/db-backup.yml` + `db-restore.yml` (secrets live only in GitHub Actions).
+- [x] Typecheck — evidence: `pnpm typecheck` → exit 0, `Tasks: 5 successful, 5 total`.
+- [x] Production build — evidence: `pnpm build` → exit 0, `Tasks: 2 successful, 2 total`, `Time: 6m54.621s`, `/backups` present in route table.
+- [x] Diff hygiene — evidence: `git diff --check` → exit 0.
+- [ ] **NOT RUN per owner instruction ("ni test"): `pnpm test` and `pnpm test:unit` on this branch.** The integration merge gate in Chunk 8.1 requires these; next agent must run them before treating the branch as gate-green. Do not mark them passed.
+- [ ] Owner-gated and deliberately untouched: live DB migration application, any restore over production, Vercel access, capability grants for `backup.read/create/restore`, GitHub Actions secrets (`DATABASE_URL`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ACCOUNT_ID`, `R2_BUCKET_PRIVATE`, Vercel-side `CLOUDFLARE_API_TOKEN`, `BACKUP_DISPATCH_TOKEN`, `BACKUP_WORKFLOW_REPO`).
+
+**Browser exposure rule (owner):** no DB URL, R2 write key, Cloudflare token or GitHub dispatch token in browser, devtools, RSC payload, action return or console. Only backup key metadata (identifier, size, timestamp) reaches the client; the key is required for typed confirmation. All signing and dispatch is server-only / GitHub Actions.
+
