@@ -26,8 +26,8 @@ test("public filter panels stay consistent while News keeps reference category t
   assert.match(icons, /export const FilterIcon[\s\S]*?<svg aria-hidden="true"/);
   assert.match(icons, /export const SearchIcon[\s\S]*?<svg aria-hidden="true"/);
   const css = await source("../apps/main/app/globals.css");
-  assert.match(css, /\.filter-panel \.input \{[^}]*border-radius: 16px/);
-  assert.match(css, /\.filter-panel__control \.input \{ padding-left: 44px; \}/);
-  assert.match(css, /\.filter-panel__icon \{[^}]*border-radius: 15px/);
+  assert.match(css, /\.filter-panel \.input \{[^}]*border-radius: var\(--ep-radius-md, 12px\)/);
+  assert.match(css, /\.filter-panel__control \.input \{ padding-left: calc\(var\(--ep-space-12, 48px\) - var\(--ep-space-1, 4px\)\); \}/);
+  assert.match(css, /\.filter-panel__icon \{[^}]*border-radius: var\(--ep-radius-md, 12px\)/);
   assert.match(css, /@media \(max-width: 640px\)[\s\S]*?\.filter-panel[^}]*grid-template-columns: minmax\(0, 1fr\)/);
 });

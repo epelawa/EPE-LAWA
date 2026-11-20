@@ -4,13 +4,14 @@
 @layer base {
  :root {
   color-scheme: light;
-  --palette-midnight: #0A1023; --palette-navy: #17264A; --palette-royal-steel: #294B91; --palette-cobalt: #477FE0; --palette-ice-blue: #A7C5F5; --form-control-inline: 16px;
-    --form-control-block: 12px;
-    --form-field-gap: 10px;
-    --palette-cloud: #F1F4FA; --palette-silver: #A6B2C5; --palette-border: #293650;
+  --palette-midnight: var(--ep-color-midnight, #0A1023); --palette-navy: var(--ep-color-navy, #17264A); --palette-royal-steel: var(--ep-color-royal-steel, #294B91); --palette-cobalt: var(--ep-color-cobalt, #477FE0); --palette-ice-blue: var(--ep-color-ice-blue, #A7C5F5);
+    --form-control-inline: var(--ep-control-px, 16px);
+    --form-control-block: var(--ep-control-py, 12px);
+    --form-field-gap: var(--ep-field-gap, 12px);
+    --palette-cloud: var(--ep-color-cloud, #F1F4FA); --palette-silver: var(--ep-color-silver, #A6B2C5); --palette-border: var(--ep-color-border, #293650);
   --background: 220 47.37% 96.27%; --foreground: 225.6 55.56% 8.82%; --card: 0 0% 100%; --card-foreground: 225.6 55.56% 8.82%; --popover: 0 0% 100%; --popover-foreground: 225.6 55.56% 8.82%;
   --primary: 218.04 71.16% 57.84%; --primary-foreground: 225.6 55.56% 8.82%; --secondary: 218.8 54.8% 93.9%; --secondary-foreground: 220.38 55.91% 36.47%; --muted: 218.8 54.8% 93.9%; --muted-foreground: 218.3 26.9% 34.3%; --accent: 216.92 79.59% 80.78%; --accent-foreground: 225.6 55.56% 8.82%;
-  --destructive: 351 52% 42%; --destructive-foreground: 0 0% 100%; --border: 216 34.5% 88.6%; --input: 216.5 20.9% 56.9%; --ring: 218.04 71.16% 57.84%; --link: 220.38 55.91% 36.47%; --radius: 1.25rem;
+  --destructive: 351 52% 42%; --destructive-foreground: 0 0% 100%; --border: 216 34.5% 88.6%; --input: 216.5 20.9% 56.9%; --ring: 218.04 71.16% 57.84%; --link: 220.38 55.91% 36.47%; --radius: var(--ep-radius-md, 12px);
   --ui-danger:#a73545; --ui-danger-soft:#fae9ed; --ui-success:#26614a; --ui-success-soft:#e7f2eb; --ui-warning:#805d18; --ui-warning-soft:#fbf1d9;
  }
  [data-theme="dark"],.dark {
@@ -115,7 +116,8 @@ html[data-theme="light"] body {
 .admin-menu-button { display:none; }
 .drawer-root { position:fixed; inset:0; z-index:80; display:none; }
 .drawer-root[data-open=true] { display:block; }
-.drawer-scrim { position:absolute; inset:0; width:100%; height:100%; background:rgb(10 16 35/.48); border:0; backdrop-filter:blur(3px); }
+.drawer-scrim { position:absolute; inset:0; width:100%; height:100%; border:0; background:var(--ep-scrim, rgb(10 16 35/.58)); -webkit-backdrop-filter:blur(var(--ep-glass-blur, 10px)); backdrop-filter:blur(var(--ep-glass-blur, 10px)); }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .drawer-scrim { background: var(--palette-midnight); } }
 .drawer { position:absolute; inset:12px 12px 12px auto; width:min(400px,calc(100% - 24px)); padding:24px; overflow-y:auto; background:hsl(var(--card)); border:1px solid hsl(var(--border)); border-radius:24px; }
 .drawer__head { display:flex; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid hsl(var(--border)); padding-bottom:16px; }
 .drawer__head h2 { font-size:18px; }
@@ -170,7 +172,12 @@ html.has-scroll-reveal .site-main [data-scroll-reveal="visible"] { opacity:1; fi
 /* Prevent browser pull-to-refresh at the page boundary without disabling normal document scrolling. */
 html { overscroll-behavior-y: none; }
 
-/* Comfortable, consistent text inset; icon and specialized controls retain their own layout. */
-:where(.ui-field,.auth-field) { gap: var(--form-field-gap, 10px); }
-:where(form) :where(input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="range"]):not([type="file"]):not([type="color"]), textarea) { padding-inline: var(--form-control-inline, 16px); padding-block: var(--form-control-block, 12px); }
-:where(form) select { padding-inline-start: var(--form-control-inline, 16px); }
+/* Explicit control class replaces the zero-specificity :where(form) override. */
+.ui-field,.auth-field,.field { gap: var(--form-field-gap, 12px); }
+:where(form,.field) :is(input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="range"]):not([type="file"]):not([type="color"]), textarea, select) {
+  box-sizing: border-box;
+  min-height: var(--ep-control-min-h, 48px);
+  padding-inline: var(--ep-control-px, 16px);
+  padding-block: var(--ep-control-py, 12px);
+  font-size: var(--ep-type-base, 16px);
+}

@@ -40,7 +40,8 @@
 .menu-lines span { height:1.5px; border-radius:1px; background:currentColor; }
 .drawer-root { position:fixed; inset:0; z-index:90; height:100dvh; overflow:clip; visibility:hidden; pointer-events:none; opacity:0; transition:opacity var(--dur-base) var(--ease-out),visibility var(--dur-base); }
 .drawer-root[data-open="true"] { visibility:visible; pointer-events:auto; opacity:1; }
-.drawer-scrim { position:absolute; inset:0; width:100%; height:100%; border:0; background:rgb(5 10 25 / .56); -webkit-backdrop-filter:blur(5px); backdrop-filter:blur(5px); }
+.drawer-scrim { position:absolute; inset:0; width:100%; height:100%; border:0; background:var(--ep-scrim, rgb(10 16 35 / .58)); -webkit-backdrop-filter:blur(var(--ep-glass-blur, 10px)); backdrop-filter:blur(var(--ep-glass-blur, 10px)); }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .drawer-scrim { background: var(--palette-navy); } }
 .drawer { position:absolute; top:0; right:0; bottom:0; display:flex; width:min(380px,calc(100vw - 72px)); flex-direction:column; overflow:hidden; padding:28px clamp(20px,4vw,32px) 22px; border:1px solid hsl(var(--border)); border-right:0; border-radius:26px 0 0 26px; background:hsl(var(--card)); box-shadow:var(--shadow-2); transform:translateX(-18px); transition:transform var(--dur-base) var(--ease-out); }
 .drawer-root[data-open="true"] .drawer { transform:translateX(0); }
 .drawer-heading { display:flex; flex:0 0 auto; align-items:center; justify-content:space-between; gap:12px; padding-bottom:16px; border-bottom:1px solid hsl(var(--border)); }
@@ -82,7 +83,10 @@ body:has(.focused-error-shell) .mobile-bottom-nav,body:has(.auth-link-issue) .mo
     overflow:hidden;
     padding-bottom:var(--mobile-nav-clearance);
   }
-  body:has(.mobile-bottom-nav) .site-main { min-height:0; overflow-x:hidden; overflow-y:auto; overscroll-behavior-y:contain; scroll-padding-bottom:4px; }
+  /* The scroll container stays, but horizontal clipping is no longer a band-aid:
+     every direct child is allowed to shrink and its media is capped. */
+  body:has(.mobile-bottom-nav) .site-main { min-height:0; overflow-y:auto; overscroll-behavior-y:contain; scroll-padding-bottom:4px; }
+  .site-main > * { min-width:0; max-width:100%; }
   body:has(.mobile-bottom-nav) .site-footer { display:none!important; }
   body:has(.mobile-bottom-nav) .toast-region { bottom:calc(var(--mobile-nav-clearance,68px) + 8px + var(--storage-notice-height,0px)); }
 }
@@ -93,15 +97,15 @@ body:has(.focused-error-shell) .mobile-bottom-nav,body:has(.auth-link-issue) .mo
   .mobile-bottom-nav ul { gap: 2px; }
   .mobile-bottom-nav__link { display: flex; min-height: 48px; justify-content: center; gap: 5px; border-radius: 999px; }
   .mobile-bottom-nav__label { font-size: 10px; }
-  .mobile-bottom-nav__link[aria-current="page"], .mobile-bottom-nav__link[aria-current="location"] { background: #477fe0; color: #0a1023; }
+  .mobile-bottom-nav__link[aria-current="page"], .mobile-bottom-nav__link[aria-current="location"] { background: var(--palette-cobalt); color: var(--palette-midnight); }
   body:has(.mobile-bottom-nav):not(:has(.focused-error-shell)):not(:has(.auth-link-issue)) { --mobile-nav-clearance: calc(80px + env(safe-area-inset-bottom,0px)); }
 }
 
 /* Home masthead inspired by the client's blue EPE LAWA reference. */
-.site-head--home { border-bottom-color: #294b91; background: linear-gradient(115deg, #104caa, #082667 76%, #0a2053); color: #fff; }
+.site-head--home { border-bottom-color: var(--palette-royal-steel); background: linear-gradient(115deg, var(--palette-royal-steel), var(--palette-navy) 76%, var(--palette-midnight)); color: #fff; }
 .site-head--home .nav-brand { position: relative; }
 .site-head--home .brand__name { color: #fff; font-size: 19px; font-weight: 800; letter-spacing: .02em; }
-.site-head--home .home-brand-tagline { position: absolute; left: 47px; top: 35px; color: #ffdf4c; font-size: 10px; font-style: italic; font-weight: 700; white-space: nowrap; }
+.site-head--home .home-brand-tagline { position: absolute; left: 47px; top: 35px; color: var(--palette-ice-blue); font-size: var(--ep-hint-min); font-style: italic; font-weight: 700; white-space: nowrap; }
 .site-head--home .site-head__nav > .nav-items > li > .nav-link,
 .site-head--home .nav-disclosure > summary,
 .site-head--home .header-signin,

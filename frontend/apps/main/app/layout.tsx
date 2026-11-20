@@ -1,4 +1,6 @@
 import "@fontsource-variable/plus-jakarta-sans";
+import "@epelawa/ui/tokens.css";
+import "@epelawa/ui/ui.css";
 import "./globals.css";
 import "./native-controls.css";
 

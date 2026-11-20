@@ -5,8 +5,12 @@ import type { HomeBreakingStory } from "../lib/home-data";
 import { newsArticlePath } from "../lib/news-urls";
 import styles from "./home-breaking-ticker.module.css";
 
+function TickerBullet() {
+  return <svg aria-hidden="true" viewBox="0 0 12 12" fill="currentColor"><circle cx="6" cy="6" r="4" /></svg>;
+}
+
 export function HomeBreakingTicker({stories,initialTime}:{stories:HomeBreakingStory[];initialTime:number}) {
- const [now,setNow]=useState(initialTime); const [paused,setPaused]=useState(false);
+ const [now,setNow]=useState(initialTime);
  const expiryKey=stories.map(s=>s.breaking_until).join("|");
  useEffect(()=>{
   let timer:ReturnType<typeof setTimeout> | undefined;
@@ -18,12 +22,11 @@ export function HomeBreakingTicker({stories,initialTime}:{stories:HomeBreakingSt
  if(!active.length)return null;
  return <section className={`ep-container ${styles.banner}`} aria-label="Breaking news">
   <div className={styles.label}><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 10v4h4l10 5V5L7 10H3ZM7 14l2 6h3l-1.5-4.5M20 9v6"/></svg><span>Breaking news</span></div>
-  <div className={styles.viewport} data-paused={paused}>
+  <div className={styles.viewport}>
    <div className={styles.track}>
-    <ul className={styles.items}>{active.map(story=><li key={story.slug}><Link href={newsArticlePath(story.slug)}>{story.title}</Link></li>)}</ul>
-    <ul className={`${styles.items} ${styles.duplicate}`} aria-hidden="true">{active.map(story=><li key={story.slug}><Link href={newsArticlePath(story.slug)} tabIndex={-1}>{story.title}</Link></li>)}</ul>
+    <ul className={styles.items}>{active.map(story=><li key={story.slug}><TickerBullet /><Link href={newsArticlePath(story.slug)}>{story.title}</Link></li>)}</ul>
+    <ul className={`${styles.items} ${styles.duplicate}`} aria-hidden="true">{active.map(story=><li key={story.slug}><TickerBullet /><Link href={newsArticlePath(story.slug)} tabIndex={-1}>{story.title}</Link></li>)}</ul>
    </div>
   </div>
-  <button type="button" className={styles.pause} onClick={()=>setPaused(!paused)} aria-label={paused ? "Resume breaking news ticker" : "Pause breaking news ticker"}>{paused ? "Play" : "Pause"}</button>
  </section>;
 }

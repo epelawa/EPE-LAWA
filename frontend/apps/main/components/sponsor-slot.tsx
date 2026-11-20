@@ -3,6 +3,14 @@ import { createClient } from "../lib/supabase";
 import styles from "./sponsor-slot.module.css";
 import SponsorPopup from "./sponsor-popup";
 
+function ArrowIcon({ direction }: { direction: "up-right" | "right" }) {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      {direction === "up-right" ? <path d="M7 17 17 7M8 7h9v9" /> : <path d="M5 12h14M13 6l6 6-6 6" />}
+    </svg>
+  );
+}
+
 type Sponsor = {
   name: string;
   slug: string;
@@ -37,13 +45,15 @@ export async function readSponsor(): Promise<Sponsor | null> {
 
 export default async function SponsorSlot({
   compact = false,
+  footer = false,
 }: {
   compact?: boolean;
+  footer?: boolean;
 }) {
   const sponsor = await readSponsor();
   return (
     <aside
-      className={`${styles.slot} ${compact ? styles.compact : ""}`}
+      className={`${styles.slot} ${compact ? styles.compact : ""} ${footer ? styles.footerSlot : ""}`}
       aria-label="Sponsored placement"
     >
       {sponsor ? (
@@ -58,7 +68,7 @@ export default async function SponsorSlot({
               "Local business"}
           </span>
           <span className={styles.action}>
-            Explore this local business <span aria-hidden="true">↗</span>
+            Patronise this local business <ArrowIcon direction="up-right" />
           </span>
         </Link>
       ) : (
@@ -71,7 +81,7 @@ export default async function SponsorSlot({
             Connect with people discovering Epe LAWA.
           </span>
           <span className={styles.action}>
-            Explore advertising <span aria-hidden="true">→</span>
+            Advertise with EPE LAWA <ArrowIcon direction="right" />
           </span>
         </Link>
       )}
