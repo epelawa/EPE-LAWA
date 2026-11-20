@@ -32,6 +32,7 @@ The public app is `frontend/apps/main`; the staff app is `frontend/apps/admin`.
 - Staff actions require a verified staff session and current capability; no service-role key in a browser bundle.
 - Branded email templates do not prove delivery readiness. Email sender authentication and Paystack operation are unconfirmed.
 - Sponsored placement, if enabled, requires a real, date-bounded record and clear sponsor label.
+- `/api/health` is a public liveness probe only. It returns fixed status fields and deliberately exposes no environment, dependency, version or error detail; it is not a readiness or deployment gate.
 
 ## Deployment status
 
