@@ -13,6 +13,6 @@ export async function proxy(request: NextRequest) {
   if (pathname.startsWith("/api/") || !["GET", "HEAD"].includes(request.method)) {
     return NextResponse.json({error:"temporarily_unavailable"}, {status:503,headers});
   }
-  const random = crypto.getRandomValues(new Uint32Array(1))[0];
+  const random = crypto.getRandomValues(new Uint8Array(1))[0] & 3;
   return new NextResponse(request.method === "HEAD" ? null : maintenanceHtml(random), {status:503,headers:{...headers,"Content-Type":"text/html; charset=utf-8"}});
 }
