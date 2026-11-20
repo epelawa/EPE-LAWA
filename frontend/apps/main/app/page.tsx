@@ -11,6 +11,8 @@ import NewsImage from "../components/news-image";
 import ArticleByline from "../components/article-byline";
 import { HomeBreakingTicker } from "../components/home-breaking-ticker";
 import { BreakingBadge } from "../components/breaking-news";
+import SponsorSlot from "../components/sponsor-slot";
+import { HomeSectionReveal } from "../components/home-sections";
 
 export default async function Home() {
   const renderedAt = Date.now();
@@ -34,7 +36,7 @@ export default async function Home() {
 
       {breaking.state === "ok" ? <HomeBreakingTicker stories={breaking.items} initialTime={renderedAt} /> : null}
 
-      <div className="ep-container home-discovery">
+      <HomeSectionReveal><div className="ep-container home-discovery">
         <section className="home-radio" aria-labelledby="home-radio-title">
           <span className="home-radio__icon" aria-hidden="true"><ListenShortcutIcon size={32} /></span>
           <div><p className="home-radio__eyebrow">EPE LAWA RADIO</p><h2 id="home-radio-title">Radio Lagos 107.5 FM</h2><p>Listen to the station and explore our programmes.</p></div>
@@ -50,9 +52,9 @@ export default async function Home() {
             { href: "/advertise", label: "Advertise with us", Icon: UsersIcon },
           ].map(({ href, label, Icon }) => <Link href={href} key={href}><span aria-hidden="true"><Icon size={25} /></span><span>{label}</span></Link>)}
         </nav>
-      </div>
+      </div></HomeSectionReveal>
 
-      <section className="ep-container home-news" aria-labelledby="latest-title">
+      <HomeSectionReveal><section className="ep-container home-news" aria-labelledby="latest-title">
         <div className="home-news__heading">
           <div><h2 id="latest-title">Latest News</h2></div>
           <Link className="ui-text-link" href="/news">View all news <ArrowRightIcon size={17} aria-hidden="true" /></Link>
@@ -103,7 +105,8 @@ export default async function Home() {
           <Link className="ui-text-link" href="/guidelines">Read the community guidelines</Link>
         </div>
         <span className="connection-panel__icon" aria-hidden="true"><UsersIcon size={96} /></span>
-      </section>
+      </section></HomeSectionReveal>
+      <SponsorSlot />
       <CookieBanner />
     </div>
   );

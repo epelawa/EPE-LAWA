@@ -77,7 +77,7 @@ function coverUrl(article: ArticleListItem): string | null {
 function NewsError() {
   return <>
     <PageFrame className={`${styles.newsPage} ui-stack`}>
-      <header className={styles.pageHeader}><p className={styles.kicker}>EPE LAWA · NEWSROOM</p><h1 className={styles.pageTitle}>News</h1></header>
+      <header className={styles.pageHeader}><p className={styles.kicker}>Latest reporting</p><h1 className={styles.pageTitle}>News</h1></header>
       <EmptyPanel title="The newsroom did not load" description="We could not reach the published newsroom, so no stories are shown rather than a guess. Try again in a moment." actions={<Link href="/news" className="btn-secondary">Reload the newsroom</Link>} />
     </PageFrame>
   </>;
@@ -156,7 +156,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
       <Suspense fallback={null}><NewsNavigationReset /></Suspense>
       <header className={styles.pageHeader}>
         <div className={styles.headingCopy}>
-          <p className={styles.kicker}>EPE LAWA <span aria-hidden="true">/</span> NEWSROOM</p>
+          <p className={styles.kicker}>Latest reporting</p>
           <h1 className={styles.pageTitle}>{heading}</h1>
           <p className={styles.pageDescription}>The latest stories, developments and voices shaping Epe Division.</p>
         </div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import SponsorSlot from "../../components/sponsor-slot";
 import type { createClient } from "../../lib/supabase";
 import { formatPublishedDate } from "../../lib/dates";
 import { publishedNewsCover } from "../../lib/published-news-cover";
@@ -223,6 +224,7 @@ export async function DashboardHomeNews({ client }: { client: SupabaseClient }) 
   const engagement = await loadEngagement(client, [...breaking.items, ...recommendations.items]);
   const recommended = recommendations.items.slice(0, 4);
   return <div className={styles.newsFeed}>
+    <SponsorSlot compact />
     <section className={styles.feedSection} aria-labelledby="breaking-heading">
       <HomeSectionHeading id="breaking-heading" title="Breaking News" helper="Only stories still marked breaking by the newsroom appear here." level="h1" />
       {breaking.state === "error" ? <ErrorState title="Breaking news is unavailable" href="/dashboard?tab=home" />
