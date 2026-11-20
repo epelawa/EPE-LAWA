@@ -1,23 +1,148 @@
+/* EPE LAWA design tokens.
+   Single source of truth. Every visual value in the platform resolves here.
+   Only this file may contain the owner-locked brand hexes. */
+
 :root {
-  --ep-ui-midnight: #0A1023;
-  --ep-ui-navy: #17264A;
-  --ep-ui-royal-steel: #294B91;
-  --ep-ui-cobalt: #477FE0;
-  --ep-ui-ice-blue: #A7C5F5;
-  --ep-ui-cloud: #F1F4FA;
-  --ep-ui-silver: #A6B2C5;
-  --ep-ui-border-brand: #293650;
-  --ep-ui-primary: var(--ep-ui-cobalt);
-  --ep-ui-primary-strong: var(--ep-ui-royal-steel);
-  --ep-ui-secondary: #E7EDF8;
-  --ep-ui-lilac: var(--ep-ui-secondary);
-  --ep-ui-limestone: var(--ep-ui-cloud);
-  --ep-ui-ink: var(--ep-ui-midnight);
-  --ep-ui-muted: #40516F;
-  --ep-ui-border: #D8E0EC;
-  --ep-ui-accent: var(--ep-ui-ice-blue);
-  --ep-ui-success: #247044;
-  --ep-ui-warning: #8A5A00;
-  --ep-ui-error: #AD302B;
-  --ep-ui-radius: 1.1rem;
+  /* ---------------------------------------------------------------- colour */
+  /* Owner-approved cobalt palette. Contrast checked against Midnight text. */
+  --ep-color-midnight: #0A1023;
+  --ep-color-navy: #17264A;
+  --ep-color-royal-steel: #294B91;
+  --ep-color-cobalt: #477FE0;
+  --ep-color-ice-blue: #A7C5F5;
+  --ep-color-cloud: #F1F4FA;
+  --ep-color-silver: #A6B2C5;
+  --ep-color-border: #293650;
+
+  /* Semantic surfaces. Components use these, never the raw palette. */
+  --ep-bg: var(--ep-color-cloud);
+  --ep-surface: #FFFFFF;
+  --ep-surface-soft: #E7EDF8;
+  --ep-surface-raised: var(--ep-surface);
+  --ep-border-subtle: #D8E0EC;
+  --ep-text: var(--ep-color-midnight);
+  --ep-text-muted: #40516F;
+  --ep-primary: var(--ep-color-cobalt);
+  --ep-primary-hover: #3D70CE;
+  --ep-primary-fg: var(--ep-color-midnight);
+  --ep-link: var(--ep-color-royal-steel);
+  --ep-accent: var(--ep-color-ice-blue);
+  --ep-success: #247044;
+  --ep-warning: #8A5A00;
+  --ep-danger: #AD302B;
+
+  /* Figure–Ground. Scrim is .58 so scrim text and focus stay legible. */
+  --ep-scrim: rgb(10 16 35 / .58);
+  --ep-glass-bg: rgb(241 244 250 / .84);
+  --ep-glass-border: rgb(255 255 255 / .36);
+  --ep-glass-blur: 10px;
+  --ep-focus-ring: var(--ep-color-cobalt);
+  --ep-focus-width: 2px;
+  --ep-focus-offset: 3px;
+
+  /* ------------------------------------------------------------ typography */
+  --ep-font-body: "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ep-font-display: var(--ep-font-body);
+  /* 1.250 major third. */
+  --ep-type-xs: 12px;
+  --ep-type-sm: 14px;
+  --ep-type-base: 16px;
+  --ep-type-lg: 20px;
+  --ep-type-xl: 25px;
+  --ep-type-2xl: 31px;
+  --ep-type-3xl: 39px;
+  --ep-type-4xl: 49px;
+  --ep-leading-xs: 16px;
+  --ep-leading-sm: 20px;
+  --ep-leading-base: 24px;
+  --ep-leading-lg: 28px;
+  --ep-leading-xl: 32px;
+  --ep-leading-2xl: 38px;
+  --ep-leading-3xl: 44px;
+  --ep-leading-4xl: 52px;
+  --ep-weight-regular: 400;
+  --ep-weight-medium: 500;
+  --ep-weight-semibold: 600;
+  --ep-weight-bold: 700;
+
+  /* --------------------------------------------------------------- spacing */
+  /* 4px base scale. Hairline values exist only for optical alignment. */
+  --ep-space-hair: 1px;
+  --ep-space-2xs: 2px;
+  --ep-space-1: 4px;
+  --ep-space-2: 8px;
+  --ep-space-3: 12px;
+  --ep-space-4: 16px;
+  --ep-space-6: 24px;
+  --ep-space-8: 32px;
+  --ep-space-12: 48px;
+  --ep-space-16: 64px;
+  --ep-space-24: 96px;
+
+  /* --------------------------------------------------------------- radius */
+  /* Three values only: small control, large surface, interactive pill. */
+  --ep-radius-sm: 8px;
+  --ep-radius-md: 12px;
+  --ep-radius-pill: 999px;
+
+  /* --------------------------------------------------------------- shadow */
+  /* One shadow per elevation level. No ad-hoc glows. */
+  --ep-shadow-1: 0 2px 8px rgb(10 16 35 / .06);
+  --ep-shadow-2: 0 8px 24px rgb(10 16 35 / .10);
+  --ep-shadow-3: 0 16px 40px rgb(10 16 35 / .16);
+  --ep-shadow-4: 0 30px 80px rgb(10 16 35 / .24);
+
+  /* --------------------------------------------------------------- motion */
+  --ep-dur-fast: 120ms;
+  --ep-dur-base: 200ms;
+  --ep-dur-slow: 320ms;
+  --ep-dur-ad: 240ms;
+  --ep-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ep-ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ep-ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+  --ep-motion-reduced: .01ms;
+  /* Enter 8px, exit 4px, hover lift 3px. Nothing else moves. */
+  --ep-motion-enter-y: 8px;
+  --ep-motion-exit-y: 4px;
+  --ep-motion-lift: -3px;
+
+  /* --------------------------------------------------------------- forms */
+  --ep-control-px: 16px;
+  --ep-control-py: 12px;
+  --ep-control-min-h: 48px;
+  --ep-field-gap: 12px;
+  --ep-label-gap: 8px;
+  --ep-hint-min: 12px;
+  --ep-touch-min: 44px;
+
+  /* ------------------------------------------------------------ sponsored */
+  --ep-ad-delay: 10s;
+  --ep-ad-exposure: 2s;
+  --ep-ad-rise: 240ms;
+
+  /* ----------------------------------------------------------- stack order */
+  --ep-z-scrim: 70;
+  --ep-z-overlay: 90;
+  --ep-z-dialog: 100;
+
+  /* Backward-compatible aliases. Old code resolves to the same values. */
+  --ep-ui-midnight: var(--ep-color-midnight);
+  --ep-ui-navy: var(--ep-color-navy);
+  --ep-ui-royal-steel: var(--ep-color-royal-steel);
+  --ep-ui-cobalt: var(--ep-color-cobalt);
+  --ep-ui-ice-blue: var(--ep-color-ice-blue);
+  --ep-ui-cloud: var(--ep-color-cloud);
+  --ep-ui-silver: var(--ep-color-silver);
+  --ep-ui-border-brand: var(--ep-color-border);
+  --ep-ui-primary: var(--ep-primary);
+  --ep-ui-primary-strong: var(--ep-link);
+  --ep-ui-secondary: var(--ep-surface-soft);
+  --ep-ui-ink: var(--ep-text);
+  --ep-ui-muted: var(--ep-text-muted);
+  --ep-ui-border: var(--ep-border-subtle);
+  --ep-ui-accent: var(--ep-accent);
+  --ep-ui-success: var(--ep-success);
+  --ep-ui-warning: var(--ep-warning);
+  --ep-ui-error: var(--ep-danger);
+  --ep-ui-radius: var(--ep-radius-md);
 }

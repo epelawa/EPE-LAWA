@@ -47,9 +47,14 @@ test("the lead image and top headline covers eagerly load and fill their contain
   );
   assert.match(page, /className=\{styles\.storyImage\} src=\{image\} alt=""/);
   assert.doesNotMatch(page, /fetchPriority="auto"/);
+  // Commit c45ecab moved the search landmark to a labelled GET form.
   assert.match(
     page,
-    /<search className=\{styles\.searchRegion\} aria-label="Search published stories">/,
+    /<form action="\/news" method="get" role="search" className=\{styles\.editorialSearch\}>/,
+  );
+  assert.match(
+    page,
+    /<label className="sr-only" htmlFor="news-query">Search stories, topics and authors<\/label>/,
   );
   assert.match(
     listingStyles,

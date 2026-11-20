@@ -16,7 +16,9 @@ test('newsroom settings remain available through the setup-incomplete flow', asy
   ]);
   assert.doesNotMatch(newsroom, /href=\{adminHref\("\/newsroom\/settings"\)\}/);
   assert.match(create, /Manage categories & bylines/);
-  assert.match(create, /categories\.length === 0 \|\| authors\.length === 0/);
+  // Commit 57d722f made bylines optional; an empty author list no longer blocks
+  // draft creation. Assert the single category gate that owns that flow now.
+  assert.match(create, /referencesFailed \|\| categories\.length === 0 \? \(/);
   assert.match(settings, /p_capability: "article\.publish"/);
   assert.match(settings, /categories"\)\.select\("id,slug,label,description,sort_order,is_active"\)/);
   assert.match(settings, /authors"\)\.select\("id,slug,display_name,bio,photo_key"\)/);

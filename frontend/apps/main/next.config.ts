@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 import { siteUrl } from "./lib/site";
 
 const nextConfig: NextConfig = {
+  // Stop the default `x-powered-by: Next.js` fingerprint on every response.
+  poweredByHeader: false,
   // @epelawa/ui ships TypeScript source so the apps compile one copy of it.
   transpilePackages: ["@epelawa/ui"],
   env: { NEXT_PUBLIC_ADMIN_BASE_PATH: "/admin" },
@@ -29,6 +31,11 @@ const nextConfig: NextConfig = {
       // routes keep the deny-by-default policy above; camera/microphone stay off.
       headers: [{ key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(self)" }],
     }];
+  },
+  // Legacy public URL from before the Ìtàn Ilú Mi rename. A permanent (308)
+  // redirect keeps any query string and tells search engines to replace it.
+  async redirects() {
+    return [{ source: "/community-history", destination: "/itan-ilu-mi", permanent: true }];
   },
 };
 

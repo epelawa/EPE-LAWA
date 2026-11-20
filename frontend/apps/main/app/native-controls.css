@@ -238,12 +238,17 @@ details[open] > summary::after { transform: rotate(-135deg); }
   background: transparent;
   color: hsl(var(--foreground));
 }
+/* Glass is here for one reason: separate the modal from the page behind it.
+   The .58 scrim and 10px blur keep text and focus legible; no blur on scroll. */
 .ui-dialog::backdrop {
-  background: rgb(10 16 35 / .58);
-  -webkit-backdrop-filter: blur(5px);
-  backdrop-filter: blur(5px);
+  background: var(--ep-scrim, rgb(10 16 35 / .58));
+  -webkit-backdrop-filter: blur(var(--ep-glass-blur, 10px));
+  backdrop-filter: blur(var(--ep-glass-blur, 10px));
 }
-.ui-dialog[open] { animation: epe-dialog-in 200ms var(--ease-out); }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .ui-dialog::backdrop { background: var(--palette-navy); }
+}
+.ui-dialog[open] { animation: epe-dialog-in var(--ep-dur-base, 200ms) var(--ease-out); }
 .ui-dialog__surface {
   display: grid;
   max-height: calc(100dvh - 32px);
@@ -324,7 +329,7 @@ details[open] > summary::after { transform: rotate(-135deg); }
   outline-offset: 3px;
 }
 @keyframes epe-dialog-in {
-  from { opacity: 0; transform: translateY(12px) scale(.985); }
+  from { opacity: 0; transform: translateY(var(--ep-motion-enter-y, 8px)); }
 }
 @media (max-width: 600px) {
   .ui-dialog {

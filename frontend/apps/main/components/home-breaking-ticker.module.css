@@ -1,18 +1,53 @@
-.banner { display:flex; align-items:stretch; min-width:0; overflow:hidden; margin-top:20px; margin-bottom:4px; border:1px solid #d9e1ef; border-radius:12px; background:#0d2348; color:#fff; }
-.label { display:flex; flex:none; align-items:center; gap:8px; padding:12px 16px; background:#ad3030; color:#fff; font-size:.75rem; font-weight:850; text-transform:uppercase; letter-spacing:.06em; }
-.viewport { min-width:0; flex:1; overflow:hidden; display:flex; align-items:center; }
-.track { display:flex; width:max-content; animation:scroll 18s linear infinite; }
-.items { display:flex; flex:none; align-items:center; width:max-content; list-style:none; margin:0; padding:0; }
-.items li { padding:0 26px; white-space:nowrap; }
-.items li::before { content:"◆"; color:#ffc968; margin-right:12px; font-size:.65rem; }
-.items a { color:#fff; font-weight:700; text-decoration:none; }
-.items a:hover,.items a:focus-visible { text-decoration:underline; }
-.pause { flex:none; min-width:55px; border:0; border-left:1px solid #ffffff44; padding:0 10px; color:#fff; background:#102e58; cursor:pointer; font-size:.75rem; }
-.viewport[data-paused="true"] .track,.banner:hover .track,.banner:focus-within .track { animation-play-state:paused; }
-.pause:focus-visible,.items a:focus-visible { outline:3px solid #ffcf69; outline-offset:2px; }
-@keyframes scroll { to { transform:translateX(-50%); } }
-@media(max-width:520px) { .label { padding:10px; font-size:.65rem; gap:5px; }.label svg { width:16px; }.items li { padding:0 14px; }.pause { min-width:48px; } }
-@media(prefers-reduced-motion:reduce) { .track { animation:none; width:auto; }.viewport { overflow-x:auto; }.items { width:auto; }.duplicate { display:none; } }
-.viewport[data-paused="true"],.banner:focus-within .viewport { overflow-x:auto; }
-
-@media(max-width:520px) { .banner { min-height:44px; margin-top:12px; border-radius:14px; } .label { padding:8px; font-size:.58rem; letter-spacing:.03em; } .label svg { width:14px; height:14px; } .items li { padding:0 10px; font-size:.78rem; } .items li::before { margin-right:7px; font-size:.5rem; } .pause { min-width:44px; padding:0 6px; font-size:.68rem; } }
+/* Breaking news is a single-purpose attention cue. The only moving property is
+   transform; keyboard focus and reduced-motion stop it, nothing else. */
+.banner {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+  overflow: hidden;
+  margin-top: var(--ep-space-6, 24px);
+  margin-bottom: var(--ep-space-1, 4px);
+  border: var(--ep-space-hair, 1px) solid var(--palette-border);
+  border-radius: var(--ep-radius-md, 12px);
+  background: var(--palette-midnight);
+  color: var(--palette-cloud);
+}
+.label {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--ep-space-2, 8px);
+  padding: var(--ep-space-3, 12px) var(--ep-space-4, 16px);
+  background: var(--palette-royal-steel);
+  color: var(--palette-cloud);
+  font-size: var(--ep-hint-min, 12px);
+  font-weight: var(--ep-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.label svg { width: 16px; height: 16px; flex: none; color: var(--palette-ice-blue); }
+.viewport { min-width: 0; flex: 1; overflow: hidden; display: flex; align-items: center; }
+.track { display: flex; width: max-content; animation:scroll 18s linear infinite; }
+.items { display: flex; flex:none; align-items:center; width:max-content; list-style:none; margin:0; padding:0; }
+.items li { display: flex; align-items: center; gap: var(--ep-space-2, 8px); padding: 0 var(--ep-space-6, 24px); white-space: nowrap; font-size: var(--ep-type-sm, 14px); }
+.items li svg { width: 10px; height: 10px; flex: none; color: var(--palette-ice-blue); }
+.items a { color: var(--palette-cloud); font-weight: var(--ep-weight-semibold); text-decoration: none; }
+.items a:hover,.items a:focus-visible { text-decoration: underline; }
+/* WCAG 2.2.2: auto-scroll lasts >5s, so keyboard focus into a link pauses it.
+   No visible button: it read as "paused" to users when the ticker was playing. */
+.banner:focus-within .track { animation-play-state:paused; }
+.items a:focus-visible { outline: 2px solid var(--palette-ice-blue); outline-offset: 2px; }
+@keyframes scroll { to { transform: translateX(-50%); } }
+@media (max-width: 520px) {
+  .banner { min-height: var(--ep-touch-min, 44px); margin-top: var(--ep-space-3, 12px); }
+  .label { padding: var(--ep-space-2, 8px); font-size: 11px; gap: var(--ep-space-1, 4px); letter-spacing: .03em; }
+  .label svg { width: 14px; height: 14px; }
+  .items li { padding: 0 var(--ep-space-3, 12px); font-size: var(--ep-hint-min, 12px); }
+}
+@media (prefers-reduced-motion:reduce) {
+  .track { animation:none; width:auto; }
+  .viewport { overflow-x:auto; }
+  .items { width:auto; }
+  .duplicate { display:none; }
+}
+.banner:focus-within .viewport { overflow-x:auto; }

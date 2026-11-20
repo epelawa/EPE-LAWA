@@ -58,7 +58,11 @@ test('News metadata, compact share actions and related cards use the canonical s
   assert.match(article, /newsArticlePath\(item\.slug\)/);
   assert.match(article, /ArticleShareActions title=\{article\.title\} imageUrl=\{imageUrl\} url=\{articleUrl\}/);
   assert.match(article, /className=\{styles\.articleHeroCopy\}/);
-  assert.doesNotMatch(article, /estimateReadMinutes|Published story|Share on WhatsApp/);
+  // Commit c45ecab deliberately restored article-end WhatsApp/Facebook links
+  // beside the compact hero share control; only legacy reading-time and
+  // "Published story" labels remain forbidden.
+  assert.doesNotMatch(article, /estimateReadMinutes|Published story/);
+  assert.match(article, /<nav aria-label="Share this story" className=\{styles\.shareLinks\}/);
   assert.match(article, /Related stories/);
   assert.match(urls, /encodeURIComponent\(slug\)/);
   assert.match(urls, /absoluteUrl\(newsArticlePath\(slug\)\)/);
