@@ -1,1 +1,144 @@
-.ep-button{display:inline-flex;min-height:44px;align-items:center;justify-content:center;gap:.5rem;border:1px solid transparent;border-radius:999px;padding:11px 20px;font:inherit;font-size:14px;font-weight:600;line-height:1.4;text-decoration:none;cursor:pointer;transition:background-color 160ms,border-color 160ms}.ep-button:disabled{opacity:.58;cursor:not-allowed}.ep-button:focus-visible{outline:2px solid hsl(var(--ring,218.04 71.16% 57.84%));outline-offset:4px}.ep-button--primary{color:hsl(var(--primary-foreground,225.6 55.56% 8.82%));border-color:hsl(var(--primary,218.04 71.16% 57.84%));background:hsl(var(--primary,218.04 71.16% 57.84%))}.ep-button--primary:hover:not(:disabled){filter:brightness(.94)}.ep-button--secondary{color:hsl(var(--secondary-foreground,220.38 55.91% 36.47%));border-color:hsl(var(--input,216.5 20.9% 56.9%));background:hsl(var(--card,0 0% 100%))}.ep-button--ghost{color:hsl(var(--foreground,225.6 55.56% 8.82%));background:transparent}.ep-button--secondary:hover:not(:disabled),.ep-button--ghost:hover:not(:disabled){background:hsl(var(--secondary,218.8 54.8% 93.9%))}.ep-ui-empty{color:hsl(var(--card-foreground,225.6 55.56% 8.82%));border:1px dashed hsl(var(--input,216.5 20.9% 56.9%));border-radius:22px;padding:32px 24px;background:hsl(var(--card,0 0% 100%))}.ep-ui-empty h2{margin:0;font-size:20px}.ep-ui-empty p{margin:10px 0 0;color:hsl(var(--muted-foreground,218.3 26.9% 34.3%));font-size:14px;line-height:1.7}.ep-ui-empty__actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px}.ep-ui-alert{border:1px solid hsl(var(--border,216 34.5% 88.6%));border-radius:16px;padding:18px 20px;line-height:1.65;font-size:14px;color:hsl(var(--foreground,225.6 55.56% 8.82%));background:hsl(var(--card,0 0% 100%))}.ep-ui-alert--info{color:hsl(var(--secondary-foreground,220.38 55.91% 36.47%));background:hsl(var(--secondary,218.8 54.8% 93.9%))}.ep-ui-alert--success{color:var(--ui-success,#26614a);background:var(--ui-success-soft,#e7f2eb)}.ep-ui-alert--warning{color:var(--ui-warning,#805d18);background:var(--ui-warning-soft,#fbf1d9)}.ep-ui-alert--error{color:var(--ui-danger,#a73545);background:var(--ui-danger-soft,#fae9ed)}@media(prefers-reduced-motion:reduce){.ep-button{transition:none}}
+/* Shared UI primitives. All values come from tokens.css.
+   Motion is limited to transform + opacity; the reduced-motion block is global. */
+
+.ep-button {
+  display: inline-flex;
+  min-height: var(--ep-touch-min);
+  align-items: center;
+  justify-content: center;
+  gap: var(--ep-space-2);
+  border: var(--ep-space-hair) solid transparent;
+  border-radius: var(--ep-radius-pill);
+  padding: var(--ep-space-3) var(--ep-space-6);
+  font: inherit;
+  font-size: var(--ep-type-sm);
+  font-weight: var(--ep-weight-semibold);
+  line-height: var(--ep-leading-sm);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform var(--ep-dur-fast) var(--ep-ease-out),
+    background-color var(--ep-dur-fast) var(--ep-ease-out),
+    border-color var(--ep-dur-fast) var(--ep-ease-out),
+    opacity var(--ep-dur-fast) var(--ep-ease-out);
+}
+.ep-button:disabled { opacity: .58; cursor: not-allowed; }
+.ep-button:focus-visible {
+  outline: var(--ep-focus-width) solid var(--ep-focus-ring);
+  outline-offset: var(--ep-focus-offset);
+}
+.ep-button--primary {
+  color: var(--primary-foreground,225.6 55.56% 8.82%);
+  border-color: var(--ep-primary);
+  background: var(--ep-primary);
+}
+.ep-button--primary:hover:not(:disabled) {
+  transform: translateY(var(--ep-motion-lift));
+  background: var(--ep-primary-hover);
+}
+.ep-button--secondary {
+  color: var(--ep-text);
+  border-color: var(--ep-border-subtle);
+  background: var(--ep-surface);
+}
+.ep-button--ghost { color: var(--ep-text); background: transparent; }
+.ep-button--secondary:hover:not(:disabled),
+.ep-button--ghost:hover:not(:disabled) {
+  transform: translateY(var(--ep-motion-lift));
+  background: var(--ep-surface-soft);
+}
+
+/* Explicit control class. Replaces the old zero-specificity :where(form) rule. */
+.ep-control {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--ep-control-min-h);
+  padding-inline: var(--ep-control-px);
+  padding-block: var(--ep-control-py);
+  border: var(--ep-space-hair) solid var(--ep-border-subtle);
+  border-radius: var(--ep-radius-md);
+  background: var(--ep-surface);
+  color: var(--ep-text);
+  font-size: var(--ep-type-base);
+  line-height: var(--ep-leading-base);
+  transition:
+    border-color var(--ep-dur-fast) var(--ep-ease-out),
+    box-shadow var(--ep-dur-fast) var(--ep-ease-out),
+    opacity var(--ep-dur-fast) var(--ep-ease-out);
+}
+.ep-control::placeholder { color: var(--ep-text-muted); opacity: 1; }
+.ep-control:hover:not(:disabled) { border-color: var(--ep-primary); }
+.ep-control:focus-visible {
+  border-color: var(--ep-primary);
+  outline: var(--ep-focus-width) solid var(--ep-focus-ring);
+  outline-offset: var(--ep-focus-offset);
+}
+.ep-control:disabled { opacity: .58; cursor: not-allowed; }
+.ep-control[aria-invalid="true"] { border-color: var(--ep-danger); }
+
+/* Glass is reserved for Figure–Ground moments: dialogs, drawers, popovers. */
+.ep-glass {
+  border: var(--ep-space-hair) solid var(--ep-glass-border);
+  background: var(--ep-glass-bg);
+  -webkit-backdrop-filter: blur(var(--ep-glass-blur));
+  backdrop-filter: blur(var(--ep-glass-blur));
+  box-shadow: var(--ep-shadow-3);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .ep-glass { background: var(--ep-surface); }
+}
+
+/* Entrances. First item is never delayed; maximum five staggered items. */
+.ep-enter {
+  animation: ep-enter var(--ep-dur-base) var(--ep-ease-out) both;
+}
+.ep-stagger > :nth-child(-n+5) { animation: ep-enter var(--ep-dur-base) var(--ep-ease-out) both; }
+.ep-stagger > :nth-child(2) { animation-delay: 40ms; }
+.ep-stagger > :nth-child(3) { animation-delay: 80ms; }
+.ep-stagger > :nth-child(4) { animation-delay: 120ms; }
+.ep-stagger > :nth-child(5) { animation-delay: 160ms; }
+@keyframes ep-enter {
+  from { opacity: 0; transform: translateY(var(--ep-motion-enter-y)); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes ep-exit {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(var(--ep-motion-exit-y)); }
+}
+
+.ep-ui-empty {
+  color: var(--ep-text);
+  border: var(--ep-space-hair) dashed var(--ep-border-subtle);
+  border-radius: var(--ep-radius-md);
+  padding: var(--ep-space-8) var(--ep-space-6);
+  background: var(--ep-surface);
+}
+.ep-ui-empty h2 { margin: 0; font-size: var(--ep-type-lg); }
+.ep-ui-empty p { margin: var(--ep-space-3) 0 0; color: var(--ep-text-muted); font-size: var(--ep-type-sm); line-height: 1.7; }
+.ep-ui-empty__actions { display: flex; flex-wrap: wrap; gap: var(--ep-space-3); margin-top: var(--ep-space-6); }
+.ep-ui-alert {
+  border: var(--ep-space-hair) solid var(--ep-border-subtle);
+  border-radius: var(--ep-radius-md);
+  padding: var(--ep-space-6);
+  line-height: 1.65;
+  font-size: var(--ep-type-sm);
+  color: var(--ep-text);
+  background: var(--ep-surface);
+}
+.ep-ui-alert--info { color: var(--ep-link); background: var(--ep-surface-soft); }
+.ep-ui-alert--success { color: var(--ep-success); background: var(--ep-surface-soft); }
+.ep-ui-alert--warning { color: var(--ep-warning); background: var(--ep-surface-soft); }
+.ep-ui-alert--error { color: var(--ep-danger); background: var(--ep-surface-soft); }
+
+/* One reduced-motion gate for every shared animation and transition. */
+@media (prefers-reduced-motion: reduce) {
+  .ep-button,
+  .ep-control,
+  .ep-enter,
+  .ep-stagger > :nth-child(-n+5) {
+    animation-duration: var(--ep-motion-reduced) !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: var(--ep-motion-reduced) !important;
+    transform: none !important;
+  }
+}

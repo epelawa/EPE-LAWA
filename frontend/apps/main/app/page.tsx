@@ -108,7 +108,7 @@ export default async function Home() {
         </div>
         <span className="connection-panel__icon" aria-hidden="true"><UsersIcon size={96} /></span>
       </section></HomeSectionReveal>
-      <SponsorSlot />
+      <SponsorSlot footer />
       <CookieBanner />
     </div>
   );
