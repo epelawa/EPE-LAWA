@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Stop the default `x-powered-by: Next.js` fingerprint on every response.
+  poweredByHeader: false,
   allowedDevOrigins: ["*.e2b.app"],
   transpilePackages: ["@epelawa/ui"],
   async headers() {
