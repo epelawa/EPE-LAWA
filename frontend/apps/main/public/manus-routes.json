@@ -58,6 +58,9 @@
       "path": "/radio"
     },
     {
+      "path": "/support"
+    },
+    {
       "path": "/radio/programmes"
     },
     {
@@ -73,10 +76,19 @@
       "path": "/who-is-who"
     },
     {
+      "path": "/admin/broadcast"
+    },
+    {
       "path": "/admin/business-review"
     },
     {
+      "path": "/admin/enquiries"
+    },
+    {
       "path": "/admin/login"
+    },
+    {
+      "path": "/admin/members"
     },
     {
       "path": "/admin/newsroom"
@@ -92,6 +104,9 @@
     },
     {
       "path": "/admin/roles"
+    },
+    {
+      "path": "/admin/settings"
     },
     {
       "path": "/admin/tourism"
@@ -128,6 +143,9 @@
     },
     {
       "path": "/newsletter"
+    },
+    {
+      "path": "/newsletter/confirm"
     },
     {
       "path": "/newsletter/unsubscribe"

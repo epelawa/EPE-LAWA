@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import { isGateExempt, maintenanceHtml, maintenanceState } from "../apps/main/lib/maintenance";
+// Load Next's server runtime once at module scope. Under a full suite the cold
+// import costs several seconds and must not be charged to the test timeout;
+// the request behaviour asserted below is unchanged.
+const { NextRequest } = await import("../apps/main/node_modules/next/server.js");
+const { proxy } = await import("../apps/main/proxy");
 const env = {MAINTENANCE_GATE_ENABLED:"true",NEXT_PUBLIC_SUPABASE_URL:"https://example.supabase.co",NEXT_PUBLIC_SUPABASE_ANON_KEY:"public-key"};
 describe("maintenance gate",()=>{
  it("exempts admin and only the assets needed by the maintenance page",()=>{
@@ -20,7 +25,6 @@ describe("maintenance gate",()=>{
 
 describe("request enforcement",()=>{
  it("returns 503 for pages and APIs even with bypass-looking headers, but preserves admin",async()=>{
-  const { NextRequest } = await import("../apps/main/node_modules/next/server.js"); const { proxy } = await import("../apps/main/proxy");
   vi.stubEnv("MAINTENANCE_GATE_ENABLED","true"); vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL",env.NEXT_PUBLIC_SUPABASE_URL);vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY",env.NEXT_PUBLIC_SUPABASE_ANON_KEY);vi.stubEnv("SUPABASE_ANON_KEY","public-key");
   vi.stubGlobal("fetch",vi.fn().mockResolvedValue(new Response("true")));
   try {

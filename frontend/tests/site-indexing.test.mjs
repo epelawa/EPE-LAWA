@@ -1,12 +1,17 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 const siteModule = new URL('../apps/main/lib/site.ts', import.meta.url).href;
+// Node 22.23 refuses to strip types from a `-e` module (ERR_NO_TYPESCRIPT).
+// tsx is already a repo devDependency; load its ESM loader explicitly so the
+// .ts site module is exercised exactly as the app builds it.
+const tsxLoader = fileURLToPath(import.meta.resolve('tsx'));
 
 function evaluateIndexing(extraEnv = {}) {
   const result = spawnSync(process.execPath, [
-    '--experimental-strip-types',
+    '--import', tsxLoader,
     '--input-type=module',
     '-e',
     `import { isIndexingAllowed } from ${JSON.stringify(siteModule)}; process.stdout.write(isIndexingAllowed() ? 'true' : 'false');`,
@@ -31,7 +36,7 @@ test('Vercel preview stays noindex even when it inherits the production canonica
 
 test('News uses the canonical site origin even if a legacy separate-host variable is present', () => {
   const result = spawnSync(process.execPath, [
-    '--experimental-strip-types',
+    '--import', tsxLoader,
     '--input-type=module',
     '-e',
     `import { newsUrl, siteUrl } from ${JSON.stringify(siteModule)}; process.stdout.write(siteUrl + '\\n' + newsUrl);`,
