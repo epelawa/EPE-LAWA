@@ -4,7 +4,10 @@
 @layer base {
  :root {
   color-scheme: light;
-  --palette-midnight: #0A1023; --palette-navy: #17264A; --palette-royal-steel: #294B91; --palette-cobalt: #477FE0; --palette-ice-blue: #A7C5F5; --palette-cloud: #F1F4FA; --palette-silver: #A6B2C5; --palette-border: #293650;
+  --palette-midnight: #0A1023; --palette-navy: #17264A; --palette-royal-steel: #294B91; --palette-cobalt: #477FE0; --palette-ice-blue: #A7C5F5; --form-control-inline: 16px;
+    --form-control-block: 12px;
+    --form-field-gap: 10px;
+    --palette-cloud: #F1F4FA; --palette-silver: #A6B2C5; --palette-border: #293650;
   --background: 220 47.37% 96.27%; --foreground: 225.6 55.56% 8.82%; --card: 0 0% 100%; --card-foreground: 225.6 55.56% 8.82%; --popover: 0 0% 100%; --popover-foreground: 225.6 55.56% 8.82%;
   --primary: 218.04 71.16% 57.84%; --primary-foreground: 225.6 55.56% 8.82%; --secondary: 218.8 54.8% 93.9%; --secondary-foreground: 220.38 55.91% 36.47%; --muted: 218.8 54.8% 93.9%; --muted-foreground: 218.3 26.9% 34.3%; --accent: 216.92 79.59% 80.78%; --accent-foreground: 225.6 55.56% 8.82%;
   --destructive: 351 52% 42%; --destructive-foreground: 0 0% 100%; --border: 216 34.5% 88.6%; --input: 216.5 20.9% 56.9%; --ring: 218.04 71.16% 57.84%; --link: 220.38 55.91% 36.47%; --radius: 1.25rem;
@@ -166,3 +169,8 @@ html.has-scroll-reveal .site-main [data-scroll-reveal="visible"] { opacity:1; fi
 
 /* Prevent browser pull-to-refresh at the page boundary without disabling normal document scrolling. */
 html { overscroll-behavior-y: none; }
+
+/* Comfortable, consistent text inset; icon and specialized controls retain their own layout. */
+:where(.ui-field,.auth-field) { gap: var(--form-field-gap, 10px); }
+:where(form) :where(input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="range"]):not([type="file"]):not([type="color"]), textarea) { padding-inline: var(--form-control-inline, 16px); padding-block: var(--form-control-block, 12px); }
+:where(form) select { padding-inline-start: var(--form-control-inline, 16px); }

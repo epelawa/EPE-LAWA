@@ -1,0 +1,11 @@
+# Forms, sponsors and storefront follow-up
+
+This change adds shared control-inset tokens for public and admin forms, a connected progress indicator to the existing enquiry flow, a compact radio player with its sponsor inside, and a homepage sponsor placement following the breaking ticker. Specialized controls may override the defaults; a screen-by-screen form audit remains necessary.
+
+The sponsor pop-up only uses a published business with an active sponsorship. It is non-modal, appears at most once per session after a delay, does not appear while a form or modal is active, closes after two seconds, and pauses on hover, focus or when the page is hidden. It dismisses when a user focuses a form or dialog. The short exposure is a requested marketing constraint, not an accessible way to convey essential information; the same sponsor remains available in the normal page placements. Browser testing with active sponsorship data and assistive technology remains necessary.
+
+Design references: W3C's [multi-page forms](https://www.w3.org/WAI/tutorials/forms/multi-page/) and [autocomplete guidance](https://www.w3.org/WAI/WCAG22/Techniques/html/H98/) support meaningful grouping and reducing repeated entry; [NN/g's auto-forwarding guidance](https://www.nngroup.com/articles/auto-forwarding/) cautions against automatically moving promotional content. These are contextual principles, not guarantees of conversion.
+
+## Storefronts still required
+
+The existing submission form accepts an HTTPS website and public business pages use a slug, display hours if present, and render a badge based on the published `is_verified` field. This is not an owner-managed storefront or premium subscription. Complete those only after reconciling the production schema and migration history: define owner authorization and update/moderation rules, secure upload/storage and image validation, verification evidence and staff approval, and provider-backed subscription lifecycle and webhook verification. Rehearse migrations against a production-equivalent isolated database before deployment. Do not treat a payment initiation or a user-supplied claim as verification. No production schema or payment changes are included here.

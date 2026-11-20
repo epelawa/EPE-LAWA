@@ -36,6 +36,8 @@ export default async function Home() {
 
       {breaking.state === "ok" ? <HomeBreakingTicker stories={breaking.items} initialTime={renderedAt} /> : null}
 
+      <SponsorSlot />
+
       <HomeSectionReveal><div className="ep-container home-discovery">
         <section className="home-radio" aria-labelledby="home-radio-title">
           <span className="home-radio__icon" aria-hidden="true"><ListenShortcutIcon size={32} /></span>

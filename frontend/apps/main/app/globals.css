@@ -10,6 +10,9 @@
     --palette-royal-steel: #294B91;
     --palette-cobalt: #477FE0;
     --palette-ice-blue: #A7C5F5;
+    --form-control-inline: 16px;
+    --form-control-block: 12px;
+    --form-field-gap: 10px;
     --palette-cloud: #F1F4FA;
     --palette-silver: #A6B2C5;
     --palette-border: #293650;
@@ -405,3 +408,15 @@ body:has([class*="directory_page"]) { background:#f6f8fc; background-image:none;
 .reveal { opacity: 0; transform: translateY(14px); transition: opacity 420ms var(--ease-out), transform 420ms var(--ease-out); }
 .reveal[data-visible="true"] { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
+
+/* Comfortable, consistent text inset; icon and specialized controls retain their own layout. */
+:where(.ui-field,.auth-field) { gap: var(--form-field-gap, 10px); }
+:where(form) :where(input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="range"]):not([type="file"]):not([type="color"]), textarea) { padding-inline: var(--form-control-inline, 16px); padding-block: var(--form-control-block, 12px); }
+:where(form) select { padding-inline-start: var(--form-control-inline, 16px); }
+
+.form-progress { display:flex; align-items:center; gap:0; margin:0 0 4px; padding:0; list-style:none; font-size:.8rem; color:#53627a; }
+.form-progress li { display:flex; align-items:center; gap:7px; min-width:0; font-weight:600; }
+.form-progress li + li::before { content:""; display:block; width:clamp(20px,5vw,48px); height:1px; background:#a6b2c5; margin:0 10px; }
+.form-progress li span { display:grid; place-items:center; flex:none; width:26px; height:26px; border:1px solid #8297b7; border-radius:50%; }
+.form-progress li[aria-current="step"] { color:#173f7b; }
+.form-progress li[aria-current="step"] span { color:#fff; background:#294b91; border-color:#294b91; }
