@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { PauseIcon, PlayIcon, VolumeOffIcon, VolumeOnIcon } from "./icons";
 import { RADIO_LAGOS_1075 } from "../lib/radio-lagos";
 import type { GutsStation } from "../lib/guts-radio";
@@ -7,7 +7,7 @@ import styles from "./radio-player.module.css";
 
 type PlaybackState = "connecting" | "playing" | "paused" | "blocked" | "unavailable" | "slow" | "offline";
 function isAutoplayDenial(error: unknown) { return error instanceof DOMException && error.name === "NotAllowedError"; }
-export default function RadioPlayer() {
+export default function RadioPlayer({ children }: { children?: ReactNode }) {
  const [guts,setGuts]=useState<GutsStation | null>(null);
  const [loadingGuts,setLoadingGuts]=useState(true);
  const [gutsReason,setGutsReason]=useState<"not_found" | "unavailable">("unavailable");
@@ -45,7 +45,7 @@ export default function RadioPlayer() {
  const active = state === "playing" || state === "connecting" || state === "slow";
  const status={connecting:"Connecting to the station…",playing:"Audio is playing",paused:"Ready to listen",blocked:"Your browser blocked playback. Tap Play to listen.",unavailable:"The station stream is unavailable right now. Please try again.",slow:"Connection is taking longer than expected. The stream may be buffering.",offline:"Your device appears offline. Reconnect, then press Play."}[state];
  return <section className={styles.player} aria-labelledby="radio-player-title">
-  <div className={styles.topline}><div><p className={styles.eyebrow}>EPE LAWA / RADIO</p><h1 id="radio-player-title">Your listening space</h1></div><span className={styles.topBadge}>LIVE RADIO</span></div>
+  <div className={styles.topline}><div><p className={styles.eyebrow}>NOW PLAYING</p><h1 id="radio-player-title">Your listening space</h1></div><span className={styles.topBadge}>LIVE RADIO</span></div>
   <div className={styles.nowPlaying}>
    <div className={`${styles.artworkStage} ${state === "playing" ? styles.artworkPlaying : ""}`}>
     <div className={`${styles.wave} ${styles.waveLeft}`} aria-hidden="true">{[0,1,2,3,4].map(i=><span key={i} />)}</div>
@@ -65,6 +65,6 @@ export default function RadioPlayer() {
    <button type="button" aria-pressed={chosen==="lagos"} onClick={()=>switchStation("lagos")}><span className={styles.stationIcon} aria-hidden="true">RL</span><span className={styles.stationInfo}><strong>Radio Lagos</strong><small>107.5 FM</small></span><span className={styles.selectMark} aria-hidden="true">{chosen==="lagos" ? "✓" : "→"}</span></button>
    <button type="button" aria-pressed={chosen==="guts"} onClick={()=>switchStation("guts")}><span className={`${styles.stationIcon} ${styles.gutsIcon}`} aria-hidden="true">GF</span><span className={styles.stationInfo}><strong>Guts FM</strong><small>104.9 FM</small></span><span className={styles.selectMark} aria-hidden="true">{chosen==="guts" ? "✓" : "→"}</span></button>
   </div></div>
-  <p className={styles.provider}>Guts FM catalogue powered by <a href="https://fm.puzzofme.com/" target="_blank" rel="noreferrer">Naija Radio ↗</a></p>
+  <p className={styles.provider}>Guts FM catalogue powered by <a href="https://fm.puzzofme.com/" target="_blank" rel="noreferrer">Naija Radio ↗</a></p>{children}
  </section>;
 }
