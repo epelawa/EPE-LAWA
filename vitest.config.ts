@@ -25,11 +25,13 @@ export default defineConfig({
     environment: "node",
     restoreMocks: true,
     clearMocks: true,
-    // This container takes ~12s to start each forks worker. With isolation on,
-    // Vitest spawns one worker per file (39) and some exceed the startup
-    // timeout. A bounded pool that reuses workers removes that race; every
-    // test and assertion still runs, including the auth/security contracts.
+    // Recycle each worker's module registry between files so jsdom globals and
+    // React scheduling state cannot leak across contracts. The original
+    // `isolate: false` made the suite order-dependent: scroll-to-top and
+    // session-recovery failed intermittently depending on which files shared
+    // a worker. A bounded pool keeps at most two warm workers, so enabling
+    // isolation does not reintroduce the per-file worker-startup timeout.
     maxWorkers: 2,
-    isolate: false,
+    isolate: true,
   },
 });
