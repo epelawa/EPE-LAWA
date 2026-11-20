@@ -106,6 +106,7 @@ body:has(.focused-error-shell) .mobile-bottom-nav,body:has(.auth-link-issue) .mo
 .site-head--home .nav-brand { position: relative; }
 .site-head--home .brand__name { color: #fff; font-size: 19px; font-weight: 800; letter-spacing: .02em; }
 .site-head--home .home-brand-tagline { position: absolute; left: 47px; top: 35px; color: var(--palette-ice-blue); font-size: var(--ep-hint-min); font-style: italic; font-weight: 700; white-space: nowrap; }
+@media (max-width: 420px) { .site-head--home .home-brand-tagline { left: 0; } }
 .site-head--home .site-head__nav > .nav-items > li > .nav-link,
 .site-head--home .nav-disclosure > summary,
 .site-head--home .header-signin,
