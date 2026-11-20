@@ -9,6 +9,7 @@ export const viewport: Viewport = { themeColor: "#F1F4FA" };
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import Connectivity from "./connectivity";
+import { SponsorPopupPlacement } from "../components/sponsor-slot";
 import SiteHeader from "../components/site-header";
 import FloatingSupport from "../components/floating-support";
 import NewsFooter from "../components/news-footer";
@@ -78,6 +79,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <SiteFooter><NewsFooter listing /></SiteFooter>
         <AuthenticatedMobileNavigation />
         <Connectivity />
+        <SponsorPopupPlacement />
         <FloatingSupport enabled={process.env.ENQUIRY_INTAKE_ENABLED === "true"} />
 
         {/* `components/notification-prompt.tsx` is intentionally NOT mounted.

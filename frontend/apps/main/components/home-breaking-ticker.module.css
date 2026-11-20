@@ -14,3 +14,5 @@
 @media(max-width:520px) { .label { padding:10px; font-size:.65rem; gap:5px; }.label svg { width:16px; }.items li { padding:0 14px; }.pause { min-width:48px; } }
 @media(prefers-reduced-motion:reduce) { .track { animation:none; width:auto; }.viewport { overflow-x:auto; }.items { width:auto; }.duplicate { display:none; } }
 .viewport[data-paused="true"],.banner:focus-within .viewport { overflow-x:auto; }
+
+@media(max-width:520px) { .banner { min-height:44px; margin-top:12px; border-radius:14px; } .label { padding:8px; font-size:.58rem; letter-spacing:.03em; } .label svg { width:14px; height:14px; } .items li { padding:0 10px; font-size:.78rem; } .items li::before { margin-right:7px; font-size:.5rem; } .pause { min-width:44px; padding:0 6px; font-size:.68rem; } }

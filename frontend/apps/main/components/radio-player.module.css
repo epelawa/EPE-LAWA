@@ -19,3 +19,18 @@
 @keyframes radioPulse { 0%, 100% { transform:scaleY(.55); opacity:.5; } 45% { transform:scaleY(1.35); opacity:1; } }
 @media(prefers-reduced-motion:reduce) { .artworkPlaying .wave span { animation:none; } }
 @media(max-width:360px) { .artworkStage { gap:5px; } .wave { width:35px; gap:3px; } .selectMark { display:none; } }
+
+/* Compact listening card: keep the station, playback and sponsor together. */
+.player { padding:clamp(20px,3vw,30px); }
+.nowPlaying { padding:14px 0; }
+.artwork { width:108px; height:108px; }
+.onAir { margin:14px 0 6px; }
+.nowPlaying h2 { font-size:clamp(1.6rem,3vw,2.2rem); }
+.status { min-height:0; margin:5px 0 10px; }
+.playButton { width:64px; height:64px; }
+.controls { margin-top:10px; }
+.stationSection { padding-top:14px; }
+.stationList button { min-height:62px; }
+.provider { margin-top:12px; }
+.sponsor { margin-top:16px; }
+@media(max-width:520px) { .player { padding:18px 16px; } .artwork { width:90px; height:90px; } .nowPlaying { padding:14px 0; } .stationSection { padding-top:12px; } }

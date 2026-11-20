@@ -35,7 +35,7 @@ function EnquiryFormInner({kind,privacyHref,onPendingChange,onReset}:{kind:Kind;
   </section>;
   return <form action={action} className="ui-stack" onSubmit={event=>{ if (step === 0) { event.preventDefault(); next(); } }}>
     <input type="hidden" name="kind" value={kind} />
-    <p>Step {step + 1} of 2</p>
+    <ol className="form-progress" aria-label="Enquiry progress"><li aria-current={step === 0 ? "step" : undefined}><span>1</span> Contact details</li><li aria-current={step === 1 ? "step" : undefined}><span>2</span> Your message</li></ol>
     <div ref={firstStep} hidden={step !== 0} className="ui-stack" style={step !== 0 ? {display:"none"} : undefined}>
       <div className="ui-field"><label htmlFor={`${id}-name`}>Name</label><input id={`${id}-name`} name="name" autoComplete="name" minLength={2} maxLength={100} required value={name} onChange={e=>setName(e.target.value)} /></div>
       <div className="ui-field"><label htmlFor={`${id}-email`}>Email address</label><input id={`${id}-email`} name="email" type="email" autoComplete="email" maxLength={254} required value={email} onChange={e=>setEmail(e.target.value)} /></div>

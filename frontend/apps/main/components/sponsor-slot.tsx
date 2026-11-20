@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "../lib/supabase";
 import styles from "./sponsor-slot.module.css";
+import SponsorPopup from "./sponsor-popup";
 
 type Sponsor = {
   name: string;
@@ -9,7 +10,7 @@ type Sponsor = {
   area: string | null;
 };
 
-async function readSponsor(): Promise<Sponsor | null> {
+export async function readSponsor(): Promise<Sponsor | null> {
   try {
     const db = await createClient();
     const { data: placements, error } = await db
@@ -57,23 +58,29 @@ export default async function SponsorSlot({
               "Local business"}
           </span>
           <span className={styles.action}>
-            View business <span aria-hidden="true">↗</span>
+            Explore this local business <span aria-hidden="true">↗</span>
           </span>
         </Link>
       ) : (
         <Link className={styles.link} href="/advertise">
           <span className={styles.label}>Advertise here</span>
           <span className={styles.name}>
-            Reach people while they listen and read.
+            Put your business in the spotlight.
           </span>
           <span className={styles.meta}>
-            Clearly labelled placements for local businesses.
+            Connect with people discovering Epe LAWA.
           </span>
           <span className={styles.action}>
-            Book this spot <span aria-hidden="true">→</span>
+            Explore advertising <span aria-hidden="true">→</span>
           </span>
         </Link>
       )}
     </aside>
   );
+}
+
+/** Only real active placements are eligible for the optional pop-up. */
+export async function SponsorPopupPlacement() {
+  const sponsor = await readSponsor();
+  return sponsor ? <SponsorPopup sponsor={sponsor} /> : null;
 }
