@@ -1,0 +1,30 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { PGlite } from '@electric-sql/pglite';
+const db = new PGlite();
+await db.exec(`create role anon; create role authenticated; create schema auth;
+create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
+create table public.staff_profiles(user_id uuid primary key,must_change_password boolean not null default false);
+create function public.staff_roles_authorized() returns boolean language sql stable as $$ select auth.uid()='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'::uuid $$;
+create table public.audit_test(action text,metadata jsonb);
+create function public.audit_event(text,text,text,uuid,text,jsonb) returns void language sql as $$ insert into public.audit_test values ($2,$6) $$;
+grant usage on schema public, auth to anon, authenticated; grant execute on function auth.uid() to anon,authenticated;`);
+await db.exec(await readFile(new URL('../supabase/migrations/20261121120000_maintenance_mode.sql',import.meta.url),'utf8'));
+test('public reads only the boolean, never direct settings or toggle',async()=>{
+ await db.exec('set role anon');
+ assert.equal((await db.query('select public.maintenance_status() as enabled')).rows[0].enabled,false);
+ await assert.rejects(db.query('select * from public.site_maintenance'));
+ await assert.rejects(db.query('select public.maintenance_set(true,1)'));
+ await db.exec('reset role');
+});
+test('authorized staff changes are revision checked and audited',async()=>{
+ await db.exec("insert into public.staff_profiles(user_id) values ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'); set role authenticated; select set_config('request.jwt.claim.sub','aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',false);");
+ await db.query('select public.maintenance_set(true,1)');
+ assert.equal((await db.query('select public.maintenance_status() as enabled')).rows[0].enabled,true);
+ await assert.rejects(db.query('select public.maintenance_set(false,1)'),/stale_maintenance_state/);
+ await db.exec('reset role'); assert.equal((await db.query('select count(*)::int as n from public.audit_test')).rows[0].n,1);
+ await db.exec("update public.staff_profiles set must_change_password=true; set role authenticated");
+ await assert.rejects(db.query('select public.maintenance_set(false,2)'),/maintenance_forbidden/);
+ await db.exec('reset role'); await db.close();
+});
