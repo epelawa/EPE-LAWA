@@ -152,6 +152,22 @@ Scope: rerun build, test, scan and live checks from a clean environment; separat
 Entry condition: Phase 0 exit condition met.
 Exit/done condition: a recorded baseline table with exact commands, exit codes and a named classification of every failure; no new source change made in this phase.
 
+### Baseline refresh on rebased main `920911f` (2026-11-20)
+
+This is a partial baseline, **not a Phase 1 exit or release sign-off**. The branch was rebased from `49bf9d8` onto `920911f`; PRs #192–#197 added remediation, the execution checklist, accessibility fixes, the master audit, the admin/backup workspace and the next-agent guide. Historical results below refer to their named revisions and are not current results. No production data, schema, provider configuration or secrets were changed.
+
+| Command / check | Result and scope |
+| --- | --- |
+| `corepack pnpm install --frozen-lockfile --ignore-scripts` | exit 0; Node 22.22.3, pnpm 10.34.9. Install scripts were not run. |
+| `PATH="/tmp/epe-bin:$PATH" pnpm typecheck` | exit 0, 5/5 tasks, no cache hits. `/tmp/epe-bin` contained Corepack shims; without them Turbo could not locate pnpm (exit 1). |
+| `PATH="/tmp/epe-bin:$PATH" pnpm build --force` | exit 0, 2/2 app builds, no cache hits. |
+| `PATH="/tmp/epe-bin:$PATH" pnpm test` after build | exit 0: Node suite 348 passed, 1 skipped, 0 failed; Vitest 127 passed in 44 files. An earlier run before the fresh build exited 1 with four `foundation.test.mjs` local fetch failures; building before testing resolved them in this run, not proof of the root cause. |
+| `corepack pnpm test:unit` | exit 0: 127 passed in 44 files. |
+| `PATH="/tmp/epe-bin:$PATH" pnpm exec playwright install chromium` | exit 1: download from `cdn.playwright.dev` failed with `ECONNRESET`; browser smoke and full accessibility/width matrix not run. |
+| `PATH="/tmp/epe-bin:$PATH" pnpm audit:ci` | exit 2: `founda-scan` executable missing (`ENOENT`); `npm view founda-scan@1.2.0 version` returned 404. Fresh severity counts, health/readiness, flagged layers and verdict are **unknown**; historical scanner numbers below are not a current scan. |
+
+The Phase 1 exit condition also requires the remaining baseline and failure classification; the next handoff additionally requires browser smoke and a real scan. Phase 2 entry requires owner sign-off for backup/restore rehearsal and the specified owner decisions. No production migration, backup, restore or permission change is authorized by this baseline. Vercel and GitHub hosted checks for the new PR must be inspected separately; local results do not establish deployment readiness.
+
 ### Chunk 1.1 — Typecheck and build baseline (§0, §4.7)
 
 - [x] Typecheck 5/5 packages PASS, exit 0 — source: §0; done: `pnpm typecheck` completed, `TYPECHECK_EXIT=0`.
