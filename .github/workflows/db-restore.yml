@@ -1,0 +1,106 @@
+name: DB restore from R2
+
+# DESTRUCTIVE. Restores the live database from a verified R2 backup.
+# Two independent gates must already have passed before this runs:
+#   1. the admin server action checked has_capability('backup.restore');
+#   2. the operator typed the exact backup key (type-to-confirm);
+#   3. db-backup.yml was dispatched first as an automatic safety snapshot.
+# DATABASE_URL and R2 keys exist ONLY in GitHub Actions secrets.
+
+on:
+  workflow_dispatch:
+    inputs:
+      key:
+        description: "Exact R2 object key of the backup to restore"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: db-restore
+  cancel-in-progress: false
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: production-restore
+    steps:
+      - name: Validate input key strictly
+        env:
+          KEY: ${{ inputs.key }}
+        run: |
+          set -euo pipefail
+          # Must be a key this system generated: db-backups/<stamp>/<file>.sql.gz
+          if ! printf '%s' "$KEY" | grep -Eq '^db-backups/[0-9]{8}T[0-9]{6}Z-run[0-9]+/[A-Za-z0-9._-]+\.sql\.gz$'; then
+            echo "::error::Invalid backup key format; refusing to restore."
+            exit 1
+          fi
+          if printf '%s' "$KEY" | grep -Eq '\.\.|\\|[[:cntrl:]]'; then
+            echo "::error::Backup key contains unsafe characters."
+            exit 1
+          fi
+          echo "Validated key: $KEY"
+
+      - name: Validate secrets are present
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_BUCKET_PRIVATE: ${{ secrets.R2_BUCKET_PRIVATE }}
+        run: |
+          for name in DATABASE_URL R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY R2_ACCOUNT_ID R2_BUCKET_PRIVATE; do
+            if [ -z "${!name}" ]; then echo "::error::Missing secret $name"; exit 1; fi
+          done
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client > /dev/null
+
+      - name: Configure AWS CLI for R2
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+        run: |
+          aws configure set aws_access_key_id "$R2_ACCESS_KEY_ID" --profile r2
+          aws configure set aws_secret_access_key "$R2_SECRET_ACCESS_KEY" --profile r2
+          aws configure set region auto --profile r2
+          echo "R2_ENDPOINT=https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com" >> "$GITHUB_ENV"
+
+      - name: Download dump and checksum
+        env:
+          KEY: ${{ inputs.key }}
+          R2_BUCKET_PRIVATE: ${{ secrets.R2_BUCKET_PRIVATE }}
+        run: |
+          set -euo pipefail
+          mkdir -p restore
+          FILE=$(basename "$KEY")
+          aws s3 cp "s3://${R2_BUCKET_PRIVATE}/${KEY}" "restore/${FILE}" \
+            --endpoint-url "$R2_ENDPOINT" --profile r2 --only-show-errors
+          aws s3 cp "s3://${R2_BUCKET_PRIVATE}/${KEY}.sha256" "restore/${FILE}.sha256" \
+            --endpoint-url "$R2_ENDPOINT" --profile r2 --only-show-errors
+          echo "FILE=${FILE}" >> "$GITHUB_ENV"
+
+      - name: Verify checksum
+        run: |
+          set -euo pipefail
+          cd restore
+          sha256sum -c "${FILE}.sha256"
+
+      - name: Restore database
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          set -euo pipefail
+          gzip -cd "restore/${FILE}" | psql "$DATABASE_URL" \
+            -v ON_ERROR_STOP=1 --no-psqlrc -q
+          echo "Restore completed from ${FILE}"
+
+      - name: Clean up local dump
+        if: always()
+        run: rm -rf restore

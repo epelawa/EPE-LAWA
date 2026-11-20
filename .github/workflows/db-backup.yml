@@ -1,0 +1,97 @@
+name: DB backup to R2
+
+# Database credentials and R2 write keys live ONLY in GitHub Actions secrets.
+# Neither the Next.js server nor the browser ever receives DATABASE_URL.
+
+on:
+  workflow_dispatch:
+    inputs:
+      label:
+        description: "Optional human label (letters, numbers, spaces, dash, underscore)"
+        required: false
+        type: string
+      reason:
+        description: "Reason for the backup"
+        required: false
+        default: "on-demand"
+        type: string
+      target:
+        description: "Related backup key (set by the pre-restore safety step)"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: db-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client > /dev/null
+
+      - name: Validate secrets are present
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_BUCKET_PRIVATE: ${{ secrets.R2_BUCKET_PRIVATE }}
+        run: |
+          for name in DATABASE_URL R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY R2_ACCOUNT_ID R2_BUCKET_PRIVATE; do
+            if [ -z "${!name}" ]; then echo "::error::Missing secret $name"; exit 1; fi
+          done
+
+      - name: Dump, compress and checksum
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          STAMP: ${{ github.run_number }}
+        run: |
+          set -euo pipefail
+          UTC=$(date -u +%Y%m%dT%H%M%SZ)
+          OBJECT="db-backups/${UTC}-run${STAMP}"
+          FILE="epelawa-${UTC}-run${STAMP}.sql.gz"
+          mkdir -p out
+          # Fail loudly on any dump error; --no-owner/--no-privileges keeps the dump portable.
+          pg_dump "$DATABASE_URL" --no-owner --no-privileges --no-tablespaces \
+            --format=plain | gzip -9 > "out/${FILE}"
+          test -s "out/${FILE}"
+          (cd out && sha256sum "${FILE}" > "${FILE}.sha256")
+          echo "OBJECT=${OBJECT}" >> "$GITHUB_ENV"
+          echo "FILE=${FILE}" >> "$GITHUB_ENV"
+
+      - name: Configure AWS CLI for R2
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+        run: |
+          aws configure set aws_access_key_id "$R2_ACCESS_KEY_ID" --profile r2
+          aws configure set aws_secret_access_key "$R2_SECRET_ACCESS_KEY" --profile r2
+          aws configure set region auto --profile r2
+          echo "R2_ENDPOINT=https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com" >> "$GITHUB_ENV"
+
+      - name: Upload dump and checksum to R2
+        env:
+          R2_BUCKET_PRIVATE: ${{ secrets.R2_BUCKET_PRIVATE }}
+        run: |
+          set -euo pipefail
+          aws s3 cp "out/${FILE}" "s3://${R2_BUCKET_PRIVATE}/${OBJECT}/${FILE}" \
+            --endpoint-url "$R2_ENDPOINT" --profile r2 --only-show-errors
+          aws s3 cp "out/${FILE}.sha256" "s3://${R2_BUCKET_PRIVATE}/${OBJECT}/${FILE}.sha256" \
+            --endpoint-url "$R2_ENDPOINT" --profile r2 --only-show-errors
+          echo "Backup uploaded to ${OBJECT}/${FILE}"
+
+      - name: Clean up local dump
+        if: always()
+        run: rm -rf out

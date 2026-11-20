@@ -99,14 +99,15 @@ html[data-theme="light"] body {
 .btn-primary:hover { filter:brightness(.94); }.btn-secondary:hover,.btn-ghost:hover { background:hsl(var(--secondary)); }
 .btn-icon,.ep-icon-btn { padding:0; width:44px; flex-shrink:0; color:hsl(var(--foreground)); }
 .btn-icon:hover,.ep-icon-btn:hover { background:hsl(var(--secondary)); }
-.admin-masthead { position:sticky; top:12px; z-index:40; width:min(1240px,calc(100% - 32px)); margin:12px auto 0; padding:12px 18px; border:1px solid hsl(var(--border)); border-radius:24px; background:hsl(var(--card)/.97); box-shadow:0 5px 24px rgb(10 16 35/.035); }
+.admin-masthead { position:sticky; top:12px; z-index:40; width:min(1240px,calc(100% - 32px)); margin:12px auto 0; padding:12px 18px; border:1px solid hsl(var(--border)); border-radius:24px; background:hsl(var(--card)/.97); box-shadow:0 5px 24px rgb(10 16 35/.035); overflow:hidden; }
+.admin-masthead::before { position:absolute; top:0; left:0; width:100%; height:3px; background:linear-gradient(90deg,var(--palette-cobalt),var(--palette-ice-blue)); content:""; }
 .admin-masthead__bar { display:flex; align-items:center; gap:20px; min-height:44px; }
 .nav-brand { display:inline-flex; min-height:44px; align-items:center; text-decoration:none; color:inherit; }
 .brand-lockup { display:inline-flex; gap:10px; align-items:center; }
 .brand-mark__img { width:34px; height:34px; object-fit:contain; border-radius:8px; background:var(--palette-cloud); padding:3px; }
 .brand-lockup__text { display:grid; gap:2px; line-height:1.2; }
 .brand-lockup__name { font-size:14px; font-weight:700; letter-spacing:.04em; }
-.admin-masthead__label { font-size:12px; color:hsl(var(--muted-foreground)); padding-left:20px; border-left:1px solid hsl(var(--border)); }
+.admin-masthead__label { font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--palette-royal-steel); padding:6px 12px; border:1px solid hsl(var(--border)); border-radius:999px; background:hsl(var(--secondary)); }
 .admin-masthead__actions { margin-left:auto; display:flex; align-items:center; gap:8px; }
 .admin-public-link { display:inline-flex; gap:8px; align-items:center; min-height:44px; font-size:13px; color:hsl(var(--link)); }
 .admin-nav { margin-top:12px; padding-top:10px; border-top:1px solid hsl(var(--border)); }
