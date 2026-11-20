@@ -5,6 +5,7 @@
     "build": {
       "env": [
         "ALLOW_INDEXING",
+        "MAINTENANCE_GATE_ENABLED",
         "NEXT_PUBLIC_R2_PUBLIC_BASE_URL",
         "NEXT_PUBLIC_SITE_URL",
         "NEXT_PUBLIC_SUPABASE_ANON_KEY",
