@@ -75,6 +75,10 @@
   .popup { right: var(--ep-space-3, 12px); width: min(320px, calc(100vw - var(--ep-space-6, 24px))); padding: var(--ep-space-3, 12px); }
   .controls { align-self: stretch; }
 }
+@media (pointer: coarse) {
+  .copy a,
+  .controls button { min-width: var(--ep-touch-min, 44px); }
+}
 @media (prefers-reduced-motion: reduce) {
   .popup,.popup[data-leaving="true"],.copy a,.controls button { animation-duration: var(--ep-motion-reduced, .01ms) !important; transition-duration: var(--ep-motion-reduced, .01ms) !important; transform: none !important; }
 }
