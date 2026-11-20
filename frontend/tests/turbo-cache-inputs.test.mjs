@@ -22,8 +22,11 @@ test('cross-app raw imports participate in each app build cache key', () => {
   ]);
   assert.equal(rootConfig.tasks.build.outputs.includes('.next/**'), true);
   assert.equal(rootConfig.tasks.build.outputs.includes('!.next/cache/**'), true);
+  // The maintenance gate must invalidate app builds, so its flag belongs in
+  // the root turbo build env allowlist.
   assert.deepEqual(rootConfig.tasks.build.env, [
     'ALLOW_INDEXING',
+    'MAINTENANCE_GATE_ENABLED',
     'NEXT_PUBLIC_R2_PUBLIC_BASE_URL',
     'NEXT_PUBLIC_SITE_URL',
     'NEXT_PUBLIC_SUPABASE_ANON_KEY',

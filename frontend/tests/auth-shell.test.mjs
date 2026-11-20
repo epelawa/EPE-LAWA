@@ -54,7 +54,10 @@ test("member auth routes use a centered branded shell without appearance control
   assert.match(styles, /\.auth-switch--member\s*\{[^}]*flex-wrap:\s*nowrap/s);
   assert.doesNotMatch(styles, /\.auth-provider\s*\{[^}]*display:\s*none/s);
   assert.doesNotMatch(shell, /className="auth-home"/);
-  assert.match(globalStyles, /body:has\(\.auth-page\) \.site-head/);
+  // Commit 6e1f362 intentionally shares the public masthead on auth pages;
+  // only the footer is hidden and centering reserves the 72px header height.
+  assert.doesNotMatch(globalStyles, /body:has\(\.auth-page\) \.site-head/);
+  assert.match(globalStyles, /body:has\(\.auth-page\) \.site-main[\s\S]*?min-height:\s*calc\(100dvh - 72px\)/);
   assert.match(globalStyles, /body:has\(\.auth-page\) \.site-footer/);
   assert.match(rootLayout, /themeScript/);
   assert.match(rootLayout, /export const viewport: Viewport = \{ themeColor: "#F1F4FA" \}/);
@@ -107,9 +110,10 @@ test("callback issue, 404, and runtime error screens keep shared controls and hi
     read(components, "focused-page-controls.tsx"),
   ]);
 
-  assert.match(globalStyles, /body:has\(\.auth-link-issue\) \.site-head/);
+  // The public masthead is shared on these shells since 6e1f362; only their
+  // public footers are removed. Assert that intentional state explicitly.
+  assert.doesNotMatch(globalStyles, /body:has\(\.(?:auth-link-issue|focused-error-shell)\) \.site-head/);
   assert.match(globalStyles, /body:has\(\.auth-link-issue\) \.site-footer/);
-  assert.match(globalStyles, /body:has\(\.focused-error-shell\) \.site-head/);
   assert.match(globalStyles, /body:has\(\.focused-error-shell\) \.site-footer/);
   assert.match(errorPage, /className="focused-error-shell"/);
   assert.match(errorPage, /<FocusedPageControls\s*\/>/);

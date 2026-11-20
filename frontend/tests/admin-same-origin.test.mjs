@@ -46,8 +46,11 @@ test("each staff section is mounted at the chosen same-origin /admin path", () =
   assert.match(shell, /basePath="\/admin"/);
   assert.match(shell, /index: false/);
   const proxy = read("frontend/apps/main/proxy.ts");
-  assert.match(proxy, /requestHeaders\.set\("x-epe-lawa-admin-route", request\.nextUrl\.pathname\)/);
-  assert.match(proxy, /matcher:\s*\["\/admin\/:path\*"\]/);
+  // Commit 5beb813 moved the gate to every path and removed the /admin-only
+  // matcher. The return hint is still pathname-derived and admin-only.
+  assert.match(proxy, /const pathname = request\.nextUrl\.pathname;/);
+  assert.match(proxy, /if \(pathname === "\/admin" \|\| pathname\.startsWith\("\/admin\/"\)\)/);
+  assert.match(proxy, /requestHeaders\.set\("x-epe-lawa-admin-route", pathname\)/);
   assert.doesNotMatch(proxy, /request\.nextUrl\.search/, "return hints exclude query parameters");
   const catchAll = read("frontend/apps/main/app/admin/[...unknown]/page.tsx");
   assert.match(catchAll, /notFound\(\)/);
