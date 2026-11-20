@@ -12,6 +12,7 @@ const sectionPages: NavItem[] = [
   { label: "History", href: "/itan-ilu-mi/review", hint: "Private contributions and reviewed publication" },
   { label: "Forum", href: "/moderation/forum", hint: "Reports and moderation queue", primary: true },
   { label: "Businesses", href: "/business-review", hint: "Submissions and verification" },
+  { label: "Advertising", href: "/advertising", hint: "Verified sponsorship placements" },
   { label: "Reviews", href: "/business-review/moderation", hint: "Business review moderation" },
   { label: "Orders", href: "/orders", hint: "Order queue" },
   { label: "Tourism", href: "/tourism", hint: "Tourism submissions" },
