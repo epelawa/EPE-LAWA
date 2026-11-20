@@ -2,6 +2,8 @@
 
 **Last checked:** 2026-11-18 06:09 WAT.
 
+> **Refresh — 2026-11-20:** the stale high-severity picomatch claim in the 2026-11-18 snapshot below is WITHDRAWN. `pnpm audit --registry=https://registry.npmjs.org --audit-level=high` exits 0 with `No known vulnerabilities found` (`/public/.cache/final-audit-npmjs.log`); the lockfile resolves `picomatch@2.3.2` and `picomatch@4.0.7`, both outside the affected `>=4.0.0,<4.0.4` range, and `GHSA-fc5q-39xc-vjpf` was WITHDRAWN `2026-11-18T15:38:56Z`. Plain `pnpm audit` fails only because the global npmmirror registry has no audit endpoint — environment, not a dependency finding. `CVE-2026-112366` remains a noted open item per §11 of the master audit. Dependency posture is GREEN, not blocked.
+
 **Verified repository `main` baseline:** `43eae784de7880d993be21673219c265d031adcf` (PR #154 merge). The Production deployment for this SHA was not verified.
 **Scope:** The eight client-approved web modules plus cross-cutting member auth, staff access, publishing, privacy, accessibility, email and audit. Native mobile remains out of scope.
 
