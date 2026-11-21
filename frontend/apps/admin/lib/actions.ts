@@ -512,3 +512,62 @@ export async function setArticleBreaking(formData: FormData): Promise<void> {
   revalidatePath("/dashboard");
   redirect(adminHref(`/newsroom/${articleId}?breaking=1`));
 }
+
+/** Replace the topic tags on the article's current version (database caps this at article.review). */
+export async function saveArticleTags(formData: FormData): Promise<void> {
+  const articleId = text(formData, "articleId", 64);
+  const tagsRaw = text(formData, "tags", 600);
+  if (!UUID.test(articleId)) fail("/newsroom?error=invalid");
+  const tags = tagsRaw
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter((tag) => tag.length > 0)
+    .slice(0, 12);
+  for (const tag of tags) {
+    if (tag.length < 2 || tag.length > 40) {
+      console.error("article tags rejected", { reason: "tag_length" });
+      fail(`/newsroom/${articleId}?error=tags`);
+    }
+  }
+  let errorCode: string | null = null;
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("article_tags_save", { p_article_id: articleId, p_tags: tags });
+    if (error) errorCode = error.code;
+  } catch (error) { errorCode = queryErrorCode(error); }
+  if (errorCode) {
+    console.error("article tags save failed", { code: errorCode });
+    fail(`/newsroom/${articleId}?error=tags`);
+  }
+  revalidatePath(adminHref(`/newsroom/${articleId}`));
+  revalidatePath("/news");
+  redirect(adminHref(`/newsroom/${articleId}?tags=1`));
+}
+
+/** Publish a new site-wide poll; the database closes any previous active poll (caps at article.publish). */
+export async function saveSitePoll(formData: FormData): Promise<void> {
+  const question = text(formData, "question", 200);
+  const daysRaw = text(formData, "days", 3);
+  const options = formData
+    .getAll("options")
+    .map((value) => (typeof value === "string" ? value.trim() : ""))
+    .filter((value) => value.length > 0)
+    .slice(0, 6);
+  const days = Number(daysRaw);
+  if (question.length < 6 || options.length < 2 || !Number.isSafeInteger(days) || days < 1 || days > 90) {
+    fail("/poll?error=invalid");
+  }
+  let errorCode: string | null = null;
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("site_poll_save", { p_question: question, p_options: options, p_days: days });
+    if (error) errorCode = error.code;
+  } catch (error) { errorCode = queryErrorCode(error); }
+  if (errorCode) {
+    console.error("site poll save failed", { code: errorCode });
+    fail("/poll?error=invalid");
+  }
+  revalidatePath(adminHref("/poll"));
+  revalidatePath("/");
+  redirect(adminHref("/poll?saved=1"));
+}

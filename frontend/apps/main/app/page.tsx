@@ -13,6 +13,7 @@ import { HomeBreakingTicker } from "../components/home-breaking-ticker";
 import { BreakingBadge } from "../components/breaking-news";
 import SponsorSlot from "../components/sponsor-slot";
 import { HomeSectionReveal } from "../components/home-sections";
+import SitePoll from "../components/site-poll";
 import HomeLivePill from "../components/home-live-pill";
 import AdsSection from "../components/ads-section";
 
@@ -112,6 +113,7 @@ export default async function Home() {
         </div>
         <span className="connection-panel__icon" aria-hidden="true"><UsersIcon size={96} /></span>
       </section></HomeSectionReveal>
+      <HomeSectionReveal><div className="ep-container home-poll"><SitePoll /></div></HomeSectionReveal>
       <SponsorSlot footer />
       <CookieBanner />
     </div>

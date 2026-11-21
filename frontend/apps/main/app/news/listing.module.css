@@ -158,3 +158,5 @@
 .featureMedia,.storyMedia { border-radius:10px 10px 0 0; }
 .storyCopy { padding:18px; }
 @media(max-width:520px) { .featureCopy { padding:20px; } }
+.tagFilterBar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 10px 16px; border-radius: 14px; background: color-mix(in srgb, var(--ep-primary, #477fe0) 8%, transparent); font-size: 0.875rem; }
+.tagFilterClear { font-weight: 600; color: var(--ep-primary, #477fe0); text-decoration: underline; }

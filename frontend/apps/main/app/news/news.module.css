@@ -375,3 +375,9 @@
 .commentVoteButton:hover { color: var(--ep-text, #1F2A44); background: var(--ep-surface-soft, #E7EDF8); }
 .commentVoteButton:active { transform: scale(.97); }
 .commentVoteButtonActive { color: var(--ep-primary, #477fe0); font-weight: 600; background: color-mix(in srgb, var(--ep-primary, #477fe0) 10%, transparent); }
+.tagRow { display: flex; align-items: baseline; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+.tagRowLabel { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ep-text-muted, #40516F); }
+.tagList { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; }
+.tagChip { display: inline-flex; align-items: center; min-height: 34px; padding: 4px 14px; border-radius: 999px; background: var(--ep-surface-soft, #E7EDF8); color: var(--ep-text, #1F2A44); font-size: 0.8125rem; font-weight: 500; transition: background 150ms ease, transform 150ms ease; }
+.tagChip:hover { background: color-mix(in srgb, var(--ep-primary, #477fe0) 14%, transparent); }
+.tagChip:active { transform: scale(.97); }

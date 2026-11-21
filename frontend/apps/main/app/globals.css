@@ -498,3 +498,10 @@ html { transition: background-color var(--ep-dur-base, 200ms) var(--ep-ease-out)
   border-color: var(--ep-primary, #477fe0);
   color: var(--ep-primary, #477fe0);
 }
+
+/* Site poll widget — result bars reuse primary token; vote form uses shared fields. */
+.site-poll { max-width: 720px; padding: 22px; border-radius: 20px; }
+.site-poll-bar { height: 8px; border-radius: 999px; background: var(--ep-surface-soft, #E7EDF8); overflow: hidden; }
+.site-poll-bar > span { display: block; height: 100%; background: var(--ep-primary, #477fe0); border-radius: inherit; transition: width 300ms ease; }
+.site-poll-label { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-size: 0.875rem; margin-top: 6px; }
+.home-poll { padding-block: 12px 32px; }

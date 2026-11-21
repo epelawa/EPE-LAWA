@@ -5,7 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buttonClassName, EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "@epelawa/ui";
 import { createClient } from "../../../../lib/supabase";
-import { publishArticle, reviseArticle, saveDraft, reviseArticleWithFeedback, saveDraftWithFeedback, setArticleBreaking, unpublishArticle } from "../../../../lib/actions";
+import { publishArticle, reviseArticle, saveArticleTags, saveDraft, reviseArticleWithFeedback, saveDraftWithFeedback, setArticleBreaking, unpublishArticle } from "../../../../lib/actions";
 import { adminHref } from "../../../../lib/admin-path";
 import { articlePublicationState } from "../../../../lib/article-publication-state";
 import NewsroomToast from "../../../../components/newsroom-toast";
@@ -57,6 +57,7 @@ function StatusMessage({ query }: { query: Record<string, string | undefined> })
   if (query.reviewed) return <Notice tone="success" role="status">The version status was updated. Publication is a separate, audited action.</Notice>;
   if (query.published) return <Notice tone="success" role="status">Published. The story is live on the public site right now.</Notice>;
   if (query.breaking) return <Notice tone="success" role="status">Breaking news status updated.</Notice>;
+  if (query.tags) return <Notice tone="success" role="status">Topic tags were saved. The public story now shows the new topics.</Notice>;
   if (query.unpublished) return <Notice tone="neutral" role="status">Article unpublished.</Notice>;
   if (query.revised) return <Notice tone="success" role="status">A new private revision was created. The existing public version is unchanged.</Notice>;
   if (query.error) {
@@ -81,7 +82,9 @@ function StatusMessage({ query }: { query: Record<string, string | undefined> })
                     ? "The story could not be deleted. Check your article access, reload and try again."
                     : query.error === "revise"
                       ? "A new private revision could not be created. Check article.create access and reload."
-                      : "The requested article action could not be completed.";
+                      : query.error === "tags"
+                        ? "The topic tags could not be saved. Use 2–12 topics of 2–40 characters, then try again."
+                        : "The requested article action could not be completed.";
     return <Notice tone="danger" role="alert">{message}</Notice>;
   }
   return null;
@@ -129,6 +132,14 @@ export default async function EditArticlePage({
   };
   const version = Array.isArray(article.current_version) ? article.current_version[0] : article.current_version;
   if (!version) notFound();
+  const [tagResult, reviewCapability] = await Promise.all([
+    supabase.from("article_version_tags").select("tags(label)").eq("version_id", version.id).limit(12),
+    supabase.rpc("has_capability", { p_capability: "article.review" }),
+  ]);
+  const articleTags = (tagResult.data ?? [])
+    .map((row: { tags?: { label?: string } | null }) => row.tags?.label ?? "")
+    .filter(Boolean);
+  const canReviewTags = reviewCapability.data === true;
 
   const categories = (categoryResult.data ?? []) as Option[];
   const authors = (authorResult.data ?? []) as Option[];
@@ -214,6 +225,18 @@ export default async function EditArticlePage({
           <label className="ui-row"><input type="checkbox" name="confirmUnpublish" value="yes" required /> I confirm taking down the version currently visible to readers.</label>
           <div className="ui-actions"><button className={buttonClassName("secondary")} type="submit">Unpublish public article</button></div>
         </form> : <p className="ui-muted">This account does not have article.unpublish access.</p>}
+      </Panel> : null}
+      {canReviewTags ? <Panel className="ui-subtle">
+        <div className="ui-stack-sm">
+          <div><p className="ui-eyebrow">Public story</p><h2 className="text-lg font-semibold">Topic tags</h2></div>
+          <p className="ui-muted">Comma-separated topics, up to 12. Readers can filter the news page by these tags.{currentVersionIsPublic ? "" : " Tags apply to the current version and appear publicly once this version is published."}</p>
+          <form action={saveArticleTags} className="ui-stack-sm">
+            <input type="hidden" name="articleId" value={article.id} />
+            <label className="ui-field"><span className="ui-label">Topics</span>
+            <input className="input" type="text" name="tags" defaultValue={articleTags.join(", ")} placeholder="e.g. markets, flooding, education" maxLength={600} /></label>
+            <div className="ui-actions"><button className={buttonClassName("primary")} type="submit">Save topics</button></div>
+          </form>
+        </div>
       </Panel> : null}
     </PageFrame>
   );
