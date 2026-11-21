@@ -1,4 +1,4 @@
- # EPE LAWA — Commit Log
+  # EPE LAWA — Commit Log
 
 **Purpose:** Auto-generated log so the developer can review what was done
 while asleep. Each entry: exact time, commit SHA, reason, tests run, features added.
