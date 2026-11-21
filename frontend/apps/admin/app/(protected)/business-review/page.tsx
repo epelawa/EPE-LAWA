@@ -1,25 +1,74 @@
 import { createClient } from "../../../lib/supabase";
 import { parseBusinessHours, hourRows, businessOpenNow } from "../../../lib/business-hours";
-import { reviewBusiness } from "./actions";
+import { reviewBusiness, decideBusinessClaim, featureBusiness } from "./actions";
 import BusinessCreateForm from "../../../components/business-create-form";
 import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "@epelawa/ui";
 
 export const dynamic = "force-dynamic";
 
-export default async function Page({ searchParams }: { searchParams: Promise<{ error?: string; updated?: string; added?: string }> }) {
+type ClaimRow = {
+  id: string;
+  message: string;
+  status: string;
+  decision_note: string | null;
+  created_at: string;
+  businesses: { name: string | null } | null;
+};
+
+export default async function Page({ searchParams }: { searchParams: Promise<{ error?: string; updated?: string; added?: string; claims?: string; featured?: string }> }) {
   const p = await searchParams;
   const db = await createClient();
   const { data: allowed, error: ge } = await db.rpc("has_capability", { p_capability: "business.review" });
   if (ge || allowed !== true) return <PageFrame className="ui-stack"><PageIntro eyebrow="Business Directory · Staff" title="Business submissions" description="Review and verify new business listings." /><Notice tone="danger" role="alert">Business review capability is required to access this queue.</Notice></PageFrame>;
   const { data, error } = await db.from("businesses").select("id,name,category_id,description,area,address,landmark,phone,whatsapp,email,website,status,created_at,hours").in("status", ["submitted", "reviewing"]).is("deleted_at", null).order("created_at").limit(100);
   const { data: cats } = await db.from("business_categories").select("id,label").limit(100);
+  const [claimsResult, featuredResult, publishedResult] = await Promise.all([
+    db.from("business_claims").select("id,business_id,message,status,decision_note,created_at,businesses(name)").in("status", ["open"]).order("created_at", { ascending: false }).limit(50),
+    db.from("business_featured").select("business_id,starts_at,ends_at,businesses(name,slug)").gt("ends_at", new Date().toISOString()).order("ends_at", { ascending: false }).limit(1),
+    db.from("businesses").select("id,slug,name").eq("status", "published").is("deleted_at", null).order("name").limit(100),
+  ]);
+  const claims = ((claimsResult.data ?? []) as unknown as ClaimRow[]);
+  const featuredNow = (featuredResult.data ?? []) as unknown as { businesses: { name: string; slug: string } | null; ends_at: string }[];
+  const publishedBusinesses = (publishedResult.data ?? []) as { id: string; slug: string; name: string }[];
   const labels = new Map((cats ?? []).map(c => [c.id, c.label]));
   return <PageFrame className="ui-stack">
     <PageIntro eyebrow="Business Directory · Staff" title="Business submissions" description="Review unpublished submissions, record evidence, then publish or reject with a reason." />
     {p.error ? <Notice tone="danger" role="alert">Review action failed. Confirm evidence and capability, then retry.</Notice> : null}
     {p.updated ? <Notice tone="success" role="status">Review action recorded.</Notice> : null}
     {p.added ? <Notice tone="success" role="status">Listing published — it is now visible in the public business directory.</Notice> : null}
+    {p.claims ? <Notice tone="success" role="status">Claim decision recorded.</Notice> : null}
+    {p.featured ? <Notice tone="success" role="status">The featured directory slot now points at the chosen business.</Notice> : null}
+    {p.error === "claim" ? <Notice tone="danger" role="alert">The claim decision needs status, a note for rejections and business.review access.</Notice> : null}
+    {p.error === "featured" ? <Notice tone="danger" role="alert">Choose a published business and a run of 1–90 days to fill the featured slot.</Notice> : null}
     {cats?.length ? <Panel><SectionHeading eyebrow="Direct listing" title="Add a business" description="Publish a listing yourself, right now — no submission needed. Everything you save here appears in the public directory immediately." /><BusinessCreateForm categories={cats} /></Panel> : null}
+
+    <section className="ui-stack-sm">
+      <SectionHeading eyebrow="Ownership claims" title="Business claims" description="Members who say they run a listing. Approving the claim links their account as owner; reject with a reason otherwise." />
+      {!claims.length ? <EmptyPanel title="No open claims" description="Claim requests appear here when members use the claim action on a listing." /> : <ul className="ui-list ui-stack-sm">{claims.map(claim => <li key={claim.id}><Panel className="ui-stack-sm">
+        <div className="ui-row"><StatusBadge tone="warning">open</StatusBadge><span className="ui-meta">Received {new Date(claim.created_at).toLocaleString("en-NG")}</span></div>
+        <p className="ui-prose">{claim.message}</p>
+        <form action={decideBusinessClaim} className="ui-stack-sm ui-divider">
+          <input type="hidden" name="claim_id" value={claim.id} />
+          <div className="ui-form-grid">
+            <label className="ui-field"><span className="label">Decision</span><select name="status" required defaultValue="" className="input"><option value="" disabled>Choose a decision</option><option value="approved">Approve — link the member as owner</option><option value="rejected">Reject — with a reason</option></select></label>
+            <label className="ui-field"><span className="label">Decision note (required when rejecting)</span><textarea name="note" maxLength={1000} className="input" /></label>
+          </div>
+          <div className="ui-actions"><button className="btn-primary" type="submit">Record claim decision</button></div>
+        </form>
+      </Panel></li>)}</ul>}
+    </section>
+
+    <Panel className="ui-subtle">
+      <SectionHeading eyebrow="Featured slot" title="Featured business placement" description="One listing at a time is highlighted at the top of the public directory for the chosen days. Placement is paid offline; record the arrangement before switching the slot." />
+      {featuredNow.length ? <p className="ui-meta">Now featured: <strong>{featuredNow[0].businesses?.name ?? "Unknown"}</strong> until {new Date(featuredNow[0].ends_at).toLocaleString("en-NG")}</p> : <p className="ui-meta">The featured slot is empty.</p>}
+      <form action={featureBusiness} className="ui-stack-sm ui-divider">
+        <div className="ui-form-grid">
+          <label className="ui-field"><span className="label">Business</span><select name="business_id" required defaultValue="" className="input"><option value="" disabled>Choose a published business</option>{publishedBusinesses.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}</select></label>
+          <label className="ui-field"><span className="label">Run for (days)</span><input className="input" name="days" type="number" min={1} max={90} defaultValue={7} required /></label>
+        </div>
+        <div className="ui-actions"><button className="btn-primary" type="submit">Feature this business</button></div>
+      </form>
+    </Panel>
     {error ? <EmptyPanel title="Queue unavailable" description="No listing details are shown. Try again later." /> : !data?.length ? <EmptyPanel title="No submissions awaiting review" description="New business submissions will appear here for staff review." /> : <section className="ui-stack-sm"><SectionHeading eyebrow="Review queue" title="Pending submissions" description="Review each listing and record a clear, auditable decision." action={<a className="btn-secondary" href="/admin/business-review/export">Download CSV</a>} />
       <ul className="ui-list ui-stack-sm">{data.map(b => <li key={b.id}><Panel className="ui-stack-sm">
         <div className="ui-row"><StatusBadge tone={b.status === "submitted" ? "warning" : "neutral"}>{b.status}</StatusBadge><span className="ui-meta">{labels.get(b.category_id) ?? "Category"} · Received {new Date(b.created_at).toLocaleString("en-NG")}</span></div>
