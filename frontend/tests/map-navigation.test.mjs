@@ -58,3 +58,15 @@ test('location disclosure says Google receives coordinates only when an external
   assert.match(ui, /Google Maps search and directions open an external service/);
   assert.match(ui, /EPE LAWA does not store them/);
 });
+
+test('the map panel embeds OpenStreetMap without any API key and keeps coordinates local', () => {
+  assert.match(ui, /const OSM_ORIGIN = "https:\/\/www\.openstreetmap\.org\/"/);
+  assert.match(ui, /new URL\("export\/embed\.html", OSM_ORIGIN\)/);
+  assert.match(ui, /url\.searchParams\.set\("layer", "mapnik"\)/);
+  assert.match(ui, /<iframe title="Epe community map" src=\{embedUrl\} loading="lazy"/);
+  assert.doesNotMatch(ui, /yandex|mapbox|thunderforest|api_key|apiKey|API_KEY/);
+  assert.match(ui, /OpenStreetMap contributors/);
+  assert.match(ui, /your coordinates stay in this browser tab/);
+  assert.match(ui, /Directions still open in Google Maps only when you choose/);
+  assert.doesNotMatch(ui, /next\/script|useEffect\(\(\) => .*geolocation/);
+});
