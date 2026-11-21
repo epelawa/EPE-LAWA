@@ -1,7 +1,7 @@
 # EPE-LAWA — Timestamped Progress Log
 
 **Time zone:** Africa/Lagos (UTC+01:00).
-**Last scope update:** 2026-11-18.
+**Last scope update:** 2026-11-21.
 
 ## Current scope and rules
 
@@ -24,6 +24,14 @@ An active, verified staff member with `article.publish` may publish directly wit
 ## Current verification snapshot
 
 No current full all-eight local/preview release pass, provider delivery, or live RLS pass is asserted in this log. A read-only production baseline is recorded below but does not verify this feature branch. No isolated Supabase development branch was created. Production migrations, schema, hosted email settings, and user-content writes remain unauthorized while migration reconciliation is pending; any separately owner-authorized staff-access changes are kept only in the private audit record.
+
+### 2026-11-21 — Phase 0 merge checkpoint
+
+- PRs #200, #201, and #198 were merged through the GitHub CLI after their exact documentation-only diffs were reviewed. The final `origin/main` is `34adfcec4ff2bd7021903aeb815d72e2f916337b`.
+- PR #200 recorded the completed live schema reconciliation; PR #201 refreshed the schema runbook; PR #198 reconciled the historical Phase 1 verification baseline with the newer Phase 0 records. No application source, payment data, advertising placement, provider credential, or migration-ledger history was fabricated or changed by these documentation merges.
+- The post-merge schema suite on `origin/main` reported **29 tests: 28 passed, 0 failed, 1 documented skip**. The skip remains the documented PGlite limitation for exclusion constraints and is not counted as a failure.
+- Phase 0 remains open despite the successful schema apply and documentation merges. Backup/restore rehearsal, exact production deployment verification, owner/legal/provider decisions, and remaining release-safety gates are not closed by this checkpoint.
+- Phase 1/release acceptance has not started. Do not mark Phase 1 complete or treat schema existence as payment/provider readiness.
 
 ### 2026-11-21 — Phase 0 read-only reconciliation
 
