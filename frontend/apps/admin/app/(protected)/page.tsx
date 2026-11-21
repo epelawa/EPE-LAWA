@@ -5,7 +5,7 @@ import { createClient } from "../../lib/supabase";
 import { combineCapabilityStates, resolveDashboardMetric, type DashboardMetricState } from "../../lib/dashboard-data";
 import styles from "../admin-dashboard.module.css";
 
-type Capability = "article.create" | "article.review" | "article.publish" | "moderation.review" | "business.review" | "order.manage" | "radio.manage" | "people.manage" | "backup.read";
+type Capability = "article.create" | "article.review" | "article.publish" | "moderation.review" | "business.review" | "radio.manage" | "people.manage" | "backup.read";
 type CountResult = { count: number | null; error: { code?: string } | null };
 
 function errorCode(error: unknown): string {
@@ -43,13 +43,12 @@ async function countForCapability(
   }
 }
 
-type IconName = "news" | "shield" | "orders" | "history" | "radio" | "people" | "database" | "arrow";
+type IconName = "news" | "shield" | "history" | "radio" | "people" | "database" | "arrow";
 
 function Icon({ name }: { name: IconName }) {
   const paths: Record<IconName, React.ReactNode> = {
     news: <><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M7 9h10M7 13h10M7 17h6" /></>,
     shield: <><path d="M12 3 5 6v5c0 4.4 3 8.3 7 10 4-1.7 7-5.6 7-10V6l-7-3Z" /><path d="m9 12 2 2 4-4" /></>,
-    orders: <><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z" /><path d="M9 8h6M9 12h6" /></>,
     history: <><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5M12 7v5l3 2" /></>,
     radio: <><circle cx="12" cy="12" r="2" /><path d="M7.8 7.8a6 6 0 0 0 0 8.4m8.4-8.4a6 6 0 0 1 0 8.4M4.9 4.9a10 10 0 0 0 0 14.2m14.2-14.2a10 10 0 0 1 0 14.2" /></>,
     people: <><circle cx="9" cy="8" r="3" /><path d="M3 20a6 6 0 0 1 12 0M16 6a3 3 0 0 1 0 6M18 20a6 6 0 0 0-2-4.5" /></>,
@@ -86,22 +85,20 @@ type Workflow = { label: string; detail: string; category: string; href: string;
 
 export default async function DashboardPage() {
   const supabase = await createClient();
-  const capabilityNames: Capability[] = ["article.create", "article.review", "article.publish", "moderation.review", "business.review", "order.manage", "radio.manage", "people.manage", "backup.read"];
+  const capabilityNames: Capability[] = ["article.create", "article.review", "article.publish", "moderation.review", "business.review", "radio.manage", "people.manage", "backup.read"];
   const capabilityEntries = await Promise.all(capabilityNames.map(async (name) => [name, await hasCapability(supabase, name)] as const));
   const capabilities = Object.fromEntries(capabilityEntries) as Record<Capability, boolean | null>;
   const articleRead = combineCapabilityStates(capabilities["article.review"], capabilities["article.publish"]);
-  const [unpublishedArticles, privateVersions, openReports, activeOrders] = await Promise.all([
+  const [unpublishedArticles, privateVersions, openReports] = await Promise.all([
     countForCapability(articleRead, "article.review/article.publish", () => supabase.from("articles").select("id", { count: "exact", head: true }).is("published_version_id", null).not("current_version_id", "is", null)),
     countForCapability(articleRead, "article.review/article.publish", () => supabase.from("article_versions").select("id", { count: "exact", head: true }).in("state", ["draft", "review", "approved"])),
     countForCapability(capabilities["moderation.review"], "moderation.review", () => supabase.from("forum_reports").select("id", { count: "exact", head: true }).eq("state", "open")),
-    countForCapability(capabilities["order.manage"], "order.manage", () => supabase.from("orders").select("id", { count: "exact", head: true }).in("status", ["pending", "paid", "preparing", "out_for_delivery"])),
   ]);
 
   const metrics = [
     { label: "Waiting to be published", detail: "Articles that are written but not public yet.", state: unpublishedArticles, href: "/newsroom", icon: "news" as const },
     { label: "Drafts in progress", detail: "Stories being written or reviewed.", state: privateVersions, href: "/newsroom", icon: "history" as const },
     { label: "Reports to check", detail: "Community reports waiting for a decision.", state: openReports, href: "/moderation/forum", icon: "shield" as const },
-    { label: "Orders being processed", detail: "Orders that are paid or on the way.", state: activeOrders, href: "/orders", icon: "orders" as const },
   ];
 
   const workflows: Workflow[] = [

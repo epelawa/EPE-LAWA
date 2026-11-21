@@ -38,7 +38,6 @@ export const CAPABILITY_GROUPS: CapabilityGroup[] = [
     label: "Business",
     capabilities: [
       { key: "business.review", label: "Verify business submissions" },
-      { key: "order.manage", label: "Manage order requests" },
     ],
   },
   {

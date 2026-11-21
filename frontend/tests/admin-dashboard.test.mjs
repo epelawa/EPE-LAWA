@@ -44,7 +44,7 @@ test("dashboard reads are request-scoped, count-only, and have no write path", (
   assert.match(page, /select\("id", \{ count: "exact", head: true \}\)/);
   assert.match(page, /hasCapability\(supabase, name\)/);
   assert.match(page, /capabilities\["article.create"\] === true/);
-  assert.match(page, /countForCapability\(capabilities\["order.manage"\]/);
+  assert.doesNotMatch(page, /order\.manage|"orders"/);
   assert.doesNotMatch(page, /\.insert\(|\.update\(|\.delete\(|service_role|serviceRole/i);
   assert.doesNotMatch(page, /select\(["'](?:email|phone|delivery_address|payment_method|report_body)/i);
   assert.match(read("frontend/apps/main/app/admin/(protected)/page.tsx"), /export \{ default \} from/);

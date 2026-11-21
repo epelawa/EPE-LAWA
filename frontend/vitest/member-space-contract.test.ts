@@ -39,7 +39,7 @@ describe("post-sign-in destination", () => {
   it("moves the member service links into the member menu", () => {
     expect(dashboard).not.toContain("<DashboardServices />");
     expect(topbar).toContain("MEMBER_SERVICE_LINKS.map");
-    for (const href of ["/forum", "/business-directory/orders", "/"]) {
+    for (const href of ["/forum", "/"]) {
       expect(source("../apps/main/lib/member-entry.ts")).toContain(`href: "${href}"`);
     }
   });

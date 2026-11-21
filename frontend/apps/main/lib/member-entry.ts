@@ -40,11 +40,6 @@ export const MEMBER_SERVICE_LINKS = [
     description: "Join the conversation and reply to Epe voices.",
   },
   {
-    href: "/business-directory/orders",
-    label: "Order requests",
-    description: "Follow requests made through the business directory.",
-  },
-  {
     href: "/",
     label: "Explore EPE LAWA",
     description: "Return to the public newsroom, radio and community pages.",

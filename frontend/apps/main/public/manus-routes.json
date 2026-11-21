@@ -109,9 +109,6 @@
       "path": "/admin/newsroom"
     },
     {
-      "path": "/admin/orders"
-    },
-    {
       "path": "/admin/people"
     },
     {
@@ -146,9 +143,6 @@
     },
     {
       "path": "/business-directory/:slug"
-    },
-    {
-      "path": "/business-directory/orders"
     },
     {
       "path": "/business-directory/submit"

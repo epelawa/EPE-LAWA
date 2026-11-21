@@ -113,7 +113,7 @@ const dataServer = createHttpsServer({ key: readFileSync(keyPath), cert: readFil
     return;
   }
   if ((request.method === "GET" || request.method === "HEAD") && [
-    "/rest/v1/articles", "/rest/v1/article_versions", "/rest/v1/forum_reports", "/rest/v1/orders",
+    "/rest/v1/articles", "/rest/v1/article_versions", "/rest/v1/forum_reports",
   ].includes(url.pathname)) {
     if (mode !== "denied") {
       respond(response, 503, { code: "LOCAL_DASHBOARD_READ_UNAVAILABLE", message: "No local dataset is configured; the dashboard must not infer zero." }, { "content-range": "*/*" }, request.method === "HEAD");

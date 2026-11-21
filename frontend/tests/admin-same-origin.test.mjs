@@ -18,7 +18,6 @@ const routes = [
   ["/admin/moderation/forum", "frontend/apps/main/app/admin/(protected)/moderation/forum/page.tsx"],
   ["/admin/business-review", "frontend/apps/main/app/admin/(protected)/business-review/page.tsx"],
   ["/admin/business-review/moderation", "frontend/apps/main/app/admin/(protected)/business-review/moderation/page.tsx"],
-  ["/admin/orders", "frontend/apps/main/app/admin/(protected)/orders/page.tsx"],
   ["/admin/people", "frontend/apps/main/app/admin/(protected)/people/page.tsx"],
   ["/admin/radio", "frontend/apps/main/app/admin/(protected)/radio/page.tsx"],
   ["/admin/tourism", "frontend/apps/main/app/admin/(protected)/tourism/page.tsx"],
@@ -100,10 +99,10 @@ test("staff login return hints are relative, same-origin, and cannot select logi
     "//outside.example/admin",
     "/newsroom",
     "/admin/login",
-    "/admin/login?next=/admin/orders",
+    "/admin/login?next=/admin/unknown-area",
     "/admin/../login",
     "\\\\outside.example\\admin",
-    "\u0000/admin/orders",
+    "\u0000/admin/unknown-area",
     12,
   ]) {
     assert.equal(safeAdminNextPath(value), "/admin", `reject unsafe return hint ${String(value)}`);

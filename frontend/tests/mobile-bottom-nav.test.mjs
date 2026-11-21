@@ -41,7 +41,7 @@ test('mobile bottom tabs mark exact pages and the Discover section semantically'
   assert.equal(mobileNavigationCurrentState('/news/smoke-breaking-story','discover'),'location');
   assert.equal(mobileNavigationCurrentState('/news/smoke-breaking-story','home'),undefined);
   assert.equal(mobileNavigationCurrentState('/map','discover'),undefined);
-  assert.equal(mobileNavigationCurrentState('/business-directory/orders','discover'),undefined);
+  assert.equal(mobileNavigationCurrentState('/business-directory/submit','discover'),undefined);
   assert.equal(mobileNavigationCurrentState('/forum','discover'),undefined);
 });
 
