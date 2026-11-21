@@ -538,3 +538,27 @@ The latest owner attachment was reconciled against PR #154 evidence and added to
 **Done:** the Map & Navigation page now shows a live OpenStreetMap embed (no API key, no account) of Epe by default; after "Use my location" it re-centres to a small window around the visitor's coordinates with a marker, plus an "Open my area on OpenStreetMap" button. OpenStreetMap search link added next to the Google links; directions still open in Google Maps only when the visitor chooses. Attribution line kept (OpenStreetMap contributors). No geolocation is requested automatically and coordinates stay in the browser tab.
 
 **Validation:** `node --test backend/tests/schema.test.mjs frontend/tests/business-directory.test.mjs frontend/tests/map-navigation.test.mjs` 41 pass / 0 fail / 1 skip; `pnpm typecheck` 5/5; `pnpm test:node` 360 pass / 0 fail / 1 skip; `pnpm vitest run` 128 pass.
+
+## 2026-11-21 (finish sweep) — forum messaging app, admin live counters, plain language, popdown forms, editable site pages, tourism live (branch `vibe/finish-sweep-d73e38`)
+
+**Forum (messaging-app style):** the forum index is now a chat-style conversation list — avatar bubbles, topic chips, post-count badges, last-activity timestamps — with a live "N active now" breathing indicator fed by the public `/api/live/forum` aggregate (polls every 60 s, aggregate only, reduced-motion safe). All forum test pins preserved.
+
+**Admin live queue counters:** new `/api/live/queues` endpoint (staff session) counts directory submissions awaiting review, open people corrections and open enquiries; the sidebar shows a "Waiting on you" strip with clickable counts that pulse when a number changes (polls every 45 s, reduced-motion safe, shows nothing when empty).
+
+**HBL (human-based language) pass:** the "Invitations unavailable — server-only Supabase invitation configuration is missing" staff-invite error is now plain words ("Staff invitations are not switched on for this deployment yet…"). The "Privacy by design…", "Live queues across…" and "Counts update from the database…" jargon blocks the owner flagged are confirmed absent from current source (only stale `.next` build caches still mention them).
+
+**Confirmation gates and busy feedback (sitewide):** new shared `ConfirmSubmit` client button adds a browser confirm dialog and a "Working…" busy state (via `useFormStatus`) to the destructive/queue actions that lacked them: Delete role (Roles), Accept/Reject correction (People), Mark resolved (Enquiries). Article delete, member delete and unpublish already had typed gates. Textareas no longer show resize handles anywhere (main + admin).
+
+**Compact popdown forms:** the tourism "Suggest a destination" form (7 fields) is now collapsed behind a single "Suggest a destination" popdown button using a shared `.ui-disclosure` pattern; the contact page keeps its verified pin (no intake form there by design).
+
+**Staff-editable site pages:** new migration `20261121232000_site_pages_editable.sql` (applied to production) adds `site_pages` (about/privacy/terms/guidelines; body + photos JSON + revision), public-read RLS, an audited `site_page_save` RPC guarded by the new `site.content` capability (primary admins hold it automatically), and the updated_at trigger. New staff page `/admin/site-pages` edits page text and uploads up to 12 anchor/pioneer photos per save (R2 pattern with honest "not configured" state; uploads need the R2 token). The About page now renders the saved text and photo grid from the database; Privacy/Terms/Guidelines render an optional "note from EPE LAWA" section. Nav item + manus-routes `/admin/site-pages` added.
+
+**Tourism applied to production:** verified `tourism_sites`/`tourism_submissions`, RLS policies, `tourism_submission_decide` RPC grant and `tourism.review` capability were missing in production — the documented outstanding item — and the exact migration file was applied and verified (tables, 3 policies, authenticated RPC grant).
+
+**Live community features (compensation list):** new migration `20261121233000_forum_reactions_reader_presence.sql` (in repo; production apply pending — see below) adds aggregate-only `forum_reactions` (member "Support" toggle via `forum_react_toggle`, counts via `forum_reaction_counts` on posts with the animated heart pop) and `reader_presence` (`/api/live/presence` beats with a random per-tab session hash; articles show "N people reading now"; no identity, pruned on each beat). Apply D-schema via MCP was interrupted by repeated tool-transport errors; DDL is verified in PGlite replay and must be applied before the two features go live (they degrade to hidden when unavailable).
+
+**Reading progress (comp 4):** the site-wide ScrollProgress bar already covers articles via the root layout.
+
+**Homepage phrases (comp 15):** "worth knowing/keeping/finding/connecting" strings are confirmed absent from source.
+
+**Validation so far:** `pnpm typecheck` 5/5; `pnpm test:node` 360 pass / 0 fail / 1 skip; `pnpm vitest run` 44 files / 128 pass; schema replay 28 pass (includes both new migrations).
