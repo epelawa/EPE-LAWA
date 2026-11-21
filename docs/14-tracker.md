@@ -1,8 +1,18 @@
 # EPE-LAWA — Implementation Tracker
 
-**Last checked:** 2026-11-21 (independent re-verification; see below for the current snapshot). Historical snapshots from 2026-11-18 and earlier are retained below as dated history.
+**Last checked:** 2026-11-23 (owner-connected execution; see the 2026-11-23 snapshot below and `docs/handoffs/2026-11-23-features-backlog-and-audit.md`). Historical snapshots from 2026-11-21 and earlier are retained below as dated history.
 
-## Verified status — 2026-11-21
+## Verified status — 2026-11-23
+
+Verified against `vibe/features-batch1-65dede` (PR #243) with owner-connected Supabase and Vercel MCP access.
+
+- PRs #239 (docs verification + forum fix + backup grants), #240 (orders/selling/payments UI removed everywhere), #241 (CSP enforced with per-request nonce — implements O8), #242 (all upload pickers as blur-backdrop modals) were merged by the owner. #240–#241 carried the green CI record.
+- PR #243 reconciled with merged `main` (only content conflict: `admin/app/(protected)/business-review/page.tsx` eyebrow rename + hours column, both kept) and carries the 20-feature program, the correction-reports feature, the "Epe Lawa" / `info.epelawa@gmail.com` site identity, and the admin hours editor. Typecheck 5/5, clean builds, 386 node + 128 Vitest tests, 0 failures.
+- Migrations `20261123010000_article_correction_reports.sql` and `20261123020000_article_correction_report_indexes.sql` were applied to production with owner authorization and verified live: table present, review-gated RLS, 0 reports, `set_updated_at` trigger attached, 5 indexes.
+- Owner decisions recorded: selling/checkout/in-app payments REMOVED from the product (advertisements paid manually off-platform, 2026-11); Paystack env values destroyed in Vercel via overwrite (hard deletion of the empty shells remains a owner action); `admin_member_delete` resolved live in the 2026-11-21 reconciliation.
+- Remaining backlog and half-built items are enumerated in `docs/handoffs/2026-11-23-features-backlog-and-audit.md`: push notifications (unmounted), AI Scheduler (`comingSoon`), live radio audio (Guts FM rights, O12), newsletter/sender email delivery (env identity + O7 decision), branch protection (O10), custom domain (O13), and the section 5 future enhancements.
+
+## Historical snapshot — 2026-11-21
 
 Verified independently against the repository and the live site (read-only; no production writes, no database access).
 
