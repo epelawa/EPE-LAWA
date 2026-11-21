@@ -52,6 +52,37 @@
 .compact .name { font-size: var(--ep-type-base, 16px); }
 .compact .action { min-height: var(--ep-touch-min, 44px); }
 .link:focus-visible { outline: 2px solid var(--ep-focus-ring, #477FE0); outline-offset: 3px; }
+/* Line-up mini banners: logo left, copy right. */
+.row { display: flex; align-items: center; gap: var(--ep-space-3, 12px); }
+.rowCopy { display: grid; gap: 2px; min-width: 0; }
+.rowCopy .name { font-size: var(--ep-type-base, 16px); }
+.logoImg {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  padding: 5px;
+  box-sizing: border-box;
+  border: var(--ep-space-hair, 1px) solid var(--ep-border-subtle);
+  border-radius: var(--ep-radius-sm, 10px);
+  background: #FFFFFF;
+  object-fit: contain;
+}
+.logoLetter {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border: var(--ep-space-hair, 1px) solid var(--ep-border-subtle);
+  border-radius: var(--ep-radius-sm, 10px);
+  background: var(--ep-primary);
+  color: var(--ep-primary-fg);
+  font-size: 1.5rem;
+  font-weight: var(--ep-weight-bold);
+}
+.compact .logoImg,
+.compact .logoLetter { width: 44px; height: 44px; }
 @media (prefers-reduced-motion: reduce) {
   .link,.link:hover,.action,.link:hover .action { animation-duration: var(--ep-motion-reduced, .01ms) !important; transition-duration: var(--ep-motion-reduced, .01ms) !important; transform: none !important; }
 }
