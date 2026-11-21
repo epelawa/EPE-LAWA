@@ -141,7 +141,7 @@ export async function CommentThread({ articleId, slug, notice }: Props) {
       {replies.get(comment.id)?.length ? <ol className="ui-list ui-stack-sm ui-subtle mt-4 rounded-xl border-l-2 p-4">{replies.get(comment.id)!.map(reply => <li key={reply.id} className="ui-item">
         <p className="ui-meta mb-2">Community member · <time dateTime={reply.created_at}>{stamp(reply.created_at)}</time></p>
         <CommentText comment={reply} noun="reply" />
-        {reply.state === "visible" || (user && reply.state === "visible" && ownIds.has(reply.id)) ? <div className={styles.commentActions}>
+        {reply.state === "visible" ? <div className={styles.commentActions}>
           {reply.state === "visible" ? <CommentVoteButton
             commentId={reply.id}
             initialCount={voteCounts.get(reply.id) ?? 0}

@@ -136,8 +136,8 @@ export default async function EditArticlePage({
     supabase.from("article_version_tags").select("tags(label)").eq("version_id", version.id).limit(12),
     supabase.rpc("has_capability", { p_capability: "article.review" }),
   ]);
-  const articleTags = (tagResult.data ?? [])
-    .map((row: { tags?: { label?: string } | null }) => row.tags?.label ?? "")
+  const articleTags = ((tagResult.data ?? []) as unknown as { tags?: { label?: string } | { label?: string }[] | null }[])
+    .map((row) => Array.isArray(row.tags) ? row.tags[0]?.label ?? "" : row.tags?.label ?? "")
     .filter(Boolean);
   const canReviewTags = reviewCapability.data === true;
 
