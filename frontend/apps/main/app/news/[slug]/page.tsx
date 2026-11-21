@@ -9,6 +9,7 @@ import { absoluteUrl, siteUrl } from "../../../lib/site";
 import { publishedNewsCover } from "../../../lib/published-news-cover";
 import { readPublishedArticleBody } from "../../../lib/published-article-body";
 import { formatPublishedDate } from "../../../lib/dates";
+import { CONTACT_EMAIL } from "../../../lib/site-identity";
 import { ArticleBody } from "../../../lib/editorial-body";
 import { loadArticleEngagement, type ArticleEngagement } from "../../../lib/article-engagement";
 import { CommentThread } from "../comment-thread";
@@ -200,7 +201,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
         <nav aria-label="Share this story" className={styles.shareLinks}><a href={`https://wa.me/?text=${encodeURIComponent(`${article.title} ${articleUrl}`)}`} target="_blank" rel="noopener noreferrer">Share on WhatsApp</a><a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(articleUrl)}`} target="_blank" rel="noopener noreferrer">Share on Facebook</a><a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(article.title)}&url=${encodeURIComponent(articleUrl)}`} target="_blank" rel="noopener noreferrer">Share on X</a><ArticleShareActions title={article.title} url={articleUrl} imageUrl={imageUrl} /></nav>
         <details className={styles.articleExtras}><summary>More story options</summary><OfflineArticleDownload article={{ slug: article.slug, title: article.title, summary: article.summary, publishedAt: article.published_at, author: article.author_name, category: article.category_label, sourceUrl: articleUrl }} /></details>
         {related.length ? <section className={styles.relatedSection} aria-labelledby="related-heading"><div className={styles.sectionHeading}><div><h2 id="related-heading">Related stories</h2></div></div><ul className={styles.relatedGrid}>{related.map((item) => { const relatedImage = publishedNewsCover(item)?.url; return <li className={styles.relatedCard} key={item.slug}><Link href={newsArticlePath(item.slug)} className={styles.relatedLink}><NewsImage className={styles.relatedImage} src={relatedImage} alt="" /><span className={styles.relatedCategory}>{item.category_label}</span><span className={styles.relatedTitle}>{item.title}</span></Link></li>; })}</ul></section> : null}
-        {signedIn ? <CorrectionForm articleId={article.id} articleTitle={article.title} /> : <p className={styles.correctionNote}>Spotted an error in this story? <Link href="/contact" className="ui-text-link">Suggest a correction</Link> through the contact desk, or email <a className="ui-text-link" href={`mailto:info.epelawa@gmail.com?subject=${encodeURIComponent(`Correction: ${article.title}`)}`}>info.epelawa@gmail.com</a>.</p>}
+        {signedIn ? <CorrectionForm articleId={article.id} articleTitle={article.title} /> : <p className={styles.correctionNote}>Spotted an error in this story? <Link href="/contact" className="ui-text-link">Suggest a correction</Link> through the contact desk, or email <a className="ui-text-link" href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`Correction: ${article.title}`)}`}>{CONTACT_EMAIL}</a>.</p>}
       </article></LayoutVariation>
     </PageFrame>
     </div>

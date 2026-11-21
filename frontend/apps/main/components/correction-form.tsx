@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import BrandedDialog from "./branded-dialog";
 import { reportCorrection, type CorrectionState } from "../app/news/[slug]/correction-actions";
+import { CONTACT_EMAIL } from "../lib/site-identity";
 import styles from "../app/news/news.module.css";
 
 const initialState: CorrectionState = { status: "idle", message: "" };
@@ -19,10 +20,10 @@ export default function CorrectionForm({ articleId, articleTitle }: { articleId:
   return (
     <div className={styles.correctionNote}>
       {state.status === "success" ? (
-        <p role="status">{state.message} <a className="ui-text-link" href="mailto:info.epelawa@gmail.com">info.epelawa@gmail.com</a> is always open too.</p>
+        <p role="status">{state.message} <a className="ui-text-link" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> is always open too.</p>
       ) : (
         <>
-          <p>Spotted an error in this story? <button className="ui-text-link" type="button" aria-haspopup="dialog" onClick={() => setOpen(true)}>Suggest a correction</button>, or email <a className="ui-text-link" href={`mailto:info.epelawa@gmail.com?subject=${encodeURIComponent(`Correction: ${articleTitle}`)}`}>info.epelawa@gmail.com</a>.</p>
+          <p>Spotted an error in this story? <button className="ui-text-link" type="button" aria-haspopup="dialog" onClick={() => setOpen(true)}>Suggest a correction</button>, or email <a className="ui-text-link" href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`Correction: ${articleTitle}`)}`}>{CONTACT_EMAIL}</a>.</p>
           {state.status === "error" ? <p role="alert">{state.message}</p> : null}
         </>
       )}

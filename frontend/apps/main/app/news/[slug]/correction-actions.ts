@@ -1,7 +1,7 @@
 "use server";
 
-import { createClient } from "../../../../lib/supabase";
-import { formRateAllowance, formRateLimitedMessage } from "../../../../lib/form-server";
+import { createClient } from "../../../lib/supabase";
+import { formRateAllowance, formRateLimitedMessage } from "../../../lib/form-server";
 
 export type CorrectionState = { status: "idle" | "success" | "error"; message: string };
 

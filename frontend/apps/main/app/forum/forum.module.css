@@ -100,3 +100,5 @@
   font-weight: 700;
   vertical-align: middle;
 }
+
+.postAvatar { border-radius: var(--ep-radius-pill); object-fit: cover; vertical-align: middle; flex-shrink: 0; }

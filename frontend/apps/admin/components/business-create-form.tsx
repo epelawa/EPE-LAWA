@@ -4,6 +4,7 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { staffCreateBusiness, type StaffCreateState } from "../app/(protected)/business-review/actions";
 import { pushToast } from "../../main/components/toast";
+import BusinessHoursEditor from "../../main/components/business-hours-editor";
 import UploadModalField from "./upload-modal-field";
 
 type Option = { id: string; label: string };
@@ -38,6 +39,7 @@ export default function BusinessCreateForm({ categories }: { categories: Option[
         <UploadModalField name="logo_file" label="Logo image (optional)" accept="image/jpeg,image/png,image/webp,image/avif" hint="JPEG, PNG, WebP or AVIF. The logo uploads through the EPE LAWA server when the listing is published." description="Choose a logo for this business from your device, or paste a logo link below." />
         <label className="ui-field"><span className="label">Or logo link (HTTPS)</span><input name="logo_url" maxLength={2048} className="input" placeholder="https://" /></label>
       </div>
+      <BusinessHoursEditor />
       <label className="ui-row"><input type="checkbox" name="verify" checked={verify} onChange={(event) => setVerify(event.currentTarget.checked)} /> Mark as Verified now</label>
       {verify ? <label className="ui-field"><span className="label">Verification evidence (at least 10 characters)</span><textarea name="evidence" rows={2} maxLength={2000} required className="input" /></label> : null}
       {state.message ? <p role={state.status === "error" ? "alert" : "status"} aria-live="polite">{state.message}</p> : null}
