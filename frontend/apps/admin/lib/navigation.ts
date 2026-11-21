@@ -18,7 +18,6 @@ const sectionPages: NavItem[] = [
   { label: "Radio", href: "/radio", hint: "Programmes, rights, episodes and schedule", primary: true },
   { label: "People", href: "/people", hint: "Who is Who records" },
   { label: "Enquiries", href: "/enquiries", hint: "Restricted private messages and corrections" },
-  { label: "Media", href: "/media", hint: "R2 media uploads and credits" },
 ];
 
 export function mainNavigation(): NavItem[] {
