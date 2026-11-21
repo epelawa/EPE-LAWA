@@ -25,7 +25,7 @@ export default function PrivacyPage() {
       <h3>2.1 Information you give us directly</h3>
       <p><strong>Member accounts.</strong> When you create an account we collect your email address, password (stored only as a cryptographic hash), display name and handle. Authentication is handled by Supabase.</p>
       <p><strong>Community content.</strong> Comments, forum posts, discussion titles and other material you choose to publish, together with your display name and handle.</p>
-      <p><strong>Contributions and submissions.</strong> History, tourism and business contributions you send for review, including any source notes, media and rights information you provide. Marketplace and business-order requests may include contact and delivery details.</p>
+      <p><strong>Contributions and submissions.</strong> History, tourism and business contributions you send for review, including any source notes, media and rights information you provide.</p>
       <p><strong>Enquiries.</strong> {intake ? "When you use the contact, advertising, support or correction forms we store your name, email address, phone numbers you choose to share, and your message, privately, for staff review." : "Contact and support forms are currently unavailable, so no message can be submitted through them."} Our acknowledgement emails are best-effort; delivery is not guaranteed.</p>
 
       <h3>2.2 Information collected automatically</h3>

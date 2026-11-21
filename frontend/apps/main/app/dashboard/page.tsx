@@ -64,7 +64,6 @@ const notificationKinds: Record<string, string> = {
   forum_reply: "Forum reply",
   news_published: "Newsroom",
   radio_live: "Radio",
-  order_status: "Order",
   moderation: "Moderation",
   admin_message: "EPE LAWA message",
 };

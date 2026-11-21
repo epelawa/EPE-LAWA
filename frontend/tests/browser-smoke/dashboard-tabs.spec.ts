@@ -77,7 +77,7 @@ test("member services live in the compact menu", async ({ page, request }) => {
   await page.getByRole("button", { name: "Open member menu" }).click();
   const menu = page.getByRole("dialog", { name: "Your EPE LAWA" });
   const services = menu.getByRole("navigation", { name: "Member services" });
-  for (const [name, href] of [["Community forum", "/forum"], ["Order requests", "/business-directory/orders"], ["Explore EPE LAWA", "/"]]) {
+  for (const [name, href] of [["Community forum", "/forum"], ["Explore EPE LAWA", "/"]]) {
     await expect(services.getByRole("link", { name: new RegExp(name) })).toHaveAttribute("href", href);
   }
   await page.keyboard.press("Escape");

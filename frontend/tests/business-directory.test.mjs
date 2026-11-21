@@ -5,7 +5,7 @@ const migration = await readFile(new URL('../../backend/supabase/migrations/2026
 const memberAction = await readFile(new URL('../apps/main/app/business-directory/submit/actions.ts', import.meta.url), 'utf8');
 const staffPage = await readFile(new URL('../apps/admin/app/(protected)/business-review/page.tsx', import.meta.url), 'utf8');
 const directoryPage = await readFile(new URL('../apps/main/app/business-directory/page.tsx', import.meta.url), 'utf8');
-const orderAction = await readFile(new URL('../apps/main/app/business-directory/order-actions.ts', import.meta.url), 'utf8');
+const detailPage = await readFile(new URL('../apps/main/app/business-directory/[slug]/page.tsx', import.meta.url), 'utf8');
 const reviewAction = await readFile(new URL('../apps/main/app/business-directory/review-actions.ts', import.meta.url), 'utf8');
 test('member submissions require verified auth and use the forced-unpublished RPC', () => {
  assert.match(memberAction, /auth\.getUser\(\)/); assert.match(memberAction, /email_confirmed_at/); assert.match(memberAction, /rpc\("business_submit"/);
@@ -27,10 +27,19 @@ test('member review insert policy requires active non-banned member and publishe
  assert.match(policy, /is_member_active\(\)/); assert.match(policy, /not public\.is_member_banned\(\)/); assert.match(policy, /b\.status = 'published'/);
 });
 
-test('discovery page does not expose marketplace order or review forms', () => {
- assert.doesNotMatch(directoryPage, /OrderRequestForm|submitBusinessReview/);
+test('discovery page does not expose inline review forms', () => {
+ assert.doesNotMatch(directoryPage, /submitBusinessReview/);
  assert.match(directoryPage, /business_discovery_search/);
  assert.match(directoryPage, /We couldn’t load the directory/);
+});
+
+test('business profile review visibility is gated on moderation with reason and audit trail', async () => {
+ const moderationMigration = await readFile(new URL('../../backend/supabase/migrations/20261107220500_marketplace_requests_moderation.sql', import.meta.url), 'utf8');
+ assert.match(moderationMigration, /state='pending'/);
+ assert.match(moderationMigration, /business_review_moderation_history/);
+ assert.match(moderationMigration, /p_reason/);
+ assert.doesNotMatch(detailPage, /submitBusinessReview/);
+ assert.doesNotMatch(detailPage, /active_business_sponsorships/);
 });
 
 test('staff can publish a directory listing directly — guarded, audited, no draft', async () => {
