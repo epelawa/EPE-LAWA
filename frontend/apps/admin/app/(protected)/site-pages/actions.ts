@@ -6,8 +6,6 @@ import { createClient } from "../../../lib/supabase";
 import { publicMediaUrl } from "../../../../main/lib/media";
 import { mediaExtensionFor, putMediaObject } from "../../../lib/media-r2";
 
-export const dynamic = "force-dynamic";
-
 const PAGES = new Set(["about", "privacy", "terms", "guidelines"]);
 const PHOTO_MAX_BYTES = 10_485_760;
 const PHOTO_SLOTS = 3;
