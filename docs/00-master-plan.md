@@ -12,7 +12,7 @@ EPE LAWA is a web-first community, news, heritage, civic-discussion and commerce
 2. Itan Ilu Mi / My Community History
 3. Chat Forum / Digital Village Square
 4. Map & Navigation
-5. Epe Business Directory & Marketplace
+5. Epe Business Directory
 6. Historical Sites & Tourism
 7. EPE LAWA Radio
 8. Who is Who in Epe
@@ -26,9 +26,9 @@ Keep the client brief section 5 future enhancements represented in the complete 
 
 ## Editorial, test and integration rules
 
-A verified active staff member with `article.publish` may publish directly; a second reviewer is not required. Every transition must use the expected current revision; stale revisions are denied, and transitions are audited. Private drafts and test content stay private in isolated environments. Production checks are read-only; no production test articles, orders or payments.
+A verified active staff member with `article.publish` may publish directly; a second reviewer is not required. Every transition must use the expected current revision; stale revisions are denied, and transitions are audited. Private drafts and test content stay private in isolated environments. Production checks are read-only; no production test articles. Selling, checkout and in-app payments were removed from the product by owner decision (2026-11); advertisements are paid manually off-platform.
 
-The current Map page builds safe outbound Google Maps search/directions URLs. There is no configured Google Maps API key or verified Places/geocoding integration; do not claim full Maps API integration. Offline maps are optional future work. Email and Paystack provider operations are unconfirmed and must not be described as ready without evidence.
+The current Map page builds safe outbound Google Maps search/directions URLs. There is no configured Google Maps API key or verified Places/geocoding integration; do not claim full Maps API integration. Offline maps are optional future work. Email provider operations are unconfirmed and must not be described as ready without evidence. Paystack and all selling/payment integrations were removed by owner decision.
 
 ## Delivery and verification
 
