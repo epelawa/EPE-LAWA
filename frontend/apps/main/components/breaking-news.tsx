@@ -4,7 +4,7 @@ import { Fragment, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { newsArticlePath } from "../lib/news-urls";
 import { StatusBadge } from "./design-system";
-import styles from "../app/news/listing.module.css";
+import tickerStyles from "./home-breaking-ticker.module.css";
 
 type BreakingStory = { slug: string; title: string; published_at: string | null; breaking_until: string | null };
 
@@ -34,10 +34,19 @@ export function BreakingNewsBanner({ stories, initialTime }: { stories: Breaking
   const now = useCurrentTime(initialTime, stories.map(story => story.breaking_until));
   const active = stories.filter(story => story.breaking_until && Date.parse(story.breaking_until) > now);
   if (!active.length) return null;
-  return <section className={styles.breakingBanner} aria-label="Breaking news">
-    <span className={styles.breakingLabel}><span aria-hidden="true" className={styles.liveDot} /> Breaking news</span>
-    <ul>{active.map(story => <li key={story.slug}><Link href={newsArticlePath(story.slug)}>{story.title}</Link>{story.published_at ? <time dateTime={story.published_at}>{new Date(story.published_at).toUTCString()}</time> : null}</li>)}</ul>
+  return <section className={`${tickerStyles.banner} ${tickerStyles.narrow}`} aria-label="Breaking news">
+    <div className={tickerStyles.label}><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 10v4h4l10 5V5L7 10H3ZM7 14l2 6h3l-1.5-4.5M20 9v6"/></svg><span>Breaking news</span></div>
+    <div className={tickerStyles.viewport}>
+      <div className={tickerStyles.track}>
+        <ul className={tickerStyles.items}>{active.map(story => <li key={story.slug}><TickerBullet /><Link href={newsArticlePath(story.slug)}>{story.title}</Link>{story.published_at ? <time dateTime={story.published_at}>{new Date(story.published_at).toUTCString()}</time> : null}</li>)}</ul>
+        <ul className={`${tickerStyles.items} ${tickerStyles.duplicate}`} aria-hidden="true">{active.map(story => <li key={story.slug}><TickerBullet /><Link href={newsArticlePath(story.slug)} tabIndex={-1}>{story.title}</Link>{story.published_at ? <time dateTime={story.published_at}>{new Date(story.published_at).toUTCString()}</time> : null}</li>)}</ul>
+      </div>
+    </div>
   </section>;
+}
+
+function TickerBullet() {
+  return <svg aria-hidden="true" viewBox="0 0 12 12" fill="currentColor"><circle cx="6" cy="6" r="4" /></svg>;
 }
 
 export function BreakingBadge({ until, initialTime }: { until: string | null; initialTime: number }) {

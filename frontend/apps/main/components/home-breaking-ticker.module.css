@@ -33,6 +33,13 @@
 .items li svg { width: 10px; height: 10px; flex: none; color: var(--palette-ice-blue); }
 .items a { color: var(--palette-cloud); font-weight: var(--ep-weight-semibold); text-decoration: none; }
 .items a:hover,.items a:focus-visible { text-decoration: underline; }
+/* News-page variant: one compact centred bar, so several breaking stories
+   slide in the same strip and the listing stays easy to read. */
+.narrow {
+  width: min(680px, 100%);
+  margin-inline: auto;
+}
+.items time { flex: none; color: var(--palette-ice-blue); font-size: var(--ep-hint-min, 12px); font-weight: 400; }
 /* WCAG 2.2.2: auto-scroll lasts >5s, so keyboard focus into a link pauses it.
    No visible button: it read as "paused" to users when the ticker was playing. */
 .banner:focus-within .track { animation-play-state:paused; }

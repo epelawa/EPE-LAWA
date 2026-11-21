@@ -20,7 +20,7 @@ export function HomeBreakingTicker({stories,initialTime}:{stories:HomeBreakingSt
  },[expiryKey]);
  const active=stories.filter(s=>s.breaking_until && Date.parse(s.breaking_until)>now);
  if(!active.length)return null;
- return <section className={`ep-container ${styles.banner}`} aria-label="Breaking news">
+ return <section className={`ep-container ${styles.banner} ${styles.narrow}`} aria-label="Breaking news">
   <div className={styles.label}><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 10v4h4l10 5V5L7 10H3ZM7 14l2 6h3l-1.5-4.5M20 9v6"/></svg><span>Breaking news</span></div>
   <div className={styles.viewport}>
    <div className={styles.track}>
