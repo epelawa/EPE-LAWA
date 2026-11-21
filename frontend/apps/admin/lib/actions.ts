@@ -4,7 +4,6 @@ import { redirect } from "next/navigation";
 import { createClient } from "./supabase";
 import { adminHref } from "./admin-path";
 import { hasConfirmedArticleUnpublish } from "./article-publication-state";
-import { isNewsCoverKey } from "../../main/lib/news-covers";
 import { publicMediaUrl } from "../../main/lib/media";
 import { normalizeExternalNewsCoverUrl } from "../../main/lib/news-cover-url.mjs";
 import { mediaExtensionFor, putMediaObject } from "./media-r2";
@@ -29,7 +28,6 @@ type ArticleFields = CoverFields & {
   categoryId: string;
   seoTitle: string | null;
   seoDescription: string | null;
-  ogImageKey: string | null;
 };
 
 function rawText(formData: FormData, name: string): string {
@@ -106,11 +104,9 @@ async function storeCoverUpload(formData: FormData, file: File): Promise<StoredC
   }
   return { fields: { ...meta.fields, coverUrl: publicUrl } };
 }
-function coverFields(formData: FormData, rawCoverKey: string): CoverFields | null {
+function coverFields(formData: FormData): CoverFields | null {
   const rawUrl = rawText(formData, "coverUrl");
   if (rawUrl.length > 2048) return null;
-  // Selecting a catalog cover, or explicitly clearing the cover URL, clears remote metadata.
-  if (rawCoverKey) return rawUrl ? null : nullCoverFields();
   if (!rawUrl) return nullCoverFields();
 
   const url = normalizeExternalNewsCoverUrl(rawUrl);
@@ -136,13 +132,11 @@ function coverFields(formData: FormData, rawCoverKey: string): CoverFields | nul
   };
 }
 function invalidCover(formData: FormData): boolean {
-  const rawCoverKey = rawText(formData, "ogImageKey");
-  if (rawCoverKey && !isNewsCoverKey(rawCoverKey)) return true;
   const linkedUrl = rawText(formData, "coverUrl");
   const upload = coverUploadFile(formData);
-  if ((rawCoverKey && linkedUrl) || (rawCoverKey && upload) || (linkedUrl && upload)) return true;
+  if (linkedUrl && upload) return true;
   if (upload) return uploadedCoverMetadata(formData).state === "error";
-  return coverFields(formData, rawCoverKey) === null;
+  return coverFields(formData) === null;
 }
 function articleBody(value: string): Record<string, unknown> | null {
   const source = value.trim();
@@ -171,9 +165,7 @@ function articleFields(formData: FormData): ArticleFields | null {
   const body = articleBody(text(formData, "body", 100_000));
   const authorId = text(formData, "authorId", 64);
   const categoryId = text(formData, "categoryId", 64);
-  const rawCover = text(formData, "ogImageKey", 64);
-  if (rawCover && !isNewsCoverKey(rawCover)) return null;
-  const cover = coverFields(formData, rawCover);
+  const cover = coverFields(formData);
   if (!cover) return null;
   if (
     !UUID.test(articleId) || !Number.isSafeInteger(revision) || revision < 1 ||
@@ -189,7 +181,6 @@ function articleFields(formData: FormData): ArticleFields | null {
     categoryId,
     seoTitle: text(formData, "seoTitle", 70) || null,
     seoDescription: text(formData, "seoDescription", 200) || null,
-    ogImageKey: rawCover || null,
     ...cover,
   };
 }
@@ -219,20 +210,17 @@ async function createArticleCore(formData: FormData): Promise<{ status: "error" 
   const categoryId = text(formData, "categoryId", 64);
   const seoTitle = text(formData, "seoTitle", 70) || null;
   const seoDescription = text(formData, "seoDescription", 200) || null;
-  const rawCover = text(formData, "ogImageKey", 64);
-  if (rawCover && !isNewsCoverKey(rawCover)) return { status: "error", message: "Choose a valid approved cover." };
   const coverUpload = coverUploadFile(formData);
-  if (coverUpload && (rawCover || rawText(formData, "coverUrl"))) return { status: "error", message: "Choose only one cover source: an approved cover, a link or an upload." };
+  if (coverUpload && rawText(formData, "coverUrl")) return { status: "error", message: "Choose only one cover source: a link or an upload, not both." };
   let cover: CoverFields | null = null;
   if (coverUpload) {
     const stored = await storeCoverUpload(formData, coverUpload);
     if ("error" in stored) return { status: "error", message: stored.error };
     cover = stored.fields;
   } else {
-    cover = coverFields(formData, rawCover);
-    if (!cover) return { status: "error", message: "Choose one cover source and supply a safe HTTPS image, alt text, credit, source and license." };
+    cover = coverFields(formData);
+    if (!cover) return { status: "error", message: "To add a cover image, link a safe HTTPS image with alt text, credit, source and license." };
   }
-  const ogImageKey = coverUpload ? null : rawCover || null;
   if (!title || !body || !UUID.test(authorId) || !UUID.test(categoryId)) return { status: "error", message: "Add a headline, article body, author and category." };
 
   let articleId: string | null = null;
@@ -248,7 +236,6 @@ async function createArticleCore(formData: FormData): Promise<{ status: "error" 
       p_category_id: categoryId,
       p_seo_title: seoTitle,
       p_seo_description: seoDescription,
-      p_og_image_key: ogImageKey,
       ...coverRpcFields(cover),
     });
     if (result.error) errorCode = result.error.code;
@@ -292,7 +279,7 @@ async function saveDraftCore(formData: FormData): Promise<EditResult> {
   if (coverUpload) {
     const stored = await storeCoverUpload(formData, coverUpload);
     if ("error" in stored) return { status: "error", message: stored.error };
-    Object.assign(fields, stored.fields, { ogImageKey: null });
+    Object.assign(fields, stored.fields);
   }
 
   let errorCode: string | null = null;
@@ -309,7 +296,6 @@ async function saveDraftCore(formData: FormData): Promise<EditResult> {
       p_category_id: fields.categoryId,
       p_seo_title: fields.seoTitle,
       p_seo_description: fields.seoDescription,
-      p_og_image_key: fields.ogImageKey,
       ...coverRpcFields(fields),
     });
     if (saved.error) errorCode = saved.error.code;
@@ -336,7 +322,7 @@ async function reviseArticleCore(formData: FormData): Promise<EditResult> {
   if (revisionUpload) {
     const stored = await storeCoverUpload(formData, revisionUpload);
     if ("error" in stored) return { status: "error", message: stored.error };
-    Object.assign(fields, stored.fields, { ogImageKey: null });
+    Object.assign(fields, stored.fields);
   }
 
   let errorCode: string | null = null;
@@ -353,7 +339,6 @@ async function reviseArticleCore(formData: FormData): Promise<EditResult> {
       p_category_id: fields.categoryId,
       p_seo_title: fields.seoTitle,
       p_seo_description: fields.seoDescription,
-      p_og_image_key: fields.ogImageKey,
       ...coverRpcFields(fields),
     });
     if (error) errorCode = error.code;

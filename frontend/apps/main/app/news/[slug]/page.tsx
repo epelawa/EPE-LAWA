@@ -7,7 +7,6 @@ import { newsArticlePath, publicNewsArticleUrl } from "../../../lib/news-urls";
 import { absoluteUrl, siteUrl } from "../../../lib/site";
 import { publishedNewsCover } from "../../../lib/published-news-cover";
 import { readPublishedArticleBody } from "../../../lib/published-article-body";
-import { selectedNewsCover } from "../../../lib/news-covers";
 import { formatPublishedDate } from "../../../lib/dates";
 import { ArticleBody } from "../../../lib/editorial-body";
 import { loadArticleEngagement, type ArticleEngagement } from "../../../lib/article-engagement";
@@ -34,7 +33,6 @@ type PublishedArticle = {
   breaking_until: string | null;
   seo_title: string | null;
   seo_description: string | null;
-  og_image_key: string | null;
   cover_url: string | null;
   cover_alt: string | null;
   cover_credit: string | null;
@@ -49,7 +47,6 @@ type RelatedArticle = {
   title: string;
   summary: string | null;
   published_at: string | null;
-  og_image_key: string | null;
   cover_url: string | null;
   cover_alt: string | null;
   category_label: string;
@@ -61,7 +58,7 @@ const loadArticle = cache(async (slug: string): Promise<ArticleResult> => {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("published_articles")
-      .select("id,slug,title,summary,published_at,is_breaking,breaking_until,seo_title,seo_description,og_image_key,cover_url,cover_alt,cover_credit,cover_caption,author_name,author_slug,category_slug,category_label")
+      .select("id,slug,title,summary,published_at,is_breaking,breaking_until,seo_title,seo_description,cover_url,cover_alt,cover_credit,cover_caption,author_name,author_slug,category_slug,category_label")
       .eq("slug", slug)
       .maybeSingle();
     if (error) {
@@ -123,7 +120,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
     const supabase = await createClient();
     const [bodyResult, relatedResult, sessionResult, commentCountResult, savedResult, engagementResult] = await Promise.all([
       readPublishedArticleBody(supabase, article.id),
-      supabase.from("published_articles").select("slug,title,summary,published_at,og_image_key,cover_url,cover_alt,category_label").eq("category_slug", article.category_slug).neq("slug", article.slug).order("published_at", { ascending: false, nullsFirst: false }).order("slug", { ascending: true }).limit(3),
+      supabase.from("published_articles").select("slug,title,summary,published_at,cover_url,cover_alt,category_label").eq("category_slug", article.category_slug).neq("slug", article.slug).order("published_at", { ascending: false, nullsFirst: false }).order("slug", { ascending: true }).limit(3),
       supabase.auth.getUser(),
       supabase.from("comments").select("id", { count: "exact", head: true }).eq("article_id", article.id).eq("state", "visible"),
       supabase.from("saved_articles").select("id", { count: "exact", head: true }).eq("article_id", article.id),
@@ -146,7 +143,6 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
   }
 
   const articleUrl = publicNewsArticleUrl(article.slug);
-  const cover = selectedNewsCover(article.og_image_key);
   const publishedCover = publishedNewsCover(article);
   const imageUrl = publishedCover?.url;
   const date = formatPublishedDate(article.published_at);
@@ -180,11 +176,11 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
             {!signedIn ? <div className={styles.publicStoryMeta}><ArticleByline name={article.author_name} />{date ? <time dateTime={article.published_at ?? undefined}>{date}</time> : null}</div> : null}
           </div>
           <div className={styles.articleCoverFrame}>
-            <NewsImage className={`${styles.articleHeroImage} ${cover ? styles.approvedCoverFull : ""}`} src={imageUrl} alt={publishedCover?.alt ?? ""} loading="eager" fetchPriority="high" />
+            <NewsImage className={styles.articleHeroImage} src={imageUrl} alt={publishedCover?.alt ?? ""} loading="eager" fetchPriority="high" />
             <ArticleCoverStats body={body} engagement={engagement} commentCount={commentCount} />
           </div>
         </header>
-        {cover ? <p className={styles.coverCredit}>Illustrative image. <Link href="/photo-credits#news-photos">Photo credits</Link></p> : article.cover_credit && imageUrl ? <p className={styles.coverCredit}>{article.cover_caption ? `${article.cover_caption} · ` : ""}Photo: {article.cover_credit}</p> : null}
+        {article.cover_credit && imageUrl ? <p className={styles.coverCredit}>{article.cover_caption ? `${article.cover_caption} · ` : ""}Photo: {article.cover_credit}</p> : null}
 
         {signedIn ? <div className={styles.articleMetaBar} aria-label="Story details">
           <span className={styles.byline}><ArticleByline name={article.author_name} /></span>
@@ -198,7 +194,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
         <CommentDock articleId={article.id} slug={article.slug} count={commentCount} signedIn={signedIn} signInHref={signInHref} />
         <nav aria-label="Share this story" className={styles.shareLinks}><a href={`https://wa.me/?text=${encodeURIComponent(`${article.title} ${articleUrl}`)}`} target="_blank" rel="noopener noreferrer">Share on WhatsApp</a><a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(articleUrl)}`} target="_blank" rel="noopener noreferrer">Share on Facebook</a><ArticleShareActions title={article.title} url={articleUrl} imageUrl={imageUrl} /></nav>
         <details className={styles.articleExtras}><summary>More story options</summary><OfflineArticleDownload article={{ slug: article.slug, title: article.title, summary: article.summary, publishedAt: article.published_at, author: article.author_name, category: article.category_label, sourceUrl: articleUrl }} /></details>
-        {related.length ? <section className={styles.relatedSection} aria-labelledby="related-heading"><div className={styles.sectionHeading}><div><h2 id="related-heading">Related stories</h2></div></div><ul className={styles.relatedGrid}>{related.map((item) => { const relatedCover = selectedNewsCover(item.og_image_key); const relatedImage = publishedNewsCover(item)?.url; return <li className={styles.relatedCard} key={item.slug}><Link href={newsArticlePath(item.slug)} className={styles.relatedLink}><NewsImage className={`${styles.relatedImage} ${relatedCover ? styles.approvedCoverThumb : ""}`} src={relatedImage} alt="" /><span className={styles.relatedCategory}>{item.category_label}</span><span className={styles.relatedTitle}>{item.title}</span></Link></li>; })}</ul></section> : null}
+        {related.length ? <section className={styles.relatedSection} aria-labelledby="related-heading"><div className={styles.sectionHeading}><div><h2 id="related-heading">Related stories</h2></div></div><ul className={styles.relatedGrid}>{related.map((item) => { const relatedImage = publishedNewsCover(item)?.url; return <li className={styles.relatedCard} key={item.slug}><Link href={newsArticlePath(item.slug)} className={styles.relatedLink}><NewsImage className={styles.relatedImage} src={relatedImage} alt="" /><span className={styles.relatedCategory}>{item.category_label}</span><span className={styles.relatedTitle}>{item.title}</span></Link></li>; })}</ul></section> : null}
         <p className={styles.correctionNote}>Correction reporting is not available through this site yet. <Link href="/contact" className="ui-text-link">View contact availability</Link>.</p>
       </article></LayoutVariation>
     </PageFrame>

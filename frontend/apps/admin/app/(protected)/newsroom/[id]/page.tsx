@@ -8,7 +8,6 @@ import { createClient } from "../../../../lib/supabase";
 import { publishArticle, reviseArticle, saveDraft, reviseArticleWithFeedback, saveDraftWithFeedback, setArticleBreaking, unpublishArticle } from "../../../../lib/actions";
 import { adminHref } from "../../../../lib/admin-path";
 import { articlePublicationState } from "../../../../lib/article-publication-state";
-import { NEWS_COVERS, isNewsCoverKey } from "../../../../../main/lib/news-covers";
 import NewsroomToast from "../../../../components/newsroom-toast";
 import NewsCoverUrlFields from "../../../../components/news-cover-url-fields";
 import { coverUploadState } from "../../../../lib/media-r2";
@@ -34,7 +33,6 @@ type ArticleVersion = {
   created_by: string;
   seo_title: string | null;
   seo_description: string | null;
-  og_image_key: string | null;
   cover_url: string | null;
   cover_alt: string | null;
   cover_credit: string | null;
@@ -100,7 +98,7 @@ export default async function EditArticlePage({
     supabase.from("articles").select(`
       id, slug, revision, current_version_id, published_version_id, published_at, is_breaking, breaking_until,
         current_version:article_versions!current_version_id(
-        id,title,summary,body,state,version_number,author_id,category_id,created_by,seo_title,seo_description,og_image_key,
+        id,title,summary,body,state,version_number,author_id,category_id,created_by,seo_title,seo_description,
         cover_url,cover_alt,cover_credit,cover_source_url,cover_license_url,cover_caption
       )
     `).eq("id", id).maybeSingle(),
@@ -177,7 +175,6 @@ export default async function EditArticlePage({
               </div>
               </> },
               { title: "Cover and search", content: <>
-              <div className="ui-field"><label className="label" htmlFor="ogImageKey">Approved cover (optional)</label><select id="ogImageKey" name="ogImageKey" className="input" defaultValue={isNewsCoverKey(version.og_image_key) ? version.og_image_key : ""}><option value="">No cover</option>{Object.entries(NEWS_COVERS).map(([key, cover]) => <option key={key} value={key}>{cover.title} — {cover.credit}</option>)}</select><p className="ui-meta">Approved, unmodified Commons images only.</p></div>
               <NewsCoverUrlFields idPrefix="edit-cover" uploadAvailable={coverUploadState().state === "ready"} initial={{ url: version.cover_url, alt: version.cover_alt, credit: version.cover_credit, sourceUrl: version.cover_source_url, licenseUrl: version.cover_license_url, caption: version.cover_caption }} />
               <div className="ui-form-grid">
                 <div className="ui-field"><label className="label" htmlFor="seoTitle">Search title</label><input id="seoTitle" name="seoTitle" className="input" maxLength={70} defaultValue={version.seo_title ?? ""} /></div>

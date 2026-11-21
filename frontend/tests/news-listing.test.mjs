@@ -21,8 +21,6 @@ test("News queries only published stories and active real categories", () => {
   assert.match(page, /rpc\("search_published_news"/);
   assert.match(page, /from\("categories"\)/);
   assert.match(page, /\.eq\("is_active", true\)/);
-  assert.match(page, /og_image_key/);
-  assert.match(page, /og_image_key,cover_url,cover_alt/);
   assert.doesNotMatch(page, /from\("articles"\)|service_role/);
 });
 

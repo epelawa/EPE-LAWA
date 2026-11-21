@@ -23,9 +23,9 @@ const fixtureAccessToken = "browser-smoke-access-token";
 function fixtureStories() {
   const now = Date.now();
   return [
-    { id: "00000000-0000-4000-8000-000000000101", slug: "smoke-breaking-story", title: "Smoke fixture: breaking headline", summary: "Synthetic browser-test content only.", published_at: new Date(now - 5 * 60_000).toISOString(), is_breaking: true, breaking_until: new Date(now + 60 * 60_000).toISOString(), author_name: "Browser fixture", category_slug: "local-news", category_label: "Local News", og_image_key: null },
-    { id: "00000000-0000-4000-8000-000000000102", slug: "smoke-market-story", title: "Smoke fixture: market story", summary: "Synthetic searchable story for local browser tests.", published_at: new Date(now - 15 * 60_000).toISOString(), is_breaking: false, breaking_until: null, author_name: "Browser fixture", category_slug: "local-news", category_label: "Local News", og_image_key: null },
-    { id: "00000000-0000-4000-8000-000000000103", slug: "smoke-sports-story", title: "Smoke fixture: sports story", summary: "Synthetic category-filter story for local browser tests.", published_at: new Date(now - 25 * 60_000).toISOString(), is_breaking: false, breaking_until: null, author_name: null, category_slug: "sports", category_label: null, og_image_key: "unapproved/synthetic-cover.jpg" },
+    { id: "00000000-0000-4000-8000-000000000101", slug: "smoke-breaking-story", title: "Smoke fixture: breaking headline", summary: "Synthetic browser-test content only.", published_at: new Date(now - 5 * 60_000).toISOString(), is_breaking: true, breaking_until: new Date(now + 60 * 60_000).toISOString(), author_name: "Browser fixture", category_slug: "local-news", category_label: "Local News" },
+    { id: "00000000-0000-4000-8000-000000000102", slug: "smoke-market-story", title: "Smoke fixture: market story", summary: "Synthetic searchable story for local browser tests.", published_at: new Date(now - 15 * 60_000).toISOString(), is_breaking: false, breaking_until: null, author_name: "Browser fixture", category_slug: "local-news", category_label: "Local News" },
+    { id: "00000000-0000-4000-8000-000000000103", slug: "smoke-sports-story", title: "Smoke fixture: sports story", summary: "Synthetic category-filter story for local browser tests.", published_at: new Date(now - 25 * 60_000).toISOString(), is_breaking: false, breaking_until: null, author_name: null, category_slug: "sports", category_label: null },
   ];
 }
 
@@ -35,7 +35,7 @@ function filteredStories(url) {
     id: `00000000-0000-4000-8000-${String(index + 201).padStart(12, "0")}`, slug: `test-story-${index + 1}`, title: `Test story ${index + 1}`,
     summary: "Synthetic browser-test content only.", published_at: new Date(Date.now() - index * 60000).toISOString(), is_breaking: mode === "news-many-breaking" && index >= 33, breaking_until: mode === "news-many-breaking" && index >= 33 ? new Date(Date.now() + (index === 33 ? 3600000 : -3600000)).toISOString() : null,
     author_name: "Browser fixture", category_slug: index % 2 ? "sports" : "local-news", category_label: index % 2 ? "Sports" : "Local News",
-    og_image_key: null, cover_url: index === 0 ? "https://images.example.com/test-cover.jpg" : null, cover_alt: index === 0 ? "Synthetic cover" : null, cover_credit: index === 0 ? "Test photographer" : null, cover_caption: null,
+    cover_url: index === 0 ? "https://images.example.com/test-cover.jpg" : null, cover_alt: index === 0 ? "Synthetic cover" : null, cover_credit: index === 0 ? "Test photographer" : null, cover_caption: null,
   }));
   const slug = url.searchParams.get("slug");
   if (slug?.startsWith("eq.")) stories = stories.filter((story) => story.slug === slug.slice(3));

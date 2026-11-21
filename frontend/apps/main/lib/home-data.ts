@@ -4,7 +4,6 @@ import { publishedNewsCover } from "./published-news-cover";
 export type StoryCover = {
   src: string;
   alt: string;
-  illustrative: boolean;
 };
 
 export type LatestStory = {
@@ -29,7 +28,6 @@ type PublishedStoryRow = {
   breaking_until: string | null;
   category_label: string | null;
   author_name: string | null;
-  og_image_key: string | null;
   cover_url: string | null;
   cover_alt: string | null;
 };
@@ -40,7 +38,7 @@ export type PublicListResult<T> =
 
 function creditedCover(row: PublishedStoryRow): StoryCover | null {
   const cover = publishedNewsCover(row);
-  return cover ? { src: cover.url, alt: cover.alt, illustrative: cover.illustrative } : null;
+  return cover ? { src: cover.url, alt: cover.alt } : null;
 }
 
 /** Read only the verified public article projection; errors never masquerade as an empty newsroom. */
@@ -49,7 +47,7 @@ export async function getLatestStories(limit = 3): Promise<PublicListResult<Late
     const supabase = await createClient();
     const count = Math.max(0, Math.min(Math.trunc(limit), 20));
     if (!count) return { state: "ok", items: [] };
-    const columns = "id,slug,title,summary,published_at,is_breaking,breaking_until,category_label,author_name,og_image_key,cover_url,cover_alt";
+    const columns = "id,slug,title,summary,published_at,is_breaking,breaking_until,category_label,author_name,cover_url,cover_alt";
     const latest = await supabase.from("published_articles").select(columns)
       .order("published_at", { ascending: false, nullsFirst: false }).order("slug", { ascending: true }).limit(count);
     if (latest.error) {

@@ -1,9 +1,7 @@
-import { isNewsCoverKey, NEWS_COVERS } from "./news-covers";
 /** Convert an R2 object key to the configured public CDN URL, or return null when unavailable. */
 export function publicMediaUrl(value: string | null | undefined): string | null {
   if (typeof value !== "string") return null;
   const key = value.trim();
-  if (isNewsCoverKey(key)) return NEWS_COVERS[key].url;
   if (!key || key.startsWith("/") || key.includes("\\")) return null;
 
   const segments = key.split("/");

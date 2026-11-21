@@ -6,10 +6,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createArticle, createArticleWithFeedback } from "../lib/actions";
 import { adminHref } from "../lib/admin-path";
-import { absoluteUrl } from "../../main/lib/site";
 import { normalizeExternalNewsCoverUrl } from "../../main/lib/news-cover-url.mjs";
 import { suggestNewsHashtags } from "../lib/news-hashtags";
-import { NEWS_COVERS, selectedNewsCover } from "../../main/lib/news-covers";
 import NewsCoverUrlFields from "./news-cover-url-fields";
 import AuthorPicker from "./author-picker";
 import SessionRecovery, { clearSessionRecovery } from "./session-recovery";
@@ -54,19 +52,17 @@ export default function NewsArticleComposer({ categories, authors, recoveryActor
     }
   }
   useEffect(() => () => releasePreviewBlob(), []);
-  const [preview, setPreview] = useState({ title: "", summary: "", body: "", category: "", author: "", image: "", imageAlt: "", illustrative: false });
+  const [preview, setPreview] = useState({ title: "", summary: "", body: "", category: "", author: "", image: "", imageAlt: "" });
   function showPreview() {
     if (!form.current) return;
     const data = new FormData(form.current);
     const get = (key: string) => String(data.get(key) ?? "").trim();
     const pickedFile = data.get("coverUpload");
-    const picked = pickedFile instanceof File && pickedFile.size > 0;
-    const selected = selectedNewsCover(picked ? null : get("ogImageKey"));
     const linked = normalizeExternalNewsCoverUrl(get("coverUrl"));
     releasePreviewBlob();
     if (pickedFile instanceof File && pickedFile.size > 0) previewBlob.current = URL.createObjectURL(pickedFile);
     setPreviewImageFailed(false);
-    setPreview({ title: get("title"), summary: get("summary"), body: get("body"), category: categories.find((item) => item.id === get("categoryId"))?.label ?? "", author: authorName, image: selected ? absoluteUrl(selected.url) : previewBlob.current ?? (linked ?? ""), imageAlt: selected?.alt ?? get("coverAlt"), illustrative: Boolean(selected) });
+    setPreview({ title: get("title"), summary: get("summary"), body: get("body"), category: categories.find((item) => item.id === get("categoryId"))?.label ?? "", author: authorName, image: previewBlob.current ?? (linked ?? ""), imageAlt: get("coverAlt") });
     previewDialog.current?.showModal();
   }
   const wordCount = body.trim() ? body.trim().split(/\s+/u).length : 0;
@@ -96,8 +92,7 @@ export default function NewsArticleComposer({ categories, authors, recoveryActor
           <div className={styles.field}><label htmlFor="body">Article content <span>Required</span></label><textarea id="body" name="body" rows={16} maxLength={100000} required placeholder="Write your story here. Leave a blank line between paragraphs." value={body} onChange={(event) => setBody(event.currentTarget.value)} /><div className={styles.writingMeta}><span>Plain text only · Separate paragraphs with a blank line</span><span aria-live="polite">{wordCount.toLocaleString()} words{wordCount ? ` · about ${readingMinutes} min read` : ""}</span></div></div>
         </section>
         <section id="composer-step-2" tabIndex={-1} data-composer-step="2" hidden={enhanced && step !== 2} className={styles.card} aria-labelledby="cover-heading">
-          <div className={styles.sectionTop}><span className={styles.step}>02</span><div><h3 id="cover-heading">Cover image</h3><p>Choose an approved image or link a properly credited cover.</p></div></div>
-          <div className={styles.field}><label htmlFor="ogImageKey">Approved cover <span>Optional</span></label><select id="ogImageKey" name="ogImageKey" defaultValue=""><option value="">No approved cover selected</option>{Object.entries(NEWS_COVERS).map(([key, cover]) => <option key={key} value={key}>{cover.title} — {cover.credit}</option>)}</select><small>These images are illustrative and already credited.</small></div>
+          <div className={styles.sectionTop}><span className={styles.step}>02</span><div><h3 id="cover-heading">Cover image</h3><p>Upload a photo from this device or link a properly credited image.</p></div></div>
           <div className={styles.coverPanel}><NewsCoverUrlFields idPrefix="new-cover" uploadAvailable={coverUploadAvailable} /></div>
         </section>
         <details hidden={enhanced && step !== 2} className={styles.advanced}><summary>Search appearance <span>Optional</span></summary><div className={styles.advancedFields}><div className={styles.field}><label htmlFor="seoTitle">Search title</label><input id="seoTitle" name="seoTitle" maxLength={70} /></div><div className={styles.field}><label htmlFor="seoDescription">Search description</label><input id="seoDescription" name="seoDescription" maxLength={200} /></div></div></details>
@@ -113,7 +108,7 @@ export default function NewsArticleComposer({ categories, authors, recoveryActor
     {enhanced && <div className={styles.stepActions}>{step > 1 && <button className={styles.chooseAuthor} type="button" onClick={() => move(step - 1)}>Back</button>}{step < 3 && <button className={styles.submit} type="button" onClick={next}>Continue →</button>}</div>}
     <dialog ref={previewDialog} className={`${styles.dialog} ${styles.previewDialog}`} aria-labelledby="preview-title" onClose={() => previewButton.current?.focus()}>
       <div className={styles.dialogHeader}><div><span className={styles.eyebrow}>PRIVATE PREVIEW</span><h2 id="preview-title">Review your article</h2><p>This preview stays in your browser and has not been published.</p></div><button type="button" className={styles.close} aria-label="Close preview" onClick={() => previewDialog.current?.close()}>×</button></div>
-      <article className={styles.previewStory}><p className={styles.eyebrow}>{preview.category || "No category selected"}</p><h3>{preview.title || "Untitled article"}</h3>{preview.summary ? <p className={styles.previewSummary}>{preview.summary}</p> : null}<p className={styles.previewByline}>By {preview.author || "No author selected"}</p>{preview.image && !previewImageFailed ? <><img src={preview.image} alt={preview.imageAlt} referrerPolicy="no-referrer" onError={() => setPreviewImageFailed(true)} />{preview.illustrative ? <small>Illustrative image</small> : null}</> : <div className={styles.previewPlaceholder}><img src="/brand-logo.png" alt="EPE LAWA logo" /><p>{previewImageFailed ? "The cover preview could not load. The EPE LAWA logo is shown as a fallback." : "No cover selected. The EPE LAWA logo is used as a fallback."}</p></div>}<div className={styles.previewBody}>{preview.body ? preview.body.split(/\n\s*\n/).map((paragraph, index) => <p key={index}>{paragraph}</p>) : <p>No story content yet.</p>}</div></article>
+      <article className={styles.previewStory}><p className={styles.eyebrow}>{preview.category || "No category selected"}</p><h3>{preview.title || "Untitled article"}</h3>{preview.summary ? <p className={styles.previewSummary}>{preview.summary}</p> : null}<p className={styles.previewByline}>By {preview.author || "No author selected"}</p>{preview.image && !previewImageFailed ? <><img src={preview.image} alt={preview.imageAlt} referrerPolicy="no-referrer" onError={() => setPreviewImageFailed(true)} /></> : <div className={styles.previewPlaceholder}><img src="/brand-logo.png" alt="EPE LAWA logo" /><p>{previewImageFailed ? "The cover preview could not load. The EPE LAWA logo is shown as a fallback." : "No cover selected. The EPE LAWA logo is used as a fallback."}</p></div>}<div className={styles.previewBody}>{preview.body ? preview.body.split(/\n\s*\n/).map((paragraph, index) => <p key={index}>{paragraph}</p>) : <p>No story content yet.</p>}</div></article>
       <section className={styles.suggestedTags}><h3>Suggested hashtags</h3><p>Keyword suggestions for review; they are not saved or added to the article.</p><div>{suggestNewsHashtags(`${preview.title} ${preview.summary} ${preview.body} ${preview.category}`).length ? suggestNewsHashtags(`${preview.title} ${preview.summary} ${preview.body} ${preview.category}`).map((tag) => <span key={tag}>#{tag}</span>) : <span>No matching suggestions yet</span>}</div></section>
     </dialog>
 

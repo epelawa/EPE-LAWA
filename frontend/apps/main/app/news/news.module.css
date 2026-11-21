@@ -132,7 +132,6 @@
 .articleHeroCopy h1 { max-width:28ch; text-wrap:balance; margin:0; color:#17264A; font-size:clamp(1.875rem, 1rem + 3.5vw, 3rem); line-height:1.1; letter-spacing:-.045em; }
 .articleCoverFrame { display:block; width:100%; aspect-ratio:16/9; overflow:hidden; background:#F1F4FA; }
 .articleHeroImage,.articleHeroFallback { display:block; width:100%; height:100%; aspect-ratio:16/9; overflow:hidden; background:#F1F4FA; object-fit:cover; object-position:center; }
-.articleHeroImage.approvedCoverFull { width:100%; height:100%; max-height:none; aspect-ratio:16/9; object-fit:cover; object-position:center; }
 .articleHeroFallback { background:linear-gradient(135deg,#17264A,#E9EFF9); }
 .coverCredit { margin:0; color:#5C677C; font-size:.75rem; line-height:1.55; }
 .coverCredit a { overflow-wrap:anywhere; color:#294B91; text-decoration:underline; text-underline-offset:2px; }
@@ -160,7 +159,6 @@
 .relatedCard { min-width:0; overflow:hidden; border:1px solid var(--news-border); background:#fff; }
 .relatedLink { display:grid; align-content:start; gap:8px; height:100%; color:inherit; text-decoration:none; }
 .relatedImage,.relatedImageFallback { display:grid; width:100%; aspect-ratio:16/9; place-items:center; overflow:hidden; color:#294B91; background:#F1F4FA; object-fit:cover; object-position:center; }
-.approvedCoverThumb { object-fit:cover !important; object-position:center; }
 .relatedCategory { padding:0 11px; color:#294B91; font-size:.6875rem; font-weight:750; }
 .relatedTitle { padding:0 11px 12px; text-wrap:balance; color:#0A1023; font-size:.875rem; font-weight:750; line-height:1.4; }
 .relatedMeta { padding:0 11px 12px; color:#5C677C; font-size:.6875rem; line-height:1.4; }

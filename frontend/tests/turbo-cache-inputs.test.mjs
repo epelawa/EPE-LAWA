@@ -18,7 +18,6 @@ test('cross-app raw imports participate in each app build cache key', () => {
   ]);
   assert.deepEqual(adminConfig.tasks.build.inputs, [
     '$TURBO_DEFAULT$',
-    '$TURBO_ROOT$/frontend/apps/main/lib/news-covers.ts',
   ]);
   assert.equal(rootConfig.tasks.build.outputs.includes('.next/**'), true);
   assert.equal(rootConfig.tasks.build.outputs.includes('!.next/cache/**'), true);
