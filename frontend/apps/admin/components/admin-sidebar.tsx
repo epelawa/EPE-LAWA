@@ -9,6 +9,7 @@ import { groupedNavigation } from "../lib/navigation";
 import type { NavItem } from "../lib/navigation";
 import { signOutStaffSameOrigin } from "../lib/session-actions";
 import { BrandLockup } from "./brand";
+import QueueLiveCounts from "./queue-live-counts";
 
 const isCurrent = (path: string, href: string) =>
   href === "/" ? path === "/" : path === href || path.startsWith(`${href}/`);
@@ -107,6 +108,7 @@ export default function AdminSidebar({
       <aside className="admin-sidebar" aria-label="Staff workspace">
         <div className="admin-sidebar__brand"><Link href={staffHref("/", basePath)}><BrandLockup size={30} /></Link></div>
         {nav()}
+        <QueueLiveCounts />
         {identity}
       </aside>
       <div className="drawer-root" data-open={open ? "true" : "false"} aria-hidden={!open} inert={!open}>

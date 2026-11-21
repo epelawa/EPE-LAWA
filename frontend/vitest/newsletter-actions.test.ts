@@ -2,7 +2,7 @@ import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import { createHash } from "node:crypto";
 const mocks = vi.hoisted(() => ({ rpc: vi.fn(), key: vi.fn(), admin: vi.fn(), config: vi.fn(), send: vi.fn() }));
 vi.mock("../apps/main/lib/form-server", () => ({ formClientKey: mocks.key, formAdminClient: mocks.admin }));
-vi.mock("../apps/main/lib/auth-mail-hook", () => ({ authMailConfig: mocks.config, deliverAuthMessage: mocks.send }));
+vi.mock("../apps/main/lib/auth-mail-hook", () => ({ authMailConfig: mocks.config, deliverAuthMessage: mocks.send, emailShell: (_title: string, html: string) => html }));
 vi.mock("../apps/main/lib/supabase", () => ({ createClient: vi.fn() }));
 import { subscribeNewsletter, confirmNewsletter } from "../apps/main/app/newsletter/actions";
 const idle = { status: "idle" as const, message: "" };

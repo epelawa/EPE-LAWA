@@ -269,3 +269,15 @@ body[data-admin-shell="sidebar"] { --admin-sidebar-width: 256px; }
   button { transition: transform 120ms var(--ep-ease-out, ease-out); }
   button:active:not(:disabled) { transform: scale(.97); }
 }
+
+/* Live queue counters (sidebar strip) */
+.queue-strip { margin: 0 12px 14px; padding: 10px 12px 6px; border: 1px solid var(--ep-color-border, #d4daea); border-radius: 12px; background: rgb(71 127 224 / .05); }
+.queue-strip__label { margin: 0 0 6px; font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--ep-color-muted, #64748b); }
+.queue-strip ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.queue-chip a { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 6px; border-radius: 8px; font-size: 12px; font-weight: 600; color: inherit; text-decoration: none; transition: background-color 120ms ease-out; }
+.queue-chip a:hover { background: rgb(71 127 224 / .1); }
+.queue-chip__count { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: var(--ep-radius-pill, 99px); background: var(--ep-color-cobalt, #477fe0); color: #ffffff; font-size: 11px; font-weight: 700; }
+.queue-chip--hot .queue-chip__count { animation: queue-pulse 1.2s ease-in-out 2; }
+@keyframes queue-pulse { 0%,100% { transform: scale(1); box-shadow: 0 0 0 0 rgb(71 127 224 / .55); } 50% { transform: scale(1.18); box-shadow: 0 0 0 6px rgb(71 127 224 / 0); } }
+@media (prefers-reduced-motion: reduce) { .queue-chip--hot .queue-chip__count { animation: none; } }
+__CSS_d73e38__ && pnpm typecheck 2>&1 | grep -E "Tasks:|Failed"
