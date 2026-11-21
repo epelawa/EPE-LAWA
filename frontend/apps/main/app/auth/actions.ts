@@ -187,3 +187,8 @@ export async function signOut() {
   try { (await cookies()).delete(ACTIVITY_COOKIE.member); } catch { /* A missing cookie store must not block sign-out. */ }
   redirect("/login");
 }
+export async function signOutEverywhere() {
+  try { const supabase = await createClient(); await supabase.auth.signOut({ scope: "global" }); } catch { /* Always return to a signed-out screen. */ }
+  try { (await cookies()).delete(ACTIVITY_COOKIE.member); } catch { /* A missing cookie store must not block sign-out. */ }
+  redirect("/login?signed-out=all");
+}

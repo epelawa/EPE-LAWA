@@ -26,7 +26,7 @@ test("member dashboard is session-gated, noindex and only reads the signed-in me
   assert.match(page, /robots:\s*\{\s*index:\s*false,\s*follow:\s*false\s*\}/);
   assert.match(page, /supabase\.auth\.getUser\(\)/);
   assert.match(page, /redirect\("\/login\?next=%2Fdashboard"\)/);
-  assert.match(page, /\.select\("user_id, handle, display_name, deleted_at"\)/);
+  assert.match(page, /\.select\("user_id, handle, display_name, created_at, avatar_key, deleted_at"\)/);
   assert.match(page, /\.eq\("user_id", user\.id\)/);
   assert.doesNotMatch(page, /Your community spaces|Welcome, \{profile\.display_name\}/);
   assert.doesNotMatch(page, /SERVICE_ROLE|service_role|email_address|view_count|fake|mock/i);

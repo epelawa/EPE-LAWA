@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "../../lib/supabase";
+import { storeAvatarDataUrl } from "../../lib/media-r2";
 
 export type MemberProfileState = {
   status: "idle" | "success" | "error";
@@ -48,6 +49,31 @@ export async function updateMemberProfile(_state: MemberProfileState, data: Form
     }
     revalidatePath("/dashboard");
     return { status: "success", message: "Your profile has been saved." };
+  } catch (error) {
+    if (error && typeof error === "object" && "digest" in error) throw error;
+    return { status: "error", message: genericError };
+  }
+}
+
+export async function updateMemberAvatar(_state: MemberProfileState, data: FormData): Promise<MemberProfileState> {
+  try {
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) redirect("/login?next=%2Fdashboard");
+    const raw = data.get("avatar_data");
+    if (typeof raw !== "string" || !raw.trim().startsWith("data:image/")) {
+      return { status: "error", message: "Choose an image before saving." };
+    }
+    const stored = await storeAvatarDataUrl(raw, "avatar");
+    if ("error" in stored) {
+      if (stored.error === "unconfigured") return { status: "error", message: "Image storage is not connected on this deployment yet." };
+      if (stored.error === "unavailable") return { status: "error", message: "The photo could not be stored right now. Try again in a moment." };
+      return { status: "error", message: "That image could not be used. Choose a JPEG, PNG or WebP image smaller than 5 MB." };
+    }
+    const { error } = await supabase.from("profiles").update({ avatar_key: stored.key }).eq("user_id", user.id);
+    if (error) return { status: "error", message: genericError };
+    revalidatePath("/dashboard");
+    return { status: "success", message: "Your profile photo has been saved." };
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
     return { status: "error", message: genericError };

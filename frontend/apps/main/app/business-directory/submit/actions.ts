@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "../../../lib/supabase";
 import { authMailConfig, deliverAuthMessage } from "../../../lib/auth-mail-hook";
 import { storeLogoDataUrl } from "../../../lib/media-r2";
+import { parseBusinessHours } from "../../../lib/business-hours";
 import { formRateAllowance, formRateLimitedMessage } from "../../../lib/form-server";
 
 async function rateGate(): Promise<string | null> { return (await formRateAllowance("business_submit")) ? null : formRateLimitedMessage; }
@@ -35,7 +36,13 @@ export async function submitBusiness(_previous:BusinessSubmitState, f:FormData):
   logoKey=stored.key;
  }
  let result;
- try { result=await supabase.rpc("business_submit",{p_name:name,p_category_id:category,p_description:description||null,p_area:area||null,p_address:address||null,p_landmark:landmark||null,p_phone:phone||null,p_whatsapp:whatsapp||null,p_email:email||null,p_website:website||null,p_hours:null,p_logo_key:logoKey}); }
+ let hours:Record<string,string>|null=null;
+ const hoursRaw=field(f,"hours_json");
+ if(hoursRaw){
+  try { const parsed=parseBusinessHours(JSON.parse(hoursRaw)); hours=Object.keys(parsed).length?parsed:null; }
+  catch { hours=null; }
+ }
+ try { result=await supabase.rpc("business_submit",{p_name:name,p_category_id:category,p_description:description||null,p_area:area||null,p_address:address||null,p_landmark:landmark||null,p_phone:phone||null,p_whatsapp:whatsapp||null,p_email:email||null,p_website:website||null,p_hours:hours,p_logo_key:logoKey}); }
  catch {return fail("We could not confirm whether the submission was saved. Please contact support before trying again to avoid duplicates.");}
  if(result.error||typeof result.data!=="string")return fail(result.error?.message==="member_profile_required"?"This public form only accepts listings from member accounts, and your account does not have a member profile. If you are staff, add the listing from the Business submissions page in the staff workspace instead. Otherwise finish creating your member profile, or sign in with a different member account.":"We could not confirm whether the submission was saved. Please contact support before trying again to avoid duplicates.");
  const id=result.data;

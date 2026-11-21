@@ -4,6 +4,7 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { submitBusiness } from "./actions";
 import styles from "./business-form.module.css";
 import BusinessLogoInput from "../../../components/business-logo-input";
+import BusinessHoursEditor from "../../../components/business-hours-editor";
 
 type Category = { id: string; label: string };
 export default function BusinessForm({ categories }: { categories: Category[] }) {
@@ -33,6 +34,7 @@ export default function BusinessForm({ categories }: { categories: Category[] })
     <section data-step="2" tabIndex={-1} hidden={enhanced && step !== 2} className={styles.step} aria-labelledby="business-contact"><h2 id="business-contact">Location and contact</h2>
       <div className="ui-form-grid">{([ ["area", "Area", 160], ["address", "Address", 300], ["landmark", "Nearby landmark", 200], ["phone", "Phone", 24], ["whatsapp", "WhatsApp", 24], ["email", "Public contact email", 254], ["website", "Website (HTTPS)", 2048] ] as const).map(([n, l, m]) => <div className="ui-field" key={n}><label className="label">{l}<input name={n} value={values[n] ?? ""} onChange={change} maxLength={m} type={n === "email" ? "email" : "text"} className="input" /></label></div>)}</div>
       <div className="ui-stack-sm"><BusinessLogoInput /><div className="ui-field"><label className="label">Logo link (optional, HTTPS)<input name="logo_url" type="url" maxLength={2048} className="input" placeholder="https://" /></label></div></div>
+      <BusinessHoursEditor />
       <p className="ui-muted">Contact information is listing content and may appear publicly after approval.</p>
     </section>
     <div className={styles.actions}>{enhanced && step === 2 && <button className="btn-secondary" type="button" onClick={() => move(1)}>Back</button>}{enhanced && step === 1 && <button className="btn-primary" type="button" onClick={next}>Continue</button>}<button className="btn-primary" type="submit" disabled={pending || state.status === "success"} hidden={enhanced && step !== 2}>{pending ? "Sending…" : "Send for review"}</button></div>

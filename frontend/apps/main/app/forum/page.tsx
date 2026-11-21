@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "../../lib/supabase";
+import { formatLagosDateTime } from "../../lib/dates";
 import { EmptyPanel, Notice, PageFrame, PageIntro, SectionHeading } from "../../components/design-system";
 import { pageMetadata } from "../../lib/metadata";
 import ForumLiveCount, { countActive } from "./live-count";
@@ -72,7 +73,7 @@ export default async function ForumPage({ searchParams }: { searchParams: Promis
             <span className={styles.avatar} aria-hidden="true">{initial}</span>
             <div className={styles.chatMain}>
               <h3 className={styles.chatTitle}><Link href={`/forum/thread/${encodeURIComponent(thread.slug)}`}>{thread.title}</Link>{thread.is_pinned ? <span className={styles.pinnedBadge}>Pinned</span> : null}</h3>
-              <p className={styles.chatMeta}>{categoryName(thread.category_id)}{thread.last_activity_at ? <> · <time dateTime={thread.last_activity_at}>{new Date(thread.last_activity_at).toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" })}</time></> : null}</p>
+              <p className={styles.chatMeta}>{categoryName(thread.category_id)}{thread.last_activity_at ? <> · <time dateTime={thread.last_activity_at}>{formatLagosDateTime(thread.last_activity_at)} Epe time</time></> : null}</p>
             </div>
             <span className={styles.badge} aria-label={`${thread.post_count} ${thread.post_count === 1 ? "post" : "posts"}`}>{thread.post_count}</span>
           </li>;

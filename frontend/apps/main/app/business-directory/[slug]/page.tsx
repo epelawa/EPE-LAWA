@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "../../../lib/supabase";
 import { logoDisplayUrl } from "../../../lib/media-r2";
+import { parseBusinessHours, hourRows, businessOpenNow } from "../../../lib/business-hours";
 import { EmptyPanel, PageFrame, Panel, StatusBadge } from "../../../components/design-system";
 import styles from "./profile.module.css";
 type Props={params:Promise<{slug:string}>};
@@ -14,6 +15,7 @@ export default async function BusinessProfilePage({params}:Props){
  if(!business&&!failed)notFound();
  if(!business)return <PageFrame><EmptyPanel title="Business profile unavailable" description="Please try again later." actions={<Link className="btn-secondary" href={`/business-directory/${encodeURIComponent(slug)}`}>Try again</Link>}/></PageFrame>;
  const logo=logoDisplayUrl(business.logo_key);
+ const openNow=businessOpenNow(parseBusinessHours(business.hours));
  const whatsappDigits=business.whatsapp?.replace(/\D/g,"");
  const ctaCount=[business.phone,business.whatsapp,business.website].filter(Boolean).length;
  return <PageFrame className="ui-stack">
@@ -37,7 +39,14 @@ export default async function BusinessProfilePage({params}:Props){
     {business.landmark&&<div><dt>Landmark</dt><dd>{business.landmark}</dd></div>}
     {(business.email)&&<div><dt>Email</dt><dd><a href={`mailto:${business.email}`}>{business.email}</a></dd></div>}
    </dl>
-   {business.hours&&<section><h2>Opening hours</h2><p>{Object.entries(business.hours).map(([day,value])=>`${day}: ${typeof value === "string" ? value : JSON.stringify(value)}`).join(" · ")}</p></section>}
+   {(() => { const hours=parseBusinessHours(business.hours); const rows=hourRows(hours); if(!Object.keys(hours).length) return null;
+    return <section><h2>Opening hours</h2>
+     <div className="ui-row" style={{ alignItems: "center" }}>
+      {openNow===null?null:openNow? <StatusBadge tone="success">Open now</StatusBadge> : <StatusBadge tone="warning">Closed now</StatusBadge>}
+      <span className="ui-meta">Epe time</span>
+     </div>
+     <dl className="ui-list ui-stack-sm">{rows.map(row => <div className="ui-item ui-row" key={row.day} style={{ justifyContent: "space-between" }}><dt className="ui-item-title" style={{ margin: 0 }}>{row.label}</dt><dd className="ui-meta" style={{ margin: 0 }}>{row.range ?? "Closed"}</dd></div>)}</dl>
+    </section>; })()}
   </Panel>
   <p>Something incorrect? <Link href="/support">Contact support</Link>.</p>
   <Link href="/business-directory">Back to businesses</Link>

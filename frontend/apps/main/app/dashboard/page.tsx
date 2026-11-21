@@ -5,8 +5,8 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import AccountShell from "../../components/account-shell";
 import { createClient } from "../../lib/supabase";
-import { checkHandleAvailability, signOut } from "../auth/actions";
-import { markNotificationsRead } from "./actions";
+import { checkHandleAvailability, signOut, signOutEverywhere } from "../auth/actions";
+import { markNotificationsRead, updateMemberAvatar } from "./actions";
 import { toggleSavedArticle } from "./saved-actions";
 import MemberTopbar from "../../components/member-topbar";
 import DashboardSwipe from "../../components/dashboard-swipe";
@@ -14,9 +14,11 @@ import type { DashboardTab } from "../../lib/dashboard-swipe";
 import LayoutVariation from "../../components/layout-variation";
 import SessionGuard from "../../components/session-guard";
 import ProfileEditor from "./profile-editor";
+import AvatarEditor from "./avatar-editor";
 import HandleCompletionForm from "./handle-completion-form";
 import { DashboardDiscoverNews, DashboardHomeNews, safePage } from "./news-content";
-import { formatPublishedDate } from "../../lib/dates";
+import { formatPublishedDate, formatLagosDateTime } from "../../lib/dates";
+import { publicMediaUrl } from "../../lib/media";
 import styles from "./dashboard.module.css";
 import "../auth/auth.css";
 import {
@@ -156,7 +158,7 @@ async function DashboardSaved() {
 
 function notificationStamp(value: string) {
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "Date unavailable" : date.toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" });
+  return Number.isNaN(date.getTime()) ? "Date unavailable" : formatLagosDateTime(date.toISOString()) ?? "Date unavailable";
 }
 
 function DashboardNotifications({ notifications, error }: { notifications: NotificationRow[]; error: boolean }) {
@@ -235,7 +237,7 @@ export default async function MemberDashboardPage({ searchParams }: { searchPara
 
   const initialProfile = await supabase
     .from("profiles")
-    .select("user_id, handle, display_name, deleted_at")
+    .select("user_id, handle, display_name, created_at, avatar_key, deleted_at")
     .eq("user_id", user.id)
     .maybeSingle();
   const error = initialProfile.error;
@@ -252,7 +254,7 @@ export default async function MemberDashboardPage({ searchParams }: { searchPara
     if (!bootstrapError && created === true) {
       const refreshed = await supabase
         .from("profiles")
-        .select("user_id, handle, display_name, deleted_at")
+        .select("user_id, handle, display_name, created_at, avatar_key, deleted_at")
         .eq("user_id", user.id)
         .maybeSingle();
       if (refreshed.error) bootstrap = "unavailable";
@@ -326,9 +328,17 @@ export default async function MemberDashboardPage({ searchParams }: { searchPara
             : activeTab === "notifications" ? <DashboardNotifications notifications={notifications} error={Boolean(notificationsError)} />
               : activeTab === "saved" ? <DashboardSaved /> : <div className={styles.grid}>
                 <section className={styles.panel} aria-labelledby="profile-title">
-                  <div className={styles.profileIdentity}><span className={styles.profileAvatar} aria-hidden="true">{profile.display_name.trim().slice(0, 1).toUpperCase()}</span><div><h2 id="profile-title">{profile.display_name}</h2><span className={styles.handle}>@{profile.handle}</span></div></div><h2>Public profile</h2>
+                  <div className={styles.profileIdentity}><span className={styles.profileAvatar} aria-hidden="true">{publicMediaUrl(profile.avatar_key) ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={publicMediaUrl(profile.avatar_key) ?? ""} alt="" width={56} height={56} style={{ borderRadius: "inherit" }} /> : profile.display_name.trim().slice(0, 1).toUpperCase()}</span><div><h2 id="profile-title">{profile.display_name}</h2><span className={styles.handle}>@{profile.handle}</span>{profile.created_at ? <span className={styles.helper}>Member since {formatPublishedDate(profile.created_at)}</span> : null}</div></div>
+                  <AvatarEditor avatarUrl={publicMediaUrl(profile.avatar_key)} displayName={profile.display_name} />
+                  {(() => { const checks = [Boolean(profile.display_name.trim()), Boolean(profile.handle), Boolean(profile.avatar_key)]; const done = checks.filter(Boolean).length; const percent = Math.round((done / checks.length) * 100);
+                    return <div className="ui-stack-sm"><p className={styles.helper}>Profile strength</p><div role="progressbar" aria-label="Profile completeness" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} className={styles.strengthTrack}><span style={{ width: `${percent}%` }} /></div><p className={styles.helper}>{percent === 100 ? "Your profile is complete." : profile.avatar_key ? "Your profile is nearly complete." : "Add a profile photo to complete your profile."}</p></div>; })()}
+                  <h2>Public profile</h2>
                   <p className={styles.helper}>Your display name and handle appear beside your posts. Keep private contact details out of your public name.</p>
                   <ProfileEditor displayName={profile.display_name} handle={profile.handle} />
+                  <form action={signOutEverywhere} className="ui-stack-sm ui-divider">
+                    <button className="btn-ghost" type="submit">Sign out everywhere</button>
+                    <p className={styles.helper}>Ends this session and every other signed-in session for your account on all devices.</p>
+                  </form>
                 </section>
               </div>}
         </DashboardSwipe>

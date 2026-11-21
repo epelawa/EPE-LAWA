@@ -55,7 +55,7 @@ const DATA_URL = /^data:image\/(png|jpeg|webp);base64,([A-Za-z0-9+/=]+)$/;
 export type StoredLogo = { key: string } | { error: string };
 
 /** Store a client-compressed data-URL image as a public R2 object. */
-export async function storeLogoDataUrl(dataUrl: string, stem = "logo"): Promise<StoredLogo> {
+export async function storeLogoDataUrl(dataUrl: string, stem = "logo", prefix = "media/business"): Promise<StoredLogo> {
   const match = DATA_URL.exec(dataUrl.trim());
   if (!match) return { error: "format" };
   const mime = `image/${match[1]}`;
@@ -66,9 +66,14 @@ export async function storeLogoDataUrl(dataUrl: string, stem = "logo"): Promise<
   if (buffer.byteLength < 64) return { error: "format" };
   const random = Array.from(crypto.getRandomValues(new Uint8Array(6)), (b) => b.toString(16).padStart(2, "0")).join("");
   const safeStem = stem.replace(/[^a-z0-9_-]+/gi, "-").replace(/^-+|-+$/g, "").toLowerCase().slice(0, 40) || "logo";
-  const key = `media/business/${new Date().getUTCFullYear()}/${random}-${safeStem}${extension}`;
+  const key = `${prefix}/${new Date().getUTCFullYear()}/${random}-${safeStem}${extension}`;
   const written = await putMediaObject(key, buffer.buffer as ArrayBuffer, mime);
   return written.state === "ready" ? { key } : { error: written.state };
+}
+
+/** Store a member avatar (client-compressed data URL) under the avatars prefix. */
+export async function storeAvatarDataUrl(dataUrl: string, stem = "avatar"): Promise<StoredLogo> {
+  return storeLogoDataUrl(dataUrl, stem, "media/avatars");
 }
 
 /** Resolve a stored logo reference (R2 key or HTTPS URL) to a display URL. */

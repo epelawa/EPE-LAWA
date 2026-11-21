@@ -11,6 +11,8 @@ export type MemberProfileSnapshot = {
   handle: string;
   display_name: string;
   deleted_at: string | null;
+  created_at?: string | null;
+  avatar_key?: string | null;
 };
 
 export type HandleAvailability = "available" | "taken" | "unavailable";
