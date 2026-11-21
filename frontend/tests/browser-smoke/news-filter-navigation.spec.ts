@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 const fixtureURL = `http://localhost:${process.env.SMOKE_FIXTURE_PORT ?? "54321"}`;
 
 for (const width of [320, 375, 768, 1024, 1440]) {
-  test(`news navigation and category disclosure at ${width}px`, async ({ page, request }) => {
+  test(`news navigation and category tabs at ${width}px`, async ({ page, request }) => {
     await request.post(`${fixtureURL}/__smoke__/mode`, { data: { mode: "stories" } });
     await page.setViewportSize({ width, height: 800 });
     await page.goto("/");
@@ -14,27 +14,17 @@ for (const width of [320, 375, 768, 1024, 1440]) {
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(10);
 
     const category = page.getByRole("navigation", { name: "News categories", exact: true });
-    const disclosure = category.locator("details");
-    const summary = disclosure.locator("summary");
-    await summary.focus();
-    await page.keyboard.press("Enter");
-    await expect(disclosure).toHaveAttribute("open", "");
-    await page.keyboard.press("Escape");
-    await expect(disclosure).not.toHaveAttribute("open", "");
-    await expect(summary).toBeFocused();
-    await summary.click();
-    await page.locator("h1").click();
-    await expect(disclosure).not.toHaveAttribute("open", "");
+    const allNews = category.getByRole("link", { name: "All news", exact: true });
+    const sports = category.getByRole("link", { name: "Sports", exact: true });
+    await expect(sports).toBeVisible();
+    await expect(allNews).toHaveAttribute("aria-current", "page");
 
-    await summary.click();
-    await category.getByRole("link", { name: "Sports", exact: true }).click();
+    await sports.focus();
+    await page.keyboard.press("Enter");
     await expect(page).toHaveURL(/category=sports/);
-    await expect(disclosure).not.toHaveAttribute("open", "");
-    await expect(summary).toContainText("Sports");
+    await expect(sports).toHaveAttribute("aria-current", "page");
+    await expect(allNews).not.toHaveAttribute("aria-current", "page");
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(10);
-    await summary.click();
-    await category.getByRole("link", { name: "Sports", exact: true }).click();
-    await expect(disclosure).not.toHaveAttribute("open", "");
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.goBack();
     await expect(page).toHaveURL(/\/news$/);
@@ -53,11 +43,9 @@ test("direct news entry and query filters retain their selected search", async (
   await page.goto("/news?q=story");
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(10);
   const category = page.getByRole("navigation", { name: "News categories", exact: true });
-  await category.locator("summary").click();
   await category.getByRole("link", { name: "Sports", exact: true }).click();
   await expect(page).toHaveURL(/q=story.*category=sports/);
-  await expect(category.locator("summary")).toContainText("Sports");
-  await expect(category.locator("details")).not.toHaveAttribute("open", "");
+  await expect(category.getByRole("link", { name: "Sports", exact: true })).toHaveAttribute("aria-current", "page");
 });
 
 test("breaking banner includes an older active story beyond the first page, but not an expired one", async ({ page, request }) => {
@@ -71,16 +59,14 @@ test("breaking banner includes an older active story beyond the first page, but 
   await expect(page.getByRole("region", { name: "Breaking news" })).toHaveCount(0);
 });
 
-test("homepage leads with an older active breaking story without duplicating it", async ({ page, request }) => {
+test("homepage breaking ticker includes an older active story but not an expired one", async ({ page, request }) => {
   await request.post(`${fixtureURL}/__smoke__/mode`, { data: { mode: "news-many-breaking" } });
   await page.setViewportSize({ width: 375, height: 800 });
   await page.goto("/");
-  const lead = page.locator(".home-story-card").first();
-  await expect(lead.getByRole("heading", { name: "Test story 34" })).toBeVisible();
-  await expect(lead.getByText("Breaking", { exact: true })).toBeVisible();
-  await expect(lead.getByRole("link", { name: "Test story 34", exact: true })).toHaveAttribute("href", "/news/test-story-34");
-  await expect(page.locator(".home-story-card").getByRole("heading", { name: "Test story 34" })).toHaveCount(1);
-  await expect(page.locator(".home-story-card").getByRole("heading", { name: "Test story 35" })).toHaveCount(0);
+  const breaking = page.getByRole("region", { name: "Breaking news" });
+  await expect(breaking.getByRole("link", { name: "Test story 34" })).toBeVisible();
+  await expect(breaking.getByRole("link", { name: "Test story 35" })).toHaveCount(0);
+  await expect(page.locator(".home-story-card").first()).toBeVisible();
 });
 
 test("homepage does not duplicate a breaking story that is also among latest stories", async ({ page, request }) => {

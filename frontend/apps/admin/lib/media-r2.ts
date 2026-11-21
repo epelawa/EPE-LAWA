@@ -1,5 +1,7 @@
 import "server-only";
 
+import { publicMediaUrl } from "../../main/lib/media";
+
 /**
  * Server-only Cloudflare R2 object writes/removes for the media workspace.
  *
@@ -77,4 +79,13 @@ export async function deleteMediaObject(bucket: string, key: string): Promise<Ob
   } catch {
     return { state: "unavailable" };
   }
+}
+
+export type CoverUploadState = { state: "ready" } | { state: "unconfigured"; reason: string };
+
+export function coverUploadState(): CoverUploadState {
+  const creds = credentials();
+  if ("state" in creds) return { state: "unconfigured", reason: "missing_credentials" };
+  if (!publicMediaUrl("media/covers/probe")) return { state: "unconfigured", reason: "missing_public_base_url" };
+  return { state: "ready" };
 }

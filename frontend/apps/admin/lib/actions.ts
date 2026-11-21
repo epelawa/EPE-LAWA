@@ -5,7 +5,9 @@ import { createClient } from "./supabase";
 import { adminHref } from "./admin-path";
 import { hasConfirmedArticleUnpublish } from "./article-publication-state";
 import { isNewsCoverKey } from "../../main/lib/news-covers";
+import { publicMediaUrl } from "../../main/lib/media";
 import { normalizeExternalNewsCoverUrl } from "../../main/lib/news-cover-url.mjs";
+import { mediaExtensionFor, putMediaObject } from "./media-r2";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -40,6 +42,70 @@ function text(formData: FormData, name: string, max: number): string {
 function nullCoverFields(): CoverFields {
   return { coverUrl: null, coverAlt: null, coverCredit: null, coverSourceUrl: null, coverLicenseUrl: null, coverCaption: null };
 }
+const COVER_UPLOAD_MAX_BYTES = 26_214_400;
+const COVER_UPLOAD_ERRORS: Record<string, string> = {
+  unconfigured: "Image storage is not configured, so direct uploads are unavailable. Link a public HTTPS image instead.",
+  invalid_file: "That file type cannot be used as a cover. Upload a JPEG, PNG, WebP or AVIF image.",
+  too_large: "That image is too large. Upload a cover smaller than 26 MB.",
+  invalid: "An uploaded cover needs alt text, credit, a safe HTTPS source page and a license URL.",
+  storage_failed: "The image could not be stored right now. Check your connection and try again.",
+};
+function coverUploadFile(formData: FormData): File | null {
+  const value = formData.get("coverUpload");
+  return value instanceof File && value.size > 0 && value.name.trim() !== "" ? value : null;
+}
+type UploadedCoverMetadata = { state: "ok"; fields: CoverFields } | { state: "error"; message: string };
+function uploadedCoverMetadata(formData: FormData): UploadedCoverMetadata {
+  const rawAlt = rawText(formData, "coverAlt");
+  const rawCredit = rawText(formData, "coverCredit");
+  const rawSource = rawText(formData, "coverSourceUrl");
+  const rawLicense = rawText(formData, "coverLicenseUrl");
+  const rawCaption = rawText(formData, "coverCaption");
+  const sourceUrl = normalizeExternalNewsCoverUrl(rawSource);
+  const licenseUrl = normalizeExternalNewsCoverUrl(rawLicense);
+  if (
+    rawAlt.length < 1 || rawAlt.length > 500 || rawCredit.length < 1 || rawCredit.length > 300 ||
+    rawCaption.length > 500 || !sourceUrl || !licenseUrl
+  ) return { state: "error", message: COVER_UPLOAD_ERRORS.invalid };
+  return { state: "ok", fields: { coverUrl: "", coverAlt: rawAlt, coverCredit: rawCredit, coverSourceUrl: sourceUrl, coverLicenseUrl: licenseUrl, coverCaption: rawCaption || null } };
+}
+type StoredCover = { fields: CoverFields } | { error: string };
+async function storeCoverUpload(formData: FormData, file: File): Promise<StoredCover> {
+  const meta = uploadedCoverMetadata(formData);
+  if (meta.state === "error") return { error: meta.message };
+  if (file.size > COVER_UPLOAD_MAX_BYTES) return { error: COVER_UPLOAD_ERRORS.too_large };
+  const extension = mediaExtensionFor(file.type);
+  if (!extension) return { error: COVER_UPLOAD_ERRORS.invalid_file };
+  const now = new Date();
+  const period = `${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
+  const random = Array.from(crypto.getRandomValues(new Uint8Array(6)), (byte) => byte.toString(16).padStart(2, "0")).join("");
+  const stem = file.name.replace(/\.[^.]*$/, "").replace(/[^a-z0-9_-]+/gi, "-").replace(/^-+|-+$/g, "").toLowerCase().slice(0, 60) || "cover";
+  const objectKey = `media/covers/${period}/${random}-${stem}${extension}`;
+  const publicUrl = publicMediaUrl(objectKey);
+  if (!publicUrl) return { error: COVER_UPLOAD_ERRORS.unconfigured };
+  const written = await putMediaObject("public", objectKey, await file.arrayBuffer(), file.type);
+  if (written.state !== "ready") return { error: COVER_UPLOAD_ERRORS.storage_failed };
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("media_asset_create", {
+      p_kind: "cover",
+      p_title: stem.replace(/-/g, " ").slice(0, 180),
+      p_credit: meta.fields.coverCredit ?? null,
+      p_rights_note: meta.fields.coverLicenseUrl,
+      p_bucket: "public",
+      p_object_key: objectKey,
+      p_mime_type: file.type,
+      p_byte_size: written.size,
+      p_width: null,
+      p_height: null,
+      p_alt_text: meta.fields.coverAlt ?? null,
+    });
+    if (error) console.error("media_asset_create failed for uploaded cover", { code: error.code });
+  } catch (error) {
+    console.error("media_asset_create failed for uploaded cover", { error: queryErrorCode(error) });
+  }
+  return { fields: { ...meta.fields, coverUrl: publicUrl } };
+}
 function coverFields(formData: FormData, rawCoverKey: string): CoverFields | null {
   const rawUrl = rawText(formData, "coverUrl");
   if (rawUrl.length > 2048) return null;
@@ -72,6 +138,10 @@ function coverFields(formData: FormData, rawCoverKey: string): CoverFields | nul
 function invalidCover(formData: FormData): boolean {
   const rawCoverKey = rawText(formData, "ogImageKey");
   if (rawCoverKey && !isNewsCoverKey(rawCoverKey)) return true;
+  const linkedUrl = rawText(formData, "coverUrl");
+  const upload = coverUploadFile(formData);
+  if ((rawCoverKey && linkedUrl) || (rawCoverKey && upload) || (linkedUrl && upload)) return true;
+  if (upload) return uploadedCoverMetadata(formData).state === "error";
   return coverFields(formData, rawCoverKey) === null;
 }
 function articleBody(value: string): Record<string, unknown> | null {
@@ -151,9 +221,18 @@ async function createArticleCore(formData: FormData): Promise<{ status: "error" 
   const seoDescription = text(formData, "seoDescription", 200) || null;
   const rawCover = text(formData, "ogImageKey", 64);
   if (rawCover && !isNewsCoverKey(rawCover)) return { status: "error", message: "Choose a valid approved cover." };
-  const cover = coverFields(formData, rawCover);
-  if (!cover) return { status: "error", message: "Choose one cover source and supply a safe HTTPS image, alt text, credit, source and license." };
-  const ogImageKey = rawCover || null;
+  const coverUpload = coverUploadFile(formData);
+  if (coverUpload && (rawCover || rawText(formData, "coverUrl"))) return { status: "error", message: "Choose only one cover source: an approved cover, a link or an upload." };
+  let cover: CoverFields | null = null;
+  if (coverUpload) {
+    const stored = await storeCoverUpload(formData, coverUpload);
+    if ("error" in stored) return { status: "error", message: stored.error };
+    cover = stored.fields;
+  } else {
+    cover = coverFields(formData, rawCover);
+    if (!cover) return { status: "error", message: "Choose one cover source and supply a safe HTTPS image, alt text, credit, source and license." };
+  }
+  const ogImageKey = coverUpload ? null : rawCover || null;
   if (!title || !body || !UUID.test(authorId) || !UUID.test(categoryId)) return { status: "error", message: "Add a headline, article body, author and category." };
 
   let articleId: string | null = null;
@@ -209,6 +288,12 @@ async function saveDraftCore(formData: FormData): Promise<EditResult> {
   if (invalidCover(formData)) return { status: "error", message: "Check the cover source, alt text and credit details." };
   const fields = articleFields(formData);
   if (!fields) return { status: "error", message: "Check the headline, body, author and category. Reload if the revision is invalid." };
+  const coverUpload = coverUploadFile(formData);
+  if (coverUpload) {
+    const stored = await storeCoverUpload(formData, coverUpload);
+    if ("error" in stored) return { status: "error", message: stored.error };
+    Object.assign(fields, stored.fields, { ogImageKey: null });
+  }
 
   let errorCode: string | null = null;
   let uncertain = false;
@@ -247,6 +332,12 @@ async function reviseArticleCore(formData: FormData): Promise<EditResult> {
   if (invalidCover(formData)) return { status: "error", message: "Check the cover source, alt text and credit details." };
   const fields = articleFields(formData);
   if (!fields) return { status: "error", message: "Check the headline, body, author and category. Reload if the revision is invalid." };
+  const revisionUpload = coverUploadFile(formData);
+  if (revisionUpload) {
+    const stored = await storeCoverUpload(formData, revisionUpload);
+    if ("error" in stored) return { status: "error", message: stored.error };
+    Object.assign(fields, stored.fields, { ogImageKey: null });
+  }
 
   let errorCode: string | null = null;
   let uncertain = false;

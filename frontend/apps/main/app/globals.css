@@ -407,7 +407,8 @@ html { overscroll-behavior-y: none; }
   .comment-fab:hover { transform: none; }
 }
 
-/* Member reading keeps a focused footer-free layout. */
+/* The member reading shell replaces public chrome without changing article URLs. */
+body:has(.member-reading-mode) .site-head,
 body:has(.member-reading-mode) .site-footer { display: none !important; }
 /* Keep the editorial newsroom free from the site's decorative dot texture. */
 body:has([class*="listing_newsPage"]) { background:var(--ep-bg); background-image:none; }
