@@ -15,7 +15,7 @@
 .modalBody :global(.ui-stack) { gap:14px; }
 .modalBody :global(.ui-field) { display:grid; gap:6px; }
 .modalBody :global(input),.modalBody :global(textarea) { box-sizing:border-box; width:100%; padding:11px 12px; border:1px solid #c3d2e6; border-radius:10px; background:#fff; color:#14233d; font:inherit; }
-.modalBody :global(textarea) { resize:vertical; }
+.modalBody :global(textarea) { resize:none; }
 .modalBody :global(button) { min-height:44px; }
 .modal :where(button,a,input,textarea):focus-visible { outline:3px solid #3269b8; outline-offset:2px; }
 .hint,.fallback { color:#52647f; font-size:.875rem; line-height:1.5; }
