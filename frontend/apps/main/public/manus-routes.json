@@ -91,9 +91,6 @@
       "path": "/admin/login"
     },
     {
-      "path": "/admin/media"
-    },
-    {
       "path": "/admin/members"
     },
     {
