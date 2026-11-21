@@ -1,4 +1,5 @@
 import { lagosNow } from "./on-air";
+import { SITE_AUTHOR, CONTACT_EMAIL } from "../../../lib/site-identity";
 
 export type IcsSlot = { id: string; day_of_week: number; starts_at: string; ends_at: string; note: string | null; programme: string | null };
 
@@ -74,6 +75,7 @@ export function buildIcs(slots: IcsSlot[], now: Date = new Date()): string {
       `DTSTART:${start}`,
       `DTEND:${end}`,
       "RRULE:FREQ=WEEKLY",
+      `ORGANIZER;CN=${escapeIcsText(SITE_AUTHOR)}:mailto:${CONTACT_EMAIL}`,
       `SUMMARY:${escapeIcsText(summary)}`,
     );
     if (slot.note?.trim()) lines.push(`DESCRIPTION:${escapeIcsText(slot.note.trim())}`);

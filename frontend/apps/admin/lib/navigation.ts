@@ -23,6 +23,7 @@ const sectionPages: NavItem[] = [
   { label: "Newsroom", href: "/newsroom", hint: "Articles and editorial review", primary: true, group: "Newsroom" },
   { label: "History", href: "/itan-ilu-mi/review", hint: "Private contributions and reviewed publication", group: "Newsroom" },
   { label: "Radio", href: "/radio", hint: "Programmes, rights, episodes and schedule", primary: true, group: "Newsroom" },
+  { label: "Corrections", href: "/corrections", hint: "Reader correction reports", group: "Newsroom" },
   { label: "Forum", href: "/moderation/forum", hint: "Reports and moderation queue", primary: true, group: "Community" },
   { label: "Businesses", href: "/business-review", hint: "Submissions and verification", group: "Community" },
   { label: "Reviews", href: "/business-review/moderation", hint: "Business review moderation", group: "Community" },
