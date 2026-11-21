@@ -470,3 +470,13 @@ html { transition: background-color var(--ep-dur-base, 200ms) var(--ep-ease-out)
 .form-progress li span { display:grid; place-items:center; flex:none; width:26px; height:26px; border:1px solid #8297b7; border-radius:50%; }
 .form-progress li[aria-current="step"] { color:#173f7b; }
 .form-progress li[aria-current="step"] span { color:#fff; background:#294b91; border-color:#294b91; }
+
+/* Compact popdown forms: long forms stay collapsed until opened */
+.ui-disclosure { border: 1px solid var(--palette-border); border-radius: var(--ep-radius-md, 12px); background: var(--palette-paper, #ffffff); }
+.ui-disclosure > summary { display: inline-flex; align-items: center; gap: var(--ep-space-2); min-height: var(--ep-touch-min); padding: var(--ep-space-3) var(--ep-space-6); margin: 10px; border: transparent; border-radius: var(--ep-radius-pill); background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); font-size: var(--ep-type-sm); font-weight: var(--ep-weight-semibold); cursor: pointer; list-style: none; transition: transform 120ms var(--ease-out, ease-out); }
+.ui-disclosure > summary::-webkit-details-marker { display: none; }
+.ui-disclosure > summary:active { transform: scale(.965); }
+.ui-disclosure[open] > summary { margin-bottom: 0; }
+.ui-disclosure > form, .ui-disclosure > * { padding: 0 var(--ep-space-5, 16px) var(--ep-space-5, 16px); }
+.ui-disclosure form textarea, textarea.input, textarea[class*="input"] { resize: none; }
+@media (prefers-reduced-motion: reduce) { .ui-disclosure > summary { transition: none; } }

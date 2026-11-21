@@ -281,3 +281,5 @@ body[data-admin-shell="sidebar"] { --admin-sidebar-width: 256px; }
 @keyframes queue-pulse { 0%,100% { transform: scale(1); box-shadow: 0 0 0 0 rgb(71 127 224 / .55); } 50% { transform: scale(1.18); box-shadow: 0 0 0 6px rgb(71 127 224 / 0); } }
 @media (prefers-reduced-motion: reduce) { .queue-chip--hot .queue-chip__count { animation: none; } }
 __CSS_d73e38__ && pnpm typecheck 2>&1 | grep -E "Tasks:|Failed"
+/* Forms: no manual resize handles */
+textarea.input, .admin-textarea { resize: none; }
