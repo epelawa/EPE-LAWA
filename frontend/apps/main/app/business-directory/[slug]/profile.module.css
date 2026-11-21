@@ -1,0 +1,62 @@
+.identity {
+  display: flex;
+  align-items: center;
+  gap: var(--ep-space-4, 18px);
+}
+
+.logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--card));
+  object-fit: contain;
+  padding: 6px;
+  flex-shrink: 0;
+}
+
+.logoFallback {
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: var(--ep-weight-bold, 700);
+  flex-shrink: 0;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ep-space-2, 8px);
+  margin-top: var(--ep-space-2, 6px);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ep-space-3, 10px);
+  margin-top: var(--ep-space-5, 22px);
+}
+
+@media (max-width: 640px) {
+  .actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    background: hsl(var(--background));
+    padding: var(--ep-space-3, 10px) 0;
+    border-top: 1px solid hsl(var(--border));
+  }
+
+  .actions > * {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+}

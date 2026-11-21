@@ -427,3 +427,87 @@ body:has(.auth-page--fixed-viewport) .site-main { height: 100vh; min-height: 0; 
   font-size: 13px;
   line-height: 1.55;
 }
+
+/* One-time-code card: digit pills, flash entrance, pulse, shake, verifying spinner. */
+.auth-otp {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 16px;
+  background: hsl(var(--secondary) / .46);
+}
+.auth-otp h2 { margin: 0; font-size: 1.15rem; line-height: 1.25; }
+.auth-otp__intro { margin: 0; color: hsl(var(--muted-foreground)); font-size: 13px; line-height: 1.55; }
+.auth-otp__form-gap { display: none; }
+.auth-otp .auth-otp__pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.auth-otp__pill {
+  width: 44px;
+  height: 52px;
+  padding: 0;
+  border: 1.5px solid hsl(var(--border));
+  border-radius: 13px;
+  background: hsl(var(--card));
+  box-sizing: border-box;
+  color: hsl(var(--foreground));
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  caret-color: var(--palette-cobalt);
+}
+.auth-otp__pill:disabled { opacity: .6; }
+.auth-otp__pill--filled {
+  border-color: var(--palette-cobalt);
+  background: hsl(var(--primary) / .06);
+  box-shadow: 0 4px 14px hsl(var(--primary) / .16);
+}
+.auth-otp__pill:focus-visible { outline: 2px solid var(--palette-cobalt); outline-offset: 2px; }
+.auth-otp .auth-step-actions { margin-top: 4px; }
+.auth-otp .auth-footnote { margin-top: 0; }
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes auth-otp-flash {
+    0% { opacity: 0; transform: translateY(10px) scale(.985); }
+    60% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes auth-otp-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .55; }
+  }
+  @keyframes auth-otp-shake {
+    0%, 100% { transform: translateX(0); }
+    15% { transform: translateX(-7px); }
+    30% { transform: translateX(6px); }
+    45% { transform: translateX(-5px); }
+    60% { transform: translateX(4px); }
+    75% { transform: translateX(-2px); }
+  }
+  @keyframes auth-otp-pill-pop {
+    0% { transform: scale(1); }
+    45% { transform: scale(1.12); }
+    100% { transform: scale(1); }
+  }
+  .auth-otp { animation: auth-otp-flash 320ms ease-out both; }
+  .auth-otp__intro.auth-otp__pulse { animation: auth-otp-pulse 2.4s ease-in-out 4; }
+  .auth-otp--shake { animation: auth-otp-shake 620ms ease-in-out both; }
+  .auth-otp__pill--filled { animation: auth-otp-pill-pop 180ms ease-out both; }
+  .auth-otp__verify--pending { color: transparent !important; position: relative; }
+  .auth-otp__verify--pending::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2.5px solid hsl(var(--primary-foreground) / .35);
+    border-top-color: hsl(var(--primary-foreground));
+    animation: auth-otp-ring-spin 700ms linear;
+    animation-iteration-count: infinite;
+  }
+  @keyframes auth-otp-ring-spin {
+    to { transform: rotate(360deg); }
+  }
+}

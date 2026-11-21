@@ -3,10 +3,14 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "../../../lib/supabase";
 import { authMailConfig, deliverAuthMessage } from "../../../lib/auth-mail-hook";
 import { storeLogoDataUrl } from "../../../lib/media-r2";
+import { formRateAllowance, formRateLimitedMessage } from "../../../lib/form-server";
+
+async function rateGate(): Promise<string | null> { return (await formRateAllowance("business_submit")) ? null : formRateLimitedMessage; }
 export type BusinessSubmitState = { status: "idle" | "success" | "error"; message: string };
 const field=(f:FormData,k:string)=>{const v=f.get(k);return typeof v==="string"?v.trim():""};
 const fail=(message:string):BusinessSubmitState=>({status:"error",message});
 export async function submitBusiness(_previous:BusinessSubmitState, f:FormData):Promise<BusinessSubmitState> {
+ const limiter=await rateGate();if(limiter)return fail(limiter);
  const supabase=await createClient();
  const {data:{user},error:authError}=await supabase.auth.getUser();
  if(authError||!user)return fail("Please sign in before submitting a business. Your entries will remain here while this page is open.");

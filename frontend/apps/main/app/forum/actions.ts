@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "../../lib/supabase";
+import { formRateAllowance, formRateLimitedMessage } from "../../lib/form-server";
 
 const text = (data: FormData, key: string) => {
   const value = data.get(key);
@@ -21,6 +22,7 @@ async function memberClient(next = "/forum") {
 }
 
 export async function createThread(data: FormData) {
+  if (!(await formRateAllowance("forum_post"))) fail(formRateLimitedMessage);
   const { supabase } = await memberClient("/forum/new");
   const categoryId = text(data, "category_id");
   const title = text(data, "title");
@@ -58,6 +60,7 @@ export async function voteInPoll(data: FormData) {
 }
 
 export async function replyToThread(data: FormData) {
+  if (!(await formRateAllowance("forum_post"))) fail(formRateLimitedMessage);
   const { supabase, user } = await memberClient();
   const threadId = text(data, "thread_id");
   const slug = text(data, "thread_slug");
