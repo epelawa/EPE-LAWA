@@ -59,9 +59,10 @@ test("radio keeps listening separate from listings and reminder settings", async
   for (const width of [320, 375, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 850 });
     await page.goto("/radio");
-    await expect(page.getByRole("heading", { name: "Listen live." })).toBeVisible();
+    await expect(page.getByRole("region", { name: "Radio stations" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Keep exploring" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Schedule", exact: true })).toHaveCount(0);
-    await expect(page.getByRole("link", { name: /Programmes & archive/ })).toHaveAttribute("href", "/radio/programmes");
+    await expect(page.getByRole("link", { name: /Programmes & archive/ })).toHaveAttribute("href
     const size = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth }));
     expect(size.document).toBeLessThanOrEqual(size.viewport + 1);
   }

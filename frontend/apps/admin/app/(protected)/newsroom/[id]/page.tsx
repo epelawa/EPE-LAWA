@@ -11,6 +11,7 @@ import { articlePublicationState } from "../../../../lib/article-publication-sta
 import { NEWS_COVERS, isNewsCoverKey } from "../../../../../main/lib/news-covers";
 import NewsroomToast from "../../../../components/newsroom-toast";
 import NewsCoverUrlFields from "../../../../components/news-cover-url-fields";
+import { coverUploadState } from "../../../../lib/media-r2";
 import { publishedNewsCover } from "../../../../../main/lib/published-news-cover";
 import { absoluteUrl } from "../../../../../main/lib/site";
 import NewsShareTools from "../../../../components/news-share-tools";
@@ -177,7 +178,7 @@ export default async function EditArticlePage({
               </> },
               { title: "Cover and search", content: <>
               <div className="ui-field"><label className="label" htmlFor="ogImageKey">Approved cover (optional)</label><select id="ogImageKey" name="ogImageKey" className="input" defaultValue={isNewsCoverKey(version.og_image_key) ? version.og_image_key : ""}><option value="">No cover</option>{Object.entries(NEWS_COVERS).map(([key, cover]) => <option key={key} value={key}>{cover.title} — {cover.credit}</option>)}</select><p className="ui-meta">Approved, unmodified Commons images only.</p></div>
-              <NewsCoverUrlFields idPrefix="edit-cover" initial={{ url: version.cover_url, alt: version.cover_alt, credit: version.cover_credit, sourceUrl: version.cover_source_url, licenseUrl: version.cover_license_url, caption: version.cover_caption }} />
+              <NewsCoverUrlFields idPrefix="edit-cover" uploadAvailable={coverUploadState().state === "ready"} initial={{ url: version.cover_url, alt: version.cover_alt, credit: version.cover_credit, sourceUrl: version.cover_source_url, licenseUrl: version.cover_license_url, caption: version.cover_caption }} />
               <div className="ui-form-grid">
                 <div className="ui-field"><label className="label" htmlFor="seoTitle">Search title</label><input id="seoTitle" name="seoTitle" className="input" maxLength={70} defaultValue={version.seo_title ?? ""} /></div>
                 <div className="ui-field"><label className="label" htmlFor="seoDescription">Search description</label><input id="seoDescription" name="seoDescription" className="input" maxLength={200} defaultValue={version.seo_description ?? ""} /></div>

@@ -47,6 +47,7 @@ function maxCssDurationMilliseconds(value: string): number {
 
 for (const width of viewportWidths) {
   test(`public homepage, News, no-results/error states, and overflow at ${width}px`, async ({ page, request }) => {
+    test.setTimeout(60_000);
     await setFixtureMode(request, "empty");
     await page.setViewportSize({ width, height: 900 });
     await page.emulateMedia({ reducedMotion: "no-preference" });

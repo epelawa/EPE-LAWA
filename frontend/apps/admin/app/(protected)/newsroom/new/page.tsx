@@ -3,6 +3,7 @@ import Link from "next/link";
 import { buttonClassName, EmptyPanel, Notice, PageFrame, PageIntro } from "@epelawa/ui";
 import { createClient } from "../../../../lib/supabase";
 import { adminHref } from "../../../../lib/admin-path";
+import { coverUploadState } from "../../../../lib/media-r2";
 import NewsArticleComposer from "../../../../components/news-article-composer";
 
 export const metadata: Metadata = {
@@ -40,7 +41,7 @@ export default async function NewArticlePage({
       {accessCheckUnavailable || !canCreate || referencesFailed || categories.length === 0 ? (
         <EmptyPanel title={accessCheckUnavailable ? "Newsroom authorization unavailable" : !canCreate ? "Article creation access required" : "Newsroom setup is incomplete"} description={accessCheckUnavailable ? "Your staff access could not be verified. No draft was created. Refresh and retry; if this continues, ask a system administrator to check the authorization service." : !canCreate ? "This staff account does not have the article.create capability." : referencesFailed ? "Categories and bylines could not be verified. No article was created." : "Add at least one active category before creating an article."} actions={<div className="ui-actions"><Link href={adminHref("/newsroom")} className={buttonClassName("secondary")}>Back to newsroom</Link>{!accessCheckUnavailable && canCreate && !referencesFailed && (categories.length === 0) ? <Link href={adminHref("/newsroom/settings")} className={buttonClassName("primary")}>Manage categories & bylines</Link> : null}</div>} />
       ) : (
-        <NewsArticleComposer categories={categories} authors={authors} recoveryActor={sessionResult.error ? undefined : sessionResult.data.user?.id} />
+        <NewsArticleComposer categories={categories} authors={authors} recoveryActor={sessionResult.error ? undefined : sessionResult.data.user?.id} coverUploadAvailable={coverUploadState().state === "ready"} />
       )}
     </PageFrame>
   );

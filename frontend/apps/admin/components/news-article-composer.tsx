@@ -22,7 +22,7 @@ function SaveButton({saving, blocked}: {saving: boolean; blocked: boolean}) {
   return <button className={styles.submit} type="submit" disabled={pending || saving || blocked}>{pending || saving ? "Saving article…" : "Save article"}<span aria-hidden="true"> →</span></button>;
 }
 
-export default function NewsArticleComposer({ categories, authors, recoveryActor }: { categories: Option[]; authors: Option[]; recoveryActor?: string }) {
+export default function NewsArticleComposer({ categories, authors, recoveryActor, coverUploadAvailable = false }: { categories: Option[]; authors: Option[]; recoveryActor?: string; coverUploadAvailable?: boolean }) {
   const router = useRouter();
   const [body, setBody] = useState("");
   const [step, setStep] = useState(1);
@@ -46,15 +46,27 @@ export default function NewsArticleComposer({ categories, authors, recoveryActor
   const previewButton = useRef<HTMLButtonElement>(null);
   const form = useRef<HTMLFormElement>(null);
   const [previewImageFailed, setPreviewImageFailed] = useState(false);
+  const previewBlob = useRef<string | null>(null);
+  function releasePreviewBlob() {
+    if (previewBlob.current) {
+      URL.revokeObjectURL(previewBlob.current);
+      previewBlob.current = null;
+    }
+  }
+  useEffect(() => () => releasePreviewBlob(), []);
   const [preview, setPreview] = useState({ title: "", summary: "", body: "", category: "", author: "", image: "", imageAlt: "", illustrative: false });
   function showPreview() {
     if (!form.current) return;
     const data = new FormData(form.current);
     const get = (key: string) => String(data.get(key) ?? "").trim();
-    const selected = selectedNewsCover(get("ogImageKey"));
+    const pickedFile = data.get("coverUpload");
+    const picked = pickedFile instanceof File && pickedFile.size > 0;
+    const selected = selectedNewsCover(picked ? null : get("ogImageKey"));
     const linked = normalizeExternalNewsCoverUrl(get("coverUrl"));
+    releasePreviewBlob();
+    if (pickedFile instanceof File && pickedFile.size > 0) previewBlob.current = URL.createObjectURL(pickedFile);
     setPreviewImageFailed(false);
-    setPreview({ title: get("title"), summary: get("summary"), body: get("body"), category: categories.find((item) => item.id === get("categoryId"))?.label ?? "", author: authorName, image: selected ? absoluteUrl(selected.url) : linked ?? "", imageAlt: selected?.alt ?? get("coverAlt"), illustrative: Boolean(selected) });
+    setPreview({ title: get("title"), summary: get("summary"), body: get("body"), category: categories.find((item) => item.id === get("categoryId"))?.label ?? "", author: authorName, image: selected ? absoluteUrl(selected.url) : previewBlob.current ?? (linked ?? ""), imageAlt: selected?.alt ?? get("coverAlt"), illustrative: Boolean(selected) });
     previewDialog.current?.showModal();
   }
   const wordCount = body.trim() ? body.trim().split(/\s+/u).length : 0;
@@ -86,7 +98,7 @@ export default function NewsArticleComposer({ categories, authors, recoveryActor
         <section id="composer-step-2" tabIndex={-1} data-composer-step="2" hidden={enhanced && step !== 2} className={styles.card} aria-labelledby="cover-heading">
           <div className={styles.sectionTop}><span className={styles.step}>02</span><div><h3 id="cover-heading">Cover image</h3><p>Choose an approved image or link a properly credited cover.</p></div></div>
           <div className={styles.field}><label htmlFor="ogImageKey">Approved cover <span>Optional</span></label><select id="ogImageKey" name="ogImageKey" defaultValue=""><option value="">No approved cover selected</option>{Object.entries(NEWS_COVERS).map(([key, cover]) => <option key={key} value={key}>{cover.title} — {cover.credit}</option>)}</select><small>These images are illustrative and already credited.</small></div>
-          <div className={styles.coverPanel}><NewsCoverUrlFields idPrefix="new-cover" /></div>
+          <div className={styles.coverPanel}><NewsCoverUrlFields idPrefix="new-cover" uploadAvailable={coverUploadAvailable} /></div>
         </section>
         <details hidden={enhanced && step !== 2} className={styles.advanced}><summary>Search appearance <span>Optional</span></summary><div className={styles.advancedFields}><div className={styles.field}><label htmlFor="seoTitle">Search title</label><input id="seoTitle" name="seoTitle" maxLength={70} /></div><div className={styles.field}><label htmlFor="seoDescription">Search description</label><input id="seoDescription" name="seoDescription" maxLength={200} /></div></div></details>
       </div>
