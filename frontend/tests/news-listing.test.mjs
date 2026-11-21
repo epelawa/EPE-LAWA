@@ -95,7 +95,7 @@ test("News uses the shared editorial footer once and protected routes do not sho
   assert.match(footer, /pathname\.startsWith\("\/admin\/"\)/);
   assert.match(footer, /pathname\.startsWith\("\/dashboard\/"\)/);
   assert.match(footer, /if \(isProtected\) return null/);
-  for (const heading of ["Quick Links", "Categories", "Newsletter"]) assert.ok(newsFooter.includes(heading));
+  for (const heading of ['"footer.quickLinks"', '"footer.browseTopics"', '"footer.newsletter"', "Categories"]) assert.ok(newsFooter.includes(heading));
   assert.match(mobileNavigation, /"\/advertise"/);
   assert.match(mobileNavigation, /"\/contact", "Contact"/);
   assert.match(newsFooter, /from\("categories"\)/);
@@ -152,7 +152,7 @@ test("News pagination remains bounded with deterministic published ordering", ()
   assert.match(page, /const MAX_PAGE = 1000/);
   assert.match(page, /\.range\(start, start \+ PAGE_SIZE\)/);
   assert.match(page, /\.order\("slug", \{ ascending: true \}\)/);
-  assert.match(page, /const hasOlder = rows\.length > PAGE_SIZE/);
+  assert.match(page, /const hasOlder = rowsForTag\.length > PAGE_SIZE && page < MAX_PAGE/);
 });
 
 

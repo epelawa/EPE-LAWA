@@ -1,6 +1,6 @@
    # EPE LAWA — Agent Working Rules
 
-Read this file and `docs/00-master-plan.md` before project work. `docs/01-product-requirements.md` is the detailed local source of truth.
+Read `docs/00-master-plan.md` first — it is the single consolidated source of truth for scope, architecture, database conventions, design system, roadmap and verification gates.
 
 ## 1. Current scope
 
@@ -10,7 +10,7 @@ The current release includes all eight client-approved web areas (sections 3.1�
 
 Never invent local facts, history, people, businesses, prices, reviews, map locations, metrics or article content. Use approved public records only; distinguish loading, empty, error and denied states. A trend requires real signals; a verification badge requires recorded human review. Current map code builds safe outbound Google Maps search/directions URLs only; there is no configured Maps API key or verified Places/geocoding integration. Offline maps are optional future work. Do not claim email or Paystack providers are operational without evidence.
 
-Test content stays private in isolated environments. Production is read-only: no test articles, orders, payments or other writes. Never expose private member, seller, delivery or verification data.
+Test content stays private in isolated environments. Production is read-only: no test articles or other test writes. Never expose private member data. Commerce/payments are removed from scope by owner decision; advert placements are paid manually.
 
 ## 3. Identity, authorization and publishing
 
@@ -36,4 +36,4 @@ Use Sckooly’s public-site structure as reference, with original EPE-LAWA brand
 
 ## 8. Documentation
 
-Keep active scope, tracker and progress evidence consistent. `[x]` requires named evidence. Archive/historical database inventory may mention legacy objects factually, but must not present them as current release features.
+Keep `docs/00-master-plan.md` truthful and current; `[x]`-style status claims require named evidence. Archive/historical database inventory may mention legacy objects factually, but must not present them as current release features.

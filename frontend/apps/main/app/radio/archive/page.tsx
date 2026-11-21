@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "../../../lib/supabase";
 import { EmptyPanel, PageFrame } from "../../../components/design-system";
-import styles from "../../radio-page.module.css";
+import styles from "../radio-page.module.css";
 
 export const metadata: Metadata = {
   title: "Radio archive",

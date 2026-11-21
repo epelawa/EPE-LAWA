@@ -183,8 +183,8 @@ test('main has honest indexable metadata, working public links and security head
     assert.equal((await fetch(base + '/status/302')).status, 404);
     const logo = await fetch(base + '/brand-logo.png');
     const logoBytes = Buffer.from(await logo.arrayBuffer());
-    assert.equal(logoBytes.readUInt32BE(16), 1348);
-    assert.equal(logoBytes.readUInt32BE(20), 1167);
+    assert.equal(logoBytes.readUInt32BE(16), 512);
+    assert.equal(logoBytes.readUInt32BE(20), 443);
   });
 });
 
@@ -231,7 +231,7 @@ test('homepage hero gallery is sourced, responsive, eager and resource-aware', a
     { slug: 'fish-statue-epe', author: 'Kwadoskii', source: 'https://commons.wikimedia.org/wiki/File:Fish_Statue_Epe.jpg' },
   ]);
   assert.equal(manifest.slice(2).length, 52, 'all existing credited Commons photos must remain');
-  assert.match(layout, /<html lang="en" data-theme="light" style=\{\{ colorScheme: "light" \}\} suppressHydrationWarning>/);
+  assert.match(layout, /<html lang=\{siteLanguage === "yo" \? "yo" : "en"\} data-theme="light" style=\{\{ colorScheme: "light" \}\} suppressHydrationWarning>/);
   assert.equal(new Set(manifest.map((slide) => slide.slug)).size, 54);
   assert.equal(new Set(manifest.map((slide) => slide.source)).size, 54);
   const creditsPage = await readProjectFile('frontend/apps/main/app/photo-credits/page.tsx');
@@ -239,7 +239,7 @@ test('homepage hero gallery is sourced, responsive, eager and resource-aware', a
   assert.match(creditsPage, /href=\{image\.source\}/);
   assert.match(creditsPage, /href=\{image\.licenseUrl\}/);
   const footer = await readProjectFile('frontend/apps/main/components/news-footer.tsx');
-  assert.match(footer, /href="\/photo-credits">Photo credits/);
+  assert.match(footer, /href="\/photo-credits">\{t\(lang, "footer.photoCredits"\)\}/);
 
   const documentedSources = [...credits.matchAll(/- Source: \[[^\]]+\]\((https:\/\/commons\.wikimedia\.org\/wiki\/[^)]+)\)/g)].map((match) => match[1]).sort();
   assert.deepEqual(manifest.map((slide) => slide.source).sort(), documentedSources);
