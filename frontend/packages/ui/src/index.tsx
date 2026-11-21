@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode, SVGProps } from "react";
 
-export type ButtonVariant = "primary" | "secondary" | "ghost";
+export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
 export function buttonClassName(variant: ButtonVariant = "primary"): string { return `ep-button ep-button--${variant}`; }
 export function Button({ variant = "primary", className = "", ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: ButtonVariant }) { return <button className={`${buttonClassName(variant)} ${className}`.trim()} {...props} />; }
 export function Container({ className = "", ...props }: HTMLAttributes<HTMLDivElement>) { return <div className={`ep-ui-container ${className}`.trim()} {...props} />; }

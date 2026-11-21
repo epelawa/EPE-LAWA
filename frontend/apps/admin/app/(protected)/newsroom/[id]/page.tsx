@@ -191,17 +191,17 @@ export default async function EditArticlePage({
         {canPublish ? <><p className="ui-muted">No second reviewer is required; the database still checks the verified staff session, article.publish capability and current revision, then records the action in the audit log.</p><form action={publishArticle} className="ui-actions"><input type="hidden" name="articleId" value={article.id} /><input type="hidden" name="revision" value={String(article.revision)} /><button className={buttonClassName("primary")} type="submit">Publish now</button></form></> : <p className="ui-muted">This account does not have article.publish access.</p>}
       </Panel> : null}
       {hasPublishedVersion ? <Panel>
-        <SectionHeading eyebrow="Publication" title="Breaking news" description="Mark the version currently visible to readers. You can mark multiple published stories: each appears independently in the breaking-news ticker until its own expiry. This never publishes a private revision." />
+        <SectionHeading eyebrow="Publication" title="Breaking news" description="Show this story in the blue breaking-news banner for a while. You can have several breaking stories at once - each one slides in the banner until its time runs out. This never publishes a private draft." />
         {article.is_breaking && article.breaking_until && new Date(article.breaking_until).getTime() > Date.now()
-          ? <p className="ui-muted">Breaking until <time dateTime={article.breaking_until}>{new Date(article.breaking_until).toUTCString()}</time>.</p>
+          ? <p className="ui-muted">Breaking until <time dateTime={article.breaking_until}>{new Date(article.breaking_until).toLocaleString('en-NG')}</time>. Pause it below to take it out of the banner now.</p>
           : <p className="ui-muted">Not currently marked as breaking.</p>}
         {canPublish ? <div className="ui-stack">
           <form action={setArticleBreaking} className="ui-stack">
             <input type="hidden" name="articleId" value={article.id} /><input type="hidden" name="revision" value={String(article.revision)} /><input type="hidden" name="operation" value="enable" />
             <div className="ui-field"><label className="label" htmlFor="breaking-duration">Show for</label><select className="input" id="breaking-duration" name="duration" defaultValue="6"><option value="1">1 hour</option><option value="6">6 hours</option><option value="24">24 hours</option><option value="48">48 hours</option></select></div>
-            <div className="ui-actions"><button className={buttonClassName("primary")} type="submit">Set or extend breaking</button></div>
+            <div className="ui-actions"><button className={buttonClassName("primary")} type="submit">Show as breaking news</button></div>
           </form>
-          {article.is_breaking ? <form action={setArticleBreaking} className="ui-actions"><input type="hidden" name="articleId" value={article.id} /><input type="hidden" name="revision" value={String(article.revision)} /><input type="hidden" name="operation" value="disable" /><button className={buttonClassName("secondary")} type="submit">Remove breaking label</button></form> : null}
+          {article.is_breaking ? <form action={setArticleBreaking} className="ui-actions"><input type="hidden" name="articleId" value={article.id} /><input type="hidden" name="revision" value={String(article.revision)} /><input type="hidden" name="operation" value="disable" /><button className={buttonClassName("secondary")} type="submit">Pause breaking news</button></form> : null}
         </div> : <p className="ui-muted">This account does not have article.publish access.</p>}
       </Panel> : null}
       {hasPublishedVersion ? <Panel>

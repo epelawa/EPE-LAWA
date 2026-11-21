@@ -12,3 +12,9 @@
 .listHeader h2 { margin:0; font-size:clamp(1.35rem,2vw,1.65rem); }
 .filter select { min-height:44px; max-width:100%; padding:0 36px 0 14px; border:1px solid #c8d6e8; border-radius:12px; background:#fff; color:#17264a; font:inherit; cursor:pointer; }
 .filter select:focus-visible { outline:3px solid #477fe0; outline-offset:2px; }
+.rowActions { display:inline-flex; flex-wrap:wrap; align-items:center; gap:8px; }
+.deleteDisclosure { position:relative; display:inline-block; }
+.deleteDisclosure > summary { list-style:none; cursor:pointer; }
+.deleteDisclosure > summary::-webkit-details-marker { display:none; }
+.deleteConfirm { display:grid; gap:8px; margin-top:8px; padding:12px; border:1px solid #e3b7b3; border-radius:12px; background:#fdf4f3; min-width:230px; }
+.deleteConfirm .ui-row { color:#7a2c27; font-size:.82rem; }
