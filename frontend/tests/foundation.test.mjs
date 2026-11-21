@@ -72,8 +72,10 @@ test('main has honest indexable metadata, working public links and security head
       assert.equal(response.headers.get('x-frame-options'), 'DENY', path);
       assert.equal(response.headers.get('referrer-policy'), 'strict-origin-when-cross-origin', path);
       assert.equal(response.headers.get('permissions-policy'), 'camera=(), microphone=(), geolocation=()', path);
-      assert.match(response.headers.get('content-security-policy-report-only') || '', /frame-ancestors 'none'/, path);
-      assert.equal(response.headers.get('content-security-policy'), null, 'CSP is report-only');
+      const csp = response.headers.get('content-security-policy') || '';
+      assert.match(csp, /frame-ancestors 'none'/, path);
+      assert.match(csp, /script-src 'self' 'nonce-[A-Za-z0-9+/=]+' 'strict-dynamic'/, path);
+      assert.equal(response.headers.get('content-security-policy-report-only'), null, 'CSP is enforced');
       assert.equal(response.headers.get('access-control-allow-origin'), 'https://epelawa.vercel.app', path);
     }
     const response = await fetch(base);

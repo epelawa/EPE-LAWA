@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export const viewport: Viewport = { themeColor: "#F1F4FA" };
 
 import type { Metadata, Viewport } from "next";
-import Script from "next/script";
+import { headers } from "next/headers";
 import Connectivity from "./connectivity";
 import { SponsorPopupPlacement } from "../components/sponsor-slot";
 import SiteHeader from "../components/site-header";
@@ -63,10 +63,11 @@ async function AuthenticatedMobileNavigation() {
 }
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
     <html lang="en" data-theme="light" style={{ colorScheme: "light" }} suppressHydrationWarning>
       <body>
-        <Script strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeScript }} />
         <AuthCallbackErrorRouter />
         <SiteMotion />
         <NotificationSoundListener />
