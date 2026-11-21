@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { pageMetadata } from "../../lib/metadata";
 
+import SitePageNote from "../../components/site-page-note";
 const description =
   "EPE LAWA editorial standards, community history consent, business verification, and Digital Village Square rules.";
 
@@ -15,6 +16,8 @@ export const metadata: Metadata = pageMetadata({
 export default function GuidelinesPage() {
   return (
     <InformationPage title="Community and editorial guidelines" description="How we report, share community history, verify business information and treat one another.">
+      <SitePageNote page="guidelines" label="A note from EPE LAWA" />
+
       <h2>Editorial standards</h2>
       <ul>
         <li>Published reporting identifies its sources; an unnamed source is explained to readers.</li>

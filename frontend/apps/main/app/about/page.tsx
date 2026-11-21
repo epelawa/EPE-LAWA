@@ -3,6 +3,7 @@ import Link from "next/link";
 import { pageMetadata } from "../../lib/metadata";
 import { PageFrame, PageIntro, Panel, SectionHeading, TextLink } from "../../components/design-system";
 import EnquiryForm from "../../components/enquiry-form";
+import { createClient } from "../../lib/supabase";
 import styles from "./about.module.css";
 
 export const metadata: Metadata = pageMetadata({
@@ -20,7 +21,26 @@ const destinations = [
   { href: "/radio", label: "EPE LAWA Radio", description: "Listening access with honest stream and programme states." },
 ];
 
-export default function AboutPage() {
+type PhotoEntry = { url?: string; alt?: string; credit?: string };
+
+async function editablePage(page: string): Promise<{ body: string; photos: PhotoEntry[] } | null> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.from("site_pages").select("body,photos").eq("page", page).maybeSingle();
+    if (error || !data) return null;
+    const photos = Array.isArray((data as { photos?: unknown }).photos) ? ((data as { photos: PhotoEntry[] }).photos ?? []) : [];
+    return { body: (data as { body?: string }).body ?? "", photos };
+  } catch { return null; }
+}
+
+function paragraphs(body: string) {
+  return body.split(/\n\s*\n/).map((text) => text.trim()).filter(Boolean).slice(0, 40);
+}
+
+export default async function AboutPage() {
+  const editable = await editablePage("about");
+  const bodyBlocks = editable ? paragraphs(editable.body) : [];
+  const photos = (editable?.photos ?? []).filter((photo) => typeof photo.url === "string" && photo.url.startsWith("https://") && (photo.alt ?? "").length >= 3);
   return (
     <PageFrame className={styles.page}>
       <PageIntro
@@ -29,6 +49,26 @@ export default function AboutPage() {
         description="A web home for people in Epe Division, Lagos State, and everyone connected to the community."
         actions={<TextLink href="/news">Explore the latest</TextLink>}
       />
+
+      {bodyBlocks.length > 0 || photos.length > 0 ? (
+        <section className={`${styles.mission} ui-stack`} aria-label="From the EPE LAWA team">
+          {bodyBlocks.length > 0 ? (
+            <div className={`${styles.missionCopy} ui-prose`}>
+              {bodyBlocks.map((text, index) => <p key={index}>{text}</p>)}
+            </div>
+          ) : null}
+          {photos.length > 0 ? (
+            <div className={`${styles.missionCopy} ui-prose`} style={{ display: "flex", flexWrap: "wrap", gap: 14 }}>
+              {photos.map((photo, index) => (
+                <figure key={`${photo.url}-${index}`} className="ui-stack-sm" style={{ maxWidth: 260, margin: 0 }}>
+                  <img src={photo.url} alt={photo.alt ?? ""} width={260} height={195} style={{ borderRadius: 10, objectFit: "cover", width: "100%", height: "auto" }} loading="lazy" />
+                  <figcaption className="ui-meta">{photo.alt}{photo.credit ? <> · {photo.credit}</> : null}</figcaption>
+                </figure>
+              ))}
+            </div>
+          ) : null}
+        </section>
+      ) : null}
 
       <section className={styles.mission} aria-labelledby="mission-title">
         <div className={styles.missionLead}>

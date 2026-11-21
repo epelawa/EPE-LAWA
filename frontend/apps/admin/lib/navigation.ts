@@ -35,6 +35,7 @@ const staffPages: NavItem[] = [
   { label: "Staff users", href: "/users", hint: "Invite and manage staff accounts", group: "Administration" },
   { label: "Roles", href: "/roles", hint: "Configure staff roles and capabilities", group: "Administration" },
   { label: "Broadcast", href: "/broadcast", hint: "Notify verified members", group: "Administration" },
+  { label: "Site pages", href: "/site-pages", hint: "Edit the About page and public page notes", group: "Administration" },
   { label: "Backups", href: "/backups", hint: "Database backups and restore in R2", group: "Administration" },
   { label: "Settings", href: "/settings", hint: "Deployment configuration and setup", group: "Administration" },
 ];
