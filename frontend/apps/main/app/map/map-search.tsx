@@ -3,9 +3,14 @@
 import { useMemo, useState } from "react";
 import { FilterIcon, SearchIcon } from "../../components/icons";
 import { Notice, Panel, SectionHeading } from "../../components/design-system";
+import styles from "./map.module.css";
 
 type Business = { slug: string; name: string; category_label: string; area: string | null; address: string | null; landmark: string | null };
 const MAPS_ORIGIN = "https://www.google.com/maps/";
+const OSM_ORIGIN = "https://www.openstreetmap.org/";
+/* Epe, Lagos State: a live no-key OpenStreetMap view of the community. */
+const EPE_BBOX = "3.902,6.551,4.076,6.630";
+const EPE_VIEW = "12/6.5905/3.9843";
 export function mapsSearchUrl(query: string) {
   const url = new URL("search/", MAPS_ORIGIN);
   url.searchParams.set("api", "1");
@@ -17,6 +22,18 @@ export function mapsDirectionsUrl(destination: string, origin?: string) {
   url.searchParams.set("api", "1");
   url.searchParams.set("destination", destination);
   if (origin) url.searchParams.set("origin", origin);
+  return url.toString();
+}
+export function osmSearchUrl(query: string) {
+  const url = new URL("search", OSM_ORIGIN);
+  url.searchParams.set("query", query);
+  return url.toString();
+}
+export function osmEmbedUrl(bbox: string, marker?: string) {
+  const url = new URL("export/embed.html", OSM_ORIGIN);
+  url.searchParams.set("bbox", bbox);
+  url.searchParams.set("layer", "mapnik");
+  if (marker) url.searchParams.set("marker", marker);
   return url.toString();
 }
 
@@ -31,6 +48,13 @@ export default function MapSearch({ businesses, businessError = false }: { busin
   const selectedDestination = selectedBusiness
     ? [selectedBusiness.name, selectedBusiness.address, selectedBusiness.landmark, selectedBusiness.area].filter(Boolean).join(", ")
     : query.trim();
+  const coords = location ? location.split(",").map(Number) : null;
+  const lat = coords && Number.isFinite(coords[0]) ? coords[0] : null;
+  const lon = coords && Number.isFinite(coords[1]) ? coords[1] : null;
+  const embedUrl = osmEmbedUrl(
+    lat !== null && lon !== null ? `${(lon - 0.02).toFixed(4)},${(lat - 0.015).toFixed(4)},${(lon + 0.02).toFixed(4)},${(lat + 0.015).toFixed(4)}` : EPE_BBOX,
+    lat !== null && lon !== null ? `${lat.toFixed(5)},${lon.toFixed(5)}` : undefined,
+  );
   const requestLocation = () => {
     setLocation(null);
     if (!window.isSecureContext) { setLocationMessage("Location requires a secure (HTTPS) connection. You can still search manually."); return; }
@@ -56,6 +80,15 @@ export default function MapSearch({ businesses, businessError = false }: { busin
         <div className="ui-field ui-actions"><button type="button" className="btn-secondary" onClick={requestLocation}>Use my location</button></div>
       </form>
       <p className="ui-muted" aria-live="polite">{locationMessage}</p>
+    </Panel>
+    <Panel className={`ui-card ${styles.mapPanel}`}>
+      <SectionHeading eyebrow="Free map, no sign-in" title="Epe on the map" id="epe-embed-map" description="The map below shows Epe and around. Tap Use my location to move it to your area; your coordinates stay in this browser tab." />
+      <iframe title="Epe community map" src={embedUrl} loading="lazy" className={styles.mapFrame} />
+      <div className="ui-actions">
+        <a className="btn-secondary" target="_blank" rel="noopener noreferrer" href={osmSearchUrl(selectedDestination || "Epe, Lagos")}>Search this in OpenStreetMap <span className="sr-only">(opens in a new tab)</span></a>
+        {lat !== null && lon !== null ? <a className="btn-secondary" target="_blank" rel="noopener noreferrer" href={`https://www.openstreetmap.org/#map=14/${lat.toFixed(4)}/${lon.toFixed(4)}`}>Open my area on OpenStreetMap <span className="sr-only">(opens in a new tab)</span></a> : <a className="btn-secondary" target="_blank" rel="noopener noreferrer" href={`https://www.openstreetmap.org/#map=${EPE_VIEW}`}>Open wider Epe view <span className="sr-only">(opens in a new tab)</span></a>}
+      </div>
+      <p className="ui-meta">Map and search from OpenStreetMap contributors — free and accountless. Directions still open in Google Maps only when you choose.</p>
     </Panel>
     {businessError ? <Notice tone="neutral">Published business listings could not be loaded just now. This is different from no matching listings; manual street and landmark search in Google Maps remains available.</Notice> : null}
     {q && <Panel className="ui-card" aria-live="polite" aria-labelledby="map-results-title">
