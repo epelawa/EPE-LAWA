@@ -1,0 +1,41 @@
+"use client";
+
+import { useActionState, useEffect, useRef, useState } from "react";
+import { useFormStatus } from "react-dom";
+import { staffCreateBusiness, type StaffCreateState } from "../app/(protected)/business-review/actions";
+
+type Option = { id: string; label: string };
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return <button className="btn-primary" type="submit" disabled={pending}>{pending ? "Publishing…" : "Publish listing"}</button>;
+}
+
+export default function BusinessCreateForm({ categories }: { categories: Option[] }) {
+  const initial: StaffCreateState = { status: "idle", message: "" };
+  const [state, action] = useActionState(staffCreateBusiness, initial);
+  const [verify, setVerify] = useState(false);
+  const form = useRef<HTMLFormElement>(null);
+  useEffect(() => { if (state.status === "success") form.current?.reset(); }, [state]);
+  return (
+    <form ref={form} action={action} className="ui-stack-sm">
+      <div className="ui-form-grid">
+        <label className="ui-field"><span className="label">Business name</span><input name="name" required maxLength={160} className="input" /></label>
+        <label className="ui-field"><span className="label">Category</span><select name="category_id" required className="input" defaultValue="">{categories.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}</select></label>
+        <label className="ui-field"><span className="label">Description</span><textarea name="description" rows={3} maxLength={4000} className="input" /></label>
+        <label className="ui-field"><span className="label">Area or community</span><input name="area" maxLength={160} className="input" /></label>
+        <label className="ui-field"><span className="label">Address</span><input name="address" maxLength={300} className="input" /></label>
+        <label className="ui-field"><span className="label">Landmark</span><input name="landmark" maxLength={200} className="input" /></label>
+        <label className="ui-field"><span className="label">Phone</span><input name="phone" maxLength={24} className="input" placeholder="+234…" /></label>
+        <label className="ui-field"><span className="label">WhatsApp</span><input name="whatsapp" maxLength={24} className="input" placeholder="+234…" /></label>
+        <label className="ui-field"><span className="label">Email</span><input name="email" type="email" maxLength={254} className="input" /></label>
+        <label className="ui-field"><span className="label">Website (HTTPS)</span><input name="website" maxLength={2048} className="input" placeholder="https://" /></label>
+      </div>
+      <label className="ui-row"><input type="checkbox" name="verify" checked={verify} onChange={(event) => setVerify(event.currentTarget.checked)} /> Mark as Verified now</label>
+      {verify ? <label className="ui-field"><span className="label">Verification evidence (at least 10 characters)</span><textarea name="evidence" rows={2} maxLength={2000} required className="input" /></label> : null}
+      {state.message ? <p role={state.status === "error" ? "alert" : "status"} aria-live="polite">{state.message}</p> : null}
+      <div className="ui-actions"><SubmitButton /></div>
+      <p className="ui-meta">Publishing makes the listing visible in the public business directory immediately.</p>
+    </form>
+  );
+}
