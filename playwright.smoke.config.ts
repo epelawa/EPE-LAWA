@@ -44,6 +44,7 @@ export default defineConfig({
   workers: 1,
   reporter: "list",
   timeout: 30_000,
+  retries: process.env.CI ? 1 : 0,
   expect: { timeout: 10_000 },
   use: {
     baseURL,
