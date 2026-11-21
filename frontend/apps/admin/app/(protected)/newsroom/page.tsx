@@ -2,6 +2,7 @@ import Link from "next/link";
 import styles from "./newsroom-list.module.css";
 import NewsroomFilter from "../../../components/newsroom-filter";
 import { createClient } from "../../../lib/supabase";
+import { deleteArticle } from "../../../lib/actions";
 import { adminHref } from "../../../lib/admin-path";
 import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, StatusBadge, buttonClassName } from "@epelawa/ui";
 
@@ -18,9 +19,9 @@ type NewsroomArticle = {
 };
 
 /** Admin newsroom — private articles and their current publication state. */
-export default async function NewsroomPage({ searchParams }: { searchParams: Promise<{ state?: string }> }) {
+export default async function NewsroomPage({ searchParams }: { searchParams: Promise<{ state: string; deleted: string; error: string }> }) {
   const supabase = await createClient();
-  const { state: requestedState } = await searchParams;
+  const { state: requestedState, deleted, error: errorFlag } = await searchParams;
   const allowedStates = new Set(["draft", "review", "approved", "rejected", "published"]);
   const state = requestedState && allowedStates.has(requestedState) ? requestedState : undefined;
 
@@ -49,8 +50,13 @@ export default async function NewsroomPage({ searchParams }: { searchParams: Pro
   if (state === "published") query = query.not("published_version_id", "is", null);
   else if (state) query = query.filter("current_version.state", "eq", state);
 
-  const [{ data, error }, editCapability] = await Promise.all([query, supabase.rpc("has_capability", { p_capability: "article.create" })]);
+  const [{ data, error }, editCapability, deleteCapability] = await Promise.all([
+    query,
+    supabase.rpc("has_capability", { p_capability: "article.create" }),
+    supabase.rpc("has_capability", { p_capability: "article.publish" }),
+  ]);
   const canEdit = !editCapability.error && editCapability.data === true;
+  const canDelete = !deleteCapability.error && deleteCapability.data === true;
   if (error) {
     return <PageFrame className="ui-stack"><PageIntro eyebrow="Staff workspace" title="Newsroom" description="Manage private drafts and published versions." /><Notice tone="danger" role="alert"><strong>Articles could not be loaded.</strong><p>The newsroom could not verify article data. Try again in a moment.</p></Notice></PageFrame>;
   }
@@ -59,6 +65,9 @@ export default async function NewsroomPage({ searchParams }: { searchParams: Pro
   return (
     <PageFrame className="ui-stack">
       <PageIntro eyebrow="Staff workspace · Editorial" title="Newsroom" actions={<Link href={adminHref("/newsroom/new")} className={buttonClassName("primary")}>Upload an article</Link>} />
+      {deleted ? <Notice tone="neutral" role="status">The story and all its records were permanently deleted.</Notice> : null}
+      {errorFlag === "delete_confirmation" ? <Notice tone="warning" role="alert">Tick the confirm box before a story can be deleted.</Notice> : null}
+      {errorFlag === "delete" ? <Notice tone="danger" role="alert">The story could not be deleted. Check your access and try again.</Notice> : null}
       <section className="ui-stack-sm admin-newsroom-list" aria-labelledby="article-list-heading">
         <div className={styles.listHeader}><h2 id="article-list-heading">Articles</h2><NewsroomFilter state={state ?? ""} /></div>
         {articles.length ? <Panel className={`ui-table admin-newsroom-table ${styles.table}`} role="region" aria-label="Articles list; scroll horizontally to see all columns" tabIndex={0}><table><thead><tr><th scope="col">Article</th><th scope="col">State</th><th scope="col">Slug</th><th scope="col">Updated</th><th scope="col"><span className="sr-only">Action</span></th></tr></thead><tbody>
@@ -68,7 +77,7 @@ export default async function NewsroomPage({ searchParams }: { searchParams: Pro
             const currentVersionIsPublic = Boolean(article.current_version_id && article.published_version_id === article.current_version_id);
             const displayState = currentVersionIsPublic ? "published" : version?.state ?? "unknown";
             const tone = displayState === "published" || displayState === "approved" ? "success" : displayState === "rejected" ? "danger" : displayState === "review" ? "warning" : "neutral";
-            return <tr key={article.id}><td><Link href={adminHref(`/newsroom/${article.id}`)} className="ui-item-title">{version?.title || "Untitled article"}</Link></td><td><StatusBadge tone={tone}>{displayState}</StatusBadge>{hasPublicVersion && !currentVersionIsPublic ? <span className="ui-meta">Earlier version is public</span> : null}</td><td><span className="ui-meta">{article.slug}</span></td><td><span className="ui-meta">{new Date(article.updated_at).toLocaleDateString("en-NG")}</span></td><td><Link href={adminHref(`/newsroom/${article.id}`)} className={buttonClassName("secondary")}>Open</Link>{canEdit ? <Link href={`${adminHref(`/newsroom/${article.id}`)}#article-editor`} className={buttonClassName("secondary")}>Edit</Link> : null}</td></tr>;
+            return <tr key={article.id}><td><Link href={adminHref(`/newsroom/${article.id}`)} className="ui-item-title">{version?.title || "Untitled article"}</Link></td><td><StatusBadge tone={tone}>{displayState}</StatusBadge>{hasPublicVersion && !currentVersionIsPublic ? <span className="ui-meta">Earlier version is public</span> : null}</td><td><span className="ui-meta">{article.slug}</span></td><td><span className="ui-meta">{new Date(article.updated_at).toLocaleDateString("en-NG")}</span></td><td><span className={styles.rowActions}><Link href={adminHref(`/newsroom/${article.id}`)} className={buttonClassName("secondary")}>Open</Link>{canEdit ? <Link href={`${adminHref(`/newsroom/${article.id}`)}#article-editor`} className={buttonClassName("secondary")}>Edit</Link> : null}{canDelete ? <details className={styles.deleteDisclosure}><summary className={buttonClassName("danger")}>Delete</summary><form action={deleteArticle} className={styles.deleteConfirm}><input type="hidden" name="articleId" value={article.id} /><label className="ui-row"><input type="checkbox" name="confirmDelete" value="yes" required /> Delete everywhere, for good.</label><button className={buttonClassName("danger")} type="submit">Yes, delete forever</button><span className="ui-meta">Removes the story, its versions and its comments from the database.</span></form></details> : null}</span></td></tr>;
           })}
         </tbody></table></Panel> : null}
         {articles.length ? <ul className={styles.cards} aria-label="Articles list">{articles.map((article) => {
@@ -76,7 +85,7 @@ export default async function NewsroomPage({ searchParams }: { searchParams: Pro
           const currentIsPublic = Boolean(article.current_version_id && article.published_version_id === article.current_version_id);
           const stateLabel = currentIsPublic ? "published" : version?.state ?? "unknown";
           const tone = stateLabel === "published" || stateLabel === "approved" ? "success" : stateLabel === "rejected" ? "danger" : stateLabel === "review" ? "warning" : "neutral";
-          return <li key={article.id} className={styles.card}><h3 className={styles.title}>{version?.title || "Untitled article"}</h3><div className={styles.meta}><StatusBadge tone={tone}>{stateLabel}</StatusBadge><time dateTime={article.updated_at}>Updated {new Date(article.updated_at).toLocaleDateString("en-NG")}</time></div>{article.published_version_id && !currentIsPublic ? <span className="ui-meta">Earlier version is public</span> : null}<div className={styles.actions}><Link href={adminHref(`/newsroom/${article.id}`)} className={buttonClassName("secondary")}>Open article</Link>{canEdit ? <Link href={`${adminHref(`/newsroom/${article.id}`)}#article-editor`} className={buttonClassName("secondary")}>Edit article</Link> : null}</div></li>;
+          return <li key={article.id} className={styles.card}><h3 className={styles.title}>{version?.title || "Untitled article"}</h3><div className={styles.meta}><StatusBadge tone={tone}>{stateLabel}</StatusBadge><time dateTime={article.updated_at}>Updated {new Date(article.updated_at).toLocaleDateString("en-NG")}</time></div>{article.published_version_id && !currentIsPublic ? <span className="ui-meta">Earlier version is public</span> : null}<div className={styles.actions}><Link href={adminHref(`/newsroom/${article.id}`)} className={buttonClassName("secondary")}>Open article</Link>{canEdit ? <Link href={`${adminHref(`/newsroom/${article.id}`)}#article-editor`} className={buttonClassName("secondary")}>Edit article</Link> : null}{canDelete ? <div className={styles.deleteDisclosure}><form action={deleteArticle} className={styles.deleteConfirm}><input type="hidden" name="articleId" value={article.id} /><label className="ui-row"><input type="checkbox" name="confirmDelete" value="yes" required /> Delete everywhere, for good.</label><button className={buttonClassName("danger")} type="submit">Yes, delete forever</button><span className="ui-meta">Removes the story, its versions and its comments from the database.</span></form></div> : null}</div></li>;
         })}</ul> : <EmptyPanel title={state ? `No ${state} articles` : "No articles yet"} description={state ? "No article currently matches this state." : "Create a private draft to begin. Nothing appears publicly until a publisher explicitly publishes it."} actions={!state ? <Link href={adminHref("/newsroom/new")} className={buttonClassName("primary")}>Upload an article</Link> : undefined} />}
       </section>
     </PageFrame>

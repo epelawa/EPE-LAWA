@@ -41,6 +41,15 @@
   border-color: var(--ep-border-subtle);
   background: var(--ep-surface);
 }
+.ep-button--danger {
+  color: var(--ep-danger);
+  border-color: var(--ep-danger);
+  background: var(--ep-surface);
+}
+.ep-button--danger:hover:not(:disabled) {
+  color: #fff;
+  background: var(--ep-danger);
+}
 .ep-button--ghost { color: var(--ep-text); background: transparent; }
 .ep-button--secondary:hover:not(:disabled),
 .ep-button--ghost:hover:not(:disabled) {

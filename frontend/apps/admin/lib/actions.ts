@@ -381,6 +381,35 @@ export async function unpublishArticle(formData: FormData): Promise<void> {
   }
   await articleTransition(formData, "article_unpublish", "unpublished");
 }
+async function deleteArticleCore(formData: FormData): Promise<void> {
+  const articleId = text(formData, "articleId", 64);
+  if (!UUID.test(articleId)) fail("/newsroom?error=invalid");
+  let errorCode: string | null = null;
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("newsroom_article_delete", { p_article_id: articleId });
+    if (error) errorCode = error.code;
+  } catch (error) {
+    errorCode = queryErrorCode(error);
+  }
+  if (errorCode) {
+    console.error("article delete failed", { code: errorCode });
+    fail(`/newsroom/${articleId}?error=delete`);
+  }
+  revalidatePath(adminHref("/newsroom"));
+  revalidatePath("/news");
+  revalidatePath("/");
+  redirect(adminHref("/newsroom?deleted=1"));
+}
+export async function deleteArticle(formData: FormData): Promise<void> {
+  const articleId = text(formData, "articleId", 64);
+  const confirmed = rawText(formData, "confirmDelete");
+  if (!UUID.test(articleId)) fail("/newsroom?error=invalid");
+  if (!hasConfirmedArticleUnpublish(confirmed)) {
+    fail(`/newsroom/${articleId}?error=delete_confirmation`);
+  }
+  await deleteArticleCore(formData);
+}
 async function articleTransition(
   formData: FormData,
   rpcName: "article_publish" | "article_unpublish",
