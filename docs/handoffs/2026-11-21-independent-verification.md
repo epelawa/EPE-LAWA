@@ -56,3 +56,20 @@ Scope: full re-verification of the project without relying on `docs/EXECUTION-CH
 3. O3 decision on `admin_member_delete` (drop the call or fix+apply the redesigned RPC).
 4. Backup/restore rehearsal, then the safety-path migration applies units (O5/O6 sign-off), starting with the ones the new features depend on (business discovery/photos/ads, media admin, site pages, maintenance mode).
 5. Then CSP enforcement plan (O8), payments decision (O11), radio rights (O12), branch protection (O10).
+
+## Live-database reconciliation and actions — 2026-11-21 (owner-connected Supabase MCP)
+
+Read-only catalog reconciliation against the real ledger (`supabase_0eec_list_migrations`, 79 entries, latest `20261121173539 form_rate_scope_widen`). The 2026-11-20 inventory is heavily superseded: the history, tourism, forum-polls, people, media, marketplace-reconciliation, member-messaging-reconciliation, business-check/repair, gallery, ads and site-pages units were all applied 2026-11-21 under dashboard-authored ledger entries, most with names embedding the local versions.
+
+Of 76 local migration files, 74 are semantically applied (objects verified present in the live catalog: all forum tables incl. polls, history_records, tourism_destinations, orders/products, programmes/episodes/radio_schedule/radio_rights_records, reader_presence, forum_reactions, business_staff_create, article_publish/guard_article_version, comment_report_resolve, radio_authoring_save, published_articles.body). The genuinely unapplied set was two files, and both were applied with owner authorization:
+
+- `20261120170000_system_backup_capabilities` — the three `backup.read` / `backup.create` / `backup.restore` capability reference rows were absent; applied as-is (idempotent INSERT, reference data only, no grants; app stays fail-closed until the owner grants the keys to staff roles). Verified after apply: all three rows present.
+- `20261121130000_site_maintenance_updated_at_trigger` — the `site_maintenance_set_updated_at` trigger was absent; applied as-is after verifying `set_updated_at()` exists live. Verified after apply: trigger present.
+
+No other production writes were made. No destructive path was touched (newsletter RPC decision O7, member-delete path O3, payments O11 remain owner-gated and unapplied).
+
+## Forum defect root cause and fix — 2026-11-21
+
+Vercel production runtime logs (read-only) identified the `/forum` error boundary: `Error: Attempted to call countActive() from the server but countActive is on the client` (every `GET /forum` request, production deployment `dpl_BQByP1tVQpBdjA1tn4wHWGyAvqRU`). Cause: `app/forum/page.tsx` imported `countActive` from `./live-count`, a `"use client"` module, and invoked it in the server component — not callable server-side. Fix on PR #239 (commit `0aa8a61`): `countActive` moved to server-safe `app/forum/active-count.ts`; `live-count.tsx` now only exports the client component. `pnpm typecheck` 5/5 exit 0 and Vitest 128/128 after the fix. The logs also confirmed `GET /api/radio/guts` honestly reports "Naija Radio catalogue did not return a unique usable Guts FM record" (O12 state unchanged).
+
+Production deployment verification (Vercel API, read-only): production alias serves `main` `e3e791f7787cd8992f71ab6df6e1ad2609081fc8` (`dpl_BQByP1tVQpBdjA1tn4wHWGyAvqRU`, READY).
