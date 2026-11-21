@@ -58,3 +58,8 @@
   .duplicate { display:none; }
 }
 .banner:focus-within .viewport { overflow-x:auto; }
+
+/* A fresh breaking story arrived while this page was open: brief glow pulse. */
+.arrived { animation: ticker-arrive 1.2s var(--ep-ease-out) 2; }
+@keyframes ticker-arrive { 0%,100% { box-shadow: 0 0 0 0 rgb(71 127 224 / 0); } 50% { box-shadow: 0 0 0 3px rgb(71 127 224 / .55); } }
+@media (prefers-reduced-motion: reduce) { .arrived { animation: none; } }

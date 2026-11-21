@@ -112,6 +112,9 @@
       "path": "/admin/settings"
     },
     {
+      "path": "/admin/site-pages"
+    },
+    {
       "path": "/admin/tourism"
     },
     {

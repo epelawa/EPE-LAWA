@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { pageMetadata } from "../../lib/metadata";
 
+import SitePageNote from "../../components/site-page-note";
 const description = "The agreement between you and EPE LAWA for using this platform.";
 
 export const metadata: Metadata = pageMetadata({ title: "Terms", description, path: "/terms" });
@@ -11,6 +12,8 @@ export default function TermsPage() {
   return (
     <InformationPage title="Terms of use" description="The agreement between you and EPE LAWA for using this platform.">
       <p className="legal-date"><strong>Last updated:</strong> 12 November 2026</p>
+
+      <SitePageNote page="terms" label="A note from EPE LAWA" />
 
       <h2>1. Agreement</h2>
       <p>These terms are an agreement between you and EPE LAWA ("we", "us") covering your use of this website, its mobile-equivalent web app and any related services we provide through it ("the service"). By using the service, creating an account, or submitting content, you accept these terms. If you do not accept them, do not use the service. Our <Link href="/privacy">Privacy notice</Link> explains how personal information is handled and forms part of these terms.</p>

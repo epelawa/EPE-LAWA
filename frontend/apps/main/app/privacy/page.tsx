@@ -3,6 +3,7 @@ import Link from "next/link";
 import { pageMetadata } from "../../lib/metadata";
 import InformationPage from "../../components/information-page";
 
+import SitePageNote from "../../components/site-page-note";
 export const metadata: Metadata = pageMetadata({
   title: "Privacy",
   description: "How EPE LAWA collects, uses, stores and protects personal information under the Nigeria Data Protection Act.",
@@ -14,6 +15,8 @@ export default function PrivacyPage() {
   return (
     <InformationPage title="Privacy notice" description="How EPE LAWA collects, uses, stores and protects your personal information.">
       <p className="legal-date"><strong>Last updated:</strong> 12 November 2026</p>
+
+      <SitePageNote page="privacy" label="A note from EPE LAWA" />
 
       <h2>1. Who we are</h2>
       <p>EPE LAWA is a news and community platform serving Epe Division, Lagos State, Nigeria. We are the controller of personal information processed through this website and decide how and why it is used. This notice explains what we collect, why, how long we keep it, and the choices and rights you have, in line with the Nigeria Data Protection Act 2023 and other applicable Nigerian law.</p>

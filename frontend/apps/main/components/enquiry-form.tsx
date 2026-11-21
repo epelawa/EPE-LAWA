@@ -2,6 +2,7 @@
 import { useActionState, useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { submitEnquiry, type EnquiryState } from "../app/enquiry/actions";
+import { pushToast } from "./toast";
 const initial: EnquiryState = {status:"idle",message:""};
 type Kind = "contact" | "advertising" | "correction" | "support";
 export default function EnquiryForm({ kind, onPendingChange, privacyHref = "/privacy" }: { kind: Kind; onPendingChange?: (pending:boolean)=>void; privacyHref?: string }) {
@@ -15,6 +16,10 @@ function EnquiryFormInner({kind,privacyHref,onPendingChange,onReset}:{kind:Kind;
   const [phone,setPhone] = useState(""); const [whatsapp,setWhatsapp] = useState(""); const [message,setMessage] = useState("");
   const firstStep = useRef<HTMLDivElement>(null);const secondStep=useRef<HTMLTextAreaElement>(null);const id=useId();
   useEffect(()=>{onPendingChange?.(pending);},[pending,onPendingChange]);
+  useEffect(()=>{
+    if (state.status === "success" && state.ticket) pushToast("success", "Request received — keep your ticket number.");
+    else if (state.status === "error" && state.message) pushToast("error", state.message);
+  },[state]);
   function next() {
     const fields = firstStep.current?.querySelectorAll<HTMLInputElement>("input") ?? [];
     for (const field of fields) if (!field.reportValidity()) return;

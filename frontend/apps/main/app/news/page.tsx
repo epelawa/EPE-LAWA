@@ -9,6 +9,7 @@ import { publishedNewsCover } from "../../lib/published-news-cover";
 import { absoluteUrl } from "../../lib/site";
 import { newsArticlePath } from "../../lib/news-urls";
 import NewsImage from "../../components/news-image";
+import HomeLivePill from "../../components/home-live-pill";
 import ArticleByline from "../../components/article-byline";
 import { BreakingBadge, BreakingNewsBanner } from "../../components/breaking-news";
 import { EmptyPanel, PageFrame } from "../../components/design-system";
@@ -158,6 +159,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
           <p className={styles.kicker}>Latest reporting</p>
           <h1 className={styles.pageTitle}>{heading}</h1>
           <p className={styles.pageDescription}>The latest stories, developments and voices shaping Epe Division.</p>
+          <HomeLivePill since={now} label="story" />
         </div>
       </header>
 

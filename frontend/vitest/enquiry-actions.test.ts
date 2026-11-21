@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const mock = vi.hoisted(()=>({ key:vi.fn(), db:vi.fn(), rpc:vi.fn(), config:vi.fn(), send:vi.fn() }));
 vi.mock("../apps/main/lib/form-server",()=>({formClientKey:mock.key,formAdminClient:mock.db}));
-vi.mock("../apps/main/lib/auth-mail-hook",()=>({authMailConfig:mock.config,deliverAuthMessage:mock.send}));
+vi.mock("../apps/main/lib/auth-mail-hook",()=>({authMailConfig:mock.config,deliverAuthMessage:mock.send,emailShell:(_title:string,html:string)=>html}));
 import {submitEnquiry} from "../apps/main/app/enquiry/actions";
 const idle={status:"idle" as const,message:""};
 function data(){const f=new FormData();f.set("kind","correction");f.set("name","Synthetic Reader");f.set("email","reader@example.invalid");f.set("message","Please review this article.");return f;}

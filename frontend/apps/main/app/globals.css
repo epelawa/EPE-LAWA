@@ -418,9 +418,34 @@ body:has([class*="directory_page"]) { background:var(--ep-bg); background-image:
 .scroll-progress { position: fixed; z-index: 120; top: 0; left: 0; width: 100%; height: 3px; pointer-events: none; }
 .scroll-progress span { display: block; width: var(--scroll-progress, 0%); height: 100%; background: linear-gradient(90deg, var(--palette-royal-steel), var(--palette-cobalt)); }
 .home-section-reveal { content-visibility: auto; contain-intrinsic-size: 1px 420px; }
-.reveal { opacity: 0; transform: translateY(var(--ep-motion-enter-y, 8px)); transition: opacity var(--dur-slow) var(--ease-out), transform var(--dur-slow) var(--ease-out); }
-.reveal[data-visible="true"] { opacity: 1; transform: none; }
-@media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
+.reveal { opacity: 0; transform: translateY(var(--ep-motion-enter-y, 8px)); filter: blur(7px); transition: opacity var(--dur-slow) var(--ease-out), transform var(--dur-slow) var(--ease-out), filter var(--dur-slow) var(--ease-out); }
+.reveal[data-visible="true"] { opacity: 1; transform: none; filter: blur(0); }
+@media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; filter: none; transition: none; } }
+
+/* Sitewide micro-interactions: press feedback on buttons, hover-lift on cards,
+   a smooth palette transition on theme change. All disabled for reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  button { transition: transform var(--ep-dur-fast, 120ms) var(--ep-ease-out); }
+  button:active:not(:disabled) { transform: scale(.965); }
+  .ui-card, .ui-panel { transition: transform var(--ep-dur-base, 200ms) var(--ep-ease-out), box-shadow var(--ep-dur-base, 200ms) var(--ep-ease-out); }
+  a.ui-card:hover, .ui-card:hover { transform: translateY(-2px); box-shadow: var(--ep-shadow-3); }
+}
+html { transition: background-color var(--ep-dur-base, 200ms) var(--ep-ease-out), color var(--ep-dur-base, 200ms) var(--ep-ease-out); }
+
+/* Toasts: a small stack bottom-right that slides in and self-dismisses. */
+.toast-region { display: grid; gap: var(--ep-space-2, 8px); position: fixed; right: var(--ep-space-4, 16px); bottom: calc(var(--ep-space-4, 16px) + 64px); z-index: 60; max-width: min(360px, calc(100vw - 32px)); }
+.toast { padding: 10px 14px; border: var(--ep-space-hair, 1px) solid var(--palette-border); border-left: 4px solid var(--palette-cobalt); border-radius: 10px; background: var(--palette-navy, #101b33); color: var(--palette-cloud, #f1f4fa); font-size: var(--ep-type-sm, 14px); line-height: 1.4; box-shadow: var(--ep-shadow-3); animation: toast-in var(--ep-dur-base, 200ms) var(--ep-ease-out); }
+.toast--success { border-left-color: #35d07f; }
+.toast--error { border-left-color: #e5484d; }
+@keyframes toast-in { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .toast { animation: none; } }
+
+/* Button busy spinner: any submit button carrying aria-busy or the .btn-busy
+   class shows an inline ring while the action runs. */
+.btn-busy, button[aria-busy="true"] { position: relative; opacity: .8; }
+.btn-busy::before, button[aria-busy="true"]::before { content: ""; display: inline-block; width: 1em; height: 1em; margin-right: .5em; vertical-align: -.125em; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: ep-spin .6s linear infinite; }
+@keyframes ep-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .btn-busy::before, button[aria-busy="true"]::before { animation-duration: 1.2s; } }
 
 /* ---------------------------------------------------------------------------
    Form inset. The old :where(form) rule had zero specificity and lost to every
@@ -445,3 +470,13 @@ body:has([class*="directory_page"]) { background:var(--ep-bg); background-image:
 .form-progress li span { display:grid; place-items:center; flex:none; width:26px; height:26px; border:1px solid #8297b7; border-radius:50%; }
 .form-progress li[aria-current="step"] { color:#173f7b; }
 .form-progress li[aria-current="step"] span { color:#fff; background:#294b91; border-color:#294b91; }
+
+/* Compact popdown forms: long forms stay collapsed until opened */
+.ui-disclosure { border: 1px solid var(--palette-border); border-radius: var(--ep-radius-md, 12px); background: var(--palette-paper, #ffffff); }
+.ui-disclosure > summary { display: inline-flex; align-items: center; gap: var(--ep-space-2); min-height: var(--ep-touch-min); padding: var(--ep-space-3) var(--ep-space-6); margin: 10px; border: transparent; border-radius: var(--ep-radius-pill); background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); font-size: var(--ep-type-sm); font-weight: var(--ep-weight-semibold); cursor: pointer; list-style: none; transition: transform 120ms var(--ease-out, ease-out); }
+.ui-disclosure > summary::-webkit-details-marker { display: none; }
+.ui-disclosure > summary:active { transform: scale(.965); }
+.ui-disclosure[open] > summary { margin-bottom: 0; }
+.ui-disclosure > form, .ui-disclosure > * { padding: 0 var(--ep-space-5, 16px) var(--ep-space-5, 16px); }
+.ui-disclosure form textarea, textarea.input, textarea[class*="input"] { resize: none; }
+@media (prefers-reduced-motion: reduce) { .ui-disclosure > summary { transition: none; } }

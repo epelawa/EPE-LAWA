@@ -104,7 +104,7 @@ export default async function TourismPage({ searchParams }: { searchParams: Prom
       {submission === "sent" ? <Notice tone="success" role="status">Your suggestion was received privately for editorial review. It is not published.</Notice> : null}
       {submission === "invalid" ? <Notice tone="warning" role="alert">Please check the required fields, HTTPS links, media-rights description and consent.</Notice> : null}
       {submission === "error" ? <Notice tone="danger" role="alert">The private suggestion could not be saved. Confirm your member profile is active and try again later.</Notice> : null}
-      {signedIn ? <Panel><form action={submitTourismContribution} className="ui-stack">
+      {signedIn ? <Panel><details className="ui-disclosure"><summary className="btn-primary">Suggest a destination</summary><form action={submitTourismContribution} className="ui-stack">
         <div className="ui-form-grid">
           <div className="ui-field"><label className="label" htmlFor="tourism-name">Destination name</label><input className="input" id="tourism-name" name="name" required minLength={2} maxLength={180} /></div>
           <div className="ui-field"><label className="label" htmlFor="tourism-source">Source citation</label><textarea className="input" id="tourism-source" name="source_citation" required minLength={5} maxLength={2000} /></div>
@@ -117,7 +117,7 @@ export default async function TourismPage({ searchParams }: { searchParams: Prom
         </div>
         <label className="ui-subtle ui-row"><input type="checkbox" name="consent" value="yes" required /><span>I confirm these details are submitted for private editorial review, the source is identified, and any media rights basis is accurately described. I understand nothing will be published unless provenance and rights are verified.</span></label>
         <div className="ui-actions"><button className="btn-primary" type="submit">Submit privately for review</button></div>
-      </form></Panel> : <p><Link className="btn-secondary" href="/login?next=%2Ftourism">Sign in to suggest a destination</Link></p>}
+      </form></details></Panel> : <p><Link className="btn-secondary" href="/login?next=%2Ftourism">Sign in to suggest a destination</Link></p>}
     </section>
     <p className="ui-meta">Directions open in Google Maps. Verify the route before travel.</p>
   </PageFrame>;

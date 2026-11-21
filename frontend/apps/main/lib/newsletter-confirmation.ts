@@ -1,4 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
+import { emailShell } from "./auth-mail-hook";
 
 export type ConfirmationMessage = { to: string; subject: string; text: string; html: string; idempotencyKey: string };
 type Pending = { email: string; confirmationHash: string; unsubscribeHash: string; otpHash: string };
@@ -30,7 +31,11 @@ export async function requestNewsletterConfirmation(input: { email: unknown; con
     const unsubscribeUrl = new URL("/newsletter/unsubscribe", origin); unsubscribeUrl.searchParams.set("token", unsubscribe);
     const subject = "Confirm your EPE LAWA newsletter subscription";
     const text = `Confirm your newsletter subscription: ${confirmUrl.href}\n\nIf this confirmation starts a new subscription, keep this link to unsubscribe: ${unsubscribeUrl.href}\n\nIf you are already subscribed, keep using your existing unsubscribe link. If you did not request this, ignore this email. The confirmation link expires in 30 minutes.`;
-    const html = `<main style="font-family:Arial,sans-serif;color:#17264a"><p>EPE LAWA NEWSLETTER</p><h1>Confirm your subscription</h1><p><a href="${escape(confirmUrl.href)}">Review and confirm subscription</a></p><p>If this confirmation starts a new subscription, <a href="${escape(unsubscribeUrl.href)}">keep this link to unsubscribe</a>.</p><p>If you are already subscribed, keep using your existing unsubscribe link. If you did not request this, ignore this email. The confirmation link expires in 30 minutes.</p></main>`;
+    const html = emailShell("Confirm your subscription", `
+      <p style="margin:0 0 16px;line-height:1.6">Please review and confirm your EPE LAWA newsletter subscription.</p>
+      <p style="margin:0 0 16px"><a href="${escape(confirmUrl.href)}" style="display:inline-block;padding:12px 22px;background:#477fe0;color:#ffffff;text-decoration:none;border-radius:10px;font-weight:bold">Review and confirm subscription</a></p>
+      <p style="margin:0 0 8px;line-height:1.6">If this confirmation starts a new subscription, <a href="${escape(unsubscribeUrl.href)}" style="color:#294b91">keep this link to unsubscribe</a>.</p>
+      <p style="margin:0;line-height:1.6">Already subscribed? Keep using your existing unsubscribe link. If you did not request this, ignore this email. The confirmation link expires in 30 minutes.</p>`, "A subscription was requested with this email address on the EPE LAWA website.");
     await deps.send({ to: email, subject, text, html, idempotencyKey: `newsletter/${pending.confirmationHash}` });
     return "accepted";
   } catch { return "unavailable"; }

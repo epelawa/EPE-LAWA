@@ -14,6 +14,7 @@ import { CommentThread } from "../comment-thread";
 import CommentDock from "../../../components/comment-dock";
 import ArticleCoverStats from "../../../components/article-cover-stats";
 import ArticleViewPing from "../../../components/article-view-ping";
+import ReaderPresence from "../../../components/reader-presence";
 import OfflineArticleDownload from "../../../components/offline-article-download";
 import ArticleShareActions from "../../../components/article-share-actions";
 import SaveArticleButton from "../../../components/save-article-button";
@@ -172,6 +173,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
           <div className={styles.articleHeroCopy}>
             {!signedIn ? <p className={styles.articleCategory}>{article.category_label}</p> : null}
             <h1>{article.title}</h1>
+            <ReaderPresence slug={article.slug} />
             {!signedIn && article.summary ? <p className={styles.articleStandfirst}>{article.summary}</p> : null}
             {!signedIn ? <div className={styles.publicStoryMeta}><ArticleByline name={article.author_name} />{date ? <time dateTime={article.published_at ?? undefined}>{date}</time> : null}</div> : null}
           </div>

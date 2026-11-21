@@ -1,6 +1,15 @@
 "use server";
 import { formAdminClient, formClientKey } from "../../lib/form-server";
-import { authMailConfig, deliverAuthMessage } from "../../lib/auth-mail-hook";
+import { authMailConfig, deliverAuthMessage, emailShell } from "../../lib/auth-mail-hook";
+
+// Each kind is routed to the right staff channel: the notification names the channel
+// and the queue to open, so the message reaches the people who handle it.
+const channels: Record<string, { label: string; queue: string }> = {
+  contact: { label: "general contact", queue: "Enquiries · contact" },
+  advertising: { label: "advertising", queue: "Enquiries · advertising" },
+  correction: { label: "correction request", queue: "Enquiries · correction" },
+  support: { label: "support request", queue: "Enquiries · contact (support ticket)" },
+};
 export type EnquiryState = { status: "idle" | "success" | "error"; message: string; ticket?: string; acknowledgement?: "accepted" | "unavailable" };
 const value = (f: FormData, n: string) => typeof f.get(n) === "string" ? (f.get(n) as string).trim() : "";
 export async function submitEnquiry(_prev: EnquiryState, form: FormData): Promise<EnquiryState> {
@@ -24,17 +33,26 @@ export async function submitEnquiry(_prev: EnquiryState, form: FormData): Promis
     const ticket = kind === "support" && typeof result.data === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(result.data) ? result.data : null;
     if (kind === "support" && !ticket) return { status:"error", message:"We couldn’t confirm your ticket number. Please contact support before trying again to avoid a duplicate." };
     // No sender details or message content leave the private staff queue in this notification.
+    const channel = channels[kind] ?? channels.contact;
     try {
       const config = authMailConfig(process.env);
       if (config.kind !== "gmail") throw new Error("Gmail unavailable");
-      await deliverAuthMessage({ to:config.user, subject:"New EPE LAWA enquiry", text:"A new enquiry is waiting in the private staff workspace.", html:"<p>A new enquiry is waiting in the private staff workspace.</p>", idempotencyKey:`enquiry/${result.data}` }, config);
+      const stafferText = `A new ${channel.label} is waiting in the private staff workspace. Open “${channel.queue}” to reply.`;
+      await deliverAuthMessage({ to:config.user, subject:`New ${channel.label} — staff queue`, text:stafferText, html:emailShell(`New ${channel.label}`, `<p style="margin:0 0 12px;line-height:1.6">A new <strong>${channel.label}</strong> is waiting in the private staff workspace.</p><p style="margin:0;line-height:1.6">Open the staff workspace and check the <strong>${channel.queue}</strong> queue to pick it up.</p>`, " routed to the right channel automatically."), idempotencyKey:`enquiry/${result.data}` }, config);
     } catch { console.error("Enquiry notification delivery unavailable; check the staff queue."); }
     // An acknowledgement is best-effort and never changes whether the enquiry was saved.
     let acknowledgementStatus: "accepted" | "unavailable" = "unavailable";
     try {
       const config = authMailConfig(process.env);
-      const acknowledgement = `Thank you for contacting EPE LAWA. Our team will get back to you soon.${ticket ? ` Your support ticket number is ${ticket}. Please keep it for reference.` : ""}`;
-      await deliverAuthMessage({ to:email, subject:ticket ? "Your EPE LAWA support ticket" : "We received your EPE LAWA enquiry", text:acknowledgement, html:`<p>${acknowledgement}</p>`, idempotencyKey:`enquiry-ack/${result.data}` }, config);
+      const ackByKind: Record<string, string> = {
+        advertising: "Thank you for your interest in advertising with EPE LAWA. Our advertising team reviews every request and will get back to you soon.",
+        correction: "Thank you for your correction request. Our editorial team reviews every correction and will update the record if it is verified.",
+        support: "Thank you for contacting EPE LAWA support. Our team will get back to you soon.",
+        contact: "Thank you for contacting EPE LAWA. Our team will get back to you soon.",
+      };
+      const base = ackByKind[kind] ?? ackByKind.contact;
+      const acknowledgement = `${base}${ticket ? ` Your support ticket number is ${ticket}. Please keep it for reference.` : ""}`;
+      await deliverAuthMessage({ to:email, subject:ticket ? "Your EPE LAWA support ticket" : `We received your ${channel.label}`, text:acknowledgement, html:emailShell(ticket ? "Your support ticket is confirmed" : "We received your message", `<p style="margin:0;line-height:1.6">${acknowledgement}</p>`, " routed to the right team automatically.") , idempotencyKey:`enquiry-ack/${result.data}` }, config);
       acknowledgementStatus = "accepted";
     } catch { console.error("Enquiry acknowledgement delivery unavailable."); }
     return { status:"success", message:ticket ? `Your support request has been received. Your ticket number is ${ticket}. Please keep it for reference. Our team will get back to you soon.` : "Your enquiry has been received. Our team will get back to you soon.", ...(ticket ? { ticket, acknowledgement: acknowledgementStatus } : {}) };

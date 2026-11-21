@@ -13,6 +13,7 @@ import { createClient } from "../lib/supabase";
 import { siteUrl } from "../lib/site";
 import { themeScript } from "../lib/theme";
 import SiteMotion from "../components/site-motion";
+import ToastRegion from "../../main/components/toast";
 import FloatingSupport from "../../main/components/floating-support";
 
 export const metadata: Metadata = {
@@ -70,6 +71,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       <body data-admin-shell={staffWorkspace ? "sidebar" : "plain"}>
         <Script strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeScript }} />
         <SiteMotion />
+        <ToastRegion />
         <a className="skip-link" href="#skip-target">Skip to content</a>
         {staffWorkspace ? (
           <AdminSidebar items={navigation} userEmail={identity?.email ?? null} userRole={identity?.role} />
