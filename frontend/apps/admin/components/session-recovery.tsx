@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type RefObject } from "react";
 
-// An opt-in, tab-local convenience, not a server draft or a security boundary.
+// Tab-local convenience enabled by default, not a server draft or a security boundary.
 const FIELDS = ["title", "summary", "body", "categoryId", "authorId", "coverUrl", "coverAlt", "coverCredit", "coverSourceUrl", "coverLicenseUrl", "coverCaption", "seoTitle", "seoDescription"] as const;
 const MAX_AGE = 24 * 60 * 60 * 1000;
 type Snapshot = { version: 1; savedAt: number; revision: string; fields: Record<string, string> };
@@ -36,7 +36,7 @@ function apply(form: HTMLFormElement, fields: Record<string, string>) {
 }
 
 export default function SessionRecovery({ form, actor, article, revision, saved = false }: { form: RefObject<HTMLFormElement | null>; actor?: string; article: string; revision: string; saved?: boolean }) {
-  const [enabled, setEnabled] = useState(false);
+  const [enabled, setEnabled] = useState(true);
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [message, setMessage] = useState("");
   const key = actor ? recoveryKey(actor, article) : "";
@@ -65,8 +65,7 @@ export default function SessionRecovery({ form, actor, article, revision, saved 
     setMessage(missing.length ? "Recovered the available fields. A saved author or category is no longer available; select it again." : "Recovery copy restored in this form. Review it before saving.");
   }
   return <section className="ui-stack-sm" aria-label="Browser recovery">
-    <p><strong>Optional browser recovery</strong> · A copy stays in this browser tab, not on the server. Anyone with access to this browser session may read it. Don’t use this on a shared device. This is not publication or a newsroom save.</p>
-    {snapshot ? <><p role="status">A recovery copy from {new Date(snapshot.savedAt).toLocaleString()} is available{snapshot.revision !== revision ? "; the article revision has changed, so compare carefully before saving" : ""}.</p><div className="ui-actions"><button className="btn-secondary" type="button" onClick={restore}>Restore recovery copy</button><button className="btn-secondary" type="button" onClick={discard}>Discard recovery copy</button></div></> : <div className="ui-actions">{enabled ? <button className="btn-secondary" type="button" onClick={discard}>Stop recovery and remove copy</button> : <button className="btn-secondary" type="button" onClick={() => { setEnabled(true); setMessage("Recovery enabled. Changes will be stored in this tab."); }}>Enable browser recovery</button>}</div>}
+    {snapshot ? <><p role="status">A recovery copy from {new Date(snapshot.savedAt).toLocaleString()} is available{snapshot.revision !== revision ? "; the article revision has changed, so compare carefully before saving" : ""}.</p><div className="ui-actions"><button className="btn-secondary" type="button" onClick={restore}>Restore recovery copy</button><button className="btn-secondary" type="button" onClick={discard}>Discard recovery copy</button></div></> : <div className="ui-actions">{enabled ? <button className="btn-secondary" type="button" onClick={discard}>Stop recovery and remove copy</button> : <button className="btn-secondary" type="button" onClick={() => { setEnabled(true); setMessage("Recovery enabled in this tab."); }}>Turn recovery back on</button>}</div>}
     {message && <p role="status">{message}</p>}
   </section>;
 }

@@ -108,7 +108,7 @@ it("article editor preserves fields and revision on conflict", async () => {
 it("browser recovery restores controlled article body and author after refresh", async () => {
  vi.useFakeTimers();sessionStorage.clear();const el=document.createElement("div");document.body.append(el);let root=createRoot(el);
  const composer=<NewsArticleComposer recoveryActor="member-1" categories={[{id:"news",label:"News"}]} authors={[{id:"author",display_name:"Author"}]} />;
- await act(async()=>root.render(composer));await act(async()=>button(el,"Enable browser recovery").click());
+ await act(async()=>root.render(composer));
  await act(async()=>{setValue(el.querySelector('#title')!,"Recovered title");setValue(el.querySelector('#body')!,"Recovered body");button(el,"Continue").click();});
  await act(async()=>button(el,"Continue").click());await act(async()=>{setValue(el.querySelector('#categoryId')!,"news");setValue(el.querySelector('#authorId')!,"author");vi.advanceTimersByTime(600);});
  await act(async()=>root.unmount());root=createRoot(el);await act(async()=>root.render(composer));
