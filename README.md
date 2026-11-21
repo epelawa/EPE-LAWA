@@ -36,7 +36,7 @@ The public app is `frontend/apps/main`; the staff app is `frontend/apps/admin`.
 
 ## Deployment status
 
-A supplied Vercel log records an older `main` build at `8885e16` failing due to unresolved helper imports and filtered environment variables. A read-only Playwright baseline on 2026-11-07 against `https://epelawa.vercel.app` found the deployed alias is still an older, incomplete release: News, Radio and Who-is-Who returned 200, while several approved module and auth routes returned 404; Radio overflowed at 320/375 px. This is not the feature branch. The current feature-branch preview remains unverified; no production writes were made.
+Verified 2026-11-21 against `https://epelawa.vercel.app` (read-only HTTP checks, no writes): `main` is `e3e791f7787cd8992f71ab6df6e1ad2609081fc8` (merge of PR #238) with CI verify, CodeQL and browser smoke all green on that exact head. The live alias serves all eight approved modules: homepage and News are populated with real published stories; Business Directory shows one verified business (Founda Technologies); Map, Tourism, Itan Ilu Mi, Who is Who and Gallery serve honest empty states; `/admin/login` and `/api/health` (`{"status":"ok"}`) respond 200. One verified live defect: `/forum` renders the error boundary ("Try once more, or take another route") instead of the forum listing. The production Supabase migration-ledger drift documented in `docs/handoffs/2026-11-20-migration-inventory.md` remains unresolved; no production writes were made during verification.
 
 ## Key documents
 

@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import styles from "./forum.module.css";
 
-type ThreadRows = { last_activity_at?: string | null }[];
-
 // Live indicator: polls the public forum feed and shows how many
 // conversations had activity in the last 15 minutes.
 export default function ForumLiveCount({ initialActive }: { initialActive: number }) {
@@ -27,9 +25,4 @@ export default function ForumLiveCount({ initialActive }: { initialActive: numbe
   }, []);
   if (active < 1) return null;
   return <span className={styles.liveBadge}><span className={styles.liveDot} aria-hidden="true" />{active} active now</span>;
-}
-
-export function countActive(threads: ThreadRows, windowMs = 15 * 60 * 1000) {
-  const cutoff = Date.now() - windowMs;
-  return threads.filter(thread => thread.last_activity_at && Date.parse(thread.last_activity_at) > cutoff).length;
 }
