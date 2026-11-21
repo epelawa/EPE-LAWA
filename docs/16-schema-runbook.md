@@ -6,23 +6,27 @@ Operational guidance for the database migrations in `backend/supabase/migrations
 
 ## 0. Current inventory and evidence
 
-The repository at base `d8de649de710fd6accec5bffe3f1f65fdae3b67f` contains **40 SQL migration files**. The full lexicographic inventory is in §2. The old count of 13 files and the old count of 19 behavioural rules are stale.
+At `origin/main` `2dfa5ba`, the repository contains **59 SQL migration files**. The full lexicographic inventory is in §2. Older counts of 13 and 40 files, and the old count of 19 behavioural rules, are stale.
 
-The latest recorded local synthetic rehearsal on `main` at `433082acaafc72fc300f5be385c100af7afc1df7` applied all 40 files, in lexicographic filename order, to PGlite with synthetic fixtures. `node --test backend/tests/schema.test.mjs` reported 29 test cases: **28 passed, 0 failed, and 1 intentional skip**. This is bounded local evidence only; it does not establish migration safety or readiness for a hosted or Production apply. See [the implementation checklist's rehearsal limits](18-project-status-implementation-checklist.md#database-rehearsal-evidence-and-limits).
+The latest recorded local synthetic rehearsal applied the then-current files, in lexicographic filename order, to PGlite with synthetic fixtures. `node --test backend/tests/schema.test.mjs` reported 29 test cases: **28 passed, 0 failed, and 1 intentional skip**. This is bounded local evidence only; it does not establish migration safety or readiness for a hosted or Production apply. See [the implementation checklist's rehearsal limits](18-project-status-implementation-checklist.md#database-rehearsal-evidence-and-limits).
 
-No evidence is recorded here for a live migration ledger or live data, Supabase RLS/role behavior, Supabase Auth/JWT or PostgREST behavior, service-role bypass, connection-pooler behavior, a backup/restore rehearsal, or production-scale locking/runtime. Do not infer any of these from the local replay or its test result.
+The live target `EPE LAWA` (`igqmybuiovaxqmrteebd`) was inspected read-only before the confirmed schema apply. It is `ACTIVE_HEALTHY` in `eu-west-3`; the pre-apply catalog had 51 public tables, 4 views, 93 policies, and the business-directory tables. The live ledger uses a separately reconciled history rather than repository filenames one-for-one.
 
-The inventory also has repeated migration version prefixes: `20261107213000` and `20261114190000` each occur on two files. Resolve and review version/ledger handling before any hosted migration operation. This docs-only change does not alter migration SQL or reconcile those identifiers.
+After explicit confirmation, four additive live records were applied in dependency order: `20261121150100_enable_btree_gist_for_marketplace`, `20261121150200_marketplace_and_payments_reconciliation`, `20261121150300_marketplace_requests_moderation_reconciliation`, and `20261121150400_advertising_admin_workflow_reconciliation`. The first marketplace attempt failed on the missing installed `btree_gist` extension and rolled back; the extension was then installed separately and the retry succeeded. Post-apply verification found the marketplace/payment tables, moderation history, active sponsorship view, five RPCs, `advertising.manage`, RLS on the new tables, no client write grants on money/sponsorship tables, zero payment rows, and zero active sponsorship rows.
+
+Still unverified: Supabase Auth/JWT and PostgREST behavior under the complete role matrix, service-role bypass review, connection-pooler behavior, a backup/restore rehearsal, production-scale locking/runtime, and exact production deployment behavior. Do not infer these from the successful DDL apply.
+
+The repository inventory still has repeated migration version prefixes: `20261107213000` and `20261114190000` each occur on two files. The live reconciliation records use unique names and preserve the existing remote ledger; they do not rename or fake historical rows. Any future migration must use a unique version and be mapped explicitly to the target ledger.
 
 ## 1. Before any apply
 
-1. **Identify the exact target and inspect its ledger.** Confirm the project reference and environment before using a linked-project command. Inspect the target's migration ledger and compare it with the complete repository inventory and the actual schema. This runbook has no verified live-ledger baseline and specifies no expected row count. If the target or its current state cannot be established, stop.
+1. **Identify the exact target and inspect its ledger.** Confirm the project reference and environment before using a linked-project command. Inspect the target's migration ledger and compare it with the complete repository inventory and actual schema. The current verified target is `igqmybuiovaxqmrteebd`; the four reconciliation records are listed in §0. If the target or its current state cannot be established, stop.
 
    ```sh
    supabase migration list --linked
    ```
 
-2. **Resolve the repeated version prefixes.** Confirm the migration tool's handling and the target ledger for the two duplicate prefixes listed in §0. Do not use the local filename replay as proof that a hosted tool will accept or safely record them.
+2. **Resolve the repeated version prefixes.** Confirm the migration tool's handling and target mapping for the two duplicate repository prefixes listed in §0. Do not rename or fabricate historical ledger entries; use a new unique reconciliation migration when the live history differs.
 
 3. **Establish recovery, not just a dump.** Take a target-specific backup and verify a restore on an isolated environment before relying on it. A dump alone is not proof of recoverability; no backup/restore rehearsal is evidenced here.
 
@@ -30,13 +34,13 @@ The inventory also has repeated migration version prefixes: `20261107213000` and
    supabase db dump --linked -f backups/pre-schema-$(date +%Y%m%d%H%M).sql
    ```
 
-4. **Use an isolated hosted preview before any Production change.** PGlite is not Supabase. The local test substitutes `citext`, does not install `btree_gist` or exercise its exclusion constraints, and omits `article_versions_guard`. Verify extension availability and the unshimmed migration behavior on the exact target platform.
+4. **Use an isolated hosted preview before any further Production change.** PGlite is not Supabase. The live apply verified `citext` and installed `btree_gist`, but this does not replace an isolated rehearsal. Verify extension availability, unshimmed migration behavior, RLS, grants, and rollback/recovery on the exact target platform.
 
 5. **Review the exact proposed apply and recovery steps.** The local replay does not validate the linked project's schema, data, RLS/authentication integration, pooler, or rollback path. Do not run `supabase db push` on the strength of this runbook or the PGlite result alone.
 
 ## 2. Repository migration inventory and order
 
-The recorded rehearsal used lexicographic filename order. The list below is the full 40-file inventory in that order; it is not, by itself, proof that a hosted apply is safe or that a remote ledger matches the repository.
+The recorded rehearsal used lexicographic filename order. The list below is the full 59-file repository inventory in that order; it is not, by itself, proof that a hosted apply is safe or that a remote ledger matches the repository.
 
 ```text
 20261102133703_staff_access_foundation.sql
@@ -79,13 +83,32 @@ The recorded rehearsal used lexicographic filename order. The list below is the 
 20261115010500_radio_live_schema_authoring_reconcile.sql
 20261115011000_newsroom_reference_settings.sql
 20261115093000_news_cover_urls.sql
+20261116120000_article_engagement.sql
+20261116140000_member_saved_articles.sql
+20261118030000_newsletter_subscriptions.sql
+20261118053000_pause_unsafe_newsletter_signup.sql
+20261118060000_restore_article_set_breaking.sql
+20261119010000_newsletter_verified_requests.sql
+20261119011000_private_enquiries.sql
+20261119012000_form_rate_limits.sql
+20261119013000_form_retention.sql
+20261119013500_staff_profiles_must_change_password.sql
+20261119014000_private_enquiry_staff.sql
+20261119015000_staff_directory_email_type.sql
+20261119020000_member_admin_messages.sql
+20261119100000_member_directory_safe.sql
+20261119105000_published_articles_body.sql
+20261119110000_published_news_search.sql
+20261120170000_system_backup_capabilities.sql
+20261121120000_maintenance_mode.sql
+20261121130000_site_maintenance_updated_at_trigger.sql
 ```
 
 Confirm ordering and dependency behavior on the chosen database platform, and reconcile the duplicate version prefixes, before any hosted apply. Do not cherry-pick, reorder, or continue past an error without a reviewed plan for the exact target and ledger.
 
 ## 3. Verification queries for an approved isolated target
 
-These are operator checks to run and record after a separately approved isolated apply. They are **not** results from a live project. No current hosted schema counts or live data counts are established by this document. Record fresh output for the exact target and compare it with a reviewed baseline; do not reuse the old 49-table, 5-view, or 101-policy numbers as current targets.
+These are operator checks to run and record after a separately approved isolated apply or when revalidating the live target. Fresh live evidence on 21 November 2026 established the counts and objects summarized in §0; those results are not a substitute for repeating the checks after future DDL or for a full production release gate. Do not reuse old 49-table, 5-view, or 101-policy numbers as current targets.
 
 **Find public tables without RLS or a primary key:**
 
@@ -168,10 +191,10 @@ The recorded test uses PGlite and synthetic fixtures, not a hosted Supabase proj
 
 | Area | What the replay did | What remains unverified |
 | --- | --- | --- |
-| GiST exclusion constraints | `btree_gist` was not installed; `radio_schedule_no_overlap` and `business_featured_no_overlap` were omitted from the replay. | Neither exclusion constraint's behavior was exercised. |
+| GiST exclusion constraints | The local fixture did not install `btree_gist`; the live reconciliation installed it and created `business_featured_no_overlap`. | Full hosted concurrency/locking behavior and the radio exclusion constraint still need an isolated rehearsal. |
 | `citext` | Replaced by a plain `text` domain. | Real `citext` installation and case-insensitive uniqueness were not verified. |
 | `article_versions_guard` | The trigger was omitted by the fixture shim. | The replay does not establish whether this trigger exists in any live catalog or verify its live behavior. |
-| Migration ledger and data | Only the repository migration files and synthetic local fixtures were used. | No live migration ledger or live data were inspected or validated. |
+| Migration ledger and data | The live ledger and selected live catalog were inspected; the four reconciliation records were applied with zero payment and sponsorship rows. | Full data-quality baseline, provider ledger behavior, and production-scale runtime remain unverified. |
 | Security and APIs | The fixture models some roles and auth helpers locally. | No live Supabase RLS/role matrix, Auth/JWT integration, PostgREST behavior, or service-role bypass was proved. |
 | Operations and recovery | No hosted project, pooler, production-sized dataset, or restore was exercised. | No connection-pooler behavior, backup/restore path, production-scale lock behavior, or migration runtime was proved. |
 
@@ -179,9 +202,9 @@ The recorded test uses PGlite and synthetic fixtures, not a hosted Supabase proj
 
 ## 5. Rollback and failed applies
 
-There are no automatic `down` migrations in this set. A backup is useful only if its restore has been tested on an isolated environment; this runbook records no such restore proof.
+There are no automatic `down` migrations in this set. A backup is useful only if its restore has been tested on an isolated environment; this runbook still records no completed backup/restore rehearsal for the live target.
 
-If an apply fails, preserve the exact command output and inspect the target's actual ledger and schema before taking further action. Do not assume all files rolled back, rerun the entire push, edit an applied migration, or patch forward without a reviewed plan for that target. Resolve the state in an isolated environment first.
+If an apply fails, preserve the exact command output and inspect the target's actual ledger and schema before taking further action. The 21 November marketplace attempt failed on the missing installed `btree_gist` extension and was verified to have left no marketplace objects or ledger record; the extension was then installed as its own migration before retrying. Do not assume all future files roll back, rerun an entire push, edit an applied migration, or patch forward without a reviewed plan for that target. Resolve the state in an isolated environment first.
 
 Dropping the `public` schema destroys its objects and data. Use such a reset only on a disposable local fixture or explicitly isolated database after confirming it contains no needed data. It is not a Production rollback procedure.
 
