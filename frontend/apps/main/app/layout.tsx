@@ -26,6 +26,7 @@ import AuthCallbackErrorRouter from "../components/auth-callback-error-router";
 import MobileBottomNav from "../components/mobile-bottom-nav";
 import { createClient } from "../lib/supabase";
 import { NotificationSoundListener } from "../components/notification-sound";
+import ToastRegion from "../components/toast";
 
 const description =
   "News, community history, local discussion, maps, local business, tourism, radio and Who-is-Who for Epe Division.";
@@ -71,6 +72,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <NotificationSoundListener />
         <ScrollToTop />
         <ScrollProgress />
+        <ToastRegion />
         <a className="skip-link" href="#main">
           Skip to content
         </a>

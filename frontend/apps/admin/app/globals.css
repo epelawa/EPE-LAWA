@@ -250,3 +250,22 @@ body[data-admin-shell="sidebar"] { --admin-sidebar-width: 256px; }
 }
 .drawer[data-sidebar="true"] { display: flex; flex-direction: column; }
 .drawer[data-sidebar="true"] .admin-sidebar__nav { flex: 1; }
+
+/* Button busy spinner for staff forms. */
+.btn-busy, button[aria-busy="true"] { position: relative; opacity: .8; }
+.btn-busy::before, button[aria-busy="true"]::before { content: ""; display: inline-block; width: 1em; height: 1em; margin-right: .5em; vertical-align: -.125em; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: ep-spin .6s linear infinite; }
+@keyframes ep-spin { to { transform: rotate(360deg); } }
+
+/* Toasts: small stack that slides in and self-dismisses. */
+.toast-region { display: grid; gap: 8px; position: fixed; right: 16px; bottom: 16px; z-index: 80; max-width: min(380px, calc(100vw - 32px)); }
+.toast { padding: 10px 14px; border: 1px solid var(--ep-color-border, #d7e2f0); border-left: 4px solid var(--ep-color-cobalt, #477fe0); border-radius: 10px; background: var(--ep-color-navy, #101b33); color: var(--ep-color-cloud, #f1f4fa); font-size: 14px; line-height: 1.4; box-shadow: var(--ep-shadow-3); animation: toast-in 200ms var(--ep-ease-out, ease-out); }
+.toast--success { border-left-color: #35d07f; }
+.toast--error { border-left-color: #e5484d; }
+@keyframes toast-in { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .toast { animation: none; } }
+
+/* Press feedback inside the staff workspace. */
+@media (prefers-reduced-motion: no-preference) {
+  button { transition: transform 120ms var(--ep-ease-out, ease-out); }
+  button:active:not(:disabled) { transform: scale(.97); }
+}

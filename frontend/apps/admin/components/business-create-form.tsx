@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { staffCreateBusiness, type StaffCreateState } from "../app/(protected)/business-review/actions";
+import { pushToast } from "../main/components/toast";
 
 type Option = { id: string; label: string };
 
@@ -16,7 +17,10 @@ export default function BusinessCreateForm({ categories }: { categories: Option[
   const [state, action] = useActionState(staffCreateBusiness, initial);
   const [verify, setVerify] = useState(false);
   const form = useRef<HTMLFormElement>(null);
-  useEffect(() => { if (state.status === "success") form.current?.reset(); }, [state]);
+  useEffect(() => {
+    if (state.status === "success") { form.current?.reset(); pushToast("success", "Listing published to the directory."); }
+    else if (state.status === "error" && state.message) pushToast("error", state.message);
+  }, [state]);
   return (
     <form ref={form} action={action} className="ui-stack-sm">
       <div className="ui-form-grid">
