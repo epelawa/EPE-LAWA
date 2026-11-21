@@ -13,6 +13,7 @@ import { HomeBreakingTicker } from "../components/home-breaking-ticker";
 import { BreakingBadge } from "../components/breaking-news";
 import SponsorSlot from "../components/sponsor-slot";
 import { HomeSectionReveal } from "../components/home-sections";
+import HomeLivePill from "../components/home-live-pill";
 
 export default async function Home() {
   const renderedAt = Date.now();
@@ -58,7 +59,7 @@ export default async function Home() {
 
       <HomeSectionReveal><section className="ep-container home-news" aria-labelledby="latest-title">
         <div className="home-news__heading">
-          <div><h2 id="latest-title">Latest News</h2></div>
+          <div><h2 id="latest-title">Latest News</h2><HomeLivePill since={renderedAt} label="story" /></div>
           <Link className="ui-text-link" href="/news">View all news <ArrowRightIcon size={17} aria-hidden="true" /></Link>
         </div>
         {stories.state === "ok" && topStories.length > 0 ? (
