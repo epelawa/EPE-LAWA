@@ -43,28 +43,27 @@ export default function RadioPlayer({ children }: { children?: ReactNode }) {
  }
  function changeVolume(value:number){setVolume(value);if(audioRef.current)audioRef.current.volume=value;if(value>0&&muted)setMuted(false);}
  const active = state === "playing" || state === "connecting" || state === "slow";
- const status={connecting:"Connecting to the station…",playing:"Audio is playing",paused:"Ready to listen",blocked:"Your browser blocked playback. Tap Play to listen.",unavailable:"The station stream is unavailable right now. Please try again.",slow:"Connection is taking longer than expected. The stream may be buffering.",offline:"Your device appears offline. Reconnect, then press Play."}[state];
- return <section className={styles.player} aria-labelledby="radio-player-title">
-  <div className={styles.topline}><div><p className={styles.eyebrow}>EPE LAWA / RADIO</p><h1 id="radio-player-title">Your listening space</h1></div><span className={styles.topBadge}>LIVE RADIO</span></div>
-  <div className={styles.nowPlaying}>
-   <div className={`${styles.artworkStage} ${state === "playing" ? styles.artworkPlaying : ""}`}>
-    <div className={`${styles.wave} ${styles.waveLeft}`} aria-hidden="true">{[0,1,2,3,4].map(i=><span key={i} />)}</div>
-    <div className={styles.artwork}><img src="/brand-logo.png" alt="EPE LAWA" width="116" height="100" /></div>
-    <div className={`${styles.wave} ${styles.waveRight}`} aria-hidden="true">{[0,1,2,3,4].map(i=><span key={i} />)}</div>
+ const status={connecting:"Connecting…",playing:"Playing live",paused:"Ready to listen",blocked:"Tap Play to start",unavailable:"The station stream is unavailable right now. Please try again.",slow:"Still connecting — buffering…",offline:"Your device appears offline. Reconnect, then press Play."}[state];
+ return <section className={`${styles.player} ${state==="playing" ? styles.playing : ""}`} aria-labelledby="radio-player-title">
+  <div className={styles.bar}>
+   <div className={styles.ident} aria-hidden="true"><img src="/brand-logo.png" alt="EPE LAWA" width="40" height="36" /><span className={styles.equalizer}>{[0,1,2,3].map(i=><span key={i} />)}</span></div>
+   <div className={styles.info}>
+    <h1 id="radio-player-title" className={styles.title}>{station?.name ?? "Radio"} <span className={styles.frequency}>{station?.frequency ?? ""}</span></h1>
+    <p className={styles.status} role="status" aria-live="polite"><span className={`${styles.liveDot} ${state==="playing" ? styles.connected : ""}`} aria-hidden="true" />{station ? status : loadingGuts ? "Looking up Guts FM…" : gutsReason === "not_found" ? "No usable Guts FM stream was found in the catalogue." : "Guts FM is temporarily unavailable in this player. Please try again later."}</p>
    </div>
-   <span className={styles.onAir}><span className={`${styles.liveDot} ${state==="playing" ? styles.connected : ""}`} aria-hidden="true" />{state==="playing" ? "PLAYING" : !station || state==="offline" || state==="unavailable" || state==="blocked" ? "NOT CONNECTED" : state==="connecting" || state==="slow" ? "CONNECTING" : "READY TO LISTEN"}</span>
-   <h2>{station?.name ?? "Guts FM"}</h2><p className={styles.frequency}>{station?.frequency ?? "104.9 FM"}</p>
-   <p className={styles.status} role="status" aria-live="polite">{station ? status : loadingGuts ? "Looking up Guts FM…" : gutsReason === "not_found" ? "No usable Guts FM stream was found in the Naija Radio catalogue." : "Guts FM is temporarily unavailable in this player. Please try again later."}</p>
    {station ? <>
     <audio key={chosen} ref={audioRef} preload="none" playsInline src={station.streamUrl} onPlaying={()=>setState("playing")} onWaiting={()=>setState("connecting")} onStalled={()=>setState(current=>current==="playing"||current==="connecting"?"slow":current)} onError={()=>setState(navigator.onLine?"unavailable":"offline")} onPause={()=>setState(current=>current==="playing"?"paused":current)} />
-    <button className={styles.playButton} type="button" onClick={()=>void togglePlayback()} aria-label={`${active?"Pause":"Play"} ${station.name}`}>{active?<PauseIcon size={32}/>:<PlayIcon size={32}/>}</button>
-    <div className={styles.controls}><button className={styles.muteButton} type="button" onClick={()=>{if(volume===0){changeVolume(.8);setMuted(false);}else setMuted(!muted);}} aria-label={muted||volume===0?"Unmute":"Mute"}>{muted||volume===0?<VolumeOffIcon size={20}/>:<VolumeOnIcon size={20}/>}</button><label className={styles.volumeLabel} htmlFor="radio-volume">Volume</label><input id="radio-volume" className={styles.volume} type="range" min="0" max="1" step="0.01" value={volume} onChange={event=>changeVolume(Number(event.target.value))}/><span className={styles.volumeValue}>{Math.round(volume*100)}%</span></div>
-   </> : <a className={styles.external} href="https://gutsfm1049.com/online-radio/" target="_blank" rel="noreferrer">Visit Guts FM’s listening page ↗</a>}
+    <div className={styles.controls}>
+     <button className={styles.muteButton} type="button" onClick={()=>{if(volume===0){changeVolume(.8);setMuted(false);}else setMuted(!muted);}} aria-label={muted||volume===0?"Unmute":"Mute"}>{muted||volume===0?<VolumeOffIcon size={18}/>:<VolumeOnIcon size={18}/>}</button>
+     <input id="radio-volume" className={styles.volume} type="range" min="0" max="1" step="0.01" value={volume} onChange={event=>changeVolume(Number(event.target.value))} aria-label="Volume" />
+     <button className={styles.playButton} type="button" onClick={()=>void togglePlayback()} aria-label={`${active?"Pause":"Play"} ${station.name}`}>{active?<PauseIcon size={22}/>:<PlayIcon size={22}/>}</button>
+    </div>
+   </> : <a className={styles.external} href="https://gutsfm1049.com/online-radio/" target="_blank" rel="noreferrer">Guts FM page ↗</a>}
   </div>
-  <div className={styles.stationSection}><p className={styles.stationHeading}>CHOOSE A STATION</p><div className={styles.stationList} role="group" aria-label="Choose a station">
+  <div className={styles.stationList} role="group" aria-label="Choose a station">
    <button type="button" aria-pressed={chosen==="lagos"} onClick={()=>switchStation("lagos")}><span className={styles.stationIcon} aria-hidden="true">RL</span><span className={styles.stationInfo}><strong>Radio Lagos</strong><small>107.5 FM</small></span><span className={styles.selectMark} aria-hidden="true">{chosen==="lagos" ? "✓" : "→"}</span></button>
    <button type="button" aria-pressed={chosen==="guts"} onClick={()=>switchStation("guts")}><span className={`${styles.stationIcon} ${styles.gutsIcon}`} aria-hidden="true">GF</span><span className={styles.stationInfo}><strong>Guts FM</strong><small>104.9 FM</small></span><span className={styles.selectMark} aria-hidden="true">{chosen==="guts" ? "✓" : "→"}</span></button>
-  </div></div>
+  </div>
   {children ? <div className={styles.sponsor}>{children}</div> : null}
   <p className={styles.provider}>Guts FM catalogue powered by <a href="https://fm.puzzofme.com/" target="_blank" rel="noreferrer">Naija Radio ↗</a></p>
  </section>;
