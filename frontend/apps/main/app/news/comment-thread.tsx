@@ -4,6 +4,7 @@ import { moderateArticleComment, postArticleComment, reportArticleComment, resol
 import { Notice, Panel } from "../../components/design-system";
 import CommentDeleteButton from "../../components/comment-delete-button";
 import { MessageCircleIcon } from "../../components/icons";
+import CommentVoteButton from "./comment-vote-button";
 import styles from "./news.module.css";
 
 type Props = { articleId: string; slug: string; notice?: string };
@@ -71,6 +72,22 @@ export async function CommentThread({ articleId, slug, notice }: Props) {
   const alertNotice = notice === "invalid" || (notice?.includes("unavailable") ?? false) || (notice?.includes("denied") ?? false);
   const visibleCount = comments.filter((comment) => comment.state === "visible").length;
 
+  const voteTargetIds = comments.filter((comment) => comment.state === "visible").map((comment) => comment.id);
+  const voteCounts = new Map<string, number>();
+  const ownVotes = new Set<string>();
+  if (voteTargetIds.length > 0) {
+    const { data: voteRows } = await db.from("comment_votes").select("comment_id,user_id").in("comment_id", voteTargetIds).limit(2000);
+    for (const row of voteRows ?? []) {
+      voteCounts.set(row.comment_id, (voteCounts.get(row.comment_id) ?? 0) + 1);
+      if (user && row.user_id === user.id) ownVotes.add(row.comment_id);
+    }
+  }
+  const sortedTop = [...top].sort((a, b) => {
+    if (a.state !== "visible" || b.state !== "visible") return 0;
+    return (voteCounts.get(b.id) ?? 0) - (voteCounts.get(a.id) ?? 0);
+  });
+  const signInHref = `/login?next=${encodeURIComponent(`/news/${slug}#comments`)}`;
+
   return <section id="comments" className={`ui-stack ${styles.commentSection}`} aria-label="Comments">
     <header className={styles.commentHeading}>
       <div>
@@ -94,10 +111,17 @@ export async function CommentThread({ articleId, slug, notice }: Props) {
       </div>
     </Panel> : null}
     {error ? <Notice role="status">Comments are temporarily unavailable. Please try again later.</Notice> : null}
-    {!error && top.length > 0 ? <ol className="ui-list ui-stack-sm">{top.map(comment => <li className="ui-card" key={comment.id}>
+    {!error && sortedTop.length > 0 ? <ol className="ui-list ui-stack-sm">{sortedTop.map(comment => <li className="ui-card" key={comment.id}>
       <p className="ui-meta mb-3">Community member · <time dateTime={comment.created_at}>{stamp(comment.created_at)}</time></p>
       <CommentText comment={comment} />
       <div className={styles.commentActions}>
+        {comment.state === "visible" ? <CommentVoteButton
+          commentId={comment.id}
+          initialCount={voteCounts.get(comment.id) ?? 0}
+          initialVoted={ownVotes.has(comment.id)}
+          signedIn={Boolean(user)}
+          signInHref={signInHref}
+        /> : null}
         {user && comment.state === "visible" && ownIds.has(comment.id) ? <CommentDeleteButton slug={slug} commentId={comment.id} /> : null}
         {user && comment.state === "visible" ? <details className="ui-divider mt-4 pt-3">
           <summary className="min-h-11 cursor-pointer py-2 font-medium">Report this comment</summary>
@@ -117,7 +141,16 @@ export async function CommentThread({ articleId, slug, notice }: Props) {
       {replies.get(comment.id)?.length ? <ol className="ui-list ui-stack-sm ui-subtle mt-4 rounded-xl border-l-2 p-4">{replies.get(comment.id)!.map(reply => <li key={reply.id} className="ui-item">
         <p className="ui-meta mb-2">Community member · <time dateTime={reply.created_at}>{stamp(reply.created_at)}</time></p>
         <CommentText comment={reply} noun="reply" />
-        {user && reply.state === "visible" && ownIds.has(reply.id) ? <div className={styles.commentActions}><CommentDeleteButton slug={slug} commentId={reply.id} compact /></div> : null}
+        {reply.state === "visible" || (user && reply.state === "visible" && ownIds.has(reply.id)) ? <div className={styles.commentActions}>
+          {reply.state === "visible" ? <CommentVoteButton
+            commentId={reply.id}
+            initialCount={voteCounts.get(reply.id) ?? 0}
+            initialVoted={ownVotes.has(reply.id)}
+            signedIn={Boolean(user)}
+            signInHref={signInHref}
+          /> : null}
+          {user && reply.state === "visible" && ownIds.has(reply.id) ? <CommentDeleteButton slug={slug} commentId={reply.id} compact /> : null}
+        </div> : null}
       </li>)}</ol> : null}
       {user && comment.state === "visible" ? <form action={postArticleComment} className="ui-divider ui-stack-sm mt-4 max-w-2xl pt-3">
         <input type="hidden" name="slug" value={slug} /><input type="hidden" name="article_id" value={articleId} /><input type="hidden" name="parent_id" value={comment.id} />
