@@ -30,7 +30,13 @@ A verified staff member with `article.publish` may publish directly without a se
 These are future roadmap items, not a reason to omit them or imply they are already implemented: event ticketing; emergency contacts; scholarship/job board; e-learning; English/Yoruba support; and an AI-powered local assistant. Sequence and acceptance gates require owner planning and evidence. Native mobile applications alone are deferred from the current web scope.
 Do not mark any gate complete without evidence. No commit, push or merge is implied by this roadmap.
 
-## Known status
+## Known status — 2026-11-09 snapshot (superseded, verified stale 2026-11-21)
+
+## Known status — 2026-11-21 (independent verification)
+
+`main` is `e3e791f7787cd8992f71ab6df6e1ad2609081fc8` (PR #238 merged), with CI verify, CodeQL and browser smoke green on that exact head, and Vercel deployments passing on PR heads (`Brave290` Vercel access blocker no longer reproducing). The live site no longer matches the 2026-11-09/10 snapshots below: News and the homepage are populated with real published stories, Business Directory serves a verified business, Map embeds OpenStreetMap, and Itan Ilu Mi now offers a live correction-request form instead of the old "Coming Soon" badge. One verified live defect: `/forum` renders the app error boundary instead of the listing. Branch protection remains `false`; payments remain disabled by design; `admin_member_delete` remains wired in admin code while its migration stays unapplied per the 2026-11-20 inventory. The historical snapshots below are retained for their decisions, not their PR/browser states.
+
+## Historical snapshot — 2026-11-09/10
 
 Latest `main` is `203d7cae923a50dff7633a7ced8e77324bfcc06b` after the normal squash merge of [PR #48](https://github.com/epelawa/EPE-LAWA/pull/48); PRs #44, #45 and #46 remain merged. Vercel Production deployment `dpl_52yiTmDzdZwjPiXW357TeSwhNfAN` is `READY` for that exact production-target SHA. A read-only fetch of the [canonical `/auth/verify` route](https://epelawa.vercel.app/auth/verify) shows the branded code-entry screen; no email was sent or code submitted, so hosted email delivery and sender authentication remain unverified. The [canonical newsroom](https://epelawa.vercel.app/news) remains in its honest empty state.
 
