@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { createClient } from "../../lib/supabase";
 import { formRateAllowance, formRateLimitedMessage } from "../../lib/form-server";
 
@@ -30,7 +29,6 @@ export async function requestSong(_prev: SongRequestState, form: FormData): Prom
       : "The request could not be sent right now. Please try again.";
     return { status: "error", message: text };
   }
-  revalidatePath("/admin");
   return {
     status: "success",
     message: "Request received. The radio desk decides what plays on air — this desk cannot promise a slot.",
