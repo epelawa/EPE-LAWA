@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRightIcon, ArrowUpRightIcon, UsersIcon, ListenShortcutIcon, NewsShortcutIcon, CompassIcon, BuildingIcon, MessageCircleIcon, ClockIcon, EyeIcon } from "../components/icons";
+import { ArrowRightIcon, ArrowUpRightIcon, UsersIcon, ListenShortcutIcon, NewsShortcutIcon, CompassIcon, BuildingIcon, MessageCircleIcon, CalendarShortcutIcon, ClockIcon, EyeIcon } from "../components/icons";
 import { formatPublishedDate } from "../lib/dates";
 import { getLatestStories, getHomeBreakingStories } from "../lib/home-data";
 import "./hero-logo.css";
@@ -54,6 +54,7 @@ export default async function Home() {
             { href: "/itan-ilu-mi", label: "Community history", Icon: CompassIcon },
             { href: "/forum", label: "Join the conversation", Icon: MessageCircleIcon },
             { href: "/business-directory", label: "Local businesses", Icon: BuildingIcon },
+            { href: "/events", label: "Community events", Icon: CalendarShortcutIcon },
             { href: "/advertise", label: "Advertise with us", Icon: UsersIcon },
           ].map(({ href, label, Icon }) => <Link href={href} key={href}><span aria-hidden="true"><Icon size={25} /></span><span>{label}</span></Link>)}
         </nav>
