@@ -1,6 +1,7 @@
 import { createClient } from "../../../lib/supabase";
 import { PageFrame, PageIntro, Notice } from "@epelawa/ui";
 import { saveSitePage } from "./actions";
+import RichTextEditor from "../../../components/rich-text-editor";
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
@@ -57,8 +58,8 @@ export default async function SitePagesPage({ searchParams }: { searchParams: Pr
         <form className="ui-stack" action={saveSitePage}>
           <input type="hidden" name="page" value={editable.key} />
           <input type="hidden" name="revision" value={row?.revision ?? 0} />
-          <label className="ui-field"><span className="label">Text</span>
-            <textarea className="input admin-textarea" name="body" rows={editorRows(editable.key)} maxLength={50000} defaultValue={row?.body ?? ""} />
+          <label className="ui-field"><span className="label sr-only">Text</span>
+            <RichTextEditor name="body" rows={editorRows(editable.key)} maxLength={50000} defaultValue={row?.body ?? ""} ariaLabel={`${editable.label} text`} />
           </label>
           {editable.key === "about" ? (
             <fieldset className="ui-stack-sm">
@@ -84,7 +85,7 @@ export default async function SitePagesPage({ searchParams }: { searchParams: Pr
               </div>
             </fieldset>
           ) : null}
-          <div className="ui-actions"><button className="btn-primary" type="submit">Publish to the live page</button></div>
+          <div className="ui-actions"><button className="btn-primary" type="submit">Publish to the live page</button><button className="btn-ghost" type="reset">Clear form</button></div>
           {row ? <p className="ui-meta">Last saved {new Date(row.updated_at).toLocaleString("en-NG")}. Version {row.revision}.</p> : <p className="ui-meta">This page has no saved edits yet; the text shows the current built-in content.</p>}
         </form>
       </section>

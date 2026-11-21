@@ -14,6 +14,7 @@ import { BreakingBadge } from "../components/breaking-news";
 import SponsorSlot from "../components/sponsor-slot";
 import { HomeSectionReveal } from "../components/home-sections";
 import HomeLivePill from "../components/home-live-pill";
+import AdsSection from "../components/ads-section";
 
 export default async function Home() {
   const renderedAt = Date.now();
@@ -56,6 +57,8 @@ export default async function Home() {
           ].map(({ href, label, Icon }) => <Link href={href} key={href}><span aria-hidden="true"><Icon size={25} /></span><span>{label}</span></Link>)}
         </nav>
       </div></HomeSectionReveal>
+
+      <HomeSectionReveal><AdsSection heading="Businesses in our community" /></HomeSectionReveal>
 
       <HomeSectionReveal><section className="ep-container home-news" aria-labelledby="latest-title">
         <div className="home-news__heading">

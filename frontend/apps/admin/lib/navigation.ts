@@ -6,6 +6,8 @@ export type NavItem = {
   hint?: string;
   primary?: boolean;
   external?: boolean;
+  /** Marked in the sidebar with a quiet badge; the destination page explains the plan. */
+  comingSoon?: boolean;
   group?: NavGroup;
 };
 
@@ -27,6 +29,7 @@ const sectionPages: NavItem[] = [
   { label: "Orders", href: "/orders", hint: "Order queue", group: "Community" },
   { label: "Tourism", href: "/tourism", hint: "Tourism submissions", group: "Community" },
   { label: "People", href: "/people", hint: "Who is Who records", group: "Community" },
+  { label: "Ads", href: "/ads", hint: "Businesses shown in the public ad carousel", group: "Community" },
   { label: "Enquiries", href: "/enquiries", hint: "Restricted private messages and corrections", group: "Inbox" },
 ];
 
@@ -36,7 +39,10 @@ const staffPages: NavItem[] = [
   { label: "Roles", href: "/roles", hint: "Configure staff roles and capabilities", group: "Administration" },
   { label: "Broadcast", href: "/broadcast", hint: "Notify verified members", group: "Administration" },
   { label: "Site pages", href: "/site-pages", hint: "Edit the About page and public page notes", group: "Administration" },
+  { label: "Legal pages", href: "/legal-pages", hint: "Maintain the Privacy, Terms and Guidelines notes", group: "Administration" },
+  { label: "Gallery & media", href: "/media", hint: "Public photo archive and media records", group: "Administration" },
   { label: "Backups", href: "/backups", hint: "Database backups and restore in R2", group: "Administration" },
+  { label: "AI Scheduler", href: "/ai-scheduler", hint: "Automated story scheduling", comingSoon: true, group: "Administration" },
   { label: "Settings", href: "/settings", hint: "Deployment configuration and setup", group: "Administration" },
 ];
 

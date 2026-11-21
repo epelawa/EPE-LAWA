@@ -36,15 +36,33 @@ async function save(db: Awaited<ReturnType<typeof createClient>>, resource: stri
   revalidatePath(adminHref("/radio"));
 }
 function outcome(code: string): never { redirect(adminHref(`/radio?radio=${encodeURIComponent(code)}`)); }
-async function run(work: () => Promise<void>) {
+async function run(work: () => Promise<void>, success = "saved", fallback = "save") {
   try { await work(); }
   catch (error) {
     // Redirect exceptions are Next control flow; never turn them into a second outcome.
     if (error && typeof error === "object" && "digest" in error) throw error;
-    const message = error instanceof Error ? error.message : "save";
-    outcome(["conflict", "denied", "invalid"].includes(message) ? message : "save");
+    const message = error instanceof Error ? error.message : fallback;
+    outcome(["conflict", "denied", "invalid", "linked", "remove"].includes(message) ? message : fallback);
   }
-  outcome("saved");
+  outcome(success);
+}
+async function remove(db: Awaited<ReturnType<typeof createClient>>, table: string, id: string) {
+  const { error, count } = await db.from(table).delete({ count: "exact" }).eq("id", id);
+  if (error) {
+    const message = error.message.toLowerCase();
+    if (error.code === "23503" || message.includes("foreign key") || message.includes("referenced")) throw new Error("linked");
+    if (error.code === "42501" || message.includes("row-level")) throw new Error("denied");
+    throw new Error("remove");
+  }
+  if (count === 0) throw new Error("conflict");
+  revalidatePath(adminHref("/radio"));
+}
+async function deleteTarget(f: FormData, kind: string) {
+  if (text(f, "kind", 20) !== kind) throw new Error("invalid");
+  const id = recordId(f);
+  if (!id) throw new Error("invalid");
+  const db = await authorized();
+  await remove(db, kind === "programme" ? "programmes" : kind === "episode" ? "episodes" : "radio_schedule", id);
 }
 
 export async function saveProgramme(f: FormData) { await run(async () => {
@@ -59,6 +77,9 @@ export async function saveSchedule(f: FormData) { await run(async () => {
   const db = await authorized();
   await save(db, "schedule", id, rev, { programme_id, day_of_week: day, starts_at, ends_at, note: note || null, publication_status: status }, rights);
 }); }
+export async function deleteProgramme(f: FormData) { await run(async () => { await deleteTarget(f, "programme"); }, "deleted", "remove"); }
+export async function deleteSchedule(f: FormData) { await run(async () => { await deleteTarget(f, "schedule"); }, "deleted", "remove"); }
+export async function deleteEpisode(f: FormData) { await run(async () => { await deleteTarget(f, "episode"); }, "deleted", "remove"); }
 export async function saveEpisode(f: FormData) { await run(async () => {
   const id = recordId(f), rev = id ? revision(f) : null, programme_id = text(f, "programme_id", 36), title = text(f, "title", 200), description = text(f, "description", 4000), rights = text(f, "rights_note", 2000), external_url = text(f, "external_url", 2048), aired_on = text(f, "aired_on", 10), status = text(f, "publication_status", 12);
   if (!/^[0-9a-f-]{36}$/i.test(programme_id) || !title || !["draft", "published", "withdrawn"].includes(status) || (status === "published" && rights.length < 3) || (external_url && !/^https:\/\//.test(external_url)) || (aired_on && !/^\d{4}-\d{2}-\d{2}$/.test(aired_on))) throw new Error("invalid");

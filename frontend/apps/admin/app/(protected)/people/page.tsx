@@ -9,11 +9,32 @@ const input = "input";
 const label = "label ui-field";
 const primaryButton = "btn-primary";
 const secondaryButton = "btn-secondary";
+const ERROR_TEXT: Record<string, string> = {
+  invalid: "The entry was incomplete or too long. Fill the required fields and try again.",
+  "save-failed": "The profile could not be saved. Check the source and revision, then retry.",
+  "achievements-failed": "The profile was saved, but the achievements could not be updated. Open the profile and retry.",
+  "create-failed": "The new profile could not be created. Check the details and retry.",
+  "source-failed": "The source could not be recorded. Check the citation and try again.",
+  "office-failed": "The term could not be recorded. Check the details and try again.",
+  "status-failed": "The status could not be changed. Someone may have edited the profile; reload and retry.",
+  "portrait-too-large": "The portrait photo is larger than 10 MB. Choose a smaller file.",
+  "portrait-invalid": "Portraits must be JPEG, PNG, WebP or AVIF photos.",
+  "portrait-alt-required": "Describe the portrait in the alt text field (at least 3 characters) so it can be published.",
+  "portrait-failed": "The portrait could not be stored right now. Try again later, or paste an asset key instead.",
+  "correction-failed": "The correction decision could not be recorded. Reload and retry.",
+};
 
 export default async function PeoplePage({ searchParams }: { searchParams: Promise<Params> }) {
-  const p = await searchParams, db = await createClient();
+  const p = await searchParams;
+  let db: Awaited<ReturnType<typeof createClient>>;
+  try {
+    db = await createClient();
+  } catch {
+    return <PageFrame className="ui-stack"><PageIntro eyebrow="Staff workspace" title="People" description="Who is Who profile administration." /><Notice tone="danger" role="alert">The people workspace is unavailable right now. Reload the page; if you are not signed in as staff, sign in first.</Notice></PageFrame>;
+  }
   const { data: grants, error: grantError } = await db.from("staff_capability_grants").select("capability").eq("capability", "people.manage").limit(1);
-  if (grantError || !grants?.length) return <PageFrame className="ui-stack"><PageIntro eyebrow="Staff workspace" title="People" description="Who is Who profile administration." /><Notice tone="danger" role="alert">The people.manage capability is required. No records are shown.</Notice></PageFrame>;
+  if (grantError) return <PageFrame className="ui-stack"><PageIntro eyebrow="Staff workspace" title="People" description="Who is Who profile administration." /><Notice tone="danger" role="alert">The people workspace is unavailable right now. Reload the page to try again.</Notice></PageFrame>;
+  if (!grants?.length) return <PageFrame className="ui-stack"><PageIntro eyebrow="Staff workspace" title="People" description="Who is Who profile administration." /><Notice tone="danger" role="alert">The people.manage capability is required. No records are shown.</Notice></PageFrame>;
 
   let query = db.from("people").select("id,full_name,preferred_name,community,community_note,biography,achievements,is_deceased,portrait_key,portrait_alt,portrait_credit,status,revision,published_at").is("deleted_at", null).order("updated_at", { ascending: false }).limit(100);
   if (p.q?.trim()) query = query.ilike("full_name", `%${p.q.trim().replace(/[,%]/g, " ")}%`);
@@ -23,7 +44,7 @@ export default async function PeoplePage({ searchParams }: { searchParams: Promi
 
   return <PageFrame className="ui-stack">
     <PageIntro eyebrow="Staff workspace · People verification and authoring" title="Who is Who" description="Review real submissions and maintain carefully sourced public profiles. Publish only after recording a source. Verification requires human review, evidence, and a note." />
-    {p.error ? <Notice tone="danger" role="alert">Action could not be completed ({p.error}). Check your capability, source, and revision, then retry.</Notice> : null}
+    {p.error ? <Notice tone="danger" role="alert">{ERROR_TEXT[p.error] ?? `Action could not be completed (${p.error}). Check your capability, source, and revision, then retry.`}</Notice> : null}
     {p.updated ? <Notice tone="success" role="status">Staff action recorded.</Notice> : null}
 
     <section className="ui-stack-sm" aria-labelledby="corrections-title">
@@ -56,5 +77,5 @@ export default async function PeoplePage({ searchParams }: { searchParams: Promi
 }
 
 function ProfileForm({ action, person }: { action: (f: FormData) => void; person?: any }) {
-  return <form action={action} className="ui-form-grid"><input type="hidden" name="id" value={person?.id ?? ""} /><input type="hidden" name="revision" value={person?.revision ?? "0"} /><label className={label}>Full name<input required minLength={2} maxLength={160} name="full_name" defaultValue={person?.full_name ?? ""} className={input} /></label><label className={label}>Preferred name<input name="preferred_name" defaultValue={person?.preferred_name ?? ""} className={input} /></label><label className={label}>Community<select name="community" defaultValue={person?.community ?? ""} className={input}><option value="">Not recorded</option><option value="eko_epe">Eko Epe</option><option value="ijebu_epe">Ijebu Epe</option><option value="other">Other</option></select></label><label className={label}>Community note<input name="community_note" defaultValue={person?.community_note ?? ""} className={input} /></label><label className={`${label} sm:col-span-2`}>Biography<textarea name="biography" maxLength={20000} defaultValue={person?.biography ?? ""} className={input} /></label><label className={`${label} sm:col-span-2`}>Achievements / contributions<textarea name="achievements" maxLength={12000} defaultValue={person?.achievements ?? ""} className={input} /></label><label className={label}>Portrait asset key<input name="portrait_key" defaultValue={person?.portrait_key ?? ""} className={input} /></label><label className={label}>Portrait alt text<input name="portrait_alt" defaultValue={person?.portrait_alt ?? ""} className={input} /></label><label className={label}>Portrait credit / rights<input name="portrait_credit" defaultValue={person?.portrait_credit ?? ""} className={input} /></label><label className="ui-row"><input type="checkbox" name="is_deceased" defaultChecked={person?.is_deceased ?? false} />Deceased (recorded only)</label><button className={`${primaryButton} w-fit`}>Save sourced profile</button></form>;
+  return <form action={action} className="ui-form-grid"><input type="hidden" name="id" value={person?.id ?? ""} /><input type="hidden" name="revision" value={person?.revision ?? "0"} /><label className={label}>Full name<input required minLength={2} maxLength={160} name="full_name" defaultValue={person?.full_name ?? ""} className={input} /></label><label className={label}>Preferred name<input name="preferred_name" defaultValue={person?.preferred_name ?? ""} className={input} /></label><label className={label}>Community<select name="community" defaultValue={person?.community ?? ""} className={input}><option value="">Not recorded</option><option value="eko_epe">Eko Epe</option><option value="ijebu_epe">Ijebu Epe</option><option value="other">Other</option></select></label><label className={label}>Community note<input name="community_note" defaultValue={person?.community_note ?? ""} className={input} /></label><label className={`${label} sm:col-span-2`}>Biography<textarea name="biography" maxLength={20000} defaultValue={person?.biography ?? ""} className={input} /></label><label className={`${label} sm:col-span-2`}>Achievements / contributions<textarea name="achievements" maxLength={12000} defaultValue={person?.achievements ?? ""} className={input} /></label><label className={label}>Portrait image<input type="file" name="portrait_file" accept="image/jpeg,image/png,image/webp,image/avif" className={input} /></label><label className={label}>Portrait asset key (optional if a file is chosen)<input name="portrait_key" defaultValue={person?.portrait_key ?? ""} className={input} /></label><label className={label}>Portrait alt text<input name="portrait_alt" defaultValue={person?.portrait_alt ?? ""} className={input} /></label><label className={label}>Portrait credit / rights<input name="portrait_credit" defaultValue={person?.portrait_credit ?? ""} className={input} /></label><label className="ui-row"><input type="checkbox" name="is_deceased" defaultChecked={person?.is_deceased ?? false} />Deceased (recorded only)</label><button className={`${primaryButton} w-fit`}>Save sourced profile</button><button className={secondaryButton} type="reset">Clear form</button></form>;
 }

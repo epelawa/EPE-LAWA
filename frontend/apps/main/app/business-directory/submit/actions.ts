@@ -2,6 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "../../../lib/supabase";
 import { authMailConfig, deliverAuthMessage } from "../../../lib/auth-mail-hook";
+import { storeLogoDataUrl } from "../../../lib/media-r2";
 export type BusinessSubmitState = { status: "idle" | "success" | "error"; message: string };
 const field=(f:FormData,k:string)=>{const v=f.get(k);return typeof v==="string"?v.trim():""};
 const fail=(message:string):BusinessSubmitState=>({status:"error",message});
@@ -16,8 +17,21 @@ export async function submitBusiness(_previous:BusinessSubmitState, f:FormData):
  if((phone&&!phoneRx.test(phone))||(whatsapp&&!phoneRx.test(whatsapp)))return fail("Enter a valid phone number.");
  if(email&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))return fail("Enter a valid email address.");
  if(website){try{if(new URL(website).protocol!=="https:")return fail("Website must use a valid HTTPS address.")}catch{return fail("Website must use a valid HTTPS address.")}}
+ const logoUrl=field(f,"logo_url");
+ if(logoUrl){try{if(new URL(logoUrl).protocol!=="https:")return fail("The logo link must use a valid HTTPS address.")}catch{return fail("The logo link must use a valid HTTPS address.")}}
+ let logoKey:string|null=logoUrl||null;
+ const logoData=field(f,"logo_data");
+ if(logoData){
+  const stored=await storeLogoDataUrl(logoData,name);
+  if("error" in stored){
+   if(stored.error==="unconfigured")return fail("Logo storage is not connected on this deployment yet. Remove the chosen logo or paste an HTTPS logo link instead — everything else in your listing is unaffected.");
+   if(stored.error==="unavailable")return fail("The logo could not be stored right now. Remove it and try again in a moment, or continue without a logo.");
+   return fail("That logo file could not be used. Choose a JPEG, PNG or WebP image smaller than 5 MB.");
+  }
+  logoKey=stored.key;
+ }
  let result;
- try { result=await supabase.rpc("business_submit",{p_name:name,p_category_id:category,p_description:description||null,p_area:area||null,p_address:address||null,p_landmark:landmark||null,p_phone:phone||null,p_whatsapp:whatsapp||null,p_email:email||null,p_website:website||null,p_hours:null}); }
+ try { result=await supabase.rpc("business_submit",{p_name:name,p_category_id:category,p_description:description||null,p_area:area||null,p_address:address||null,p_landmark:landmark||null,p_phone:phone||null,p_whatsapp:whatsapp||null,p_email:email||null,p_website:website||null,p_hours:null,p_logo_key:logoKey}); }
  catch {return fail("We could not confirm whether the submission was saved. Please contact support before trying again to avoid duplicates.");}
  if(result.error||typeof result.data!=="string")return fail(result.error?.message==="member_profile_required"?"This public form only accepts listings from member accounts, and your account does not have a member profile. If you are staff, add the listing from the Business submissions page in the staff workspace instead. Otherwise finish creating your member profile, or sign in with a different member account.":"We could not confirm whether the submission was saved. Please contact support before trying again to avoid duplicates.");
  const id=result.data;

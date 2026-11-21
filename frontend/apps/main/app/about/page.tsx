@@ -4,6 +4,7 @@ import { pageMetadata } from "../../lib/metadata";
 import { PageFrame, PageIntro, Panel, SectionHeading, TextLink } from "../../components/design-system";
 import EnquiryForm from "../../components/enquiry-form";
 import { createClient } from "../../lib/supabase";
+import { renderInlineText } from "../../lib/structured-text";
 import styles from "./about.module.css";
 
 export const metadata: Metadata = pageMetadata({
@@ -54,7 +55,7 @@ export default async function AboutPage() {
         <section className={`${styles.mission} ui-stack`} aria-label="From the EPE LAWA team">
           {bodyBlocks.length > 0 ? (
             <div className={`${styles.missionCopy} ui-prose`}>
-              {bodyBlocks.map((text, index) => <p key={index}>{text}</p>)}
+              {bodyBlocks.map((text, index) => <p key={index}>{renderInlineText(text, `about-${index}`)}</p>)}
             </div>
           ) : null}
           {photos.length > 0 ? (

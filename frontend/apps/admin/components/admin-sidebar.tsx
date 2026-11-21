@@ -64,7 +64,10 @@ export default function AdminSidebar({
                   className={isCurrent(path, item.href) ? "admin-sidebar__link admin-sidebar__link--active" : "admin-sidebar__link"}
                   aria-current={isCurrent(path, item.href) ? "page" : undefined}
                   onClick={onNavigate}
-                >{item.label}</Link>
+                >
+                  <span className="admin-sidebar__label">{item.label}</span>
+                  {item.comingSoon ? <span className="admin-sidebar__soon">Coming soon</span> : null}
+                </Link>
               </li>
             ))}
           </ul>

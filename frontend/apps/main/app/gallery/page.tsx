@@ -1,18 +1,55 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+import { createClient } from "../../lib/supabase";
 import { ImageIcon } from "../../components/icons";
 import { EmptyPanel, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge, TextLink } from "../../components/design-system";
 import styles from "./gallery.module.css";
 
-export const metadata = { title: "Gallery", description: "A source-credited visual archive of Epe." };
+export const metadata: Metadata = { title: "Gallery", description: "A source-credited visual archive of Epe." };
 
-export default function GalleryPage() {
+type GalleryPhoto = {
+  id: string;
+  title: string;
+  credit: string | null;
+  alt_text: string | null;
+  provider: string;
+  bucket: string;
+  object_key: string;
+  created_at: string;
+};
+
+function photoUrl(photo: GalleryPhoto, r2Base: string): string | null {
+  if (photo.provider === "external") return photo.object_key;
+  if (photo.provider === "r2" && r2Base) return `${r2Base.replace(/\/+$/, "")}/${photo.object_key.replace(/^\/+/, "")}`;
+  return null;
+}
+
+export default async function GalleryPage() {
+  const r2Base = process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL ?? "";
+  let photos: GalleryPhoto[] = [];
+  let failed = false;
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("media_assets")
+      .select("id,title,credit,alt_text,provider,bucket,object_key,created_at")
+      .eq("kind", "gallery")
+      .eq("is_public", true)
+      .order("created_at", { ascending: false })
+      .limit(60);
+    if (error) failed = true;
+    else photos = (data ?? []) as GalleryPhoto[];
+  } catch {
+    failed = true;
+  }
+
   return (
     <PageFrame className={styles.page}>
       <PageIntro
         eyebrow="The visual archive"
         title={<>Epe,<br />through a local lens.</>}
         description="A considered home for photographs from across Epe, published with a source and credit for every image."
-        meta={<StatusBadge tone="warning">Archive not yet published</StatusBadge>}
+        meta={<StatusBadge tone={photos.length ? "success" : "warning"}>{photos.length ? "Published photographs" : "Archive not yet published"}</StatusBadge>}
         actions={<TextLink href="/photo-credits">View photo credits</TextLink>}
       />
 
@@ -27,19 +64,43 @@ export default function GalleryPage() {
         </div>
       </section>
 
-      <Panel className={styles.emptyPanel}>
-        <EmptyPanel
-          icon={<ImageIcon size={24} />}
-          title="No photographs have been published"
-          description="The EPE LAWA gallery is waiting for an approved, credited collection. This is an honest empty state, not a missing feed."
-          actions={
-            <div className="ui-actions">
-              <Link href="/photo-credits" className="btn-secondary">Read photo credits</Link>
-              <Link href="/tourism" className="btn-secondary">Explore places in Epe</Link>
-            </div>
-          }
-        />
-      </Panel>
+      {photos.length > 0 ? (
+        <section className={styles.archiveSection} aria-labelledby="gallery-archive-title">
+          <SectionHeading eyebrow="Now showing" title="Photographs of Epe" id="gallery-archive-title" />
+          <ul className={styles.archiveGrid}>
+            {photos.map((photo) => {
+              const url = photoUrl(photo, r2Base);
+              return (
+                <li key={photo.id} className={styles.archivedPhoto}>
+                  {url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={url} alt={photo.alt_text ?? photo.title} loading="lazy" referrerPolicy="no-referrer" />
+                  ) : <div className={styles.archivePlaceholder} aria-hidden="true"><ImageIcon size={24} /></div>}
+                  <div className={styles.archiveCaption}>
+                    <strong>{photo.title}</strong>
+                    <span>{photo.credit ? `Photograph by ${photo.credit}` : "Credit on record"}</span>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+          <p className="ui-muted">Every photograph is checked for licence and credit before it appears here.</p>
+        </section>
+      ) : (
+        <Panel className={styles.emptyPanel}>
+          <EmptyPanel
+            icon={<ImageIcon size={24} />}
+            title={failed ? "The gallery could not be loaded" : "No photographs have been published"}
+            description={failed ? "The archive is temporarily unavailable — please try again in a moment." : "The EPE LAWA gallery is waiting for an approved, credited collection. This is an honest empty state, not a missing feed."}
+            actions={
+              <div className="ui-actions">
+                <Link href="/photo-credits" className="btn-secondary">Read photo credits</Link>
+                <Link href="/tourism" className="btn-secondary">Explore places in Epe</Link>
+              </div>
+            }
+          />
+        </Panel>
+      )}
     </PageFrame>
   );
 }

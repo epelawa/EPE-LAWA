@@ -5,6 +5,9 @@ import { createClient } from "../../../lib/supabase";
 import { deleteArticle } from "../../../lib/actions";
 import { adminHref } from "../../../lib/admin-path";
 import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, StatusBadge, buttonClassName } from "@epelawa/ui";
+import ComposerModal from "../../../components/composer-modal";
+import NewsArticleComposer from "../../../components/news-article-composer";
+import { coverUploadState } from "../../../lib/media-r2";
 
 type NewsroomArticle = {
   id: string;
@@ -50,10 +53,13 @@ export default async function NewsroomPage({ searchParams }: { searchParams: Pro
   if (state === "published") query = query.not("published_version_id", "is", null);
   else if (state) query = query.filter("current_version.state", "eq", state);
 
-  const [{ data, error }, editCapability, deleteCapability] = await Promise.all([
+  const [{ data, error }, editCapability, deleteCapability, session, categoryList, authorList] = await Promise.all([
     query,
     supabase.rpc("has_capability", { p_capability: "article.create" }),
     supabase.rpc("has_capability", { p_capability: "article.publish" }),
+    supabase.auth.getUser(),
+    supabase.from("categories").select("id,label").eq("is_active", true).order("sort_order").limit(100),
+    supabase.from("authors").select("id,display_name").order("display_name").limit(100),
   ]);
   const canEdit = !editCapability.error && editCapability.data === true;
   const canDelete = !deleteCapability.error && deleteCapability.data === true;
@@ -64,7 +70,16 @@ export default async function NewsroomPage({ searchParams }: { searchParams: Pro
   const articles = (data ?? []) as unknown as NewsroomArticle[];
   return (
     <PageFrame className="ui-stack">
-      <PageIntro eyebrow="Staff workspace · Editorial" title="Newsroom" actions={<Link href={adminHref("/newsroom/new")} className={buttonClassName("primary")}>Upload an article</Link>} />
+      <PageIntro eyebrow="Staff workspace · Editorial" title="Newsroom" actions={(canEdit && (categoryList.data ?? []).length > 0 && (authorList.data ?? []).length > 0) ? (
+        <ComposerModal triggerLabel="Upload an article" title="Publish an article">
+          <NewsArticleComposer
+            categories={(categoryList.data ?? []) as { id: string; label: string }[]}
+            authors={(authorList.data ?? []) as { id: string; display_name: string }[]}
+            recoveryActor={session.error ? undefined : session.data.user?.id}
+            coverUploadAvailable={coverUploadState().state === "ready"}
+          />
+        </ComposerModal>
+      ) : <Link href={adminHref("/newsroom/new")} className={buttonClassName("primary")}>Upload an article</Link>} />
       {deleted ? <Notice tone="neutral" role="status">The story and all its records were permanently deleted.</Notice> : null}
       {errorFlag === "delete_confirmation" ? <Notice tone="warning" role="alert">Tick the confirm box before a story can be deleted.</Notice> : null}
       {errorFlag === "delete" ? <Notice tone="danger" role="alert">The story could not be deleted. Check your access and try again.</Notice> : null}

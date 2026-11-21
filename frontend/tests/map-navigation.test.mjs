@@ -53,10 +53,10 @@ test('business query errors are distinct from true no-match results', () => {
 });
 
 test('location disclosure says Google receives coordinates only when an external link is opened', () => {
-  assert.match(ui, /Google receives your coordinates only if you open that link/);
-  assert.match(ui, /Google receives your device coordinates only if you open directions with location enabled/);
-  assert.match(ui, /Google Maps search and directions open an external service/);
-  assert.match(ui, /EPE LAWA does not store them/);
+  assert.match(ui, /Google receives them only if you continue into Google Maps/);
+  assert.match(ui, /Your device location is shared with Google only if you open directions while location sharing is enabled/);
+  assert.match(ui, /Search and directions on Google Maps are provided by an external service/);
+  assert.match(ui, /EPE LAWA does not store your coordinates/);
 });
 
 test('the map panel embeds OpenStreetMap without any API key and keeps coordinates local', () => {
@@ -67,6 +67,6 @@ test('the map panel embeds OpenStreetMap without any API key and keeps coordinat
   assert.doesNotMatch(ui, /yandex|mapbox|thunderforest|api_key|apiKey|API_KEY/);
   assert.match(ui, /OpenStreetMap contributors/);
   assert.match(ui, /your coordinates stay in this browser tab/);
-  assert.match(ui, /Directions still open in Google Maps only when you choose/);
+  assert.match(ui, /Directions in Google Maps are opened only when you choose|Google Maps is opened only when you choose to get directions there/);
   assert.doesNotMatch(ui, /next\/script|useEffect\(\(\) => .*geolocation/);
 });
