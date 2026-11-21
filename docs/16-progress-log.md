@@ -530,3 +530,11 @@ The latest owner attachment was reconciled against PR #154 evidence and added to
 - New client form `business-create-form.tsx` with inline plain-word validation, "Publishing…" pending state, and success notice `?added=1` on the review page; directory revalidated on publish.
 
 **Validation:** `node --test backend/tests/schema.test.mjs` 28 pass / 0 fail / 1 skip (migration replays clean in PGlite); `node --test frontend/tests/business-directory.test.mjs` 6/6 (new guard/audit/publish contract); `pnpm typecheck` 5/5; `pnpm test:node` 359 pass / 0 fail / 1 skip; `pnpm vitest run` 128 pass.
+
+## 2026-11-21 (later) — Map page: live OpenStreetMap embed restored and jumping to the visitor's area (branch `vibe/map-osm-restore-d73e38`)
+
+**Found:** PR #223 was merged before its code was pushed, so the free map never reached `main` — visitors who pressed "Use my location" only got a sentence and nothing else to look at ("Ready for directions… [nothing]"). The stranded commit `2639d2a` was recovered and replayed on top of the business-review branch.
+
+**Done:** the Map & Navigation page now shows a live OpenStreetMap embed (no API key, no account) of Epe by default; after "Use my location" it re-centres to a small window around the visitor's coordinates with a marker, plus an "Open my area on OpenStreetMap" button. OpenStreetMap search link added next to the Google links; directions still open in Google Maps only when the visitor chooses. Attribution line kept (OpenStreetMap contributors). No geolocation is requested automatically and coordinates stay in the browser tab.
+
+**Validation:** `node --test backend/tests/schema.test.mjs frontend/tests/business-directory.test.mjs frontend/tests/map-navigation.test.mjs` 41 pass / 0 fail / 1 skip; `pnpm typecheck` 5/5; `pnpm test:node` 360 pass / 0 fail / 1 skip; `pnpm vitest run` 128 pass.
