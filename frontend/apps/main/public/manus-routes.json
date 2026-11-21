@@ -76,6 +76,9 @@
       "path": "/who-is-who"
     },
     {
+      "path": "/admin/backups"
+    },
+    {
       "path": "/admin/broadcast"
     },
     {
@@ -86,6 +89,9 @@
     },
     {
       "path": "/admin/login"
+    },
+    {
+      "path": "/admin/media"
     },
     {
       "path": "/admin/members"
