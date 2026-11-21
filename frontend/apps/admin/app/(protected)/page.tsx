@@ -60,7 +60,7 @@ function Icon({ name }: { name: IconName }) {
 }
 
 function MetricCard({ label, detail, state, href, icon }: { label: string; detail: string; state: DashboardMetricState; href?: string; icon: IconName }) {
-  const statusLabel = state.status === "verified" ? "Live count" : state.status === "restricted" ? "Restricted" : "Unavailable";
+  const statusLabel = state.status === "verified" ? "Live count" : state.status === "restricted" ? "No access" : "Cannot check";
   const statusTone = state.status === "unavailable" ? "warning" : "neutral";
   const accessibleHref = state.status === "verified" && href ? adminHref(href) : null;
   const card = (
@@ -71,8 +71,8 @@ function MetricCard({ label, detail, state, href, icon }: { label: string; detai
       </div>
       <p className={`${styles.metricValue} ${state.status !== "verified" ? styles.metricUnavailable : ""}`}>{state.value === null ? "—" : new Intl.NumberFormat("en-NG").format(state.value)}</p>
       <h3 className={styles.metricTitle}>{label}</h3>
-      <p className={styles.metricDetail}>{state.status === "verified" ? detail : state.status === "restricted" ? "Your role does not include the required read capability." : "This count could not be confirmed. No zero has been inferred."}</p>
-      {accessibleHref ? <span className={styles.metricLink}>Open workspace <span aria-hidden="true"><Icon name="arrow" /></span></span> : null}
+      <p className={styles.metricDetail}>{state.status === "verified" ? detail : state.status === "restricted" ? "This number is not open to your role." : "We could not load this number just now."}</p>
+      {accessibleHref ? <span className={styles.metricLink}>Open it <span aria-hidden="true"><Icon name="arrow" /></span></span> : null}
     </>
   );
   const className = `${styles.metricCard} ${accessibleHref ? styles.metricCardLinked : ""}`;
@@ -98,19 +98,19 @@ export default async function DashboardPage() {
   ]);
 
   const metrics = [
-    { label: "Awaiting publication", detail: "Articles with a current version but no public version yet.", state: unpublishedArticles, href: "/newsroom", icon: "news" as const },
-    { label: "Private versions", detail: "Draft, review and approved version records — not a publishability decision.", state: privateVersions, href: "/newsroom", icon: "history" as const },
-    { label: "Open reports", detail: "Reports currently open in the moderation queue.", state: openReports, href: "/moderation/forum", icon: "shield" as const },
-    { label: "Orders in progress", detail: "Pending, paid, preparing or out-for-delivery orders.", state: activeOrders, href: "/orders", icon: "orders" as const },
+    { label: "Waiting to be published", detail: "Articles that are written but not public yet.", state: unpublishedArticles, href: "/newsroom", icon: "news" as const },
+    { label: "Drafts in progress", detail: "Stories being written or reviewed.", state: privateVersions, href: "/newsroom", icon: "history" as const },
+    { label: "Reports to check", detail: "Community reports waiting for a decision.", state: openReports, href: "/moderation/forum", icon: "shield" as const },
+    { label: "Orders being processed", detail: "Orders that are paid or on the way.", state: activeOrders, href: "/orders", icon: "orders" as const },
   ];
 
   const workflows: Workflow[] = [
-    { label: "Newsroom", detail: "Write, review and publish articles with revision safety.", category: "Editorial", href: "/newsroom", icon: "news", allowed: capabilities["article.create"] === true || articleRead === true },
-    { label: "Forum moderation", detail: "Resolve reports from the digital village square.", category: "Community", href: "/moderation/forum", icon: "shield", allowed: capabilities["moderation.review"] === true },
-    { label: "Business review", detail: "Verify submitted businesses and directory records.", category: "Community", href: "/business-review", icon: "people", allowed: capabilities["business.review"] === true },
-    { label: "Radio studio", detail: "Manage programmes, rights, episodes and schedule.", category: "Broadcast", href: "/radio", icon: "radio", allowed: capabilities["radio.manage"] === true },
-    { label: "Who is Who", detail: "Curate people records and verification.", category: "Directory", href: "/people", icon: "people", allowed: capabilities["people.manage"] === true },
-    { label: "Backups", detail: "Snapshot and restore the database in private R2.", category: "System", href: "/backups", icon: "database", allowed: capabilities["backup.read"] === true },
+    { label: "Newsroom", detail: "Write, check and publish news stories.", category: "News", href: "/newsroom", icon: "news", allowed: capabilities["article.create"] === true || articleRead === true },
+    { label: "Forum moderation", detail: "Check reports from the community.", category: "Community", href: "/moderation/forum", icon: "shield", allowed: capabilities["moderation.review"] === true },
+    { label: "Business review", detail: "Approve businesses sent in by owners.", category: "Community", href: "/business-review", icon: "people", allowed: capabilities["business.review"] === true },
+    { label: "Radio studio", detail: "Manage programmes, episodes and the schedule.", category: "Radio", href: "/radio", icon: "radio", allowed: capabilities["radio.manage"] === true },
+    { label: "Who is Who", detail: "Curate people records and verification.", category: "People", href: "/people", icon: "people", allowed: capabilities["people.manage"] === true },
+    { label: "Backups", detail: "Save or restore a copy of the website data.", category: "System", href: "/backups", icon: "database", allowed: capabilities["backup.read"] === true },
   ];
   const visibleWorkflows = workflows.filter((workflow) => workflow.allowed);
 
@@ -119,25 +119,18 @@ export default async function DashboardPage() {
   return <PageFrame className={styles.page}>
     <PageIntro
       eyebrow="Staff workspace"
-      title="Admin dashboard"
-      description="Live queues across the EPE LAWA newsroom and community. Counts appear only where your role grants the matching read capability."
-      actions={capabilities["article.create"] === true ? <Link className="btn-primary" href={adminHref("/newsroom/new")}>Create private draft</Link> : null}
+      title="Welcome back"
+      description="This is your EPE LAWA desk: see what needs attention, then open your workspaces below."
+      actions={capabilities["article.create"] === true ? <Link className="btn-primary" href={adminHref("/newsroom/new")}>Write a new story</Link> : null}
       meta={
         <span className={styles.metaBadge}>
           <span className={`${styles.statusDot} ${verifiedCount === metrics.length ? styles.statusHealthy : styles.statusPartial}`} aria-hidden="true" />
-          {verifiedCount === metrics.length ? "All queues available" : `${verifiedCount} of ${metrics.length} queues available to your role`}
+          {verifiedCount === metrics.length ? "All numbers loaded" : `${verifiedCount} of ${metrics.length} numbers open to your role`}
         </span>
       }
     />
 
     <section className={styles.overview} aria-label="Dashboard counts">
-      <div className={styles.sectionIntro}>
-        <div>
-          <p className={styles.sectionEyebrow}>At a glance</p>
-          <h2>Live queues</h2>
-          <p>Counts update from the database; restricted or failed reads are never shown as zero.</p>
-        </div>
-      </div>
       <div className={styles.metricGrid}>
         {metrics.map((item) => <MetricCard key={item.label} {...item} />)}
       </div>
@@ -146,15 +139,15 @@ export default async function DashboardPage() {
     <section className={styles.workflows} aria-label="Workspace shortcuts">
       <div className={styles.sectionIntro}>
         <div>
-          <p className={styles.sectionEyebrow}>Your workspace</p>
+          <p className={styles.sectionEyebrow}>Your workspaces</p>
           <h2>Quick access</h2>
-          <p>Only the areas your current capabilities allow are shown.</p>
+          <p>Only areas open to your role are shown.</p>
         </div>
       </div>
       {visibleWorkflows.length === 0 ? (
         <div className={styles.noWorkflows}>
-          <strong>No workspaces available</strong>
-          <span>Ask an administrator to grant the capabilities you need.</span>
+          <strong>No workspaces open yet</strong>
+          <span>Ask an administrator to give your role the access it needs.</span>
         </div>
       ) : (
         <ul className={styles.workflowGrid}>
@@ -174,10 +167,5 @@ export default async function DashboardPage() {
         </ul>
       )}
     </section>
-
-    <aside className={styles.privacyNote}>
-      <span className={styles.privacyIcon}><Icon name="shield" /></span>
-      <p><strong>Privacy by design.</strong> All publishing and moderation actions are capability-gated and audited server-side. Member and seller data stays private. Database restore never runs in the browser.</p>
-    </aside>
   </PageFrame>;
 }
