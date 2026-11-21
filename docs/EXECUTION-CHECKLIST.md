@@ -152,9 +152,11 @@ Scope: rerun build, test, scan and live checks from a clean environment; separat
 Entry condition: Phase 0 exit condition met.
 Exit/done condition: a recorded baseline table with exact commands, exit codes and a named classification of every failure; no new source change made in this phase.
 
-### Baseline refresh on rebased main `920911f` (2026-11-20)
+### Historical baseline refresh on rebased main `920911f` (2026-11-20)
 
 Baseline refreshed on rebased main `920911f`; PRs #192–#197 added remediation, the execution checklist, accessibility fixes, the master audit, the admin/backup workspace and the next-agent guide. Historical results in the chunks below refer to their named revisions and are not current results. No production data, schema, provider configuration or secrets were changed. The earlier draft (PR #198) recorded env-related failures (`cdn.playwright.dev` ECONNRESET, `founda-scan` ENOENT); those tools are now available in this environment (`/usr/local/bin/founda-scan`, `/usr/bin/chromium`, Playwright 1.65.1 resolvable), so the rows below were re-run with real results.
+
+This section is retained as historical verification evidence. The current Phase 0 status, live schema reconciliation, rollback evidence and remaining exit gates are recorded in `docs/16-progress-log.md`, `docs/16-schema-runbook.md` and `docs/18-project-status-implementation-checklist.md` on the newer `main` baseline; Phase 1/release acceptance remains incomplete.
 
 | Command / check | Result and scope (2026-11-20, feature branch `feat/full-web-implementation`, base `920911f`) |
 | --- | --- |
@@ -748,4 +750,3 @@ Owner-directed execution phase. Branch `feat/admin-backup-redesign`; docs branch
 - [ ] Owner-gated and deliberately untouched: live DB migration application, any restore over production, Vercel access, capability grants for `backup.read/create/restore`, GitHub Actions secrets (`DATABASE_URL`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ACCOUNT_ID`, `R2_BUCKET_PRIVATE`, Vercel-side `CLOUDFLARE_API_TOKEN`, `BACKUP_DISPATCH_TOKEN`, `BACKUP_WORKFLOW_REPO`).
 
 **Browser exposure rule (owner):** no DB URL, R2 write key, Cloudflare token or GitHub dispatch token in browser, devtools, RSC payload, action return or console. Only backup key metadata (identifier, size, timestamp) reaches the client; the key is required for typed confirmation. All signing and dispatch is server-only / GitHub Actions.
-
