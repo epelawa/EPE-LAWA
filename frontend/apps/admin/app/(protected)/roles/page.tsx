@@ -4,6 +4,7 @@ import { createClient } from "../../../lib/supabase";
 import { assignRole, deleteRole, saveRole } from "./actions";
 import styles from "./roles.module.css";
 
+import ConfirmSubmit from "../../../components/confirm-submit";
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 
@@ -100,7 +101,7 @@ export default async function RolesPage() {
             </form>
             <form action={deleteRole}>
               <input type="hidden" name="id" value={role.id} />
-              <button className="btn-secondary" type="submit">Delete role</button>
+              <ConfirmSubmit className="btn-secondary" message={"Delete the role \""+role.name+"\"? Staff members will lose its access immediately. This cannot be undone."}>Delete role</ConfirmSubmit>
             </form>
 
             <h3>Staff assignments</h3>

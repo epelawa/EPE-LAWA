@@ -2,6 +2,7 @@ import { createClient } from "../../../lib/supabase";
 import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "@epelawa/ui";
 import { addOffice, addSource, changeStatus, resolveCorrection, savePerson, sourceVisibility, unverifyPerson, verifyPerson } from "./actions";
 
+import ConfirmSubmit from "../../../components/confirm-submit";
 export const dynamic = "force-dynamic";
 type Params = { q?: string; error?: string; updated?: string };
 const input = "input";
@@ -27,7 +28,7 @@ export default async function PeoplePage({ searchParams }: { searchParams: Promi
 
     <section className="ui-stack-sm" aria-labelledby="corrections-title">
       <SectionHeading eyebrow="Submissions" title="Open correction submissions" id="corrections-title" />
-      {cerror ? <EmptyPanel title="Submissions unavailable" description="Open corrections could not be loaded." /> : !corrections?.length ? <EmptyPanel title="No open corrections" description="There are no correction submissions awaiting review." /> : <ul className="ui-list ui-stack-sm">{corrections.map(c => <li key={c.id}><Panel className="ui-stack-sm"><p className="ui-meta">Received {new Date(c.created_at).toLocaleString("en-NG")}</p><p className="ui-prose" style={{ whiteSpace: "pre-wrap" }}>{c.claim}</p>{c.evidence ? <p className="ui-muted" style={{ whiteSpace: "pre-wrap" }}>Evidence: {c.evidence}</p> : null}<form action={resolveCorrection} className="ui-actions"><input type="hidden" name="correction_id" value={c.id} /><button name="state" value="accepted" className={primaryButton}>Accept correction</button><button name="state" value="rejected" className={secondaryButton}>Reject</button></form></Panel></li>)}</ul>}
+      {cerror ? <EmptyPanel title="Submissions unavailable" description="Open corrections could not be loaded." /> : !corrections?.length ? <EmptyPanel title="No open corrections" description="There are no correction submissions awaiting review." /> : <ul className="ui-list ui-stack-sm">{corrections.map(c => <li key={c.id}><Panel className="ui-stack-sm"><p className="ui-meta">Received {new Date(c.created_at).toLocaleString("en-NG")}</p><p className="ui-prose" style={{ whiteSpace: "pre-wrap" }}>{c.claim}</p>{c.evidence ? <p className="ui-muted" style={{ whiteSpace: "pre-wrap" }}>Evidence: {c.evidence}</p> : null}<form action={resolveCorrection} className="ui-actions"><input type="hidden" name="correction_id" value={c.id} /><ConfirmSubmit className={primaryButton} confirmFirst message="Publish this correction to the public profile now?" name="state" value="accepted">Accept correction</ConfirmSubmit><ConfirmSubmit className={secondaryButton} confirmFirst message="Reject this correction? The submitter can raise it again." name="state" value="rejected">Reject</ConfirmSubmit></form></Panel></li>)}</ul>}
     </section>
 
     <section className="ui-stack-sm" aria-labelledby="profiles-title">
