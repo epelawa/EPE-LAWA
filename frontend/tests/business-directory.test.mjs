@@ -32,3 +32,20 @@ test('discovery page does not expose marketplace order or review forms', () => {
  assert.match(directoryPage, /business_discovery_search/);
  assert.match(directoryPage, /We couldn’t load the directory/);
 });
+
+test('staff can publish a directory listing directly — guarded, audited, no draft', async () => {
+  const staffMigration = await readFile(new URL('../../backend/supabase/migrations/20261121230000_business_staff_create.sql', import.meta.url), 'utf8');
+  const staffAction = await readFile(new URL('../apps/admin/app/(protected)/business-review/actions.ts', import.meta.url), 'utf8');
+  assert.match(staffMigration, /create or replace function public\.business_staff_create/);
+  assert.match(staffMigration, /perform public\.require_capability\('business\.review'\)/);
+  assert.match(staffMigration, /'published',\s*\n\s*now\(\)/);
+  assert.match(staffMigration, /'staff', 'business\.staff_create', 'business'/);
+  assert.match(staffMigration, /revoke all on function public\.business_staff_create\([^)]*\) from public, anon/);
+  assert.match(staffMigration, /grant execute on function public\.business_staff_create\([^)]*\) to authenticated/);
+  assert.doesNotMatch(staffAction, /\.from\("businesses"\)\.(insert|update|upsert|delete)/);
+  assert.match(staffAction, /rpc\("business_staff_create"/);
+  assert.match(staffAction, /revalidatePath\("\/business-directory"\)/);
+  assert.match(staffPage, /BusinessCreateForm/);
+  assert.match(staffPage, /Add a business/);
+  assert.doesNotMatch(staffPage, /from\("businesses"\)\.insert/);
+});

@@ -1,10 +1,11 @@
 import { createClient } from "../../../lib/supabase";
 import { reviewBusiness } from "./actions";
+import BusinessCreateForm from "../../../components/business-create-form";
 import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "@epelawa/ui";
 
 export const dynamic = "force-dynamic";
 
-export default async function Page({ searchParams }: { searchParams: Promise<{ error?: string; updated?: string }> }) {
+export default async function Page({ searchParams }: { searchParams: Promise<{ error?: string; updated?: string; added?: string }> }) {
   const p = await searchParams;
   const db = await createClient();
   const { data: allowed, error: ge } = await db.rpc("has_capability", { p_capability: "business.review" });
@@ -16,6 +17,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
     <PageIntro eyebrow="Marketplace · Staff" title="Business submissions" description="Review unpublished submissions, record evidence, then publish or reject with a reason." />
     {p.error ? <Notice tone="danger" role="alert">Review action failed. Confirm evidence and capability, then retry.</Notice> : null}
     {p.updated ? <Notice tone="success" role="status">Review action recorded.</Notice> : null}
+    {p.added ? <Notice tone="success" role="status">Listing published — it is now visible in the public business directory.</Notice> : null}
+    {cats?.length ? <Panel><SectionHeading eyebrow="Direct listing" title="Add a business" description="Publish a listing yourself, right now — no submission needed. Everything you save here appears in the public directory immediately." /><BusinessCreateForm categories={cats} /></Panel> : null}
     {error ? <EmptyPanel title="Queue unavailable" description="No listing details are shown. Try again later." /> : !data?.length ? <EmptyPanel title="No submissions awaiting review" description="New business submissions will appear here for staff review." /> : <section className="ui-stack-sm"><SectionHeading eyebrow="Review queue" title="Pending submissions" description="Review each listing and record a clear, auditable decision." />
       <ul className="ui-list ui-stack-sm">{data.map(b => <li key={b.id}><Panel className="ui-stack-sm">
         <div className="ui-row"><StatusBadge tone={b.status === "submitted" ? "warning" : "neutral"}>{b.status}</StatusBadge><span className="ui-meta">{labels.get(b.category_id) ?? "Category"} · Received {new Date(b.created_at).toLocaleString("en-NG")}</span></div>
