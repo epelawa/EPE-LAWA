@@ -1,4 +1,4 @@
-  # EPE LAWA — Agent Working Rules
+   # EPE LAWA — Agent Working Rules
 
 Read this file and `docs/00-master-plan.md` before project work. `docs/01-product-requirements.md` is the detailed local source of truth.
 
