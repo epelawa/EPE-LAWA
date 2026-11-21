@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
@@ -105,6 +106,7 @@ function ArticleUnavailable() {
 }
 
 export default async function ArticlePage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ comments?: string }> }) {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   const [{ slug }, notice] = await Promise.all([params, searchParams]);
   const result = await loadArticle(slug);
   if (result.status === "error") return <ArticleUnavailable />;
@@ -152,7 +154,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
 
   return (
     <div className={signedIn ? "member-reading-mode" : undefined}>
-    <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify({"@context":"https://schema.org","@type":"NewsArticle",headline:article.title,description:article.summary || undefined,datePublished:article.published_at || undefined,author:article.author_name ? {"@type":"Person",name:article.author_name} : undefined,publisher:{"@type":"Organization",name:"EPE LAWA",url:siteUrl},mainEntityOfPage:articleUrl,image:imageUrl ? new URL(imageUrl,siteUrl).toString() : undefined}).replace(/</g,"\\u003c")}} />
+    <script type="application/ld+json" nonce={nonce} dangerouslySetInnerHTML={{__html:JSON.stringify({"@context":"https://schema.org","@type":"NewsArticle",headline:article.title,description:article.summary || undefined,datePublished:article.published_at || undefined,author:article.author_name ? {"@type":"Person",name:article.author_name} : undefined,publisher:{"@type":"Organization",name:"EPE LAWA",url:siteUrl},mainEntityOfPage:articleUrl,image:imageUrl ? new URL(imageUrl,siteUrl).toString() : undefined}).replace(/</g,"\\u003c")}} />
     {signedIn ? <nav className={styles.memberReadingBar} aria-label="Member reading navigation">
       <Link href="/dashboard?tab=discover" className={styles.memberReadingBack}>← <span>Discover</span></Link>
       <span className={styles.memberReadingLabel}>EPE LAWA <span>· Member reading</span></span>
