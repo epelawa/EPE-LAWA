@@ -90,7 +90,7 @@
   button:disabled { cursor: not-allowed; opacity: .55; }
   :where(a,button,input,select,textarea,summary,[tabindex]):focus-visible { outline: var(--ep-focus-width, 2px) solid var(--ep-focus-ring, hsl(var(--ring))); outline-offset: var(--ep-focus-offset, 3px); }
   :where(input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),select,textarea) { width: 100%; min-height: var(--ep-control-min-h, 48px); border: 1px solid hsl(var(--input)); border-radius: var(--ep-radius-md, 12px); background: hsl(var(--card)); color: hsl(var(--foreground)); padding-inline: var(--ep-control-px, 16px); padding-block: var(--ep-control-py, 12px); font-size: var(--ep-type-base, 16px); line-height: var(--ep-leading-base, 24px); }
-  textarea { min-height: 132px; resize: vertical; }
+  textarea { min-height: 132px; resize: none; }
   input[type="checkbox"],input[type="radio"] { accent-color: hsl(var(--primary)); width: 18px; height: 18px; }
   input::placeholder,textarea::placeholder { color: hsl(var(--muted-foreground)); opacity: .9; }
   label { font-size: 14px; font-weight: 600; }
