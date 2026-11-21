@@ -18,9 +18,27 @@ it("shows only unexpired stories and removes the banner and badge when time expi
     expect(host.querySelector("a")?.getAttribute("href")).toBe("/news/active");
     expect(host.textContent).not.toContain("Synthetic expired story");
     expect(host.textContent).toContain("Breaking");
+    expect(host.querySelectorAll("ul")).toHaveLength(2);
+    expect(host.querySelector("ul[aria-hidden='true']")?.querySelectorAll("a[tabindex='-1']").length).toBe(1);
     act(() => { vi.advanceTimersByTime(1001); });
     expect(host.querySelector('[aria-label="Breaking news"]')).toBeNull();
     expect(host.textContent).not.toContain("Breaking");
+  } finally { act(() => root.unmount()); host.remove(); vi.useRealTimers(); }
+});
+it("slides several breaking stories in one duplicated track", () => {
+  vi.useFakeTimers();
+  const now = new Date("2026-11-16T12:00:00Z").getTime(); vi.setSystemTime(now);
+  const future = new Date(now + 1000).toISOString();
+  const stories = [
+    { slug: "one", title: "Synthetic first story", published_at: null, breaking_until: future },
+    { slug: "two", title: "Synthetic second story", published_at: null, breaking_until: future },
+  ];
+  const host = document.createElement("div"); document.body.append(host); const root = createRoot(host);
+  try {
+    act(() => root.render(<BreakingNewsBanner stories={stories} initialTime={now} />));
+    const links = [...host.querySelectorAll("a")].map(link => link.getAttribute("href"));
+    expect(links.filter(href => href === "/news/one")).toHaveLength(2);
+    expect(links.filter(href => href === "/news/two")).toHaveLength(2);
   } finally { act(() => root.unmount()); host.remove(); vi.useRealTimers(); }
 });
 it("expires member cards and shows the honest empty state", async () => {

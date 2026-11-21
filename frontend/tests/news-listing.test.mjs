@@ -5,6 +5,8 @@ import { readFile } from "node:fs/promises";
 const root = new URL("../apps/main/", import.meta.url);
 const page = await readFile(new URL("app/news/page.tsx", root), "utf8");
 const styles = await readFile(new URL("app/news/listing.module.css", root), "utf8");
+const breaking = await readFile(new URL("components/breaking-news.tsx", root), "utf8");
+const tickerStyles = await readFile(new URL("components/home-breaking-ticker.module.css", root), "utf8");
 const header = await readFile(new URL("components/site-header.tsx", root), "utf8");
 const mobileNavigation = await readFile(new URL("lib/mobile-navigation.ts", root), "utf8");
 const headerStyles = await readFile(new URL("components/navigation-refinement.css", root), "utf8");
@@ -62,7 +64,10 @@ test("Breaking news is visible only for a flagged, unexpired published lead", ()
   assert.match(page, /breaking_until.*Date\.now\(\)/);
   assert.match(page, /<BreakingNewsBanner stories=\{breakingStories\}/);
   assert.match(page, /\.eq\("is_breaking", true\)\.gt\("breaking_until"/);
-  assert.match(styles, /\.breakingBanner \{/);
+  assert.match(breaking, /tickerStyles\.track/);
+  assert.match(breaking, /tickerStyles\.duplicate/);
+  assert.match(tickerStyles, /\.narrow \{[^}]*width: min\(680px, 100%\)/);
+  assert.doesNotMatch(styles, /breakingBanner/);
 });
 
 test("News uses the shared public shell and keeps its cobalt search and route entry points", () => {
