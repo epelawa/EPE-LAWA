@@ -31,6 +31,7 @@
 .card { position:relative; display:flex; flex-direction:column; height:100%; border:1px solid #dde5f0; border-radius:16px; overflow:hidden; background:#fff; box-shadow:0 6px 18px #142f5a0a; transition:transform .15s ease, box-shadow .15s ease; }
 .card:hover { transform:translateY(-3px); box-shadow:0 16px 34px #142f5a1f; }
 .cardArtwork { position:relative; display:grid; place-items:center; height:112px; background:linear-gradient(135deg,#e8f0fb,#d9e7f8); color:#3b77c4; }
+.cardLogoImg { width:64px; height:64px; border-radius:18px; background:#fff; object-fit:contain; padding:6px; box-shadow:0 8px 20px #17458226; }
 .cardLetter { display:grid; place-items:center; width:64px; height:64px; border-radius:18px; background:#fff; color:#174582; font-size:1.7rem; font-weight:800; letter-spacing:-.03em; box-shadow:0 8px 20px #17458226; }
 .verifiedChip { position:absolute; top:12px; right:12px; display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:999px; background:#0f3d2a; color:#8ef0c0; font-size:.68rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; }
 .cardBody { display:flex; flex:1; flex-direction:column; gap:9px; padding:18px; }
