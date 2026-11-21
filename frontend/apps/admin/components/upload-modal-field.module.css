@@ -1,0 +1,48 @@
+.triggerRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.choice {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.85rem;
+}
+
+.pickerStack {
+  display: grid;
+  gap: 14px;
+}
+
+.dropzone {
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 120px;
+  padding: 22px 18px;
+  border: 1.5px dashed hsl(var(--border));
+  border-radius: 16px;
+  background: hsl(var(--muted) / 0.5);
+  color: hsl(var(--foreground));
+  font-weight: 650;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.dropzone:hover,
+.dropzone:focus-within {
+  border-color: hsl(var(--ring));
+  background: hsl(var(--muted) / 0.8);
+}
+
+.dropzone input[type="file"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

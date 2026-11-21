@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import BrandedDialog from "./branded-dialog";
 import styles from "./business-logo-input.module.css";
 
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -28,6 +29,7 @@ async function compress(file: File): Promise<string> {
 export default function BusinessLogoInput({ label = "Business logo (optional)" }: { label?: string }) {
   const [preview, setPreview] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
   const hiddenRef = useRef<HTMLInputElement>(null);
 
   async function onPick(file: File | null | undefined) {
@@ -59,7 +61,21 @@ export default function BusinessLogoInput({ label = "Business logo (optional)" }
 
   return (
     <div className={styles.field}>
-      <label className="label">{label}<input type="file" accept={ACCEPTED.join(",")} className="input" onChange={(event) => void onPick(event.target.files?.[0])} /></label>
+      <div className="ui-field">
+        <span className="ui-row">
+          <button type="button" className="btn-secondary" aria-haspopup="dialog" onClick={() => setOpen(true)}>{label}</button>
+          {preview ? <span className="ui-meta" role="status">Logo ready</span> : <span className="ui-meta" role="status">No logo selected</span>}
+        </span>
+      </div>
+      <BrandedDialog open={open} onClose={() => setOpen(false)} title={label} description="Choose an image from this device. It is compressed in your browser before it is stored with your listing.">
+        <div className={styles.pickerStack}>
+          <label className="btn-secondary">
+            Browse files
+            <input type="file" accept={ACCEPTED.join(",")} data-autofocus onChange={(event) => { setOpen(false); void onPick(event.target.files?.[0]); }} />
+          </label>
+          <p className="ui-meta">JPEG, PNG or WebP, smaller than 5 MB.</p>
+        </div>
+      </BrandedDialog>
       <input ref={hiddenRef} type="hidden" name="logo_data" />
       {preview ? (
         <div className={styles.preview}>
@@ -68,7 +84,7 @@ export default function BusinessLogoInput({ label = "Business logo (optional)" }
           <button type="button" className="btn-ghost" onClick={clear}>Remove logo</button>
         </div>
       ) : null}
-      {message ? <p className="ui-meta">{message}</p> : <p className="ui-meta">Or paste a logo link below — the image is compressed in your browser before upload.</p>}
+      {message ? <p className="ui-meta">{message}</p> : null}
     </div>
   );
 }
