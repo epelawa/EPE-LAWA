@@ -3,7 +3,7 @@
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { staffCreateBusiness, type StaffCreateState } from "../app/(protected)/business-review/actions";
-import { pushToast } from "../main/components/toast";
+import { pushToast } from "../../main/components/toast";
 
 type Option = { id: string; label: string };
 

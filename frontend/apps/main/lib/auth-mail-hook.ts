@@ -21,6 +21,14 @@ export function verifyAuthMail(body: string, headers: Record<string, string>, se
   return new Webhook(key).verify(body, headers);
 }
 
+/** Branded HTML5 email shell: navy header band, white content card, quiet footer. */
+export function emailShell(title: string, bodyHtml: string, note?: string): string {
+  return `<div style="margin:0;padding:24px 12px;background:#eef2fa;font-family:Arial,Helvetica,sans-serif">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:auto;background:#101b33;border-radius:14px 14px 0 0;overflow:hidden"><tr><td style="padding:22px 28px;background:#101b33"><table role="presentation" cellpadding="0" cellspacing="0" width="100%"><tr><td style="vertical-align:middle"><img src="https://epelawa.vercel.app/brand-logo.png" alt="EPE LAWA" width="36" height="32" style="display:inline-block;vertical-align:middle" /></td><td align="right" style="color:#a7c5f5;font-size:12px;font-weight:bold;letter-spacing:2px;vertical-align:middle">THE VOICE OF EPE DIVISION</td></tr></table></td></tr></table>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:auto;background:#ffffff;border-radius:0 0 14px 14px"><tr><td style="padding:28px"><h1 style="margin:0 0 16px;font-size:21px;color:#17264a">${escape(title)}</h1>${bodyHtml}</td></tr><tr><td style="padding:14px 28px;border-top:1px solid #e3eaf6;color:#8a90a2;font-size:12px">${escape(note ?? "You are receiving this because of activity on your EPE LAWA account or enquiry.")}<br />© EPE LAWA · Rooted in Epe. Connected everywhere.</td></tr></table>
+</div>`;
+}
+
 /** Render all supported Auth actions, including both secure-email-change recipients. */
 export function renderAuthMessages(payload: unknown, projectUrl: string, allowedOrigin: string): Message[] {
   const root = record(payload), user = record(root.user), data = record(root.email_data);
@@ -43,7 +51,11 @@ export function renderAuthMessages(payload: unknown, projectUrl: string, allowed
     }
     const subject = subjects[action];
     const text = `${subject}\n\nYour verification code: ${code}${link ? `\n\nContinue securely: ${link}` : ""}\n\nIf you did not request this, you can ignore this email.\n\nEPE LAWA`;
-    const html = `<div style="font-family:Arial,sans-serif;color:#17264a;max-width:560px;margin:auto;padding:32px"><p style="color:#294b91;font-weight:bold">EPE LAWA</p><h1>${escape(subject)}</h1><p>Your verification code:</p><p style="font-size:28px;font-weight:bold;letter-spacing:4px">${escape(code)}</p>${link ? `<p><a href="${escape(link)}">Continue securely</a></p>` : ""}<p>If you did not request this, you can ignore this email.</p></div>`;
+    const html = emailShell(subject, `
+      <p style="margin:0 0 16px">Your verification code:</p>
+      <p style="margin:0 0 16px;font-size:28px;font-weight:bold;letter-spacing:4px">${escape(code)}</p>
+      ${link ? `<p style="margin:0 0 16px"><a href="${escape(link)}" style="display:inline-block;padding:12px 22px;background:#477fe0;color:#ffffff;text-decoration:none;border-radius:10px;font-weight:bold">Continue securely</a></p>` : ""}
+      <p style="margin:0;color:#5a6b8c">If you did not request this, you can ignore this email.</p>`);
     // Stable across hook retries, distinct across recipients and token pairs; never log it.
     const idempotencyKey = `auth/${createHash("sha256").update(JSON.stringify([action, recipient, code, hash])).digest("hex")}`;
     return { to: recipient, subject, text, html, idempotencyKey };
