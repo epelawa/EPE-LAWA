@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { absoluteUrl, isIndexingAllowed } from "../lib/site";
+import { createClient } from "../lib/supabase";
 
 /**
  * Only public pages that actually render content. Members pages, the status reference
@@ -21,9 +22,25 @@ const publicPaths = [
   "/privacy",
   "/terms",
   "/photo-credits",
+  "/search",
 ] as const;
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (!isIndexingAllowed()) return [];
-  return publicPaths.map((pathname) => ({ url: absoluteUrl(pathname) }));
+  const entries: MetadataRoute.Sitemap = publicPaths.map((pathname) => ({ url: absoluteUrl(pathname) }));
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("published_articles")
+      .select("published_at")
+      .not("published_at", "is", null)
+      .order("published_at", { ascending: false, nullsFirst: false })
+      .limit(1);
+    const lastmod = data?.[0]?.published_at;
+    if (typeof lastmod === "string") {
+      const index = entries.findIndex((entry) => entry.url.endsWith("/news"));
+      if (index >= 0) entries[index] = { ...entries[index], lastModified: new Date(lastmod) };
+    }
+  } catch { /* The static route list still ships when the newsroom is unreachable. */ }
+  return entries;
 }

@@ -196,6 +196,7 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
           <nav className="drawer-nav" aria-label="All sections">
             {MOBILE_GROUPS.map(renderMobileGroup)}
             <Link href="/news?search=1" className="drawer-link" onClick={closeDrawer}>Search news</Link>
+            <Link href="/search" className="drawer-link" onClick={closeDrawer}>Search the whole site</Link>
           </nav>
           <section className="drawer-account" aria-labelledby="drawer-account-title">
             <h2 id="drawer-account-title">Account</h2>

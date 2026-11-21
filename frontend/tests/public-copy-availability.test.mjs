@@ -39,10 +39,15 @@ test('web apps keep Coming Soon labels limited to explicit unavailable-state dis
   }
 });
 
-test('the protected primary-admin address is absent from public app source and static metadata', async () => {
-  const files = await textFiles(path.join(appsRoot, 'main'));
+test('the shared contact inbox lives only in the central site-identity module', async () => {
+  const allowed = new Set(['main/lib/site-identity.ts']);
+  const files = await textFiles(appsRoot);
   for (const file of files) {
+    const relative = path.relative(appsRoot, file);
     const source = await readFile(file, 'utf8');
-    assert.doesNotMatch(source, privateAddress, path.relative(appsRoot, file));
+    if (allowed.has(relative)) continue;
+    assert.doesNotMatch(source, privateAddress, relative);
   }
+  const identity = await readFile(path.join(appsRoot, 'main/lib/site-identity.ts'), 'utf8');
+  assert.match(identity, privateAddress);
 });

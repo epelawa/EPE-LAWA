@@ -31,3 +31,15 @@ export function formatIsoDay(value: string | null | undefined): string | null {
   const date = validDate(dateOnly ? `${value}T00:00:00.000Z` : value);
   return date ? isoDayFormatter.format(date) : null;
 }
+
+/** Timestamps shown to readers render in Lagos time, independent of server timezone. */
+const lagosStampFormatter = new Intl.DateTimeFormat("en-NG", {
+  dateStyle: "medium",
+  timeStyle: "short",
+  timeZone: "Africa/Lagos",
+});
+
+export function formatLagosDateTime(value: string | null | undefined): string | null {
+  const date = validDate(value);
+  return date ? lagosStampFormatter.format(date) : null;
+}

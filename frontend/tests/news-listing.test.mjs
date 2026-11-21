@@ -113,8 +113,8 @@ test("public footers and correction links do not imply that unavailable contact 
   assert.match(errorPage, /View contact availability/);
   assert.doesNotMatch(errorPage, /contact the team|with the page address/i);
   assert.match(contact, /nothing is sent or stored/);
-  assert.match(article, /Correction reporting is not available through this site yet/);
-  assert.match(article, /View contact availability/);
+  assert.match(article, /Suggest a correction/);
+  assert.match(article, /href="\/contact"/);
   assert.doesNotMatch(article, /contact the newsroom/i);
 });
 

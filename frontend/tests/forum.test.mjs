@@ -58,7 +58,7 @@ test("polls use the atomic creation RPC, single-choice authenticated voting, and
 
 test("thread authors are sourced from real profiles; no public-office claim is inferred", async () => {
   const thread = await source("../apps/main/app/forum/thread/[slug]/page.tsx");
-  assert.match(thread, /from\("profiles"\)\.select\("user_id,handle,display_name,is_verified,verified_at,deleted_at"\)/);
+  assert.match(thread, /from\("profiles"\)\.select\("user_id,handle,display_name,is_verified,verified_at,deleted_at,avatar_key"\)/);
   assert.match(thread, /profile\?\.is_verified && profile\.verified_at/);
   assert.match(thread, /profile\.deleted_at/);
   assert.doesNotMatch(thread, /public office|office verified/i);

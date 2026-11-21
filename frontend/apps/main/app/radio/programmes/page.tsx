@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { RadioIcon } from "../../../components/icons";
-import { EmptyPanel, PageFrame, PageIntro, Panel, SectionHeading } from "../../../components/design-system";
+import { EmptyPanel, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "../../../components/design-system";
+import { onAirSlotId } from "./on-air";
 import styles from "../radio-page.module.css";
 import { createClient } from "../../../lib/supabase";
 import { pageMetadata } from "../../../lib/metadata";
@@ -10,6 +11,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = pageMetadata({ title: "Radio programmes", description: "Approved EPE LAWA programmes, schedules and archive episodes.", path: "/radio/programmes" });
 
 export default async function RadioProgrammesPage() {
+  let onAirId: string | null = null;
   let programmes: Array<{ id: string; name: string; description: string | null }> = [];
   let slots: Array<{ id: string; day_of_week: number; starts_at: string; ends_at: string; note: string | null; programmes: Array<{ name: string }> }> = [];
   let episodes: Array<{ id: string; title: string; description: string | null; aired_on: string | null; external_url: string | null; programmes: Array<{ name: string }> }> = [];
@@ -22,7 +24,7 @@ export default async function RadioProgrammesPage() {
       db.from("episodes").select("id,title,description,aired_on,external_url,programmes(name)").not("published_at", "is", null).order("published_at", { ascending: false }).limit(50),
     ]);
     if (p.error || s.error || e.error) unavailable = true;
-    else { programmes = p.data ?? []; slots = s.data ?? []; episodes = e.data ?? []; }
+    else { programmes = p.data ?? []; slots = s.data ?? []; episodes = e.data ?? []; onAirId = onAirSlotId(slots); }
   } catch { unavailable = true; }
 
   return (
@@ -58,7 +60,7 @@ export default async function RadioProgrammesPage() {
           </Panel>
 
           <Panel>
-            <SectionHeading eyebrow="Weekly listings" title="Schedule" />
+            <SectionHeading eyebrow="Weekly listings" title="Schedule" action={<a className="btn-secondary" href="/api/radio/schedule.ics">Add to calendar (.ics)</a>} />
             {slots.length ? (
               <ul className="ui-list">
                 {slots.map((slot) => (
@@ -66,7 +68,7 @@ export default async function RadioProgrammesPage() {
                     <span className="ui-number">{["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][slot.day_of_week]}</span>
                     <div className="ui-stack-sm">
                       <h3 className="ui-item-title">{slot.programmes[0]?.name}</h3>
-                      <p className="ui-meta"><span>{slot.starts_at.slice(0, 5)}–{slot.ends_at.slice(0, 5)}</span>{slot.note ? <span>{slot.note}</span> : null}</p>
+                      <p className="ui-meta"><span>{slot.starts_at.slice(0, 5)}–{slot.ends_at.slice(0, 5)}</span>{slot.note ? <span>{slot.note}</span> : null}{slot.id === onAirId ? <StatusBadge tone="success">On air now</StatusBadge> : null}</p>
                     </div>
                   </li>
                 ))}

@@ -481,3 +481,11 @@ html { transition: background-color var(--ep-dur-base, 200ms) var(--ep-ease-out)
 .ui-disclosure > form, .ui-disclosure > * { padding: 0 var(--ep-space-5, 16px) var(--ep-space-5, 16px); }
 .ui-disclosure form textarea, textarea.input, textarea[class*="input"] { resize: none; }
 @media (prefers-reduced-motion: reduce) { .ui-disclosure > summary { transition: none; } }
+
+/* Print: site chrome and overlays stay off the paper. */
+@media print {
+  .site-head, .site-footer, .skip-link, .storage-notice, .cookie-banner,
+  nav[aria-label="Pagination"], dialog { display: none !important; }
+  .site-main { padding: 0 !important; margin: 0 !important; }
+  body { background: #ffffff !important; color: #000000 !important; }
+}

@@ -362,3 +362,12 @@
 .publicArticlePage .articleBody { box-sizing:border-box; width:100%; padding-inline:clamp(16px, 3vw, 28px); }
 .articleCoverFrame,.relatedCard { border-radius:12px; overflow:hidden; }
 .relatedImage { border-radius:10px 10px 0 0; }
+
+/* Print: the story is the page. */
+@media print {
+  .articleHeroTop, .memberReadingBar, .readingGuide, .shareLinks, .articleExtras,
+  .coverStats, .coverCredit, .articleAuthorCredit, .correctionNote { display: none !important; }
+  .articlePage { padding: 0 !important; }
+  .articleBody { font-size: 12pt; line-height: 1.5; }
+  .article a { color: inherit; text-decoration: none; }
+}

@@ -80,7 +80,7 @@ export default async function TourismPage({ searchParams }: { searchParams: Prom
 
     <form method="get" action="/tourism" role="search" aria-label="Search approved tourism destinations" className="ui-toolbar filter-panel">
       <div className="filter-panel__heading"><span className="filter-panel__icon"><FilterIcon/></span><div><p className="ui-eyebrow">Approved records</p><h2 className="filter-panel__title">Find a destination</h2></div></div>
-      <div className="ui-field"><label className="label" htmlFor="tourism-query">Search approved destinations</label><div className="filter-panel__control"><SearchIcon className="filter-panel__input-icon"/><input className="input" id="tourism-query" name="q" maxLength={100} defaultValue={query} placeholder="Name or description" /></div></div>
+      <div className="ui-field"><label className="label" htmlFor="tourism-query">Search approved destinations</label><div className="filter-panel__control"><SearchIcon className="filter-panel__input-icon"/><input className="input" id="tourism-query" name="q" maxLength={100} defaultValue={query} placeholder="Name or description" data-slash-focus /></div></div>
       <button className="btn-primary" type="submit"><SearchIcon size={16}/>Search</button>
     </form>
 

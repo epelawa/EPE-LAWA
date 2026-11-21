@@ -352,3 +352,5 @@
 .shell :global([data-layout-variant="3"]) .storyCard { padding-bottom: 12px; border-bottom: 1px solid hsl(var(--border)); border-radius: 0; }
 /* Distinguish the logo from a photographic cover when the image is missing or fails. */
 .storyImage[data-news-fallback="true"] { object-fit:contain; padding:24px; background:#edf3fc; }
+.strengthTrack { display: block; width: 100%; max-width: 320px; height: 8px; border-radius: var(--ep-radius-pill); background: rgb(41 75 145 / .15); overflow: hidden; }
+.strengthTrack > span { display: block; height: 100%; border-radius: inherit; background: #294b91; transition: width 200ms var(--ep-ease-out, ease-out); }

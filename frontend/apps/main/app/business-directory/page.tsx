@@ -25,7 +25,7 @@ export default async function BusinessDirectoryPage({searchParams}:{searchParams
  return <div className={styles.page}>
   <header className={styles.hero}><div className={styles.heroInner}><div><span className={styles.heroBadge}>EpeLawa · Business directory</span><h1>Discover businesses in Epe.</h1><p>Find trusted local shops, services and professionals within your community — every listing is checked by our editorial team before it appears.</p></div><Link className={styles.submit} href="/business-directory/submit">Submit a business <span aria-hidden="true">↗</span></Link></div></header>
   <form action="/business-directory" method="get" role="search" aria-label="Filter published business listings" className={styles.search}>
-   <label className={styles.mainField}><span>What are you looking for?</span><div><SearchIcon size={19}/><input name="q" type="search" defaultValue={q} maxLength={100} placeholder="Search businesses, services or keywords"/></div></label>
+   <label className={styles.mainField}><span>What are you looking for?</span><div><SearchIcon size={19}/><input name="q" type="search" defaultValue={q} maxLength={100} placeholder="Search businesses, services or keywords" data-slash-focus/></div></label>
    <label className={styles.areaField}><span>Area or community</span><input name="area" defaultValue={area} maxLength={100} placeholder="Enter an area"/></label>
    {category && <input type="hidden" name="category" value={category}/>}
    <button type="submit">Search businesses</button>

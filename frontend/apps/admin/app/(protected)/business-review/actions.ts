@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { adminHref } from "../../../lib/admin-path";
 import { createClient } from "../../../lib/supabase";
 import { mediaExtensionFor, putMediaObject } from "../../../lib/media-r2";
+import { parseBusinessHours } from "../../../lib/business-hours";
 
 const value = (form: FormData, key: string) => {
   const raw = form.get(key);
@@ -69,12 +70,18 @@ export async function staffCreateBusiness(_prev: StaffCreateState, formData: For
     if (written.state !== "ready") return { status: "error", message: "The logo could not be stored right now. Remove it and try again in a moment." };
     logoKey = objectKey;
   }
+  let hours: Record<string, string> | null = null;
+  const hoursRaw = field("hours_json");
+  if (hoursRaw) {
+    try { const parsed = parseBusinessHours(JSON.parse(hoursRaw)); hours = Object.keys(parsed).length ? parsed : null; }
+    catch { hours = null; }
+  }
   let result;
   try {
     result = await db.rpc("business_staff_create", {
       p_name: name, p_category_id: categoryId, p_description: description || null, p_area: area || null, p_address: address || null,
       p_landmark: landmark || null, p_phone: phone || null, p_whatsapp: whatsapp || null, p_email: email || null, p_website: website || null,
-      p_hours: null, p_verify: verify, p_evidence: verify ? evidence : null, p_logo_key: logoKey,
+      p_hours: hours, p_verify: verify, p_evidence: verify ? evidence : null, p_logo_key: logoKey,
     });
   } catch {
     return { status: "error", message: "We could not confirm whether the listing was saved. Reload the page; do not resubmit until you have checked, to avoid duplicates." };

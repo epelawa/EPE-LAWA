@@ -166,7 +166,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
       <div className={styles.editorialControls}>
         <form action="/news" method="get" role="search" className={styles.editorialSearch}>
           <label className="sr-only" htmlFor="news-query">Search stories, topics and authors</label>
-          <input id="news-query" name="q" type="search" maxLength={100} defaultValue={query} placeholder="Search news, topics and authors…" />
+          <input id="news-query" name="q" type="search" maxLength={100} defaultValue={query} placeholder="Search news, topics and authors…" data-slash-focus />
           {category ? <input type="hidden" name="category" value={category} /> : null}
           <button type="submit">Search</button>
         </form>

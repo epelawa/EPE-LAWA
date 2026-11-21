@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { createClient } from "../../lib/supabase";
 import { ImageIcon } from "../../components/icons";
 import { EmptyPanel, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge, TextLink } from "../../components/design-system";
+import GalleryLightboxGrid, { type LightboxPhoto } from "./lightbox-grid";
 import styles from "./gallery.module.css";
 
 export const metadata: Metadata = { title: "Gallery", description: "A source-credited visual archive of Epe." };
@@ -67,23 +68,33 @@ export default async function GalleryPage() {
       {photos.length > 0 ? (
         <section className={styles.archiveSection} aria-labelledby="gallery-archive-title">
           <SectionHeading eyebrow="Now showing" title="Photographs of Epe" id="gallery-archive-title" />
-          <ul className={styles.archiveGrid}>
-            {photos.map((photo) => {
+          {(() => {
+            const withUrl: LightboxPhoto[] = [];
+            const withoutUrl: GalleryPhoto[] = [];
+            for (const photo of photos) {
               const url = photoUrl(photo, r2Base);
-              return (
-                <li key={photo.id} className={styles.archivedPhoto}>
-                  {url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={url} alt={photo.alt_text ?? photo.title} loading="lazy" referrerPolicy="no-referrer" />
-                  ) : <div className={styles.archivePlaceholder} aria-hidden="true"><ImageIcon size={24} /></div>}
-                  <div className={styles.archiveCaption}>
-                    <strong>{photo.title}</strong>
-                    <span>{photo.credit ? `Photograph by ${photo.credit}` : "Credit on record"}</span>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+              if (url) withUrl.push({ id: photo.id, title: photo.title, credit: photo.credit, alt: photo.alt_text ?? photo.title, url });
+              else withoutUrl.push(photo);
+            }
+            return (
+              <>
+                {withUrl.length ? <GalleryLightboxGrid photos={withUrl} /> : null}
+                {withoutUrl.length ? (
+                  <ul className={styles.archiveGrid}>
+                    {withoutUrl.map((photo) => (
+                      <li key={photo.id} className={styles.archivedPhoto}>
+                        <div className={styles.archivePlaceholder} aria-hidden="true"><ImageIcon size={24} /></div>
+                        <div className={styles.archiveCaption}>
+                          <strong>{photo.title}</strong>
+                          <span>{photo.credit ? `Photograph by ${photo.credit}` : "Credit on record"}</span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </>
+            );
+          })()}
           <p className="ui-muted">Every photograph is checked for licence and credit before it appears here.</p>
         </section>
       ) : (
