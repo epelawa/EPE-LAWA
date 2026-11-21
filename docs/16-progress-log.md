@@ -25,6 +25,15 @@ An active, verified staff member with `article.publish` may publish directly wit
 
 No current full all-eight local/preview release pass, provider delivery, or live RLS pass is asserted in this log. A read-only production baseline is recorded below but does not verify this feature branch. No isolated Supabase development branch was created. Production migrations, schema, hosted email settings, and user-content writes remain unauthorized while migration reconciliation is pending; any separately owner-authorized staff-access changes are kept only in the private audit record.
 
+### 2026-11-21 — Phase 0 read-only reconciliation
+
+- `origin/main` was verified at `2dfa5ba`; the already-merged Step 3 and Step 4 PRs are #187 and #188. The rebased historical Step 4 branch passed its focused 12-test advertising/radio/footer suite and `git diff --check`; it was not force-pushed because its PR is already merged.
+- GitHub CLI lists PR #198 as a separate draft documentation PR with `CONFLICTING`/`DIRTY` merge state and no review decision. It remains open and unmerged because its own verification body records browser, scanner, owner-approval, and deployment gates as outstanding.
+- Supabase read-only inspection of project `igqmybuiovaxqmrteebd` found `ACTIVE_HEALTHY`, 51 public tables, 4 views, 93 public policies, RLS enabled on all listed public tables, and the business-directory catalog. The live ledger uses a separately reconciled naming history.
+- After explicit confirmation, the live schema reconciliation was applied in dependency order. The ledger now contains `20261121150100_enable_btree_gist_for_marketplace`, `20261121150200_marketplace_and_payments_reconciliation`, `20261121150300_marketplace_requests_moderation_reconciliation`, and `20261121150400_advertising_admin_workflow_reconciliation`. Existing ledger history was not rewritten or faked.
+- Post-apply read-only checks found all marketplace/payment tables and moderation history with RLS, the `active_business_sponsorships` view, the five expected RPCs, and the `advertising.manage` capability. Anonymous/authenticated roles have no direct write grants on money or sponsorship tables. Payment rows and active sponsorship rows are both zero; provider payment and advertising data remain unavailable until a separately verified provider flow exists.
+- The backup/restore rehearsal, isolated hosted rehearsal evidence, and exact production deployment verification remain open Phase 0 blockers. Schema existence is not being reported as payment/provider readiness.
+
 ### 2026-11-08 — Cobalt and motion polish, local evidence
 
 - The appearance switch, half-width mobile drawer with outside-close behavior, concise navbar lockup, dot-free editorial labels and two-column footer are implemented. The custom Tidegate motif covers initial loading and route fallbacks; scroll sections blur/lift into view with reduced-motion fallbacks.
