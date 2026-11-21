@@ -13,3 +13,22 @@ test("Tourism review RPC explicitly rejects a null decision", async () => {
   const migration = await read("backend/supabase/migrations/20261107230000_tourism_sites.sql");
   assert.match(migration, /p_decision is null or p_decision not in/);
 });
+
+const contributionForm=async()=>await read("frontend/apps/main/app/tourism/contribution-form.tsx");
+test("Tourism suggestion takes a compressed photo upload, not a pasted media URL",async()=>{
+  const page=await read("frontend/apps/main/app/tourism/page.tsx");
+  const form=await contributionForm();
+  const action=await read("frontend/apps/main/app/tourism/actions.ts");
+  const media=await read("frontend/apps/main/lib/media-r2.ts");
+  assert.match(page,/TourismContributionForm/);
+  assert.doesNotMatch(page,/Media URL/);
+  assert.match(form,/compressImage/);
+  assert.match(form,/accept="image\/jpeg,image\/png,image\/webp"/);
+  assert.match(form,/shrinked automatically before sending|shrunk automatically before sending/);
+  assert.match(action,/mediaUpload/);
+  assert.match(action,/mediaExtensionFor\(upload\.type\)/);
+  assert.match(action,/putPublicMediaObject/);
+  assert.match(action,/media\/tourism\//);
+  assert.match(media,/R2_ACCOUNT_ID/);
+  assert.match(media,/R2_BUCKET_PUBLIC/);
+});
