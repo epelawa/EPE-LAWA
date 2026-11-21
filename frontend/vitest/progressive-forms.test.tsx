@@ -92,8 +92,8 @@ it("uncertain saves require a deliberate check before retry", async () => {
  await act(async()=>root.render(<NewsArticleComposer categories={[{id:"news",label:"News"}]} authors={[{id:"author",display_name:"Author"}]} />));
  await act(async()=>{setValue(el.querySelector('#title')!,"A headline");setValue(el.querySelector('#body')!,"A story");button(el,"Continue").click();});await act(async()=>button(el,"Continue").click());
  await act(async()=>{setValue(el.querySelector('#categoryId')!,"news");setValue(el.querySelector('#authorId')!,"author");el.querySelector('form')!.requestSubmit();});
- expect(button(el,"Save article").disabled).toBe(true);expect(el.querySelector('[role="alert"]')?.textContent).toContain('Check the newsroom list');
- await act(async()=>button(el,"I checked").click());expect(button(el,"Save article").disabled).toBe(false);
+ expect(button(el,"Publish article").disabled).toBe(true);expect(el.querySelector('[role="alert"]')?.textContent).toContain('Check the newsroom list');
+ await act(async()=>button(el,"I checked").click());expect(button(el,"Publish article").disabled).toBe(false);
  await act(async()=>root.unmount());el.remove();
 });
 

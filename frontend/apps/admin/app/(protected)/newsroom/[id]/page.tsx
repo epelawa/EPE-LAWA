@@ -40,7 +40,6 @@ type ArticleVersion = {
   cover_license_url: string | null;
   cover_caption: string | null;
 };
-type VersionHistoryItem = { id: string; version_number: number; title: string; state: string; created_at: string; created_by: string | null };
 
 function bodyForEditor(body: unknown): string {
   if (typeof body === "string") return body;
@@ -52,33 +51,37 @@ function bodyForEditor(body: unknown): string {
 }
 
 function StatusMessage({ query }: { query: Record<string, string | undefined> }) {
-  if (query.created) return <Notice tone="success" role="status">Private article draft created. It is not public until an authorized publisher publishes it.</Notice>;
-  if (query.saved) return <Notice tone="success" role="status">Private draft saved. It is not public.</Notice>;
-  if (query.submitted) return <Notice tone="success" role="status">This version remains private. Authorized publishers can publish it directly.</Notice>;
+  if (query.created) return <Notice tone="success" role="status">The article was saved, but it is not public yet. Press “Publish now” below to put it live.</Notice>;
+  if (query.saved) return <Notice tone="success" role="status">The story was saved, but it is not public yet. Press “Publish now” below to put it live.</Notice>;
+  if (query.submitted) return <Notice tone="success" role="status">Version status updated. Publication is a separate, audited action.</Notice>;
   if (query.reviewed) return <Notice tone="success" role="status">The version status was updated. Publication is a separate, audited action.</Notice>;
-  if (query.published) return <Notice tone="success" role="status">Article published. The published version is now public.</Notice>;
+  if (query.published) return <Notice tone="success" role="status">Published. The story is live on the public site right now.</Notice>;
   if (query.breaking) return <Notice tone="success" role="status">Breaking news status updated.</Notice>;
   if (query.unpublished) return <Notice tone="neutral" role="status">Article unpublished.</Notice>;
   if (query.revised) return <Notice tone="success" role="status">A new private revision was created. The existing public version is unchanged.</Notice>;
   if (query.error) {
     const message =
       query.error === "uncertain"
-        ? "We could not confirm whether your changes were saved. Check the article and its revision before trying again."
+        ? "We could not confirm whether your changes were saved or published. Check the article and its revision before trying again."
         : query.error === "breaking"
         ? "Breaking status could not be updated. Check publication access, expiry and revision, then reload and try again."
         : query.error === "cover"
         ? "Use one cover source. A linked cover needs a safe HTTPS image URL, alt text, credit, source page and license URL."
         : query.error === "save"
-          ? "The draft could not be saved. It may have changed; reload before trying again."
+          ? "The story could not be saved. It may have changed; reload before trying again."
           : query.error === "published"
             ? "The article was not published. Check article.publish access and reload for revision changes."
             : query.error === "unpublished"
               ? "The article could not be unpublished. Check the revision and your article.unpublish access."
               : query.error === "unpublish_confirmation"
                 ? "Confirm that you want to take down the version currently visible to readers."
-                : query.error === "revise"
-                  ? "A new private revision could not be created. Check article.create access and reload."
-                  : "The requested article action could not be completed.";
+                : query.error === "delete_confirmation"
+                  ? "Tick the confirm box, then press Yes, delete forever."
+                  : query.error === "delete"
+                    ? "The story could not be deleted. Check your article access, reload and try again."
+                    : query.error === "revise"
+                      ? "A new private revision could not be created. Check article.create access and reload."
+                      : "The requested article action could not be completed.";
     return <Notice tone="danger" role="alert">{message}</Notice>;
   }
   return null;
@@ -94,7 +97,7 @@ export default async function EditArticlePage({
   const [{ id }, query, supabase] = await Promise.all([params, searchParams, createClient()]);
   if (!UUID.test(id)) notFound();
 
-  const [articleResult, categoryResult, authorResult, createCapability, publishCapability, unpublishCapability, versionHistoryResult, sessionResult] = await Promise.all([
+  const [articleResult, categoryResult, authorResult, createCapability, publishCapability, unpublishCapability, sessionResult] = await Promise.all([
     supabase.from("articles").select(`
       id, slug, revision, current_version_id, published_version_id, published_at, is_breaking, breaking_until,
         current_version:article_versions!current_version_id(
@@ -107,7 +110,6 @@ export default async function EditArticlePage({
     supabase.rpc("has_capability", { p_capability: "article.create" }),
     supabase.rpc("has_capability", { p_capability: "article.publish" }),
     supabase.rpc("has_capability", { p_capability: "article.unpublish" }),
-    supabase.from("article_versions").select("id,version_number,title,state,created_at,created_by").eq("article_id", id).order("version_number", { ascending: false }).limit(100),
     supabase.auth.getUser(),
   ]);
   if (articleResult.error) {
@@ -143,7 +145,6 @@ export default async function EditArticlePage({
   const canPublishCurrentVersion = ["draft", "review", "approved", "published"].includes(version.state);
   const displayState = currentVersionIsPublic ? "published" : version.state;
   const displayTone = displayState === "published" || displayState === "approved" ? "success" : displayState === "rejected" ? "danger" : displayState === "review" ? "warning" : "neutral";
-  const versionHistory = (versionHistoryResult.data ?? []) as VersionHistoryItem[];
 
   return (
     <PageFrame className="ui-stack">
@@ -153,16 +154,11 @@ export default async function EditArticlePage({
 
       {currentVersionIsPublic ? <NewsShareTools title={version.title} summary={version.summary} url={publicNewsArticleUrl(article.slug)} imageUrl={publishedNewsCover(version)?.url ? new URL(publishedNewsCover(version)!.url, absoluteUrl("/")).toString() : null} /> : null}
 
-      <Panel>
-        <SectionHeading eyebrow="Protected history" title="Revision history" description="Read-only version history. Publication actions remain recorded in the protected audit log." />
-        {versionHistoryResult.error ? <Notice tone="neutral" role="status">Revision history is unavailable for this article right now.</Notice> : versionHistory.length ? <div className="ui-table" role="region" aria-label="Article revision history" tabIndex={0}><table><thead><tr><th scope="col">Version</th><th scope="col">Headline</th><th scope="col">State</th><th scope="col">Created</th></tr></thead><tbody>{versionHistory.map((item) => <tr key={item.id}><td>{item.version_number}</td><td>{item.title}</td><td><StatusBadge tone={item.state === "approved" || item.state === "published" ? "success" : item.state === "rejected" ? "danger" : item.state === "review" ? "warning" : "neutral"}>{item.state}</StatusBadge></td><td><span className="ui-meta">{new Date(item.created_at).toLocaleString("en-NG")}</span></td></tr>)}</tbody></table></div> : <p className="ui-muted">No saved revisions are available.</p>}
-      </Panel>
-
       {editablePrivateVersion || canCreateRevision ? (
         !referencesAvailable ? <EmptyPanel title="Bylines and categories unavailable" description="The article was not changed. Reload after the reference lists can be verified." /> : (
           <Panel>
-            <SectionHeading eyebrow={editablePrivateVersion ? "Private editing" : "New version"} title={editablePrivateVersion ? "Edit current draft" : "Create a private correction"} description="Changes remain private. Publication is a separate, audited action." />
-            <ProgressiveEditor action={editablePrivateVersion ? saveDraft : reviseArticle} feedbackAction={editablePrivateVersion ? saveDraftWithFeedback : reviseArticleWithFeedback} recoveryActor={sessionResult.error ? undefined : sessionResult.data.user?.id} articleId={article.id} revision={String(article.revision)} submitLabel={editablePrivateVersion ? "Save private draft" : "Create private correction draft"} intent={editablePrivateVersion ? "save" : undefined} steps={[
+            <SectionHeading eyebrow={editablePrivateVersion ? "Edit and publish" : "Correct and publish"} title={editablePrivateVersion ? "Edit this story" : "Correct the live story"} description="Saving publishes immediately — readers see the update the moment you press the button." />
+            <ProgressiveEditor action={editablePrivateVersion ? saveDraft : reviseArticle} feedbackAction={editablePrivateVersion ? saveDraftWithFeedback : reviseArticleWithFeedback} recoveryActor={sessionResult.error ? undefined : sessionResult.data.user?.id} articleId={article.id} revision={String(article.revision)} submitLabel={editablePrivateVersion ? "Save & publish" : "Save correction & publish"} intent={editablePrivateVersion ? "save" : undefined} steps={[
               { title: "Story details", content: <>
               <div className="ui-field"><label className="label" htmlFor="title">Headline</label><input id="title" name="title" className="input" maxLength={200} required defaultValue={version.title} /></div>
               <div className="ui-field"><label className="label" htmlFor="summary">Summary</label><textarea id="summary" name="summary" className="input" rows={3} maxLength={1000} defaultValue={version.summary ?? ""} /></div>
@@ -188,10 +184,10 @@ export default async function EditArticlePage({
 
       {!currentVersionIsPublic && canPublishCurrentVersion ? <Panel>
         <SectionHeading eyebrow="Publication" title="Publish now" description="Publishing makes the current version publicly visible immediately." />
-        {canPublish ? <><p className="ui-muted">No second reviewer is required; the database still checks the verified staff session, article.publish capability and current revision, then records the action in the audit log.</p><form action={publishArticle} className="ui-actions"><input type="hidden" name="articleId" value={article.id} /><input type="hidden" name="revision" value={String(article.revision)} /><button className={buttonClassName("primary")} type="submit">Publish now</button></form></> : <p className="ui-muted">This account does not have article.publish access.</p>}
+        {canPublish ? <><p className="ui-muted">No second reviewer is required; every save normally publishes on its own. Publish here if a save ended up private — the database checks your verified session and records the action in the audit log.</p><form action={publishArticle} className="ui-actions"><input type="hidden" name="articleId" value={article.id} /><input type="hidden" name="revision" value={String(article.revision)} /><button className={buttonClassName("primary")} type="submit">Publish now</button></form></> : <p className="ui-muted">This account does not have article.publish access.</p>}
       </Panel> : null}
       {hasPublishedVersion ? <Panel>
-        <SectionHeading eyebrow="Publication" title="Breaking news" description="Show this story in the blue breaking-news banner for a while. You can have several breaking stories at once - each one slides in the banner until its time runs out. This never publishes a private draft." />
+        <SectionHeading eyebrow="Publication" title="Breaking news" description="Show this story in the blue breaking-news banner for a while. You can have several breaking stories at once - each one slides in the banner until its time runs out. This never makes an unpublished story public." />
         {article.is_breaking && article.breaking_until && new Date(article.breaking_until).getTime() > Date.now()
           ? <p className="ui-muted">Breaking until <time dateTime={article.breaking_until}>{new Date(article.breaking_until).toLocaleString('en-NG')}</time>. Pause it below to take it out of the banner now.</p>
           : <p className="ui-muted">Not currently marked as breaking.</p>}
