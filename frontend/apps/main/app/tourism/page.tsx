@@ -103,6 +103,7 @@ export default async function TourismPage({ searchParams }: { searchParams: Prom
       <SectionHeading eyebrow="02 · Community contribution" title="Suggest a destination" id="contribute-title" description="Contributions stay private until staff verify the source and publication rights. Do not submit sensitive access details or personal residential addresses. Submission is not approval." />
       {submission === "sent" ? <Notice tone="success" role="status">Your suggestion was received privately for editorial review. It is not published.</Notice> : null}
       {submission === "invalid" ? <Notice tone="warning" role="alert">Please check the required fields, HTTPS links, media-rights description and consent.</Notice> : null}
+      {submission === "limited" ? <Notice tone="warning" role="alert">Too many suggestions from this network this hour. Please wait a while and try again.</Notice> : null}
       {submission === "error" ? <Notice tone="danger" role="alert">The private suggestion could not be saved. Confirm your member profile is active and try again later.</Notice> : null}
       {signedIn ? <Panel><details className="ui-disclosure"><summary className="btn-primary">Suggest a destination</summary><form action={submitTourismContribution} className="ui-stack">
         <div className="ui-form-grid">

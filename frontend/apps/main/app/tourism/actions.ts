@@ -4,11 +4,13 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "../../lib/supabase";
 import { parseTourismContribution } from "../../lib/tourism-contribution-input";
+import { formRateAllowance, formRateLimitedMessage } from "../../lib/form-server";
 
 const CONSENT_VERSION = "tourism-intake-v1";
 const CONSENT_TEXT = "I confirm the information and source details are submitted for private editorial review, and that any media rights basis is accurately described. I consent to review and understand nothing will be published unless provenance and publication rights are verified.";
 
 export async function submitTourismContribution(data: FormData) {
+  if (!(await formRateAllowance("tourism_submit"))) redirect(`/tourism?submission=limited`);
   const contribution = parseTourismContribution(data);
   if (!contribution) redirect("/tourism?submission=invalid");
 
