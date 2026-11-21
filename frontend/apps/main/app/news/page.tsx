@@ -13,6 +13,7 @@ import HomeLivePill from "../../components/home-live-pill";
 import ArticleByline from "../../components/article-byline";
 import { BreakingBadge, BreakingNewsBanner } from "../../components/breaking-news";
 import { EmptyPanel, PageFrame } from "../../components/design-system";
+import FollowButton from "../../components/follow-button";
 import styles from "./listing.module.css";
 
 type ArticleListItem = {
@@ -28,7 +29,7 @@ type ArticleListItem = {
   cover_url: string | null;
   cover_alt: string | null;
 };
-type NewsCategory = { slug: string; label: string };
+type NewsCategory = { id: string; slug: string; label: string };
 type SearchParams = { q?: string | string[]; page?: string | string[]; category?: string | string[]; search?: string | string[] };
 
 const newsIndexUrl = absoluteUrl("/news");
@@ -68,7 +69,7 @@ function categoryHref(query: string, category: string): string { return pageHref
 function fallbackCategories(articles: ArticleListItem[]): NewsCategory[] {
   const labels = new Map<string, string>();
   for (const article of articles) labels.set(article.category_slug, article.category_label);
-  return [...labels].map(([slug, label]) => ({ slug, label }));
+  return [...labels].map(([slug, label]) => ({ id: "", slug, label }));
 }
 function coverUrl(article: ArticleListItem): string | null {
   return publishedNewsCover(article)?.url ?? null;
@@ -122,7 +123,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
     : Promise.resolve({ data: [], error: null });
   const [articleResult, categoryResult, breakingResult] = await Promise.all([
     query ? supabase.rpc("search_published_news", { p_query: query, p_category: category, p_offset: start }).select("slug,title,summary,published_at,is_breaking,breaking_until,author_name,category_slug,category_label,cover_url,cover_alt") : articleQuery.range(start, start + PAGE_SIZE),
-    supabase.from("categories").select("slug,label").eq("is_active", true).order("sort_order", { ascending: true }).order("label", { ascending: true }).limit(MAX_CATEGORIES),
+    supabase.from("categories").select("id,slug,label").eq("is_active", true).order("sort_order", { ascending: true }).order("label", { ascending: true }).limit(MAX_CATEGORIES),
     breakingQuery,
   ]);
   if (articleResult.error) {
@@ -150,6 +151,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
     grouped.set(story.category_slug, group);
   }
   const heading = category ? categories.find((item) => item.slug === category)?.label ?? "News" : query ? "Search results" : "News from Epe.";
+  const activeCategory = category ? categories.find((item) => item.slug === category) : undefined;
 
   return <>
     <PageFrame className={`${styles.newsPage} ui-stack`}>
@@ -160,6 +162,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
           <h1 className={styles.pageTitle}>{heading}</h1>
           <p className={styles.pageDescription}>The latest stories, developments and voices shaping Epe Division.</p>
           <HomeLivePill since={now} label="story" />
+          {category && activeCategory ? <div className="pt-1"><FollowButton topicType="news_category" topicId={activeCategory.id} returnTo={`/news?category=${encodeURIComponent(category)}`} /></div> : null}
         </div>
       </header>
 

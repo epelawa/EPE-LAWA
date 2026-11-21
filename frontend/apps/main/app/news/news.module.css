@@ -371,7 +371,7 @@
   .articleBody { font-size: 12pt; line-height: 1.5; }
   .article a { color: inherit; text-decoration: none; }
 }
-.commentVoteButton { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 14px; font-size: 0.8125rem; font-weight: 500; color: var(--ep-muted, #6b7280); border-radius: 999px; transition: color var(--ep-motion-fast,150ms) ease, background var(--ep-motion-fast,150ms) ease, transform var(--ep-motion-fast,150ms) ease; }
-.commentVoteButton:hover { color: var(--ep-fg, #111827); background: var(--ep-subtle, #f3f4f6); }
+.commentVoteButton { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 14px; font-size: 0.8125rem; font-weight: 500; color: var(--ep-text-muted, #40516F); border-radius: 999px; transition: color 150ms ease, background 150ms ease, transform 150ms ease; }
+.commentVoteButton:hover { color: var(--ep-text, #1F2A44); background: var(--ep-surface-soft, #E7EDF8); }
 .commentVoteButton:active { transform: scale(.97); }
-.commentVoteButtonActive { color: var(--ep-primary, #0f766e); font-weight: 600; background: color-mix(in srgb, var(--ep-primary, #0f766e) 10%, transparent); }
+.commentVoteButtonActive { color: var(--ep-primary, #477fe0); font-weight: 600; background: color-mix(in srgb, var(--ep-primary, #477fe0) 10%, transparent); }

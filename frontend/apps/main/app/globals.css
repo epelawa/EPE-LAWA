@@ -491,3 +491,10 @@ html { transition: background-color var(--ep-dur-base, 200ms) var(--ep-ease-out)
   .site-main { padding: 0 !important; margin: 0 !important; }
   body { background: #ffffff !important; color: #000000 !important; }
 }
+
+/* Topic follow toggle — active state reflects the pressed (following) mode. */
+.follow-toggle--active {
+  background: color-mix(in srgb, var(--ep-primary, #477fe0) 12%, transparent);
+  border-color: var(--ep-primary, #477fe0);
+  color: var(--ep-primary, #477fe0);
+}
