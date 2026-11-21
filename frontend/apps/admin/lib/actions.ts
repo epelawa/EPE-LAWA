@@ -257,14 +257,31 @@ async function createArticleCore(formData: FormData): Promise<{ status: "error" 
 
 export async function createArticle(formData: FormData): Promise<void> {
   const result = await createArticleCore(formData);
-  if (result.status === "success") redirect(adminHref(`/newsroom/${result.articleId}?created=1`));
+  if (result.status === "success") {
+    const supabase = await createClient();
+    const published = await autoPublishArticle(supabase, result.articleId);
+    if (published) {
+      revalidatePath("/news");
+      revalidatePath("/");
+      redirect(adminHref(`/newsroom/${result.articleId}?published=1`));
+    }
+    redirect(adminHref(`/newsroom/${result.articleId}?created=1`));
+  }
   fail(result.status === "uncertain" ? "/newsroom/new?error=uncertain" : "/newsroom/new?error=1");
 }
-export async function createArticleWithFeedback(formData: FormData): Promise<{ status: "error" | "uncertain"; message: string } | { status: "success"; articleId: string }> {
-  return createArticleCore(formData);
+export async function createArticleWithFeedback(formData: FormData): Promise<{ status: "error" | "uncertain"; message: string } | { status: "success"; articleId: string; published: boolean }> {
+  const result = await createArticleCore(formData);
+  if (result.status !== "success") return result;
+  const supabase = await createClient();
+  const published = await autoPublishArticle(supabase, result.articleId);
+  if (published) {
+    revalidatePath("/news");
+    revalidatePath("/");
+  }
+  return { ...result, published };
 }
 
-type EditResult = { status: "error" | "uncertain"; message: string } | { status: "success"; articleId: string; outcome: "saved" | "revised" };
+type EditResult = { status: "error" | "uncertain"; message: string } | { status: "success"; articleId: string; outcome: "saved" | "revised" | "published"; revision?: number };
 function editFailure(code: string | null, uncertain: boolean): EditResult {
   if (uncertain || !code || !/^(22[0-9A-Z]{3}|23[0-9A-Z]{3}|40001|42501)$/.test(code)) return { status: "uncertain", message: "We could not confirm whether your changes were saved. Open this article in a new tab and check its revision before retrying." };
   if (code === "40001") return { status: "error", message: "This article changed since you opened it. Copy your work, then reload and review the latest revision." };
@@ -284,6 +301,7 @@ async function saveDraftCore(formData: FormData): Promise<EditResult> {
 
   let errorCode: string | null = null;
   let uncertain = false;
+  let savedRevision: number | undefined;
   try {
     const supabase = await createClient();
     const saved = await supabase.rpc("article_draft_update_with_cover", {
@@ -300,6 +318,7 @@ async function saveDraftCore(formData: FormData): Promise<EditResult> {
     });
     if (saved.error) errorCode = saved.error.code;
     else if (typeof saved.data !== "number") uncertain = true;
+    else savedRevision = saved.data;
   } catch (error) {
     errorCode = queryErrorCode(error);
     uncertain = true;
@@ -310,7 +329,23 @@ async function saveDraftCore(formData: FormData): Promise<EditResult> {
   }
   revalidatePath(adminHref(`/newsroom/${fields.articleId}`));
   revalidatePath(adminHref("/newsroom"));
-  return { status: "success", articleId: fields.articleId, outcome: "saved" };
+  return { status: "success", articleId: fields.articleId, outcome: "saved", revision: savedRevision };
+}
+
+/** Publish immediately after a save. Never fails the save: falls back to the private state. */
+async function autoPublishArticle(supabase: Awaited<ReturnType<typeof createClient>>, articleId: string, revision?: number): Promise<boolean> {
+  try {
+    let expected = revision;
+    if (!Number.isSafeInteger(expected) || (expected as number) < 1) {
+      const read = await supabase.from("articles").select("revision").eq("id", articleId).maybeSingle();
+      if (read.error || !read.data || typeof read.data.revision !== "number") return false;
+      expected = read.data.revision;
+    }
+    const { error } = await supabase.rpc("article_publish", { p_article_id: articleId, p_expected_revision: expected });
+    return !error;
+  } catch {
+    return false;
+  }
 }
 
 async function reviseArticleCore(formData: FormData): Promise<EditResult> {
@@ -355,17 +390,28 @@ async function reviseArticleCore(formData: FormData): Promise<EditResult> {
   return { status: "success", articleId: fields.articleId, outcome: "revised" };
 }
 
-export async function saveDraftWithFeedback(formData: FormData): Promise<EditResult> { return saveDraftCore(formData); }
-export async function reviseArticleWithFeedback(formData: FormData): Promise<EditResult> { return reviseArticleCore(formData); }
+/** Save + publish in one action: the reader-visible outcome of every save. */
+async function publishAfterSave(result: EditResult, outcome: "saved" | "revised"): Promise<EditResult> {
+  if (result.status !== "success") return result;
+  const supabase = await createClient();
+  const published = await autoPublishArticle(supabase, result.articleId, result.revision);
+  if (!published) return result;
+  revalidatePath("/news");
+  revalidatePath("/");
+  return { ...result, outcome: "published" };
+}
+
+export async function saveDraftWithFeedback(formData: FormData): Promise<EditResult> { return publishAfterSave(await saveDraftCore(formData), "saved"); }
+export async function reviseArticleWithFeedback(formData: FormData): Promise<EditResult> { return publishAfterSave(await reviseArticleCore(formData), "revised"); }
 export async function saveDraft(formData: FormData): Promise<void> {
-  const result = await saveDraftCore(formData);
-  if (result.status === "success") redirect(adminHref(`/newsroom/${result.articleId}?saved=1`));
+  const result = await publishAfterSave(await saveDraftCore(formData), "saved");
+  if (result.status === "success") redirect(adminHref(`/newsroom/${result.articleId}?${result.outcome}=1`));
   const id = text(formData, "articleId", 64);
   fail(UUID.test(id) ? `/newsroom/${id}?error=${result.status === "uncertain" ? "uncertain" : "save"}` : "/newsroom?error=invalid");
 }
 export async function reviseArticle(formData: FormData): Promise<void> {
-  const result = await reviseArticleCore(formData);
-  if (result.status === "success") redirect(adminHref(`/newsroom/${result.articleId}?revised=1`));
+  const result = await publishAfterSave(await reviseArticleCore(formData), "revised");
+  if (result.status === "success") redirect(adminHref(`/newsroom/${result.articleId}?${result.outcome}=1`));
   const id = text(formData, "articleId", 64);
   fail(UUID.test(id) ? `/newsroom/${id}?error=${result.status === "uncertain" ? "uncertain" : "revise"}` : "/newsroom?error=invalid");
 }

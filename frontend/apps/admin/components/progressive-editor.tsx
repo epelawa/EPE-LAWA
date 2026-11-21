@@ -14,7 +14,7 @@ function SubmitButton({ label, intent, hidden, busy }: { label: string; intent?:
 }
 
 type Step = { title: string; content: ReactNode };
-type EditResult = { status: "error" | "uncertain"; message: string } | { status: "success"; articleId: string; outcome: "saved" | "revised" };
+type EditResult = { status: "error" | "uncertain"; message: string } | { status: "success"; articleId: string; outcome: "saved" | "revised" | "published" };
 export default function ProgressiveEditor({ action, feedbackAction, recoveryActor, articleId, revision, steps, submitLabel, intent }: { action: (formData: FormData) => void | Promise<void>; feedbackAction?: (formData: FormData) => Promise<EditResult>; recoveryActor?: string; articleId: string; revision: string; steps: Step[]; submitLabel: string; intent?: string }) {
   const router = useRouter();
   const [saving, startSaving] = useTransition();

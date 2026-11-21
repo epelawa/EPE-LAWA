@@ -43,10 +43,10 @@ test("direct publish is capability- and revision-checked server-side, and revali
   assert.match(schema, /'publication_mode',\s*v_publication_mode/);
 });
 
-test("drafts stay private and the public list and article resolve only published_articles", async () => {
+test("saving publishes straight away; the public list and article resolve only published_articles", async () => {
   assert.match(createPage, /<NewsArticleComposer/);
-  assert.match(await read("frontend/apps/admin/components/news-article-composer.tsx"), /Saving creates a private article/);
-  assert.match(editPage, /Changes remain private/);
+  assert.match(await read("frontend/apps/admin/components/news-article-composer.tsx"), /Publishing puts your story on the public site straight away/);
+  assert.match(editPage, /Saving publishes immediately/);
   assert.match(listing, /from\("published_articles"\)/);
   assert.match(listing, /newsArticlePath\(article\.slug\)/);
   assert.doesNotMatch(listing, /from\("articles"\)/);
@@ -96,7 +96,8 @@ test("Newsroom reports public state from the published-version pointer and disti
   assert.match(editPage, /const displayState = currentVersionIsPublic \? "published" : version\.state/);
   assert.match(newsroomListing, /state === "published"\) query = query\.not\("published_version_id", "is", null\)/);
   assert.match(newsroomListing, /const currentVersionIsPublic = Boolean\(article\.current_version_id && article\.published_version_id === article\.current_version_id\)/);
-  assert.match(editPage, /query\.created[\s\S]*?Private article draft created/);
+  assert.match(editPage, /query\.published[\s\S]*?is live on the public site/);
+  assert.match(editPage, /query\.created[\s\S]*?not public yet[\s\S]*?Publish now/);
   assert.match(editPage, /if \(articleResult\.error\) \{[\s\S]*?role="alert"/);
   assert.match(editPage, /if \(!articleResult\.data\) notFound\(\)/);
   assert.doesNotMatch(editPage, /articleResult\.error\s*\|\|\s*!articleResult\.data/);
@@ -115,13 +116,23 @@ test("admin current-version joins use stable column hints rather than deployment
   }
 });
 
-test("staff Newsroom exposes revision history without listing protected audit events", async () => {
+test("the read-only revision history block is gone and saves publish in one step", async () => {
   const editor = await read("frontend/apps/admin/app/(protected)/newsroom/[id]/page.tsx");
-  assert.match(editor, /from\("article_versions"\)/);
+  const composer = await read("frontend/apps/admin/components/news-article-composer.tsx");
+  assert.doesNotMatch(editor, /Revision history|Protected history/);
   assert.doesNotMatch(editor, /from\("audit_events"\)/);
-  assert.match(editor, /Revision history/);
-  assert.match(editor, /protected audit log/);
-  assert.doesNotMatch(editor, /actor_id|created_by<\/td>|email_address/);
+  assert.doesNotMatch(editor, /Save private draft|Create private correction draft/);
+  assert.match(editor, /Save & publish|Save correction & publish/);
+  assert.doesNotMatch(composer, /Save article<\/button>/);
+  assert.match(composer, /Publish article/);
+});
+
+test("create, draft-save and revise actions chain the article_publish RPC after saving", () => {
+  assert.match(actions, /async function autoPublishArticle/);
+  const publishChains = (actions.match(/autoPublishArticle\(supabase/g) ?? []).length;
+  assert.ok(publishChains >= 4, `expected publish-after-save in create/save/revise plus feedback variants, got ${publishChains}`);
+  assert.match(actions, /outcome: "published"/);
+  assert.match(actions, /revalidatePath\("\/news"\)/);
 });
 
 test("breaking controls use published pointers and guarded revision RPC with bounded durations", async () => {
