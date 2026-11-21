@@ -572,3 +572,25 @@ The latest owner attachment was reconciled against PR #154 evidence and added to
 **Validation:** `frontend/apps/main` build compiles and generates all pages; `frontend/apps/admin` build 1/1 pages; `pnpm typecheck` 5/5; `pnpm test:node` 360 pass / 0 fail / 1 skip; `pnpm vitest run` 44 files / 128 tests. `CI / verify`, `Browser smoke` and `CodeQL` are expected green again on the PR head.
 
 **Supabase incident note (same day):** the "compute too high" warning was traced with live metrics to a client-side replay storm — thousands of stale-revision `maintenance_set` / `article_revise` rejections at ~60/min plus silent transaction-abort bursts (~273/s) — all guarded safely (no data changed). Migration `20261121233000_forum_reactions_reader_presence.sql` was applied successfully by the owner and verified present. Statement counters were reset 2026-11-21 14:47 UTC; the project was restarted by the owner; post-restart differentials show normal traffic (0 rollbacks over 37s). No compute upgrade is needed.
+
+## 2026-11-21 (later) — Finish sweep: legal pages admin, rich editor, portraits & business logos, Ads section + carousel, composer modal, professional map wording (branch `vibe/radio-deletes-admin-fixes-d73e38`)
+
+**Admin — Legal pages:** new `/legal-pages` staff section (Privacy / Terms / Community guidelines) — opens prefilled with the live texts from `site_pages` using the revision optimistic-lock, a rich text editor (bold, italics, bullet & numbered lists, links, quotes) with a live character counter, and a "Clear form" reset on every page. About's editor was upgraded to the same rich editor with its own clear button. The public pages render the light markup (`**bold**`, `*italic*`, `[links](https://…)`, lists, quotes) via a new shared `structured-text` renderer.
+
+**Who is Who (People):** portrait upload added to the profile form (10 MB cap, jpeg/png/webp/avif, stored in R2 under `media/people/<year>/…`, alt text required ≥ 3 characters), friendly plain-word error map for all failure codes, and a "Clear form" button. Accept/Reject submission buttons were already present; the production blocker (missing `people_corrections` policies) was fixed by the migrations applied earlier this branch.
+
+**Business logos (members + staff):** `businesses.logo_key` (R2 key or HTTPS link, check-constrained). Member submissions gain a logo uploader that canvas-compresses to a 512 px JPEG before upload plus an optional HTTPS logo-link field; staff "Add a business" gains both a logo file upload and a logo link. Migration `20261122000800_business_logos_ads.sql` redefines `business_submit` / `business_staff_create` with a trailing optional `p_logo_key` (single signature each — the old ones are dropped so no call ambiguity).
+
+**Admin Ads section:** new `/ads` page gated on `advertising.manage`. Lists published businesses with logos, checkboxes to slot several into the public carousel (max 12), per-row position/active updates and remove. New `business_ad_slots` table + `business_ad_assign` / `business_ad_remove` RPCs (capability-gated, audited) and a public `business_ad_carousel` view.
+
+**Public carousel:** homepage gains a "Businesses in our community" carousel — 5-second autoplay, pause on hover/focus, touch swipe, arrows and dots, reduced-motion safe, every slide linking to the business profile.
+
+**Newsroom:** the article composer now opens as a modal popup from the newsroom index with backdrop blur, spinner and `aria-busy` pending states.
+
+**Buttons:** ghost/base buttons received proper outlines sitewide (both apps).
+
+**Map page:** the casual OpenStreetMap/Google notices replaced with professional wording; pins updated (`map-navigation.test.mjs`).
+
+**Migration `20261122000800_business_logos_ads.sql`** — applied to production (project `igqmybuiovaxqmrteebd`) after a clean PGlite replay. Replay lessons baked into the migration: the rebuilt `published_businesses` view must keep the canonical column expressions (`b.slug::text` etc., create-or-replace only — `business_discovery_search` depends on it) and `anon/authenticated` need the new `logo_key` column grant or the security-invoker view denies the whole read. Production verified: one signature per RPC, single-overload calls resolve, anon can select the carousel and logo columns, ad RPCs execute for authenticated only.
+
+**Validation:** `pnpm typecheck` 5/5; `pnpm test:node` 360 pass / 0 fail / 1 skip (`route-manifest`, `public-copy-availability`, `ui-rebuild` pins extended for the new admin pages and nav); `pnpm vitest run` 44 files / 128 tests; `node --test backend/tests/schema.test.mjs` 28 pass / 0 fail / 1 skip.

@@ -26,18 +26,24 @@ function mergeGroups(catalogue: Capability[]): CapabilityGroup[] {
 }
 
 export default async function RolesPage() {
-  const db = await createClient();
+  const denied = (
+    <PageFrame>
+      <PageIntro
+        eyebrow="Access control"
+        title="Roles"
+        description="Role management requires the primary administrator or the configured role-management capability."
+      />
+    </PageFrame>
+  );
+  let db: Awaited<ReturnType<typeof createClient>>;
+  try {
+    db = await createClient();
+  } catch {
+    return denied;
+  }
   const { data: allowed, error: authError } = await db.rpc("staff_roles_authorized");
   if (authError || allowed !== true) {
-    return (
-      <PageFrame>
-        <PageIntro
-          eyebrow="Access control"
-          title="Roles"
-          description="Role management requires the primary administrator or the configured role-management capability."
-        />
-      </PageFrame>
-    );
+    return denied;
   }
 
   const [rolesResult, capsResult, directoryResult, assignmentsResult, roleCapsResult] = await Promise.all([

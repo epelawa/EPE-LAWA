@@ -929,7 +929,7 @@ test('a member can submit a listing but cannot publish or verify it themselves',
   const businessId = await as(U.m2, async () => (await rows(
     `select public.business_submit(
        'Example Kitchen', $1, 'A description of the business.', 'Epe', '1 Test Road',
-       null, '08000000000', null, null, null, null
+       null::text, '08000000000', null::text, null::text, null::text, null::jsonb
      ) as id`,
     [categoryId],
   ))[0].id);

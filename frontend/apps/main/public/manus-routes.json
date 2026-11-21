@@ -76,6 +76,12 @@
       "path": "/who-is-who"
     },
     {
+      "path": "/admin/ads"
+    },
+    {
+      "path": "/admin/ai-scheduler"
+    },
+    {
       "path": "/admin/backups"
     },
     {
@@ -88,7 +94,13 @@
       "path": "/admin/enquiries"
     },
     {
+      "path": "/admin/legal-pages"
+    },
+    {
       "path": "/admin/login"
+    },
+    {
+      "path": "/admin/media"
     },
     {
       "path": "/admin/members"

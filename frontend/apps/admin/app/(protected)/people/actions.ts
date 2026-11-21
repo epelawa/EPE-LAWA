@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "../../../lib/supabase";
+import { mediaExtensionFor, putMediaObject } from "../../../lib/media-r2";
 import { adminHref } from "../../../lib/admin-path";
 
 const val = (form: FormData, key: string) => {
@@ -18,6 +19,19 @@ function finish(error?: string): never {
   redirect(adminHref(`/people${error ? `?error=${encodeURIComponent(error)}` : "?updated=1"}`));
 }
 
+const PORTRAIT_MAX_BYTES = 10_485_760;
+
+async function uploadPortrait(file: File): Promise<string> {
+  if (file.size > PORTRAIT_MAX_BYTES) return "portrait-too-large";
+  const extension = mediaExtensionFor(file.type);
+  if (!extension) return "portrait-invalid";
+  const random = Array.from(crypto.getRandomValues(new Uint8Array(6)), (b) => b.toString(16).padStart(2, "0")).join("");
+  const stem = file.name.replace(/\.[^.]*$/, "").replace(/[^a-z0-9_-]+/gi, "-").replace(/^-+|-+$/g, "").toLowerCase().slice(0, 40) || "portrait";
+  const objectKey = `media/people/${new Date().getUTCFullYear()}/${random}-${stem}${extension}`;
+  const written = await putMediaObject("public", objectKey, await file.arrayBuffer(), file.type);
+  return written.state === "ready" ? objectKey : "portrait-failed";
+}
+
 export async function savePerson(form: FormData): Promise<void> {
   const db = await createClient();
   const id = val(form, "id");
@@ -28,6 +42,15 @@ export async function savePerson(form: FormData): Promise<void> {
 
   if (name.length < 2 || name.length > 160 || !Number.isSafeInteger(revision)) {
     finish("invalid");
+  }
+
+  let portraitKey = val(form, "portrait_key") || null;
+  const portraitFile = form.get("portrait_file");
+  if (portraitFile instanceof File && portraitFile.size > 0) {
+    if ((val(form, "portrait_alt") || "").length < 3) finish("portrait-alt-required");
+    const uploaded = await uploadPortrait(portraitFile);
+    if (uploaded.startsWith("portrait-")) finish(uploaded);
+    portraitKey = uploaded;
   }
 
   if (id) {
@@ -41,7 +64,7 @@ export async function savePerson(form: FormData): Promise<void> {
       p_community_note: val(form, "community_note") || null,
       p_biography: biography || null,
       p_is_deceased: form.get("is_deceased") === "on",
-      p_portrait_key: val(form, "portrait_key") || null,
+      p_portrait_key: portraitKey,
       p_portrait_alt: val(form, "portrait_alt") || null,
       p_portrait_credit: val(form, "portrait_credit") || null,
       p_contributor_name: null,
@@ -63,7 +86,7 @@ export async function savePerson(form: FormData): Promise<void> {
       p_community_note: val(form, "community_note") || null,
       p_biography: biography || null,
       p_is_deceased: form.get("is_deceased") === "on",
-      p_portrait_key: val(form, "portrait_key") || null,
+      p_portrait_key: portraitKey,
       p_portrait_alt: val(form, "portrait_alt") || null,
       p_portrait_credit: val(form, "portrait_credit") || null,
       p_achievements: achievements || null,

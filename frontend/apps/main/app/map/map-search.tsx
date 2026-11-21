@@ -62,7 +62,7 @@ export default function MapSearch({ businesses, businessError = false }: { busin
     setLocationMessage("Requesting location permission…");
     navigator.geolocation.getCurrentPosition((position) => {
       setLocation(`${position.coords.latitude},${position.coords.longitude}`);
-      setLocationMessage("Ready for directions. Google receives your coordinates only if you open that link; EPE LAWA does not store them.");
+      setLocationMessage("Your position is marked on the map below. Coordinates stay in this browser tab and are never sent to EPE LAWA; Google receives them only if you continue into Google Maps.");
     }, (error) => {
       const message = error.code === error.PERMISSION_DENIED
         ? "Location permission was denied. You can still search manually."
@@ -88,7 +88,7 @@ export default function MapSearch({ businesses, businessError = false }: { busin
         <a className="btn-secondary" target="_blank" rel="noopener noreferrer" href={osmSearchUrl(selectedDestination || "Epe, Lagos")}>Search this in OpenStreetMap <span className="sr-only">(opens in a new tab)</span></a>
         {lat !== null && lon !== null ? <a className="btn-secondary" target="_blank" rel="noopener noreferrer" href={`https://www.openstreetmap.org/#map=14/${lat.toFixed(4)}/${lon.toFixed(4)}`}>Open my area on OpenStreetMap <span className="sr-only">(opens in a new tab)</span></a> : <a className="btn-secondary" target="_blank" rel="noopener noreferrer" href={`https://www.openstreetmap.org/#map=${EPE_VIEW}`}>Open wider Epe view <span className="sr-only">(opens in a new tab)</span></a>}
       </div>
-      <p className="ui-meta">Map and search from OpenStreetMap contributors — free and accountless. Directions still open in Google Maps only when you choose.</p>
+      <p className="ui-meta">Map data and search are provided by OpenStreetMap contributors. It is free to use and needs no account. Google Maps is opened only when you choose to get directions there.</p>
     </Panel>
     {businessError ? <Notice tone="neutral">Published business listings could not be loaded just now. This is different from no matching listings; manual street and landmark search in Google Maps remains available.</Notice> : null}
     {q && <Panel className="ui-card" aria-live="polite" aria-labelledby="map-results-title">
@@ -113,6 +113,6 @@ export default function MapSearch({ businesses, businessError = false }: { busin
         <a className="btn-secondary" target="_blank" rel="noopener noreferrer" href={mapsDirectionsUrl(selectedDestination, location ?? undefined)}>{selectedBusiness ? `Get directions to ${selectedBusiness.name}` : "Get directions"} <span className="sr-only">(opens in a new tab)</span></a>
       </div>
     </Panel>}
-    <Notice tone="neutral">Google Maps search and directions open an external service. Google receives your device coordinates only if you open directions with location enabled; EPE LAWA does not store them.</Notice>
+    <Notice tone="neutral">Search and directions on Google Maps are provided by an external service operated by Google. Your device location is shared with Google only if you open directions while location sharing is enabled; EPE LAWA does not store your coordinates.</Notice>
   </div>;
 }

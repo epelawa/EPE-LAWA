@@ -1,4 +1,5 @@
 import { createClient } from "../lib/supabase";
+import { StructuredText } from "../lib/structured-text";
 
 async function editableBody(page: string): Promise<string | null> {
   try {
@@ -13,12 +14,10 @@ async function editableBody(page: string): Promise<string | null> {
 export default async function SitePageNote({ page, label }: { page: string; label: string }) {
   const body = await editableBody(page);
   if (!body) return null;
-  const blocks = body.split(/\n\s*\n/).map((text) => text.trim()).filter(Boolean).slice(0, 20);
-  if (blocks.length === 0) return null;
   return (
-    <section className="ui-stack-sm" aria-label={label}>
+    <section className="ui-stack-sm ui-prose" aria-label={label}>
       <h2>{label}</h2>
-      {blocks.map((text, index) => <p key={index}>{text}</p>)}
+      <StructuredText text={body} maxBlocks={20} />
     </section>
   );
 }

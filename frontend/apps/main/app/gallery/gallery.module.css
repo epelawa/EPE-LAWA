@@ -23,6 +23,49 @@
   background: linear-gradient(135deg, color-mix(in srgb, var(--gallery-ink) 5%, transparent), transparent 60%);
 }
 
+.archiveSection { margin-top: clamp(2rem, 5vw, 4rem); }
+
+.archiveGrid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
+  gap: 1.25rem;
+}
+
+.archivedPhoto {
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--gallery-ink) 12%, transparent);
+  border-radius: 14px;
+  background: hsl(var(--card));
+}
+
+.archivedPhoto img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+.archivePlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 4 / 3;
+  color: color-mix(in srgb, var(--gallery-ink) 40%, transparent);
+}
+
+.archiveCaption {
+  display: grid;
+  gap: 2px;
+  padding: 10px 14px 12px;
+}
+
+.archiveCaption strong { color: var(--gallery-ink); font-size: 15px; }
+.archiveCaption span { font-size: 13px; color: color-mix(in srgb, var(--gallery-ink) 62%, transparent); }
+
 .emptyPanel a:focus-visible {
   outline: 3px solid color-mix(in srgb, var(--color-primary, #2364d2) 36%, transparent);
   outline-offset: 3px;

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { adminHref } from "../../../lib/admin-path";
 import { createClient } from "../../../lib/supabase";
+import { mediaExtensionFor, putMediaObject } from "../../../lib/media-r2";
 
 const value = (form: FormData, key: string) => {
   const raw = form.get(key);
@@ -52,12 +53,28 @@ export async function staffCreateBusiness(_prev: StaffCreateState, formData: For
   if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { status: "error", message: "Enter a valid email address." };
   if (website && !/^https:\/\//.test(website)) return { status: "error", message: "The website address must start with https://" };
   if (verify && evidence.length < 10) return { status: "error", message: "To mark it Verified, record how it was checked (at least 10 characters)." };
+  const logoUrl = field("logo_url");
+  if (logoUrl && !/^https:\/\//.test(logoUrl)) return { status: "error", message: "The logo link must start with https://" };
+  let logoKey: string | null = logoUrl || null;
+  const logoFileRaw = formData.get("logo_file");
+  if (logoFileRaw instanceof File && logoFileRaw.size > 0) {
+    const extension = mediaExtensionFor(logoFileRaw.type);
+    if (!extension) return { status: "error", message: "Logos must be JPEG, PNG, WebP or AVIF images." };
+    if (logoFileRaw.size > 5_000_000) return { status: "error", message: "The logo is larger than 5 MB. Choose a smaller file." };
+    const random = Array.from(crypto.getRandomValues(new Uint8Array(6)), (b) => b.toString(16).padStart(2, "0")).join("");
+    const stem = logoFileRaw.name.replace(/\.[^.]*$/, "").replace(/[^a-z0-9_-]+/gi, "-").replace(/^-+|-+$/g, "").toLowerCase().slice(0, 40) || "logo";
+    const objectKey = `media/business/${new Date().getUTCFullYear()}/${random}-${stem}${extension}`;
+    const written = await putMediaObject("public", objectKey, await logoFileRaw.arrayBuffer(), logoFileRaw.type);
+    if (written.state === "unconfigured") return { status: "error", message: "Image storage is not connected on this deployment yet. Paste a public HTTPS logo link instead, or publish without a logo." };
+    if (written.state !== "ready") return { status: "error", message: "The logo could not be stored right now. Remove it and try again in a moment." };
+    logoKey = objectKey;
+  }
   let result;
   try {
     result = await db.rpc("business_staff_create", {
       p_name: name, p_category_id: categoryId, p_description: description || null, p_area: area || null, p_address: address || null,
       p_landmark: landmark || null, p_phone: phone || null, p_whatsapp: whatsapp || null, p_email: email || null, p_website: website || null,
-      p_hours: null, p_verify: verify, p_evidence: verify ? evidence : null,
+      p_hours: null, p_verify: verify, p_evidence: verify ? evidence : null, p_logo_key: logoKey,
     });
   } catch {
     return { status: "error", message: "We could not confirm whether the listing was saved. Reload the page; do not resubmit until you have checked, to avoid duplicates." };

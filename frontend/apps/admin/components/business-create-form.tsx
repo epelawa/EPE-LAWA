@@ -34,11 +34,13 @@ export default function BusinessCreateForm({ categories }: { categories: Option[
         <label className="ui-field"><span className="label">WhatsApp</span><input name="whatsapp" maxLength={24} className="input" placeholder="+234…" /></label>
         <label className="ui-field"><span className="label">Email</span><input name="email" type="email" maxLength={254} className="input" /></label>
         <label className="ui-field"><span className="label">Website (HTTPS)</span><input name="website" maxLength={2048} className="input" placeholder="https://" /></label>
+        <label className="ui-field"><span className="label">Logo image (optional)</span><input type="file" name="logo_file" accept="image/jpeg,image/png,image/webp,image/avif" className="input" /></label>
+        <label className="ui-field"><span className="label">Or logo link (HTTPS)</span><input name="logo_url" maxLength={2048} className="input" placeholder="https://" /></label>
       </div>
       <label className="ui-row"><input type="checkbox" name="verify" checked={verify} onChange={(event) => setVerify(event.currentTarget.checked)} /> Mark as Verified now</label>
       {verify ? <label className="ui-field"><span className="label">Verification evidence (at least 10 characters)</span><textarea name="evidence" rows={2} maxLength={2000} required className="input" /></label> : null}
       {state.message ? <p role={state.status === "error" ? "alert" : "status"} aria-live="polite">{state.message}</p> : null}
-      <div className="ui-actions"><SubmitButton /></div>
+      <div className="ui-actions"><SubmitButton /><button className="btn-ghost" type="reset">Clear form</button></div>
       <p className="ui-meta">Publishing makes the listing visible in the public business directory immediately.</p>
     </form>
   );
