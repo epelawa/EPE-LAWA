@@ -2,12 +2,18 @@
 
 - **Status snapshot:** 21 November 2026, 06:58 WAT (UTC+01:00)
 - **Repository:** [`epelawa/EPE-LAWA`](https://github.com/epelawa/EPE-LAWA)
-- **Verified `main` SHA:** `34adfcec4ff2bd7021903aeb815d72e2f916337b`
+- **Verified `main` SHA:** `6f5b43dfd1873b8c1a839cb553c9a28644afa2f5`
 - **Purpose:** one current status and acceptance checklist for the complete product redesign. Refresh the snapshot after material merges or new test evidence.
+
+## Current continuation checkpoint — 21 November 2026, 07:12 WAT
+
+- The active worktree was fully rebased onto `origin/main` at `6f5b43dfd1873b8c1a839cb553c9a28644afa2f5`. No feature commits remain outside that base; the only pre-existing local edits are the SMTP variable/documentation contract from the newsletter work.
+- **Phase 0 intentionally skipped for this delivery:** the remaining scope crosswalk, custom-domain decision, canonical Admin boundary, legal/controller review, target-specific backup/restore rehearsal, and exact Production deployment verification are not safely resolvable from repository code. They require owner/legal/provider access or external operational evidence. They remain explicit blockers and are not marked complete.
+- **Phase 1 started:** the next bounded public-information slice is `/about`. This PR adds a source-backed information hierarchy, links to approved public destinations, responsive/focus/reduced-motion-safe cards, and preserves truthful Contact and correction-request unavailability. It does not claim Phase 1 or full-product acceptance.
 
 ## Current verified snapshot — 21 November 2026
 
-- PRs [#200](https://github.com/epelawa/EPE-LAWA/pull/200), [#201](https://github.com/epelawa/EPE-LAWA/pull/201), and [#198](https://github.com/epelawa/EPE-LAWA/pull/198) are merged. The final `main` merge tip is `34adfcec4ff2bd7021903aeb815d72e2f916337b`; the merged changes are documentation-only.
+- PRs [#200](https://github.com/epelawa/EPE-LAWA/pull/200), [#201](https://github.com/epelawa/EPE-LAWA/pull/201), [#198](https://github.com/epelawa/EPE-LAWA/pull/198), and [#202](https://github.com/epelawa/EPE-LAWA/pull/202) are merged. The current `origin/main` tip is `6f5b43dfd1873b8c1a839cb553c9a28644afa2f5`; the latest Phase 0 checkpoint is documentation-only.
 - The post-merge schema suite on this `main` state reports **29 tests: 28 passed, 0 failed, 1 documented skip**. The skip is the documented PGlite exclusion-constraint limitation. This local suite does not establish hosted deployment, backup/restore, provider, or full product acceptance.
 - Phase 0 remains open. The live schema reconciliation is recorded, but backup/restore rehearsal, exact production deployment verification, owner/legal/provider decisions, and remaining release-safety gates are still pending.
 - Phase 1/release acceptance has not started. Do not treat this checkpoint as product completion, payment/provider readiness, or approval to begin later-phase implementation.
@@ -132,7 +138,7 @@ Across every form, verify visible labels, keyboard/focus order, inline and annou
 
 #### Fresh read-only baseline — 21 November 2026
 
-- **Repository/rebase:** `origin/main` is `2dfa5ba`. PRs #187 and #188 are already merged. The rebased Step 4 branch was validated locally at `7237534`; its focused advertising/radio/footer suite passed 12/12, `git diff --check` passed, and no conflict markers remain. This is branch evidence only; the already-merged historical branch was not force-pushed.
+- **Repository/rebase:** the current `origin/main` is `6f5b43dfd1873b8c1a839cb553c9a28644afa2f5`. PRs #187 and #188 are already merged. The rebased Step 4 branch was validated locally at `7237534`; its focused advertising/radio/footer suite passed 12/12, `git diff --check` passed, and no conflict markers remain. This is branch evidence only; the already-merged historical branch was not force-pushed.
 - **Open PR state:** PR #198 (`Record phase one verification baseline`) remains a draft, `CONFLICTING`/`DIRTY`, with no review decision. Its own description says the browser/scanner/owner/deployment gates are outstanding; it is not merge-eligible and remains unmerged.
 - **Live target:** Supabase project `EPE LAWA` (`igqmybuiovaxqmrteebd`) is `ACTIVE_HEALTHY` in `eu-west-3`. Read-only inspection found 51 public tables, 4 views, 93 public policies, and RLS enabled on every listed public table. The live catalog contains the business-directory tables (`businesses`, `business_categories`, and related tables).
 - **Migration reconciliation and apply:** The live ledger remains a separately named/reconciled history rather than a rewritten copy of repository filenames. After explicit confirmation, four uniquely named records were appended in dependency order: `20261121150100_enable_btree_gist_for_marketplace`, `20261121150200_marketplace_and_payments_reconciliation`, `20261121150300_marketplace_requests_moderation_reconciliation`, and `20261121150400_advertising_admin_workflow_reconciliation`. The repository's historical filenames were not falsified or renamed.
@@ -150,6 +156,11 @@ Across every form, verify visible labels, keyboard/focus order, inline and annou
 **Exit:** approved scope, domain/host arrangement, canonical app boundary, legal/data owners, and a documented safe production baseline—or explicit release blockers where those decisions are not available.
 
 ### Phase 1 — Design system, shared components, and navigation
+
+#### Focused delivery started — About public-information slice
+
+- [~] `/about` is the first independently deliverable Phase 1 slice on the rebased `origin/main` base. It introduces a clear mission hierarchy, six approved destination paths, responsive cards, keyboard focus treatment, and reduced-motion-safe interaction.
+- [ ] Exact-head responsive/browser evidence and reviewer sign-off remain required; this slice does not sign off the shared shell, mobile navigation, homepage, member dashboard, or later public modules.
 
 - [ ] Reconcile one token/typography/spacing/color system with `docs/05-design-system.md`; use semantic tokens, approved local fonts, real credited imagery, and consistent focus/error/success/unavailable states.
 - [ ] Redesign public header, footer, page frames, typography, buttons, search/filters, cards, form fields, status badges, dialogs/drawers, pagination, and empty/loading/error components.
