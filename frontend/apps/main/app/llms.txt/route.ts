@@ -20,6 +20,8 @@ Map & Navigation currently provides safe outbound Google Maps search/directions 
 - [Home](${absoluteUrl("/")}): Introduction to EPE LAWA and links to its current sections.
 - [About EPE LAWA](${absoluteUrl("/about")}): Project purpose and contact information.
 - [Guidelines](${absoluteUrl("/guidelines")}): Editorial, history-contribution, business-verification and community standards.
+- [Search](${absoluteUrl("/search")}): One search across news stories, businesses, destinations, people and forum threads.
+- [RSS feed](${absoluteUrl("/feed.xml")}): Machine-readable feed of published news stories.
 `;
 
   return new Response(body, {

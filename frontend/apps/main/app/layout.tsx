@@ -27,6 +27,7 @@ import MobileBottomNav from "../components/mobile-bottom-nav";
 import { createClient } from "../lib/supabase";
 import { NotificationSoundListener } from "../components/notification-sound";
 import ToastRegion from "../components/toast";
+import SlashFocus from "../components/slash-focus";
 
 const description =
   "News, community history, local discussion, maps, local business, tourism, radio and Who-is-Who for Epe Division.";
@@ -36,7 +37,7 @@ export const metadata: Metadata = {
   title: { default: "EPE LAWA — The Voice of Epe Division", template: "%s | EPE LAWA" },
   description,
   robots: isIndexingAllowed() ? undefined : { index: false, follow: false },
-  alternates: { canonical: "/" },
+  alternates: { canonical: "/", types: { "application/rss+xml": "/feed.xml" } },
   openGraph: {
     type: "website",
     siteName: "EPE LAWA",
@@ -73,6 +74,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <ScrollToTop />
         <ScrollProgress />
         <ToastRegion />
+        <SlashFocus />
         <a className="skip-link" href="#main">
           Skip to content
         </a>

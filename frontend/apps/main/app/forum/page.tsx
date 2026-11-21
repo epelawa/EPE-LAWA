@@ -7,15 +7,18 @@ import ForumLiveCount, { countActive } from "./live-count";
 import styles from "./forum.module.css";
 
 type Category = { id: string; slug: string; name: string; description: string | null; rules: string | null };
-type Thread = { id: string; category_id: string; slug: string; title: string; post_count: number; last_activity_at: string | null };
+type Thread = { id: string; category_id: string; slug: string; title: string; post_count: number; last_activity_at: string | null; is_pinned: boolean };
 
-type SearchParams = { forum_error?: string | string[] };
+type SearchParams = { forum_error?: string | string[]; sort?: string | string[] };
 
 export const metadata: Metadata = pageMetadata({ title: "Forum", description: "A moderated space for Epe community discussions, questions and replies.", path: "/forum" });
 
 export default async function ForumPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const params = await searchParams;
   const requestedError = typeof params.forum_error === "string" ? params.forum_error : "";
+  const requestedSort = typeof params.sort === "string" ? params.sort : "";
+  const sort = requestedSort === "newest" || requestedSort === "posts" ? (requestedSort as "active" | "newest" | "posts") : "active";
+  const sortHref = (value: "active" | "newest" | "posts") => (value === sort ? undefined : `/forum?sort=${value}`);
   const safeErrors = new Set([
     "Check the category, title, and post text.",
     "A poll needs a question and 2–10 distinct options within the stated limits.",
@@ -31,9 +34,15 @@ export default async function ForumPage({ searchParams }: { searchParams: Promis
   let failed = false;
   try {
     const supabase = await createClient();
+    let threadRequest = supabase.from("forum_threads").select("id,category_id,slug,title,post_count,last_activity_at,is_pinned")
+      .in("state", ["open", "locked"]).is("deleted_at", null)
+      .order("is_pinned", { ascending: false });
+    if (sort === "newest") threadRequest = threadRequest.order("created_at", { ascending: false });
+    else if (sort === "posts") threadRequest = threadRequest.order("post_count", { ascending: false });
+    else threadRequest = threadRequest.order("last_activity_at", { ascending: false, nullsFirst: false });
     const [categoryResult, threadResult] = await Promise.all([
       supabase.from("forum_categories").select("id,slug,name,description,rules").eq("is_active", true).order("sort_order").limit(50),
-      supabase.from("forum_threads").select("id,category_id,slug,title,post_count,last_activity_at").in("state", ["open", "locked"]).is("deleted_at", null).order("last_activity_at", { ascending: false, nullsFirst: false }).limit(50),
+      threadRequest.limit(50),
     ]);
     if (categoryResult.error || threadResult.error) { console.error("forum public listing read failed", { code: categoryResult.error?.code ?? threadResult.error?.code }); failed = true; }
     else { categories = (categoryResult.data ?? []) as Category[]; threads = (threadResult.data ?? []) as Thread[]; }
@@ -48,12 +57,21 @@ export default async function ForumPage({ searchParams }: { searchParams: Promis
         {categories.length === 0 ? <p className="ui-muted">Topics will appear here after moderators publish them.</p> : <ul className={styles.chips}>{categories.map((category) => <li key={category.id}><Link className={styles.chip} href={`/forum/category/${encodeURIComponent(category.slug)}`}># {category.name}</Link></li>)}</ul>}
       </section>
       <section className="ui-stack-sm" aria-labelledby="forum-threads"><SectionHeading id="forum-threads" eyebrow="Now talking" title="Recent conversations" />
+        <nav className={styles.sortRow} aria-label="Sort threads">
+          {(["active", "newest", "posts"] as const).map((value) => {
+            const href = sortHref(value);
+            const label = value === "active" ? "Most recent activity" : value === "newest" ? "Newest" : "Most posts";
+            return href
+              ? <Link key={value} className={styles.sortLink} href={href}>{label}</Link>
+              : <span key={value} className={styles.sortCurrent} aria-current="true">{label}</span>;
+          })}
+        </nav>
         {threads.length === 0 ? <EmptyPanel title="No public threads yet" description="When the community starts a discussion, it will appear here." /> : <ul className={styles.chatList}>{threads.map((thread) => {
           const initial = thread.title.trim().slice(0, 1).toLocaleUpperCase("en-NG") || "•";
           return <li key={thread.id} className={styles.chatRow}>
             <span className={styles.avatar} aria-hidden="true">{initial}</span>
             <div className={styles.chatMain}>
-              <h3 className={styles.chatTitle}><Link href={`/forum/thread/${encodeURIComponent(thread.slug)}`}>{thread.title}</Link></h3>
+              <h3 className={styles.chatTitle}><Link href={`/forum/thread/${encodeURIComponent(thread.slug)}`}>{thread.title}</Link>{thread.is_pinned ? <span className={styles.pinnedBadge}>Pinned</span> : null}</h3>
               <p className={styles.chatMeta}>{categoryName(thread.category_id)}{thread.last_activity_at ? <> · <time dateTime={thread.last_activity_at}>{new Date(thread.last_activity_at).toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" })}</time></> : null}</p>
             </div>
             <span className={styles.badge} aria-label={`${thread.post_count} ${thread.post_count === 1 ? "post" : "posts"}`}>{thread.post_count}</span>

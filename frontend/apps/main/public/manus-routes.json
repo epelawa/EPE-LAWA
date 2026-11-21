@@ -58,6 +58,9 @@
       "path": "/radio"
     },
     {
+      "path": "/search"
+    },
+    {
       "path": "/support"
     },
     {

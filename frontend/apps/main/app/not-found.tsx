@@ -22,14 +22,28 @@ export default function NotFound() {
         />
         <EmptyPanel
           title="Let’s find your way back."
-          description="Start from the community home or explore the latest reporting."
+          description="Start from the community home, search the whole site, or pick a section below."
           actions={
             <>
               <Link className="btn-primary" href="/">Back to EPE LAWA</Link>
-              <Link className="btn-secondary" href="/news">Visit the newsroom</Link>
+              <Link className="btn-secondary" href="/search">Search the site</Link>
             </>
           }
         />
+        <nav aria-label="Popular sections">
+          <ul className="ui-actions" style={{ flexWrap: "wrap" }}>
+            {[
+              ["/news", "Newsroom"],
+              ["/itan-ilu-mi", "Ìtàn Ilú Mi — Community History"],
+              ["/forum", "Forum"],
+              ["/business-directory", "Business Directory"],
+              ["/tourism", "Tourism & Historical Sites"],
+              ["/radio", "EPE LAWA Radio"],
+              ["/who-is-who", "Who is Who"],
+              ["/map", "Map & Navigation"],
+            ].map(([href, label]) => <li key={href}><Link className="btn-secondary" href={href}>{label}</Link></li>)}
+          </ul>
+        </nav>
       </PageFrame>
     </div>
   );
