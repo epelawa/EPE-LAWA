@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "../../lib/supabase";
 import { PageFrame, PageIntro, Panel, SectionHeading, EmptyPanel, Notice, StatusBadge } from "../../components/design-system";
+import EnquiryForm from "../../components/enquiry-form";
 import { submitHistoryContribution } from "./actions";
 
 export const metadata: Metadata = {
@@ -66,12 +67,10 @@ export default async function ItanIluMiPage({ searchParams }: { searchParams: Pr
   return <PageFrame className="ui-stack">
     <PageIntro eyebrow="Community record" title="Ìtàn Ilú Mi" description="A community archive built from identifiable sources and reviewed contributions. Accounts are not published until evidence, consent and publication rights have been checked." meta={<span>Verified accounts · Private submissions</span>} />
 
-    <Notice tone="warning" role="note">
-      <div className="ui-stack-sm">
-        <div className="ui-row"><StatusBadge tone="warning">Unavailable</StatusBadge><strong>Correction requests for published records</strong></div>
-        <p>A secure online correction and removal request path is not configured. The contribution form accepts new accounts only and cannot change a published record; do not enter correction details as a new contribution. No private public-contact channel is currently available.</p>
-      </div>
-    </Notice>
+    <section className="ui-stack-sm" aria-labelledby="history-corrections">
+      <SectionHeading eyebrow="Fix the record" title="Correction and removal requests" id="history-corrections" description="Point us to what is wrong in a published record. Requests go to a private staff queue and are never published; we reply by email after checking." />
+      {process.env.ENQUIRY_INTAKE_ENABLED === "true" ? <Panel className="ui-stack-sm"><EnquiryForm kind="correction" privacyHref="/privacy" /></Panel> : <Notice tone="warning" role="status">The correction form is temporarily unavailable. Please check back later; nothing can be submitted right now.</Notice>}
+    </section>
 
     <form method="get" className="ui-toolbar" role="search">
       <div className="ui-field"><label className="label" htmlFor="history-search">Family name or community</label><input className="input" id="history-search" name="q" maxLength={120} defaultValue={query} /></div>

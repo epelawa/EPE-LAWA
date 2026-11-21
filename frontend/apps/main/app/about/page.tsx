@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { pageMetadata } from "../../lib/metadata";
-import { PageFrame, PageIntro, Panel, SectionHeading, StatusBadge, TextLink } from "../../components/design-system";
+import { PageFrame, PageIntro, Panel, SectionHeading, TextLink } from "../../components/design-system";
+import EnquiryForm from "../../components/enquiry-form";
 import styles from "./about.module.css";
 
 export const metadata: Metadata = pageMetadata({
@@ -75,12 +76,14 @@ export default function AboutPage() {
             <p className="ui-muted">Contact is currently informational only. It does not receive or store messages.</p>
             <TextLink href="/contact">View contact availability</TextLink>
           </Panel>
-          <Panel className="ui-stack-sm">
+          <Panel className="ui-stack-sm" id="corrections">
             <div className="ui-row">
               <h2>Correction requests</h2>
-              <StatusBadge tone="warning">Coming Soon</StatusBadge>
             </div>
-            <p className="ui-muted">A secure correction or removal-request channel is not available yet. Please do not send private details or rely on Contact as a report intake.</p>
+            {process.env.ENQUIRY_INTAKE_ENABLED === "true" ? <>
+              <p className="ui-muted">Found a mistake on any EPE LAWA page? Tell us what is wrong and what it should say. Requests go to a private staff queue and we reply by email. Do not include passwords or payment details.</p>
+              <EnquiryForm kind="correction" privacyHref="/privacy" />
+            </> : <p className="ui-muted" role="status">The correction form is temporarily unavailable. Please check back later; nothing can be submitted right now.</p>}
           </Panel>
         </aside>
       </div>

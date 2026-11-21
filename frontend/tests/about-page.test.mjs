@@ -14,6 +14,9 @@ test('About page presents the approved public-information paths without invented
   assert.match(source, /Editorial staff details will appear here once confirmed/i);
   assert.match(source, /does not receive or store messages/i);
   assert.match(source, /Correction requests/);
+  assert.match(source, /EnquiryForm kind="correction"/);
+  assert.doesNotMatch(source, /Coming Soon/);
+  assert.doesNotMatch(source, /not available yet/);
 });
 
 test('About page uses responsive cards and reduced-motion-safe interaction', async () => {
