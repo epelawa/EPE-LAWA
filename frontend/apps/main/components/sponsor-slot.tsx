@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { createClient } from "../lib/supabase";
+import { readAdItems } from "./ads-section";
 import styles from "./sponsor-slot.module.css";
+import SponsorMiniCarousel, { type MiniAd } from "./sponsor-mini-carousel";
 import SponsorPopup from "./sponsor-popup";
 
 function ArrowIcon({ direction }: { direction: "up-right" | "right" }) {
@@ -51,6 +53,19 @@ export default async function SponsorSlot({
   footer?: boolean;
 }) {
   const sponsor = await readSponsor();
+  if (!sponsor) {
+    const items = await readAdItems(4);
+    if (items.length > 0) {
+      const miniAdItems: MiniAd[] = items.map((item) => ({
+        name: item.name,
+        slug: item.slug,
+        categoryLabel: item.categoryLabel,
+        area: item.area,
+        logoUrl: item.logoUrl,
+      }));
+      return <SponsorMiniCarousel items={miniAdItems} footer={footer} compact={compact} />;
+    }
+  }
   return (
     <aside
       className={`${styles.slot} ${compact ? styles.compact : ""} ${footer ? styles.footerSlot : ""}`}
