@@ -76,9 +76,13 @@ function StatusMessage({ query }: { query: Record<string, string | undefined> })
               ? "The article could not be unpublished. Check the revision and your article.unpublish access."
               : query.error === "unpublish_confirmation"
                 ? "Confirm that you want to take down the version currently visible to readers."
-                : query.error === "revise"
-                  ? "A new private revision could not be created. Check article.create access and reload."
-                  : "The requested article action could not be completed.";
+                : query.error === "delete_confirmation"
+                  ? "Tick the confirm box, then press Yes, delete forever."
+                  : query.error === "delete"
+                    ? "The story could not be deleted. Check your article access, reload and try again."
+                    : query.error === "revise"
+                      ? "A new private revision could not be created. Check article.create access and reload."
+                      : "The requested article action could not be completed.";
     return <Notice tone="danger" role="alert">{message}</Notice>;
   }
   return null;
