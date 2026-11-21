@@ -36,7 +36,8 @@ const staffPages: NavItem[] = [
   { label: "Roles", href: "/roles", hint: "Configure staff roles and capabilities", group: "Administration" },
   { label: "Broadcast", href: "/broadcast", hint: "Notify verified members", group: "Administration" },
   { label: "Backups", href: "/backups", hint: "Database backups and restore in R2", group: "Administration" },
-  { label: "Settings", href: "/settings", hint: "Deployment configuration and setup", group: "Administration" },
+  { label: "Deployment", href: "/deployment", hint: "Environment variables and setup checklist", group: "Administration" },
+  { label: "Settings", href: "/settings", hint: "Website maintenance switch", group: "Administration" },
 ];
 
 export function mainNavigation(): NavItem[] {

@@ -32,6 +32,7 @@ export const CONFIGURATION: readonly Spec[] = [
   { name: "VAPID_PRIVATE_KEY", group: "Web push", guide: "Store the private half of the same VAPID key pair as a sensitive server-only variable.", optional: true },
   { name: "RADIO_STREAM_URL", group: "Radio", guide: "Set the authorized direct HTTPS stream URL after verifying broadcasting rights.", optional: true },
   { name: "NAIJA_RADIO_API_KEY", group: "Radio", guide: "If using the Naija Radio API, obtain its key from the provider.", optional: true },
+  { name: "MAINTENANCE_GATE_ENABLED", group: "Operations", guide: "Set to true in Vercel once the maintenance migration is applied; the admin switch then pauses the public site." },
   { name: "ALLOW_INDEXING", group: "Operations", guide: "Optional indexing override: true or false. If absent, the site applies its origin-based default.", optional: true },
   { name: "CRON_SECRET", group: "Operations", guide: "Generate a random secret and configure it as a sensitive Vercel environment variable for scheduled jobs.", optional: true },
 ];
