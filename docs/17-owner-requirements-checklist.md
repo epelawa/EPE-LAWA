@@ -10,6 +10,12 @@
 
 **Historical release state (2026-11-14 10:49 WAT; superseded):** Remote `main` was `e5c9bde21b82d555f486ac3356592f6e31007b29`; PRs #47, #49 and #51 had merged. PR #50 was blocked by missing `publication_status` on `programmes`/`episodes`; PR #52's exact hosted check rollup was inaccessible. No Production schema, data or environment was changed.
 
+## Current continuation checkpoint — 2026-11-21
+
+- The active worktree was fully rebased onto `origin/main` `6f5b43dfd1873b8c1a839cb553c9a28644afa2f5`; the SMTP variable contract remains local and contains no credentials.
+- Remaining Phase 0 work is intentionally deferred in the current focused delivery: scope/domain/Admin-boundary decisions, legal review, backup/restore rehearsal, and exact Production deployment evidence require external authorization or operational proof. They remain blocked rather than being represented as done.
+- Phase 1 starts with a focused `/about` public-information redesign. The slice is source-backed, preserves truthful unavailable states, and requires its own exact-head verification before merge.
+
 ## Current UI redesign status — 2026-11-15
 
 This section supersedes the 2026-11-14 release snapshot above. The full route/form and end-to-end phase inventory is in [`docs/18-full-ui-redesign-phase-plan.md`](18-full-ui-redesign-phase-plan.md), reconciled with the source-backed [`sitemap`](03-sitemap.md).

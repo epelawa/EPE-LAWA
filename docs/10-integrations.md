@@ -8,7 +8,7 @@
 | --- | --- |
 | Web hosting | Vercel project/older deployment evidence exists; current branch preview/deployment is unverified. |
 | Database and auth | Supabase is present in the project; current environment/provider state must be verified. Local PGlite tests are not live RLS proof. |
-| Transactional email | Branded templates are a requirement; sender/provider operation and domain authentication are unconfirmed. |
+| Transactional email | The standalone newsletter mailer and branded templates are implemented. Delivery remains unconfirmed until the `NEWSLETTER_SMTP_*` and `NEWSLETTER_FROM` runtime variables, sender-domain authentication and a private test recipient are verified. |
 | Payments | Paystack setup and sandbox operation are unconfirmed. Do not enable real payment claims without isolated verification. |
 | Maps | Current page builds safe outbound Google Maps search/directions URLs. No configured Google Maps API key or verified Places/geocoding integration. |
 | Analytics | Admin analytics must use real query results; no unverified metric or provider readiness claims. |
@@ -19,6 +19,21 @@ Tourism facts/locations, Who is Who identity and office claims, and Radio stream
 ## Email
 
 Required templates include branded verification and password recovery, plus other essential transactional notices where implemented. Use generic auth responses to avoid account enumeration. Template presence is not delivery proof: verify sender-domain authentication (SPF, DKIM, DMARC), provider configuration and a private test recipient before claiming delivery operational. Never log message bodies or credentials.
+
+### Newsletter SMTP variables
+
+The custom newsletter flow is separate from Supabase Auth email links. Configure these server-only variables in `.env.local` and the relevant Vercel environments; keep real values out of Git:
+
+| Variable | Purpose |
+| --- | --- |
+| `NEWSLETTER_SMTP_HOST` | Approved SMTP hostname |
+| `NEWSLETTER_SMTP_PORT` | SMTP port, normally `465` for implicit TLS or `587` for STARTTLS |
+| `NEWSLETTER_SMTP_SECURE` | `true` for implicit TLS; `false` for STARTTLS |
+| `NEWSLETTER_SMTP_USER` | SMTP account username |
+| `NEWSLETTER_SMTP_PASSWORD` | SMTP account password |
+| `NEWSLETTER_FROM` | Approved sender address, optionally with a display name |
+
+The application fails closed when these variables are missing or invalid. After configuring them, send only to a private test recipient and verify the confirmation template, management code, unsubscribe URL, SPF, DKIM and DMARC before describing delivery as operational.
 
 ## Payments
 
