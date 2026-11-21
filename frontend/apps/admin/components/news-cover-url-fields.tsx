@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import BrandedDialog from "./branded-dialog";
 import { normalizeExternalNewsCoverUrl } from "../../main/lib/news-cover-url.mjs";
 import styles from "./news-cover-url-fields.module.css";
 
@@ -20,6 +21,7 @@ export default function NewsCoverUrlFields({ idPrefix, initial = {}, uploadAvail
   const [urlTouched, setUrlTouched] = useState(false);
   const [previewFailed, setPreviewFailed] = useState(false);
   const [uploadName, setUploadName] = useState("");
+  const [uploadOpen, setUploadOpen] = useState(false);
   const [uploadPreview, setUploadPreview] = useState<string | null>(null);
   const normalizedPreview = normalizeExternalNewsCoverUrl(url);
   const hasUrl = url.trim().length > 0;
@@ -74,29 +76,39 @@ export default function NewsCoverUrlFields({ idPrefix, initial = {}, uploadAvail
         <>
           <p className="ui-meta">Upload an image from this device, or paste a publicly accessible HTTPS image link; either way provide its alt text, credit, source and license. Choose only one cover source. The browser requests a linked image directly, so its host can see visitors’ IP addresses; page referrers are not sent.</p>
           <div className="ui-field">
-            <label className="label" htmlFor={labelId("upload")}>Upload from this device</label>
-            <input
-              id={labelId("upload")}
-              name="coverUpload"
-              className="input"
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/avif"
-              onChange={(event) => {
-                const file = event.currentTarget.files?.[0] ?? null;
-                releaseUploadPreview();
-                if (file) {
-                  previewBlob.current = URL.createObjectURL(file);
-                  setUploadPreview(previewBlob.current);
-                  setUploadName(file.name);
-                } else {
-                  setUploadPreview(null);
-                  setUploadName("");
-                }
-                setPreviewFailed(false);
-              }}
-            />
-            <span id={labelId("upload-help")} className="ui-meta">JPEG, PNG, WebP or AVIF, up to 26 MB. The upload happens through the EPE LAWA server; covers are served from the image-storage domain.</span>
+            <span className="ui-row">
+              <button type="button" className="btn-secondary" aria-haspopup="dialog" onClick={() => setUploadOpen(true)}>Upload from this device</button>
+              <span className="ui-meta" role="status">{uploadName ? `Selected: ${uploadName}` : "No file selected"}</span>
+            </span>
           </div>
+          <BrandedDialog open={uploadOpen} onClose={() => setUploadOpen(false)} title="Upload cover image" description="Choose an image from this device. You can still fill in alt text, credit, source and license after closing this dialog.">
+            <div className="ui-stack-sm">
+              <label className="label" htmlFor={labelId("upload")}>Cover image file</label>
+              <input
+                id={labelId("upload")}
+                name="coverUpload"
+                className="input"
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/avif"
+                data-autofocus
+                onChange={(event) => {
+                  const file = event.currentTarget.files?.[0] ?? null;
+                  releaseUploadPreview();
+                  if (file) {
+                    previewBlob.current = URL.createObjectURL(file);
+                    setUploadPreview(previewBlob.current);
+                    setUploadName(file.name);
+                    setUploadOpen(false);
+                  } else {
+                    setUploadPreview(null);
+                    setUploadName("");
+                  }
+                  setPreviewFailed(false);
+                }}
+              />
+              <span id={labelId("upload-help")} className="ui-meta">JPEG, PNG, WebP or AVIF, up to 26 MB. The upload happens through the EPE LAWA server; covers are served from the image-storage domain.</span>
+            </div>
+          </BrandedDialog>
           {uploadPreview && !previewFailed ? <img className={styles.preview} src={uploadPreview} alt="" loading="eager" decoding="async" onLoad={() => setPreviewFailed(false)} onError={() => setPreviewFailed(true)} /> : null}
           {uploadPreview && previewFailed ? <p className="ui-meta" role="status">The uploaded image preview could not load. Try a different image file.</p> : null}
           {uploadName ? <p className="ui-meta" role="status">Selected file: {uploadName}. Clear the file input to switch back to a linked image.</p> : null}

@@ -27,7 +27,6 @@ const sectionPages: NavItem[] = [
   { label: "Forum", href: "/moderation/forum", hint: "Reports and moderation queue", primary: true, group: "Community" },
   { label: "Businesses", href: "/business-review", hint: "Submissions and verification", group: "Community" },
   { label: "Reviews", href: "/business-review/moderation", hint: "Business review moderation", group: "Community" },
-  { label: "Orders", href: "/orders", hint: "Order queue", group: "Community" },
   { label: "Tourism", href: "/tourism", hint: "Tourism submissions", group: "Community" },
   { label: "People", href: "/people", hint: "Who is Who records", group: "Community" },
   { label: "Ads", href: "/ads", hint: "Businesses shown in the public ad carousel", group: "Community" },
@@ -70,6 +69,5 @@ export const footerNavigation = [
   { label: "Dashboard", href: "/" },
   { label: "Newsroom", href: "/newsroom" },
   { label: "Forum moderation", href: "/moderation/forum" },
-  { label: "Orders", href: "/orders" },
   { label: "People", href: "/people" },
 ];

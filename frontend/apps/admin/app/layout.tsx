@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "@fontsource-variable/plus-jakarta-sans";
-import Script from "next/script";
+import { headers } from "next/headers";
 import "@epelawa/ui/tokens.css";
 import "@epelawa/ui/ui.css";
 import "./globals.css";
@@ -55,6 +55,7 @@ async function loadIdentity(): Promise<AdminIdentity> {
 }
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   let navigation = staffNavigation(false);
   let identity: AdminIdentity | null = null;
   try {
@@ -69,7 +70,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   return (
     <html lang="en" data-theme="light" style={{ colorScheme: "light" }} suppressHydrationWarning>
       <body data-admin-shell={staffWorkspace ? "sidebar" : "plain"}>
-        <Script strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeScript }} />
         <SiteMotion />
         <ToastRegion />
         <a className="skip-link" href="#skip-target">Skip to content</a>

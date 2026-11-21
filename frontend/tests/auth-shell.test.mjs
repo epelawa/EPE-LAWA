@@ -60,13 +60,13 @@ test("member auth routes use a centered branded shell without appearance control
   assert.match(globalStyles, /body:has\(\.auth-page\) \.site-main[\s\S]*?min-height:\s*calc\(100dvh - 72px\)/);
   assert.match(globalStyles, /body:has\(\.auth-page\) \.site-footer/);
   assert.match(rootLayout, /themeScript/);
+  assert.match(rootLayout, /<script nonce=\{nonce\}/);
   assert.match(rootLayout, /export const viewport: Viewport = \{ themeColor: "#F1F4FA" \}/);
   assert.match(theme, /dataset\.theme="light"/);
   assert.match(theme, /style\.colorScheme="light"/);
   assert.match(theme, /localStorage\.removeItem\("epelawa-theme"\)/);
   assert.doesNotMatch(theme, /matchMedia|prefers-color-scheme|data-theme="dark"|colorScheme="dark"/);
   assert.match(theme, /document\.querySelector\('meta\[name="theme-color"\]'\)/);
-  assert.match(rootLayout, /strategy="beforeInteractive"/);
 
   for (const route of [
     "login/page.tsx",

@@ -10,12 +10,12 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
   const p = await searchParams;
   const db = await createClient();
   const { data: allowed, error: ge } = await db.rpc("has_capability", { p_capability: "business.review" });
-  if (ge || allowed !== true) return <PageFrame className="ui-stack"><PageIntro eyebrow="Marketplace · Staff" title="Business submissions" description="Review and verify new business listings." /><Notice tone="danger" role="alert">Business review capability is required to access this queue.</Notice></PageFrame>;
+  if (ge || allowed !== true) return <PageFrame className="ui-stack"><PageIntro eyebrow="Business Directory · Staff" title="Business submissions" description="Review and verify new business listings." /><Notice tone="danger" role="alert">Business review capability is required to access this queue.</Notice></PageFrame>;
   const { data, error } = await db.from("businesses").select("id,name,category_id,description,area,address,landmark,phone,whatsapp,email,website,status,created_at,hours").in("status", ["submitted", "reviewing"]).is("deleted_at", null).order("created_at").limit(100);
   const { data: cats } = await db.from("business_categories").select("id,label").limit(100);
   const labels = new Map((cats ?? []).map(c => [c.id, c.label]));
   return <PageFrame className="ui-stack">
-    <PageIntro eyebrow="Marketplace · Staff" title="Business submissions" description="Review unpublished submissions, record evidence, then publish or reject with a reason." />
+    <PageIntro eyebrow="Business Directory · Staff" title="Business submissions" description="Review unpublished submissions, record evidence, then publish or reject with a reason." />
     {p.error ? <Notice tone="danger" role="alert">Review action failed. Confirm evidence and capability, then retry.</Notice> : null}
     {p.updated ? <Notice tone="success" role="status">Review action recorded.</Notice> : null}
     {p.added ? <Notice tone="success" role="status">Listing published — it is now visible in the public business directory.</Notice> : null}

@@ -100,7 +100,6 @@ describe("member service links", () => {
   it("keeps the old post-sign-in destinations inside the dashboard", () => {
     expect(MEMBER_SERVICE_LINKS.map((link) => link.href)).toEqual([
       "/forum",
-      "/business-directory/orders",
       "/",
     ]);
     for (const link of MEMBER_SERVICE_LINKS) {

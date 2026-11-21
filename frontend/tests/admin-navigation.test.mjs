@@ -43,7 +43,7 @@ test("admin navigation links resolve to existing app routes", () => {
   for (const href of registeredHrefs) {
     assert.ok(hasRoute(href), `${href} is not an existing admin route`);
   }
-  for (const href of ["/newsroom", "/itan-ilu-mi/review", "/moderation/forum", "/business-review", "/orders", "/tourism", "/radio", "/people"]) {
+  for (const href of ["/newsroom", "/itan-ilu-mi/review", "/moderation/forum", "/business-review", "/tourism", "/radio", "/people"]) {
     assert.ok(actualRoutes.has(href), `expected staff route ${href}`);
     assert.ok(registeredHrefs.includes(href), `expected navigation to ${href}`);
   }

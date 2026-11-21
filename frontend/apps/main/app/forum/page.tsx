@@ -4,7 +4,8 @@ import { createClient } from "../../lib/supabase";
 import { formatLagosDateTime } from "../../lib/dates";
 import { EmptyPanel, Notice, PageFrame, PageIntro, SectionHeading } from "../../components/design-system";
 import { pageMetadata } from "../../lib/metadata";
-import ForumLiveCount, { countActive } from "./live-count";
+import { countActive } from "./active-count";
+import ForumLiveCount from "./live-count";
 import styles from "./forum.module.css";
 
 type Category = { id: string; slug: string; name: string; description: string | null; rules: string | null };

@@ -16,8 +16,6 @@ const nextConfig: NextConfig = {
         { key: "X-Frame-Options", value: "DENY" },
         { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
         { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
-        // Report-only until real Next.js scripts, media, and embeds have been reviewed.
-        { key: "Content-Security-Policy-Report-Only", value: "default-src 'self'; base-uri 'self'; object-src 'none'; img-src 'self' data: https:; frame-ancestors 'none'" },
         // Only the configured public origin; no wildcard and no credentials. Read from
         // NEXT_PUBLIC_SITE_URL so the Cloud Run domain is never hardcoded.
         { key: "Access-Control-Allow-Origin", value: siteUrl },

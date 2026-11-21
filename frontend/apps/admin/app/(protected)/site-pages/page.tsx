@@ -2,6 +2,7 @@ import { createClient } from "../../../lib/supabase";
 import { PageFrame, PageIntro, Notice } from "@epelawa/ui";
 import { saveSitePage } from "./actions";
 import RichTextEditor from "../../../components/rich-text-editor";
+import UploadModalField from "../../../components/upload-modal-field";
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
@@ -77,7 +78,7 @@ export default async function SitePagesPage({ searchParams }: { searchParams: Pr
               <div className="ui-stack-sm">
                 {[1, 2, 3].map((slot) => (
                   <div className="ui-stack-sm" key={slot}>
-                    <label className="ui-field"><span className="label">Photo {slot} file</span><input className="input" type="file" name={`photoFile${slot}`} accept="image/jpeg,image/png,image/webp,image/avif" /></label>
+                    <UploadModalField name={`photoFile${slot}`} label={`Photo ${slot} file`} accept="image/jpeg,image/png,image/webp,image/avif" hint="JPEG, PNG, WebP or AVIF. Add a short description of what the photo shows below." description={`Choose photo ${slot} for this page from your device.`} />
                     <label className="ui-field"><span className="label">Photo {slot} description (required if file chosen)</span><input className="input" name={`photoAlt${slot}`} maxLength={500} /></label>
                     <label className="ui-field"><span className="label">Photo {slot} credit (optional)</span><input className="input" name={`photoCredit${slot}`} maxLength={300} /></label>
                   </div>
