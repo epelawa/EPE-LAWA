@@ -594,3 +594,11 @@ The latest owner attachment was reconciled against PR #154 evidence and added to
 **Migration `20261122000800_business_logos_ads.sql`** — applied to production (project `igqmybuiovaxqmrteebd`) after a clean PGlite replay. Replay lessons baked into the migration: the rebuilt `published_businesses` view must keep the canonical column expressions (`b.slug::text` etc., create-or-replace only — `business_discovery_search` depends on it) and `anon/authenticated` need the new `logo_key` column grant or the security-invoker view denies the whole read. Production verified: one signature per RPC, single-overload calls resolve, anon can select the carousel and logo columns, ad RPCs execute for authenticated only.
 
 **Validation:** `pnpm typecheck` 5/5; `pnpm test:node` 360 pass / 0 fail / 1 skip (`route-manifest`, `public-copy-availability`, `ui-rebuild` pins extended for the new admin pages and nav); `pnpm vitest run` 44 files / 128 tests; `node --test backend/tests/schema.test.mjs` 28 pass / 0 fail / 1 skip.
+
+## 2026-11-21 (later) — Business profile: proper CTAs and logos; directory cards show logos (branch `vibe/business-profile-cta-d73e38`)
+
+**Done:** the business profile page (`/business-directory/<slug>`) no longer shows the breadcrumb "/ Founda Technologies" text at the top. The header is now an identity block: the business logo (uploaded R2 logo or HTTPS link, with a letter fallback), the category badge, a "Verified business" badge and the name. Below it sit real call-to-action buttons instead of bare contact text — a primary **Call** button (`tel:`), a **Chat on WhatsApp** button (`wa.me`, new tab, noopener) and a **Visit website** button — sticky at the bottom on small screens. Email/address/landmark/hours remain in the details grid; only submitted and approved information is shown, nothing is fabricated. No hero was added.
+
+**Directory cards:** cards on `/business-directory` now show the business logo in the artwork area when the listing has one (falls back to the initial letter block), using the same `logo_key` read model.
+
+**Validation:** `node --test frontend/tests/business-directory.test.mjs` 6/6; `pnpm typecheck` 5/5.
