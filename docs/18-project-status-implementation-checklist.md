@@ -1,18 +1,16 @@
 # EPE LAWA — Canonical Project Status & Full UI Implementation Checklist
 
-- **Status snapshot:** 18 November 2026, 06:09 WAT (UTC+01:00)
+- **Status snapshot:** 21 November 2026, 06:58 WAT (UTC+01:00)
 - **Repository:** [`epelawa/EPE-LAWA`](https://github.com/epelawa/EPE-LAWA)
-- **Verified `main` SHA:** `43eae784de7880d993be21673219c265d031adcf`
+- **Verified `main` SHA:** `34adfcec4ff2bd7021903aeb815d72e2f916337b`
 - **Purpose:** one current status and acceptance checklist for the complete product redesign. Refresh the snapshot after material merges or new test evidence.
 
-## Current verified snapshot — 18 November 2026
+## Current verified snapshot — 21 November 2026
 
-- Current `main` is merge commit [`43eae784de7880d993be21673219c265d031adcf`](https://github.com/epelawa/EPE-LAWA/commit/43eae784de7880d993be21673219c265d031adcf), from [PR #154](https://github.com/epelawa/EPE-LAWA/pull/154). GitHub reports that account `epelawa` merged it at 2026-11-18 04:57:06Z; the assistant did not issue a merge command.
-- PR #154 completed: ~~shared newsletter footer across homepage, News listing, article slugs and radio reminders; removal of duplicate News-local footers; branded SVG 404 state; homepage story-card logo fallback; protected-dashboard footer isolation; and narrow-screen News overflow fix.~~
-- Exact-head browser smoke passed ([run #44240056909](https://github.com/epelawa/EPE-LAWA/actions/runs/44240056909)) on PR head `8da2a0313aa63c83e2fce78f028d7b64ae0c5664`. ~~The affected local regression set passed 34/34 and `git diff --check` passed.~~
-- [CI run #44240056915](https://github.com/epelawa/EPE-LAWA/actions/runs/44240056915): ~~test stage (0 failures), typecheck, build, and CodeQL passed.~~ **The verify job is still failed** at `pnpm audit --audit-level=high`: one high-severity picomatch ReDoS advisory, [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf), through `.>vitest>picomatch` and `admin>tailwindcss>chokidar>anymatch>picomatch`. Do not claim an all-green CI run, suppress the audit, or treat the merge as proof the vulnerability is resolved.
-- No Production deployment was verified. PR #154 made no Supabase schema, migration, user-content, or production-setting changes.
-- Owner-requested backlog remains open. The [18 November continuation handoff](handoffs/2026-11-18-shared-footer-and-newsroom-backlog.md) now lists the uncompleted News navigation/UX and sharing work, full-page/control/form audit, progressive newsroom editor/media/publication requirements, Admin settings and toasts, account validation/OTP decisions, analytics, deletion, and ten optional feature suggestions. Preserve audit records, authorization, privacy, and data integrity.
+- PRs [#200](https://github.com/epelawa/EPE-LAWA/pull/200), [#201](https://github.com/epelawa/EPE-LAWA/pull/201), and [#198](https://github.com/epelawa/EPE-LAWA/pull/198) are merged. The final `main` merge tip is `34adfcec4ff2bd7021903aeb815d72e2f916337b`; the merged changes are documentation-only.
+- The post-merge schema suite on this `main` state reports **29 tests: 28 passed, 0 failed, 1 documented skip**. The skip is the documented PGlite exclusion-constraint limitation. This local suite does not establish hosted deployment, backup/restore, provider, or full product acceptance.
+- Phase 0 remains open. The live schema reconciliation is recorded, but backup/restore rehearsal, exact production deployment verification, owner/legal/provider decisions, and remaining release-safety gates are still pending.
+- Phase 1/release acceptance has not started. Do not treat this checkpoint as product completion, payment/provider readiness, or approval to begin later-phase implementation.
 
 The detailed status table and open-PR records that follow were written for the **15 November snapshot** and are retained as history; they are not current PR/check status.
 
