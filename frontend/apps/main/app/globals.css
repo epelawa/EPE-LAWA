@@ -505,3 +505,16 @@ html { transition: background-color var(--ep-dur-base, 200ms) var(--ep-ease-out)
 .site-poll-bar > span { display: block; height: 100%; background: var(--ep-primary, #477fe0); border-radius: inherit; transition: width 300ms ease; }
 .site-poll-label { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-size: 0.875rem; margin-top: 6px; }
 .home-poll { padding-block: 12px 32px; }
+
+.lang-toggle {
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--ep-border, #C9D6EC);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+.lang-toggle:hover { border-color: var(--ep-primary, #477fe0); color: var(--ep-primary, #477fe0); }

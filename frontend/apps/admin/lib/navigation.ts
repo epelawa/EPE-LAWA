@@ -1,4 +1,4 @@
-export type NavGroup = "Overview" | "Newsroom" | "Community" | "Inbox" | "Administration";
+export type NavGroup = "Overview" | "Newsroom" | "Community" | "Trust" | "Inbox" | "Administration";
 
 export type NavItem = {
   label: string;
@@ -16,7 +16,7 @@ export type NavSection = {
   items: NavItem[];
 };
 
-const GROUP_ORDER: NavGroup[] = ["Overview", "Newsroom", "Community", "Inbox", "Administration"];
+const GROUP_ORDER: NavGroup[] = ["Overview", "Newsroom", "Community", "Trust", "Inbox", "Administration"];
 
 const sectionPages: NavItem[] = [
   { label: "Dashboard", href: "/", hint: "Real counts and queues", primary: true, group: "Overview" },
@@ -24,6 +24,12 @@ const sectionPages: NavItem[] = [
   { label: "History", href: "/itan-ilu-mi/review", hint: "Private contributions and reviewed publication", group: "Newsroom" },
   { label: "Radio", href: "/radio", hint: "Programmes, rights, episodes and schedule", primary: true, group: "Newsroom" },
   { label: "Corrections", href: "/corrections", hint: "Reader correction reports", group: "Newsroom" },
+  { label: "Email digest", href: "/digest", hint: "Mail-ready weekly digest", group: "Newsroom" },
+  { label: "Analytics", href: "/analytics", hint: "Reads, clicks and member trends", group: "Overview" },
+  { label: "Site poll", href: "/poll", hint: "Compose the site-wide poll", group: "Newsroom" },
+  { label: "Events queue", href: "/events", hint: "Community event submissions", group: "Community" },
+  { label: "Song requests", href: "/radio/requests", hint: "Radio song request desk", group: "Community" },
+  { label: "Appeals", href: "/appeals", hint: "Member appeals against moderation", group: "Trust" },
   { label: "Forum", href: "/moderation/forum", hint: "Reports and moderation queue", primary: true, group: "Community" },
   { label: "Businesses", href: "/business-review", hint: "Submissions and verification", group: "Community" },
   { label: "Reviews", href: "/business-review/moderation", hint: "Business review moderation", group: "Community" },

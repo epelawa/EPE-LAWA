@@ -25,6 +25,7 @@ import ScrollProgress from "../components/scroll-progress";
 import AuthCallbackErrorRouter from "../components/auth-callback-error-router";
 import MobileBottomNav from "../components/mobile-bottom-nav";
 import { createClient } from "../lib/supabase";
+import { readSiteLanguage } from "../lib/i18n";
 import { NotificationSoundListener } from "../components/notification-sound";
 import ToastRegion from "../components/toast";
 import SlashFocus from "../components/slash-focus";
@@ -65,8 +66,9 @@ async function AuthenticatedMobileNavigation() {
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
+  const siteLanguage = await readSiteLanguage();
   return (
-    <html lang="en" data-theme="light" style={{ colorScheme: "light" }} suppressHydrationWarning>
+    <html lang={siteLanguage === "yo" ? "yo" : "en"} data-theme="light" style={{ colorScheme: "light" }} suppressHydrationWarning>
       <body>
         <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeScript }} />
         <AuthCallbackErrorRouter />

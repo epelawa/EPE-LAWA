@@ -14,6 +14,7 @@ import { coverUploadState } from "../../../../lib/media-r2";
 import { publishedNewsCover } from "../../../../../main/lib/published-news-cover";
 import { absoluteUrl } from "../../../../../main/lib/site";
 import NewsShareTools from "../../../../components/news-share-tools";
+import RevisionDiffView, { type RevisionVersion } from "./revision-diff-view";
 import { publicNewsArticleUrl } from "../../../../../main/lib/news-urls";
 
 export const metadata: Metadata = { title: "Article workflow", robots: { index: false, follow: false } };
@@ -132,14 +133,20 @@ export default async function EditArticlePage({
   };
   const version = Array.isArray(article.current_version) ? article.current_version[0] : article.current_version;
   if (!version) notFound();
-  const [tagResult, reviewCapability] = await Promise.all([
+  const [tagResult, reviewCapability, versionsResult] = await Promise.all([
     supabase.from("article_version_tags").select("tags(label)").eq("version_id", version.id).limit(12),
     supabase.rpc("has_capability", { p_capability: "article.review" }),
+    supabase.from("article_versions").select("id,version_number,title,summary,body,state,created_at").eq("article_id", id).order("version_number", { ascending: false }).limit(20),
   ]);
   const articleTags = ((tagResult.data ?? []) as unknown as { tags?: { label?: string } | { label?: string }[] | null }[])
     .map((row) => Array.isArray(row.tags) ? row.tags[0]?.label ?? "" : row.tags?.label ?? "")
     .filter(Boolean);
   const canReviewTags = reviewCapability.data === true;
+  const versions = (versionsResult.data ?? []) as unknown as RevisionVersion[];
+  const requestedBefore = versions.find((row) => row.id === query.revisionA);
+  const requestedAfter = versions.find((row) => row.id === query.revisionB);
+  const diffBefore = requestedBefore ?? (versions.length > 1 ? versions[1] : null);
+  const diffAfter = requestedAfter ?? (versions.length > 0 ? versions[0] : null);
 
   const categories = (categoryResult.data ?? []) as Option[];
   const authors = (authorResult.data ?? []) as Option[];
@@ -236,6 +243,24 @@ export default async function EditArticlePage({
             <input className="input" type="text" name="tags" defaultValue={articleTags.join(", ")} placeholder="e.g. markets, flooding, education" maxLength={600} /></label>
             <div className="ui-actions"><button className={buttonClassName("primary")} type="submit">Save topics</button></div>
           </form>
+        </div>
+      </Panel> : null}
+      {canReviewTags && versions.length > 1 && diffBefore && diffAfter ? <Panel className="ui-subtle">
+        <div className="ui-stack-sm">
+          <div><p className="ui-eyebrow">History</p><h2 className="text-lg font-semibold">Revision diff</h2></div>
+          <p className="ui-muted">Pick any two saved revisions to compare headlines, summaries and body paragraphs.</p>
+          <form method="get" className="ui-row">
+            <label className="ui-field"><span className="ui-label">Older revision</span>
+              <select className="input" name="revisionA" defaultValue={diffBefore.id}>
+                {versions.map((row) => <option key={row.id} value={row.id}>Revision {row.version_number} · {row.state}</option>)}
+              </select></label>
+            <label className="ui-field"><span className="ui-label">Newer revision</span>
+              <select className="input" name="revisionB" defaultValue={diffAfter.id}>
+                {versions.map((row) => <option key={row.id} value={row.id}>Revision {row.version_number} · {row.state}</option>)}
+              </select></label>
+            <div className="ui-actions"><button className={buttonClassName("secondary")} type="submit">Compare</button></div>
+          </form>
+          <RevisionDiffView before={diffBefore} after={diffAfter} />
         </div>
       </Panel> : null}
     </PageFrame>
