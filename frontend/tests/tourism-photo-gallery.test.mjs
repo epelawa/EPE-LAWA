@@ -20,12 +20,12 @@ test("Tourism photo references are responsive, source-linked and not treated as 
   assert.match(gallery, /alt="A sandy shoreline with water, sky and green plants in the foreground\."/);
   assert.match(gallery, /alt="People in canoes on a tree-lined waterway, seen from another canoe\."/);
   assert.match(gallery, /not approved destination listings/);
-  assert.match(gallery, /Wikimedia Commons title: “Iberekodo Beach, Epe, Lagos”/);
-  assert.match(gallery, /Wikimedia Commons title: “Through Epe Mangrove”/);
+  assert.doesNotMatch(gallery, /Wikimedia Commons title:/);
   assert.match(gallery, /href="https:\/\/commons\.wikimedia\.org\/wiki\/File:Iberekodo_Beach,_Epe,_Lagos\.jpg"/);
   assert.match(gallery, /href="https:\/\/commons\.wikimedia\.org\/wiki\/File:Through_Epe_Mangrove\.jpg"/);
   assert.match(gallery, /href="https:\/\/creativecommons\.org\/licenses\/by-sa\/4\.0\/"/);
-  assert.match(gallery, /without cropping/);
+  assert.match(gallery, /href="\/photo-credits"/);
+  assert.doesNotMatch(gallery, /without cropping/);
 });
 
 test("Tourism photo attribution file records both creators, source links and share-alike terms", async () => {

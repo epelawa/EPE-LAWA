@@ -13,7 +13,7 @@ import "./navigation-refinement.css";
 const FOCUSABLE = 'a[href], button:not([disabled]), input, [tabindex]:not([tabindex="-1"])';
 const DESKTOP_GROUPS = [
   { label: "Community", routes: [["/itan-ilu-mi", "Ìtàn Ilú Mi"], ["/forum", "Forum"], ["/who-is-who", "Who is Who"]] },
-  { label: "Discover", routes: [["/map", "Map & Navigation"], ["/business-directory", "Business Directory"], ["/tourism", "Tourism"], ["/radio", "Radio"]] },
+  { label: "Discover", routes: [["/map", "Map & Navigation"], ["/business-directory", "Business Directory"], ["/tourism", "Tourism"], ["/gallery", "Gallery"], ["/radio", "Radio"]] },
   { label: "About", routes: [["/about", "About"], ["/contact", "Contact"], ["/guidelines", "Guidelines"], ["/advertise", "Advertise"], ["/photo-credits", "Photo credits"], ["/privacy", "Privacy"], ["/terms", "Terms"]] },
 ] as const;
 

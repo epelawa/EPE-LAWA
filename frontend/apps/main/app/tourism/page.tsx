@@ -61,30 +61,21 @@ export default async function TourismPage({ searchParams }: { searchParams: Prom
     <Notice tone="neutral">We do not guess opening hours, prices, access conditions or locations. Confirm current arrangements with the destination before travelling.</Notice>
 
     <section className="ui-stack-sm" aria-labelledby="tourism-photo-references">
-      <SectionHeading eyebrow="Licensed photo references" title="Epe in photographs" id="tourism-photo-references" description="Wikimedia Commons images shown for visual context only. These are not approved destination listings and do not verify access, amenities, safety, opening hours, prices or current conditions." />
-      <ul className="ui-grid ui-grid--2 ui-list" aria-label="Licensed Epe photo references">
+      <SectionHeading eyebrow="Photo references" title="Epe in photographs" id="tourism-photo-references" description="Reference photographs of Epe. These are not approved destination listings." />
+      <ul className="ui-grid ui-grid--2 ui-list" aria-label="Epe photo references">
         <li className="ui-card ui-stack-sm">
           <figure className={styles.figure}>
             <Image className={styles.photo} src="/epe-iberekodo-beach.jpg" alt="A sandy shoreline with water, sky and green plants in the foreground." width={2592} height={1456} sizes="(max-width: 640px) 100vw, 50vw" />
-            <figcaption className={styles.caption}>
-              <span>Wikimedia Commons title: “Iberekodo Beach, Epe, Lagos”</span>
-              <span>Photograph by Tarikhaldun.</span>
-              <span>Source: <a href="https://commons.wikimedia.org/wiki/File:Iberekodo_Beach,_Epe,_Lagos.jpg" rel="noreferrer">Wikimedia Commons file</a>. License: <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="license noreferrer">CC BY-SA 4.0</a>.</span>
-            </figcaption>
+            <figcaption className={styles.caption}><a href="https://commons.wikimedia.org/wiki/File:Iberekodo_Beach,_Epe,_Lagos.jpg" rel="noreferrer">Iberekodo Beach, Epe, Lagos</a> · Photograph by Tarikhaldun · <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="license noreferrer">CC BY-SA 4.0</a> · <Link href="/photo-credits">Photo credits</Link></figcaption>
           </figure>
         </li>
         <li className="ui-card ui-stack-sm">
           <figure className={styles.figure}>
             <Image className={styles.photo} src="/epe-through-mangrove.jpg" alt="People in canoes on a tree-lined waterway, seen from another canoe." width={1600} height={1200} sizes="(max-width: 640px) 100vw, 50vw" />
-            <figcaption className={styles.caption}>
-              <span>Wikimedia Commons title: “Through Epe Mangrove”</span>
-              <span>Photograph by Dotun55 (Adedotun Ajibade).</span>
-              <span>Source: <a href="https://commons.wikimedia.org/wiki/File:Through_Epe_Mangrove.jpg" rel="noreferrer">Wikimedia Commons file</a>. License: <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="license noreferrer">CC BY-SA 4.0</a>.</span>
-            </figcaption>
+            <figcaption className={styles.caption}><a href="https://commons.wikimedia.org/wiki/File:Through_Epe_Mangrove.jpg" rel="noreferrer">Through Epe Mangrove</a> · Photograph by Dotun55 (Adedotun Ajibade) · <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="license noreferrer">CC BY-SA 4.0</a> · <Link href="/photo-credits">Photo credits</Link></figcaption>
           </figure>
         </li>
       </ul>
-      <p className="ui-meta">Images retain their full source aspect ratios; responsive delivery resizes and re-encodes them without cropping.</p>
     </section>
 
     <form method="get" action="/tourism" role="search" aria-label="Search approved tourism destinations" className="ui-toolbar filter-panel">
@@ -128,6 +119,6 @@ export default async function TourismPage({ searchParams }: { searchParams: Prom
         <div className="ui-actions"><button className="btn-primary" type="submit">Submit privately for review</button></div>
       </form></Panel> : <p><Link className="btn-secondary" href="/login?next=%2Ftourism">Sign in to suggest a destination</Link></p>}
     </section>
-    <p className="ui-meta">Directions are an external Google Maps handoff, not a live EPE LAWA location service. Verify the destination and route before travel.</p>
+    <p className="ui-meta">Directions open in Google Maps. Verify the route before travel.</p>
   </PageFrame>;
 }
