@@ -86,7 +86,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const title = article.seo_title || article.title;
   const description = article.seo_description || article.summary || undefined;
   const coverImage = publishedNewsCover(article)?.url ?? null;
-  const image = coverImage ? new URL(coverImage, siteUrl).toString() : absoluteUrl("/brand-logo.png");
+  const image = coverImage ? new URL(coverImage, siteUrl).toString() : absoluteUrl("/brand-logo.webp");
   const articleUrl = publicNewsArticleUrl(article.slug);
   return {
     title,

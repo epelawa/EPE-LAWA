@@ -9,7 +9,7 @@ for (const width of [320, 375, 768, 1024, 1440]) {
   test(`homepage and member feeds use linked covers and logo fallback at ${width}px`, async ({ page, request }) => {
     await request.post(`${fixture}/__smoke__/mode`, { data: { mode: "news-many" } });
     await page.setViewportSize({ width, height: 800 });
-    await page.route("https://images.example.com/test-cover.jpg", route => route.fulfill({ path: "frontend/apps/main/public/brand-logo.png", contentType: "image/png" }));
+    await page.route("https://images.example.com/test-cover.jpg", route => route.fulfill({ path: "frontend/apps/main/public/brand-logo.webp", contentType: "image/png" }));
     await page.goto("/");
     const firstHome = page.locator(".home-story-card").first().locator("img");
     await expect(firstHome).toHaveAttribute("src", "https://images.example.com/test-cover.jpg");
@@ -33,5 +33,5 @@ test("a broken linked image is replaced with the site logo", async ({ page, requ
   const image = page.getByRole("link", { name: "Read: Test story 1", exact: true }).locator("img");
   await image.scrollIntoViewIfNeeded();
   await expect(image).toHaveAttribute("data-news-fallback", "true");
-  await expect(image).toHaveAttribute("src", "/brand-logo.png");
+  await expect(image).toHaveAttribute("src", "/brand-logo.webp");
 });

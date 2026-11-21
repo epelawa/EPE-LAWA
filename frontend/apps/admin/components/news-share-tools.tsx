@@ -24,7 +24,7 @@ export default function NewsShareTools({ title, summary, url, imageUrl }: { titl
     if (navigator.share) {
       try {
         if (navigator.canShare?.({ files: [new File(["x"], "cover.png", { type: "image/png" })] })) {
-          const cover = await buildShareCover(imageUrl || new URL("/brand-logo.png", url).toString());
+          const cover = await buildShareCover(imageUrl || new URL("/brand-logo.webp", url).toString());
           if (cover && navigator.canShare({ files: [cover] })) {
             await navigator.share({ title, text, files: [cover] });
             setMessage("Cover image and caption sent to the share sheet.");
