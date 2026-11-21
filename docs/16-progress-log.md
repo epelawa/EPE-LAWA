@@ -562,3 +562,13 @@ The latest owner attachment was reconciled against PR #154 evidence and added to
 **Homepage phrases (comp 15):** "worth knowing/keeping/finding/connecting" strings are confirmed absent from source.
 
 **Validation so far:** `pnpm typecheck` 5/5; `pnpm test:node` 360 pass / 0 fail / 1 skip; `pnpm vitest run` 44 files / 128 pass; schema replay 28 pass (includes both new migrations).
+
+## 2026-11-21 (later) — Hotfix: CI build failure on main after #232 (branch `vibe/ci-use-server-fix-d73e38`)
+
+**Found:** the merge deployment's `CI / verify` failed with "Only async functions are allowed to be exported in a `use server` file" — the finish-sweep's `site-pages/actions.ts` carried a redundant `export const dynamic = "force-dynamic"` inside a `"use server"` module (the page already declares it). The main app build imports the mirrored admin page tree, so `frontend/apps/main` failed to compile on main.
+
+**Done:** removed the illegal route-segment export from `site-pages/actions.ts`. No behavior change — the page-level declaration remains, server actions unchanged, database untouched.
+
+**Validation:** `frontend/apps/main` build compiles and generates all pages; `frontend/apps/admin` build 1/1 pages; `pnpm typecheck` 5/5; `pnpm test:node` 360 pass / 0 fail / 1 skip; `pnpm vitest run` 44 files / 128 tests. `CI / verify`, `Browser smoke` and `CodeQL` are expected green again on the PR head.
+
+**Supabase incident note (same day):** the "compute too high" warning was traced with live metrics to a client-side replay storm — thousands of stale-revision `maintenance_set` / `article_revise` rejections at ~60/min plus silent transaction-abort bursts (~273/s) — all guarded safely (no data changed). Migration `20261121233000_forum_reactions_reader_presence.sql` was applied successfully by the owner and verified present. Statement counters were reset 2026-11-21 14:47 UTC; the project was restarted by the owner; post-restart differentials show normal traffic (0 rollbacks over 37s). No compute upgrade is needed.
