@@ -106,6 +106,7 @@ export default async function ItanIluMiPage({ searchParams }: { searchParams: Pr
       <Notice tone="warning"><strong>Images and video are not currently accepted.</strong> Secure private media storage and staff-controlled publication are unavailable until a storage provider is configured. Do not submit media URLs or upload private files.</Notice>
       {contributionState === "sent" ? <Notice tone="success" role="status">Your account was received privately for review. Submission does not mean it has been approved or published.</Notice> : null}
       {contributionState === "invalid" ? <Notice tone="danger" role="alert">Please check required fields, category, HTTPS source link, rights information and consent.</Notice> : null}
+      {contributionState === "limited" ? <Notice tone="warning" role="alert">Too many submissions from this network this hour. Please wait a while and try again.</Notice> : null}
       {contributionState === "error" ? <Notice tone="danger" role="alert">The private submission could not be saved. Confirm your member profile is active and try again later.</Notice> : null}
       <Panel>
         {signedIn ? <form action={submitHistoryContribution} className="ui-stack">

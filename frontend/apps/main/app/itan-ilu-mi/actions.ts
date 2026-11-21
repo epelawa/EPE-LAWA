@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "../../lib/supabase";
+import { formRateAllowance, formRateLimitedMessage } from "../../lib/form-server";
 
 const CONSENT_VERSION = "history-intake-v2";
 const CONSENT_TEXT = "I confirm this account is submitted for community-history review, that I identified its source and rights basis to the best of my knowledge, and that I consent to staff review and possible publication only after verification. I understand submission does not guarantee publication and may request correction or removal.";
@@ -13,6 +14,7 @@ function field(formData: FormData, key: string, max: number): string {
 }
 
 export async function submitHistoryContribution(formData: FormData) {
+  if (!(await formRateAllowance("history_submit"))) redirect(`/itan-ilu-mi?contribution=limited`);
   const title = field(formData, "title", 180);
   const account = field(formData, "account", 20000);
   const sourceDescription = field(formData, "source_description", 2000);

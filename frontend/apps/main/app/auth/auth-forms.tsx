@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState, type FormEvent } from "react";
+import { useActionState, useEffect, useRef, useState, type ClipboardEvent, type FormEvent, type KeyboardEvent } from "react";
 import Link from "next/link";
 import { requestPasswordReset, signIn, signUp, updatePassword, verifyEmailOtp, verifyHandleBeforeContinue, type AuthState } from "./actions";
 
@@ -162,6 +162,125 @@ function GoogleSignInUnavailable() {
   );
 }
 
+const OTP_DIGITS = 6;
+
+function OtpCard({ defaultEmail, message }: { defaultEmail: string; message: string }) {
+  const [state, action, pending] = useActionState(verifyEmailOtp, initial);
+  const formRef = useRef<HTMLFormElement>(null);
+  const lastSubmitted = useRef("");
+  const pillRefs = useRef<Array<HTMLInputElement | null>>([]);
+  const [digits, setDigits] = useState<string[]>(() => Array(OTP_DIGITS).fill(""));
+  const [shake, setShake] = useState(false);
+  const [seconds, setSeconds] = useState(45);
+
+  useEffect(() => {
+    if (seconds <= 0) return;
+    const timer = setInterval(() => setSeconds((current) => (current > 0 ? current - 1 : 0)), 1000);
+    return () => clearInterval(timer);
+  }, [seconds > 0]);
+
+  useEffect(() => {
+    if (state.status !== "error") return;
+    setShake(true);
+    const timer = setTimeout(() => setShake(false), 700);
+    return () => clearTimeout(timer);
+  }, [state]);
+
+  const token = digits.join("");
+  const maybeAutoVerify = (next: string[]) => {
+    if (pending) return;
+    const value = next.join("");
+    if (value.length < OTP_DIGITS || !/^\d+$/.test(value)) return;
+    if (lastSubmitted.current === value) return;
+    lastSubmitted.current = value;
+    formRef.current?.requestSubmit();
+  };
+
+  const setDigit = (index: number, raw: string) => {
+    const clean = raw.replace(/[^0-9]/g, "");
+    if (!clean) return;
+    setDigits((current) => {
+      const next = [...current];
+      next[index] = clean[clean.length - 1];
+      const focusTarget = index < OTP_DIGITS - 1 ? index + 1 : index;
+      queueMicrotask(() => pillRefs.current[focusTarget]?.focus());
+      if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") navigator.vibrate(8);
+      maybeAutoVerify(next);
+      return next;
+    });
+  };
+
+  const onPillKeyDown = (index: number) => (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key !== "Backspace") return;
+    event.preventDefault();
+    setDigits((current) => {
+      const next = [...current];
+      if (next[index]) next[index] = "";
+      else if (index > 0) { next[index - 1] = ""; queueMicrotask(() => pillRefs.current[index - 1]?.focus()); }
+      return next;
+    });
+  };
+
+  const onPillPaste = (event: ClipboardEvent<HTMLInputElement>) => {
+    event.preventDefault();
+    const clean = event.clipboardData.getData("text").replace(/[^0-9]/g, "").slice(0, OTP_DIGITS);
+    if (!clean) return;
+    const next = Array(OTP_DIGITS).fill("");
+    clean.split("").forEach((digit, offset) => { next[offset] = digit; });
+    setDigits(next);
+    queueMicrotask(() => pillRefs.current[Math.min(clean.length, OTP_DIGITS - 1)]?.focus());
+    maybeAutoVerify(next);
+  };
+
+  return (
+    <section className={shake ? "auth-otp auth-otp--shake" : "auth-otp"} aria-labelledby="auth-otp-title">
+      <p className="auth-confirmation__progress">Next step · One-time code</p>
+      <h2 id="auth-otp-title">Check your inbox</h2>
+      <p className="auth-otp__intro auth-otp__pulse" role="status" aria-live="polite">{message}</p>
+      <form ref={formRef} action={action} className="auth-form" aria-busy={pending}>
+        <div className="auth-field">
+          <label htmlFor="verify-email">Email address</label>
+          <input id="verify-email" name="email" type="email" autoComplete="email" maxLength={254} required defaultValue={defaultEmail} />
+        </div>
+        <input type="hidden" name="token" value={token} autoComplete="one-time-code" />
+        <div className="auth-field">
+          <label htmlFor="signup-otp-0">Verification code</label>
+          <div className="auth-otp__pills" role="group" aria-describedby="signup-otp-help">
+            {Array.from({ length: OTP_DIGITS }, (_, index) => (
+              <input
+                key={index}
+                id={`signup-otp-${index}`}
+                ref={(node) => { pillRefs.current[index] = node; }}
+                className={digits[index] ? "auth-otp__pill auth-otp__pill--filled" : "auth-otp__pill"}
+                inputMode="numeric"
+                autoComplete={index === 0 ? "one-time-code" : "off"}
+                maxLength={1}
+                pattern="[0-9]"
+                value={digits[index]}
+                required={index === 0}
+                autoFocus={index === 0}
+                disabled={pending}
+                aria-label={`Digit ${index + 1} of ${OTP_DIGITS}`}
+                onChange={(event) => setDigit(index, event.currentTarget.value)}
+                onKeyDown={onPillKeyDown(index)}
+                onPaste={onPillPaste}
+                onFocus={(event) => event.currentTarget.select()}
+              />
+            ))}
+          </div>
+          <small id="signup-otp-help">Enter the code from your EPE LAWA verification email. It verifies itself when the last digit lands.</small>
+        </div>
+        <Feedback state={state} />
+        <div className="auth-step-actions">
+          <button className={pending ? "auth-submit auth-otp__verify--pending" : "auth-submit"} type="submit" name="intent" value="verify" disabled={pending}>{pending ? "Verifying" : "Verify and continue"}</button>
+          <button className="btn-secondary" type="submit" name="intent" value="resend" formNoValidate disabled={pending} onClick={() => setSeconds(45)}>{seconds > 0 ? `Resend in ${seconds}s` : "Resend code"}</button>
+        </div>
+      </form>
+      <p className="auth-footnote">Your verification email includes a one-time code and a secure link — either one activates your account. <Link href="/auth/verify">Moved page?</Link></p>
+    </section>
+  );
+}
+
 export function SignUpForm() {
   const [state, action, pending] = useActionState(signUp, initial);
   const [handleMessage, setHandleMessage] = useState("");
@@ -182,12 +301,7 @@ export function SignUpForm() {
     } finally { setCheckingHandle(false); }
   });
   if (state.status === "notice") {
-    return (
-      <>
-        <ConfirmationPanel title="Account request received" message={state.message} progress="Next step · Email verification" />
-        <p className="auth-footnote">Your verification email includes a one-time code and a secure link. <Link href="/auth/verify">Enter the code here</Link>, or open the link to continue.</p>
-      </>
-    );
+    return <OtpCard defaultEmail={state.values?.email ?? ""} message={state.message} />;
   }
 
   return (
@@ -234,6 +348,9 @@ export function SignUpForm() {
 
 export function SignInForm() {
   const [state, action, pending] = useActionState(signIn, initial);
+  if (state.status === "notice") {
+    return <OtpCard defaultEmail={state.values?.email ?? ""} message={state.message} />;
+  }
   return (
     <form action={action} className="auth-form" aria-busy={pending} draggable={false} onDragStart={(event) => event.preventDefault()}>
       <GoogleSignInUnavailable />
@@ -290,23 +407,5 @@ export function NewPasswordForm() {
 }
 
 export function VerificationForm() {
-  const [state, action, pending] = useActionState(verifyEmailOtp, initial);
-  return (
-    <form action={action} className="auth-form" aria-busy={pending}>
-      <div className="auth-field">
-        <label htmlFor="verify-email">Email address</label>
-        <input id="verify-email" name="email" type="email" autoComplete="email" maxLength={254} required />
-      </div>
-      <div className="auth-field">
-        <label htmlFor="verify-token">Verification code</label>
-        <input id="verify-token" name="token" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6,8}" maxLength={8} required aria-describedby="verify-token-help" />
-        <small id="verify-token-help">Enter the code from your EPE LAWA verification email.</small>
-      </div>
-      <Feedback state={state} />
-      <div className="auth-step-actions">
-        <button className="auth-submit" type="submit" name="intent" value="verify" disabled={pending}>{pending ? "Working…" : "Verify email"}</button>
-        <button className="btn-secondary" type="submit" name="intent" value="resend" formNoValidate disabled={pending}>Resend verification email</button>
-      </div>
-    </form>
-  );
+  return <OtpCard defaultEmail="" message="Enter the one-time code we sent to your email to activate your member sign-in." />;
 }

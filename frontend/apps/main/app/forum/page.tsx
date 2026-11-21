@@ -23,6 +23,7 @@ export default async function ForumPage({ searchParams }: { searchParams: Promis
     "The thread was created but its page could not be opened.",
     "Write a reply of up to 20,000 characters.",
     "Your reply could not be posted. The thread may be locked or your membership may be inactive.",
+    "Too many attempts from this network this hour. Please wait a while and try again.",
   ]);
   const actionError = safeErrors.has(requestedError) ? requestedError : null;
   let categories: Category[] = [];
