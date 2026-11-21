@@ -22,3 +22,17 @@ test('newsroom delete removes the whole story through the capability-guarded RPC
   assert.match(editor, /Pause breaking news/);
   assert.match(editor, /Show as breaking news/);
 });
+
+test('delete failures explain themselves in plain words', async () => {
+  const page = await readFile(new URL('../apps/admin/app/(protected)/newsroom/[id]/page.tsx', import.meta.url), 'utf8');
+  assert.match(page, /query\.error === "delete_confirmation"/);
+  assert.match(page, /Tick the confirm box, then press Yes, delete forever\./);
+  assert.match(page, /query\.error === "delete"/);
+  assert.match(page, /The story could not be deleted\. Check your article access, reload and try again\./);
+});
+const migration = await read('backend/supabase/migrations/20261121214500_newsroom_delete_version_guard.sql');
+test('the version guard lets only the sanctioned delete action through', async () => {
+  assert.match(migration, /current_setting\('app\.newsroom_article_delete', true\) = 'on'/);
+  assert.match(migration, /perform set_config\('app\.newsroom_article_delete', 'on', true\);/);
+  assert.match(migration, /guard_article_version/);
+});
