@@ -4,8 +4,7 @@
   "tasks": {
     "build": {
       "inputs": [
-        "$TURBO_DEFAULT$",
-        "$TURBO_ROOT$/frontend/apps/main/lib/news-covers.ts"
+        "$TURBO_DEFAULT$"
       ]
     }
   }

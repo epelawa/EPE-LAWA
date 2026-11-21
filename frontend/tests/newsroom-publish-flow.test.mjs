@@ -61,7 +61,7 @@ test("drafts stay private and the public list and article resolve only published
 test("public News selects only columns verified on published_articles", () => {
   const verifiedColumns = new Set([
     "id", "slug", "published_at", "is_breaking", "breaking_until", "title", "summary", "body",
-    "seo_title", "seo_description", "og_image_key", "cover_url", "cover_alt", "cover_credit", "cover_caption",
+    "seo_title", "seo_description", "cover_url", "cover_alt", "cover_credit", "cover_caption",
     "author_name", "author_slug", "category_slug", "category_label",
   ]);
   const selections = [...listing.matchAll(/\.from\("published_articles"\)\s*\.select\("([^"]+)"\)/g),

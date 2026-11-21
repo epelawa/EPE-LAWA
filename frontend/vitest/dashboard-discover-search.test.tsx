@@ -2,7 +2,7 @@ import {expect,it,vi} from 'vitest';
 import {renderToStaticMarkup} from 'react-dom/server';
 vi.mock('next/link',()=>({default:({children,href}:{children:React.ReactNode;href:string})=><a href={href}>{children}</a>}));
 import {DashboardDiscoverNews} from '../apps/main/app/dashboard/news-content';
-const story={id:'1',slug:'report',title:'Report',summary:'A unique summary',published_at:'2026-01-01T00:00:00Z',is_breaking:false,breaking_until:null,author_name:'Reporter',category_slug:'local',category_label:'Local',og_image_key:null,cover_url:null,cover_alt:null};
+const story={id:'1',slug:'report',title:'Report',summary:'A unique summary',published_at:'2026-01-01T00:00:00Z',is_breaking:false,breaking_until:null,author_name:'Reporter',category_slug:'local',category_label:'Local',cover_url:null,cover_alt:null};
 function fixture(failed=false){
  const rpc=vi.fn(()=>chain(failed?{data:null,error:{code:'failure'}}:{data:[story],error:null}));
  function chain(result:unknown){const obj:Record<string,unknown>={};for(const method of ['select','order','eq','limit','range','in'])obj[method]=()=>obj;obj.then=(resolve:(value:unknown)=>void)=>resolve(result);return obj;}

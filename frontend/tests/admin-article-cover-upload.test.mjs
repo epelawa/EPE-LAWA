@@ -21,7 +21,7 @@ test('Server actions store uploaded covers in R2 and register them in the media 
 
 test('Only one cover source is accepted and every path handles uploads', async () => {
   const source = await readFile(actions, 'utf8');
-  assert.match(source, /Choose only one cover source: an approved cover, a link or an upload\./);
+  assert.match(source, /Choose only one cover source: a link or an upload, not both\./);
   assert.match(source, /invalidCover[\s\S]*?coverUploadFile/);
   for (const rpc of ['article_create_with_cover', 'article_draft_update_with_cover', 'article_revise_with_cover']) {
     assert.match(source, new RegExp(rpc));
@@ -37,7 +37,7 @@ test('Cover fields offer device upload only when R2 is configured and keep hones
   assert.match(source, /uploadAvailable = false/);
   assert.match(source, /An EPE LAWA image-storage bucket is not configured, so direct uploads are unavailable/);
   assert.match(source, /URL\.revokeObjectURL/);
-  assert.match(source, /Choose one cover source/);
+  assert.doesNotMatch(source, /approved cover|ogImageKey/);
 });
 
 test('Newsroom pages pass the live upload availability into the composer', async () => {

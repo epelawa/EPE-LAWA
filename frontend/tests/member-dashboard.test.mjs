@@ -57,10 +57,10 @@ test("sign-in leads straight to the dashboard while the public drawer stays acco
 });
 
 test("member Home and Discover use published story data and distinguish loading, empty, and error states", () => {
-  const columns = new Set(["slug", "title", "summary", "published_at", "is_breaking", "breaking_until", "author_name", "category_slug", "category_label", "og_image_key"]);
+  const columns = new Set(["slug", "title", "summary", "published_at", "is_breaking", "breaking_until", "author_name", "category_slug", "category_label"]);
   const selections = [...newsContent.matchAll(/\.from\("published_articles"\)\.select\(STORY_COLUMNS\)/g)];
   assert.ok(selections.length >= 3, "Home and Discover read the published articles view");
-  for (const column of "slug,title,summary,published_at,is_breaking,breaking_until,author_name,category_slug,category_label,og_image_key".split(",")) assert.ok(columns.has(column));
+  for (const column of "slug,title,summary,published_at,is_breaking,breaking_until,author_name,category_slug,category_label".split(",")) assert.ok(columns.has(column));
   assert.match(newsContent, /\.eq\("is_breaking", true\)\.gt\("breaking_until", now\)/);
   assert.match(newsContent, /rpc\("search_published_news"/);
   assert.match(newsContent, /p_offset: start/);

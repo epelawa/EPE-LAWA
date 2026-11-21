@@ -3,7 +3,7 @@
 import { useEffect, useState, type RefObject } from "react";
 
 // An opt-in, tab-local convenience, not a server draft or a security boundary.
-const FIELDS = ["title", "summary", "body", "categoryId", "authorId", "ogImageKey", "coverUrl", "coverAlt", "coverCredit", "coverSourceUrl", "coverLicenseUrl", "coverCaption", "seoTitle", "seoDescription"] as const;
+const FIELDS = ["title", "summary", "body", "categoryId", "authorId", "coverUrl", "coverAlt", "coverCredit", "coverSourceUrl", "coverLicenseUrl", "coverCaption", "seoTitle", "seoDescription"] as const;
 const MAX_AGE = 24 * 60 * 60 * 1000;
 type Snapshot = { version: 1; savedAt: number; revision: string; fields: Record<string, string> };
 export function recoveryKey(actor: string, article: string) { return `epelawa:news-recovery:v1:${actor}:${article}`; }

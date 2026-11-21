@@ -72,10 +72,6 @@ test("article hero cover eagerly loads, never lazily, and uses full-container co
   );
   assert.match(
     styles,
-    /\.articleHeroImage\.approvedCoverFull \{[^}]*object-fit:cover/,
-  );
-  assert.match(
-    styles,
     /\.relatedImage,\.relatedImageFallback \{[^}]*object-fit:cover/,
   );
 });

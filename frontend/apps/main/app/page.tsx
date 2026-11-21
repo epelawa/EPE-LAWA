@@ -72,7 +72,7 @@ export default async function Home() {
                       <Link className="home-story-cover-link" href={storyHref} aria-label={`Read story: ${story.title}`}>
                         <NewsImage className="home-story-image" src={story.cover?.src} alt={story.cover?.alt ?? "EPE LAWA logo"} loading="lazy" />
                       </Link>
-                      {story.cover?.illustrative ? <figcaption><span className="home-story-cover-caption">Illustrative image. <Link href="/photo-credits#news-photos">Photo credits</Link></span></figcaption> : null}
+                      {null}
                     </figure>
                     <div className="home-story-copy">
                       <span className="home-story-meta">{story.category ?? "News"} {story.breakingUntil ? <BreakingBadge until={story.breakingUntil} initialTime={renderedAt} /> : null}{story.publishedAt ? <> <span aria-hidden="true">·</span> <time dateTime={story.publishedAt}>{formatPublishedDate(story.publishedAt)}</time></> : null}</span>

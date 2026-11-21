@@ -66,19 +66,17 @@ test('every admin page has actual rebuilt markup and complete workflow navigatio
   assert.match(read('frontend/apps/admin/components/site-header.tsx'),/aria-modal="true"/);
 });
 
-test('homepage story cards use published covers and preserve illustrative credits',()=>{
+test('homepage story cards use published covers',()=>{
   const data=read('frontend/apps/main/lib/home-data.ts');
   const home=read('frontend/apps/main/app/page.tsx');
   const newsImage=read('frontend/apps/main/components/news-image.tsx');
   const styles=read('frontend/apps/main/app/hero-logo.css');
-  assert.match(data,/author_name,og_image_key/);
+  assert.match(data,/author_name/);
   assert.match(data,/cover_url,cover_alt/);
   assert.match(data,/publishedNewsCover\(row\)/);
-  assert.match(home,/story\.cover\?\.illustrative/);
   assert.match(home,/story\.authorName/);
   assert.match(home,/story\.cover\?\.alt \?\? "EPE LAWA logo"/);
   assert.match(newsImage,/data-news-fallback=\{fallback \? "true" : undefined\}/);
-  assert.match(home,/photo-credits#news-photos/);
   assert.match(read("frontend/apps/main/app/photo-credits/page.tsx"),/image\.license/);
   assert.match(home,/index === 0 \? "home-story-item home-story-item--lead"/);
   assert.match(home,/home-story-item--support/);

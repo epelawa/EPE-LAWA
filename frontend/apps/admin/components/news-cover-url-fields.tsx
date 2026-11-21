@@ -41,18 +41,16 @@ export default function NewsCoverUrlFields({ idPrefix, initial = {}, uploadAvail
     const root = fieldset.current;
     const form = root?.form;
     if (!root || !form) return;
-    const approved = form.elements.namedItem("ogImageKey");
     const cover = root.querySelector<HTMLInputElement>('[name="coverUrl"]');
     const source = root.querySelector<HTMLInputElement>('[name="coverSourceUrl"]');
     const license = root.querySelector<HTMLInputElement>('[name="coverLicenseUrl"]');
-    if (!(approved instanceof HTMLSelectElement) || !cover || !source || !license) return;
+    if (!cover || !source || !license) return;
     function validate() {
       const linked = cover!.value.trim();
       const upload = form!.elements.namedItem("coverUpload");
       const picked = upload instanceof HTMLInputElement && upload.files && upload.files.length > 0;
       cover!.setCustomValidity(
-        linked && approved instanceof HTMLSelectElement && approved.value ? "Choose one cover source: clear this URL or the approved cover."
-        : linked && picked ? "Choose only one cover source: an approved cover, a link or an upload."
+        linked && picked ? "Choose only one cover source: a link or an upload."
         : linked && !normalizeExternalNewsCoverUrl(linked) ? "Use a public HTTPS image URL without credentials or a private host."
         : "");
       for (const field of [source!, license!]) {
@@ -62,8 +60,6 @@ export default function NewsCoverUrlFields({ idPrefix, initial = {}, uploadAvail
           : (linked || picked) && !value ? "An uploaded or linked cover needs its source page."
           : "");
       }
-      if (picked && linked) cover!.setCustomValidity("Choose only one cover source: an approved cover, a link or an upload.");
-      if (picked && approved instanceof HTMLSelectElement && approved.value) cover!.setCustomValidity("Choose one cover source: clear the approved cover before uploading.");
     }
     form.addEventListener("input", validate);
     form.addEventListener("change", validate);
@@ -99,14 +95,14 @@ export default function NewsCoverUrlFields({ idPrefix, initial = {}, uploadAvail
                 setPreviewFailed(false);
               }}
             />
-            <span id={labelId("upload-help")} className="ui-meta">JPEG, PNG, WebP or AVIF, up to 26 MB. The upload happens through the EPE LAWA server; approved covers are served from the image-storage domain.</span>
+            <span id={labelId("upload-help")} className="ui-meta">JPEG, PNG, WebP or AVIF, up to 26 MB. The upload happens through the EPE LAWA server; covers are served from the image-storage domain.</span>
           </div>
           {uploadPreview && !previewFailed ? <img className={styles.preview} src={uploadPreview} alt="" loading="eager" decoding="async" onLoad={() => setPreviewFailed(false)} onError={() => setPreviewFailed(true)} /> : null}
           {uploadPreview && previewFailed ? <p className="ui-meta" role="status">The uploaded image preview could not load. Try a different image file.</p> : null}
           {uploadName ? <p className="ui-meta" role="status">Selected file: {uploadName}. Clear the file input to switch back to a linked image.</p> : null}
         </>
       ) : (
-        <p className="ui-meta">An EPE LAWA image-storage bucket is not configured, so direct uploads are unavailable. Paste a publicly accessible HTTPS image link; provide its alt text, credit, source and license. Choose either this link or an approved cover above; clear this URL before switching. The browser requests the image directly, so its host can see visitors’ IP addresses; page referrers are not sent. Use only a trusted public image host: obvious private/local hosts are rejected, but a domain’s DNS can change later.</p>
+        <p className="ui-meta">An EPE LAWA image-storage bucket is not configured, so direct uploads are unavailable. Paste a publicly accessible HTTPS image link; provide its alt text, credit, source and license. The browser requests the image directly, so its host can see visitors’ IP addresses; page referrers are not sent. Use only a trusted public image host: obvious private/local hosts are rejected, but a domain’s DNS can change later.</p>
       )}
       <div className="ui-field">
         <label className="label" htmlFor={labelId("url")}>{uploadAvailable ? "Or link a cover image URL" : "Cover image URL"}</label>

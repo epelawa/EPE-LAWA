@@ -206,7 +206,7 @@ async function newPublishedArticle(title) {
   const authorId = (await rows("select id from public.authors where slug = 'test-byline'"))[0].id;
 
   const id = await as(U.editor, async () => (await rows(
-    `select public.article_create($1, 's', '{"type":"doc"}'::jsonb, $2, $3, null, null, null) as id`,
+    `select public.article_create($1, 's', '{"type":"doc"}'::jsonb, $2, $3, null, null) as id`,
     [title, authorId, categoryId],
   ))[0].id);
 
@@ -422,7 +422,7 @@ test('a draft article is invisible to anon and to other journalists, but visible
   const articleId = await as(U.editor, async () => {
     const result = await rows(
       `select public.article_create(
-         'A draft that must stay private', 's', '{"type":"doc"}'::jsonb, $1, $2, null, null, null
+         'A draft that must stay private', 's', '{"type":"doc"}'::jsonb, $1, $2, null, null
        ) as id`,
       [authorId, categoryId],
     );
@@ -470,7 +470,7 @@ test('a verified publisher can publish a private draft directly and corrections 
   const authorId = (await rows("select id from public.authors where slug = 'test-byline'"))[0].id;
   const firstBody = { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Private test-only article body.' }] }] };
   const articleId = await as(U.editor, async () => (await rows(
-    'select public.article_create($1, null, $2::jsonb, $3, $4, null, null, null) as id',
+    'select public.article_create($1, null, $2::jsonb, $3, $4, null, null) as id',
     ['Private direct-publish regression', JSON.stringify(firstBody), authorId, categoryId],
   ))[0].id);
 
@@ -498,7 +498,7 @@ test('a verified publisher can publish a private draft directly and corrections 
   const correctionBody = { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Private corrected test-only body.' }] }] };
   const revisionBeforeCorrection = await currentRevision();
   await as(U.editor, () => db.query(
-    'select public.article_revise($1, $2, $3, null, $4::jsonb, $5, $6, null, null, null)',
+    'select public.article_revise($1, $2, $3, null, $4::jsonb, $5, $6, null, null)',
     [articleId, revisionBeforeCorrection, 'Private correction draft', JSON.stringify(correctionBody), authorId, categoryId],
   ));
   assert.equal((await as(null, () => rows('select title from public.published_articles where id = $1', [articleId])))[0].title,
@@ -528,18 +528,18 @@ test('a private draft update saves submitted values, uses revision CAS, and reop
   const categoryId = (await rows("select id from public.categories where slug = 'politics'"))[0].id;
   const authorId = (await rows("select id from public.authors where slug = 'test-byline'"))[0].id;
   const articleId = await as(U.editor, async () => (await rows(
-    `select public.article_create($1, null, '{"type":"doc","content":[]}'::jsonb, $2, $3, null, null, null) as id`,
+    `select public.article_create($1, null, '{"type":"doc","content":[]}'::jsonb, $2, $3, null, null) as id`,
     ['Private draft before update', authorId, categoryId],
   ))[0].id);
 
   const denied = await asFails(U.journalist2, `select public.article_draft_update(
     '${articleId}', 1, 'Not my draft', null, '{"type":"doc"}'::jsonb,
-    '${authorId}', '${categoryId}', null, null, null
+    '${authorId}', '${categoryId}', null, null
   )`);
   assert.match(denied ?? '', /not_article_owner/, 'another writer cannot edit a private draft');
 
   const updatedRevision = await as(U.editor, async () => (await rows(
-    `select public.article_draft_update($1, 1, $2, $3, $4::jsonb, $5, $6, null, null, null) as revision`,
+    `select public.article_draft_update($1, 1, $2, $3, $4::jsonb, $5, $6, null, null) as revision`,
     [articleId, 'Private draft after update', 'A saved summary', JSON.stringify({ type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Saved private body' }] }] }), authorId, categoryId],
   ))[0].revision);
   assert.equal(updatedRevision, 2, 'saving updates the revision atomically');
@@ -557,7 +557,7 @@ test('a private draft update saves submitted values, uses revision CAS, and reop
 
   const stale = await asFails(U.editor, `select public.article_draft_update(
     '${articleId}', 1, 'Stale overwrite', null, '{"type":"doc"}'::jsonb,
-    '${authorId}', '${categoryId}', null, null, null
+    '${authorId}', '${categoryId}', null, null
   )`);
   assert.match(stale ?? '', /revision_conflict/, 'a stale editor cannot overwrite a newer save');
 
@@ -571,7 +571,7 @@ test('a private draft update saves submitted values, uses revision CAS, and reop
     'submission remains private until the separate review and publish transitions');
 
   const reopenedRevision = await as(U.editor, async () => (await rows(
-    `select public.article_draft_update($1, 3, $2, null, '{"type":"doc"}'::jsonb, $3, $4, null, null, null) as revision`,
+    `select public.article_draft_update($1, 3, $2, null, '{"type":"doc"}'::jsonb, $3, $4, null, null) as revision`,
     [articleId, 'Reopened private draft', authorId, categoryId],
   ))[0].revision);
   assert.equal(reopenedRevision, 4, 'editing an unapproved submission advances the revision');
@@ -586,21 +586,21 @@ test('a private draft update saves submitted values, uses revision CAS, and reop
   assert.ok(audit.some((event) => event.action === 'article.draft_update'), 'draft updates are recorded in the audit ledger');
 });
 
-test('external News covers are safe, attributed, published by version, and switch atomically with catalog covers', async () => {
+test('external News covers are safe, attributed, published by version, and can be cleared and replaced atomically', async () => {
   const categoryId = (await rows("select id from public.categories where slug = 'politics'"))[0].id;
   const authorId = (await rows("select id from public.authors where slug = 'test-byline'"))[0].id;
   const body = JSON.stringify({ type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Cover workflow body remains unchanged.' }] }] });
   const sourceUrl = 'https://commons.wikimedia.org/wiki/File:Test_cover.jpg';
   const licenseUrl = 'https://creativecommons.org/licenses/by/4.0/';
   const createWithCover = async (title, url) => as(U.editor, async () => (await rows(
-    `select public.article_create_with_cover($1, null, $2::jsonb, $3, $4, null, null, null,
+    `select public.article_create_with_cover($1, null, $2::jsonb, $3, $4, null, null,
       $5, 'A description of the cover image', 'Example photographer', $6, $7, 'News cover') as id`,
     [title, body, authorId, categoryId, url, sourceUrl, licenseUrl],
   ))[0].id);
 
   const invalid = await asFails(U.editor, `select public.article_create_with_cover(
     'Rejected external cover', null, '{"type":"doc"}'::jsonb, '${authorId}', '${categoryId}',
-    null, null, null, 'http://images.unsplash.com/cover.jpg', 'Alt text', 'Photographer',
+    null, null, 'http://images.unsplash.com/cover.jpg', 'Alt text', 'Photographer',
     '${sourceUrl}', '${licenseUrl}', null
   )`);
   assert.match(invalid ?? '', /invalid_news_cover_metadata/, 'insecure image links must fail before article creation');
@@ -639,7 +639,7 @@ test('external News covers are safe, attributed, published by version, and switc
   const beforeCorrection = (await rows('select revision from public.articles where id = $1', [articleId]))[0].revision;
   await as(U.editor, () => db.query(
     `select public.article_revise_with_cover($1, $2, 'Private cover correction', null, $3::jsonb, $4, $5,
-       null, null, null, $6, 'Updated alt text', 'Second photographer', $7, $8, 'Updated credit')`,
+       null, null, $6, 'Updated alt text', 'Second photographer', $7, $8, 'Updated credit')`,
     [articleId, beforeCorrection, body, authorId, categoryId, 'https://images.unsplash.com/photo-9876543210?auto=format', sourceUrl, licenseUrl],
   ));
   assert.equal((await as(null, () => rows('select cover_url from public.published_articles where id = $1', [articleId])))[0].cover_url,
@@ -658,25 +658,25 @@ test('external News covers are safe, attributed, published by version, and switc
     'https://images.unsplash.com/photo-9876543210?auto=format');
 
   const draftId = await createWithCover('Draft cover switching', 'https://images.unsplash.com/photo-1122334455?auto=format');
-  const catalogRevision = (await as(U.editor, () => rows(
-    `select public.article_draft_update_with_cover($1, 1, 'Switch to catalog cover', null, $2::jsonb,
-      $3, $4, null, null, $5, null, null, null, null, null, null) as revision`,
-    [draftId, body, authorId, categoryId, 'epe_welcome_demobebz'],
+  const clearedRevision = (await as(U.editor, () => rows(
+    `select public.article_draft_update_with_cover($1, 1, 'Clear the cover', null, $2::jsonb,
+      $3, $4, null, null, null, null, null, null, null, null) as revision`,
+    [draftId, body, authorId, categoryId],
   )))[0].revision;
-  assert.equal(catalogRevision, 2);
+  assert.equal(clearedRevision, 2);
   assert.deepEqual((await rows(
-    'select og_image_key, cover_url, cover_alt, cover_credit from public.article_versions where article_id = $1 and state = $2',
+    'select cover_url, cover_alt, cover_credit from public.article_versions where article_id = $1 and state = $2',
     [draftId, 'draft'],
-  ))[0], { og_image_key: 'epe_welcome_demobebz', cover_url: null, cover_alt: null, cover_credit: null },
-  'switching from a URL to a catalog cover clears remote metadata in the same version update');
+  ))[0], { cover_url: null, cover_alt: null, cover_credit: null },
+  'clearing the cover wipes the linked image and its metadata in the same version update');
   const remoteRevision = (await as(U.editor, () => rows(
     `select public.article_draft_update_with_cover($1, $2, 'Switch back to URL cover', null, $3::jsonb,
-      $4, $5, null, null, null, $6, 'Alt text', 'Photographer', $7, $8, null) as revision`,
-    [draftId, catalogRevision, body, authorId, categoryId, 'https://images.unsplash.com/photo-5566778899?auto=format', sourceUrl, licenseUrl],
+      $4, $5, null, null, $6, 'Alt text', 'Photographer', $7, $8, null) as revision`,
+    [draftId, clearedRevision, body, authorId, categoryId, 'https://images.unsplash.com/photo-5566778899?auto=format', sourceUrl, licenseUrl],
   )))[0].revision;
   assert.equal(remoteRevision, 3);
   assert.equal((await rows(
-    'select og_image_key, cover_url from public.article_versions where article_id = $1 and state = $2',
+    'select cover_url from public.article_versions where article_id = $1 and state = $2',
     [draftId, 'draft'],
   ))[0].cover_url, 'https://images.unsplash.com/photo-5566778899?auto=format');
 
@@ -832,7 +832,7 @@ test('a comment cannot be posted on an unpublished article', async () => {
   const authorId = (await rows("select id from public.authors where slug = 'test-byline'"))[0].id;
 
   const draftId = await as(U.editor, async () => (await rows(
-    `select public.article_create('Draft for comment block', 's', '{"type":"doc"}'::jsonb, $1, $2, null, null, null) as id`,
+    `select public.article_create('Draft for comment block', 's', '{"type":"doc"}'::jsonb, $1, $2, null, null) as id`,
     [authorId, categoryId],
   ))[0].id);
 
@@ -1033,14 +1033,14 @@ test('newsroom RPCs use the live schema, publish directly from a private draft, 
   const categoryId = (await rows("select id from public.categories where slug = 'politics'"))[0].id;
   const authorId = (await rows("select id from public.authors where slug = 'test-byline'"))[0].id;
   const id = (await as(U.editor, () => rows(
-    `select public.article_create($1, null, '{"type":"doc","content":[]}'::jsonb, $2, $3, null, null, null) as id`,
+    `select public.article_create($1, null, '{"type":"doc","content":[]}'::jsonb, $2, $3, null, null) as id`,
     ['Live schema direct publish fixture', authorId, categoryId],
   )))[0].id;
 
   let revision = (await rows('select revision from public.articles where id = $1', [id]))[0].revision;
   await as(U.editor, () => db.query(
-    'select public.article_draft_update($1, $2, $3, $4, $5::jsonb, $6, $7, $8, $9, $10)',
-    [id, revision, 'Updated private fixture', 'Private summary', '{"type":"doc","content":[]}', authorId, categoryId, null, null, null],
+    'select public.article_draft_update($1, $2, $3, $4, $5::jsonb, $6, $7, $8, $9)',
+    [id, revision, 'Updated private fixture', 'Private summary', '{"type":"doc","content":[]}', authorId, categoryId, null, null],
   ));
   revision = (await rows('select revision from public.articles where id = $1', [id]))[0].revision;
   assert.equal((await as(null, () => rows('select id from public.published_articles where id = $1', [id]))).length, 0,
@@ -1068,8 +1068,8 @@ test('newsroom RPCs use the live schema, publish directly from a private draft, 
   const priorPublicVersion = (await rows('select published_version_id from public.articles where id = $1', [id]))[0].published_version_id;
   revision = (await rows('select revision from public.articles where id = $1', [id]))[0].revision;
   const newVersion = (await as(U.editor, () => rows(
-    'select public.article_revise($1, $2, $3, $4, $5::jsonb, $6, $7, $8, $9, $10) as id',
-    [id, revision, 'Private correction fixture', null, '{"type":"doc","content":[]}', authorId, categoryId, null, null, null],
+    'select public.article_revise($1, $2, $3, $4, $5::jsonb, $6, $7, $8, $9) as id',
+    [id, revision, 'Private correction fixture', null, '{"type":"doc","content":[]}', authorId, categoryId, null, null],
   )))[0].id;
   const article = (await rows('select current_version_id, published_version_id from public.articles where id = $1', [id]))[0];
   assert.equal(article.current_version_id, newVersion, 'correction starts as a new private version');
@@ -1115,7 +1115,7 @@ test('Newsroom RLS grants eligible staff private reads but exposes only the curr
   const categoryId = (await rows("select id from public.categories where slug = 'politics'"))[0].id;
   const authorId = (await rows("select id from public.authors where slug = 'test-byline'"))[0].id;
   const id = (await as(U.editor, () => rows(
-    `select public.article_create($1, null, '{"type":"doc","content":[]}'::jsonb, $2, $3, null, null, null) as id`,
+    `select public.article_create($1, null, '{"type":"doc","content":[]}'::jsonb, $2, $3, null, null) as id`,
     ['RLS private draft fixture', authorId, categoryId],
   )))[0].id;
   const currentVersion = (await rows('select current_version_id from public.articles where id = $1', [id]))[0].current_version_id;
@@ -1149,8 +1149,8 @@ test('Newsroom RLS grants eligible staff private reads but exposes only the curr
 
   revision = (await rows('select revision from public.articles where id = $1', [id]))[0].revision;
   await as(U.editor, () => db.query(
-    'select public.article_revise($1, $2, $3, $4, $5::jsonb, $6, $7, $8, $9, $10)',
-    [id, revision, 'RLS correction fixture', null, '{"type":"doc","content":[]}', authorId, categoryId, null, null, null],
+    'select public.article_revise($1, $2, $3, $4, $5::jsonb, $6, $7, $8, $9)',
+    [id, revision, 'RLS correction fixture', null, '{"type":"doc","content":[]}', authorId, categoryId, null, null],
   ));
   revision = (await rows('select revision from public.articles where id = $1', [id]))[0].revision;
   await as(U.publisher, () => db.query('select public.article_publish($1, $2)', [id, revision]));
@@ -1174,14 +1174,14 @@ test('draft-save rejects an article without a current version and does not recor
   const categoryId = (await rows("select id from public.categories where slug = 'politics'"))[0].id;
   const authorId = (await rows("select id from public.authors where slug = 'test-byline'"))[0].id;
   const id = (await as(U.editor, () => rows(
-    `select public.article_create($1, null, '{"type":"doc","content":[]}'::jsonb, $2, $3, null, null, null) as id`,
+    `select public.article_create($1, null, '{"type":"doc","content":[]}'::jsonb, $2, $3, null, null) as id`,
     ['Missing current-version fixture', authorId, categoryId],
   )))[0].id;
 
   await db.query('update public.articles set current_version_id = null where id = $1', [id]);
   const revision = (await rows('select revision from public.articles where id = $1', [id]))[0].revision;
   const failure = await asFails(U.editor,
-    `select public.article_draft_update('${id}', ${revision}, 'Must not save', null, '{"type":"doc","content":[]}'::jsonb, '${authorId}', '${categoryId}', null, null, null)`);
+    `select public.article_draft_update('${id}', ${revision}, 'Must not save', null, '{"type":"doc","content":[]}'::jsonb, '${authorId}', '${categoryId}', null, null)`);
   assert.match(failure ?? '', /invalid_transition/);
   assert.equal((await rows('select revision from public.articles where id = $1', [id]))[0].revision, revision,
     'a rejected transition does not bump the article revision');
@@ -1219,6 +1219,6 @@ test('Newsroom RPC privileges are restricted to verified authenticated staff act
   assert.equal(legacyReview.authenticated_execute, false,
     'the stale, incompatible review RPC is disabled until a versioned review flow exists');
   const anonymousCreate = await asFails(null,
-    `select public.article_create('Anon fixture', null, '{"type":"doc"}'::jsonb, '${U.editor}', '${U.editor}', null, null, null)`);
+    `select public.article_create('Anon fixture', null, '{"type":"doc"}'::jsonb, '${U.editor}', '${U.editor}', null, null)`);
   assert.match(anonymousCreate ?? '', /permission denied/i);
 });

@@ -24,7 +24,6 @@ type ArticleListItem = {
   author_name: string;
   category_slug: string;
   category_label: string;
-  og_image_key: string | null;
   cover_url: string | null;
   cover_alt: string | null;
 };
@@ -110,7 +109,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
   }
 
   let articleQuery = supabase.from("published_articles")
-    .select("slug,title,summary,published_at,is_breaking,breaking_until,author_name,category_slug,category_label,og_image_key,cover_url,cover_alt")
+    .select("slug,title,summary,published_at,is_breaking,breaking_until,author_name,category_slug,category_label,cover_url,cover_alt")
     .order("published_at", { ascending: false, nullsFirst: false })
     .order("slug", { ascending: true });
   if (category) articleQuery = articleQuery.eq("category_slug", category);
@@ -121,7 +120,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
     ? supabase.from("published_articles").select("slug,title,published_at,breaking_until").eq("is_breaking", true).gt("breaking_until", new Date(now).toISOString()).order("published_at", { ascending: false, nullsFirst: false }).order("slug", { ascending: true }).limit(10)
     : Promise.resolve({ data: [], error: null });
   const [articleResult, categoryResult, breakingResult] = await Promise.all([
-    query ? supabase.rpc("search_published_news", { p_query: query, p_category: category, p_offset: start }).select("slug,title,summary,published_at,is_breaking,breaking_until,author_name,category_slug,category_label,og_image_key,cover_url,cover_alt") : articleQuery.range(start, start + PAGE_SIZE),
+    query ? supabase.rpc("search_published_news", { p_query: query, p_category: category, p_offset: start }).select("slug,title,summary,published_at,is_breaking,breaking_until,author_name,category_slug,category_label,cover_url,cover_alt") : articleQuery.range(start, start + PAGE_SIZE),
     supabase.from("categories").select("slug,label").eq("is_active", true).order("sort_order", { ascending: true }).order("label", { ascending: true }).limit(MAX_CATEGORIES),
     breakingQuery,
   ]);

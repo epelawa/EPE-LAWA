@@ -22,7 +22,6 @@ type PublishedStory = {
   author_name: string | null;
   category_slug: string | null;
   category_label: string | null;
-  og_image_key: string | null;
   cover_url: string | null;
   cover_alt: string | null;
 };
@@ -32,7 +31,7 @@ type DiscoverResult = QueryResult<PublishedStory> & { categories: QueryResult<Ne
 
 const PAGE_SIZE = 20;
 const MAX_PAGE = 1000;
-const STORY_COLUMNS = "id,slug,title,summary,published_at,is_breaking,breaking_until,author_name,category_slug,category_label,og_image_key,cover_url,cover_alt";
+const STORY_COLUMNS = "id,slug,title,summary,published_at,is_breaking,breaking_until,author_name,category_slug,category_label,cover_url,cover_alt";
 type StoryEngagement = { view_count: number; comment_count: number; read_minutes: number };
 
 function isActiveBreaking(story: PublishedStory, now = Date.now()): boolean {
