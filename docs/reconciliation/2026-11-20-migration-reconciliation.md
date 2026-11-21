@@ -282,3 +282,74 @@ Branch `fix/migration-reconciliation` created from `main` at `49bf9d8`. Contains
 document, **uncommitted and unpushed**, per Mus'ab's instruction ("don't commit yet"). No PR has
 been opened; no merge to `main`; no production apply. The four pre-existing `.jpg` deletions remain
 unstaged and were not included.
+
+## 2026-11-21 UPDATE — RECONCILIATION APPLIED TO PRODUCTION (OWNER AUTHORISED)
+
+The owner authorised applying the outstanding migrations against production
+("fix errors in the migrations ledger and migrations ... make sure everything is applied against
+the live database nothing left out"). All work ran through the authenticated Supabase MCP
+connection to project `igqmybuiovaxqmrteebd`. Nothing was replayed by `supabase db push`; every
+application was an atomic, forward-only migration.
+
+### Applied (in order)
+
+| Ledger name | Content |
+| --- | --- |
+| `20261121160000_editorial_slug_and_version_guards_reconciliation` | `slugify`, `article_slug`, `guard_article_version` + `article_versions_guard` trigger (file 3/15 gap) |
+| `20261121160100_people_lifecycle_rpcs_reconciliation` | `people_create`, `people_update`, `people_set_status`, `people_verify`, `people_unverify` + ACLs (file 7 gap) |
+| `20261107222000_people_staff_console` | `people_update_achievements`, `people_source_add`, `people_source_set_visibility`, `people_office_add`, `people_correction_resolve` + ACLs (file 24) |
+| `20261107224000_people_create_achievements` | `people_create_with_achievements` + `grant select (revision)` (file 25) |
+| `20261107202500_community_history` | `history_records`, `history_record_sources`, `history_contributions`, RLS + policies, `history.review` capability (file 16) |
+| `20261107203000_history_review_workflow` | 2-arg `history_contribution_decide` (file 17) |
+| `20261107214000_itan_ilu_mi_categorization_lineage` | history categorization/lineage columns, constraints, 5-arg decide (file 21) |
+| `20261107234000_history_review_redacted_publish` | final 7-arg `history_contribution_decide(uuid,text,text,text,text,text,text)`; 2-arg/5-arg overloads dropped (file 29) |
+| `20261107230000_tourism_sites` | `tourism_destinations`, `tourism_submissions`, `tourism_submission_decide`, RLS + policies (file 26 — fixes the tourism "Destinations could not be loaded" state) |
+| `20261121160900_forum_polls_moderation_reconciliation` | `forum_polls`, `forum_poll_options`, `forum_poll_votes`, `forum_poll_results` view, `sync_thread_activity` + 4 forum triggers, `forum_create_thread`, `forum_vote`, single-vote index, `forum_thread_moderate`, `member_ban`, `member_unban` + poll RLS (file 11/22 gap) |
+| `20261121161000_member_admin_messages_reconciliation` | `notifications_kind` constraint updated; `admin_member_message`, `admin_member_delete` (file 52 gap; `admin_member_list` left as the live safe redefinition from file 53) |
+| `20261121161100_radio_status_projection_reconciliation` | `guard_stream_status_append_only` + trigger, `media_assets_set_updated_at` / `stream_config_set_updated_at` triggers, `radio_status` view (file 4 gap) |
+| `20261121161200_member_delete_audit_after_delete` | security-flag fix: `admin_member_delete` now writes the audit event **after** a successful `auth.users` delete instead of before it |
+| `20261121161300_staff_must_change_password_source_gap` | reproducibility no-op on production: idempotent `add column if not exists must_change_password ... default true` restores fresh-environment compilability of the seven gated RPCs |
+
+### Verified after application (live queries, single-statement each)
+
+- All five `tourism_*`/`history_*` gap tables plus the two views (`radio_status`,
+  `forum_poll_results`) resolve via `to_regclass`.
+- All 25 people/history/forum/tourism/member RPC signatures resolve via `to_regprocedure`.
+- Trigger inventory: `article_versions_guard`, `forum_posts_sync_thread`,
+  `forum_threads/forum_posts/forum_categories_set_updated_at`, `media_assets_set_updated_at`,
+  `stream_config_set_updated_at`, `stream_status_checks_append_only` all present.
+- `notifications_kind` constraint present on `public.notifications`.
+- `radio_status` returns an empty set (no singleton row yet) — honest not-configured behaviour.
+- Ledger: `supabase_migrations.schema_migrations` = **59 versions**, latest recorded
+  `20261121074510`. The ledger's `version` column is assigned by the apply tool; the local file
+  timestamps are preserved in the recorded **names**, so the ledger and repository now agree by
+  name for every file applied here. `supabase db push` remains forbidden — several older remote
+  versions still have no matching local file.
+
+### Divergences handled explicitly
+
+1. **`stream_config` was built from a shortened reconstruction.** The live table lacked
+   `stream_format`, `embedding_permitted`, `embedding_permitted_at`, `embedding_permitted_by` and
+   `created_at`. The radio reconciliation migration restores those columns (guarded, forward-only)
+   plus the `stream_config_format` and `stream_config_permission_recorded` checks before creating
+   the `radio_status` view.
+2. **`guard_article_version` transition adaptation.** Production's terminal published state is
+   `'approved'` (live `article_publish` moves draft/review → `'approved'` in direct-publish mode),
+   so `'approved'` is an allowed target from `'draft'` in addition to the source migration's
+   `'published'`. Without this, every direct publish of a draft would raise
+   `invalid_version_transition`. `article_draft_update` (draft/review → draft),
+   `article_submit` (draft → review), `article_review` (review → approved/rejected) and
+   `article_revise` (inserts a new draft row) were all checked against the guard — no other
+   collision exists.
+
+### DECISIONS CLOSED
+
+- Decision 3 (`btree_gist`): already installed by ledger `20261121034723` (owner-applied
+  2026-11-21 alongside the marketplace reconciliation `20261121034742`, which had been classified
+  NOT APPLIED above as file 13; rows #13 and #23 are therefore now APPLIED too).
+- Decision 4 (member deletion RPC): restored with the audit-after-delete fix; the R2 orphan-cleanup
+  policy remains an open, documented follow-up.
+- Decision 6 (missing areas): all restored (history, tourism, forum polls, people RPCs, member
+  messaging, radio projection).
+- Decision 8 (apply authorisation): given by the owner on 2026-11-21; executed through the
+  authenticated MCP connection, atomic per migration, verified per §"Verified after application".
