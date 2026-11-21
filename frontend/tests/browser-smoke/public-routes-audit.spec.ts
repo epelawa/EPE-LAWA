@@ -62,7 +62,7 @@ test("radio keeps listening separate from listings and reminder settings", async
     await expect(page.getByRole("region", { name: "Radio stations" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Keep exploring" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Schedule", exact: true })).toHaveCount(0);
-    await expect(page.getByRole("link", { name: /Programmes & archive/ })).toHaveAttribute("href
+    await expect(page.getByRole("link", { name: /Programmes & archive/ })).toHaveAttribute("href", "/radio/programmes");
     const size = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth }));
     expect(size.document).toBeLessThanOrEqual(size.viewport + 1);
   }

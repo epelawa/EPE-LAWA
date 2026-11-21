@@ -95,7 +95,9 @@ test("authorized Admin dashboard keeps unavailable counts honest without workflo
   await expect(page.getByRole("region", { name: "Dashboard counts" })).toBeVisible();
   const metricValues = page.locator('[class*="metricValue"]');
   await expect(metricValues).toHaveCount(4);
-  await expect(metricValues).toHaveText(["Unavailable", "Unavailable", "Unavailable", "Unavailable"]);
+  await expect(metricValues).toHaveText(["—", "—", "—", "—"]);
+  await expect(page.getByText("Unavailable", { exact: true })).toHaveCount(4);
+  await expect(page.getByText("Live count", { exact: true })).toHaveCount(0);
   await expect(page.getByText("Verified count", { exact: true })).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "Workflows available to your role" })).toHaveCount(0);
   await expect(page.getByText("Counts only, no private records.")).toHaveCount(0);
@@ -122,8 +124,9 @@ test("denied capabilities hide dashboard shortcuts and never expose queue counts
   await page.goto("/admin");
 
   await expect(page.getByRole("heading", { level: 1, name: "Admin dashboard" })).toBeVisible();
-  await expect(page.locator('[class*="metricValue"]')).toHaveText(["Unavailable", "Unavailable", "Unavailable", "Unavailable"]);
-  await expect(page.getByText("Access restricted", { exact: true })).toHaveCount(4);
+  await expect(page.locator('[class*="metricValue"]')).toHaveText(["—", "—", "—", "—"]);
+  await expect(page.getByText("Restricted", { exact: true })).toHaveCount(4);
+  await expect(page.getByText("Live count", { exact: true })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Create private draft" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: /Forum moderation/ })).toHaveCount(0);
   await expect(page.getByRole("link", { name: /Staff roles and accounts/ })).toHaveCount(0);
@@ -137,8 +140,8 @@ test("failed permission checks produce unavailable state, not guessed access or 
   await page.goto("/admin");
 
   await expect(page.getByRole("heading", { level: 1, name: "Admin dashboard" })).toBeVisible();
-  await expect(page.locator('[class*="metricValue"]')).toHaveText(["Unavailable", "Unavailable", "Unavailable", "Unavailable"]);
-  await expect(page.getByText("Unavailable", { exact: true })).toHaveCount(8);
+  await expect(page.locator('[class*="metricValue"]')).toHaveText(["—", "—", "—", "—"]);
+  await expect(page.getByText("Unavailable", { exact: true })).toHaveCount(4);
   await expect(page.getByRole("link", { name: "Create private draft" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: /Staff roles and accounts/ })).toHaveCount(0);
 });
