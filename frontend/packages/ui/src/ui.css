@@ -23,6 +23,8 @@
     opacity var(--ep-dur-fast) var(--ep-ease-out);
 }
 .ep-button:disabled { opacity: .58; cursor: not-allowed; }
+.ep-button:active:not(:disabled) { transform: scale(.97); transition-duration: var(--ep-dur-fast); }
+.btn-primary:active:not(:disabled), .btn-secondary:active:not(:disabled) { transform: scale(.97); }
 .ep-button:focus-visible {
   outline: var(--ep-focus-width) solid var(--ep-focus-ring);
   outline-offset: var(--ep-focus-offset);
@@ -141,6 +143,9 @@
 
 /* One reduced-motion gate for every shared animation and transition. */
 @media (prefers-reduced-motion: reduce) {
+  .ep-button:active:not(:disabled),
+  .btn-primary:active:not(:disabled),
+  .btn-secondary:active:not(:disabled) { transform: none; }
   .ep-button,
   .ep-control,
   .ep-enter,

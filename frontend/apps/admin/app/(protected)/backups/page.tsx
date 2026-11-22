@@ -1,6 +1,7 @@
 import { PageFrame, PageIntro, Notice } from "@epelawa/ui";
 import { createStaffClient, type StaffClient } from "../../../lib/supabase";
 import { listBackups } from "../../../lib/backup-r2";
+import { backupDispatchConfigured } from "../../../lib/backup-dispatch";
 import BackupControls from "../../../components/backup-controls";
 import styles from "./backups.module.css";
 
@@ -37,6 +38,7 @@ export default async function BackupsPage() {
           initial={await listBackups()}
           canCreate={canCreate}
           canRestore={canRestore}
+          dispatchConfigured={backupDispatchConfigured()}
         />
       )}
     </PageFrame>

@@ -1,6 +1,7 @@
 "use client";
 import { useActionState, useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
+import { controlError } from "@epelawa/ui";
 import { submitEnquiry, type EnquiryState } from "../app/enquiry/actions";
 import { pushToast } from "./toast";
 import TurnstileField from "./turnstile-field";
@@ -13,6 +14,7 @@ export default function EnquiryForm({ kind, onPendingChange, privacyHref = "/pri
 function EnquiryFormInner({kind,privacyHref,onPendingChange,onReset}:{kind:Kind;privacyHref:string;onPendingChange?:(pending:boolean)=>void;onReset:()=>void}) {
   const [state,action,pending] = useActionState(submitEnquiry,initial);
   const [step,setStep] = useState(0), [copyMessage,setCopyMessage]=useState("");
+  const [stepError,setStepError] = useState("");
   const [name,setName] = useState(""); const [email,setEmail] = useState("");
   const [phone,setPhone] = useState(""); const [whatsapp,setWhatsapp] = useState(""); const [message,setMessage] = useState("");
   const firstStep = useRef<HTMLDivElement>(null);const secondStep=useRef<HTMLTextAreaElement>(null);const id=useId();
@@ -23,7 +25,14 @@ function EnquiryFormInner({kind,privacyHref,onPendingChange,onReset}:{kind:Kind;
   },[state]);
   function next() {
     const fields = firstStep.current?.querySelectorAll<HTMLInputElement>("input") ?? [];
-    for (const field of fields) if (!field.reportValidity()) return;
+    for (const field of Array.from(fields)) {
+      const error = controlError(field);
+      if (!error) continue;
+      setStepError(error);
+      field.setAttribute("aria-invalid", "true");
+      return;
+    }
+    setStepError("");
     setStep(1);requestAnimationFrame(()=>secondStep.current?.focus());
   }
   async function copyTicket() {
@@ -39,18 +48,19 @@ function EnquiryFormInner({kind,privacyHref,onPendingChange,onReset}:{kind:Kind;
     <p role="status">{state.acknowledgement === "accepted" ? "We sent an acknowledgement to your email provider. Check your inbox and spam folder; delivery is not guaranteed." : "We couldn’t confirm the acknowledgement email was sent. Please copy your ticket number now."}</p>
     <button type="button" className="btn-secondary" onClick={onReset}>Start another request</button>
   </section>;
-  return <form action={action} className="ui-stack" onSubmit={event=>{ if (step === 0) { event.preventDefault(); next(); } }}>
+  return <form action={action} noValidate className="ui-stack" onSubmit={event=>{ if (step === 0) { event.preventDefault(); next(); } else { const error = message.trim().length < 10 ? "Write at least 10 characters so staff can act on it." : ""; if (error) { event.preventDefault(); setStepError(error); return; } setStepError(""); } }}>
     <input type="hidden" name="kind" value={kind} />
     <ol className="form-progress" aria-label="Enquiry progress"><li aria-current={step === 0 ? "step" : undefined}><span>1</span> Contact details</li><li aria-current={step === 1 ? "step" : undefined}><span>2</span> Your message</li></ol>
     <div ref={firstStep} hidden={step !== 0} className="ui-stack" style={step !== 0 ? {display:"none"} : undefined}>
       <div className="ui-field"><label htmlFor={`${id}-name`}>Name</label><input id={`${id}-name`} name="name" autoComplete="name" minLength={2} maxLength={100} required value={name} onChange={e=>setName(e.target.value)} /></div>
       <div className="ui-field"><label htmlFor={`${id}-email`}>Email address</label><input id={`${id}-email`} name="email" type="email" autoComplete="email" maxLength={254} required value={email} onChange={e=>setEmail(e.target.value)} /></div>
       {kind === "advertising" && <><div className="ui-field"><label htmlFor={`${id}-whatsapp`}>WhatsApp number</label><input id={`${id}-whatsapp`} name="whatsapp" type="tel" autoComplete="tel" minLength={7} maxLength={24} required value={whatsapp} onChange={e=>setWhatsapp(e.target.value)} /></div><div className="ui-field"><label htmlFor={`${id}-phone`}>Alternative phone number (optional)</label><input id={`${id}-phone`} name="phone" type="tel" maxLength={24} value={phone} onChange={e=>setPhone(e.target.value)} /></div></>}
-      <TurnstileField compact />
-      <button className="btn-primary" type="button" onClick={next}>Continue</button>
+      {stepError && step === 0 ? <p role="alert" className="ep-live-field__message">{stepError}</p> : null}
+      <TurnstileField compact />      <button className="btn-primary" type="button" onClick={next}>Continue</button>
     </div>
     <div hidden={step !== 1} className="ui-stack" style={step !== 1 ? {display:"none"} : undefined}>
       <div className="ui-field"><label htmlFor={`${id}-message`}>{kind === "correction" ? "What needs correcting? Include the article link." : kind === "advertising" ? "Tell us about your business and advertising needs" : kind === "support" ? "How can we help? Include the page and steps to reproduce any error." : "Message"}</label><textarea ref={secondStep} id={`${id}-message`} name="message" minLength={10} maxLength={kind === "advertising" ? 4900 : kind === "support" ? 4980 : 5000} rows={5} required={step === 1} value={message} onChange={e=>setMessage(e.target.value)} /></div>
+      {stepError && step === 1 ? <p role="alert" className="ep-live-field__message">{stepError}</p> : null}
       <p>We store your enquiry for staff review. Please avoid sensitive information. See our <Link href={privacyHref}>privacy notice</Link>.</p>
       <div className="ui-row"><button type="button" disabled={pending} onClick={()=>setStep(0)}>Back</button><button className="btn-primary" disabled={pending || state.status === "success"} type="submit">{pending ? "Sending…" : kind === "support" ? "Send support request" : "Send enquiry"}</button></div>
     </div>
