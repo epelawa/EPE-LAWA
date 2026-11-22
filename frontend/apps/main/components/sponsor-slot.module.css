@@ -8,6 +8,7 @@
 .link {
   display: grid;
   gap: var(--ep-space-2, 8px);
+  align-content: start;
   padding: var(--ep-space-6, 24px);
   border: var(--ep-space-hair, 1px) dashed var(--ep-border-subtle);
   border-radius: var(--ep-radius-md, 12px);
@@ -52,6 +53,91 @@
 .compact .name { font-size: var(--ep-type-base, 16px); }
 .compact .action { min-height: var(--ep-touch-min, 44px); }
 .link:focus-visible { outline: 2px solid var(--ep-focus-ring, #477FE0); outline-offset: 3px; }
+
+/* Filled state: the staff-selected business lineup replaces the empty invite.
+   Every carousel slide reuses the same card so height never jumps. */
+.logo {
+  width: 56px;
+  height: 56px;
+  flex: none;
+  border-radius: var(--ep-radius-sm, 8px);
+  object-fit: contain;
+  background: var(--ep-surface-muted, #F5F7FB);
+}
+.logoFallback {
+  display: inline-flex;
+  width: 56px;
+  height: 56px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--ep-radius-sm, 8px);
+  background: var(--ep-primary);
+  color: var(--ep-primary-fg);
+  font-size: var(--ep-type-lg, 20px);
+  font-weight: var(--ep-weight-bold);
+}
+.compact .logo, .compact .logoFallback { width: 40px; height: 40px; }
+@media (min-width: 640px) {
+  .link:has(.logo), .link:has(.logoFallback) { grid-template-columns: auto 1fr; align-items: start; }
+}
+.copy { display: grid; gap: var(--ep-space-2, 8px); }
+.link:has(.logo), .link:has(.logoFallback) { column-gap: var(--ep-space-4, 16px); }
+
+/* Auto-rotating lineup with manual fallbacks: arrows, dots, swipe. */
+.carouselWindow { overflow: hidden; }
+.carouselTrack {
+  display: flex;
+  align-items: stretch;
+  transition: transform 420ms var(--ep-ease-out, cubic-bezier(.2,.8,.2,1));
+}
+.carouselSlide { flex: 0 0 100%; min-width: 0; }
+.carouselSlide .link { height: 100%; }
+.carouselControls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ep-space-3, 12px);
+  margin-top: var(--ep-space-3, 12px);
+}
+.carouselArrow {
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: var(--ep-space-hair, 1px) solid var(--ep-border-subtle);
+  border-radius: var(--ep-radius-pill);
+  background: var(--ep-surface, #FFFFFF);
+  color: var(--ep-text, #17264A);
+  cursor: pointer;
+  transition: transform var(--ep-dur-fast, 120ms) var(--ep-ease-out), border-color var(--ep-dur-fast, 120ms) var(--ep-ease-out);
+}
+.carouselArrow svg { width: 16px; height: 16px; }
+.carouselArrow:hover { transform: translateY(var(--ep-motion-lift, -2px)); border-color: var(--ep-primary); }
+.carouselArrow:focus-visible { outline: 2px solid var(--ep-focus-ring, #477FE0); outline-offset: 3px; }
+.compactWindow .link { padding: var(--ep-space-4, 16px); }
+.compactWindow .name { font-size: var(--ep-type-base, 16px); }
+.compact + .carouselControls, .compactWindow + .carouselControls { margin-top: var(--ep-space-2, 8px); }
+.carouselDots { display: flex; align-items: center; gap: var(--ep-space-2, 8px); }
+.carouselDot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: var(--ep-radius-pill);
+  background: var(--ep-border-subtle, #C9D3E4);
+  cursor: pointer;
+  transition: background var(--ep-dur-fast, 120ms) var(--ep-ease-out), width var(--ep-dur-fast, 120ms) var(--ep-ease-out);
+}
+.carouselDot:hover { background: var(--ep-text-muted); }
+.carouselDot:focus-visible { outline: 2px solid var(--ep-focus-ring, #477FE0); outline-offset: 2px; }
+.carouselDotActive { width: 20px; background: var(--ep-primary); }
 @media (prefers-reduced-motion: reduce) {
   .link,.link:hover,.action,.link:hover .action { animation-duration: var(--ep-motion-reduced, .01ms) !important; transition-duration: var(--ep-motion-reduced, .01ms) !important; transform: none !important; }
+  .carouselTrack { transition: none !important; }
+  .carouselWindow { overflow-x: auto; scroll-snap-type: x mandatory; }
+  .carouselSlide { scroll-snap-align: start; }
 }
