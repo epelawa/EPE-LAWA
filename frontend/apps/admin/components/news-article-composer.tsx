@@ -4,14 +4,13 @@ import { useEffect, useRef, useState, useTransition, type ChangeEvent } from "re
 import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LiveField, SaveState, validateField, type FieldRules } from "@epelawa/ui";
+import { LiveField, validateField, type FieldRules } from "@epelawa/ui";
 import { createArticle, createArticleWithFeedback } from "../lib/actions";
 import { adminHref } from "../lib/admin-path";
 import { normalizeExternalNewsCoverUrl } from "../../main/lib/news-cover-url.mjs";
 import { suggestNewsHashtags } from "../lib/news-hashtags";
 import NewsCoverUrlFields from "./news-cover-url-fields";
 import AuthorPicker from "./author-picker";
-import SessionRecovery, { clearSessionRecovery } from "./session-recovery";
 import styles from "./news-article-composer.module.css";
 
 type Option = { id: string; label?: string; display_name?: string };
@@ -50,7 +49,7 @@ function SaveButton({saving, blocked}: {saving: boolean; blocked: boolean}) {
   return <button data-pending-self-managed="true" className={styles.submit} type="submit" aria-busy={pending || saving} disabled={pending || saving || blocked}>{pending || saving ? "Publishing article…" : "Publish article"}<span aria-hidden="true"> →</span></button>;
 }
 
-export default function NewsArticleComposer({ categories, authors, recoveryActor, coverUploadAvailable = false }: { categories: Option[]; authors: Option[]; recoveryActor?: string; coverUploadAvailable?: boolean }) {
+export default function NewsArticleComposer({ categories, authors, coverUploadAvailable = false }: { categories: Option[]; authors: Option[]; coverUploadAvailable?: boolean }) {
   const router = useRouter();
   const [body, setBody] = useState("");
   const [title, setTitle] = useState("");
@@ -59,8 +58,7 @@ export default function NewsArticleComposer({ categories, authors, recoveryActor
   const [tags, setTags] = useState("");
   const [step, setStep] = useState(1);
   const [stepError, setStepError] = useState("");
-  const [draftState, setDraftState] = useState<"idle" | "saving" | "saved" | "error">("idle");
-  const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
+
   const [saving, startSaving] = useTransition();
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState<{status: "error" | "uncertain"; message: string} | null>(null);
@@ -138,13 +136,12 @@ export default function NewsArticleComposer({ categories, authors, recoveryActor
     const data = new FormData(event.currentTarget);
     setSaveError(null);
     startSaving(async () => {
-      try { const result = await createArticleWithFeedback(data); if (result.status === "success") { setSaved(true); clearSessionRecovery(recoveryActor, "new"); router.push(adminHref(`/newsroom/${result.articleId}?${result.published ? "published=1" : "created=1"}`)); } else setSaveError(result); }
+      try { const result = await createArticleWithFeedback(data); if (result.status === "success") { setSaved(true); router.push(adminHref(`/newsroom/${result.articleId}?${result.published ? "published=1" : "created=1"}`)); } else setSaveError(result); }
       catch { setSaveError({ status: "uncertain", message: "We could not confirm whether the article was saved. Check the newsroom list before trying again to avoid a duplicate." }); }
     });
   }} onKeyDown={(event) => { if (enhanced && step < 3 && event.key === "Enter" && event.target instanceof HTMLInputElement) { event.preventDefault(); next(); } }} onInvalid={(event) => { const target = event.target as HTMLElement; const section = target.closest<HTMLElement>("[data-composer-step]"); const invalidStep = Number(section?.dataset.composerStep); if (enhanced && invalidStep && invalidStep !== step) { move(invalidStep); requestAnimationFrame(() => target.focus()); } }}>
     {saveError && <div role="alert" className="ui-notice"><p>{saveError.message}</p>{saveError.status === "uncertain" && <><Link href={adminHref("/newsroom")} target="_blank" rel="noopener noreferrer">Check the newsroom list in a new tab</Link><button type="button" className="btn-secondary" onClick={() => setSaveError(null)}>I checked; allow another attempt</button></>}</div>}
-    <SessionRecovery form={form} actor={recoveryActor} article="new" revision="new" saved={saved} onDraftState={(next, at) => { setDraftState(next); setDraftSavedAt(next === "saved" ? new Date(at ?? Date.now()).toLocaleTimeString() : null); }} />
-    <div className={styles.intro}><div><span className={styles.eyebrow}>THE NEWSROOM / COMPOSE</span><h2>Create Story</h2><p>Write in plain text, choose the people and topic behind the story, then save your work.</p></div><div className={styles.introStatus}><SaveState state={draftState} savedAt={draftSavedAt} /><span className={styles.introBadge}>New article</span></div></div>
+    <div className={styles.intro}><div><span className={styles.eyebrow}>THE NEWSROOM / COMPOSE</span><h2>Create Story</h2><p>Write in plain text, choose the people and topic behind the story, then save your work.</p></div><div className={styles.introStatus}><span className={styles.introBadge}>New article</span></div></div>
     {enhanced && <div className={styles.progress} aria-live="polite"><p>Step {step} of 3 · {Math.round(step / 3 * 100)}%</p><div role="progressbar" aria-label="Article form progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(step / 3 * 100)}><span style={{ width: `${step / 3 * 100}%` }} /></div></div>}
     <div className={styles.layout}>
       <div className={styles.mainColumn}>
