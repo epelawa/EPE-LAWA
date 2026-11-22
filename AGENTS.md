@@ -1,6 +1,6 @@
    # EPE LAWA — Agent Working Rules
 
-Read this file and `docs/00-master-plan.md` before project work. `docs/01-product-requirements.md` is the detailed local source of truth.
+Read `docs/00-master-plan.md` first — it is the single consolidated source of truth for scope, architecture, database conventions, design system, roadmap and verification gates.
 
 ## 1. Current scope
 
@@ -36,4 +36,4 @@ Use Sckooly’s public-site structure as reference, with original EPE-LAWA brand
 
 ## 8. Documentation
 
-Keep active scope, tracker and progress evidence consistent. `[x]` requires named evidence. Archive/historical database inventory may mention legacy objects factually, but must not present them as current release features.
+Keep `docs/00-master-plan.md` truthful and current; status claims require named evidence. Archive/historical database inventory may mention legacy objects factually, but must not present them as current release features.

@@ -12,7 +12,7 @@ test("public site always starts light and ignores OS or stale saved theme prefer
   assert.match(theme, /dataset\.theme="light"/);
   assert.match(theme, /style\.colorScheme="light"/);
   assert.match(theme, /localStorage\.removeItem\("epelawa-theme"\)/);
-  assert.match(layout, /<html lang="en" data-theme="light" style=\{\{ colorScheme: "light" \}\} suppressHydrationWarning>/);
+  assert.match(layout, /<html lang=\{siteLanguage === "yo" \? "yo" : "en"\} data-theme="light" style=\{\{ colorScheme: "light" \}\} suppressHydrationWarning>/);
   assert.doesNotMatch(theme, /matchMedia|prefers-color-scheme|data-theme="dark"|colorScheme="dark"/);
   assert.doesNotMatch(layout, /data-theme="dark"|colorScheme: "dark"/);
 });

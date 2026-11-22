@@ -122,6 +122,6 @@ it("article preview shows the branded fallback when no cover is selected", async
  try {
   await act(async()=>root.render(<NewsArticleComposer categories={[{id:'news',label:'News'}]} authors={[{id:'author',display_name:'Author'}]} />));
   await act(async()=>button(el,'Preview article').click());
-  const dialog=el.querySelector('dialog')!;expect(dialog.querySelector('img')?.getAttribute('src')).toBe('/brand-logo.png');expect(dialog.textContent).toContain('No cover selected');
+  const dialog=el.querySelector('dialog')!;expect(dialog.querySelector('img')?.getAttribute('src')).toBe('/brand-logo.webp');expect(dialog.textContent).toContain('No cover selected');
  } finally {await act(async()=>root.unmount());el.remove();HTMLDialogElement.prototype.showModal=original;}
 });

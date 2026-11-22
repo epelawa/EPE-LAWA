@@ -1,39 +1,141 @@
-# EPE LAWA — Master Plan
+# EPE LAWA — Consolidated Master Plan
 
-**Status:** Active; scope reaffirmed 2026-11-07.
-**Authority:** `docs/01-product-requirements.md` and client brief sections 3.1–3.8.
-**Design direction:** Sckooly public-site structure, adapted to original EPE-LAWA branding and the latest owner-approved cobalt palette, compact 90% typography and a full from-scratch UI rebuild informed by Sckooly, GetQuant and JĀSĀB.
+**Single source of truth.** This file consolidates every active project document (master plan, product requirements, page specs, design system, architecture, security, integrations, roadmap, tracker, schema runbook, execution checklists, progress logs and all handoff notes). Superseded files were removed from `docs/`; historical snapshots remain only in `docs/archive/` and in git history.
 
-## Product and current release
+**Last updated:** 2026-11-23 · branch `vibe/feature-program-65dede` · owner: Epe Lawa (info.epelawa@gmail.com)
 
-EPE LAWA is a web-first community, news, heritage, civic-discussion and commerce platform for Epe Division, Lagos State. This release includes all eight client-approved web areas (sections 3.1–3.8):
+---
 
-1. Trending News
-2. Itan Ilu Mi / My Community History
-3. Chat Forum / Digital Village Square
-4. Map & Navigation
-5. Epe Business Directory
-6. Historical Sites & Tourism
-7. EPE LAWA Radio
-8. Who is Who in Epe
+## 1. Product and scope
 
-Cross-cutting requirements include web member signup, email verification, login and recovery; secure staff sessions and capability checks; real-result admin analytics; news publishing; branded transactional email templates; audit, privacy, accessibility and full Playwright coverage. Native mobile apps alone are deferred; section 5 enhancements remain on the full roadmap.
+EPE LAWA is a web-first community platform for Epe Division, Lagos State: news, heritage, civic discussion, radio, tourism and local business. The current release includes all eight client-approved web areas:
 
-Use Sckooly's public-site structure as an information-architecture reference, not a source of copied assets or copy. Apply the owner-provided color direction with original EPE-LAWA branding. Never invent Epe facts, history, people, businesses, prices, reviews, map locations, metrics, article content or live status. Public content uses approved records only; empty, loading, error and denied states remain honest.
+1. **Trending News** — editorial workflow (draft → review → publish → unpublish), revisions, tags, author bylines, comments with helpful votes, article views/read tracking, breaking-news rotation.
+2. **Itan Ilu Mi / My Community History** — member contributions with private review (`/admin/itan-ilu-mi/review`).
+3. **Chat Forum / Digital Village Square** — threads, replies, moderation, report flow, topic/category follows with notifications.
+4. **Map & Navigation** — safe outbound Google Maps search/directions URLs only; no Maps API key, no geocoding. Offline maps are optional future work.
+5. **Epe Business Directory** — listings, search, claim flow with verdict queue, contact-click tracking, featured slots, gallery.
+6. **Historical Sites & Tourism** — destinations with review workflow.
+7. **EPE LAWA Radio** — live player, programme schedule, archive with search, on-air now-playing, member song requests with staff desk queue.
+8. **Who is Who in Epe** — community profiles.
 
-## Full roadmap beyond the current release
-Keep the client brief section 5 future enhancements represented in the complete roadmap: event ticketing, emergency contacts, scholarship/job board, e-learning, English/Yoruba support, and an AI-powered local assistant. They are future enhancements, not features whose implementation is claimed here. Native mobile apps alone are deferred from current scope.
+Cross-cutting: member signup/OTP email verification/login/recovery, secure separate staff sessions with capability checks, admin analytics, real workspaces for member submissions, audit trail, privacy, honest empty/loading/error states, community events calendar with ICS feeds, site-wide poll, weekly email-digest composer (copy-to-clipboard; no email sending), moderation appeals, member dashboard with self-service security (password change, sign-out everywhere).
 
-## Editorial, test and integration rules
+**Commerce: removed by owner decision.** All payment/Paystack, order, buyer/seller and storefront code was removed from the backend, UI and environment (including Vercel Paystack variables). Advert placement is paid **manually** for now; legacy marketplace/payment tables in the database are out of product scope. Do not reintroduce payment claims.
 
-A verified active staff member with `article.publish` may publish directly; a second reviewer is not required. Every transition must use the expected current revision; stale revisions are denied, and transitions are audited. Private drafts and test content stay private in isolated environments. Production checks are read-only; no production test articles. Selling, checkout and in-app payments were removed from the product by owner decision (2026-11); advertisements are paid manually off-platform.
+**Section 5 future enhancements (roadmap, not implemented):** event ticketing, emergency contacts, scholarship/job board, e-learning, full English/Yoruba i18n (a starter Yoruba toggle **is** shipped for footer chrome), AI-powered local assistant. Native mobile apps are deferred. On real store availability: never report a waitlist success unless a verified persistent storage route saves the submission; the app UI always says the native mobile app is deferred and continues on the web.
 
-The current Map page builds safe outbound Google Maps search/directions URLs. There is no configured Google Maps API key or verified Places/geocoding integration; do not claim full Maps API integration. Offline maps are optional future work. Email provider operations are unconfirmed and must not be described as ready without evidence. Paystack and all selling/payment integrations were removed by owner decision.
+---
 
-## Delivery and verification
+## 2. Architecture and toolchain
 
-Do not claim a check passed unless it was run and its result recorded. Release verification includes typecheck, production builds, tests and Playwright across 320/375/768/1024/1440 CSS px, including member/staff access, private content, publishing, accessibility and responsive behavior. Production reads only. Keep provider, preview and deployment status explicitly unverified until evidenced. No commit or push is authorized by this plan alone.
+- pnpm 10.34.9, Node ≥22 <25, Turbo. Typecheck via `cd frontend && pnpm exec turbo run typecheck --force`.
+- **Public app** `frontend/apps/main` — the site served at the Vercel domain; `/admin/*` is a same-origin compatibility layer that re-exports pages from the admin app (guard layout: `AdminAccessGuard` + `SessionGuard`).
+- **Staff app** `frontend/apps/admin` — canonical staff app; `adminHref()` resolves base paths. All new staff pages are built in this app; re-export stubs in main keep same-origin `/admin` parity.
+- **Shared UI** `frontend/packages/ui` — PageFrame, Panel, SectionHeading, StatusBadge, Notice, EmptyPanel, `buttonClassName`, icons.
+- **Migrations** `backend/supabase/migrations` — forward-only, never rewritten (AGENTS.md §6).
+- **Tests** `frontend/vitest` (unit), `backend/tests/schema.test.mjs` (node), `frontend/tests` browser-smoke (Playwright, 320/375/768/1024/1440).
+- Route manifest `frontend/apps/main/public/manus-routes.json` is asserted by `frontend/vitest/member-space-contract.test.ts` (must never include `/auth/complete`) and updated whenever routes change.
+- Root scripts: `test`, `test:node`, `test:unit`, `typecheck`, `build`, `test:browser-smoke`, `audit` (`scripts/audit/run.mjs`).
 
-## Evidence notes
+---
 
-A supplied Vercel log records an older `main` build failure at `8885e16` on 2026-11-07 due to unresolved helper imports and filtered environment variables; the worktree includes those helper modules, but this does not prove a current build or preview passes. A read-only fetch of the public alias showed older site content. Deployment inspection requires authorization. No isolated Supabase development branch was created.
+## 3. Database conventions
+
+- RLS on every table; `revoke all … from anon, authenticated` then targeted grants.
+- Capabilities via `public.has_capability('…')`: `article.create`, `article.review`, `article.publish`, `article.unpublish`, `moderation.review`, `business.review`, `radio.manage`, `people.manage`, `advertising.manage`, `backup.read`.
+- Security-definer RPCs use `set search_path = ''`.
+- Rate limiting: `form_rate_allowance(scope, limit)` with the `form_rate_buckets_scope_check` constraint enumerating every scope; a new scope requires widening that check.
+- Apply migrations against project `igqmybuiovaxqmrteebd` (Supabase MCP), then **verify the ledger row** (`supabase_migrations.schema_migrations`) and insert it manually if absent — the apply step does not always write it.
+- Never bulk-replay historical migrations; live ledger history diverges from filenames. Use new unique versions.
+
+**Applied 2026-11-23 (feature program, verified live):** `20261123030000` feature tables (comment votes, topic follows, claims, click counters, events, song requests, site polls, appeals + notify trigger) · `20261123080000` `auth_password_change` rate scope · `20261123090000` `staff_analytics_timeseries` / `staff_analytics_top_articles` · `20261123100000` `staff_digest_snapshot` · `20261123110000` `article_version_tags_json` + `published_articles` view recreated with `tags` · `20261123120000` feature-program FK indexes (business claims, appeals, site polls).
+
+**Known `published_articles` contract:** the view is `security_invoker` and does NOT include relational columns added later; use the `article_version_tags_json(uuid)` aggregator (granted to anon/authenticated) instead of selecting tags directly from stored tables.
+
+---
+
+## 4. Security and permissions
+
+- Authorization enforced server-side and in RLS policy — hiding a button is not authorization. Staff and member sessions are separate; staff actions re-check capability fresh per action.
+- Public contact identity is "Epe Lawa" with inbox `info.epelawa@gmail.com`, sourced only from `frontend/apps/main/lib/site-identity.ts`.
+- Editing staff member with `article.publish` publishes directly; revision transitions validate `expectedRevision`, reject stale values, and audit.
+- Form actions return `{status, message}` states; RPC errors mapped to honest member-facing messages.
+- Member security: email verified at signup (OTP), password change re-verifies the current password via `signInWithPassword` then `auth.updateUser`, sign-out-everywhere on demand.
+- Moderation appeals (`member_bans` + `moderation_appeals`): members can appeal an **active ban** via `member_appeal_moderation`; staff decide via `staff_decide_appeal` (gate `moderation.review`, decision note required). Content-hide actions remain staff-internal — members cannot see or appeal them (documented limitation because `moderation_actions` rows are not member-readable).
+- Admin member-delete is **disabled** pending audit-before-effect fix and data-deletion owner sign-off.
+- Fixed light theme only; no theme toggle, no persisted theme preference.
+
+## 5. Design system
+
+- **Palette:** Midnight `#0A1023` (primary text), Navy `#17264A` (deep emphasis), Royal Steel `#294B91` (links on light), Cobalt `#477FE0` (primary actions, Midnight text on cobalt 4.84:1), Ice Blue `#A7C5F5` (focus/non-text accents only on light), Cloud `#F1F4FA` (canvas), Silver `#A6B2C5` (non-text accents), Border `#293650`.
+- **Type:** locally bundled Plus Jakarta Sans (SIL OFL; never describe as Codec Pro); compact ~90% scale, hero ≈56px, body ≥16px, metadata 14px, labels 12px, article measure 62–72ch.
+- **Motion:** Apple-style restrained micro-motion — staggered hero cascade, shortcut tile cascade, card lift + press feedback, cover zoom; all guarded by `prefers-reduced-motion`; motion is brief, drawers trap focus and close on Escape/tap-out/navigation.
+- SVG icons only, no emoji; 44px touch targets; visible focus; WCAG 2.2 AA target.
+- Imagery: `.webp` preferred for in-app art (`/brand-logo.webp`); `public/brand-logo.png` (512px, optimized) is retained **only** for the email template (`auth-mail-hook.ts`). No unused originals in `public/`.
+
+## 6. Integrations and provider truth
+
+| Concern | Status |
+| --- | --- |
+| Hosting | Vercel; verified live on `https://epelawa.vercel.app` (preview deploys per PR). |
+| Database/auth | Supabase `igqmybuiovaxqmrteebd` (eu-west-3), live and used for all reads/writes. |
+| Advert payment | **Manual** for now (owner decision). No PSP in the app. |
+| Transactional email | Supabase Auth mail hook with branded PNG-logo template. Newsletter SMTP (`NEWSLETTER_SMTP_*`, `NEWSLETTER_FROM`) not yet configured/verified — the digest composer deliberately copies text for manual sending. |
+| Payments | Removed. Never claim live payment behavior. |
+| Maps | Outbound search/directions URLs only; no API key. |
+| Analytics | Admin analytics from real queries (`article_views`, `business_contact_clicks`, `profiles`); unavailable ≠ zero. |
+
+## 7. Staff destinations (canonical map)
+
+Newsroom (list/editor/revisions/diff/settings/tags), Reviews (business, itan, moderation/forum, corrections), Community (events queue, song requests), Trust (appeals), Broadcast, Media, Members, Users, People, Roles, Settings, Site pages, Legal pages, Ads, AI scheduler, Backups, Enquiries, Site poll, Email digest, Analytics.
+
+---
+
+## 8. Remaining roadmap (verified, current)
+
+Compiled from code state on 2026-11-23, not from stale checklists:
+
+1. **Email delivery** — verify SMTP variables + sender-domain auth (SPF/DKIM/DMARC) with a private test recipient; then make the digest auto-send.
+2. **Full Yoruba i18n** — starter toggle covers footer chrome; extend dictionary + page bodies.
+3. **Browser-smoke refresh** — extend Playwright cover to new routes (events, radio/archive, news authors, admin analytics/appeals/digest/poll/events/radio-requests) and re-run across all widths.
+4. **Admin compat surface** — extend `frontend/apps/main/app/admin` re-exports if same-origin parity matters for any yet-existing route (new routes are stubbed now).
+5. **Security audit gate** — re-run `scripts/audit/run.mjs` and wire CRITICAL warnings into CI when the count is acceptable.
+6. **Backup/restore rehearsal** — never evidenced; required before destructive DB operations.
+7. **Schema reconciliation follow-ups** from the 2026-11-20 audit: duplicate local migration prefixes (`20261107213000`, `20261114190000`), 9 broken-ish historical files classified in the git-history reconciliation doc.
+8. **Who is Who / Itan Ilu Mi review ergonomics** and tourism photo provenance updates beyond the reference set.
+9. **Legal review** — controller identity, retention, terms, privacy handling, Nigerian legal review before publication-grade claims.
+10. **Custom-domain decision** — `epelawa.com` vs `epelawa.vercel.app` vs `epelawa.ng` (superseded split); DNS/TLS/canonical/robots verification, cookie scope, sitemap.
+11. **Section 5 enhancements** (owner-selected, not built): event ticketing, emergency contacts, scholarship/job board, e-learning, AI assistant.
+12. **Member messaging** — draft existed in git history; never implemented.
+13. **Offline maps** — optional future work; needs owner decision.
+14. **Radio playback verification** — official stream URL, rights/permission, browser playback testing.
+15. **Admin analytics breadth** — add forum/thread activity + events/radio-request metrics when data volume justifies.
+16. **Push notifications** — dashboard components exist but are unmounted; no `sw.js` or subscribe route. Backend subscription capability is live; needs owner decision + front-end finish.
+17. **AI Scheduler** — admin nav entry is `comingSoon`; no feature behind it. Build it or retire the entry.
+18. **Live radio stream** — schedule/on-air/`.ics` shipped; the live stream depends on the Guts FM rights decision (O12).
+19. **Who is Who human verification evidence** (O9) — verification badges require recorded human review.
+20. **Branch protection on `main`** — false (free-plan private repo; enable via GitHub Pro or public repo).
+
+## 9. Known honest limitations
+
+- Email digest: composer only; nothing sends mail until SMTP is verified (owner copies text outward).
+- Appeals: ban-only (see §4).
+- Admin analytics data (`article_views`/`business_contact_clicks`) only has meaningful volume after traffic; empty renders must say "no data yet", not claim zero activity.
+- Paystack environment variables were removed from Vercel; ensure nobody re-adds them.
+- Production deployment status of this branch must be verified from Vercel evidence after merge — never inferred from green checks alone.
+
+## 10. Verification gates (repo rules)
+
+1. `pnpm test` (node + unit), `typecheck`, and a fresh `pnpm build` on the exact head before any merge/claim.
+2. Playwright browser-smoke per UI change; reduced-motion and keyboard checks for any new motion.
+3. No secret values in code, fixtures or commit messages; env names documented in `.env.example`.
+4. Commit author: **Epe Lawa <info.epelawa@gmail.com>**; commit per verified phase.
+5. Delivery: feature branch → PR → green checks → merge. Never push implementation commits to `main`.
+
+## 11. Changelog of major phases (condensed)
+
+- **Foundation:** eight web areas, auth/staff sessions, editorial workflow, schema rollout, business directory, tourism, radio player, who-is-who.
+- **2026-11-20/21:** master audit + migration reconciliation (34 applied / 12 not applied / 9 broken classification), maintenance mode, security headers/health endpoint, visual tokens.
+- **Earlier 2026-11-23 batch (PR #243, on main):** site-wide search, RSS feed, forum sort, related destinations, radio on-air + schedule .ics, gallery lightbox, business opening hours, member avatar upload (R2), sign-out-everywhere, profile strength, CSV export, Lagos timestamps, print styles, web app manifest, share-on-X, sitemap lastmod, and the "suggest a correction" flow (member modal + staff corrections desk, migrations `20261123010000`/`20261123020000` + site identity module). Upload pickers as blur-backdrop popup modals (PR #242); CSP with per-request nonce (PR #241); orders/selling/payments UI removal (PR #240).
+- **Feature program (this branch, 2026-11-23):** Paystack/orders/storefront removal (code + env + UI); comment helpful votes; topic follows + notifications; article tags end-to-end (incl. `published_articles.tags` fix); author byline pages; site poll + admin composer + public results; business gallery/claims/click tracking/featured slots; community events calendar + ICS; radio archive + song-request desk; dashboard security card; moderation appeals (member + staff); staff analytics; Yoruba starter toggle; revision diff viewer; weekly digest composer; new admin nav group; `.webp` asset pass (public dir 37MB→8MB, unused 22MB hero originals deleted); docs consolidated into this file; `manus-routes.json` refreshed.

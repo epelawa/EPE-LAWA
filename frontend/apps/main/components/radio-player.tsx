@@ -46,7 +46,7 @@ export default function RadioPlayer({ children }: { children?: ReactNode }) {
  const status={connecting:"Connecting…",playing:"Playing live",paused:"Ready to listen",blocked:"Tap Play to start",unavailable:"The station stream is unavailable right now. Please try again.",slow:"Still connecting — buffering…",offline:"Your device appears offline. Reconnect, then press Play."}[state];
  return <section className={`${styles.player} ${state==="playing" ? styles.playing : ""}`} aria-labelledby="radio-player-title">
   <div className={styles.bar}>
-   <div className={styles.ident} aria-hidden="true"><img src="/brand-logo.png" alt="EPE LAWA" width="40" height="36" /><span className={styles.equalizer}>{[0,1,2,3].map(i=><span key={i} />)}</span></div>
+   <div className={styles.ident} aria-hidden="true"><img src="/brand-logo.webp" alt="EPE LAWA" width="40" height="36" /><span className={styles.equalizer}>{[0,1,2,3].map(i=><span key={i} />)}</span></div>
    <div className={styles.info}>
     <h1 id="radio-player-title" className={styles.title}>{station?.name ?? "Radio"} <span className={styles.frequency}>{station?.frequency ?? ""}</span></h1>
     <p className={styles.status} role="status" aria-live="polite"><span className={`${styles.liveDot} ${state==="playing" ? styles.connected : ""}`} aria-hidden="true" />{station ? status : loadingGuts ? "Looking up Guts FM…" : gutsReason === "not_found" ? "No usable Guts FM stream was found in the catalogue." : "Guts FM is temporarily unavailable in this player. Please try again later."}</p>

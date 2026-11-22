@@ -45,6 +45,7 @@ type PublishedArticle = {
   author_slug: string;
   category_slug: string;
   category_label: string;
+  tags: { slug: string; label: string }[] | null;
 };
 type RelatedArticle = {
   slug: string;
@@ -62,7 +63,7 @@ const loadArticle = cache(async (slug: string): Promise<ArticleResult> => {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("published_articles")
-      .select("id,slug,title,summary,published_at,is_breaking,breaking_until,seo_title,seo_description,cover_url,cover_alt,cover_credit,cover_caption,author_name,author_slug,category_slug,category_label")
+      .select("id,slug,title,summary,published_at,is_breaking,breaking_until,seo_title,seo_description,cover_url,cover_alt,cover_credit,cover_caption,author_name,author_slug,category_slug,category_label,tags")
       .eq("slug", slug)
       .maybeSingle();
     if (error) {
@@ -85,7 +86,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const title = article.seo_title || article.title;
   const description = article.seo_description || article.summary || undefined;
   const coverImage = publishedNewsCover(article)?.url ?? null;
-  const image = coverImage ? new URL(coverImage, siteUrl).toString() : absoluteUrl("/brand-logo.png");
+  const image = coverImage ? new URL(coverImage, siteUrl).toString() : absoluteUrl("/brand-logo.webp");
   const articleUrl = publicNewsArticleUrl(article.slug);
   return {
     title,
@@ -195,7 +196,8 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
 
         <div className={styles.readingGuide}><span>THE STORY</span><a href="#comments">Join the conversation <span aria-hidden="true">↗</span></a></div>
         <div className={`ui-prose ${styles.articleBody}`} data-offline-article-body><ArticleBody body={body} /></div>
-        <p className={styles.articleAuthorCredit}><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="m4 20 4.3-1 10.2-10.2a2.1 2.1 0 0 0-3-3L5.3 16 4 20Z" /><path d="m13.8 7.2 3 3" /><path d="M4 20h4" /></svg><span><strong>Brought to you by</strong> {article.author_name}</span></p>
+        {article.tags?.length ? <nav className={styles.tagRow} aria-label="Story topics"><span className={styles.tagRowLabel}>Topics</span><ul className={styles.tagList}>{article.tags.map((tag) => tag.slug ? <li key={tag.slug}><Link className={styles.tagChip} href={`/news?tag=${encodeURIComponent(tag.slug)}`}>{tag.label ?? tag.slug}</Link></li> : null)}</ul></nav> : null}
+        <p className={styles.articleAuthorCredit}><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="m4 20 4.3-1 10.2-10.2a2.1 2.1 0 0 0-3-3L5.3 16 4 20Z" /><path d="m13.8 7.2 3 3" /><path d="M4 20h4" /></svg><span><strong>Brought to you by</strong> {article.author_slug ? <Link className="ui-text-link" href={`/news/author/${encodeURIComponent(article.author_slug)}`}>{article.author_name}</Link> : article.author_name}</span></p>
         <CommentThread articleId={article.id} slug={article.slug} notice={notice.comments} />
         <CommentDock articleId={article.id} slug={article.slug} count={commentCount} signedIn={signedIn} signInHref={signInHref} />
         <nav aria-label="Share this story" className={styles.shareLinks}><a href={`https://wa.me/?text=${encodeURIComponent(`${article.title} ${articleUrl}`)}`} target="_blank" rel="noopener noreferrer">Share on WhatsApp</a><a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(articleUrl)}`} target="_blank" rel="noopener noreferrer">Share on Facebook</a><a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(article.title)}&url=${encodeURIComponent(articleUrl)}`} target="_blank" rel="noopener noreferrer">Share on X</a><ArticleShareActions title={article.title} url={articleUrl} imageUrl={imageUrl} /></nav>

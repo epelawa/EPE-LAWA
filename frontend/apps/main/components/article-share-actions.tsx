@@ -41,7 +41,7 @@ export default function ArticleShareActions({ title, imageUrl, url, className = 
       let coverAttached = false;
       try {
         if (navigator.canShare?.({ files: [new File(["x"], "cover.png", { type: "image/png" })] })) {
-          const cover = await buildShareCover(imageUrl || "/brand-logo.png");
+          const cover = await buildShareCover(imageUrl || "/brand-logo.webp");
           if (cover && navigator.canShare({ files: [cover] })) {
             await navigator.share({ title, text: `${title}\n${url}`, files: [cover] });
             setMessage("Cover image and article link sent to the share sheet.");

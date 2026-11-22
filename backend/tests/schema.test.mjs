@@ -16,7 +16,7 @@
  * they are listed in SHIMMED at runtime. In particular the two GiST exclusion constraints
  * (radio_schedule_no_overlap, business_featured_no_overlap) are NOT exercised, because btree_gist
  * is unavailable here. Before release, run this same file against a Supabase preview branch or a
- * local `supabase db reset` and drop the shims — see docs/16-schema-runbook.md.
+ * local `supabase db reset` and drop the shims — see the migration reconciliation history (docs/00-master-plan.md).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';

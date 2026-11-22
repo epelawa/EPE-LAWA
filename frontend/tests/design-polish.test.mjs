@@ -22,7 +22,7 @@ test("public shell stays light and the all-viewport drawer is account-only", () 
   const heroManifest = JSON.parse(read("frontend/apps/main/lib/hero-images.json"));
   const mastheadActions = header.match(/<div className="masthead-actions">([\s\S]*?)<\/div>/)?.[1] ?? "";
 
-	assert.match(layout, /<html lang="en" data-theme="light" style=\{\{ colorScheme: "light" \}\} suppressHydrationWarning>/);
+	assert.match(layout, /<html lang=\{siteLanguage === "yo" \? "yo" : "en"\} data-theme="light" style=\{\{ colorScheme: "light" \}\} suppressHydrationWarning>/);
   assert.doesNotMatch(header, /ThemeToggle|Appearance|appearance|Member dashboard/);
 	assert.doesNotMatch(mastheadActions, /ThemeToggle/);
 	assert.match(header, /renderLink\("\/auth", "Create account", "btn-primary"\)/);
@@ -53,7 +53,7 @@ test("public shell stays light and the all-viewport drawer is account-only", () 
   assert.match(header, /A shared home for everyone\./);
   assert.match(header, /addEventListener\("pointerdown", onOutsideDrawer\)/);
   assert.match(newsFooter, /<NewsletterForm id="news-listing-signup" variant="footer" \/>/);
-  assert.match(newsFooter, /Stories and updates from Epe/);
+  assert.match(newsFooter, /"footer.tagline"/);
   assert.match(newsletter, /temporarily unavailable/);
   assert.match(newsletter, /disabled/);
   assert.match(navCss, /\.drawer\s*\{[^}]*width:min\(380px,calc\(100vw - 72px\)\)/);

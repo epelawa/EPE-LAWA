@@ -10,7 +10,7 @@ const [page, action, editor, auth, header, sitemap, globalStyles, footer, newsCo
   readFile(new URL("dashboard/profile-editor.tsx", app), "utf8"),
   readFile(new URL("auth/actions.ts", app), "utf8"),
   readFile(new URL("site-header.tsx", components), "utf8"),
-  readFile(new URL("../../../../docs/03-sitemap.md", app), "utf8"),
+  readFile(new URL("../public/manus-routes.json", app), "utf8"),
   readFile(new URL("globals.css", app), "utf8"),
   readFile(new URL("../components/site-footer.tsx", app), "utf8"),
   readFile(new URL("dashboard/news-content.tsx", app), "utf8"),
@@ -53,7 +53,7 @@ test("sign-in leads straight to the dashboard while the public drawer stays acco
 	assert.doesNotMatch(header, /Appearance|ThemeToggle|theme-control/);
 	assert.match(header, /renderLink\("\/auth", "Create account", "btn-primary"\)/);
 	assert.match(header, /renderLink\("\/login", "Sign in", "btn-secondary"\)/);
-	assert.match(sitemap, /\/dashboard\s+MOUNTED/);
+	assert.match(sitemap, /"\/dashboard"/);
 });
 
 test("member Home and Discover use published story data and distinguish loading, empty, and error states", () => {

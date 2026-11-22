@@ -1,0 +1,6 @@
+.claimBlock { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.claimTrigger { min-height: 44px; border-radius: 999px; }
+.galleryGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+.galleryPhoto { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 14px; display: block; background: var(--ep-surface-soft, #E7EDF8); }
+.galleryEmpty, .featuredRibbon { font-size: 0.8125rem; }
+.featuredRibbon { display: inline-flex; align-items: center; min-height: 28px; padding: 2px 12px; border-radius: 999px; background: color-mix(in srgb, var(--ep-primary, #477fe0) 12%, transparent); color: var(--ep-primary, #477fe0); font-weight: 600; }

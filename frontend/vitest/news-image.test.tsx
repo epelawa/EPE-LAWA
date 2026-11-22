@@ -8,13 +8,13 @@ it("uses the logo for absent and failed covers", () => {
   const container = document.createElement("div"); document.body.append(container); const root = createRoot(container);
   act(() => root.render(<NewsImage className="image" src={null} alt="" />));
   let image = container.querySelector("img")!;
-  expect(image.getAttribute("src")).toBe("/brand-logo.png");
+  expect(image.getAttribute("src")).toBe("/brand-logo.webp");
   expect(image.dataset.newsFallback).toBe("true");
   act(() => root.render(<NewsImage className="image" src="https://images.example.com/cover.jpg" alt="Photo" />));
   image = container.querySelector("img")!;
   expect(image.getAttribute("src")).toBe("https://images.example.com/cover.jpg");
   act(() => image.dispatchEvent(new Event("error")));
-  expect(image.getAttribute("src")).toBe("/brand-logo.png");
+  expect(image.getAttribute("src")).toBe("/brand-logo.webp");
   expect(image.getAttribute("alt")).toBe("EPE LAWA logo");
   act(() => root.unmount()); container.remove();
 });
@@ -26,7 +26,7 @@ it("handles a cover that failed before hydration", () => {
   Object.defineProperty(HTMLImageElement.prototype, "naturalWidth", { configurable: true, get: () => 0 });
   try {
     act(() => root.render(<NewsImage className="image" src="https://images.example.com/failed.jpg" alt="Photo" />));
-    expect(container.querySelector("img")!.getAttribute("src")).toBe("/brand-logo.png");
+    expect(container.querySelector("img")!.getAttribute("src")).toBe("/brand-logo.webp");
   } finally {
     act(() => root.unmount()); container.remove();
     Object.defineProperty(HTMLImageElement.prototype, "complete", complete);

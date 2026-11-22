@@ -13,6 +13,7 @@ import HomeLivePill from "../../components/home-live-pill";
 import ArticleByline from "../../components/article-byline";
 import { BreakingBadge, BreakingNewsBanner } from "../../components/breaking-news";
 import { EmptyPanel, PageFrame } from "../../components/design-system";
+import FollowButton from "../../components/follow-button";
 import styles from "./listing.module.css";
 
 type ArticleListItem = {
@@ -27,9 +28,10 @@ type ArticleListItem = {
   category_label: string;
   cover_url: string | null;
   cover_alt: string | null;
+  tags: { slug: string; label: string }[] | null;
 };
-type NewsCategory = { slug: string; label: string };
-type SearchParams = { q?: string | string[]; page?: string | string[]; category?: string | string[]; search?: string | string[] };
+type NewsCategory = { id: string; slug: string; label: string };
+type SearchParams = { q?: string | string[]; page?: string | string[]; category?: string | string[]; tag?: string | string[]; search?: string | string[] };
 
 const newsIndexUrl = absoluteUrl("/news");
 const newsDescription = "Source-backed reporting from Epe and its connected communities.";
@@ -56,19 +58,20 @@ function safePage(value: string | string[] | undefined): number {
 function safeCategory(value: string | string[] | undefined): string {
   return typeof value === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value) ? value : "";
 }
-function pageHref(page: number, query: string, category: string): string {
+function pageHref(page: number, query: string, category: string, tag: string): string {
   const params = new URLSearchParams();
   if (query) params.set("q", query);
   if (category) params.set("category", category);
+  if (tag) params.set("tag", tag);
   if (page > 1) params.set("page", String(page));
   const suffix = params.toString();
   return suffix ? `/news?${suffix}` : "/news";
 }
-function categoryHref(query: string, category: string): string { return pageHref(1, query, category); }
+function categoryHref(query: string, category: string, tag = ""): string { return pageHref(1, query, category, tag); }
 function fallbackCategories(articles: ArticleListItem[]): NewsCategory[] {
   const labels = new Map<string, string>();
   for (const article of articles) labels.set(article.category_slug, article.category_label);
-  return [...labels].map(([slug, label]) => ({ slug, label }));
+  return [...labels].map(([slug, label]) => ({ id: "", slug, label }));
 }
 function coverUrl(article: ArticleListItem): string | null {
   return publishedNewsCover(article)?.url ?? null;
@@ -87,8 +90,9 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
   const params = await searchParams;
   const query = typeof params.q === "string" ? params.q.trim().slice(0, 100) : "";
   const category = safeCategory(params.category);
+  const tag = safeCategory(params.tag);
   const page = safePage(params.page);
-  const hasSearchOrCategory = Boolean(query || category);
+  const hasSearchOrCategory = Boolean(query || category || tag);
   const needsReset = hasSearchOrCategory || page > 1;
   const start = (page - 1) * PAGE_SIZE;
   let supabase: Awaited<ReturnType<typeof createClient>>;
@@ -110,10 +114,11 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
   }
 
   let articleQuery = supabase.from("published_articles")
-    .select("slug,title,summary,published_at,is_breaking,breaking_until,author_name,category_slug,category_label,cover_url,cover_alt")
+    .select("slug,title,summary,published_at,is_breaking,breaking_until,author_name,category_slug,category_label,cover_url,cover_alt,tags")
     .order("published_at", { ascending: false, nullsFirst: false })
     .order("slug", { ascending: true });
   if (category) articleQuery = articleQuery.eq("category_slug", category);
+  if (tag && !query) articleQuery = articleQuery.contains("tags", [{ slug: tag }]);
 
   const now = Date.now();
   // The banner is independent of pagination: older flagged stories can still be breaking.
@@ -121,8 +126,8 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
     ? supabase.from("published_articles").select("slug,title,published_at,breaking_until").eq("is_breaking", true).gt("breaking_until", new Date(now).toISOString()).order("published_at", { ascending: false, nullsFirst: false }).order("slug", { ascending: true }).limit(10)
     : Promise.resolve({ data: [], error: null });
   const [articleResult, categoryResult, breakingResult] = await Promise.all([
-    query ? supabase.rpc("search_published_news", { p_query: query, p_category: category, p_offset: start }).select("slug,title,summary,published_at,is_breaking,breaking_until,author_name,category_slug,category_label,cover_url,cover_alt") : articleQuery.range(start, start + PAGE_SIZE),
-    supabase.from("categories").select("slug,label").eq("is_active", true).order("sort_order", { ascending: true }).order("label", { ascending: true }).limit(MAX_CATEGORIES),
+    query ? supabase.rpc("search_published_news", { p_query: query, p_category: category, p_offset: start }).select("slug,title,summary,published_at,is_breaking,breaking_until,author_name,category_slug,category_label,cover_url,cover_alt,tags") : articleQuery.range(start, start + PAGE_SIZE),
+    supabase.from("categories").select("id,slug,label").eq("is_active", true).order("sort_order", { ascending: true }).order("label", { ascending: true }).limit(MAX_CATEGORIES),
     breakingQuery,
   ]);
   if (articleResult.error) {
@@ -132,8 +137,10 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
   if (categoryResult.error) console.error("news categories read failed", { code: categoryResult.error.code });
 
   const rows = (articleResult.data ?? []) as ArticleListItem[];
-  const articles = rows.slice(0, PAGE_SIZE);
-  const hasOlder = rows.length > PAGE_SIZE && page < MAX_PAGE;
+  const tagMatch = (item: ArticleListItem) => !tag || (item.tags ?? []).some((item2) => item2.slug === tag);
+  const rowsForTag = query && tag ? rows.filter(tagMatch) : rows;
+  const articles = rowsForTag.slice(0, PAGE_SIZE);
+  const hasOlder = rowsForTag.length > PAGE_SIZE && page < MAX_PAGE;
   const categories = (categoryResult.data?.length ? categoryResult.data : fallbackCategories(articles)) as NewsCategory[];
   if (breakingResult.error) console.error("breaking stories read failed", { code: breakingResult.error.code });
   const breakingStories = breakingResult.data ?? [];
@@ -150,6 +157,8 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
     grouped.set(story.category_slug, group);
   }
   const heading = category ? categories.find((item) => item.slug === category)?.label ?? "News" : query ? "Search results" : "News from Epe.";
+  const activeCategory = category ? categories.find((item) => item.slug === category) : undefined;
+  const tagLabel = tag ? articles.flatMap((article) => article.tags ?? []).find((item) => item.slug === tag)?.label ?? tag.replace(/-/g, " ") : "";
 
   return <>
     <PageFrame className={`${styles.newsPage} ui-stack`}>
@@ -160,6 +169,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
           <h1 className={styles.pageTitle}>{heading}</h1>
           <p className={styles.pageDescription}>The latest stories, developments and voices shaping Epe Division.</p>
           <HomeLivePill since={now} label="story" />
+          {category && activeCategory ? <div className="pt-1"><FollowButton topicType="news_category" topicId={activeCategory.id} returnTo={`/news?category=${encodeURIComponent(category)}`} /></div> : null}
         </div>
       </header>
 
@@ -178,9 +188,14 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
 
       {breakingResult.error ? <p role="status">Breaking news is unavailable right now.</p> : <BreakingNewsBanner stories={breakingStories} initialTime={now} />}
 
+      {tag ? <div className={styles.tagFilterBar} role="status">
+        <span>Stories tagged <strong>{tagLabel}</strong></span>
+        <Link className={styles.tagFilterClear} href={categoryHref(query, category)}>Clear topic filter</Link>
+      </div> : null}
+
       {articles.length === 0 ? <EmptyPanel
-        title={category ? "No published stories in this category" : query ? "No matching stories" : "No stories published yet"}
-        description={category ? "There are no published stories in this category yet." : query ? "Try a different search. No unpublished stories are shown." : "When the newsroom publishes a story, it will appear here with its byline, date and category."}
+        title={tag ? `No stories tagged ${tagLabel}` : category ? "No published stories in this category" : query ? "No matching stories" : "No stories published yet"}
+        description={tag ? "No published stories carry this topic yet." : category ? "There are no published stories in this category yet." : query ? "Try a different search. No unpublished stories are shown." : "When the newsroom publishes a story, it will appear here with its byline, date and category."}
         actions={needsReset ? <><Link href="/news" className="btn-secondary">{hasSearchOrCategory ? "Clear search and filters" : "Back to latest stories"}</Link><Link href="/" className="btn-secondary">Explore EPE LAWA</Link></> : <Link href="/" className="btn-secondary">Explore EPE LAWA</Link>}
       /> : <>
         {lead ? <section className={styles.featureSection} aria-labelledby="featured-heading">
@@ -226,7 +241,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
           })}</ul>
         </section>)}
       </>}
-      {page > 1 || hasOlder || hasSearchOrCategory ? <nav className={styles.pagination} aria-label="News pages">{page > 1 ? <Link className="btn-secondary" href={pageHref(page - 1, query, category)}>Newer stories</Link> : null}<span className={styles.pageNumber} aria-live="polite">Page {page}</span>{hasOlder ? <Link className="btn-secondary" href={pageHref(page + 1, query, category)}>Load more news</Link> : null}{hasSearchOrCategory || page > 1 ? <Link className={`${styles.viewAll} btn-primary`} href="/news">View all available news</Link> : null}</nav> : null}
+      {page > 1 || hasOlder || hasSearchOrCategory ? <nav className={styles.pagination} aria-label="News pages">{page > 1 ? <Link className="btn-secondary" href={pageHref(page - 1, query, category, tag)}>Newer stories</Link> : null}<span className={styles.pageNumber} aria-live="polite">Page {page}</span>{hasOlder ? <Link className="btn-secondary" href={pageHref(page + 1, query, category, tag)}>Load more news</Link> : null}{hasSearchOrCategory || page > 1 ? <Link className={`${styles.viewAll} btn-primary`} href="/news">View all available news</Link> : null}</nav> : null}
     </PageFrame>
   </>;
 }

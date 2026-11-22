@@ -1,10 +1,10 @@
  # EPE LAWA
 
-**The Voice of Epe Division.** A community, news, heritage, discussion and commerce platform for Epe Division, Lagos State, Nigeria.
+**The Voice of Epe Division.** A community, news, heritage, discussion and local-business platform for Epe Division, Lagos State, Nigeria.
 
 ## Current release scope
 
-The current web release includes all eight client-approved web areas (sections 3.1–3.8): Trending News; Itan Ilu Mi / My Community History; Chat Forum / Digital Village Square; Map & Navigation; Epe Business Directory & Marketplace; Historical Sites & Tourism; EPE LAWA Radio; and Who is Who in Epe. Cross-cutting requirements include member signup/verification/login/recovery, secure staff sessions/capabilities, admin analytics, news publishing, branded transactional email templates, audit, privacy, accessibility and full Playwright testing. See [the master plan](docs/00-master-plan.md) and [product requirements](docs/01-product-requirements.md).
+The current web release includes all eight client-approved web areas (sections 3.1–3.8): Trending News; Itan Ilu Mi / My Community History; Chat Forum / Digital Village Square; Map & Navigation; Epe Business Directory & Marketplace; Historical Sites & Tourism; EPE LAWA Radio; and Who is Who in Epe. Cross-cutting requirements include member signup/verification/login/recovery, secure staff sessions/capabilities, admin analytics, news publishing, branded transactional email templates, audit, privacy, accessibility and full Playwright testing. Commerce/payments are out of scope by owner decision — advert placements are paid manually. See [the consolidated master plan](docs/00-master-plan.md) — the single active project document.
 
 A route or database object existing does not prove a feature is complete or in current scope. Historical schema inventory is not a release claim.
 
@@ -36,22 +36,15 @@ The public app is `frontend/apps/main`; the staff app is `frontend/apps/admin`.
 
 ## Deployment status
 
-Verified 2026-11-21 against `https://epelawa.vercel.app` (read-only HTTP checks, no writes): `main` is `e3e791f7787cd8992f71ab6df6e1ad2609081fc8` (merge of PR #238) with CI verify, CodeQL and browser smoke all green on that exact head. The live alias serves all eight approved modules: homepage and News are populated with real published stories; Business Directory shows one verified business (Founda Technologies); Map, Tourism, Itan Ilu Mi, Who is Who and Gallery serve honest empty states; `/admin/login` and `/api/health` (`{"status":"ok"}`) respond 200. One verified live defect: `/forum` renders the error boundary ("Try once more, or take another route") instead of the forum listing. The production Supabase migration-ledger drift documented in `docs/handoffs/2026-11-20-migration-inventory.md` remains unresolved; no production writes were made during verification.
+Verified 2026-11-21 against `https://epelawa.vercel.app` (read-only HTTP checks, no writes): `main` is `e3e791f7787cd8992f71ab6df6e1ad2609081fc8` (merge of PR #238) with CI verify, CodeQL and browser smoke all green on that exact head. The live alias serves all eight approved modules: homepage and News are populated with real published stories; Business Directory shows one verified business (Founda Technologies); Map, Tourism, Itan Ilu Mi, Who is Who and Gallery serve honest empty states; `/admin/login` and `/api/health` (`{"status":"ok"}`) respond 200. One verified live defect: `/forum` renders the error boundary ("Try once more, or take another route") instead of the forum listing. The production Supabase migration-ledger drift documented in the 2026-11-20 reconciliation (now in git history) has since been resolved for the feature-program migrations; no production writes were made during this verification.
 
 ## Key documents
 
 | Document | Purpose |
 | --- | --- |
-| [00 — Master plan](docs/00-master-plan.md) | Scope, design direction and release evidence |
-| [01 — Product requirements](docs/01-product-requirements.md) | Full requirements for all eight web areas and section 5 roadmap enhancements |
-| [04 — Page specifications](docs/04-page-specifications.md) | Current public/staff page requirements |
-| [05 — Design system](docs/05-design-system.md) | Palette, interaction and accessibility |
-| [08 — Security](docs/08-permissions-security.md) | Roles, access, privacy and moderation |
-| [11 — Testing](docs/11-testing-acceptance.md) | Acceptance and verification status |
-| [12 — Roadmap](docs/12-development-roadmap.md) | Current implementation workstreams |
-| [14 — Tracker](docs/14-tracker.md) | Evidence, status and blockers |
-| [15 — UI research](docs/15-ui-research.md) | Reference sources and limitations |
-| [16 — Progress log](docs/16-progress-log.md) | Timestamped evidence and decisions |
+| [00 — Master plan](docs/00-master-plan.md) | The single consolidated project document: scope, architecture, database conventions, security, design system, integrations, roadmap and changelog |
+
+Historical snapshots live in `docs/archive/` and in git history.
 
 ## Repository layout
 

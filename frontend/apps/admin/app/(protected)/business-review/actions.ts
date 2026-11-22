@@ -92,3 +92,34 @@ export async function staffCreateBusiness(_prev: StaffCreateState, formData: For
   revalidatePath("/");
   redirect(adminHref("/business-review?added=1"));
 }
+
+/** Approve or reject an "own this business" claim; approval links the member account as owner. */
+export async function decideBusinessClaim(formData: FormData): Promise<void> {
+  const db = await createClient();
+  const claimId = value(formData, "claim_id");
+  const status = value(formData, "status");
+  const note = value(formData, "note");
+  if (!UUID_RE.test(claimId) || !["approved", "rejected"].includes(status) || (status === "rejected" && note.length < 2) || note.length > 1000) {
+    redirect(adminHref("/business-review?error=claim"));
+  }
+  const { error } = await db.rpc("staff_decide_business_claim", { p_claim_id: claimId, p_status: status, p_note: note });
+  if (error) redirect(adminHref("/business-review?error=claim"));
+  revalidatePath(adminHref("/business-review"));
+  revalidatePath("/business-directory");
+  redirect(adminHref("/business-review?claims=1"));
+}
+
+/** Replace the featured directory slot with this published business for the chosen number of days. */
+export async function featureBusiness(formData: FormData): Promise<void> {
+  const db = await createClient();
+  const businessId = value(formData, "business_id");
+  const days = Number(value(formData, "days"));
+  if (!UUID_RE.test(businessId) || !Number.isSafeInteger(days) || days < 1 || days > 90) {
+    redirect(adminHref("/business-review?error=featured"));
+  }
+  const { error } = await db.rpc("staff_set_business_featured", { p_business_id: businessId, p_days: days });
+  if (error) redirect(adminHref("/business-review?error=featured"));
+  revalidatePath(adminHref("/business-review"));
+  revalidatePath("/business-directory");
+  redirect(adminHref("/business-review?featured=1"));
+}

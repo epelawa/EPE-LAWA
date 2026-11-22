@@ -6,13 +6,47 @@ import { PageFrame } from "../../components/design-system";
 import styles from "./radio-page.module.css";
 import { pageMetadata } from "../../lib/metadata";
 import SponsorSlot from "../../components/sponsor-slot";
+import { createClient } from "../../lib/supabase";
+import SongRequestModal from "./request-modal";
+import { onAirSlotId } from "./programmes/on-air";
+
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = pageMetadata({ title: "EPE LAWA Radio", description: "Listen to Radio Lagos and discover Guts FM on EPE LAWA.", path: "/radio" });
-export default function RadioPage() {
+
+export default async function RadioPage() {
+  let programmes: Array<{ id: string; name: string }> = [];
+  let slots: Array<{ id: string; day_of_week: number; starts_at: string; ends_at: string; programmes: Array<{ name: string }> }> = [];
+  let signedIn = false;
+  let unavailable = false;
+  try {
+    const db = await createClient();
+    const [{ data: { user } }, p, s] = await Promise.all([
+      db.auth.getUser(),
+      db.from("programmes").select("id,name").eq("is_active", true).order("name").limit(100),
+      db.from("radio_schedule").select("id,day_of_week,starts_at,ends_at,programmes(name)").limit(200),
+    ]);
+    signedIn = Boolean(user);
+    if (p.error || s.error) unavailable = true;
+    else { programmes = p.data ?? []; slots = s.data ?? []; }
+  } catch { unavailable = true; }
+  const onAirId = unavailable ? null : onAirSlotId(slots);
+  const onAirName = onAirId ? slots.find(slot => slot.id === onAirId)?.programmes?.[0]?.name ?? null : null;
+
   return <PageFrame className={styles.listeningPage}>
-    <section id="live-player" className={styles.playerWrap} aria-label="Radio stations"><RadioPlayer><SponsorSlot compact /></RadioPlayer></section>
+    <section id="live-player" className={styles.playerWrap} aria-label="Radio stations">
+      <RadioPlayer><SponsorSlot compact /></RadioPlayer>
+      <div className={styles.nowPlaying} role="status">
+        <span className={styles.onAirDot} aria-hidden="true" />
+        {onAirName ? <span><strong>On air now:</strong> {onAirName}</span> : <span><strong>On air now:</strong> station programming</span>}
+      </div>
+      <div className={styles.requestRow}>
+        <SongRequestModal programmes={programmes} signedIn={signedIn} />
+        <Link href="/radio/archive" className="btn-ghost">Browse the archive</Link>
+      </div>
+    </section>
     <section className={styles.explore} aria-labelledby="radio-explore-title"><div><p className={styles.eyebrow}>MORE FROM EPE LAWA</p><h2 id="radio-explore-title">Keep exploring</h2></div><div className={styles.links}>
-      <Link href="/radio/programmes"><span><strong>Programmes &amp; archive</strong><small>Explore published radio content</small></span><ArrowRightIcon size={20} /></Link>
+      <Link href="/radio/programmes"><span><strong>Programmes &amp; schedule</strong><small>Weekly programme grid</small></span><ArrowRightIcon size={20} /></Link>
+      <Link href="/radio/archive"><span><strong>Programme archive</strong><small>Past episodes to replay</small></span><ArrowRightIcon size={20} /></Link>
       <Link href="/radio/reminders"><span><strong>Radio reminders</strong><small>Choose your listening reminders</small></span><ArrowRightIcon size={20} /></Link>
       <Link href="/news"><span><strong>Latest news</strong><small>Stories from the newsroom</small></span><ArrowRightIcon size={20} /></Link>
     </div></section>

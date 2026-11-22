@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "../../../../lib/supabase";
 import { EmptyPanel, Notice, PageFrame, PageIntro, SectionHeading } from "../../../../components/design-system";
+import FollowButton from "../../../../components/follow-button";
 
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ page?: string | string[] }> };
 const PAGE_SIZE = 20;
@@ -31,7 +32,10 @@ export default async function ForumCategoryPage({ params, searchParams }: Props)
   const threads = (data ?? []).slice(0, PAGE_SIZE);
   const hasNext = (data?.length ?? 0) > PAGE_SIZE && page < MAX_PAGE;
   return <PageFrame className="ui-stack"><nav className="ui-back-link" aria-label="Breadcrumb"><Link href="/forum">Forum</Link><span aria-hidden="true"> / </span><span>{category.name}</span></nav>
-    <PageIntro eyebrow="Community category" title={category.name} description={category.description ?? undefined} actions={<Link className="btn-primary" href={`/forum/new?category=${encodeURIComponent(category.id)}`}>Start a discussion</Link>} meta={category.rules ? <span><strong>Posting rules:</strong> {category.rules}</span> : undefined} />
+    <PageIntro eyebrow="Community category" title={category.name} description={category.description ?? undefined} actions={<>
+      <Link className="btn-primary" href={`/forum/new?category=${encodeURIComponent(category.id)}`}>Start a discussion</Link>
+      <FollowButton topicType="forum_category" topicId={category.id} returnTo={`/forum/category/${encodeURIComponent(slug)}`} />
+    </>} meta={category.rules ? <span><strong>Posting rules:</strong> {category.rules}</span> : undefined} />
     <section className="ui-stack-sm"><SectionHeading eyebrow="Conversations" title="Threads" />{threadError ? <Notice role="status" tone="warning">Threads could not be loaded. Please try again later.</Notice> : !threads.length ? <EmptyPanel title={page > 1 ? "No discussions on this page" : "No public threads in this category yet"} description={page > 1 ? "Go back to see earlier results." : "There are no visible discussions to show here."} /> : <ul className="ui-list ui-panel ui-results">{threads.map((thread) => <li className="ui-item" key={thread.id}><h2 className="ui-item-title"><Link href={`/forum/thread/${encodeURIComponent(thread.slug)}`}>{thread.title}</Link></h2><p className="ui-meta">{thread.post_count} {thread.post_count === 1 ? "post" : "posts"}</p></li>)}</ul>}</section>
     {!threadError && (page > 1 || hasNext) ? <nav className="ui-actions" aria-label="Discussion pages">{page > 1 ? <Link className="btn-secondary" href={pageHref(page - 1)}>Previous discussions</Link> : null}<span className="ui-meta">Page {page}</span>{hasNext ? <Link className="btn-secondary" href={pageHref(page + 1)}>More discussions</Link> : null}</nav> : null}
   </PageFrame>;

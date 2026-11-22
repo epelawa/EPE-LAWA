@@ -13,5 +13,5 @@ export default function NewsImage({ src, alt, className, loading = "lazy", fetch
     // A fast failure can occur before React attaches the error handler.
     if (!fallback && src && image.current?.complete && image.current.naturalWidth === 0) setFailed(src);
   }, [src, fallback]);
-  return <img ref={image} className={className} data-news-fallback={fallback ? "true" : undefined} src={fallback ? "/brand-logo.png" : src} alt={fallback ? "EPE LAWA logo" : alt} loading={loading} fetchPriority={fetchPriority} decoding="async" referrerPolicy="no-referrer" onError={() => { if (!fallback && src) setFailed(src); }} />;
+  return <img ref={image} className={className} data-news-fallback={fallback ? "true" : undefined} src={fallback ? "/brand-logo.webp" : src} alt={fallback ? "EPE LAWA logo" : alt} loading={loading} fetchPriority={fetchPriority} decoding="async" referrerPolicy="no-referrer" onError={() => { if (!fallback && src) setFailed(src); }} />;
 }

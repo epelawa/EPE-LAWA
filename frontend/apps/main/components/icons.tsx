@@ -213,3 +213,7 @@ export const SignOutIcon = ({ size = 20, className }: { size?: number; className
     <path d="M10 12h10.2" />
   </svg>
 );
+
+export const CalendarShortcutIcon = ({ size = 24 }: { size?: number }) => (
+  <svg aria-hidden="true" focusable="false" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18M8 15h3"/></svg>
+);

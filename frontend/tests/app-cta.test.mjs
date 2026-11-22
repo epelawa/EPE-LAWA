@@ -10,7 +10,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 test("app CTA reports real availability without inventing a store listing or waitlist", () => {
   const full = read("frontend/apps/main/components/download-app.tsx");
   const compact = read("frontend/apps/main/components/download-app-button.tsx");
-  const requirements = read("docs/01-product-requirements.md");
+  const requirements = read("docs/00-master-plan.md");
 
   for (const source of [full, compact]) {
     assert.match(source, /Not on Play Store/);

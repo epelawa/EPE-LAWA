@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRightIcon, ArrowUpRightIcon, UsersIcon, ListenShortcutIcon, NewsShortcutIcon, CompassIcon, BuildingIcon, MessageCircleIcon, ClockIcon, EyeIcon } from "../components/icons";
+import { ArrowRightIcon, ArrowUpRightIcon, UsersIcon, ListenShortcutIcon, NewsShortcutIcon, CompassIcon, BuildingIcon, MessageCircleIcon, CalendarShortcutIcon, ClockIcon, EyeIcon } from "../components/icons";
 import { formatPublishedDate } from "../lib/dates";
 import { getLatestStories, getHomeBreakingStories } from "../lib/home-data";
 import "./hero-logo.css";
@@ -13,6 +13,7 @@ import { HomeBreakingTicker } from "../components/home-breaking-ticker";
 import { BreakingBadge } from "../components/breaking-news";
 import SponsorSlot from "../components/sponsor-slot";
 import { HomeSectionReveal } from "../components/home-sections";
+import SitePoll from "../components/site-poll";
 import HomeLivePill from "../components/home-live-pill";
 import AdsSection from "../components/ads-section";
 
@@ -53,6 +54,7 @@ export default async function Home() {
             { href: "/itan-ilu-mi", label: "Community history", Icon: CompassIcon },
             { href: "/forum", label: "Join the conversation", Icon: MessageCircleIcon },
             { href: "/business-directory", label: "Local businesses", Icon: BuildingIcon },
+            { href: "/events", label: "Community events", Icon: CalendarShortcutIcon },
             { href: "/advertise", label: "Advertise with us", Icon: UsersIcon },
           ].map(({ href, label, Icon }) => <Link href={href} key={href}><span aria-hidden="true"><Icon size={25} /></span><span>{label}</span></Link>)}
         </nav>
@@ -112,6 +114,7 @@ export default async function Home() {
         </div>
         <span className="connection-panel__icon" aria-hidden="true"><UsersIcon size={96} /></span>
       </section></HomeSectionReveal>
+      <HomeSectionReveal><div className="ep-container home-poll"><SitePoll /></div></HomeSectionReveal>
       <SponsorSlot footer />
       <CookieBanner />
     </div>

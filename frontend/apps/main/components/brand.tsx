@@ -6,7 +6,7 @@ import { useState } from "react";
  * The EPE LAWA lockup.
  *
  * The only brand mark in this project is the supplied artwork at
- * `public/brand-logo.png`. An earlier version drew a fallback mark inline (a
+ * `public/brand-logo.webp`. An earlier version drew a fallback mark inline (a
  * teal circle with a wave) which was invented branding — it has been removed.
  *
  * The PNG is dark artwork on a transparent background, so it sits on an ivory
@@ -30,7 +30,7 @@ export function BrandLockup({ size = 32 }: { size?: number }) {
       {imageFailed ? null : (
         <span className="brand__mark">
           <img
-            src="/brand-logo.png"
+            src="/brand-logo.webp"
             alt=""
             width={markWidth}
             height={size}

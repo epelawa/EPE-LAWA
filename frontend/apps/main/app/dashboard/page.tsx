@@ -14,6 +14,8 @@ import type { DashboardTab } from "../../lib/dashboard-swipe";
 import LayoutVariation from "../../components/layout-variation";
 import SessionGuard from "../../components/session-guard";
 import ProfileEditor from "./profile-editor";
+import SecurityCard from "./security-card";
+import AppealsPanel from "./appeals-panel";
 import AvatarEditor from "./avatar-editor";
 import HandleCompletionForm from "./handle-completion-form";
 import { DashboardDiscoverNews, DashboardHomeNews, safePage } from "./news-content";
@@ -334,6 +336,8 @@ export default async function MemberDashboardPage({ searchParams }: { searchPara
                   <h2>Public profile</h2>
                   <p className={styles.helper}>Your display name and handle appear beside your posts. Keep private contact details out of your public name.</p>
                   <ProfileEditor displayName={profile.display_name} handle={profile.handle} />
+                  <SecurityCard email={user.email ?? "your email address"} memberSince={profile.created_at ? formatPublishedDate(profile.created_at) : null} />
+                  <AppealsPanel />
                   <form action={signOutEverywhere} className="ui-stack-sm ui-divider">
                     <button className="btn-ghost" type="submit">Sign out everywhere</button>
                     <p className={styles.helper}>Ends this session and every other signed-in session for your account on all devices.</p>
