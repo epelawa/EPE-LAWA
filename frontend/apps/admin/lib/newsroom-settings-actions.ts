@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { adminHref } from "./admin-path";
-import { createClient } from "./supabase";
+import { createStaffClient } from "./supabase";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 function value(form: FormData, key: string, max: number): string {
@@ -40,8 +40,8 @@ async function save(kind: "category" | "byline", formData: FormData): Promise<vo
     rpc = "newsroom_byline_save";
     args = { p_id: id || null, p_slug: slug, p_display_name: displayName, p_bio: bio || null, p_photo_key: photoKey || null };
   }
+  const client = await createStaffClient();
   try {
-    const client = await createClient();
     const result = await client.rpc(rpc, args);
     if (result.error) {
       console.error("newsroom reference save failed", { kind, code: errorCode(result.error) });

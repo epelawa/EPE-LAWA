@@ -1,4 +1,4 @@
-import { createClient } from "../../../lib/supabase";
+import { createStaffClient } from "../../../lib/supabase";
 import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "@epelawa/ui";
 import { addGalleryPhoto, removeGalleryPhoto } from "./actions";
 import ConfirmSubmit from "../../../components/confirm-submit";
@@ -38,18 +38,7 @@ export default async function MediaAdminPage({ searchParams }: { searchParams: P
     remove: { role: "alert", text: "The photograph could not be removed. Try again in a moment." },
   };
   const message = params.media ? messages[params.media] : null;
-  const denied = (
-    <PageFrame className="ui-stack">
-      <PageIntro eyebrow="Staff workspace" title="Gallery & media" description="The public photo archive and media records." />
-      <Notice tone="danger" role="alert">Gallery management is unavailable right now. Reload the page; if you are not signed in as staff, sign in first.</Notice>
-    </PageFrame>
-  );
-  let db: Awaited<ReturnType<typeof createClient>>;
-  try {
-    db = await createClient();
-  } catch {
-    return denied;
-  }
+  const db = await createStaffClient();
   const { data: allowed, error: capabilityError } = await db.rpc("has_capability", { p_capability: "site.content" });
   if (capabilityError || allowed !== true) {
     return <PageFrame className="ui-stack"><PageIntro eyebrow="Staff workspace" title="Gallery & media" description="The public photo archive and media records." /><Notice tone="danger" role="alert">The site.content capability is required. No records are shown.</Notice></PageFrame>;

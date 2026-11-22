@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { adminHref } from "../../../lib/admin-path";
-import { createClient } from "../../../lib/supabase";
+import { createStaffClient } from "../../../lib/supabase";
 
 const value = (form: FormData, key: string) => {
   const raw = form.get(key);
@@ -11,7 +11,7 @@ const value = (form: FormData, key: string) => {
 };
 
 export async function resolveCorrection(form: FormData): Promise<void> {
-  const db = await createClient();
+  const db = await createStaffClient();
   const { data: allowed, error: ge } = await db.rpc("has_capability", { p_capability: "article.review" });
   if (ge || allowed !== true) redirect(adminHref("/corrections?error=forbidden"));
 

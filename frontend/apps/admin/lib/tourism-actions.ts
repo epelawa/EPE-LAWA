@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { adminHref } from "./admin-path";
-import { createClient } from "./supabase";
+import { createStaffClient } from "./supabase";
 
 function value(data: FormData, key: string, max: number) {
   const raw = data.get(key);
@@ -22,8 +22,8 @@ export async function decideTourismSubmission(data: FormData) {
   }
 
   let failed = false;
+  const supabase = await createStaffClient();
   try {
-    const supabase = await createClient();
     const capability = await supabase.rpc("has_capability", { p_capability: "tourism.review" });
     if (capability.error || capability.data !== true) redirect(adminHref("/tourism?result=denied"));
 

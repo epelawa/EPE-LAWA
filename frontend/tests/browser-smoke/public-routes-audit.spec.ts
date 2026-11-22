@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 // Synthetic fixture: this verifies route rendering, not production providers or writes.
-const routes = ["/", "/news", "/about", "/advertise", "/contact", "/business-directory", "/forum", "/gallery", "/guidelines", "/itan-ilu-mi", "/map", "/photo-credits", "/privacy", "/radio", "/terms", "/tourism", "/who-is-who", "/login", "/forgot-password"];
+const routes = ["/", "/news", "/about", "/advertise", "/contact", "/business-directory", "/events", "/forum", "/gallery", "/guidelines", "/itan-ilu-mi", "/map", "/photo-credits", "/privacy", "/radio", "/radio/archive", "/radio/programmes", "/terms", "/tourism", "/who-is-who", "/login", "/forgot-password"];
 for (const width of [320, 1440]) {
   test(`public routes render without horizontal overflow at ${width}px`, async ({ page, request }) => {
     test.setTimeout(240_000);
@@ -62,11 +62,11 @@ test("radio keeps listening separate from listings and reminder settings", async
     await expect(page.getByRole("region", { name: "Radio stations" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Keep exploring" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Schedule", exact: true })).toHaveCount(0);
-    await expect(page.getByRole("link", { name: /Programmes & archive/ })).toHaveAttribute("href", "/radio/programmes");
+    await expect(page.getByRole("link", { name: /Programmes & schedule/ })).toHaveAttribute("href", "/radio/programmes");
     const size = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth }));
     expect(size.document).toBeLessThanOrEqual(size.viewport + 1);
   }
-  await page.getByRole("link", { name: /Programmes & archive/ }).click();
+  await page.getByRole("link", { name: /Programmes & schedule/ }).click();
   await expect(page).toHaveURL(/\/radio\/programmes$/);
   await expect(page.getByRole("heading", { name: "Programmes and archive" })).toBeVisible();
   await page.getByRole("link", { name: "Radio notification settings" }).click();

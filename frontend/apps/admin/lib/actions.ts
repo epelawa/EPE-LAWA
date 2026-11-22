@@ -1,10 +1,12 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "./supabase";
+import { after } from "next/server";
+import { createClient, createStaffClient } from "./supabase";
 import { adminHref } from "./admin-path";
 import { hasConfirmedArticleUnpublish } from "./article-publication-state";
 import { publicMediaUrl } from "../../main/lib/media";
+import { pushSenderReady } from "../../main/lib/web-push-send";
 import { normalizeExternalNewsCoverUrl } from "../../main/lib/news-cover-url.mjs";
 import { mediaExtensionFor, putMediaObject } from "./media-r2";
 
@@ -36,6 +38,35 @@ function rawText(formData: FormData, name: string): string {
 }
 function text(formData: FormData, name: string, max: number): string {
   return rawText(formData, name).slice(0, max);
+}
+/** Fire-and-forget web-push dispatch after a successful publish; never blocks or fails publication. */
+function pushOrigin(): string {
+  return (process.env.NEXT_PUBLIC_SITE_URL?.trim() || "https://epelawa.com").replace(/\/+$/, "");
+}
+async function dispatchNewsroomPush(supabase: Awaited<ReturnType<typeof createClient>>, articleId: string): Promise<void> {
+  if (!pushSenderReady()) return;
+  try {
+    const read = await supabase.from("articles").select("title,summary,slug").eq("id", articleId).maybeSingle();
+    const article = read.data;
+    if (!article || typeof article.slug !== "string" || !article.slug) return;
+    const response = await fetch(`${pushOrigin()}/api/push/dispatch`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${process.env.PUSH_DISPATCH_SECRET?.trim() ?? ""}`,
+      },
+      body: JSON.stringify({
+        kind: "news_published",
+        title: article.title.slice(0, 140),
+        body: (article.summary?.trim() || "A new story was just published on EPE LAWA.").slice(0, 1000),
+        url: `/news/${article.slug}`,
+      }),
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!response.ok) console.error("push dispatch failed", { status: response.status });
+  } catch (error) {
+    console.error("push dispatch unavailable", { message: error instanceof Error ? error.message : "" });
+  }
 }
 function nullCoverFields(): CoverFields {
   return { coverUrl: null, coverAlt: null, coverCredit: null, coverSourceUrl: null, coverLicenseUrl: null, coverCaption: null };
@@ -83,8 +114,8 @@ async function storeCoverUpload(formData: FormData, file: File): Promise<StoredC
   if (!publicUrl) return { error: COVER_UPLOAD_ERRORS.unconfigured };
   const written = await putMediaObject("public", objectKey, await file.arrayBuffer(), file.type);
   if (written.state !== "ready") return { error: COVER_UPLOAD_ERRORS.storage_failed };
+  const supabase = await createStaffClient();
   try {
-    const supabase = await createClient();
     const { error } = await supabase.rpc("media_asset_create", {
       p_kind: "cover",
       p_title: stem.replace(/-/g, " ").slice(0, 180),
@@ -226,8 +257,8 @@ async function createArticleCore(formData: FormData): Promise<{ status: "error" 
   let articleId: string | null = null;
   let errorCode: string | null = null;
   let uncertain = false;
+  const supabase = await createStaffClient();
   try {
-    const supabase = await createClient();
     const result = await supabase.rpc("article_create_with_cover", {
       p_title: title,
       p_summary: summary,
@@ -258,7 +289,7 @@ async function createArticleCore(formData: FormData): Promise<{ status: "error" 
 export async function createArticle(formData: FormData): Promise<void> {
   const result = await createArticleCore(formData);
   if (result.status === "success") {
-    const supabase = await createClient();
+    const supabase = await createStaffClient();
     const published = await autoPublishArticle(supabase, result.articleId);
     if (published) {
       revalidatePath("/news");
@@ -272,7 +303,7 @@ export async function createArticle(formData: FormData): Promise<void> {
 export async function createArticleWithFeedback(formData: FormData): Promise<{ status: "error" | "uncertain"; message: string } | { status: "success"; articleId: string; published: boolean }> {
   const result = await createArticleCore(formData);
   if (result.status !== "success") return result;
-  const supabase = await createClient();
+  const supabase = await createStaffClient();
   const published = await autoPublishArticle(supabase, result.articleId);
   if (published) {
     revalidatePath("/news");
@@ -302,8 +333,8 @@ async function saveDraftCore(formData: FormData): Promise<EditResult> {
   let errorCode: string | null = null;
   let uncertain = false;
   let savedRevision: number | undefined;
+  const supabase = await createStaffClient();
   try {
-    const supabase = await createClient();
     const saved = await supabase.rpc("article_draft_update_with_cover", {
       p_article_id: fields.articleId,
       p_expected_revision: fields.revision,
@@ -342,6 +373,7 @@ async function autoPublishArticle(supabase: Awaited<ReturnType<typeof createClie
       expected = read.data.revision;
     }
     const { error } = await supabase.rpc("article_publish", { p_article_id: articleId, p_expected_revision: expected });
+    if (!error) after(() => dispatchNewsroomPush(supabase, articleId));
     return !error;
   } catch {
     return false;
@@ -362,8 +394,8 @@ async function reviseArticleCore(formData: FormData): Promise<EditResult> {
 
   let errorCode: string | null = null;
   let uncertain = false;
+  const supabase = await createStaffClient();
   try {
-    const supabase = await createClient();
     const { error } = await supabase.rpc("article_revise_with_cover", {
       p_article_id: fields.articleId,
       p_expected_revision: fields.revision,
@@ -393,7 +425,7 @@ async function reviseArticleCore(formData: FormData): Promise<EditResult> {
 /** Save + publish in one action: the reader-visible outcome of every save. */
 async function publishAfterSave(result: EditResult, outcome: "saved" | "revised"): Promise<EditResult> {
   if (result.status !== "success") return result;
-  const supabase = await createClient();
+  const supabase = await createStaffClient();
   const published = await autoPublishArticle(supabase, result.articleId, result.revision);
   if (!published) return result;
   revalidatePath("/news");
@@ -431,8 +463,8 @@ async function deleteArticleCore(formData: FormData): Promise<void> {
   const articleId = text(formData, "articleId", 64);
   if (!UUID.test(articleId)) fail("/newsroom?error=invalid");
   let errorCode: string | null = null;
+  const supabase = await createStaffClient();
   try {
-    const supabase = await createClient();
     const { error } = await supabase.rpc("newsroom_article_delete", { p_article_id: articleId });
     if (error) errorCode = error.code;
   } catch (error) {
@@ -466,10 +498,11 @@ async function articleTransition(
   if (!UUID.test(articleId) || !Number.isSafeInteger(revision) || revision < 1) fail("/newsroom?error=invalid");
 
   let errorCode: string | null = null;
+  const supabase = await createStaffClient();
   try {
-    const supabase = await createClient();
     const { error } = await supabase.rpc(rpcName, { p_article_id: articleId, p_expected_revision: revision });
     if (error) errorCode = error.code;
+    else if (rpcName === "article_publish") after(() => dispatchNewsroomPush(supabase, articleId));
   } catch (error) {
     errorCode = queryErrorCode(error);
   }
@@ -495,8 +528,8 @@ export async function setArticleBreaking(formData: FormData): Promise<void> {
   if (operation === "enable" && !["1", "6", "24", "48"].includes(duration)) fail(`/newsroom/${articleId}?error=breaking`);
   const until = operation === "enable" ? new Date(Date.now() + Number(duration) * 60 * 60 * 1000).toISOString() : null;
   let errorCode: string | null = null;
+  const supabase = await createStaffClient();
   try {
-    const supabase = await createClient();
     const { error } = await supabase.rpc("article_set_breaking", {
       p_article_id: articleId, p_expected_revision: revision, p_breaking: operation === "enable", p_until: until,
     });
@@ -530,8 +563,8 @@ export async function saveArticleTags(formData: FormData): Promise<void> {
     }
   }
   let errorCode: string | null = null;
+  const supabase = await createStaffClient();
   try {
-    const supabase = await createClient();
     const { error } = await supabase.rpc("article_tags_save", { p_article_id: articleId, p_tags: tags });
     if (error) errorCode = error.code;
   } catch (error) { errorCode = queryErrorCode(error); }
@@ -558,8 +591,8 @@ export async function saveSitePoll(formData: FormData): Promise<void> {
     fail("/poll?error=invalid");
   }
   let errorCode: string | null = null;
+  const supabase = await createStaffClient();
   try {
-    const supabase = await createClient();
     const { error } = await supabase.rpc("site_poll_save", { p_question: question, p_options: options, p_days: days });
     if (error) errorCode = error.code;
   } catch (error) { errorCode = queryErrorCode(error); }

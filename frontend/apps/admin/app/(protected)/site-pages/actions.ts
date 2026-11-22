@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { createClient } from "../../../lib/supabase";
+import { createStaffClient } from "../../../lib/supabase";
 import { publicMediaUrl } from "../../../../main/lib/media";
 import { mediaExtensionFor, putMediaObject } from "../../../lib/media-r2";
 
@@ -51,7 +51,7 @@ export async function saveSitePage(form: FormData) {
   const revision = Number.parseInt(revisionRaw || "0", 10);
   if (revisionRaw !== "" && !Number.isFinite(revision)) redirect(`/site-pages?status=error&reason=failed`);
 
-  const supabase = await createClient();
+  const supabase = await createStaffClient();
   const keep: PhotoTarget[] = [];
   const uploads: { file: File; alt: string; credit: string }[] = [];
   for (let slot = 1; slot <= PHOTO_SLOTS; slot += 1) {

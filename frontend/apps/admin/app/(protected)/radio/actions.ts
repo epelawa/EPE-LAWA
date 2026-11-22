@@ -2,7 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { adminHref } from "../../../lib/admin-path";
-import { createClient } from "../../../lib/supabase";
+import { createClient, createStaffClient } from "../../../lib/supabase";
 
 const text = (f: FormData, key: string, max: number) => String(f.get(key) ?? "").trim().slice(0, max);
 function slugify(value: string) { return value.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80); }
@@ -20,7 +20,7 @@ function recordId(f: FormData): string | null {
   return id;
 }
 async function authorized() {
-  const db = await createClient();
+  const db = await createStaffClient();
   const { data, error } = await db.rpc("has_capability", { p_capability: "radio.manage" });
   if (error || data !== true) throw new Error("denied");
   return db;

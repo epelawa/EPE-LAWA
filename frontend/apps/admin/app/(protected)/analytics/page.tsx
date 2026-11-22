@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading } from "@epelawa/ui";
 import { adminHref } from "../../../lib/admin-path";
-import { createClient } from "../../../lib/supabase";
+import { createStaffClient } from "../../../lib/supabase";
 import TrendChart from "./trend-chart";
 
 export const dynamic = "force-dynamic";
@@ -29,7 +29,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
   const query = await searchParams;
   const requestedDays = Number.parseInt(typeof query.days === "string" ? query.days : "", 10);
   const days = requestedDays === 7 || requestedDays === 90 ? requestedDays : 30;
-  const db = await createClient();
+  const db = await createStaffClient();
   const [publish, business, moderation] = await Promise.all([
     db.rpc("has_capability", { p_capability: "article.publish" }),
     db.rpc("has_capability", { p_capability: "business.review" }),

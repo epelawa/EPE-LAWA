@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "../../../lib/supabase";
+import { createStaffClient } from "../../../lib/supabase";
 import { mediaExtensionFor, putMediaObject } from "../../../lib/media-r2";
 import { adminHref } from "../../../lib/admin-path";
 
@@ -33,7 +33,7 @@ async function uploadPortrait(file: File): Promise<string> {
 }
 
 export async function savePerson(form: FormData): Promise<void> {
-  const db = await createClient();
+  const db = await createStaffClient();
   const id = val(form, "id");
   const name = val(form, "full_name");
   const revision = Number(val(form, "revision"));
@@ -98,7 +98,7 @@ export async function savePerson(form: FormData): Promise<void> {
 }
 
 export async function addSource(form: FormData): Promise<void> {
-  const db = await createClient();
+  const db = await createStaffClient();
   const personId = val(form, "person_id");
   const citation = val(form, "citation");
   const url = val(form, "url");
@@ -117,7 +117,7 @@ export async function addSource(form: FormData): Promise<void> {
 }
 
 export async function sourceVisibility(form: FormData): Promise<void> {
-  const db = await createClient();
+  const db = await createStaffClient();
   const sourceId = val(form, "source_id");
   const visibility = val(form, "visibility");
   if (!uuid(sourceId) || !["public", "staff"].includes(visibility)) finish("invalid");
@@ -130,7 +130,7 @@ export async function sourceVisibility(form: FormData): Promise<void> {
 }
 
 export async function addOffice(form: FormData): Promise<void> {
-  const db = await createClient();
+  const db = await createStaffClient();
   const personId = val(form, "person_id");
   const sourceId = val(form, "source_id");
   if (!uuid(personId) || (sourceId && !uuid(sourceId))) finish("invalid");
@@ -148,7 +148,7 @@ export async function addOffice(form: FormData): Promise<void> {
 }
 
 export async function changeStatus(form: FormData): Promise<void> {
-  const db = await createClient();
+  const db = await createStaffClient();
   const personId = val(form, "person_id");
   const revision = Number(val(form, "revision"));
   const status = val(form, "status");
@@ -165,7 +165,7 @@ export async function changeStatus(form: FormData): Promise<void> {
 }
 
 export async function verifyPerson(form: FormData): Promise<void> {
-  const db = await createClient();
+  const db = await createStaffClient();
   const personId = val(form, "person_id");
   const sourceId = val(form, "source_id");
   const note = val(form, "note");
@@ -180,7 +180,7 @@ export async function verifyPerson(form: FormData): Promise<void> {
 }
 
 export async function unverifyPerson(form: FormData): Promise<void> {
-  const db = await createClient();
+  const db = await createStaffClient();
   const personId = val(form, "person_id");
   const reason = val(form, "reason");
   if (!uuid(personId) || reason.length < 3 || reason.length > 2000) finish("invalid");
@@ -193,7 +193,7 @@ export async function unverifyPerson(form: FormData): Promise<void> {
 }
 
 export async function resolveCorrection(form: FormData): Promise<void> {
-  const db = await createClient();
+  const db = await createStaffClient();
   const correctionId = val(form, "correction_id");
   const state = val(form, "state");
   if (!uuid(correctionId) || !["accepted", "rejected"].includes(state)) finish("invalid");

@@ -1,6 +1,6 @@
 import { beforeEach, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({ rpc: vi.fn(), client: vi.fn(), revalidate: vi.fn() }));
-vi.mock("../apps/admin/lib/supabase", () => ({ createClient: mocks.client }));
+vi.mock("../apps/admin/lib/supabase", () => ({ createClient: mocks.client, createStaffClient: mocks.client }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidate }));
 import { addInlineAuthor } from "../apps/admin/lib/inline-author-actions";
 beforeEach(() => { vi.clearAllMocks(); mocks.client.mockResolvedValue({rpc:mocks.rpc}); });

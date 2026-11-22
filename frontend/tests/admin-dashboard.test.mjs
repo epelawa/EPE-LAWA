@@ -39,7 +39,7 @@ test("combined capability checks fail closed but accept any explicitly granted c
 test("dashboard reads are request-scoped, count-only, and have no write path", () => {
   const page = read("frontend/apps/admin/app/(protected)/page.tsx");
   assert.match(page, /export default async function DashboardPage/);
-  assert.match(page, /await createClient\(\)/);
+  assert.match(page, /await createStaffClient\(\)/);
   assert.match(page, /countForCapability\(articleRead/);
   assert.match(page, /select\("id", \{ count: "exact", head: true \}\)/);
   assert.match(page, /hasCapability\(supabase, name\)/);

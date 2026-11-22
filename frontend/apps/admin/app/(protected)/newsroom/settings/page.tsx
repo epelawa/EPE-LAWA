@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, buttonClassName } from "@epelawa/ui";
-import { createClient } from "../../../../lib/supabase";
+import { createStaffClient } from "../../../../lib/supabase";
 import { adminHref } from "../../../../lib/admin-path";
 import { saveNewsroomByline, saveNewsroomCategory } from "../../../../lib/newsroom-settings-actions";
 export const metadata: Metadata = { title: "Newsroom settings", robots: { index: false, follow: false } };
@@ -17,7 +17,7 @@ function ResultNotice({ value, label }: { value?: string; label: string }) {
 }
 export default async function NewsroomSettingsPage({ searchParams }: { searchParams: Promise<{ category?: string; byline?: string }> }) {
   const params = await searchParams;
-  const supabase = await createClient();
+  const supabase = await createStaffClient();
   const [capability, categoryResult, bylineResult] = await Promise.all([
     supabase.rpc("has_capability", { p_capability: "article.publish" }),
     supabase.from("categories").select("id,slug,label,description,sort_order,is_active").order("sort_order").order("label").limit(200),

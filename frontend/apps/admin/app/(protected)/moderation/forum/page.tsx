@@ -1,4 +1,4 @@
-import { createClient } from "../../../../lib/supabase";
+import { createStaffClient } from "../../../../lib/supabase";
 import { resolveForumReport } from "./actions";
 import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "@epelawa/ui";
 import type { ReactNode } from "react";
@@ -16,11 +16,7 @@ function QueuePage({ children }: { children: ReactNode }) {
 }
 
 export default async function ForumModerationPage({ searchParams }: { searchParams: Promise<{ result?: string }> }) {
-  let supabase;
-  try { supabase = await createClient(); }
-  catch {
-    return <QueuePage><Notice tone="danger" role="alert"><SectionHeading title="Access denied" description="Sign in with an active staff account and the moderation.review capability to view the queue." /></Notice></QueuePage>;
-  }
+  const supabase = await createStaffClient();
 
   const capability = await supabase.rpc("has_capability", { p_capability: "moderation.review" });
   if (capability.error) return <QueuePage><Notice tone="danger" role="alert"><SectionHeading title="Unable to verify access" description="Try again shortly. No report data has been displayed." /></Notice></QueuePage>;

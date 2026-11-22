@@ -1,12 +1,12 @@
 import { PageFrame, PageIntro, Panel } from "@epelawa/ui";
-import { createClient } from "../../../lib/supabase";
+import { createStaffClient } from "../../../lib/supabase";
 import { inviteStaff, setStaffActive } from "./actions";
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 export default async function StaffUsersPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const { q = "" } = await searchParams;
   const search = q.trim().slice(0, 100);
-  const db = await createClient();
+  const db = await createStaffClient();
   const { data: authorized, error: authError } = await db.rpc("staff_roles_authorized");
   if (authError || authorized !== true) return <PageFrame><PageIntro eyebrow="Access control" title="Staff users" description="This directory is restricted to the verified primary administrator." /></PageFrame>;
   const { data, error } = await db.rpc("staff_role_staff_directory", { p_search: search, p_limit: 50 });

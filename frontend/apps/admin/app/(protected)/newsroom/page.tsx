@@ -1,7 +1,7 @@
 import Link from "next/link";
 import styles from "./newsroom-list.module.css";
 import NewsroomFilter from "../../../components/newsroom-filter";
-import { createClient } from "../../../lib/supabase";
+import { createStaffClient } from "../../../lib/supabase";
 import { deleteArticle } from "../../../lib/actions";
 import { adminHref } from "../../../lib/admin-path";
 import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, StatusBadge, buttonClassName } from "@epelawa/ui";
@@ -23,7 +23,7 @@ type NewsroomArticle = {
 
 /** Admin newsroom — private articles and their current publication state. */
 export default async function NewsroomPage({ searchParams }: { searchParams: Promise<{ state: string; deleted: string; error: string; compose: string }> }) {
-  const supabase = await createClient();
+  const supabase = await createStaffClient();
   const { state: requestedState, deleted, error: errorFlag, compose } = await searchParams;
   const allowedStates = new Set(["draft", "review", "approved", "rejected", "published"]);
   const state = requestedState && allowedStates.has(requestedState) ? requestedState : undefined;

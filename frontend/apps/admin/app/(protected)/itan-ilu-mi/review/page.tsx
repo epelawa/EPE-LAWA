@@ -1,4 +1,4 @@
-import { createClient } from "../../../../lib/supabase";
+import { createStaffClient } from "../../../../lib/supabase";
 import { decideHistoryContribution } from "../../../../lib/history-actions";
 import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "@epelawa/ui";
 
@@ -11,7 +11,7 @@ type Contribution = {
 const labels: Record<string, string> = { "community-history": "Community history", "family-lineage": "Family / house lineage", "cultural-practice": "Cultural practice", "place-history": "Place history", "oral-history": "Oral history", other: "Other" };
 
 export default async function HistoryReviewPage({ searchParams }: { searchParams: Promise<{ result?: string }> }) {
-  const supabase = await createClient();
+  const supabase = await createStaffClient();
   const [{ data: capability, error: capabilityError }, params] = await Promise.all([
     supabase.rpc("has_capability", { p_capability: "history.review" }), searchParams,
   ]);

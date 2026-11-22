@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { buttonClassName, EmptyPanel, Notice, PageFrame, PageIntro } from "@epelawa/ui";
-import { createClient } from "../../../../lib/supabase";
+import { createStaffClient } from "../../../../lib/supabase";
 import { adminHref } from "../../../../lib/admin-path";
 import { coverUploadState } from "../../../../lib/media-r2";
 import NewsArticleComposer from "../../../../components/news-article-composer";
@@ -19,7 +19,7 @@ export default async function NewArticlePage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const params = await searchParams;
-  const supabase = await createClient();
+  const supabase = await createStaffClient();
   const [capabilityResult, sessionResult, categoryResult, authorResult] = await Promise.all([
     supabase.rpc("has_capability", { p_capability: "article.create" }),
     supabase.auth.getUser(),

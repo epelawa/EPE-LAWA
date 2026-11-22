@@ -2,7 +2,7 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import { revalidatePath } from "next/cache";
-import { createClient } from "../../../lib/supabase";
+import { createClient, createStaffClient } from "../../../lib/supabase";
 import { dispatchBackupWorkflow, type DispatchResult } from "../../../lib/backup-dispatch";
 import { isBackupKey } from "../../../lib/backup-r2";
 
@@ -21,7 +21,7 @@ function keyAsUuid(key: string): string {
 
 async function requireCapability(capability: string) {
   if (!KEY_PATTERN.test(capability)) throw new Error("Invalid capability.");
-  const db = await createClient();
+  const db = await createStaffClient();
   const { data, error } = await db.rpc("has_capability", { p_capability: capability });
   if (error || data !== true) throw new Error("This action is not authorised for your role.");
   return db;

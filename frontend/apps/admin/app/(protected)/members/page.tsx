@@ -1,10 +1,10 @@
 import { PageFrame, PageIntro, Panel } from "@epelawa/ui";
-import { createClient } from "../../../lib/supabase";
+import { createStaffClient } from "../../../lib/supabase";
 import { messageMember, deleteMember } from "./actions";
 export const dynamic = "force-dynamic";
 export default async function MembersPage({searchParams}:{searchParams:Promise<{q?:string;page?:string;status?:string}>}) {
  const {q="",page="0",status}=await searchParams; const search=q.trim().slice(0,100); const n=Math.max(0,Math.min(2000,Number.parseInt(page,10)||0));
- const db=await createClient(); const {data:allowed,error:authError}=await db.rpc("staff_roles_authorized");
+ const db=await createStaffClient(); const {data:allowed,error:authError}=await db.rpc("staff_roles_authorized");
  if(authError||allowed!==true) return <PageFrame><PageIntro eyebrow="Administration" title="Members" description="Restricted to the primary administrator." /></PageFrame>;
  const {data,error}=await db.rpc("admin_member_list",{p_search:search,p_offset:n*50});
  const members=(data??[]) as {user_id:string;email:string;handle:string;display_name:string}[];

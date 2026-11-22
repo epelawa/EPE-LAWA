@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "@epelawa/ui";
-import { createClient } from "../../../lib/supabase";
+import { createStaffClient } from "../../../lib/supabase";
 import { decideEvent } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -20,7 +20,7 @@ type EventRow = {
 
 export default async function EventsPage({ searchParams }: { searchParams: Promise<{ decided?: string; error?: string }> }) {
   const query = await searchParams;
-  const db = await createClient();
+  const db = await createStaffClient();
   const { data: allowed } = await db.rpc("has_capability", { p_capability: "article.publish" });
   if (allowed !== true) {
     return <PageFrame className="ui-stack">

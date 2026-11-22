@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { createClient } from "../../../../lib/supabase";
+import { createStaffClient } from "../../../../lib/supabase";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  const db = await createStaffClient();
   try {
-    const db = await createClient();
     const [business, corrections, enquiries] = await Promise.all([
       db.from("businesses").select("id", { count: "exact", head: true }).in("status", ["submitted", "reviewing"]).is("deleted_at", null),
       db.from("people_corrections").select("id", { count: "exact", head: true }).eq("state", "open"),

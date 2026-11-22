@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { adminHref } from "../../../lib/admin-path";
-import { createClient } from "../../../lib/supabase";
+import { createStaffClient } from "../../../lib/supabase";
 import { mediaExtensionFor, putMediaObject } from "../../../lib/media-r2";
 import { parseBusinessHours } from "../../../lib/business-hours";
 
@@ -13,7 +13,7 @@ const value = (form: FormData, key: string) => {
 };
 
 export async function reviewBusiness(formData: FormData): Promise<void> {
-  const db = await createClient();
+  const db = await createStaffClient();
   const id = value(formData, "business_id");
   const status = value(formData, "status");
   const note = value(formData, "note");
@@ -32,7 +32,7 @@ const UUID_RE = /^[0-9a-f-]{36}$/i;
 export type StaffCreateState = { status: "idle" | "success" | "error"; message: string };
 
 export async function staffCreateBusiness(_prev: StaffCreateState, formData: FormData): Promise<StaffCreateState> {
-  const db = await createClient();
+  const db = await createStaffClient();
   const field = (key: string) => { const raw = formData.get(key); return typeof raw === "string" ? raw.trim() : ""; };
   const name = field("name");
   const categoryId = field("category_id");
@@ -95,7 +95,7 @@ export async function staffCreateBusiness(_prev: StaffCreateState, formData: For
 
 /** Approve or reject an "own this business" claim; approval links the member account as owner. */
 export async function decideBusinessClaim(formData: FormData): Promise<void> {
-  const db = await createClient();
+  const db = await createStaffClient();
   const claimId = value(formData, "claim_id");
   const status = value(formData, "status");
   const note = value(formData, "note");
@@ -111,7 +111,7 @@ export async function decideBusinessClaim(formData: FormData): Promise<void> {
 
 /** Replace the featured directory slot with this published business for the chosen number of days. */
 export async function featureBusiness(formData: FormData): Promise<void> {
-  const db = await createClient();
+  const db = await createStaffClient();
   const businessId = value(formData, "business_id");
   const days = Number(value(formData, "days"));
   if (!UUID_RE.test(businessId) || !Number.isSafeInteger(days) || days < 1 || days > 90) {

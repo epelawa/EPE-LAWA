@@ -1,11 +1,11 @@
-import { createClient } from "../../../../lib/supabase";
+import { createStaffClient } from "../../../../lib/supabase";
 import { moderateBusinessReview } from "../moderation-actions";
 import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "@epelawa/ui";
 
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  const db = await createClient();
+  const db = await createStaffClient();
   const cap = await db.rpc("has_capability", { p_capability: "business.review" });
   if (cap.error || cap.data !== true) return <PageFrame className="ui-stack"><PageIntro eyebrow="Business directory · Staff" title="Review moderation" description="Moderate member-submitted business reviews." /><Notice tone="danger" role="alert">Business review capability is required.</Notice></PageFrame>;
   const { data, error } = await db.from("business_reviews").select("id,business_id,rating,body,created_at").eq("state", "pending").is("deleted_at", null).order("created_at").limit(100);

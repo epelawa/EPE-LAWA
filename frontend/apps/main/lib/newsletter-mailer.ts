@@ -19,7 +19,7 @@ function escapeHtml(value: string): string {
   return value.replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character] ?? character);
 }
 
-function transporter() {
+export function transporter() {
   const port = Number(process.env.NEWSLETTER_SMTP_PORT ?? "465");
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error("Invalid NEWSLETTER_SMTP_PORT");
   return nodemailer.createTransport({
@@ -27,6 +27,7 @@ function transporter() {
     port,
     secure: process.env.NEWSLETTER_SMTP_SECURE ? process.env.NEWSLETTER_SMTP_SECURE === "true" : port === 465,
     auth: { user: required("NEWSLETTER_SMTP_USER"), pass: required("NEWSLETTER_SMTP_PASSWORD") },
+    connectionTimeout: 8000, greetingTimeout: 8000, socketTimeout: 8000,
   });
 }
 

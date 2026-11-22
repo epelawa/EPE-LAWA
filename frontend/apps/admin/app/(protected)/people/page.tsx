@@ -1,4 +1,4 @@
-import { createClient } from "../../../lib/supabase";
+import { createStaffClient } from "../../../lib/supabase";
 import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "@epelawa/ui";
 import { addOffice, addSource, changeStatus, resolveCorrection, savePerson, sourceVisibility, unverifyPerson, verifyPerson } from "./actions";
 import UploadModalField from "../../../components/upload-modal-field";
@@ -27,12 +27,7 @@ const ERROR_TEXT: Record<string, string> = {
 
 export default async function PeoplePage({ searchParams }: { searchParams: Promise<Params> }) {
   const p = await searchParams;
-  let db: Awaited<ReturnType<typeof createClient>>;
-  try {
-    db = await createClient();
-  } catch {
-    return <PageFrame className="ui-stack"><PageIntro eyebrow="Staff workspace" title="People" description="Who is Who profile administration." /><Notice tone="danger" role="alert">The people workspace is unavailable right now. Reload the page; if you are not signed in as staff, sign in first.</Notice></PageFrame>;
-  }
+  const db = await createStaffClient();
   const { data: grants, error: grantError } = await db.from("staff_capability_grants").select("capability").eq("capability", "people.manage").limit(1);
   if (grantError) return <PageFrame className="ui-stack"><PageIntro eyebrow="Staff workspace" title="People" description="Who is Who profile administration." /><Notice tone="danger" role="alert">The people workspace is unavailable right now. Reload the page to try again.</Notice></PageFrame>;
   if (!grants?.length) return <PageFrame className="ui-stack"><PageIntro eyebrow="Staff workspace" title="People" description="Who is Who profile administration." /><Notice tone="danger" role="alert">The people.manage capability is required. No records are shown.</Notice></PageFrame>;

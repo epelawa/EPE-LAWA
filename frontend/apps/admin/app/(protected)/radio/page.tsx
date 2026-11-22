@@ -1,4 +1,4 @@
-import { createClient } from "../../../lib/supabase";
+import { createStaffClient } from "../../../lib/supabase";
 import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "@epelawa/ui";
 import { deleteEpisode, deleteProgramme, deleteSchedule, saveEpisode, saveProgramme, saveSchedule } from "./actions";
 import ConfirmSubmit from "../../../components/confirm-submit";
@@ -21,11 +21,7 @@ export default async function RadioAdminPage({ searchParams }: { searchParams: P
     linked: { role: "alert", text: "This programme still has episodes attached. Delete those episodes first, then remove the programme." },
   };
   const message = params.radio ? messages[params.radio] : null;
-  const unavailable = <PageFrame className="ui-stack"><PageIntro eyebrow="Staff workspace" title="Radio authoring" description="Manage approved radio programming."/><Notice tone="danger" role="alert">Radio authoring is unavailable right now. Reload the page to try again; if you are not signed in as staff, sign in first.</Notice></PageFrame>;
-  let db: Awaited<ReturnType<typeof createClient>>;
-  try {
-    db = await createClient();
-  } catch { return unavailable; }
+  const db = await createStaffClient();
   const { data: allowed, error: capabilityError } = await db.rpc("has_capability", { p_capability: "radio.manage" });
   if (capabilityError || allowed !== true) return <PageFrame className="ui-stack"><PageIntro eyebrow="Staff workspace" title="Radio authoring" description="Manage approved radio programming."/><Notice tone="danger" role="alert">The radio.manage capability is required. No records are shown.</Notice></PageFrame>;
   const [
