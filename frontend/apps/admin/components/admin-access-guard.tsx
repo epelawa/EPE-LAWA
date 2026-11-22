@@ -1,7 +1,7 @@
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { adminLoginHref } from "../lib/admin-path";
-import { getAdminAccessForSession } from "../lib/supabase-access";
+import { clearAdminSessionCookies, getAdminAccessForSession } from "../lib/supabase-access";
 import { ACTIVITY_COOKIE, STAFF_INACTIVITY_MS, isInactiveSince } from "../lib/session-policy";
 
 export async function AdminAccessGuard({
@@ -27,6 +27,25 @@ export async function AdminAccessGuard({
   });
 
   if (!access.allowed || !access.userId) {
+    if (access.staleSession) {
+      clearAdminSessionCookies({
+        getAll: () => cookieStore.getAll().map(({ name, value }) => ({ name, value })),
+        setAll: (entries) => {
+          for (const entry of entries) {
+            cookieStore.set(entry.name, entry.value, {
+              ...(entry.options as Record<string, string | number | boolean | undefined>),
+              httpOnly: true,
+              secure: true,
+              sameSite: "lax",
+              path: "/",
+              domain: undefined,
+            });
+          }
+        },
+      });
+      const href = adminLoginHref(loginPath, requestHeaders.get("x-epe-lawa-admin-route"));
+      redirect(`${href}${href.includes("?") ? "&" : "?"}reason=session_expired`);
+    }
     redirect(adminLoginHref(loginPath, requestHeaders.get("x-epe-lawa-admin-route")));
   }
   // Staff sessions end after ten hours without recorded activity. The client
