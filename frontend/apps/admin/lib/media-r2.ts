@@ -1,5 +1,6 @@
 import "server-only";
 
+import { optimizeUploadedImage, toExactArrayBuffer } from "@epelawa/image-optimizer/optimize";
 import { publicMediaUrl } from "../../main/lib/media";
 
 /**
@@ -11,7 +12,7 @@ import { publicMediaUrl } from "../../main/lib/media";
  * bucket; without configuration the workspace fails closed.
  */
 
-export type ObjectWrite = { state: "ready"; key: string; size: number } | { state: "unconfigured" } | { state: "unavailable" };
+export type ObjectWrite = { state: "ready"; key: string; size: number; mimeType: "image/webp"; width: number; height: number } | { state: "unconfigured" } | { state: "unavailable" };
 export type ObjectRemove = { state: "ready" } | { state: "unconfigured" } | { state: "unavailable" };
 
 function objectUrl(account: string, bucket: string, key: string): string {
@@ -30,10 +31,10 @@ function credentials(): { account: string; token: string; publicBucket: string; 
 }
 
 const MIME_TO_EXT: Record<string, string> = {
-  "image/jpeg": ".jpg",
-  "image/png": ".png",
+  "image/jpeg": ".webp",
+  "image/png": ".webp",
   "image/webp": ".webp",
-  "image/avif": ".avif",
+  "image/avif": ".webp",
 };
 
 export function mediaExtensionFor(mime: string): string | null {
@@ -44,20 +45,30 @@ function resolveBucket(bucket: string, creds: { publicBucket: string; privateBuc
   return bucket === "private" ? creds.privateBucket : creds.publicBucket;
 }
 
-export async function putMediaObject(bucket: string, key: string, body: ArrayBuffer, mime: string): Promise<ObjectWrite> {
+export async function putMediaObject(bucket: string, key: string, body: ArrayBuffer | Uint8Array, mime: string): Promise<ObjectWrite> {
   const creds = credentials();
   if ("state" in creds) return { state: "unconfigured" };
   const remote = resolveBucket(bucket, creds);
+  let optimized: Awaited<ReturnType<typeof optimizeUploadedImage>>;
   try {
-    const response = await fetch(objectUrl(creds.account, remote, key), {
+    optimized = await optimizeUploadedImage(body, mime);
+  } catch {
+    return { state: "unavailable" };
+  }
+  const outputKey = /\.(?:jpe?g|png|webp|avif)$/i.test(key)
+    ? key.replace(/\.(?:jpe?g|png|webp|avif)$/i, optimized.extension)
+    : `${key}${optimized.extension}`;
+  const exactBody = toExactArrayBuffer(optimized.bytes);
+  try {
+    const response = await fetch(objectUrl(creds.account, remote, outputKey), {
       method: "PUT",
-      headers: { Authorization: `Bearer ${creds.token}`, "Content-Type": mime },
-      body,
+      headers: { Authorization: `Bearer ${creds.token}`, "Content-Type": optimized.mimeType },
+      body: exactBody,
       cache: "no-store",
       signal: AbortSignal.timeout(30_000),
     });
     if (!response.ok) return { state: "unavailable" };
-    return { state: "ready", key, size: body.byteLength };
+    return { state: "ready", key: outputKey, size: exactBody.byteLength, mimeType: optimized.mimeType, width: optimized.width, height: optimized.height };
   } catch {
     return { state: "unavailable" };
   }

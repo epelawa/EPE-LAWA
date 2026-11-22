@@ -20,8 +20,13 @@ export type BackupListResult =
   | { state: "unconfigured" }
   | { state: "unavailable" };
 
+type BackupPageResult =
+  | { state: "ready"; backups: BackupObject[]; cursor: string | null; isTruncated: boolean }
+  | { state: "unavailable" };
+
 const BACKUP_PREFIX = "db-backups/";
-const MAX_KEYS = 100;
+const PAGE_SIZE = 1000;
+const MAX_LIST_PAGES = 5;
 const OBJECTS_ENDPOINT =
   "https://api.cloudflare.com/client/v4/accounts/{account}/r2/buckets/{bucket}/objects";
 
@@ -38,8 +43,42 @@ export function isBackupKey(key: string): boolean {
   );
 }
 
-function stripChecksumSuffix(key: string): string {
-  return key.endsWith(".sha256") ? key.slice(0, -".sha256".length) : key;
+/** Parse one Cloudflare R2 List Objects v4 page without trusting its shape. */
+export function parseBackupListPayload(body: unknown): BackupPageResult {
+  if (!body || typeof body !== "object" || Array.isArray(body)) return { state: "unavailable" };
+  const envelope = body as { success?: unknown; result?: unknown; result_info?: unknown };
+  if (envelope.success !== true || !Array.isArray(envelope.result)) return { state: "unavailable" };
+
+  const rawInfo = envelope.result_info;
+  if (rawInfo !== undefined && (!rawInfo || typeof rawInfo !== "object" || Array.isArray(rawInfo))) {
+    return { state: "unavailable" };
+  }
+  const info = rawInfo as { cursor?: unknown; is_truncated?: unknown } | undefined;
+  if (info?.is_truncated !== undefined && typeof info.is_truncated !== "boolean") {
+    return { state: "unavailable" };
+  }
+  const isTruncated = info?.is_truncated === true;
+  const cursor = typeof info?.cursor === "string" && info.cursor.length > 0 ? info.cursor : null;
+  if (isTruncated && !cursor) return { state: "unavailable" };
+
+  const byKey = new Map<string, BackupObject>();
+  for (const raw of envelope.result) {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
+    const object = raw as { key?: unknown; size?: unknown; last_modified?: unknown; uploaded?: unknown };
+    if (typeof object.key !== "string" || !isBackupKey(object.key) || object.key.endsWith(".sha256")) continue;
+
+    const size = typeof object.size === "number" && Number.isSafeInteger(object.size) && object.size >= 0 ? object.size : 0;
+    const rawDate = typeof object.last_modified === "string" ? object.last_modified : object.uploaded;
+    const uploaded = typeof rawDate === "string" && Number.isFinite(Date.parse(rawDate)) ? rawDate : null;
+    byKey.set(object.key, { key: object.key, size, uploaded });
+  }
+
+  const backups = [...byKey.values()].sort((a, b) => {
+    const at = a.uploaded ?? "";
+    const bt = b.uploaded ?? "";
+    return bt.localeCompare(at) || b.key.localeCompare(a.key);
+  });
+  return { state: "ready", backups, cursor, isTruncated };
 }
 
 export async function listBackups(): Promise<BackupListResult> {
@@ -49,46 +88,48 @@ export async function listBackups(): Promise<BackupListResult> {
 
   if (!account || !bucket || !token) return { state: "unconfigured" };
 
-  const url =
+  const endpoint =
     OBJECTS_ENDPOINT.replace("{account}", encodeURIComponent(account)).replace(
       "{bucket}",
       encodeURIComponent(bucket),
-    ) + `?prefix=${encodeURIComponent(BACKUP_PREFIX)}&per_page=${MAX_KEYS}`;
+    );
 
   try {
-    const response = await fetch(url, {
-      headers: { Authorization: `Bearer ${token}` },
-      cache: "no-store",
-      signal: AbortSignal.timeout(8_000),
-    });
-    if (!response.ok) return { state: "unavailable" };
-    const body = (await response.json()) as {
-      success?: boolean;
-      result?: { objects?: Array<{ key: string; size?: number; uploaded?: string }> };
-    };
-    if (body.success !== true || !Array.isArray(body.result?.objects)) {
-      return { state: "unavailable" };
-    }
-
-    // Group dump + checksum entries by dump key; expose one row per backup.
     const byKey = new Map<string, BackupObject>();
-    for (const object of body.result.objects) {
-      if (!object || typeof object.key !== "string" || !isBackupKey(object.key)) continue;
-      const key = stripChecksumSuffix(object.key);
-      const size = typeof object.size === "number" && object.size >= 0 ? object.size : 0;
-      const uploaded = typeof object.uploaded === "string" ? object.uploaded : null;
-      const existing = byKey.get(key);
-      if (!existing || (uploaded && (!existing.uploaded || uploaded > existing.uploaded))) {
-        byKey.set(key, { key, size, uploaded: uploaded ?? existing?.uploaded ?? null });
+    const seenCursors = new Set<string>();
+    let cursor: string | null = null;
+
+    for (let page = 0; page < MAX_LIST_PAGES; page += 1) {
+      const url = new URL(endpoint);
+      url.searchParams.set("prefix", BACKUP_PREFIX);
+      url.searchParams.set("per_page", String(PAGE_SIZE));
+      if (cursor) url.searchParams.set("cursor", cursor);
+
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+        signal: AbortSignal.timeout(8_000),
+      });
+      if (!response.ok) return { state: "unavailable" };
+      const parsed = parseBackupListPayload(await response.json());
+      if (parsed.state !== "ready") return parsed;
+
+      for (const backup of parsed.backups) byKey.set(backup.key, backup);
+      if (!parsed.isTruncated) {
+        const backups = [...byKey.values()].sort((a, b) => {
+          const at = a.uploaded ?? "";
+          const bt = b.uploaded ?? "";
+          return bt.localeCompare(at) || b.key.localeCompare(a.key);
+        });
+        return { state: "ready", backups };
       }
+      if (!parsed.cursor || seenCursors.has(parsed.cursor)) return { state: "unavailable" };
+      seenCursors.add(parsed.cursor);
+      cursor = parsed.cursor;
     }
 
-    const backups = [...byKey.values()].sort((a, b) => {
-      const at = a.uploaded ?? "";
-      const bt = b.uploaded ?? "";
-      return bt.localeCompare(at) || b.key.localeCompare(a.key);
-    });
-    return { state: "ready", backups };
+    // Never present a partial backup inventory as complete.
+    return { state: "unavailable" };
   } catch {
     return { state: "unavailable" };
   }

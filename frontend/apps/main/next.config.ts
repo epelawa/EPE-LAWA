@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   // Stop the default `x-powered-by: Next.js` fingerprint on every response.
   poweredByHeader: false,
   // @epelawa/ui ships TypeScript source so the apps compile one copy of it.
-  transpilePackages: ["@epelawa/ui"],
+  transpilePackages: ["@epelawa/ui", "@epelawa/image-optimizer"],
   env: { NEXT_PUBLIC_ADMIN_BASE_PATH: "/admin" },
   allowedDevOrigins: ["*.e2b.app"],
   async headers() {

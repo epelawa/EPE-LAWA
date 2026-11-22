@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   // Stop the default `x-powered-by: Next.js` fingerprint on every response.
   poweredByHeader: false,
   allowedDevOrigins: ["*.e2b.app"],
-  transpilePackages: ["@epelawa/ui"],
+  transpilePackages: ["@epelawa/ui", "@epelawa/image-optimizer"],
   async headers() {
     return [{ source: "/:path*", headers: [
       { key: "Cache-Control", value: "private, no-store, max-age=0, must-revalidate" },

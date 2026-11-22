@@ -40,7 +40,7 @@ async function uploadPhoto(file: File): Promise<{ url: string } | { error: strin
   if (!publicUrl) return { error: "unconfigured" };
   const written = await putMediaObject("public", objectKey, await file.arrayBuffer(), file.type);
   if (written.state !== "ready") return { error: "storage_failed" };
-  return { url: publicUrl };
+  return { url: publicMediaUrl(written.key) ?? publicUrl };
 }
 
 export async function saveSitePage(form: FormData) {

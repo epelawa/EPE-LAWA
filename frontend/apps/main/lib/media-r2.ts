@@ -1,5 +1,6 @@
 import "server-only";
 
+import { optimizeUploadedImage, toExactArrayBuffer } from "@epelawa/image-optimizer/optimize";
 import { publicMediaUrl } from "./media";
 
 /**
@@ -7,7 +8,7 @@ import { publicMediaUrl } from "./media";
  * (business logos, tourism photos). Fails closed without configuration.
  */
 
-export type ObjectWrite = { state: "ready"; key: string; size: number } | { state: "unconfigured" } | { state: "unavailable" };
+export type ObjectWrite = { state: "ready"; key: string; size: number; mimeType: "image/webp"; width: number; height: number } | { state: "unconfigured" } | { state: "unavailable" };
 
 function objectUrl(account: string, bucket: string, key: string): string {
   return `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(account)}/r2/buckets/${encodeURIComponent(bucket)}/objects/${encodeURIComponent(key)}`;
@@ -22,31 +23,58 @@ function credentials(): { account: string; token: string; publicBucket: string }
 }
 
 const MIME_TO_EXT: Record<string, string> = {
-  "image/jpeg": ".jpg",
-  "image/png": ".png",
+  "image/jpeg": ".webp",
+  "image/png": ".webp",
   "image/webp": ".webp",
-  "image/avif": ".avif",
+  "image/avif": ".webp",
 };
 
 export function mediaExtensionFor(mime: string): string | null {
   return MIME_TO_EXT[mime.toLowerCase()] ?? null;
 }
 
-export async function putMediaObject(key: string, body: ArrayBuffer, mime: string): Promise<ObjectWrite> {
+export async function putMediaObject(key: string, body: ArrayBuffer | Uint8Array, mime: string): Promise<ObjectWrite> {
   const creds = credentials();
   if ("state" in creds) return { state: "unconfigured" };
+  let optimized: Awaited<ReturnType<typeof optimizeUploadedImage>>;
   try {
-    const response = await fetch(objectUrl(creds.account, creds.publicBucket, key), {
+    optimized = await optimizeUploadedImage(body, mime);
+  } catch {
+    return { state: "unavailable" };
+  }
+  const outputKey = /\.(?:jpe?g|png|webp|avif)$/i.test(key)
+    ? key.replace(/\.(?:jpe?g|png|webp|avif)$/i, optimized.extension)
+    : `${key}${optimized.extension}`;
+  const exactBody = toExactArrayBuffer(optimized.bytes);
+  try {
+    const response = await fetch(objectUrl(creds.account, creds.publicBucket, outputKey), {
       method: "PUT",
-      headers: { Authorization: `Bearer ${creds.token}`, "Content-Type": mime },
-      body,
+      headers: { Authorization: `Bearer ${creds.token}`, "Content-Type": optimized.mimeType },
+      body: exactBody,
       cache: "no-store",
       signal: AbortSignal.timeout(30_000),
     });
     if (!response.ok) return { state: "unavailable" };
-    return { state: "ready", key, size: body.byteLength };
+    return { state: "ready", key: outputKey, size: exactBody.byteLength, mimeType: optimized.mimeType, width: optimized.width, height: optimized.height };
   } catch {
     return { state: "unavailable" };
+  }
+}
+
+/** Delete only the exact public object created during a failed member upload. */
+export async function deleteMediaObject(key: string): Promise<boolean> {
+  const creds = credentials();
+  if ("state" in creds) return false;
+  try {
+    const response = await fetch(objectUrl(creds.account, creds.publicBucket, key), {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${creds.token}` },
+      cache: "no-store",
+      signal: AbortSignal.timeout(15_000),
+    });
+    return response.ok || response.status === 404;
+  } catch {
+    return false;
   }
 }
 
@@ -67,8 +95,8 @@ export async function storeLogoDataUrl(dataUrl: string, stem = "logo", prefix = 
   const random = Array.from(crypto.getRandomValues(new Uint8Array(6)), (b) => b.toString(16).padStart(2, "0")).join("");
   const safeStem = stem.replace(/[^a-z0-9_-]+/gi, "-").replace(/^-+|-+$/g, "").toLowerCase().slice(0, 40) || "logo";
   const key = `${prefix}/${new Date().getUTCFullYear()}/${random}-${safeStem}${extension}`;
-  const written = await putMediaObject(key, buffer.buffer as ArrayBuffer, mime);
-  return written.state === "ready" ? { key } : { error: written.state };
+  const written = await putMediaObject(key, new Uint8Array(buffer), mime);
+  return written.state === "ready" ? { key: written.key } : { error: written.state };
 }
 
 /** Store a member avatar (client-compressed data URL) under the avatars prefix. */

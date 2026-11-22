@@ -29,7 +29,7 @@ async function uploadPortrait(file: File): Promise<string> {
   const stem = file.name.replace(/\.[^.]*$/, "").replace(/[^a-z0-9_-]+/gi, "-").replace(/^-+|-+$/g, "").toLowerCase().slice(0, 40) || "portrait";
   const objectKey = `media/people/${new Date().getUTCFullYear()}/${random}-${stem}${extension}`;
   const written = await putMediaObject("public", objectKey, await file.arrayBuffer(), file.type);
-  return written.state === "ready" ? objectKey : "portrait-failed";
+  return written.state === "ready" ? written.key : "portrait-failed";
 }
 
 export async function savePerson(form: FormData): Promise<void> {

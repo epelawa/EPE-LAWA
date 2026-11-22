@@ -6,7 +6,7 @@ import { adminHref } from "./admin-path";
 import { hasConfirmedArticleUnpublish } from "./article-publication-state";
 import { publicMediaUrl } from "../../main/lib/media";
 import { normalizeExternalNewsCoverUrl } from "../../main/lib/news-cover-url.mjs";
-import { mediaExtensionFor, putMediaObject } from "./media-r2";
+import { deleteMediaObject, mediaExtensionFor, putMediaObject } from "./media-r2";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -79,10 +79,13 @@ async function storeCoverUpload(formData: FormData, file: File): Promise<StoredC
   const random = Array.from(crypto.getRandomValues(new Uint8Array(6)), (byte) => byte.toString(16).padStart(2, "0")).join("");
   const stem = file.name.replace(/\.[^.]*$/, "").replace(/[^a-z0-9_-]+/gi, "-").replace(/^-+|-+$/g, "").toLowerCase().slice(0, 60) || "cover";
   const objectKey = `media/covers/${period}/${random}-${stem}${extension}`;
-  const publicUrl = publicMediaUrl(objectKey);
-  if (!publicUrl) return { error: COVER_UPLOAD_ERRORS.unconfigured };
   const written = await putMediaObject("public", objectKey, await file.arrayBuffer(), file.type);
   if (written.state !== "ready") return { error: COVER_UPLOAD_ERRORS.storage_failed };
+  const publicUrl = publicMediaUrl(written.key);
+  if (!publicUrl) {
+    await deleteMediaObject("public", written.key);
+    return { error: COVER_UPLOAD_ERRORS.unconfigured };
+  }
   try {
     const supabase = await createClient();
     const { error } = await supabase.rpc("media_asset_create", {
@@ -91,16 +94,22 @@ async function storeCoverUpload(formData: FormData, file: File): Promise<StoredC
       p_credit: meta.fields.coverCredit ?? null,
       p_rights_note: meta.fields.coverLicenseUrl,
       p_bucket: "public",
-      p_object_key: objectKey,
-      p_mime_type: file.type,
+      p_object_key: written.key,
+      p_mime_type: written.mimeType,
       p_byte_size: written.size,
-      p_width: null,
-      p_height: null,
+      p_width: written.width,
+      p_height: written.height,
       p_alt_text: meta.fields.coverAlt ?? null,
     });
-    if (error) console.error("media_asset_create failed for uploaded cover", { code: error.code });
+    if (error) {
+      console.error("media_asset_create failed for uploaded cover", { code: error.code });
+      await deleteMediaObject("public", written.key);
+      return { error: COVER_UPLOAD_ERRORS.storage_failed };
+    }
   } catch (error) {
     console.error("media_asset_create failed for uploaded cover", { error: queryErrorCode(error) });
+    await deleteMediaObject("public", written.key);
+    return { error: COVER_UPLOAD_ERRORS.storage_failed };
   }
   return { fields: { ...meta.fields, coverUrl: publicUrl } };
 }
