@@ -81,7 +81,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <a className="skip-link" href="#main">
           Skip to content
         </a>
-        <SiteHeader items={navigation} />
+        <SiteHeader items={navigation} lang={siteLanguage} />
         <main id="main" className="site-main" tabIndex={-1}>
           {children}
         </main>

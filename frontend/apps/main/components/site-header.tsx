@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type SyntheticEvent } from "react";
 import type { NavItem } from "../lib/navigation";
 import { MOBILE_GROUPS } from "../lib/mobile-navigation";
+import { type SiteLanguage, fullNavLabel, navGroupLabel, navLabel } from "../lib/i18n-messages";
 import { ArrowRightIcon, ArrowUpRightIcon } from "./icons";
 import { BrandLockup } from "./brand";
 import RadioReminder from "./radio-reminder";
@@ -22,7 +23,7 @@ function isCurrent(path: string, href: string) {
   return href === "/" ? path === "/" : path === href || path.startsWith(`${href}/`);
 }
 
-export default function SiteHeader({ items }: { items: NavItem[] }) {
+export default function SiteHeader({ items, lang = "en" }: { items: NavItem[]; lang?: SiteLanguage }) {
   const pathname = usePathname() ?? "/";
   const [drawerOpen, setDrawerOpen] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
@@ -52,12 +53,13 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
 
   const renderLink = (href: string, label: string, className: string) => {
     const item = navItem(href, label);
-    return <Link className={className} href={item.href} aria-current={isCurrent(pathname, item.href) ? "page" : undefined} key={item.href}>{item.label}</Link>;
+    const display = lang === "en" ? item.label : fullNavLabel(lang, item.href, navLabel(lang, item.href, item.label));
+    return <Link className={className} href={item.href} aria-current={isCurrent(pathname, item.href) ? "page" : undefined} key={item.href}>{display}</Link>;
   };
 
   const renderMobileGroup = (group: typeof MOBILE_GROUPS[number]) => (
     <section className="drawer-group" key={group.label} aria-labelledby={`drawer-${group.label.toLowerCase().replaceAll(" ", "-")}`}>
-      <h2 id={`drawer-${group.label.toLowerCase().replaceAll(" ", "-")}`}>{group.label}</h2>
+      <h2 id={`drawer-${group.label.toLowerCase().replaceAll(" ", "-")}`}>{navGroupLabel(lang, group.label)}</h2>
       <ul>{group.routes.map(([href, label]) => {
         const item = navItem(href, label);
         return <li key={href}><Link className="drawer-link" href={item.href} aria-current={isCurrent(pathname, item.href) ? "page" : undefined}>{label}</Link></li>;
@@ -156,7 +158,7 @@ export default function SiteHeader({ items }: { items: NavItem[] }) {
               return <li key={group.label}>
                 <details className="nav-disclosure" onToggle={handleDisclosureToggle}>
                   <summary className="nav-link" data-active={active ? "true" : undefined}>
-                    {group.label}<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                    {navGroupLabel(lang, group.label)}<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
                   </summary>
                   <ul className="nav-disclosure__list" aria-label={`${group.label} pages`}>
                     {group.routes.map(([href, label]) => <li key={href}>{renderLink(href, label, "nav-link")}</li>)}

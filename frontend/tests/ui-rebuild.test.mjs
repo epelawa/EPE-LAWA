@@ -21,7 +21,7 @@ test('homepage preserves all 52 credited photos and restores its two original he
   const heroCss=read('frontend/apps/main/app/hero-logo.css');
   const manifest=JSON.parse(read('frontend/apps/main/lib/hero-images.json'));
   assert.match(source,/<HeroCarousel>/);
-  assert.match(source,/Stay Connected/);
+  assert.match(source,/"home.title.line1"/);
   assert.match(source,/getLatestStories\(3\)/);
   assert.match(source,/aria-label="Explore EPE LAWA"/);
   assert.equal(manifest.length,54);
@@ -29,7 +29,7 @@ test('homepage preserves all 52 credited photos and restores its two original he
   assert.deepEqual(manifest.slice(0,2).map(slide=>slide.slug),['new-epe-road','fish-statue-epe']);
   assert.equal(new Set(manifest.map(slide=>slide.source)).size,54);
   assert.doesNotMatch(source,/home-hero__brand|BrandLockup/);
-  assert.match(source,/href="\/news" className="btn-primary">Read latest news/);
+  assert.match(source,/href="\/news" className="btn-primary">\{t\(lang, "home.cta.news"\)\}/);
   assert.doesNotMatch(source,/Stories worth knowing|History worth keeping|Places worth finding|People worth connecting/);
   assert.doesNotMatch(carousel,/Epe · Lagos State|Rooted in the community\. Open to everyone\./);
   assert.match(carousel,/setTimeout|setInterval|ROTATION_DELAY/);
@@ -80,7 +80,7 @@ test('homepage story cards use published covers',()=>{
   assert.match(read("frontend/apps/main/app/photo-credits/page.tsx"),/image\.license/);
   assert.match(home,/index === 0 \? "home-story-item home-story-item--lead"/);
   assert.match(home,/home-story-item--support/);
-  assert.match(home,/Byline unavailable/);
+  assert.match(home,/"home.byline.unavailable"/);
   assert.match(styles,/\.home-story-cover-link \{[^}]*aspect-ratio:\s*16\s*\/\s*10/);
   assert.match(styles,/\.home-story-list--3 \{[^}]*grid-template-columns:\s*minmax\(0,\s*2fr\)\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
   assert.match(styles,/\.home-story-item--support \.home-story-cover-link \{[^}]*aspect-ratio:\s*4\s*\/\s*3/);
