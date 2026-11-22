@@ -33,6 +33,15 @@ export default function AdminSidebar({
   const [open, setOpen] = useState(false);
   const panel = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (open && panel.current) {
+      panel.current.scrollTop = (() => {
+        try { return Number(sessionStorage.getItem("epe-admin-drawer-scroll")) || 0; }
+        catch { return 0; }
+      })();
+    }
+  }, [open]);
   const sections = groupedNavigation(items);
   const displayName = userEmail && userEmail.trim() ? userEmail : "Staff";
   const close = () => {
@@ -116,7 +125,18 @@ export default function AdminSidebar({
       </aside>
       <div className="drawer-root" data-open={open ? "true" : "false"} aria-hidden={!open} inert={!open}>
         <button className="drawer-scrim" type="button" tabIndex={-1} aria-label="Close menu" onClick={close} />
-        <div className="drawer" id="admin-drawer" ref={panel} role="dialog" aria-modal="true" aria-labelledby="admin-drawer-title" data-sidebar="true">
+        <div
+          className="drawer"
+          id="admin-drawer"
+          ref={panel}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="admin-drawer-title"
+          data-sidebar="true"
+          onScroll={() => {
+            try { sessionStorage.setItem("epe-admin-drawer-scroll", String(panel.current?.scrollTop ?? 0)); } catch {}
+          }}
+        >
           <div className="drawer__head">
             <h2 id="admin-drawer-title">Staff workspace</h2>
             <button className="btn-icon" type="button" aria-label="Close menu" onClick={close}><CloseIcon size={20} /></button>
