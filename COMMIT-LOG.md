@@ -187,7 +187,7 @@ while asleep. Each entry: exact time, commit SHA, reason, tests run, features ad
 ### [08:10] 8667607 — fix(media): optimize R2 uploads and repair backup listing
 **Reason:** Repair new image/avatar uploads to Cloudflare R2 and make the Admin backup listing parse Cloudflare's paginated response correctly.
 
-**Tests:** `pnpm typecheck` — 5/5 tasks passed; `pnpm build` — 2/2 apps passed; `pnpm test` — 398 Node tests and 138 Vitest tests passed, 0 failures, 1 skipped. Browser smoke had a prior 64/65 result due to a stale locator, which was corrected. The corrected run was interrupted by prompt closure (exit 137); output showed 40 passing tests but no completed suite result. The full browser suite and PR checks remain unverified; do not merge yet.
+**Tests:** `pnpm typecheck` — 5/5 tasks passed; `pnpm build` — 2/2 apps passed; `pnpm test` — 398 Node tests and 138 Vitest tests passed, 0 failures, 1 skipped. After correcting the stale locator, the full Playwright browser smoke suite passed 65/65 in 5.6 minutes. GitHub reports PR merge state `UNSTABLE`; detailed check runs are inaccessible to this session, so do not merge until required PR checks are confirmed green.
 
 **Features added:**
 - Shared Sharp optimizer converts accepted raster uploads to metadata-stripped WebP, caps dimensions at 2048 px and stored size at 900 KiB; avatar preview payloads are capped at 200 KiB.
