@@ -97,7 +97,7 @@ Newsroom (list/editor/revisions/diff/settings/tags), Reviews (business, itan, mo
 Compiled from code state on 2026-11-23, not from stale checklists:
 
 1. **Email delivery** — verify SMTP variables + sender-domain auth (SPF/DKIM/DMARC) with a private test recipient; then make the digest auto-send.
-2. **Full Yoruba i18n** — starter toggle covers footer chrome; extend dictionary + page bodies.
+2. **Full Yoruba i18n** — shipped: toggle, footer chrome, header nav + drawer groups, homepage hero/shortcuts/news/community sections, `<html lang>` switching, dictionary parity test. Remaining: page bodies inside each module (news article UI, forum, business, tourism, member dashboard tabs).
 3. **Browser-smoke refresh** — extend Playwright cover to new routes (events, radio/archive, news authors, admin analytics/appeals/digest/poll/events/radio-requests) and re-run across all widths.
 4. **Admin compat surface** — extend `frontend/apps/main/app/admin` re-exports if same-origin parity matters for any yet-existing route (new routes are stubbed now).
 5. **Security audit gate** — re-run `scripts/audit/run.mjs` and wire CRITICAL warnings into CI when the count is acceptable.
