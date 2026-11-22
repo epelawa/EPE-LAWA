@@ -1,4 +1,4 @@
-import { PageFrame, PageIntro, Panel } from "@epelawa/ui";
+import {  PageFrame, PageIntro, Panel, SubmitButton } from "@epelawa/ui";
 import { createStaffClient } from "../../../lib/supabase";
 import { inviteStaff, setStaffActive } from "./actions";
 export const dynamic = "force-dynamic";
@@ -15,8 +15,8 @@ export default async function StaffUsersPage({ searchParams }: { searchParams: P
   const { data: authData } = await db.auth.getUser();
   const currentUserId = authData.user?.id;
   return <PageFrame><PageIntro eyebrow="Access control" title="Staff users" description="Staff-only accounts and access state. Member accounts and member data are not included." />
-    <Panel><h2>Invite staff</h2>{configured ? <form action={inviteStaff} className="ui-row"><label>Email address<input name="email" type="email" required maxLength={254} autoComplete="email" /></label><button type="submit">Send invitation</button></form> : <p role="status">Staff invitations are not switched on for this deployment yet. No invite has been sent — ask the site owner to enable them.</p>}</Panel>
+    <Panel><h2>Invite staff</h2>{configured ? <form action={inviteStaff} className="ui-row"><label>Email address<input name="email" type="email" required maxLength={254} autoComplete="email" /></label><SubmitButton pendingLabel="Sending…" className="btn-primary">Send invitation</SubmitButton></form> : <p role="status">Staff invitations are not switched on for this deployment yet. No invite has been sent — ask the site owner to enable them.</p>}</Panel>
     <Panel><h2>Staff directory</h2><form method="get" className="ui-row"><label htmlFor="staff-search">Search email</label><input id="staff-search" name="q" defaultValue={search} maxLength={100} /><button type="submit">Search</button></form>
-    {error ? <p role="status">Staff directory unavailable until the reviewed role migration is approved and applied.</p> : staff.length ? <ul>{staff.map(user=><li key={user.user_id} className="ui-row"><span><strong>{user.email}</strong> · {user.email_verified ? "Verified" : "Unverified"} · {user.is_active ? "Active" : "Inactive"}</span><form action={setStaffActive}><input type="hidden" name="user_id" value={user.user_id}/><input type="hidden" name="active" value={String(!user.is_active)}/><button type="submit" disabled={user.user_id === currentUserId}>{user.is_active ? "Deactivate" : "Activate"}</button></form></li>)}</ul> : <p>No staff accounts found.</p>}</Panel>
+    {error ? <p role="status">Staff directory unavailable until the reviewed role migration is approved and applied.</p> : staff.length ? <ul>{staff.map(user=><li key={user.user_id} className="ui-row"><span><strong>{user.email}</strong> · {user.email_verified ? "Verified" : "Unverified"} · {user.is_active ? "Active" : "Inactive"}</span><form action={setStaffActive}><input type="hidden" name="user_id" value={user.user_id}/><input type="hidden" name="active" value={String(!user.is_active)}/><SubmitButton pendingLabel="Working…" className="btn-secondary" disabled={user.user_id === currentUserId}>{user.is_active ? "Deactivate" : "Activate"}</SubmitButton></form></li>)}</ul> : <p>No staff accounts found.</p>}</Panel>
   </PageFrame>;
 }

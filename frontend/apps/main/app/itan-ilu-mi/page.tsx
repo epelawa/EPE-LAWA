@@ -1,3 +1,4 @@
+import { SubmitButton } from "@epelawa/ui";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "../../lib/supabase";
@@ -122,7 +123,7 @@ export default async function ItanIluMiPage({ searchParams }: { searchParams: Pr
           <div className="ui-field"><label className="label" htmlFor="history-url">Public source link (optional)</label><input className="input" id="history-url" name="source_url" type="url" pattern="https://.*" maxLength={1000} placeholder="https://" /></div>
           <div className="ui-field"><label className="label" htmlFor="history-rights">Publication rights / permission basis</label><textarea className="input" id="history-rights" name="rights_description" required minLength={5} maxLength={2000} rows={4} /><p className="ui-muted">Describe your rights or permission to submit for possible publication. Staff must verify this before publishing.</p></div>
           <div className="ui-subtle ui-card"><label className="ui-row"><input className="size-5 shrink-0" type="checkbox" name="consent" value="yes" required /><span>I confirm this account is submitted for community-history review, that I identified its source and rights basis to the best of my knowledge, and that I consent to staff review and possible publication only after verification. I understand submission does not guarantee publication and may request correction or removal.</span></label></div>
-          <button className="btn-primary" type="submit">Submit privately for review</button>
+          <SubmitButton pendingLabel="Submitting…" className="btn-primary">Submit privately for review</SubmitButton>
         </form> : <div className="ui-stack-sm"><p className="ui-muted">Sign in with an active member profile to submit an account privately for review.</p><Link className="btn-secondary" href="/login?next=%2Fitan-ilu-mi">Sign in to contribute</Link></div>}
       </Panel>
     </section>

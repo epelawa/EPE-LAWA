@@ -1,4 +1,4 @@
-import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "@epelawa/ui";
+import {  EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge, SubmitButton } from "@epelawa/ui";
 import { createStaffClient } from "../../../lib/supabase";
 import { decideAppeal } from "./actions";
 
@@ -86,7 +86,7 @@ export default async function AppealsPage({ searchParams }: { searchParams: Prom
           </label>
           <label className="ui-field"><span className="label">Decision note (required, shown to the member)</span><textarea name="note" maxLength={1000} className="input" /></label>
         </div>
-        <div className="ui-actions"><button className="btn-primary" type="submit">Record appeal decision</button></div>
+        <div className="ui-actions"><SubmitButton pendingLabel="Recording…" className="btn-primary">Record appeal decision</SubmitButton></div>
       </form>
     ) : (
       <p className="ui-meta">Decision: {row.decision_note ?? "—"} · {new Date(row.updated_at).toLocaleString("en-NG")}</p>

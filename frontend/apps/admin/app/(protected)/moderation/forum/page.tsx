@@ -1,7 +1,7 @@
 import { createStaffClient } from "../../../../lib/supabase";
 import { resolveForumReport, deleteForumThread, deleteForumPost, restoreForumPost } from "./actions";
 import ConfirmSubmit from "../../../../components/confirm-submit";
-import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "@epelawa/ui";
+import {  EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge, SubmitButton } from "@epelawa/ui";
 import type { ReactNode } from "react";
 
 type Report = {
@@ -69,7 +69,7 @@ export default async function ForumModerationPage({ searchParams }: { searchPara
               <div className="ui-field"><label className="label" htmlFor={`action-${report.id}`}>Resolution</label><select className="input" id={`action-${report.id}`} name="action" defaultValue="dismiss"><option value="dismiss">Dismiss report</option><option value="hide">Hide post</option><option value="restore">Restore post</option></select></div>
               <div className="ui-field"><label className="label" htmlFor={`reason-${report.id}`}>Staff reason (required, at least 5 characters)</label><textarea className="input" id={`reason-${report.id}`} name="resolutionReason" required minLength={5} maxLength={1000} rows={3} /></div>
             </div>
-            <div className="ui-actions"><button type="submit" className="btn-primary">Record resolution</button></div>
+            <div className="ui-actions"><SubmitButton pendingLabel="Recording…" className="btn-primary">Record resolution</SubmitButton></div>
           </form>
         </article>)}
       </div>}

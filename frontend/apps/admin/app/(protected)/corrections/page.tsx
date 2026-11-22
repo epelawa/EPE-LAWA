@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "@epelawa/ui";
+import {  EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge, SubmitButton } from "@epelawa/ui";
 import { adminHref } from "../../../lib/admin-path";
 import { createStaffClient } from "../../../lib/supabase";
 import { resolveCorrection } from "./actions";
@@ -41,7 +41,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ r
               <label className="ui-field"><span className="label">Decision</span><select name="status" required defaultValue="resolved" className="input"><option value="resolved">Resolved — a correction was made</option><option value="dismissed">Dismissed — no correction needed</option></select></label>
               <label className="ui-field"><span className="label">Resolution note (required when resolved, at least 2 characters)</span><textarea name="note" minLength={2} maxLength={2000} className="input" /></label>
             </div>
-            <button className="btn-primary" type="submit">Record decision</button>
+            <SubmitButton pendingLabel="Recording…" className="btn-primary">Record decision</SubmitButton>
           </form>
         </Panel></li>)}</ul> : <EmptyPanel title="Queue is clear" description="No correction reports are awaiting a decision." />}
       </section>

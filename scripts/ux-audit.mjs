@@ -4,6 +4,7 @@
 //  - native validation calls (reportValidity / checkValidity) — we own the rules
 //  - bare <dialog> elements without branded chrome or a styled module class
 //  - bare <select> inputs without our `.input` or `.ui-select` styling
+//  - server pages whose submit buttons lack pending-state handling (SubmitButton / BusySubmit / ConfirmSubmit)
 // Emits a Markdown report (stdout and docs/ux-audit-report.md).
 // Exit 0 when clean or issues are marked FIXED/ACCEPTED; exit 1 on new NEEDS-FIX.
 
@@ -64,6 +65,30 @@ for (const root of ROOTS) {
   }
 }
 
+// Server pages must route submit actions through a pending-state button so every
+// staff click shows a spinner. Client components own their state via hooks, and
+// GET-method search forms navigate the page instead of waiting on a server action.
+const PENDING_MARKERS = /SubmitButton|BusySubmit|ConfirmSubmit|useFormStatus|aria-busy/;
+for (const root of ["frontend/apps"]) {
+  for (const file of walk(root)) {
+    const source = readFileSync(file, "utf8");
+    if (/^\s*["']use client["']/m.test(source)) continue;
+    if (PENDING_MARKERS.test(source)) continue;
+    const lines = source.split("\n");
+    lines.forEach((text, index) => {
+      const line = index + 1;
+      const trimmed = text.trim();
+      if (trimmed.startsWith("*") || trimmed.startsWith("//") || trimmed.startsWith("/*")) return;
+      if (!/<button(?![\w-])/.test(text) || !/type=["']submit["']/.test(text)) return;
+      if (/type=["']reset["']/.test(lines.slice(index, index + 3).join("\n"))) return;
+      const before = lines.slice(Math.max(0, index - 20), index + 1).join("\n");
+      const opening = before.lastIndexOf("<form");
+      if (opening !== -1 && /method=["']get["']/.test(before.slice(opening))) return;
+      push(file, line, "no-pending-submit", text.trim().slice(0, 140));
+    });
+  }
+}
+
 // Selects inherit brand styling from each app's global control layer
 // (native-controls.css / the :where(input,select,textarea) rule), so these are informational.
 for (const finding of findings) {
@@ -83,7 +108,7 @@ const open = findings.filter(
 
 let report = "# UX audit sweep\n\n";
 report += `Generated ${new Date().toISOString()}\n\n`;
-report += "Scope: frontend/apps + frontend/packages/ui (.tsx). Checks: native popups (alert/confirm/prompt), native validation (reportValidity/checkValidity), bare <dialog> without branded chrome, unstyled <select>.\n\n";
+report += "Scope: frontend/apps + frontend/packages/ui (.tsx). Checks: native popups (alert/confirm/prompt), native validation (reportValidity/checkValidity), bare <dialog> without branded chrome, unstyled <select>, server-page submit buttons without a pending-state component.\n\n";
 if (findings.length === 0) {
   report += "No violations found. The platform is fully on the branded control contract.\n";
 } else {

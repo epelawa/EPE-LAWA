@@ -1,4 +1,4 @@
-import { PageFrame, PageIntro, Panel } from "@epelawa/ui";
+import {  PageFrame, PageIntro, Panel, SubmitButton } from "@epelawa/ui";
 import CapabilityPicker from "../../../components/roles-capability-picker";
 import { CAPABILITY_GROUPS, type CapabilityGroup } from "../../../lib/capability-groups";
 import { createStaffClient } from "../../../lib/supabase";
@@ -79,7 +79,7 @@ export default async function RolesPage() {
             <legend>Capabilities</legend>
             <CapabilityPicker groups={groups} selected={[]} />
           </fieldset>
-          <div className="ui-actions"><button className="btn-primary" type="submit">Create role</button></div>
+          <div className="ui-actions"><SubmitButton pendingLabel="Creating…" className="btn-primary">Create role</SubmitButton></div>
         </form>
       </Panel>
 
@@ -99,7 +99,7 @@ export default async function RolesPage() {
                 <legend>Capabilities</legend>
                 <CapabilityPicker groups={groups} selected={granted} />
               </fieldset>
-              <div className="ui-actions"><button className="btn-primary" type="submit">Save role</button></div>
+              <div className="ui-actions"><SubmitButton pendingLabel="Saving…" className="btn-primary">Save role</SubmitButton></div>
             </form>
             <form action={deleteRole}>
               <input type="hidden" name="id" value={role.id} />
@@ -119,7 +119,7 @@ export default async function RolesPage() {
                     {!person.email_confirmed_at ? " · email unverified" : ""}
                     {!person.is_active ? " · inactive" : ""}
                   </span>
-                  <button className="btn-secondary" type="submit">{assigned ? "Remove role" : "Assign role"}</button>
+                  <SubmitButton pendingLabel="Working…" className="btn-secondary">{assigned ? "Remove role" : "Assign role"}</SubmitButton>
                 </form>
               );
             })}

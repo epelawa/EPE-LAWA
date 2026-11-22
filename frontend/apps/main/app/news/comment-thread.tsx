@@ -1,3 +1,4 @@
+import { SubmitButton } from "@epelawa/ui";
 import Link from "next/link";
 import { createClient } from "../../lib/supabase";
 import { moderateArticleComment, postArticleComment, reportArticleComment, resolveArticleCommentReport } from "./comment-actions";
@@ -129,7 +130,7 @@ export async function CommentThread({ articleId, slug, notice }: Props) {
             <input type="hidden" name="slug" value={slug} /><input type="hidden" name="comment_id" value={comment.id} />
             <label className={field}>Reason<select className="input" name="reason" required defaultValue=""><option value="" disabled>Choose a reason</option>{[["spam","Spam"],["harassment","Harassment"],["hate","Hate or slurs"],["misinformation","Misinformation"],["privacy","Privacy concern"],["other","Other"]].map(([value,label]) => <option value={value} key={value}>{label}</option>)}</select></label>
             <label className={field}>Additional context (optional)<textarea className={textarea} name="note" maxLength={1000} rows={3} /></label>
-            <button className="btn-secondary w-fit" type="submit">Send private report</button>
+            <SubmitButton pendingLabel="Sending…" className="btn-secondary w-fit">Send private report</SubmitButton>
           </form>
         </details> : null}
       </div>
@@ -155,7 +156,7 @@ export async function CommentThread({ articleId, slug, notice }: Props) {
       {user && comment.state === "visible" ? <form action={postArticleComment} className="ui-divider ui-stack-sm mt-4 max-w-2xl pt-3">
         <input type="hidden" name="slug" value={slug} /><input type="hidden" name="article_id" value={articleId} /><input type="hidden" name="parent_id" value={comment.id} />
         <label className={field} htmlFor={`reply-${comment.id}`}>Reply<textarea id={`reply-${comment.id}`} name="body" required maxLength={4000} rows={3} className={textarea} /></label>
-        <button className="btn-primary w-fit" type="submit">Post reply</button>
+        <SubmitButton pendingLabel="Posting…" className="btn-primary w-fit">Post reply</SubmitButton>
       </form> : null}
     </li>)}</ol> : null}
     {user ? <details className={styles.commentComposerPanel}><summary className={styles.commentComposeToggle}>Write a comment</summary>
@@ -163,7 +164,7 @@ export async function CommentThread({ articleId, slug, notice }: Props) {
         <input type="hidden" name="slug" value={slug} /><input type="hidden" name="article_id" value={articleId} />
         <label className="sr-only" htmlFor="new-comment">Write a comment</label>
         <textarea id="new-comment" name="body" required maxLength={4000} rows={1} className={styles.commentInput} placeholder="Write a comment…" aria-describedby="comment-guidance" />
-        <button className={styles.commentSubmit} type="submit" aria-label="Post comment" title="Post comment"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4 20-7Z" /><path d="M22 2 11 13" /></svg></button>
+        <SubmitButton className={styles.commentSubmit} aria-label="Post comment" title="Post comment" pendingLabel="…"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4 20-7Z" /><path d="M22 2 11 13" /></svg></SubmitButton>
       </form>
       <p id="comment-guidance" className={styles.commentGuidance}>Comments follow community guidelines. You can delete your own comment at any time.</p>
     </details> : <Panel className={styles.commentSignIn}>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading } from "@epelawa/ui";
+import {  EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, SubmitButton } from "@epelawa/ui";
 import { adminHref } from "../../../lib/admin-path";
 import { createStaffClient } from "../../../lib/supabase";
 import { saveSitePoll } from "../../../lib/actions";
@@ -61,7 +61,7 @@ export default async function PollPage({ searchParams }: { searchParams: Promise
           {[1, 2, 3, 4, 5, 6].map((slot) => <label key={slot} className="ui-field"><span className="label">Option {slot}{slot <= 2 ? " (required)" : " (optional)"}</span><input className="input" name="options" maxLength={120} required={slot <= 2} /></label>)}
         </div>
         <label className="ui-field"><span className="label">Run for (days)</span><input className="input" name="days" type="number" min={1} max={90} defaultValue={7} required /></label>
-        <div className="ui-actions"><button className="btn-primary w-fit" type="submit">Publish poll</button></div>
+        <div className="ui-actions"><SubmitButton pendingLabel="Publishing…" className="btn-primary w-fit">Publish poll</SubmitButton></div>
       </form>
     </Panel>
 

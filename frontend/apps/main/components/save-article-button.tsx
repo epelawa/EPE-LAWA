@@ -1,3 +1,4 @@
+import { SubmitButton } from "@epelawa/ui";
 import { toggleSavedArticle } from "../app/dashboard/saved-actions";
 import { BookmarkIcon } from "./icons";
 
@@ -21,10 +22,10 @@ export default function SaveArticleButton({
       <input type="hidden" name="articleId" value={articleId} />
       <input type="hidden" name="slug" value={slug} />
       <input type="hidden" name="intent" value={saved ? "remove" : "save"} />
-      <button type="submit" aria-pressed={saved} title={saved ? "Remove from saved stories" : "Save this story"}>
+      <SubmitButton aria-pressed={saved} title={saved ? "Remove from saved stories" : "Save this story"} pendingLabel={saved ? "Removing…" : "Saving…"}>
         <BookmarkIcon size={18} filled={saved} />
         <span className="sr-only">{saved ? "Remove from saved stories" : "Save this story"}</span>
-      </button>
+      </SubmitButton>
     </form>
   );
 }
