@@ -2,32 +2,41 @@
 
 import { useEffect, useState } from "react";
 import { VAPID_PUBLIC_KEY, WEB_PUSH_READY } from "../lib/vapid";
+import { createClient } from "../lib/supabase.client";
 
 /**
  * Notification opt-in popup.
  *
- * Asks the user for permission to send push notifications about new articles,
- * radio programmes and community updates. Stores preference so it only shows
- * once.
+ * Asks a signed-in member for permission to send push notifications about new
+ * articles, radio programmes and community updates. Stores consent so it only
+ * shows once, and never asks anonymous visitors — a subscription belongs to a
+ * member and cannot exist without one.
  */
 export default function NotificationPrompt() {
   const [show, setShow] = useState(true);
   const [granted, setGranted] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (!WEB_PUSH_READY) {
-      setShow(false);
-      return;
-    }
-    const granted = localStorage.getItem("epelawa_notification_consent");
-    if (granted !== null) {
-      setShow(false);
-      setGranted(granted === "true");
-    } else if ("Notification" in window) {
-      setShow(true);
-    } else {
-      setShow(false);
-    }
+    let cancelled = false;
+    (async () => {
+      if (!WEB_PUSH_READY || !("serviceWorker" in navigator) || !("PushManager" in window)) {
+        setShow(false);
+        return;
+      }
+      const stored = localStorage.getItem("epelawa_notification_consent");
+      if (stored !== null) {
+        setShow(false);
+        setGranted(stored === "true");
+        return;
+      }
+      try {
+        const { data } = await createClient().auth.getUser();
+        setShow(!cancelled && data?.user != null && "Notification" in window);
+      } catch {
+        setShow(false);
+      }
+    })().catch(() => setShow(false));
+    return () => { cancelled = true; };
   }, []);
 
   const grant = async () => {
@@ -42,21 +51,23 @@ export default function NotificationPrompt() {
       setGranted(allowed);
       setShow(false);
 
-      if (allowed && "serviceWorker" in navigator) {
+      if (allowed && "serviceWorker" in navigator && "PushManager" in window) {
         const registration = await navigator.serviceWorker.register(
           "/sw.js",
           { scope: "/" }
         );
-        const subscription = await registration.pushManager.subscribe({
+        // Re-use an existing subscription so re-visits do not pile up endpoints.
+        const existing = await registration.pushManager.getSubscription();
+        const subscription = existing ?? await registration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as unknown as PushSubscriptionOptionsInit["applicationServerKey"],
         });
-        // Send subscription to server
-        await fetch("/api/notifications/subscribe", {
+        const saved = await fetch("/api/notifications/subscribe", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ subscription }),
         });
+        if (!saved.ok) throw new Error("subscription store refused");
       }
     } catch (err) {
       console.error("Notification permission error:", err);

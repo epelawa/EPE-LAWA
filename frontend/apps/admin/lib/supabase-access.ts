@@ -387,7 +387,7 @@ export async function signOutAdminSession(
  */
 export async function getAdminAccessForSession(
   cookieStore: CookieStoreLike,
-): Promise<{ allowed: boolean; userId: string | null }> {
+): Promise<{ allowed: boolean; userId: string | null; staleSession?: boolean }> {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_PUBLISHABLE_KEY;
 
@@ -429,14 +429,50 @@ export async function getAdminAccessForSession(
     }
   }
 
-  // Verify identity.
+  // Verify identity. A 403 session_not_found means the auth server no longer
+  // holds this browser's session record (server-side sign-out or a wiped
+  // session table). The bearer header alone cannot be re-honoured without
+  // credentials, so attempt one refresh and, when that fails, report the
+  // session as stale so the guard can clear the dead cookie and bounce the
+  // staff member through the login flow to mint a fresh token pair.
+  const readStaleCode = (resp: Response): boolean => {
+    const header = resp.headers.get("x-sb-error-code");
+    if (header) return /session.*not.*found/i.test(header);
+    return false;
+  };
+
   let userId: string | null = null;
   try {
-    const userResp = await fetch(`${url}/auth/v1/user`, {
+    let userResp = await fetch(`${url}/auth/v1/user`, {
       cache: "no-store",
       headers: { Authorization: `Bearer ${accessToken}`, apikey: key },
     });
-    if (!userResp.ok) return { allowed: false, userId: null };
+    let maybeStale = !userResp.ok && (readStaleCode(userResp) || userResp.status === 403);
+    if (!userResp.ok && maybeStale && session.refresh_token) {
+      try {
+        const recoveryResp = await fetch(`${url}/auth/v1/token?grant_type=refresh_token`, {
+          cache: "no-store",
+          method: "POST",
+          headers: { apikey: key, "Content-Type": "application/json" },
+          body: JSON.stringify({ refresh_token: session.refresh_token }),
+        });
+        if (recoveryResp.ok) {
+          const recovered = (await recoveryResp.json()) as AdminSessionValue;
+          if (typeof recovered.access_token === "string" && recovered.access_token) {
+            accessToken = recovered.access_token;
+            refreshedSession = { ...recovered, expires_at: recovered.expires_at ?? Math.floor(Date.now() / 1000) + (recovered.expires_in ?? 3600) };
+            userResp = await fetch(`${url}/auth/v1/user`, {
+              cache: "no-store",
+              headers: { Authorization: `Bearer ${accessToken}`, apikey: key },
+            });
+            maybeStale = false;
+          }
+        }
+      } catch {
+        // Recovery refresh failed; fall through with maybeStale intact.
+      }
+    }
+    if (!userResp.ok) return maybeStale ? { allowed: false, userId: null, staleSession: true } : { allowed: false, userId: null };
     const user = (await userResp.json()) as { id?: string; email_confirmed_at?: string | null };
     userId = user.id ?? null;
     if (!userId || typeof user.email_confirmed_at !== "string" || !user.email_confirmed_at) {
@@ -498,6 +534,22 @@ export async function getAdminAccessForSession(
  * cookie headers and no-store cache. On denial returns 403. On provider
  * failure returns 503.
  */
+/**
+ * After getAdminAccessForSession reports a stale session the dead browser
+ * cookie must be invalidated here, client-side independent: only the response
+ * headers can set cookies during a redirect render.
+ */
+export function clearAdminSessionCookies(
+  cookieStore: CookieStoreLike,
+): void {
+  const secure = isSecureUrl(process.env.SUPABASE_URL);
+  for (const cookie of cookieStore.getAll()) {
+    if (cookie.name === ADMIN_COOKIE || cookie.name.startsWith(`${ADMIN_COOKIE}.`)) {
+      cookieStore.setAll([{ name: cookie.name, value: "", options: { ...cookieOptions(secure), maxAge: 0 } }], { "Cache-Control": "no-store" });
+    }
+  }
+}
+
 export async function respondToAdminRead(
   request: Request,
   protectedResponse: (access: { userId: string }) => Response,

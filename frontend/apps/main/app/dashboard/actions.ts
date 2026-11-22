@@ -96,3 +96,25 @@ export async function markNotificationsRead(): Promise<void> {
     .is("read_at", null);
   revalidatePath("/dashboard");
 }
+
+/**
+ * Saves the signed-in member's own notification channel preferences.
+ * The row is scoped to the caller's session both by the RLS policy and by
+ * always taking user_id from auth, never from the form.
+ */
+const NOTIFICATION_PREFERENCE_KEYS = [
+  "in_app_news", "in_app_radio", "in_app_comments", "in_app_forum",
+  "push_news", "push_radio", "push_comments", "push_forum",
+] as const;
+
+export async function updateNotificationPreferences(data: FormData): Promise<void> {
+  const supabase = await createClient();
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) redirect("/login?next=%2Fdashboard");
+  const preferences: Partial<Record<(typeof NOTIFICATION_PREFERENCE_KEYS)[number], boolean>> = {};
+  for (const key of NOTIFICATION_PREFERENCE_KEYS) preferences[key] = data.get(key) === "on";
+  await supabase
+    .from("notification_preferences")
+    .upsert({ user_id: user.id, ...preferences });
+  revalidatePath("/dashboard");
+}

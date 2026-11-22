@@ -51,7 +51,7 @@ export default async function ThreadPage({ params, searchParams }: Props) {
   const canReply = user !== null && thread.state === "open";
   const pollOpen = thread.state === "open" && (!poll?.closes_at || new Date(poll.closes_at).getTime() > Date.now());
   const signIn = `/login?next=${encodeURIComponent(`/forum/thread/${slug}`)}`;
-  return <PageFrame className="ui-stack">
+  return <PageFrame className="ui-stack forum-shell">
     <nav className="ui-back-link" aria-label="Breadcrumb"><Link href="/forum">Forum</Link>{category ? <><span aria-hidden="true"> / </span><Link href={`/forum/category/${encodeURIComponent(category.slug)}`}>{category.name}</Link></> : null}</nav>
     <PageIntro eyebrow="Community discussion" title={thread.title} description={thread.state === "locked" ? "This discussion is locked." : "Join the conversation."} meta={<span>{thread.state === "locked" ? <StatusBadge tone="warning">Locked</StatusBadge> : <StatusBadge tone="success">Open discussion</StatusBadge>}</span>} />
     <div className="ui-stack-sm" aria-live="polite">{notice.posted ? <Notice role="status" tone="success">Your reply was posted.</Notice> : null}{notice.reported ? <Notice role="status" tone="success">Your report was submitted for moderator review.</Notice> : null}{notice.voted ? <Notice role="status" tone="success">Your vote was recorded.</Notice> : null}{notice.forum_error ? <Notice role="alert" tone="danger">{notice.forum_error}</Notice> : null}</div>

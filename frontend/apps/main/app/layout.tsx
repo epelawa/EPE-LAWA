@@ -27,6 +27,7 @@ import MobileBottomNav from "../components/mobile-bottom-nav";
 import { createClient } from "../lib/supabase";
 import { readSiteLanguage } from "../lib/i18n";
 import { NotificationSoundListener } from "../components/notification-sound";
+import NotificationPrompt from "../components/notification-prompt";
 import ToastRegion from "../components/toast";
 import SlashFocus from "../components/slash-focus";
 
@@ -81,7 +82,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <a className="skip-link" href="#main">
           Skip to content
         </a>
-        <SiteHeader items={navigation} />
+        <SiteHeader items={navigation} lang={siteLanguage} />
         <main id="main" className="site-main" tabIndex={-1}>
           {children}
         </main>
@@ -91,19 +92,13 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <SponsorPopupPlacement />
         <FloatingSupport enabled={process.env.ENQUIRY_INTAKE_ENABLED === "true"} />
 
-        {/* `components/notification-prompt.tsx` is intentionally NOT mounted.
-            It asks for browser notification permission, then registers `/sw.js`
-            and POSTs a subscription to `/api/notifications/subscribe` — neither
-            exists, and no real VAPID public key is configured. Asking a visitor
-            for a permission we cannot honour is worse than not asking. Re-mount
-            it only once all four exist:
-              1. `public/sw.js` — a service worker that handles `push`
-              2. `app/api/notifications/subscribe/route.ts` — authenticated,
-                 rate-limited, and writes to `push_subscriptions`
-              3. a real VAPID key pair, with the private half server-side only
-              4. something that actually sends a notification
-            The component is guarded by the explicit public push enable flag and
-            remains unmounted until the complete delivery path is available. */}
+        {/* Web-push opt-in. The component itself stays dark unless
+            NEXT_PUBLIC_WEB_PUSH_ENABLED === "true" and a real VAPID public key
+            is configured, so enabling delivery is a Vercel-variable change only.
+            The matching private key stays server-side, and the sender (what
+            pushes article/radio events to stored subscriptions) is the last
+            unbuilt half of web push — see docs/00-master-plan.md §8. */}
+        <NotificationPrompt />
       </body>
     </html>
   );

@@ -41,6 +41,10 @@ test('server session gate verifies Auth before checking current RLS grants and f
     assert.equal(req.cache, 'no-store');
     if (scenario === 'offline') throw new Error('offline');
     if (path === '/auth/v1/user' && scenario === 'invalid') return new Response('{}', { status: 401, headers: { 'content-type': 'application/json' } });
+    if (path === '/auth/v1/user' && scenario === 'stale') return new Response('{"code":403,"msg":"session not found"}', { status: 403, headers: { 'content-type': 'application/json', 'x-sb-error-code': 'session_not_found' } });
+    if (path === '/auth/v1/token' && scenario === 'stale') return new Response('{"code":403,"msg":"session not found"}', { status: 403, headers: { 'content-type': 'application/json', 'x-sb-error-code': 'session_not_found' } });
+    if (path === '/auth/v1/user' && scenario === 'stale_recovered') { if (calls.length === 1) return new Response('{"code":403,"msg":"session not found"}', { status: 403, headers: { 'content-type': 'application/json', 'x-sb-error-code': 'session_not_found' } }); }
+    if (path === '/auth/v1/token' && scenario === 'stale_recovered') return Response.json({ access_token: 'test-access-token', refresh_token: 'refreshed-refresh-token', expires_in: 3600, user: { id: 'staff-a' } });
     let data;
     if (path === '/auth/v1/user') data = { id: 'staff-a', aud: 'authenticated', email_confirmed_at: scenario === 'unverified' ? null : '2026-01-01T00:00:00Z' };
     else if (path === '/rest/v1/staff_profiles') data = [{ user_id: 'staff-a', is_active: scenario !== 'inactive' }];
@@ -53,17 +57,20 @@ test('server session gate verifies Auth before checking current RLS grants and f
     assert.deepEqual(await getAdminAccessForSession(cookieStore([sessionCookie()])), { allowed: true, userId: 'staff-a' });
     assert.deepEqual(calls, ['/auth/v1/user', '/rest/v1/staff_profiles', '/rest/v1/rpc/has_capability']);
     assert.equal(scenario, 'active', 'the RPC response can represent an effective capability supplied by an assigned role');
-    for (const [mode, expected] of [
-      ['invalid', ['/auth/v1/user']],
-      ['unverified', ['/auth/v1/user']],
-      ['inactive', ['/auth/v1/user', '/rest/v1/staff_profiles']],
-      ['revoked', ['/auth/v1/user', '/rest/v1/staff_profiles', '/rest/v1/rpc/has_capability']],
-      ['offline', ['/auth/v1/user']],
+    for (const [mode, expected, allowed] of [
+      ['invalid', ['/auth/v1/user'], { allowed: false, userId: null }],
+      ['stale', ['/auth/v1/user', '/auth/v1/token'], { allowed: false, userId: null, staleSession: true }],
+      ['stale_recovered', ['/auth/v1/user', '/auth/v1/token', '/auth/v1/user', '/rest/v1/staff_profiles', '/rest/v1/rpc/has_capability'], { allowed: true, userId: 'staff-a' }],
+      ['unverified', ['/auth/v1/user'], { allowed: false, userId: null }],
+      ['inactive', ['/auth/v1/user', '/rest/v1/staff_profiles'], { allowed: false, userId: null }],
+      ['revoked', ['/auth/v1/user', '/rest/v1/staff_profiles', '/rest/v1/rpc/has_capability'], { allowed: false, userId: null }],
+      ['offline', ['/auth/v1/user'], { allowed: false, userId: null }],
     ]) {
       scenario = mode; calls.length = 0;
-      assert.deepEqual(await getAdminAccessForSession(cookieStore([sessionCookie()])), { allowed: false, userId: null }, mode);
+      assert.deepEqual(await getAdminAccessForSession(cookieStore([sessionCookie()])), allowed, mode);
       assert.deepEqual(calls, expected, mode);
     }
+
     scenario = 'active'; calls.length = 0;
     assert.deepEqual(await getAdminAccessForSession(cookieStore()), { allowed: false, userId: null }, 'missing session');
     assert.ok(!calls.includes('/rest/v1/staff_profiles'));

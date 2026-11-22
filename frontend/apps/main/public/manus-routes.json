@@ -82,9 +82,6 @@
       "path": "/admin/ads"
     },
     {
-      "path": "/admin/ai-scheduler"
-    },
-    {
       "path": "/admin/backups"
     },
     {
