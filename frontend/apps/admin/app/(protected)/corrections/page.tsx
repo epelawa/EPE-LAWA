@@ -41,7 +41,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ r
               <label className="ui-field"><span className="label">Decision</span><select name="status" required defaultValue="resolved" className="input"><option value="resolved">Resolved — a correction was made</option><option value="dismissed">Dismissed — no correction needed</option></select></label>
               <label className="ui-field"><span className="label">Resolution note (required when resolved, at least 2 characters)</span><textarea name="note" minLength={2} maxLength={2000} className="input" /></label>
             </div>
-            <SubmitButton pendingLabel="Recording…" className="btn-primary">Record decision</SubmitButton>
+            <SubmitButton pendingLabel="Recording…" className="btn-primary" useLegacyClasses>Record decision</SubmitButton>
           </form>
         </Panel></li>)}</ul> : <EmptyPanel title="Queue is clear" description="No correction reports are awaiting a decision." />}
       </section>

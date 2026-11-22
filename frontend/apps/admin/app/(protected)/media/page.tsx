@@ -71,7 +71,7 @@ export default async function MediaAdminPage({ searchParams }: { searchParams: P
                 <label className={label}>Image address (HTTPS)<input className={input} name="media_url" required type="url" pattern="https://.*" placeholder="https://…" /></label>
                 <label className={label}>Rights / source note (private)<textarea className={input} name="rights_note" required minLength={5} maxLength={2000} placeholder="Where this image came from and why it may be used" /></label>
                 <div className="ui-actions">
-                  <SubmitButton pendingLabel="Adding…" className="btn-primary w-fit">Add to gallery</SubmitButton>
+                  <SubmitButton pendingLabel="Adding…" className="btn-primary w-fit" useLegacyClasses>Add to gallery</SubmitButton>
                 </div>
                 <p className="ui-muted">The rights note stays staff-only. Add images you have checked; use only addresses you have the licence to display.</p>
               </form>

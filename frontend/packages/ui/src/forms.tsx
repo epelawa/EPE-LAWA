@@ -103,7 +103,7 @@ type LiveFieldProps = {
 
 /**
  * Wraps one input and validates it on every keystroke after first blur.
- * The error message shakes once when the field turns invalid, then glows red —
+ * The error message shakes once when the field turns invalid, then glows red –
  * it never re-shakes on every keystroke. Rendered inline, never window.alert.
  */
 export function LiveField({ label, optional, hint, rules, value, onChange, children }: LiveFieldProps) {
@@ -171,16 +171,40 @@ export function LiveField({ label, optional, hint, rules, value, onChange, child
 /** Submit button that rolls a spinner while the surrounding form action is pending. */
 export function SubmitButton({
   children,
-  pendingLabel = "Working…",
+  pendingLabel = "Working\u2026",
   variant = "primary",
   className = "",
   disabled,
+  useLegacyClasses = false,
   ...rest
 }: Omit<ButtonHTMLAttributes<HTMLButtonElement>, "type"> & {
   pendingLabel?: string;
   variant?: "primary" | "secondary" | "ghost" | "danger";
+  useLegacyClasses?: boolean;
 }) {
   const { pending } = useFormStatus();
+  
+  // If legacy classes are requested, use btn- classes for admin compatibility
+  if (useLegacyClasses) {
+    const btnClass = {
+      primary: "btn-primary",
+      secondary: "btn-secondary",
+      ghost: "btn-ghost",
+      danger: "btn-danger",
+    }[variant];
+    return (
+      <button
+        type="submit"
+        disabled={pending || disabled}
+        className={`${btnClass} ${pending ? "btn-busy" : ""} ${className}`.trim()}
+        aria-busy={pending}
+        {...rest}
+      >
+        {children}
+      </button>
+    );
+  }
+  
   return (
     <button
       type="submit"
@@ -201,7 +225,7 @@ export function SubmitButton({
   );
 }
 
-/** Save-state pill for autosaving composers: "Saving…" → "Saved" → timestamp. */
+/** Save-state pill for autosaving composers: "Saving\u2026" \u2192 "Saved" \u2192 timestamp. */
 export function SaveState({
   state,
   savedAt,
@@ -213,7 +237,7 @@ export function SaveState({
   return (
     <span className={`ep-save ep-save--${state}`} role="status" aria-live="polite">
       <span className="ep-save__dot" aria-hidden="true" />
-      {state === "saving" ? "Saving…" : state === "saved" ? "Saved" : "Saving failed"}
+      {state === "saving" ? "Saving\u2026" : state === "saved" ? "Saved" : "Saving failed"}
       {state === "saved" && savedAt ? <span className="ep-save__time">{savedAt}</span> : null}
     </span>
   );

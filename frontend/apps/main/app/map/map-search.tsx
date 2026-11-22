@@ -83,7 +83,14 @@ export default function MapSearch({ businesses, businessError = false }: { busin
     </Panel>
     <Panel className={`ui-card ${styles.mapPanel}`}>
       <SectionHeading eyebrow="Free map, no sign-in" title="Epe on the map" id="epe-embed-map" description="The map below shows Epe and around. Tap Use my location to move it to your area; your coordinates stay in this browser tab." />
-      <iframe title="Epe community map" src={embedUrl} loading="lazy" className={styles.mapFrame} />
+      <iframe 
+        title="Epe community map" 
+        src={embedUrl} 
+        loading="lazy" 
+        className={styles.mapFrame}
+        referrerPolicy="no-referrer-when-downgrade"
+        sandbox="allow-same-origin allow-scripts allow-popups"
+      />
       <div className="ui-actions">
         <a className="btn-secondary" target="_blank" rel="noopener noreferrer" href={osmSearchUrl(selectedDestination || "Epe, Lagos")}>Search this in OpenStreetMap <span className="sr-only">(opens in a new tab)</span></a>
         {lat !== null && lon !== null ? <a className="btn-secondary" target="_blank" rel="noopener noreferrer" href={`https://www.openstreetmap.org/#map=14/${lat.toFixed(4)}/${lon.toFixed(4)}`}>Open my area on OpenStreetMap <span className="sr-only">(opens in a new tab)</span></a> : <a className="btn-secondary" target="_blank" rel="noopener noreferrer" href={`https://www.openstreetmap.org/#map=${EPE_VIEW}`}>Open wider Epe view <span className="sr-only">(opens in a new tab)</span></a>}

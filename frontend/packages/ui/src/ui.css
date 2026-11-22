@@ -502,6 +502,29 @@
   font-size: var(--ep-type-sm);
 }
 
+/* Button Spinner */
+.ep-btn__spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: btn-spin 0.65s linear infinite;
+}
+
+@keyframes btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ep-btn--pending {
+  cursor: wait;
+  opacity: 0.85;
+}
+
 /* Theme toggle button */
 .ui-theme-toggle {
   display: inline-flex;

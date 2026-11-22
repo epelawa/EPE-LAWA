@@ -19,7 +19,7 @@ function turnstileDirective(name: "script-src" | "connect-src" | "frame-src" | "
   if (name === "script-src") return `${value} https://challenges.cloudflare.com`;
   if (name === "connect-src") return `${value} https://challenges.cloudflare.com`;
   if (name === "worker-src") return `${value} https://challenges.cloudflare.com`;
-  return `frame-src https://challenges.cloudflare.com`;
+  return `frame-src https://challenges.cloudflare.com https://www.openstreetmap.org`;
 }
 
 function connectOrigins(): string[] {

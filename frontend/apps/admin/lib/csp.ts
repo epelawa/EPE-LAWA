@@ -31,5 +31,5 @@ export function newCspNonce(): string {
 export function contentSecurityPolicy(nonce: string | null): string {
   const devEval = process.env.NODE_ENV !== "production" ? " 'unsafe-eval'" : "";
   const scriptSrc = nonce ? `'self' 'nonce-${nonce}' 'strict-dynamic'${devEval}` : `'self'${devEval}`;
-  return [...DIRECTIVES, `script-src ${scriptSrc}`, `connect-src ${connectOrigins().join(" ")}`].join("; ") + ";";
+  return [...DIRECTIVES, `script-src ${scriptSrc}`, `connect-src ${connectOrigins().join(" ")}`, `frame-src https://www.openstreetmap.org`].join("; ") + ";";
 }

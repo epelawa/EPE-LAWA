@@ -25,7 +25,7 @@ export default async function Page() {
             <label className="ui-field"><span className="label">Decision</span><select name="decision" className="input"><option value="approve">Approve and publish</option><option value="hide">Hide</option></select></label>
             <label className="ui-field"><span className="label">Reason (at least 5 characters)</span><textarea name="reason" minLength={5} maxLength={1000} required className="input" /></label>
           </div>
-          <div className="ui-actions"><SubmitButton pendingLabel="Recording…" className="btn-primary">Save moderation decision</SubmitButton></div>
+          <div className="ui-actions"><SubmitButton pendingLabel="Recording…" className="btn-primary" useLegacyClasses>Save moderation decision</SubmitButton></div>
         </form>
       </Panel></li>)}</ul>
     </section>}

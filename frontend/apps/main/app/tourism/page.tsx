@@ -118,7 +118,7 @@ export default async function TourismPage({ searchParams }: { searchParams: Prom
           <div className="ui-field"><label className="label" htmlFor="tourism-rights">Media rights / permission basis (required if media supplied)</label><textarea className="input" id="tourism-rights" name="media_rights" maxLength={2000} /></div>
         </div>
         <label className="ui-subtle ui-row"><input type="checkbox" name="consent" value="yes" required /><span>I confirm these details are submitted for private editorial review, the source is identified, and any media rights basis is accurately described. I understand nothing will be published unless provenance and rights are verified.</span></label>
-        <div className="ui-actions"><SubmitButton pendingLabel="Submitting…" className="btn-primary">Submit privately for review</SubmitButton></div>
+        <div className="ui-actions"><SubmitButton pendingLabel="Submitting…" className="btn-primary" useLegacyClasses>Submit privately for review</SubmitButton></div>
       </form></details></Panel> : <p><Link className="btn-secondary" href="/login?next=%2Ftourism">Sign in to suggest a destination</Link></p>}
     </section>
     <p className="ui-meta">Directions open in Google Maps. Verify the route before travel.</p>

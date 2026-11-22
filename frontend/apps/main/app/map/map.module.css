@@ -1,3 +1,44 @@
-.mapFrame { width: 100%; height: clamp(320px, 55vh, 520px); border: 1px solid #d7e2f0; border-radius: 14px; background: #eaf0f9; }
-.mapPanel { display: grid; gap: 12px; }
-@media (prefers-reduced-motion: reduce) { .mapPanel { transition: none; } }
+.mapFrame { 
+  width: 100%; 
+  height: clamp(320px, 55vh, 520px); 
+  border: 1px solid #d7e2f0; 
+  border-radius: 14px; 
+  background: #eaf0f9; 
+}
+.mapContainer {
+  position: relative;
+  width: 100%;
+  height: clamp(320px, 55vh, 520px);
+}
+.mapFallback {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  background: #eaf0f9;
+  border: 1px solid #d7e2f0;
+  border-radius: 14px;
+  text-align: center;
+  color: #293650;
+}
+.mapFallback a {
+  color: #477fe0;
+  text-decoration: underline;
+}
+.mapFallback a:hover {
+  color: #294b91;
+}
+.mapPanel { 
+  display: grid; 
+  gap: 12px; 
+}
+@media (prefers-reduced-motion: reduce) { 
+  .mapPanel { transition: none; } 
+}

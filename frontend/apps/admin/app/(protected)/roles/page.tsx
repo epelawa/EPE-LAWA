@@ -79,7 +79,7 @@ export default async function RolesPage() {
             <legend>Capabilities</legend>
             <CapabilityPicker groups={groups} selected={[]} />
           </fieldset>
-          <div className="ui-actions"><SubmitButton pendingLabel="Creating…" className="btn-primary">Create role</SubmitButton></div>
+          <div className="ui-actions"><SubmitButton pendingLabel="Creating…" className="btn-primary" useLegacyClasses>Create role</SubmitButton></div>
         </form>
       </Panel>
 
@@ -99,7 +99,7 @@ export default async function RolesPage() {
                 <legend>Capabilities</legend>
                 <CapabilityPicker groups={groups} selected={granted} />
               </fieldset>
-              <div className="ui-actions"><SubmitButton pendingLabel="Saving…" className="btn-primary">Save role</SubmitButton></div>
+              <div className="ui-actions"><SubmitButton pendingLabel="Saving…" className="btn-primary" useLegacyClasses>Save role</SubmitButton></div>
             </form>
             <form action={deleteRole}>
               <input type="hidden" name="id" value={role.id} />
@@ -119,7 +119,7 @@ export default async function RolesPage() {
                     {!person.email_confirmed_at ? " · email unverified" : ""}
                     {!person.is_active ? " · inactive" : ""}
                   </span>
-                  <SubmitButton pendingLabel="Working…" className="btn-secondary">{assigned ? "Remove role" : "Assign role"}</SubmitButton>
+                  <SubmitButton pendingLabel="Working…" className="btn-secondary" useLegacyClasses>{assigned ? "Remove role" : "Assign role"}</SubmitButton>
                 </form>
               );
             })}
