@@ -35,7 +35,7 @@ const ART_HINT: Record<Illustration, string> = {
 };
 
 export function maintenanceHtml(index: number): string {
-  const variant = illustrations[index % illustrations.length] ?? illustrations[0];
+  const variant = illustrations[index & 3] ?? illustrations[0];
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>We'll be back soon | EPE LAWA</title><style>
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:32px 20px;background:#0a1023;color:#17264a;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
