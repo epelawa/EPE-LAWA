@@ -17,7 +17,7 @@ export type BackupObject = {
 
 export type BackupListResult =
   | { state: "ready"; backups: BackupObject[] }
-  | { state: "unconfigured" }
+  | { state: "unconfigured"; missing: string[] }
   | { state: "unavailable" };
 
 type BackupPageResult =
@@ -86,7 +86,14 @@ export async function listBackups(): Promise<BackupListResult> {
   const bucket = process.env.R2_BUCKET_PRIVATE?.trim();
   const token = process.env.CLOUDFLARE_API_TOKEN?.trim();
 
-  if (!account || !bucket || !token) return { state: "unconfigured" };
+  if (!account || !bucket || !token) {
+    const missing = [
+      "R2_ACCOUNT_ID",
+      "R2_BUCKET_PRIVATE",
+      "CLOUDFLARE_API_TOKEN",
+    ].filter(name => !({ R2_ACCOUNT_ID: account, R2_BUCKET_PRIVATE: bucket, CLOUDFLARE_API_TOKEN: token }[name]));
+    return { state: "unconfigured", missing };
+  }
 
   const endpoint =
     OBJECTS_ENDPOINT.replace("{account}", encodeURIComponent(account)).replace(

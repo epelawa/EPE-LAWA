@@ -48,7 +48,7 @@ const staffPages: NavItem[] = [
   { label: "Legal pages", href: "/legal-pages", hint: "Maintain the Privacy, Terms and Guidelines notes", group: "Administration" },
   { label: "Gallery & media", href: "/media", hint: "Public photo archive and media records", group: "Administration" },
   { label: "Backups", href: "/backups", hint: "Database backups and restore in R2", group: "Administration" },
-  { label: "Settings", href: "/settings", hint: "Deployment configuration and setup", group: "Administration" },
+  { label: "Settings", href: "/settings", hint: "Maintenance and workspace status", group: "Administration" },
 ];
 
 export function mainNavigation(): NavItem[] {
