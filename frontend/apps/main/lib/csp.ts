@@ -13,6 +13,15 @@ const DIRECTIVES = [
   `upgrade-insecure-requests`,
 ];
 
+/** Turnstile needs script, connect, frame and worker access to its origin. */
+function turnstileDirective(name: "script-src" | "connect-src" | "frame-src" | "worker-src", value: string): string {
+  if (!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim()) return name === "frame-src" ? "" : value;
+  if (name === "script-src") return `${value} https://challenges.cloudflare.com`;
+  if (name === "connect-src") return `${value} https://challenges.cloudflare.com`;
+  if (name === "worker-src") return `${value} https://challenges.cloudflare.com`;
+  return `frame-src https://challenges.cloudflare.com`;
+}
+
 function connectOrigins(): string[] {
   const origins = ["'self'"];
   try {
@@ -31,5 +40,8 @@ export function newCspNonce(): string {
 export function contentSecurityPolicy(nonce: string | null): string {
   const devEval = process.env.NODE_ENV !== "production" ? " 'unsafe-eval'" : "";
   const scriptSrc = nonce ? `'self' 'nonce-${nonce}' 'strict-dynamic'${devEval}` : `'self'${devEval}`;
-  return [...DIRECTIVES, `script-src ${scriptSrc}`, `connect-src ${connectOrigins().join(" ")}`].join("; ") + ";";
+  let policy = [...DIRECTIVES, `script-src ${turnstileDirective("script-src", scriptSrc)}`, `connect-src ${turnstileDirective("connect-src", connectOrigins().join(" "))}`.trimEnd()];
+  const frameSrc = turnstileDirective("frame-src", "");
+  if (frameSrc) policy = [...policy, frameSrc];
+  return policy.filter(Boolean).join("; ") + ";";
 }

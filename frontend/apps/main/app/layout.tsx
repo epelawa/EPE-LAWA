@@ -18,6 +18,7 @@ import NewsFooter from "../components/news-footer";
 import SiteFooter from "../components/site-footer";
 import { mainNavigation } from "../lib/navigation";
 import { isIndexingAllowed, siteUrl } from "../lib/site";
+import { turnstileSiteKey } from "../lib/turnstile";
 import { themeScript } from "../lib/theme";
 import SiteMotion from "../components/site-motion";
 import ScrollToTop from "../components/scroll-to-top";
@@ -71,6 +72,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   return (
     <html lang={siteLanguage === "yo" ? "yo" : "en"} data-theme="light" style={{ colorScheme: "light" }} suppressHydrationWarning>
       <body>
+        {turnstileSiteKey() ? (
+          <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer nonce={nonce} />
+        ) : null}
         <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeScript }} />
         <AuthCallbackErrorRouter />
         <SiteMotion />

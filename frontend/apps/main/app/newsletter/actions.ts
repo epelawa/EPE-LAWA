@@ -3,6 +3,7 @@
 import { createHash } from "node:crypto";
 import { createClient } from "../../lib/supabase";
 import { formAdminClient, formClientKey } from "../../lib/form-server";
+import { verifyTurnstile } from "../../lib/turnstile";
 import { requestNewsletterConfirmation } from "../../lib/newsletter-confirmation";
 import { authMailConfig, deliverAuthMessage } from "../../lib/auth-mail-hook";
 
@@ -23,6 +24,7 @@ function hash(value: string): string {
 // are reviewed. Never use the old, unsafe anonymous signup RPC.
 export async function subscribeNewsletter(_previous: NewsletterState = idleState, data: FormData): Promise<NewsletterState> {
   if (process.env.NEWSLETTER_SIGNUP_ENABLED !== "true") return { status: "error", message: "Newsletter sign-up is temporarily unavailable." };
+  if ((await verifyTurnstile(data)) === "fail") return { status: "error", message: "Verification failed. Complete the human-verification box and try again." };
   try {
     const clientKey = await formClientKey(), client = formAdminClient(), mail = authMailConfig(process.env);
     const result = await requestNewsletterConfirmation({ email: data.get("email"), consent: data.get("consent") === "yes", clientKey, origin: process.env.NEXT_PUBLIC_SITE_URL ?? "" }, {
