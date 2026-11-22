@@ -1,5 +1,5 @@
 import { createStaffClient } from "../../../lib/supabase";
-import { PageFrame, PageIntro, Notice } from "@epelawa/ui";
+import {  PageFrame, PageIntro, Notice, SubmitButton } from "@epelawa/ui";
 import { saveSitePage } from "./actions";
 import RichTextEditor from "../../../components/rich-text-editor";
 import UploadModalField from "../../../components/upload-modal-field";
@@ -86,7 +86,7 @@ export default async function SitePagesPage({ searchParams }: { searchParams: Pr
               </div>
             </fieldset>
           ) : null}
-          <div className="ui-actions"><button className="btn-primary" type="submit">Publish to the live page</button><button className="btn-ghost" type="reset">Clear form</button></div>
+          <div className="ui-actions"><SubmitButton pendingLabel="Publishing…" className="btn-primary">Publish to the live page</SubmitButton><button className="btn-ghost" type="reset">Clear form</button></div>
           {row ? <p className="ui-meta">Last saved {new Date(row.updated_at).toLocaleString("en-NG")}. Version {row.revision}.</p> : <p className="ui-meta">This page has no saved edits yet; the text shows the current built-in content.</p>}
         </form>
       </section>

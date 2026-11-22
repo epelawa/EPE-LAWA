@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "@epelawa/ui";
+import {  EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge, SubmitButton } from "@epelawa/ui";
 import { createStaffClient } from "../../../lib/supabase";
 import { decideEvent } from "./actions";
 
@@ -55,7 +55,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
               <label className="ui-field"><span className="label">Decision</span><select name="status" required defaultValue="" className="input"><option value="" disabled>Choose a decision</option><option value="published">Publish to the calendar</option><option value="rejected">Reject — with a reason</option></select></label>
               <label className="ui-field"><span className="label">Decision note (required when rejecting)</span><textarea name="note" maxLength={1000} className="input" /></label>
             </div>
-            <div className="ui-actions"><button className="btn-primary" type="submit">Record event decision</button></div>
+            <div className="ui-actions"><SubmitButton pendingLabel="Recording…" className="btn-primary">Record event decision</SubmitButton></div>
           </form>
         </Panel></li>)}</ul>
       </section>}

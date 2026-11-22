@@ -1,4 +1,4 @@
-import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "@epelawa/ui";
+import {  EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge, SubmitButton } from "@epelawa/ui";
 import { createStaffClient } from "../../../../lib/supabase";
 import { decideSongRequest } from "./actions";
 
@@ -43,9 +43,9 @@ export default async function SongRequestsPage({ searchParams }: { searchParams:
           <p className="ui-prose"><strong>{row.song}</strong></p>
           {row.note ? <p className="ui-meta">“{row.note}” — {row.member_email ?? "member"}</p> : null}
           <div className="ui-actions">
-            <form action={decideSongRequest}><input type="hidden" name="request_id" value={row.id} /><input type="hidden" name="status" value="queued" /><button className="btn-secondary" type="submit">Queue for airtime</button></form>
-            <form action={decideSongRequest}><input type="hidden" name="request_id" value={row.id} /><input type="hidden" name="status" value="played" /><button className="btn-primary" type="submit">Mark as played</button></form>
-            <form action={decideSongRequest}><input type="hidden" name="request_id" value={row.id} /><input type="hidden" name="status" value="declined" /><button className="btn-ghost" type="submit">Decline</button></form>
+            <form action={decideSongRequest}><input type="hidden" name="request_id" value={row.id} /><input type="hidden" name="status" value="queued" /><SubmitButton pendingLabel="Working…" className="btn-secondary">Queue for airtime</SubmitButton></form>
+            <form action={decideSongRequest}><input type="hidden" name="request_id" value={row.id} /><input type="hidden" name="status" value="played" /><SubmitButton pendingLabel="Working…" className="btn-primary">Mark as played</SubmitButton></form>
+            <form action={decideSongRequest}><input type="hidden" name="request_id" value={row.id} /><input type="hidden" name="status" value="declined" /><SubmitButton pendingLabel="Working…" className="btn-ghost">Decline</SubmitButton></form>
           </div>
         </Panel></li>)}</ul> : <EmptyPanel title="Queue is clear" description="No requests are waiting on the desk." />}
 
