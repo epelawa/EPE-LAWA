@@ -79,6 +79,15 @@
   --ep-space-16: 64px;
   --ep-space-24: 96px;
 
+  /* ------------------------------------------------------------ breakpoints */
+  /* Mobile-first breakpoints */
+  --ep-breakpoint-xs: 360px;
+  --ep-breakpoint-sm: 640px;
+  --ep-breakpoint-md: 768px;
+  --ep-breakpoint-lg: 1024px;
+  --ep-breakpoint-xl: 1280px;
+  --ep-breakpoint-2xl: 1536px;
+
   /* --------------------------------------------------------------- radius */
   /* Three values only: small control, large surface, interactive pill. */
   --ep-radius-sm: 8px;
@@ -125,7 +134,37 @@
   --ep-z-overlay: 90;
   --ep-z-dialog: 100;
 
-  /* Backward-compatible aliases. Old code resolves to the same values. */
+  /* -------------------------------------------------------------- dark mode */
+  /* Dark theme color overrides */
+}
+
+[data-theme="dark"] {
+  --ep-bg: #0A1023;
+  --ep-surface: #17264A;
+  --ep-surface-soft: #294B91;
+  --ep-surface-raised: #293650;
+  --ep-border-subtle: #294B91;
+  --ep-text: #F1F4FA;
+  --ep-text-muted: #A6B2C5;
+  --ep-primary: #A7C5F5;
+  --ep-primary-hover: #C8D9F8;
+  --ep-primary-fg: #0A1023;
+  --ep-link: #477FE0;
+  --ep-accent: #477FE0;
+
+  /* Dark mode shadows - more subtle */
+  --ep-shadow-1: 0 2px 8px rgb(0 0 0 / .20);
+  --ep-shadow-2: 0 8px 24px rgb(0 0 0 / .30);
+  --ep-shadow-3: 0 16px 40px rgb(0 0 0 / .40);
+  --ep-shadow-4: 0 30px 80px rgb(0 0 0 / .50);
+
+  /* Dark mode glass effects */
+  --ep-glass-bg: rgb(10 16 35 / .84);
+  --ep-glass-border: rgb(255 255 255 / .16);
+  --ep-scrim: rgb(0 0 0 / .64);
+}
+
+/* Backward-compatible aliases. Old code resolves to the same values. */
   --ep-ui-midnight: var(--ep-color-midnight);
   --ep-ui-navy: var(--ep-color-navy);
   --ep-ui-royal-steel: var(--ep-color-royal-steel);
