@@ -12,8 +12,8 @@ beforeEach(() => {
   vi.resetAllMocks();
   mock.createClient.mockResolvedValue({ rpc: mock.rpc });
   mock.readiness.mockReturnValue([
-    { label: "Database backups", description: "Snapshot listing is ready on the backups desk.", state: "ready", missing: [], href: "/backups" },
-    { label: "Backup automation", description: "Dispatching snapshots needs the remaining workflow variables.", state: "incomplete", missing: ["BACKUP_DISPATCH_TOKEN"], href: "/backups" },
+    { label: "Database backups", description: "Snapshot listing is ready on the backups desk.", state: "ready", missing: [], set: ["R2_ACCOUNT_ID", "R2_BUCKET_PRIVATE", "CLOUDFLARE_API_TOKEN"], href: "/backups" },
+    { label: "Backup automation", description: "Dispatching snapshots needs the remaining workflow variables.", state: "incomplete", missing: ["BACKUP_DISPATCH_TOKEN"], set: ["BACKUP_WORKFLOW_REPO"], href: "/backups" },
   ]);
 });
 describe("settings authorization and status surface", () => {

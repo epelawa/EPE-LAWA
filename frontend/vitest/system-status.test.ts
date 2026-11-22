@@ -25,6 +25,7 @@ describe("settings system readiness", () => {
       description: "On-demand and pre-restore snapshots can be dispatched.",
       state: "ready",
       missing: [],
+      set: ["BACKUP_DISPATCH_TOKEN", "BACKUP_WORKFLOW_REPO"],
       href: "/backups",
     });
     const newsletter = tiles.find(tile => tile.label === "Newsletter sending");
@@ -38,6 +39,7 @@ describe("settings system readiness", () => {
     const listing = tiles.find(tile => tile.label === "Database backups");
     expect(listing?.state).toBe("incomplete");
     expect(listing?.missing).toEqual(["R2_BUCKET_PRIVATE", "CLOUDFLARE_API_TOKEN"]);
+    expect(listing?.set).toEqual(["R2_ACCOUNT_ID"]);
     const push = tiles.find(tile => tile.label === "Web push");
     expect(push?.state).toBe("off");
   });

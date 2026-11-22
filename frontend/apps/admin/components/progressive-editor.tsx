@@ -11,7 +11,7 @@ import { useFormStatus } from "react-dom";
 
 function SubmitButton({ label, intent, hidden, busy }: { label: string; intent?: string; hidden: boolean; busy?: boolean }) {
   const { pending } = useFormStatus();
-  return <button className="btn-primary" type="submit" name={intent ? "intent" : undefined} value={intent} hidden={hidden} disabled={pending || busy}>{pending || busy ? "Saving…" : label}</button>;
+  return <button data-pending-self-managed="true" className="btn-primary" type="submit" name={intent ? "intent" : undefined} value={intent} hidden={hidden} disabled={pending || busy}>{pending || busy ? "Saving…" : label}</button>;
 }
 
 type Step = { title: string; content: ReactNode };
