@@ -1,5 +1,5 @@
 import { PageFrame, PageIntro, Panel } from "@epelawa/ui";
-import { createClient } from "../../../lib/supabase";
+import { createStaffClient } from "../../../lib/supabase";
 import { configurationStatus } from "../../../lib/configuration-inventory";
 import { setMaintenance } from "./maintenance-actions";
 import { CopyConfigName } from "../../../components/copy-config-name";
@@ -7,12 +7,13 @@ export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 export default async function SettingsPage({ searchParams }: { searchParams: Promise<{maintenance?: string}> }) {
   const params = await searchParams;
+  const db = await createStaffClient();
   let authorized = false;
-  try { const db = await createClient(); const { data, error } = await db.rpc("staff_roles_authorized"); authorized = !error && data === true; } catch { /* fail closed */ }
+  { const { data, error } = await db.rpc("staff_roles_authorized"); authorized = !error && data === true; }
   if (!authorized) return <PageFrame><PageIntro eyebrow="Administration" title="Settings" description="Configuration status is restricted to the primary administrator, or authorization could not be verified." /></PageFrame>;
   let maintenance: {enabled:boolean; revision:number} | null = null;
   if (process.env.MAINTENANCE_GATE_ENABLED === "true") {
-    try { const db = await createClient(); const {data,error} = await db.rpc("maintenance_admin_status"); if (!error && Array.isArray(data) && typeof data[0]?.enabled === "boolean" && Number.isSafeInteger(data[0]?.revision)) maintenance = data[0]; } catch { /* unavailable, do not guess */ }
+    { const {data,error} = await db.rpc("maintenance_admin_status"); if (!error && Array.isArray(data) && typeof data[0]?.enabled === "boolean" && Number.isSafeInteger(data[0]?.revision)) maintenance = data[0]; }
   }
   const items = configurationStatus(process.env);
   const groups = [...new Set(items.map(item => item.group))];

@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buttonClassName, EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "@epelawa/ui";
-import { createClient } from "../../../../lib/supabase";
+import { createStaffClient } from "../../../../lib/supabase";
 import { publishArticle, reviseArticle, saveArticleTags, saveDraft, reviseArticleWithFeedback, saveDraftWithFeedback, setArticleBreaking, unpublishArticle } from "../../../../lib/actions";
 import { adminHref } from "../../../../lib/admin-path";
 import { articlePublicationState } from "../../../../lib/article-publication-state";
@@ -98,7 +98,7 @@ export default async function EditArticlePage({
   params: Promise<{ id: string }>;
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
-  const [{ id }, query, supabase] = await Promise.all([params, searchParams, createClient()]);
+  const [{ id }, query, supabase] = await Promise.all([params, searchParams, createStaffClient()]);
   if (!UUID.test(id)) notFound();
 
   const [articleResult, categoryResult, authorResult, createCapability, publishCapability, unpublishCapability, sessionResult] = await Promise.all([

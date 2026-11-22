@@ -3,10 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { adminHref } from "../../../lib/admin-path";
-import { createClient } from "../../../lib/supabase";
+import { createStaffClient } from "../../../lib/supabase";
 
 export async function moderateBusinessReview(formData: FormData): Promise<void> {
-  const db = await createClient();
+  const db = await createStaffClient();
   const id = String(formData.get("review_id") ?? "").trim();
   const decision = String(formData.get("decision") ?? "");
   const reason = String(formData.get("reason") ?? "").trim();

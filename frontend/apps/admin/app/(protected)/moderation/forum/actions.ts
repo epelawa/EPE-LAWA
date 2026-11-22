@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { adminHref } from "../../../../lib/admin-path";
-import { createClient } from "../../../../lib/supabase";
+import { createStaffClient } from "../../../../lib/supabase";
 
 const allowed = new Set(["hide", "restore", "dismiss"]);
 export async function resolveForumReport(formData: FormData) {
@@ -17,8 +17,8 @@ export async function resolveForumReport(formData: FormData) {
   }
 
   let saved = false;
+  const supabase = await createStaffClient();
   try {
-    const supabase = await createClient();
     const { error } = await supabase.rpc("forum_report_resolve", {
       p_report_id: reportId,
       p_action: action,

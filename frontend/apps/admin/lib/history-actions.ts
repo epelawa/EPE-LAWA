@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect as nextRedirect } from "next/navigation";
-import { createClient } from "./supabase";
+import { createStaffClient } from "./supabase";
 import { adminHref } from "./admin-path";
 
 function staffRedirect(path: string): never {
@@ -40,8 +40,8 @@ export async function decideHistoryContribution(formData: FormData): Promise<voi
   }
 
   let resultError = false;
+  const supabase = await createStaffClient();
   try {
-    const supabase = await createClient();
     const capability = await supabase.rpc("has_capability", { p_capability: "history.review" });
     if (capability.error || capability.data !== true) {
       staffRedirect("/itan-ilu-mi/review?result=denied");

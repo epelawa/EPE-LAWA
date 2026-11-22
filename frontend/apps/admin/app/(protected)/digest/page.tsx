@@ -1,5 +1,7 @@
 import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading } from "@epelawa/ui";
-import { createClient } from "../../../lib/supabase";
+import { createStaffClient } from "../../../lib/supabase";
+import { digestSmtpConfigured } from "../../../../main/lib/digest-mailer";
+import DigestSendForm from "./send-form";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +46,7 @@ function digestText(snapshot: DigestSnapshot, origin: string): string {
 }
 
 export default async function DigestPage() {
-  const db = await createClient();
+  const db = await createStaffClient();
   const { data: allowed } = await db.rpc("has_capability", { p_capability: "article.publish" });
   if (allowed !== true) {
     return <PageFrame className="ui-stack">
@@ -66,7 +68,7 @@ export default async function DigestPage() {
   const text = digestText(snapshot, origin);
 
   return <PageFrame className="ui-stack">
-    <PageIntro eyebrow="Newsroom · Staff" title="Email digest" description="A mail-ready digest of the last 7 days: new stories, upcoming events and the running site poll. Nothing is sent from here — copy the text into your mail tool." />
+    <PageIntro eyebrow="Newsroom · Staff" title="Email digest" description="A mail-ready digest of the last 7 days: new stories, upcoming events and the running site poll. Copy the text outward, or send it to active newsletter subscribers directly." />
     <section className="ui-stack-sm">
       <SectionHeading eyebrow="Preview" title="Digest contents" description={`Generated from live published content on ${new Date(snapshot.generated_at).toLocaleString("en-NG")}.`} />
       <div className="ui-stack-sm">
@@ -91,6 +93,10 @@ export default async function DigestPage() {
     <section className="ui-stack-sm">
       <SectionHeading eyebrow="Mail-ready" title="Plain-text digest" description="Copy this into an email. Links are absolute so they open from any mail client." />
       <textarea className="input" readOnly rows={Math.min(Math.max(text.split("\n").length + 2, 10), 40)} defaultValue={text} aria-label="Digest plain text" />
+    </section>
+    <section className="ui-stack-sm">
+      <SectionHeading eyebrow="Delivery" title="Send the digest" description={digestSmtpConfigured() ? "Newsletter SMTP is configured for this environment." : "Newsletter SMTP is not configured yet; sending stays disabled and the text copy above remains the way out."} />
+      <Panel className="ui-stack-sm"><DigestSendForm /></Panel>
     </section>
   </PageFrame>;
 }

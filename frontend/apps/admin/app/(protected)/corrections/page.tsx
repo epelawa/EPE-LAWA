@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "@epelawa/ui";
 import { adminHref } from "../../../lib/admin-path";
-import { createClient } from "../../../lib/supabase";
+import { createStaffClient } from "../../../lib/supabase";
 import { resolveCorrection } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +17,7 @@ type Report = {
 
 export default async function Page({ searchParams }: { searchParams: Promise<{ resolved?: string; dismissed?: string; error?: string }> }) {
   const p = await searchParams;
-  const db = await createClient();
+  const db = await createStaffClient();
   const { data: allowed, error: ge } = await db.rpc("has_capability", { p_capability: "article.review" });
   if (ge || allowed !== true) return <PageFrame className="ui-stack"><PageIntro eyebrow="Newsroom · Staff" title="Correction reports" description="Reader-reported corrections on published stories." /><Notice tone="danger" role="alert">Article review capability is required to read correction reports.</Notice></PageFrame>;
   const { data, error } = await db.from("article_correction_reports").select("id,article_id,reason,status,resolution_note,created_at,articles(slug)").order("created_at", { ascending: false }).limit(100);

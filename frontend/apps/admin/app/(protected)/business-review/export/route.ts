@@ -1,4 +1,4 @@
-import { createClient } from "../../../../lib/supabase";
+import { createStaffClient } from "../../../../lib/supabase";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +9,7 @@ const csvCell = (value: unknown): string => {
 
 /** CSV of the current business review queue, gated to the business.review capability. */
 export async function GET(): Promise<Response> {
-  const db = await createClient();
+  const db = await createStaffClient();
   const { data: allowed, error: ge } = await db.rpc("has_capability", { p_capability: "business.review" });
   if (ge || allowed !== true) return new Response("Forbidden", { status: 403 });
 
