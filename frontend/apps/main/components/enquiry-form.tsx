@@ -4,6 +4,7 @@ import Link from "next/link";
 import { controlError } from "@epelawa/ui";
 import { submitEnquiry, type EnquiryState } from "../app/enquiry/actions";
 import { pushToast } from "./toast";
+import TurnstileField from "./turnstile-field";
 const initial: EnquiryState = {status:"idle",message:""};
 type Kind = "contact" | "advertising" | "correction" | "support";
 export default function EnquiryForm({ kind, onPendingChange, privacyHref = "/privacy" }: { kind: Kind; onPendingChange?: (pending:boolean)=>void; privacyHref?: string }) {
@@ -55,7 +56,7 @@ function EnquiryFormInner({kind,privacyHref,onPendingChange,onReset}:{kind:Kind;
       <div className="ui-field"><label htmlFor={`${id}-email`}>Email address</label><input id={`${id}-email`} name="email" type="email" autoComplete="email" maxLength={254} required value={email} onChange={e=>setEmail(e.target.value)} /></div>
       {kind === "advertising" && <><div className="ui-field"><label htmlFor={`${id}-whatsapp`}>WhatsApp number</label><input id={`${id}-whatsapp`} name="whatsapp" type="tel" autoComplete="tel" minLength={7} maxLength={24} required value={whatsapp} onChange={e=>setWhatsapp(e.target.value)} /></div><div className="ui-field"><label htmlFor={`${id}-phone`}>Alternative phone number (optional)</label><input id={`${id}-phone`} name="phone" type="tel" maxLength={24} value={phone} onChange={e=>setPhone(e.target.value)} /></div></>}
       {stepError && step === 0 ? <p role="alert" className="ep-live-field__message">{stepError}</p> : null}
-      <button className="btn-primary" type="button" onClick={next}>Continue</button>
+      <TurnstileField compact />      <button className="btn-primary" type="button" onClick={next}>Continue</button>
     </div>
     <div hidden={step !== 1} className="ui-stack" style={step !== 1 ? {display:"none"} : undefined}>
       <div className="ui-field"><label htmlFor={`${id}-message`}>{kind === "correction" ? "What needs correcting? Include the article link." : kind === "advertising" ? "Tell us about your business and advertising needs" : kind === "support" ? "How can we help? Include the page and steps to reproduce any error." : "Message"}</label><textarea ref={secondStep} id={`${id}-message`} name="message" minLength={10} maxLength={kind === "advertising" ? 4900 : kind === "support" ? 4980 : 5000} rows={5} required={step === 1} value={message} onChange={e=>setMessage(e.target.value)} /></div>

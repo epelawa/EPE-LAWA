@@ -55,7 +55,9 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   if (!authorized) return <PageFrame><PageIntro eyebrow="Administration" title="Settings" description="Maintenance control and workspace status are restricted to the primary administrator, or authorization could not be verified." /></PageFrame>;
 
   let maintenance: {enabled:boolean; revision:number} | null = null;
-  if (process.env.MAINTENANCE_GATE_ENABLED === "true") {
+  if (process.env.MAINTENANCE_GATE_ENABLED === "false") {
+    maintenance = null;
+  } else {
     { const {data,error} = await db.rpc("maintenance_admin_status"); if (!error && Array.isArray(data) && typeof data[0]?.enabled === "boolean" && Number.isSafeInteger(data[0]?.revision)) maintenance = data[0]; }
   }
   const tiles = systemReadiness(process.env);

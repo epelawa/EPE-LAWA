@@ -5,7 +5,7 @@ import { adminHref } from "../../../lib/admin-path";
 import { createStaffClient } from "../../../lib/supabase";
 export async function setMaintenance(form: FormData) {
   const desired = form.get("enabled"), rawRevision = form.get("revision");
-  if (process.env.MAINTENANCE_GATE_ENABLED !== "true" || (desired !== "true" && desired !== "false") || typeof rawRevision !== "string" || !/^[1-9]\d{0,14}$/.test(rawRevision)) redirect(adminHref("/settings?maintenance=unavailable"));
+  if (process.env.MAINTENANCE_GATE_ENABLED === "false" || (desired !== "true" && desired !== "false") || typeof rawRevision !== "string" || !/^[1-9]\d{0,14}$/.test(rawRevision)) redirect(adminHref("/settings?maintenance=unavailable"));
   let success = false;
   const db = await createStaffClient();
   try {
