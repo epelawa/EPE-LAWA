@@ -50,6 +50,7 @@ const staffPages: NavItem[] = [
   { label: "Gallery & media", href: "/media", hint: "Public photo archive and media records", group: "Administration" },
   { label: "Backups", href: "/backups", hint: "Database backups and restore in R2", group: "Administration" },
   { label: "Settings", href: "/settings", hint: "Maintenance and workspace status", group: "Administration" },
+  { label: "Cron Jobs", href: "/settings/cron", hint: "Cron job execution history and monitoring", group: "Administration" },
 ];
 
 export function mainNavigation(): NavItem[] {

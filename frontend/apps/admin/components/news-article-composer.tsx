@@ -22,10 +22,6 @@ const COMPOSER_RULES: Record<string, FieldRules> = {
   body: { required: true, maxLength: 100000, message: "Write your story before continuing." },
   categoryId: { required: true, message: "Choose a category." },
   coverUrl: { url: true },
-  coverSourceUrl: { url: true },
-  coverLicenseUrl: { url: true },
-  seoTitle: { maxLength: 70 },
-  seoDescription: { maxLength: 200 },
 };
 
 function firstInvalid(step: string, values: Record<string, string>): string {
@@ -60,6 +56,7 @@ export default function NewsArticleComposer({ categories, authors, recoveryActor
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [categoryId, setCategoryId] = useState("");
+  const [tags, setTags] = useState("");
   const [step, setStep] = useState(1);
   const [stepError, setStepError] = useState("");
   const [draftState, setDraftState] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -102,6 +99,7 @@ export default function NewsArticleComposer({ categories, authors, recoveryActor
     if (name === "summary") setSummary(nextValue);
     if (name === "body") setBody(nextValue);
     if (name === "categoryId") setCategoryId(nextValue);
+    if (name === "tags") setTags(nextValue);
   };
   const [authorName, setAuthorName] = useState("");
   const previewDialog = useRef<HTMLDialogElement>(null);
@@ -146,7 +144,7 @@ export default function NewsArticleComposer({ categories, authors, recoveryActor
   }} onKeyDown={(event) => { if (enhanced && step < 3 && event.key === "Enter" && event.target instanceof HTMLInputElement) { event.preventDefault(); next(); } }} onInvalid={(event) => { const target = event.target as HTMLElement; const section = target.closest<HTMLElement>("[data-composer-step]"); const invalidStep = Number(section?.dataset.composerStep); if (enhanced && invalidStep && invalidStep !== step) { move(invalidStep); requestAnimationFrame(() => target.focus()); } }}>
     {saveError && <div role="alert" className="ui-notice"><p>{saveError.message}</p>{saveError.status === "uncertain" && <><Link href={adminHref("/newsroom")} target="_blank" rel="noopener noreferrer">Check the newsroom list in a new tab</Link><button type="button" className="btn-secondary" onClick={() => setSaveError(null)}>I checked; allow another attempt</button></>}</div>}
     <SessionRecovery form={form} actor={recoveryActor} article="new" revision="new" saved={saved} onDraftState={(next, at) => { setDraftState(next); setDraftSavedAt(next === "saved" ? new Date(at ?? Date.now()).toLocaleTimeString() : null); }} />
-    <div className={styles.intro}><div><span className={styles.eyebrow}>THE NEWSROOM / COMPOSE</span><h2>Tell the story</h2><p>Write in plain text, choose the people and topic behind the story, then save your work.</p></div><div className={styles.introStatus}><SaveState state={draftState} savedAt={draftSavedAt} /><span className={styles.introBadge}>New article</span></div></div>
+    <div className={styles.intro}><div><span className={styles.eyebrow}>THE NEWSROOM / COMPOSE</span><h2>Create Story</h2><p>Write in plain text, choose the people and topic behind the story, then save your work.</p></div><div className={styles.introStatus}><SaveState state={draftState} savedAt={draftSavedAt} /><span className={styles.introBadge}>New article</span></div></div>
     {enhanced && <div className={styles.progress} aria-live="polite"><p>Step {step} of 3 · {Math.round(step / 3 * 100)}%</p><div role="progressbar" aria-label="Article form progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(step / 3 * 100)}><span style={{ width: `${step / 3 * 100}%` }} /></div></div>}
     <div className={styles.layout}>
       <div className={styles.mainColumn}>
@@ -155,13 +153,13 @@ export default function NewsArticleComposer({ categories, authors, recoveryActor
           <LiveField label="Headline" value={title} rules={COMPOSER_RULES.title} onChange={onComposerChange}><input id="title" name="title" maxLength={200} value={title} onChange={onComposerChange} placeholder="Give your story a headline" /></LiveField>
           <LiveField label="Summary" optional hint="Shown alongside your story in the news listing." value={summary} rules={COMPOSER_RULES.summary} onChange={onComposerChange}><textarea id="summary" name="summary" rows={2} maxLength={1000} value={summary} onChange={onComposerChange} placeholder="Introduce the story in a sentence or two" /></LiveField>
           <LiveField label="Article content" hint="Plain text only · Separate paragraphs with a blank line." value={body} rules={COMPOSER_RULES.body} onChange={onComposerChange}><textarea id="body" name="body" rows={10} maxLength={100000} placeholder="Write your story here. Leave a blank line between paragraphs." value={body} onChange={onComposerChange} /></LiveField><div className={styles.writingMeta}><span>Plain text only · Separate paragraphs with a blank line</span><span aria-live="polite">{wordCount.toLocaleString()} words{wordCount ? ` · about ${readingMinutes} min read` : ""}</span></div>
+          <LiveField label="Hashtags" optional hint="Comma-separated tags for categorization" value={tags} rules={{ maxLength: 500 }} onChange={onComposerChange}><input id="tags" name="tags" maxLength={500} value={tags} onChange={onComposerChange} placeholder="e.g., EpeNews, Community, LocalNews" /></LiveField>
           {enhanced && stepError && step === 1 ? <p role="alert" aria-live="polite" className={styles.stepError}>{stepError}</p> : null}
         </section>
         <section id="composer-step-2" tabIndex={-1} data-composer-step="2" hidden={enhanced && step !== 2} className={styles.card} aria-labelledby="cover-heading">
           <div className={styles.sectionTop}><span className={styles.step}>02</span><div><h3 id="cover-heading">Cover image</h3><p>Upload a photo from this device or link a properly credited image.</p></div></div>
           <div className={styles.coverPanel}><NewsCoverUrlFields idPrefix="new-cover" uploadAvailable={coverUploadAvailable} /></div>
         </section>
-        <details hidden={enhanced && step !== 2} className={styles.advanced}><summary>Search appearance <span>Optional</span></summary><div className={styles.advancedFields}><div className={styles.field}><label htmlFor="seoTitle">Search title</label><input id="seoTitle" name="seoTitle" maxLength={70} /></div><div className={styles.field}><label htmlFor="seoDescription">Search description</label><input id="seoDescription" name="seoDescription" maxLength={200} /></div></div></details>
       </div>
       <aside id="composer-step-3" tabIndex={-1} data-composer-step="3" hidden={enhanced && step !== 3} className={styles.sidebar} aria-label="Article settings">
         <section className={styles.card}><div className={styles.sectionTop}><span className={styles.step}>03</span><div><h3>Story settings</h3><p>Help readers find the right story.</p></div></div>
