@@ -1,5 +1,6 @@
 "use server";
 import { formAdminClient, formClientKey } from "../../lib/form-server";
+import { verifyTurnstile } from "../../lib/turnstile";
 import { authMailConfig, deliverAuthMessage, emailShell } from "../../lib/auth-mail-hook";
 
 // Each kind is routed to the right staff channel: the notification names the channel
@@ -16,6 +17,7 @@ export async function submitEnquiry(_prev: EnquiryState, form: FormData): Promis
   if (process.env.ENQUIRY_INTAKE_ENABLED !== "true") return { status: "error", message: "Enquiries are temporarily unavailable." };
   const kind = value(form,"kind"), name = value(form,"name"), email = value(form,"email").toLowerCase(), message = value(form,"message");
   if (value(form,"website")) return { status:"success", message:"Thank you. Your enquiry has been submitted." };
+  if ((await verifyTurnstile(form)) === "fail") return { status: "error", message: "Verification failed. Complete the human-verification box and send again." };
   if (!['contact','advertising','correction','support'].includes(kind) || name.length < 2 || name.length > 100 || /[\x00-\x1f\x7f]/.test(name) || email.length > 254 || !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(email) || message.length < 10 || message.length > 5000 || message.includes('\0')) return { status:"error", message:"Please complete all fields with a valid email and a message of 10 to 5,000 characters." };
   const whatsapp = value(form,"whatsapp"), phone = value(form,"phone");
   const phonePattern = /^\+?[0-9][0-9 ()-]{6,23}$/;

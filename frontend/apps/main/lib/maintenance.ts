@@ -5,14 +5,32 @@ export type Illustration = (typeof illustrations)[number];
 export function isGateExempt(path: string): boolean {
   return path === "/admin" || path.startsWith("/admin/") || path.startsWith("/_next/static/") || path === "/brand-logo.webp";
 }
+/** Short edge cache so the gate stays near-real-time without an RPC on every request. */
+export const MAINTENANCE_CACHE_TTL_MS = 10_000;
+let maintenanceCache: { at: number; state: "on" | "off" | "unavailable" } | null = null;
+export function resetMaintenanceStateCache(): void {
+  maintenanceCache = null;
+}
 
 export async function maintenanceState(env: NodeJS.ProcessEnv, fetcher: typeof fetch = fetch): Promise<"on" | "off" | "unavailable"> {
-  // Deployment is explicitly opted in only after the database migration is rehearsed.
-  if (env.MAINTENANCE_GATE_ENABLED !== "true") return "off";
+  // Only an explicit "false" opts the deployment out; the owner's settings switch
+  // otherwise drives the gate through the reviewed database RPC. A deployment
+  // without database variables is simply undriven — the gate stays off.
+  if (env.MAINTENANCE_GATE_ENABLED === "false") return "off";
+  const cacheUsable = fetcher === fetch;
+  if (cacheUsable && maintenanceCache && Date.now() - maintenanceCache.at < MAINTENANCE_CACHE_TTL_MS) return maintenanceCache.state;
+  const state = await maintenanceStateUncached(env, fetcher);
+  if (cacheUsable) maintenanceCache = { at: Date.now(), state };
+  return state;
+}
+
+async function maintenanceStateUncached(env: NodeJS.ProcessEnv, fetcher: typeof fetch): Promise<"on" | "off" | "unavailable"> {
   try {
-    const url = new URL(env.NEXT_PUBLIC_SUPABASE_URL ?? "");
+    const rawUrl = env.NEXT_PUBLIC_SUPABASE_URL ?? "";
     const key = env.SUPABASE_ANON_KEY ?? env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!key || (url.protocol !== "https:" && !(env.NODE_ENV !== "production" && url.hostname === "localhost")) || url.username || url.password || url.pathname !== "/" || url.search || url.hash) return "unavailable";
+    if (!rawUrl || !key) return "off";
+    const url = new URL(rawUrl);
+    if ((url.protocol !== "https:" && !(env.NODE_ENV !== "production" && url.hostname === "localhost")) || url.username || url.password || url.pathname !== "/" || url.search || url.hash) return "unavailable";
     const response = await fetcher(new URL("/rest/v1/rpc/maintenance_status", url), {method:"POST",headers:{apikey:key,Authorization:`Bearer ${key}`,"Content-Type":"application/json"},body:"{}",cache:"no-store",signal:AbortSignal.timeout(4000)});
     if (!response.ok) return "unavailable";
     const data: unknown = await response.json();
