@@ -1,8 +1,28 @@
 import { createStaffClient } from "../../../lib/supabase";
 import { parseBusinessHours, hourRows, businessOpenNow } from "../../../lib/business-hours";
-import { reviewBusiness, decideBusinessClaim, featureBusiness } from "./actions";
+import { reviewBusiness, decideBusinessClaim, featureBusiness, deleteBusiness } from "./actions";
 import BusinessCreateForm from "../../../components/business-create-form";
+import BusinessEditForm from "../../../components/business-edit-form";
+import ConfirmSubmit from "../../../components/confirm-submit";
 import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "@epelawa/ui";
+
+type PublishedRow = {
+  id: string;
+  slug: string;
+  name: string;
+  category_id: string;
+  description: string | null;
+  area: string | null;
+  address: string | null;
+  landmark: string | null;
+  phone: string | null;
+  whatsapp: string | null;
+  email: string | null;
+  website: string | null;
+  logo_key: string | null;
+  hours: unknown;
+  created_at: string;
+};
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +35,7 @@ type ClaimRow = {
   businesses: { name: string | null } | null;
 };
 
-export default async function Page({ searchParams }: { searchParams: Promise<{ error?: string; updated?: string; added?: string; claims?: string; featured?: string }> }) {
+export default async function Page({ searchParams }: { searchParams: Promise<{ error?: string; updated?: string; added?: string; claims?: string; featured?: string; deleted?: string }> }) {
   const p = await searchParams;
   const db = await createStaffClient();
   const { data: allowed, error: ge } = await db.rpc("has_capability", { p_capability: "business.review" });
@@ -25,11 +45,11 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
   const [claimsResult, featuredResult, publishedResult] = await Promise.all([
     db.from("business_claims").select("id,business_id,message,status,decision_note,created_at,businesses(name)").in("status", ["open"]).order("created_at", { ascending: false }).limit(50),
     db.from("business_featured").select("business_id,starts_at,ends_at,businesses(name,slug)").gt("ends_at", new Date().toISOString()).order("ends_at", { ascending: false }).limit(1),
-    db.from("businesses").select("id,slug,name").eq("status", "published").is("deleted_at", null).order("name").limit(100),
+    db.from("businesses").select("id,slug,name,category_id,description,area,address,landmark,phone,whatsapp,email,website,logo_key,hours,created_at,status").eq("status", "published").is("deleted_at", null).order("name").limit(200),
   ]);
   const claims = ((claimsResult.data ?? []) as unknown as ClaimRow[]);
   const featuredNow = (featuredResult.data ?? []) as unknown as { businesses: { name: string; slug: string } | null; ends_at: string }[];
-  const publishedBusinesses = (publishedResult.data ?? []) as { id: string; slug: string; name: string }[];
+  const publishedBusinesses = (publishedResult.data ?? []) as unknown as PublishedRow[];
   const labels = new Map((cats ?? []).map(c => [c.id, c.label]));
   return <PageFrame className="ui-stack">
     <PageIntro eyebrow="Business Directory · Staff" title="Business submissions" description="Review unpublished submissions, record evidence, then publish or reject with a reason." />
@@ -40,6 +60,50 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
     {p.featured ? <Notice tone="success" role="status">The featured directory slot now points at the chosen business.</Notice> : null}
     {p.error === "claim" ? <Notice tone="danger" role="alert">The claim decision needs status, a note for rejections and business.review access.</Notice> : null}
     {p.error === "featured" ? <Notice tone="danger" role="alert">Choose a published business and a run of 1–90 days to fill the featured slot.</Notice> : null}
+    {p.deleted ? <Notice tone="success" role="status">The listing was removed completely — it no longer appears anywhere on the platform.</Notice> : null}
+    {p.error === "delete" ? <Notice tone="danger" role="alert">To remove a listing, write a reason of at least 5 characters.</Notice> : null}
+    {p.error === "delete-failed" ? <Notice tone="danger" role="alert">The listing could not be deleted. Confirm your business.review access, reload and try again; nothing was removed.</Notice> : null}
+
+    <section className="ui-stack-sm">
+      <SectionHeading eyebrow="Published listings" title="Live listings" description={`${publishedBusinesses.length} published ${publishedBusinesses.length === 1 ? "listing" : "listings"} · expand one to edit its details or remove it completely.`} />
+      {!publishedBusinesses.length ? <EmptyPanel title="No published listings" description="Listings appear here as soon as they are published, including the ones you add directly." /> : <ul className="ui-list ui-stack-sm">{publishedBusinesses.map((b) => { const hours = parseBusinessHours(b.hours); const rows = hourRows(hours).filter((row) => row.range); return <li key={b.id}><Panel className="ui-stack-sm">
+        <div className="ui-row">
+          <div className="ui-stack-sm">
+            <h3 className="ui-item-title">{b.name}</h3>
+            <p className="ui-meta">{labels.get(b.category_id) ?? "Category"}{b.area ? ` · ${b.area}` : ""} · /business-directory/{b.slug}{rows.length ? ` · ${rows.map((row) => `${row.label} ${row.range}`).join(" · ")}` : ""}</p>
+          </div>
+          <StatusBadge tone="success">published</StatusBadge>
+        </div>
+        <details className="ui-stack-sm">
+          <summary className="btn-ghost" style={{ width: "fit-content" }}>Edit this listing</summary>
+          <div className="ui-divider">
+            <BusinessEditForm
+              categories={cats ?? []}
+              business={{
+                id: b.id,
+                name: b.name ?? "",
+                category_id: b.category_id ?? "",
+                description: b.description ?? "",
+                area: b.area ?? "",
+                address: b.address ?? "",
+                landmark: b.landmark ?? "",
+                phone: b.phone ?? "",
+                whatsapp: b.whatsapp ?? "",
+                email: b.email ?? "",
+                website: b.website ?? "",
+                hours_json: b.hours && typeof b.hours === "object" ? JSON.stringify(b.hours) : "",
+                logo_url: b.logo_key && /^https?:\/\//.test(b.logo_key) ? b.logo_key : "",
+              }}
+            />
+          </div>
+        </details>
+        <form action={deleteBusiness} className="ui-stack-sm ui-divider">
+          <input type="hidden" name="business_id" value={b.id} />
+          <label className="ui-field"><span className="label">Deletion reason (kept in the audit record, at least 5 characters)</span><textarea name="reason" required minLength={5} maxLength={1000} className="input" /></label>
+          <div className="ui-actions"><ConfirmSubmit message={`Remove ${b.name} completely? Its photos, reviews, claims, verification records and featured slots are deleted with it and cannot be recovered.`} confirmLabel="Delete listing" className="btn-danger">Delete listing</ConfirmSubmit></div>
+        </form>
+      </Panel></li>; })}</ul>}
+    </section>
     {cats?.length ? <Panel><SectionHeading eyebrow="Direct listing" title="Add a business" description="Publish a listing yourself, right now — no submission needed. Everything you save here appears in the public directory immediately." /><BusinessCreateForm categories={cats} /></Panel> : null}
 
     <section className="ui-stack-sm">

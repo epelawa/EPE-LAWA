@@ -175,6 +175,9 @@
       "path": "/admin/itan-ilu-mi/review"
     },
     {
+      "path": "/admin/moderation/comments"
+    },
+    {
       "path": "/admin/moderation/forum"
     },
     {

@@ -26,7 +26,9 @@ test('resolution accepts only supported actions and requires a reason; mutations
 });
 
 test('resolution action redirects after the RPC catch so a committed report is not shown as failed', () => {
-  const handler = action.slice(action.indexOf('export async function resolveForumReport'));
+  const start = action.indexOf('export async function resolveForumReport');
+  const nextExport = action.indexOf('export async function', start + 10);
+  const handler = action.slice(start, nextExport === -1 ? undefined : nextExport);
   const catchPosition = handler.indexOf('  } catch {');
   const redirectPosition = handler.lastIndexOf('redirect(');
   assert.ok(catchPosition >= 0);

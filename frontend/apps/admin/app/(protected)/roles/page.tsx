@@ -1,5 +1,6 @@
 import { PageFrame, PageIntro, Panel } from "@epelawa/ui";
-import CapabilityPicker, { CAPABILITY_GROUPS, type CapabilityGroup } from "../../../components/roles-capability-picker";
+import CapabilityPicker from "../../../components/roles-capability-picker";
+import { CAPABILITY_GROUPS, type CapabilityGroup } from "../../../lib/capability-groups";
 import { createStaffClient } from "../../../lib/supabase";
 import { assignRole, deleteRole, saveRole } from "./actions";
 import styles from "./roles.module.css";

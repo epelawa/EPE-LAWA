@@ -49,7 +49,6 @@ export async function staffCreateBusiness(_prev: StaffCreateState, formData: For
   if (name.length < 2 || name.length > 160) return { status: "error", message: "Give the business a name (2 to 160 characters)." };
   if (!UUID_RE.test(categoryId)) return { status: "error", message: "Choose a category for the business." };
   if (description.length > 4000 || area.length > 160 || address.length > 300 || landmark.length > 200) return { status: "error", message: "One of the text fields is too long. Shorten it and try again." };
-  const phoneRx = /^\+?[0-9][0-9 ()-]{6,19}$/;
   if ((phone && !phoneRx.test(phone)) || (whatsapp && !phoneRx.test(whatsapp))) return { status: "error", message: "Enter a valid phone number (digits, spaces, () and -)." };
   if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { status: "error", message: "Enter a valid email address." };
   if (website && !/^https:\/\//.test(website)) return { status: "error", message: "The website address must start with https://" };
@@ -107,6 +106,68 @@ export async function decideBusinessClaim(formData: FormData): Promise<void> {
   revalidatePath(adminHref("/business-review"));
   revalidatePath("/business-directory");
   redirect(adminHref("/business-review?claims=1"));
+}
+
+export type StaffUpdateState = { status: "idle" | "success" | "error"; message: string };
+
+const phoneRx = /^\+?[0-9][0-9 ()-]{6,19}$/;
+
+/** Update a published listing in place, including its public text and category. */
+export async function staffUpdateBusiness(_prev: StaffUpdateState, formData: FormData): Promise<StaffUpdateState> {
+  const db = await createStaffClient();
+  const field = (key: string) => { const raw = formData.get(key); return typeof raw === "string" ? raw.trim() : ""; };
+  const businessId = field("business_id");
+  const name = field("name");
+  const categoryId = field("category_id");
+  const description = field("description");
+  const area = field("area");
+  const address = field("address");
+  const landmark = field("landmark");
+  const phone = field("phone");
+  const whatsapp = field("whatsapp");
+  const email = field("email");
+  const website = field("website");
+  const logoUrl = field("logo_url");
+  if (!UUID_RE.test(businessId)) return { status: "error", message: "This listing reference is invalid. Reload the page and try again." };
+  if (name.length < 2 || name.length > 160) return { status: "error", message: "Give the business a name (2 to 160 characters)." };
+  if (!UUID_RE.test(categoryId)) return { status: "error", message: "Choose a category for the business." };
+  if (description.length > 4000 || area.length > 160 || address.length > 300 || landmark.length > 200) return { status: "error", message: "One of the text fields is too long. Shorten it and try again." };
+  if ((phone && !phoneRx.test(phone)) || (whatsapp && !phoneRx.test(whatsapp))) return { status: "error", message: "Enter a valid phone number (digits, spaces, () and -)." };
+  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { status: "error", message: "Enter a valid email address." };
+  if (website && !/^https:\/\//.test(website)) return { status: "error", message: "The website address must start with https://" };
+  if (logoUrl && !/^https:\/\//.test(logoUrl)) return { status: "error", message: "The logo link must start with https://" };
+  let hours: Record<string, string> | null = null;
+  const hoursRaw = field("hours_json");
+  if (hoursRaw) {
+    try { const parsed = parseBusinessHours(JSON.parse(hoursRaw)); hours = Object.keys(parsed).length ? parsed : null; }
+    catch { hours = null; }
+  }
+  const { error } = await db.rpc("business_staff_update", {
+    p_business_id: businessId, p_name: name, p_category_id: categoryId, p_description: description || null,
+    p_area: area || null, p_address: address || null, p_landmark: landmark || null, p_phone: phone || null,
+    p_whatsapp: whatsapp || null, p_email: email || null, p_website: website || null, p_hours: hours,
+    p_logo_key: logoUrl || null,
+  });
+  if (error) return { status: "error", message: error.message === "business_category_unavailable" ? "That category is no longer active. Choose another one." : "The listing could not be saved. Check your business.review access, reload and try again." };
+  revalidatePath(adminHref("/business-review"));
+  revalidatePath("/business-directory");
+  return { status: "success", message: "The listing was updated on the public directory." };
+}
+
+/** Completely remove a listing and everything hanging off it. Requires a recorded reason. */
+export async function deleteBusiness(formData: FormData): Promise<void> {
+  const db = await createStaffClient();
+  const businessId = value(formData, "business_id");
+  const reason = value(formData, "reason");
+  if (!UUID_RE.test(businessId) || reason.length < 5 || reason.length > 1000) {
+    redirect(adminHref("/business-review?error=delete"));
+  }
+  const { error } = await db.rpc("business_staff_delete", { p_business_id: businessId, p_reason: reason });
+  if (error) redirect(adminHref("/business-review?error=delete-failed"));
+  revalidatePath(adminHref("/business-review"));
+  revalidatePath("/business-directory");
+  revalidatePath("/");
+  redirect(adminHref("/business-review?deleted=1"));
 }
 
 /** Replace the featured directory slot with this published business for the chosen number of days. */
