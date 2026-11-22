@@ -9,7 +9,7 @@ import { CONTACT_EMAIL } from "./site-identity";
 
 /** Escape for safe embedding inside an inline <script> tag. */
 export function jsonLdScript(data: object): string {
-  return JSON.stringify(data).replace(/</g, "\\u003c").replace(/-->/g, "--\\u003e");
+  return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
 export function websiteSchema(): object {
