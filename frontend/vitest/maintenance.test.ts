@@ -31,9 +31,6 @@ describe("maintenance gate",()=>{
    expect(await maintenanceState(withoutFlag)).toBe("off");
   } finally { vi.unstubAllGlobals(); resetMaintenanceStateCache(); }
  });
- it("varies the illustration without revealing staff access",()=>{
-  const pages=[0,1,2,3].map(maintenanceHtml);expect(new Set(pages.map(p=>p.match(/\/maintenance\/\w+\.webp/)?.[0])).size).toBe(4);
-  for(const page of pages){expect(page).toContain('name="robots"');expect(page).not.toMatch(/staff|admin/i);}
  it("varies the inline SVG illustration without raster images or revealing staff access",()=>{
   const pages=[0,1,2,3,4,5,6,7].map(maintenanceHtml);
   expect(new Set(pages.map(p=>p.match(/<svg class="art-svg" viewBox="0 0 240 240" role="img" aria-label="[^"]+"/)?.[0])).size).toBe(4);
