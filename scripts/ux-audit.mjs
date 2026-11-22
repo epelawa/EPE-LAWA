@@ -89,7 +89,7 @@ if (findings.length === 0) {
 } else {
   report += "| Status | Kind | Location | Detail |\n| --- | --- | --- | --- |\n";
   for (const finding of findings) {
-    report += `| ${finding.status} | ${finding.kind} | ${finding.file}:${finding.line} | \`${finding.detail.replace(/\|/g, "\\|")}\` |\n`;
+    report += `| ${finding.status} | ${finding.kind} | ${finding.file}:${finding.line} | \`${finding.detail.replace(/\\/g, "\\\\").replace(/\|/g, "\\|")}\` |\n`;
   }
 }
 writeFileSync("docs/ux-audit-report.md", report);
