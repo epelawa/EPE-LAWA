@@ -15,7 +15,6 @@ import SponsorSlot from "../components/sponsor-slot";
 import { HomeSectionReveal } from "../components/home-sections";
 import SitePoll from "../components/site-poll";
 import HomeLivePill from "../components/home-live-pill";
-import AdsSection from "../components/ads-section";
 import { readSiteLanguage, t } from "../lib/i18n";
 
 export default async function Home() {
@@ -61,8 +60,6 @@ export default async function Home() {
           ].map(({ href, label, Icon }) => <Link href={href} key={href}><span aria-hidden="true"><Icon size={25} /></span><span>{label}</span></Link>)}
         </nav>
       </div></HomeSectionReveal>
-
-      <HomeSectionReveal><AdsSection heading={t(lang, "home.section.business")} /></HomeSectionReveal>
 
       <HomeSectionReveal><section className="ep-container home-news" aria-labelledby="latest-title">
         <div className="home-news__heading">
