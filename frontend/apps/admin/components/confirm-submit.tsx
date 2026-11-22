@@ -29,7 +29,7 @@ export default function ConfirmSubmit({
 
   if (!confirmFirst) {
     return (
-      <button ref={buttonRef} type="submit" className={className} aria-busy={pending} disabled={pending} {...rest}>
+      <button ref={buttonRef} type="submit" className={className} aria-busy={pending} disabled={pending} data-pending-self-managed="true" {...rest}>
         {pending ? "Working…" : children}
       </button>
     );

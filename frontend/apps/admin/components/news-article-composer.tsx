@@ -51,7 +51,7 @@ function currentValues(form: HTMLFormElement | null): Record<string, string> {
 
 function SaveButton({saving, blocked}: {saving: boolean; blocked: boolean}) {
   const { pending } = useFormStatus();
-  return <button className={styles.submit} type="submit" aria-busy={pending || saving} disabled={pending || saving || blocked}>{pending || saving ? "Publishing article…" : "Publish article"}<span aria-hidden="true"> →</span></button>;
+  return <button data-pending-self-managed="true" className={styles.submit} type="submit" aria-busy={pending || saving} disabled={pending || saving || blocked}>{pending || saving ? "Publishing article…" : "Publish article"}<span aria-hidden="true"> →</span></button>;
 }
 
 export default function NewsArticleComposer({ categories, authors, recoveryActor, coverUploadAvailable = false }: { categories: Option[]; authors: Option[]; recoveryActor?: string; coverUploadAvailable?: boolean }) {

@@ -14,7 +14,7 @@ export default function BusySubmit({
 }) {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" className={className} aria-busy={pending} disabled={pending}>
+    <button type="submit" className={className} aria-busy={pending} disabled={pending} data-pending-self-managed="true">
       {pending ? pendingLabel : children}
     </button>
   );

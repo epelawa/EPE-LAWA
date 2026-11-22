@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import "@fontsource-variable/plus-jakarta-sans";
 import { headers } from "next/headers";
 import "@epelawa/ui/tokens.css";
@@ -15,6 +16,8 @@ import { siteUrl } from "../lib/site";
 import { themeScript } from "../lib/theme";
 import SiteMotion from "../components/site-motion";
 import ToastRegion from "../../main/components/toast";
+import FeedbackToasts from "../components/feedback-toasts";
+import GlobalSubmitBusy from "../components/global-submit-busy";
 import FloatingSupport from "../../main/components/floating-support";
 
 export const metadata: Metadata = {
@@ -85,6 +88,10 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeScript }} />
         <SiteMotion />
         <ToastRegion />
+        <Suspense fallback={null}>
+          <FeedbackToasts />
+        </Suspense>
+        <GlobalSubmitBusy />
         <a className="skip-link" href="#skip-target">Skip to content</a>
         {staffWorkspace ? (
           <AdminSidebar items={navigation} userEmail={identity?.email ?? null} userRole={identity?.role} />

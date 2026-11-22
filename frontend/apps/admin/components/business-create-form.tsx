@@ -11,7 +11,7 @@ type Option = { id: string; label: string };
 
 function SubmitButton() {
   const { pending } = useFormStatus();
-  return <button className="btn-primary" type="submit" disabled={pending}>{pending ? "Publishing…" : "Publish listing"}</button>;
+  return <button data-pending-self-managed="true" className="btn-primary" type="submit" disabled={pending}>{pending ? "Publishing…" : "Publish listing"}</button>;
 }
 
 export default function BusinessCreateForm({ categories }: { categories: Option[] }) {
