@@ -4,11 +4,13 @@ import { readFile } from 'node:fs/promises';
 
 const page = new URL('../apps/admin/app/(protected)/roles/page.tsx', import.meta.url);
 const picker = new URL('../apps/admin/components/roles-capability-picker.tsx', import.meta.url);
+const catalogue = new URL('../apps/admin/lib/capability-groups.ts', import.meta.url);
 
 test('Roles page uses grouped capability labels instead of raw keys', async () => {
   const pickerSource = await readFile(picker, 'utf8');
-  assert.match(pickerSource, /Full administrative access/);
-  assert.match(pickerSource, /Publish articles and flag breaking news/);
+  const catalogueSource = await readFile(catalogue, 'utf8');
+  assert.match(catalogueSource, /Full administrative access/);
+  assert.match(catalogueSource, /Publish articles and flag breaking news/);
   assert.match(pickerSource, /label\}</);
   assert.match(pickerSource, /"use client"/);
 });

@@ -18,9 +18,25 @@ function serialize(entries: Record<string, Entry>): string {
   ));
 }
 
+function deserialize(raw: string | undefined): Record<string, Entry> {
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    const entries: Record<string, Entry> = {};
+    for (const [day, value] of Object.entries(parsed)) {
+      if (typeof value !== "string") continue;
+      const [open, close] = value.split("–");
+      if (open && close) entries[day] = { open: open.trim(), close: close.trim() };
+    }
+    return entries;
+  } catch {
+    return {};
+  }
+}
+
 /** Weekly hours editor. Empty times mean closed; the serialized JSON ships with the form. */
-export default function BusinessHoursEditor({ name = "hours_json" }: { name?: string }) {
-  const [entries, setEntries] = useState<Record<string, Entry>>({});
+export default function BusinessHoursEditor({ name = "hours_json", initial }: { name?: string; initial?: string }) {
+  const [entries, setEntries] = useState<Record<string, Entry>>(() => deserialize(initial));
   const update = (day: Day, patch: Partial<Entry>) => {
     setEntries((current) => {
       const next = { ...current, [day]: { ...current[day], ...patch } };
