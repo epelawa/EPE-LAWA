@@ -1,5 +1,5 @@
 import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "@epelawa/ui";
-import { createClient } from "../../../../lib/supabase";
+import { createStaffClient } from "../../../../lib/supabase";
 import { decideSongRequest } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +15,7 @@ const toneByStatus: Record<string, "warning" | "neutral" | "success" | "danger">
 
 export default async function SongRequestsPage({ searchParams }: { searchParams: Promise<{ decided?: string; error?: string }> }) {
   const query = await searchParams;
-  const db = await createClient();
+  const db = await createStaffClient();
   const { data: allowed } = await db.rpc("has_capability", { p_capability: "radio.manage" });
   if (allowed !== true) {
     return <PageFrame className="ui-stack">

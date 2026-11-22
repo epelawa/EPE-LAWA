@@ -48,7 +48,7 @@ test('Radio writes use one verified-capability RPC instead of direct PostgREST w
  assert.match(actions,/radio_authoring_save/);
  assert.match(actions,/has_capability/);
  assert.doesNotMatch(actions,/from\("(programmes|episodes|radio_schedule|radio_rights_records)"\)\.(insert|update)/);
- assert.match(page,/await createClient\(\)/);
+ assert.match(page,/await createStaffClient\(\)/);
  assert.match(page,/has_capability/);
  assert.match(migration,/perform public\.require_capability\('radio\.manage'\)/);
  assert.match(migration,/revoke insert, update, delete on public\.programmes, public\.episodes, public\.radio_schedule/);

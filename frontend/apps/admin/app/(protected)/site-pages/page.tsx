@@ -1,4 +1,4 @@
-import { createClient } from "../../../lib/supabase";
+import { createStaffClient } from "../../../lib/supabase";
 import { PageFrame, PageIntro, Notice } from "@epelawa/ui";
 import { saveSitePage } from "./actions";
 import RichTextEditor from "../../../components/rich-text-editor";
@@ -37,12 +37,12 @@ export default async function SitePagesPage({ searchParams }: { searchParams: Pr
   const params = await searchParams;
   let rows: SitePageRow[] = [];
   let failed = false;
-  try {
-    const db = await createClient();
+  const db = await createStaffClient();
+  {
     const { data, error } = await db.from("site_pages").select("*").order("page");
     if (error) failed = true;
     else rows = (data ?? []) as SitePageRow[];
-  } catch { failed = true; }
+  }
   const status = params.status && STATUS[params.status] ? STATUS[params.status] : null;
   const reasonText = params.status === "error" && params.reason ? REASONS[params.reason] ?? REASONS.failed : null;
 

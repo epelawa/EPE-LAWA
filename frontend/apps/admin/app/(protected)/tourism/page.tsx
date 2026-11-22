@@ -1,4 +1,4 @@
-import { createClient } from "../../../lib/supabase";
+import { createStaffClient } from "../../../lib/supabase";
 import { decideTourismSubmission } from "../../../lib/tourism-actions";
 import {
   EmptyPanel,
@@ -36,8 +36,9 @@ export default async function TourismReviewPage({
   let failed = false;
   let rows: Submission[] = [];
 
+  const supabase = await createStaffClient();
+
   try {
-    const supabase = await createClient();
     const cap = await supabase.rpc("has_capability", {
       p_capability: "tourism.review",
     });

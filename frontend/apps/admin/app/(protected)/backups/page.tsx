@@ -1,5 +1,5 @@
 import { PageFrame, PageIntro, Notice } from "@epelawa/ui";
-import { createClient } from "../../../lib/supabase";
+import { createStaffClient, type StaffClient } from "../../../lib/supabase";
 import { listBackups } from "../../../lib/backup-r2";
 import BackupControls from "../../../components/backup-controls";
 import styles from "./backups.module.css";
@@ -7,21 +7,17 @@ import styles from "./backups.module.css";
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 
-async function capability(name: string): Promise<boolean> {
-  try {
-    const db = await createClient();
-    const { data, error } = await db.rpc("has_capability", { p_capability: name });
-    return !error && data === true;
-  } catch {
-    return false;
-  }
+async function capability(db: StaffClient, name: string): Promise<boolean> {
+  const { data, error } = await db.rpc("has_capability", { p_capability: name });
+  return !error && data === true;
 }
 
 export default async function BackupsPage() {
+  const db = await createStaffClient();
   const [canRead, canCreate, canRestore] = await Promise.all([
-    capability("backup.read"),
-    capability("backup.create"),
-    capability("backup.restore"),
+    capability(db, "backup.read"),
+    capability(db, "backup.create"),
+    capability(db, "backup.restore"),
   ]);
 
   return (

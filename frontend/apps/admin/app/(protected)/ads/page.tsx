@@ -1,4 +1,4 @@
-import { createClient } from "../../../lib/supabase";
+import { createStaffClient } from "../../../lib/supabase";
 import { EmptyPanel, Notice, PageFrame, PageIntro, Panel } from "@epelawa/ui";
 import { assignAds, removeAd, updateAdSlot } from "./actions";
 import ConfirmSubmit from "../../../components/confirm-submit";
@@ -21,12 +21,7 @@ const STATUS: Record<string, { tone: "success" | "danger"; text: string }> = {
 
 export default async function AdsPage({ searchParams }: { searchParams: Promise<{ ads?: string }> }) {
   const params = await searchParams;
-  let db: Awaited<ReturnType<typeof createClient>>;
-  try {
-    db = await createClient();
-  } catch {
-    return <PageFrame className="ui-stack"><PageIntro eyebrow="Staff workspace" title="Ads" description="Choose which businesses rotate in the public ad carousel." /><Notice tone="danger" role="alert">The ads workspace is unavailable right now. Reload the page; if you are not signed in as staff, sign in first.</Notice></PageFrame>;
-  }
+  const db = await createStaffClient();
   const { data: grants, error: grantError } = await db.from("staff_capability_grants").select("capability").eq("capability", "advertising.manage").limit(1);
   if (grantError) return <PageFrame className="ui-stack"><PageIntro eyebrow="Staff workspace" title="Ads" description="Choose which businesses rotate in the public ad carousel." /><Notice tone="danger" role="alert">The ads workspace is unavailable right now. Reload the page to try again.</Notice></PageFrame>;
   if (!grants?.length) return <PageFrame className="ui-stack"><PageIntro eyebrow="Staff workspace" title="Ads" description="Choose which businesses rotate in the public ad carousel." /><Notice tone="danger" role="alert">The advertising.manage capability is required. No records are shown.</Notice></PageFrame>;

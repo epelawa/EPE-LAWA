@@ -1,5 +1,5 @@
 import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "@epelawa/ui";
-import { createClient } from "../../../lib/supabase";
+import { createStaffClient } from "../../../lib/supabase";
 import { decideAppeal } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -24,7 +24,7 @@ const resourceLabel = (resourceType: string) => (resourceType === "member_ban" ?
 
 export default async function AppealsPage({ searchParams }: { searchParams: Promise<{ decided?: string; error?: string }> }) {
   const query = await searchParams;
-  const db = await createClient();
+  const db = await createStaffClient();
   const { data: allowed } = await db.rpc("has_capability", { p_capability: "moderation.review" });
   if (allowed !== true) {
     return <PageFrame className="ui-stack">

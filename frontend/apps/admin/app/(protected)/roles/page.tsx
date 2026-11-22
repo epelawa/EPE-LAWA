@@ -1,6 +1,6 @@
 import { PageFrame, PageIntro, Panel } from "@epelawa/ui";
 import CapabilityPicker, { CAPABILITY_GROUPS, type CapabilityGroup } from "../../../components/roles-capability-picker";
-import { createClient } from "../../../lib/supabase";
+import { createStaffClient } from "../../../lib/supabase";
 import { assignRole, deleteRole, saveRole } from "./actions";
 import styles from "./roles.module.css";
 
@@ -35,12 +35,7 @@ export default async function RolesPage() {
       />
     </PageFrame>
   );
-  let db: Awaited<ReturnType<typeof createClient>>;
-  try {
-    db = await createClient();
-  } catch {
-    return denied;
-  }
+  const db = await createStaffClient();
   const { data: allowed, error: authError } = await db.rpc("staff_roles_authorized");
   if (authError || allowed !== true) {
     return denied;

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { adminHref } from "../../../lib/admin-path";
-import { createClient } from "../../../lib/supabase";
+import { createStaffClient } from "../../../lib/supabase";
 
 const text = (f: FormData, key: string, max: number) => String(f.get(key) ?? "").trim().slice(0, max);
 function outcome(code: string): never { redirect(adminHref(`/media?media=${encodeURIComponent(code)}`)); }
@@ -17,7 +17,7 @@ async function run(work: () => Promise<void>, success: string, fallback: string)
   outcome(success);
 }
 async function authorized() {
-  const db = await createClient();
+  const db = await createStaffClient();
   const { data, error } = await db.rpc("has_capability", { p_capability: "site.content" });
   if (error || data !== true) throw new Error("denied");
   return db;

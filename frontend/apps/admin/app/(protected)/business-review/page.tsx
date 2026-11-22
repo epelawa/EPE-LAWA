@@ -1,4 +1,4 @@
-import { createClient } from "../../../lib/supabase";
+import { createStaffClient } from "../../../lib/supabase";
 import { parseBusinessHours, hourRows, businessOpenNow } from "../../../lib/business-hours";
 import { reviewBusiness, decideBusinessClaim, featureBusiness } from "./actions";
 import BusinessCreateForm from "../../../components/business-create-form";
@@ -17,7 +17,7 @@ type ClaimRow = {
 
 export default async function Page({ searchParams }: { searchParams: Promise<{ error?: string; updated?: string; added?: string; claims?: string; featured?: string }> }) {
   const p = await searchParams;
-  const db = await createClient();
+  const db = await createStaffClient();
   const { data: allowed, error: ge } = await db.rpc("has_capability", { p_capability: "business.review" });
   if (ge || allowed !== true) return <PageFrame className="ui-stack"><PageIntro eyebrow="Business Directory · Staff" title="Business submissions" description="Review and verify new business listings." /><Notice tone="danger" role="alert">Business review capability is required to access this queue.</Notice></PageFrame>;
   const { data, error } = await db.from("businesses").select("id,name,category_id,description,area,address,landmark,phone,whatsapp,email,website,status,created_at,hours").in("status", ["submitted", "reviewing"]).is("deleted_at", null).order("created_at").limit(100);

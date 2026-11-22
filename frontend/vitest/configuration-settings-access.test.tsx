@@ -2,7 +2,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 const mock = vi.hoisted(() => ({ rpc: vi.fn(), createClient: vi.fn(), inventory: vi.fn() }));
-vi.mock("../apps/admin/lib/supabase", () => ({ createClient: mock.createClient }));
+vi.mock("../apps/admin/lib/supabase", () => ({ createClient: mock.createClient, createStaffClient: mock.createClient }));
 vi.mock("../apps/admin/lib/configuration-inventory", () => ({ configurationStatus: mock.inventory }));
 import SettingsPage from "../apps/admin/app/(protected)/settings/page";
 // The page is a Next server component and now requires its async searchParams
@@ -22,6 +22,7 @@ describe("deployment settings authorization", () => {
   });
   it("fails closed on authorization exception", async () => {
     mock.createClient.mockRejectedValue(new Error("offline"));
-    expect(renderToStaticMarkup(await SettingsPage(pageProps))).toContain("restricted"); expect(mock.inventory).not.toHaveBeenCalled();
+    await expect(SettingsPage(pageProps)).rejects.toThrow("offline");
+    expect(mock.inventory).not.toHaveBeenCalled();
   });
 });

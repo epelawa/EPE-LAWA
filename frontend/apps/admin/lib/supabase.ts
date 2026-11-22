@@ -4,6 +4,7 @@
  */
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { getAdminAccessForSession, readAdminSessionFromCookies } from "./supabase-access";
 
 export async function createClient() {
@@ -33,4 +34,21 @@ export async function createClient() {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     global: { headers: { Authorization: `Bearer ${session.access_token}` } },
   });
+}
+
+/**
+ * Workspace-stage client for pages and server actions. An unauthorised or dead
+ * staff session never renders an "access denied" or "could not load" panel —
+ * it bounces through the login screen to mint a fresh token pair. Callers that
+ * must tolerate a missing session (the root shell) keep using createClient.
+ */
+export type StaffClient = Awaited<ReturnType<typeof createClient>>;
+
+export async function createStaffClient() {
+  try {
+    return await createClient();
+  } catch (error) {
+    if (!(error instanceof Error) || error.message !== "Unauthorized") throw error;
+    redirect("/login?reason=session_expired");
+  }
 }

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading } from "@epelawa/ui";
 import { adminHref } from "../../../lib/admin-path";
-import { createClient } from "../../../lib/supabase";
+import { createStaffClient } from "../../../lib/supabase";
 import { saveSitePoll } from "../../../lib/actions";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +12,7 @@ type ResultRow = { option_id: string; label: string; votes: number };
 
 export default async function PollPage({ searchParams }: { searchParams: Promise<{ saved?: string; error?: string }> }) {
   const query = await searchParams;
-  const db = await createClient();
+  const db = await createStaffClient();
   const { data: allowed } = await db.rpc("has_capability", { p_capability: "article.publish" });
   if (allowed !== true) {
     return <PageFrame className="ui-stack">

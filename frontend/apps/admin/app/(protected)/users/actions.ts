@@ -1,10 +1,10 @@
 "use server";
 import "server-only";
 import { revalidatePath } from "next/cache";
-import { createClient } from "../../../lib/supabase";
+import { createStaffClient } from "../../../lib/supabase";
 
 async function primaryAdmin() {
-  const db = await createClient();
+  const db = await createStaffClient();
   const { data, error } = await db.rpc("staff_roles_authorized");
   if (error || data !== true) throw new Error("Only the verified primary administrator may manage staff.");
   return db;

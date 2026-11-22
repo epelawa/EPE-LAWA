@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { createClient } from "../../../lib/supabase";
+import { createStaffClient } from "../../../lib/supabase";
 
 const PAGES = new Set(["privacy", "terms", "guidelines"]);
 const ERRORS: Record<string, string> = {
@@ -27,8 +27,8 @@ export async function saveLegalPage(form: FormData): Promise<void> {
 
   let code = "";
   let savedRevision: number | null = null;
+  const db = await createStaffClient();
   try {
-    const db = await createClient();
     const { data, error } = await db.rpc("site_page_save", { p_page: page, p_body: body, p_photos: [], p_revision: revision });
     if (error) code = typeof (error as { message?: unknown }).message === "string" ? (error as { message: string }).message : "";
     else savedRevision = typeof data === "number" ? data : null;

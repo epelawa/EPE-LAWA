@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { PageFrame, PageIntro, StatusBadge } from "@epelawa/ui";
 import { adminHref } from "../../lib/admin-path";
-import { createClient } from "../../lib/supabase";
+import { createClient, createStaffClient } from "../../lib/supabase";
 import { combineCapabilityStates, resolveDashboardMetric, type DashboardMetricState } from "../../lib/dashboard-data";
 import styles from "../admin-dashboard.module.css";
 
@@ -84,7 +84,7 @@ function MetricCard({ label, detail, state, href, icon }: { label: string; detai
 type Workflow = { label: string; detail: string; category: string; href: string; icon: IconName; allowed: boolean };
 
 export default async function DashboardPage() {
-  const supabase = await createClient();
+  const supabase = await createStaffClient();
   const capabilityNames: Capability[] = ["article.create", "article.review", "article.publish", "moderation.review", "business.review", "radio.manage", "people.manage", "backup.read"];
   const capabilityEntries = await Promise.all(capabilityNames.map(async (name) => [name, await hasCapability(supabase, name)] as const));
   const capabilities = Object.fromEntries(capabilityEntries) as Record<Capability, boolean | null>;

@@ -1,12 +1,13 @@
 import { PageFrame, PageIntro, Panel, Notice } from "@epelawa/ui";
-import { createClient } from "../../../lib/supabase";
+import { createStaffClient } from "../../../lib/supabase";
 import { resolveEnquiry } from "./actions";
 import ConfirmSubmit from "../../../components/confirm-submit";
 export const dynamic="force-dynamic"; export const fetchCache="force-no-store";
 type Enquiry = { id:string; kind:string; sender_name:string; sender_email:string; message:string; created_at:string; status:string; revision:number };
 export default async function Enquiries({searchParams}:{searchParams:Promise<{result?:string}>}) {
+  const db = await createStaffClient();
   let rows: Enquiry[] = []; let failed = false;
-  try { const db = await createClient(); const {data,error}=await db.rpc("staff_enquiry_list"); if(error) failed=true; else rows=(data??[]) as Enquiry[]; } catch { failed=true; }
+  { const {data,error}=await db.rpc("staff_enquiry_list"); if(error) failed=true; else rows=(data??[]) as Enquiry[]; }
   const {result}=await searchParams;
   return <PageFrame className="ui-stack"><PageIntro eyebrow="Private staff workspace" title="Enquiries" description="Private contact, advertising and correction messages. Access is restricted and audited." />
     {result && <Notice tone={result === "saved" ? "success" : "danger"} role={result === "saved" ? "status" : "alert"}>{result === "saved" ? "Enquiry marked resolved." : "Could not update the enquiry. Refresh and try again."}</Notice>}
