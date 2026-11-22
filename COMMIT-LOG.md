@@ -180,3 +180,25 @@ while asleep. Each entry: exact time, commit SHA, reason, tests run, features ad
 **Current state:** All planning docs rewritten, all migrations applied to Supabase, Phase 1 public shell complete, admin Phase 2 pages built, Who is Who public pages built. Working tree is clean, committed and pushed to origin/main. Vercel build fails on Next.js 16.4.4 `_global-error.tsx` built-in component bug — cannot fix from application code.
 
 **Next steps:** Continue building Phase 5 (member accounts + comments), Phase 6 (forum), Phase 7 (business directory), Phase 8 (marketplace + Paystack payments), Phase 9 (hardening + release). Commit after every verified step. Update this log with each commit.
+
+
+## Session — 22 November 2026
+
+### [08:10] 8667607 — fix(media): optimize R2 uploads and repair backup listing
+**Reason:** Repair new image/avatar uploads to Cloudflare R2 and make the Admin backup listing parse Cloudflare's paginated response correctly.
+
+**Tests:** `pnpm typecheck` — 5/5 tasks passed; `pnpm build` — 2/2 apps passed; `pnpm test` — 398 Node tests and 138 Vitest tests passed, 0 failures, 1 skipped. Browser smoke had a prior 64/65 result due to a stale locator, which was corrected. The corrected run was interrupted by prompt closure (exit 137); output showed 40 passing tests but no completed suite result. The full browser suite and PR checks remain unverified; do not merge yet.
+
+**Features added:**
+- Shared Sharp optimizer converts accepted raster uploads to metadata-stripped WebP, caps dimensions at 2048 px and stored size at 900 KiB; avatar preview payloads are capped at 200 KiB.
+- Exact-sized R2 request bodies and callers updated to persist returned `.webp` object keys.
+- Backup parser handles `result[]`/`last_modified`, excludes `.sha256` sidecars, follows up to five pages and reports unavailable rather than a partial list if pagination exceeds the cap.
+- Added regression coverage for image optimization, exact body handling, parser shapes and pagination.
+- PR #249 opened against `main`: https://github.com/epelawa/EPE-LAWA/pull/249. No merge, deployment, database change, backup dispatch or bulk rewrite of existing R2 objects.
+
+### [08:14] 189a65e — chore: restore generated main Next.js type references
+**Reason:** Remove an unintended generated `next-env.d.ts` change from the PR branch after the browser run ended.
+
+**Tests:** `git diff --cached --check` passed before commit. Restored `frontend/apps/main/next-env.d.ts` to `origin/main` and pushed the correction to `feat/full-web-implementation`.
+
+**Features added:** None; generated-file cleanup only.
