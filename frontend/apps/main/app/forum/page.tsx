@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "../../lib/supabase";
 import { formatLagosDateTime } from "../../lib/dates";
-import { EmptyPanel, Notice, PageFrame, PageIntro, SectionHeading } from "../../components/design-system";
+import { EmptyPanel, Notice, PageFrame } from "../../components/design-system";
 import { pageMetadata } from "../../lib/metadata";
 import { countActive } from "./active-count";
 import ForumLiveCount from "./live-count";
@@ -51,36 +51,60 @@ export default async function ForumPage({ searchParams }: { searchParams: Promis
   } catch { failed = true; }
   const activeNow = countActive(threads);
   const categoryName = (id: string) => categories.find((category) => category.id === id)?.name ?? "Forum";
-  return <PageFrame className="ui-stack">
-    <PageIntro eyebrow="Community" title="Forum" description="Browse public discussions, share a perspective, and take part in community conversations." actions={<><ForumLiveCount initialActive={activeNow} /><Link className="btn-primary" href="/forum/new">Start a discussion</Link></>} />
+  return <PageFrame className={`forum-shell ${styles.shell}`}>
+    <header className={styles.appBar}>
+      <div className={styles.appBarCopy}>
+        <p className={styles.eyebrow}>Community</p>
+        <h1 className={styles.appTitle}>Forum</h1>
+        <p className={styles.appSub}>Epe’s moderated group chat — pick a topic and join the conversation.</p>
+      </div>
+      <div className={styles.appBarActions}>
+        <ForumLiveCount initialActive={activeNow} />
+        <Link className="btn-primary" href="/forum/new">Start a discussion</Link>
+      </div>
+    </header>
     {actionError ? <Notice role="alert" tone="danger">{actionError}</Notice> : null}
     {failed ? <EmptyPanel title="The forum could not be loaded" description="Please try again later. No discussion data is shown." /> : categories.length === 0 && threads.length === 0 ? <EmptyPanel title="No forum categories are available" description="Categories will appear here after moderators publish them." /> : <>
-      <section className="ui-stack-sm" aria-labelledby="forum-categories"><SectionHeading id="forum-categories" eyebrow="Explore" title="Topics" />
-        {categories.length === 0 ? <p className="ui-muted">Topics will appear here after moderators publish them.</p> : <ul className={styles.chips}>{categories.map((category) => <li key={category.id}><Link className={styles.chip} href={`/forum/category/${encodeURIComponent(category.slug)}`}># {category.name}</Link></li>)}</ul>}
-      </section>
-      <section className="ui-stack-sm" aria-labelledby="forum-threads"><SectionHeading id="forum-threads" eyebrow="Now talking" title="Recent conversations" />
-        <nav className={styles.sortRow} aria-label="Sort threads">
-          {(["active", "newest", "posts"] as const).map((value) => {
-            const href = sortHref(value);
-            const label = value === "active" ? "Most recent activity" : value === "newest" ? "Newest" : "Most posts";
-            return href
-              ? <Link key={value} className={styles.sortLink} href={href}>{label}</Link>
-              : <span key={value} className={styles.sortCurrent} aria-current="true">{label}</span>;
-          })}
-        </nav>
-        {threads.length === 0 ? <EmptyPanel title="No public threads yet" description="When the community starts a discussion, it will appear here." /> : <ul className={styles.chatList}>{threads.map((thread) => {
-          const initial = thread.title.trim().slice(0, 1).toLocaleUpperCase("en-NG") || "•";
-          return <li key={thread.id} className={styles.chatRow}>
-            <span className={styles.avatar} aria-hidden="true">{initial}</span>
-            <div className={styles.chatMain}>
-              <h3 className={styles.chatTitle}><Link href={`/forum/thread/${encodeURIComponent(thread.slug)}`}>{thread.title}</Link>{thread.is_pinned ? <span className={styles.pinnedBadge}>Pinned</span> : null}</h3>
-              <p className={styles.chatMeta}>{categoryName(thread.category_id)}{thread.last_activity_at ? <> · <time dateTime={thread.last_activity_at}>{formatLagosDateTime(thread.last_activity_at)} Epe time</time></> : null}</p>
-            </div>
-            <span className={styles.badge} aria-label={`${thread.post_count} ${thread.post_count === 1 ? "post" : "posts"}`}>{thread.post_count}</span>
-          </li>;
-        })}</ul>}
-      </section>
+      <div className={styles.split}>
+        <aside className={styles.rail} aria-label="Topics">
+          <h2 className={styles.railTitle}>Topics</h2>
+          {categories.length === 0 ? <p className="ui-muted">Topics will appear here after moderators publish them.</p> : <ul className={styles.railList}>{categories.map((category) => <li key={category.id}>
+            <Link className={styles.railRow} href={`/forum/category/${encodeURIComponent(category.slug)}`}>
+              <span className={styles.railAvatar} aria-hidden="true">{category.name.trim().slice(0, 1).toLocaleUpperCase("en-NG")}</span>
+              <span className={styles.railCopy}>
+                <span className={styles.railName}>{category.name}</span>
+                {category.description ? <span className={styles.railDesc}>{category.description}</span> : null}
+              </span>
+            </Link>
+          </li>)}</ul>}
+        </aside>
+        <section className={styles.stream} aria-labelledby="forum-threads">
+          <div className={styles.streamHead}>
+            <h2 className={styles.railTitle} id="forum-threads">Conversations</h2>
+            <nav className={styles.sortRow} aria-label="Sort threads">
+              {(["active", "newest", "posts"] as const).map((value) => {
+                const href = sortHref(value);
+                const label = value === "active" ? "Most recent activity" : value === "newest" ? "Newest" : "Most posts";
+                return href
+                  ? <Link key={value} className={styles.sortLink} href={href}>{label}</Link>
+                  : <span key={value} className={styles.sortCurrent} aria-current="true">{label}</span>;
+              })}
+            </nav>
+          </div>
+          {threads.length === 0 ? <EmptyPanel title="No public threads yet" description="When the community starts a discussion, it will appear here." /> : <ul className={styles.chatList}>{threads.map((thread) => {
+            const initial = thread.title.trim().slice(0, 1).toLocaleUpperCase("en-NG") || "•";
+            return <li key={thread.id} className={styles.chatRow}>
+              <span className={styles.avatar} aria-hidden="true">{initial}</span>
+              <div className={styles.chatMain}>
+                <h3 className={styles.chatTitle}><Link href={`/forum/thread/${encodeURIComponent(thread.slug)}`}>{thread.title}</Link>{thread.is_pinned ? <span className={styles.pinnedBadge}>Pinned</span> : null}</h3>
+                <p className={styles.chatMeta}>{categoryName(thread.category_id)}{thread.last_activity_at ? <> · <time dateTime={thread.last_activity_at}>{formatLagosDateTime(thread.last_activity_at)} Epe time</time></> : null}</p>
+              </div>
+              <span className={styles.badge} aria-label={`${thread.post_count} ${thread.post_count === 1 ? "post" : "posts"}`}>{thread.post_count}</span>
+            </li>;
+          })}</ul>}
+        </section>
+      </div>
     </>}
-    <p className="ui-muted">Read the <Link className="ui-text-link" href="/guidelines">community guidelines</Link>.</p>
+    <p className={`ui-muted ${styles.guidelineNote}`}>Read the <Link className="ui-text-link" href="/guidelines">community guidelines</Link>.</p>
   </PageFrame>;
 }

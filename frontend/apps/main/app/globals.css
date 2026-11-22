@@ -134,6 +134,8 @@ html[data-theme="light"] body {
 /* Layout and reusable editorial language. */
 .site-main { flex: 1; width: 100%; }
 body:has(.member-dashboard-shell) .site-footer { display: none; }
+/* The forum is a focused chat surface; the global footer would interrupt the conversation rail. */
+body:has(.forum-shell) .site-footer { display: none; }
 /* Member workspace keeps its own background and controls below the shared masthead. */
 html body:has(.member-dashboard-shell) { background: var(--palette-cloud); background-image: radial-gradient(1200px 420px at 50% -12%, rgb(71 127 224 / .16), transparent 70%); }
 body:has(.auth-page) .site-footer,

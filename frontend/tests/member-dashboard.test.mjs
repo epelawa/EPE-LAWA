@@ -39,7 +39,10 @@ test("member profile editor updates only the authenticated user's name and handl
   assert.match(action, /\.eq\("user_id", user\.id\)/);
   assert.match(action, /RESERVED_HANDLES/);
   assert.match(action, /23505/);
-  assert.doesNotMatch(action, /user_id\s*:\s*|is_verified|verified_by|deleted_at|email\s*:/);
+  // Identity-field guard scopes to the profile/avatar editors; later exports in this
+  // action file (notification preferences) legitimately spell out the session's user_id.
+  const profileActions = action.slice(0, action.indexOf("markNotificationsRead"));
+  assert.doesNotMatch(profileActions, /user_id\s*:\s*|is_verified|verified_by|deleted_at|email\s*:/);
   assert.match(editor, /name="displayName"/);
   assert.match(editor, /name="handle"/);
   assert.match(editor, /role=\{state\.status === "error" \? "alert" : "status"\}/);

@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import AccountShell from "../../components/account-shell";
 import { createClient } from "../../lib/supabase";
 import { checkHandleAvailability, signOut, signOutEverywhere } from "../auth/actions";
-import { markNotificationsRead, updateMemberAvatar } from "./actions";
+import { markNotificationsRead, updateMemberAvatar, updateNotificationPreferences } from "./actions";
 import { toggleSavedArticle } from "./saved-actions";
 import MemberTopbar from "../../components/member-topbar";
 import DashboardSwipe from "../../components/dashboard-swipe";
@@ -54,6 +54,51 @@ type NotificationRow = {
   read_at: string | null;
   created_at: string;
 };
+type NotificationPreferences = {
+  in_app_news: boolean; in_app_radio: boolean; in_app_comments: boolean; in_app_forum: boolean;
+  push_news: boolean; push_radio: boolean; push_comments: boolean; push_forum: boolean;
+};
+
+const inAppPreferenceRows: { key: keyof NotificationPreferences; title: string; description: string }[] = [
+  { key: "in_app_news", title: "Newsroom updates", description: "Headlines and stories from the EPE LAWA desk." },
+  { key: "in_app_radio", title: "Radio", description: "Live shows and radio moments." },
+  { key: "in_app_comments", title: "Comment replies", description: "Replies to your comments on stories." },
+  { key: "in_app_forum", title: "Forum replies", description: "Replies inside forum discussions you take part in." },
+];
+const pushPreferenceRows: { key: keyof NotificationPreferences; title: string; description: string }[] = [
+  { key: "push_news", title: "Breaking news", description: "Push alerts for major stories on this device." },
+  { key: "push_radio", title: "Radio live", description: "Ping when a show goes on air." },
+  { key: "push_comments", title: "Comment replies", description: "Replies to your comments, on this device." },
+  { key: "push_forum", title: "Forum replies", description: "Replies in forum discussions, on this device." },
+];
+
+function PreferenceRow({ name, title, description, checked }: { name: string; title: string; description: string; checked: boolean }) {
+  return <label className={styles.prefRow}>
+    <span className={styles.prefCopy}>
+      <span className={styles.prefTitle}>{title}</span>
+      <span className={styles.prefDescription}>{description}</span>
+    </span>
+    <input className={styles.prefSwitch} type="checkbox" name={name} defaultChecked={checked} />
+  </label>;
+}
+
+function NotificationPreferencesPanel({ preferences }: { preferences: NotificationPreferences }) {
+  return <section className={styles.prefsPanel} aria-labelledby="notification-preferences-title">
+    <h2 id="notification-preferences-title">Notification channels</h2>
+    <p className={styles.helper}>Choose what reaches your account in the app. Push channels also need “Allow notifications” in your browser first.</p>
+    <form action={updateNotificationPreferences}>
+      <fieldset className={styles.prefsGroup}>
+        <legend>In-app</legend>
+        {inAppPreferenceRows.map((row) => <PreferenceRow key={row.key} name={row.key} title={row.title} description={row.description} checked={preferences[row.key]} />)}
+      </fieldset>
+      <fieldset className={styles.prefsGroup}>
+        <legend>Push (this device, after browser opt-in)</legend>
+        {pushPreferenceRows.map((row) => <PreferenceRow key={row.key} name={row.key} title={row.title} description={row.description} checked={preferences[row.key]} />)}
+      </fieldset>
+      <button className="btn-primary" type="submit">Save preferences</button>
+    </form>
+  </section>;
+}
 
 const dashboardTabs = [
   { key: "home" as const, href: "/dashboard?tab=home", label: "Home", Icon: HomeIcon },
@@ -162,7 +207,7 @@ function notificationStamp(value: string) {
   return Number.isNaN(date.getTime()) ? "Date unavailable" : formatLagosDateTime(date.toISOString()) ?? "Date unavailable";
 }
 
-function DashboardNotifications({ notifications, error }: { notifications: NotificationRow[]; error: boolean }) {
+function DashboardNotifications({ notifications, error, preferences }: { notifications: NotificationRow[]; error: boolean; preferences: NotificationPreferences | null }) {
   const unread = notifications.filter((row) => !row.read_at).length;
   return <section className={`${styles.panel} ${styles.notificationsPanel}`} aria-labelledby="notifications-title">
     <header className={styles.notificationsHeading}>
@@ -174,6 +219,7 @@ function DashboardNotifications({ notifications, error }: { notifications: Notif
       {unread > 0 ? <form action={markNotificationsRead}><button className="btn-secondary" type="submit">Mark all as read</button></form> : <span className={styles.handle}>All read</span>}
     </header>
     <NotificationSoundSettings />
+    {preferences ? <NotificationPreferencesPanel preferences={preferences} /> : null}
     {error
       ? <p className={styles.error} role="alert">Notifications could not be loaded right now. Nothing is being guessed or substituted.</p>
       : notifications.length === 0
@@ -310,6 +356,12 @@ export default async function MemberDashboardPage({ searchParams }: { searchPara
     .limit(40);
   const notifications = (notificationRows ?? []) as NotificationRow[];
   const unreadCount = notifications.filter((row) => !row.read_at).length;
+  const { data: preferenceRow, error: preferencesError } = await supabase
+    .from("notification_preferences")
+    .select("in_app_news,in_app_radio,in_app_comments,in_app_forum,push_news,push_radio,push_comments,push_forum")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (preferencesError) console.error("notification_preferences read failed", { code: preferencesError.code });
 
   return (
     <>
@@ -326,7 +378,7 @@ export default async function MemberDashboardPage({ searchParams }: { searchPara
         </header> : null}
         {activeTab === "home" ? <DashboardHomeNews client={supabase} />
           : activeTab === "discover" ? <DashboardDiscoverNews client={supabase} query={query} category={category} page={page} />
-            : activeTab === "notifications" ? <DashboardNotifications notifications={notifications} error={Boolean(notificationsError)} />
+            : activeTab === "notifications" ? <DashboardNotifications notifications={notifications} error={Boolean(notificationsError)} preferences={(preferenceRow as unknown as NotificationPreferences) ?? null} />
               : activeTab === "saved" ? <DashboardSaved /> : <div className={styles.grid}>
                 <section className={styles.panel} aria-labelledby="profile-title">
                   <div className={styles.profileIdentity}><span className={styles.profileAvatar} aria-hidden="true">{publicMediaUrl(profile.avatar_key) ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={publicMediaUrl(profile.avatar_key) ?? ""} alt="" width={56} height={56} style={{ borderRadius: "inherit" }} /> : profile.display_name.trim().slice(0, 1).toUpperCase()}</span><div><h2 id="profile-title">{profile.display_name}</h2><span className={styles.handle}>@{profile.handle}</span>{profile.created_at ? <span className={styles.helper}>Member since {formatPublishedDate(profile.created_at)}</span> : null}</div></div>

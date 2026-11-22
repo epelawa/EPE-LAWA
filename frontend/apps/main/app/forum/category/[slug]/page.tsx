@@ -31,7 +31,7 @@ export default async function ForumCategoryPage({ params, searchParams }: Props)
   const { data, error: threadError } = await supabase.from("forum_threads").select("id,slug,title,post_count,last_activity_at").eq("category_id", category.id).in("state", ["open", "locked"]).is("deleted_at", null).order("last_activity_at", { ascending: false, nullsFirst: false }).order("id", { ascending: false }).range(start, start + PAGE_SIZE);
   const threads = (data ?? []).slice(0, PAGE_SIZE);
   const hasNext = (data?.length ?? 0) > PAGE_SIZE && page < MAX_PAGE;
-  return <PageFrame className="ui-stack"><nav className="ui-back-link" aria-label="Breadcrumb"><Link href="/forum">Forum</Link><span aria-hidden="true"> / </span><span>{category.name}</span></nav>
+  return <PageFrame className="ui-stack forum-shell"><nav className="ui-back-link" aria-label="Breadcrumb"><Link href="/forum">Forum</Link><span aria-hidden="true"> / </span><span>{category.name}</span></nav>
     <PageIntro eyebrow="Community category" title={category.name} description={category.description ?? undefined} actions={<>
       <Link className="btn-primary" href={`/forum/new?category=${encodeURIComponent(category.id)}`}>Start a discussion</Link>
       <FollowButton topicType="forum_category" topicId={category.id} returnTo={`/forum/category/${encodeURIComponent(slug)}`} />
