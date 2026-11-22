@@ -13,6 +13,7 @@ export type ReadinessTile = {
   description: string;
   state: ReadinessState;
   missing: string[];
+  set: string[];
   href?: string;
 };
 
@@ -30,6 +31,7 @@ export function systemReadiness(env: NodeJS.ProcessEnv): ReadinessTile[] {
     description: listing.missing.length === 0 ? "Snapshot listing is ready on the backups desk." : "Snapshot listing needs the remaining private-storage variables.",
     state: listing.missing.length === 0 ? "ready" : "incomplete",
     missing: listing.missing,
+    set: listing.set,
     href: "/backups",
   });
 
@@ -39,6 +41,7 @@ export function systemReadiness(env: NodeJS.ProcessEnv): ReadinessTile[] {
     description: dispatch.missing.length === 0 ? "On-demand and pre-restore snapshots can be dispatched." : "Dispatching snapshots needs the remaining workflow variables.",
     state: dispatch.missing.length === 0 ? "ready" : "incomplete",
     missing: dispatch.missing,
+    set: dispatch.set,
     href: "/backups",
   });
 
@@ -48,6 +51,7 @@ export function systemReadiness(env: NodeJS.ProcessEnv): ReadinessTile[] {
     description: email.missing.length === 0 ? "Digest delivery can send through SMTP." : "Digest delivery stays disabled until SMTP is complete.",
     state: email.missing.length === 0 ? "ready" : "off",
     missing: email.missing,
+    set: email.set,
     href: "/digest",
   });
 
@@ -58,6 +62,7 @@ export function systemReadiness(env: NodeJS.ProcessEnv): ReadinessTile[] {
     description: !pushFlag ? "Feature flag is off; members are not asked to subscribe." : push.missing.length === 0 ? "Flag and key pair are present." : "Flag is on but the key pair is incomplete.",
     state: !pushFlag ? "off" : push.missing.length === 0 ? "ready" : "incomplete",
     missing: pushFlag ? push.missing : ["NEXT_PUBLIC_WEB_PUSH_ENABLED"],
+    set: pushFlag ? push.set : [],
     href: "/",
   });
 
@@ -67,6 +72,7 @@ export function systemReadiness(env: NodeJS.ProcessEnv): ReadinessTile[] {
     description: storage.missing.length === 0 ? "Uploads resolve through the configured base URL." : "Member uploads need the public bucket variables.",
     state: storage.missing.length === 0 ? "ready" : storage.set.length === 0 ? "optional" : "incomplete",
     missing: storage.missing,
+    set: storage.set,
   });
 
   return tiles;

@@ -4,6 +4,7 @@ import { DatabaseIcon, InboxIcon, WrenchIcon, ImageIcon, ShieldIcon, ChartIcon, 
 import { createStaffClient } from "../../../lib/supabase";
 import { systemReadiness } from "../../../lib/system-status";
 import { setMaintenance } from "./maintenance-actions";
+import { restoreOwnerAuthority } from "./owner-authority-actions";
 import BusySubmit from "../../../components/busy-submit";
 import styles from "./settings.module.css";
 
@@ -48,7 +49,7 @@ const shortcutIcon: Record<string, ReactNode> = {
   Enquiries: <InboxIcon size={22} />,
 };
 
-export default async function SettingsPage({ searchParams }: { searchParams: Promise<{maintenance?: string}> }) {
+export default async function SettingsPage({ searchParams }: { searchParams: Promise<{maintenance?: string; authority?: string}> }) {
   const params = await searchParams;
   const db = await createStaffClient();
   let authorized = false;
@@ -103,6 +104,23 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       </div>
     </Panel>
 
+    <Panel className={styles.pause} data-on="false">
+      <div className={styles.pauseArt} aria-hidden="true"><ShieldIcon size={30} /></div>
+      <div className={styles.pauseBody}>
+        <h2>Owner authority</h2>
+        <p>Restore the full Owner capability set to your account. Handy after a session, role or database reset.</p>
+        {params.authority === "restored" && <p role="status" className={styles.note}>Owner capabilities are in place.</p>}
+        {params.authority === "failed" && <p role="alert" className={styles.note}>The authority could not be restored. Confirm you are signed in as the primary administrator and try again.</p>}
+      </div>
+      <div className={styles.pauseAction}>
+        <form action={restoreOwnerAuthority}>
+          <BusySubmit className="btn-secondary" pendingLabel="Restoring…">
+            Restore full owner authority
+          </BusySubmit>
+        </form>
+      </div>
+    </Panel>
+
     <section className={styles.readiness} aria-labelledby="readiness-heading">
       <SectionHeading
         id="readiness-heading"
@@ -119,11 +137,9 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
             </div>
             <h3>{tile.label}</h3>
             <p>{tile.description}</p>
-            {tile.missing.length > 0 ? (
-              <p className={styles.missing} title="Set these sensitive variables in Vercel">
-                <ClockIcon size={14} /> Missing: {tile.missing.join(", ")}
-              </p>
-            ) : null}
+            <p className={styles.missing} title={tile.missing.length > 0 ? `Set these sensitive variables in Vercel: ${tile.missing.join(", ")}` : "Every variable this feature needs is present"}>
+              <ClockIcon size={14} /> {tile.set.length} of {tile.set.length + tile.missing.length} variables present
+            </p>
             {tile.href && tile.href !== "/" ? <a className={styles.tileLink} href={tile.href}>Open desk</a> : null}
           </li>
         ))}
