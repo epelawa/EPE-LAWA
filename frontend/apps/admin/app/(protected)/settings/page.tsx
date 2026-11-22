@@ -4,6 +4,7 @@ import { DatabaseIcon, InboxIcon, WrenchIcon, ImageIcon, ShieldIcon, ChartIcon, 
 import { createStaffClient } from "../../../lib/supabase";
 import { systemReadiness } from "../../../lib/system-status";
 import { setMaintenance } from "./maintenance-actions";
+import BusySubmit from "../../../components/busy-submit";
 import styles from "./settings.module.css";
 
 export const dynamic = "force-dynamic";
@@ -89,9 +90,12 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           <form action={setMaintenance}>
             <input type="hidden" name="enabled" value={String(!maintenance.enabled)} />
             <input type="hidden" name="revision" value={maintenance.revision} />
-            <button className="btn-primary" type="submit">
+            <BusySubmit
+              className="btn-primary"
+              pendingLabel={maintenance.enabled ? "Turning off…" : "Turning on…"}
+            >
               {maintenance.enabled ? "Turn maintenance off" : "Turn maintenance on"}
-            </button>
+            </BusySubmit>
           </form>
         ) : (
           <p className={styles.unavailableNote}>Complete the database and deployment setup before using this setting.</p>
