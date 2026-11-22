@@ -126,15 +126,20 @@ export default function AdminSidebar({
     <>
       <header className="admin-topbar">
         <Link className="nav-brand" href={staffHref("/", basePath)}><BrandLockup size={28} /></Link>
-        <button
-          ref={trigger}
-          type="button"
-          className="btn-icon admin-menu-button"
-          aria-label={open ? "Close menu" : "Open menu"}
-          aria-expanded={open}
-          aria-controls="admin-drawer"
-          onClick={() => setOpen((value) => !value)}
-        ><MenuIcon size={20} /></button>
+        <div className="admin-topbar__actions">
+          <form action={signOutStaffSameOrigin}>
+            <button className="admin-topbar__signout" type="submit">Sign out</button>
+          </form>
+          <button
+            ref={trigger}
+            type="button"
+            className="btn-icon admin-menu-button"
+            aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
+            aria-controls="admin-drawer"
+            onClick={() => setOpen((value) => !value)}
+          ><MenuIcon size={20} /></button>
+        </div>
       </header>
       <aside className="admin-sidebar" aria-label="Staff workspace">
         <div className="admin-sidebar__brand"><Link href={staffHref("/", basePath)}><BrandLockup size={30} /></Link></div>

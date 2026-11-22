@@ -264,6 +264,7 @@ body[data-admin-shell="sidebar"] { --admin-sidebar-width: 256px; }
 }
 .admin-sidebar__public:hover, .admin-sidebar__signout:hover { background: rgb(255 255 255 / .08); color: #FFFFFF; }
 .admin-sidebar__signout { padding: 8px 10px; }
+.admin-topbar__actions { display: flex; align-items: center; gap: 8px; }
 @media(max-width: 960px) {
   .admin-topbar {
     display: flex; align-items: center; justify-content: space-between;
@@ -271,6 +272,11 @@ body[data-admin-shell="sidebar"] { --admin-sidebar-width: 256px; }
     background: var(--ep-color-midnight); color: #FFFFFF;
   }
   body[data-admin-shell="sidebar"] .admin-sidebar { display: none; }
+  .admin-topbar__signout {
+    padding: 7px 12px; border-radius: 10px; border: 1px solid rgb(255 255 255 / .24);
+    background: transparent; color: #C7D1E4; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  .admin-topbar__signout:hover { background: rgb(255 255 255 / .08); color: #FFFFFF; }
 }
 .drawer[data-sidebar="true"] { display: flex; flex-direction: column; }
 .drawer[data-sidebar="true"] .admin-sidebar__nav { flex: 1; }
