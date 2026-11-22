@@ -94,6 +94,9 @@ importers:
       '@epelawa/image-optimizer':
         specifier: workspace:*
         version: link:../../packages/image-optimizer
+      '@epelawa/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@fontsource-variable/plus-jakarta-sans':
         specifier: 5.3.0
         version: 5.3.0

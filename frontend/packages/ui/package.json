@@ -6,7 +6,8 @@
   "exports": {
     ".": "./src/index.tsx",
     "./tokens.css": "./src/tokens.css",
-    "./ui.css": "./src/ui.css"
+    "./ui.css": "./src/ui.css",
+    "./forms.css": "./src/forms.css"
   },
   "peerDependencies": {
     "react": "^19.0.0"

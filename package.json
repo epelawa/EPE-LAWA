@@ -21,6 +21,7 @@
     "audit:security": "node scripts/audit/run.mjs --only=hacking",
     "audit:ui": "node scripts/audit/run.mjs --only=ui",
     "audit:ci": "node scripts/audit/run.mjs --fail-on=medium",
+    "ux:audit": "node scripts/ux-audit.mjs",
     "test:node": "tsx --conditions=react-server --test frontend/tests/*.test.mjs backend/tests/*.test.mjs",
     "test:unit": "vitest run"
   },

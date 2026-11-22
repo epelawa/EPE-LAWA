@@ -1,6 +1,7 @@
 import "@fontsource-variable/plus-jakarta-sans";
 import "@epelawa/ui/tokens.css";
 import "@epelawa/ui/ui.css";
+import "@epelawa/ui/forms.css";
 import "./globals.css";
 import "./native-controls.css";
 
@@ -68,17 +69,9 @@ async function AuthenticatedMobileNavigation() {
   }
 }
 
-function preconnectOrigins(): string[] {
-  const origins = new Set<string>();
-  try {
-    const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    if (supabase) origins.add(new URL(supabase).origin);
-  } catch { /* ignore malformed configuration */ }
-  try {
-    const r2 = process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL;
-    if (r2) origins.add(new URL(r2).origin);
-  } catch { /* ignore malformed configuration */ }
-  return [...origins];
+function publicOrigin(raw: string | undefined): string | null {
+  if (!raw) return null;
+  try { return new URL(raw).origin; } catch { return null; }
 }
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -87,9 +80,12 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   return (
     <html lang={siteLanguage === "yo" ? "yo" : "en"} data-theme="light" style={{ colorScheme: "light" }} suppressHydrationWarning>
       <body>
-        {preconnectOrigins().map((origin) => (
-          <link key={origin} rel="preconnect" href={origin} crossOrigin="anonymous" />
-        ))}
+        {publicOrigin(process.env.NEXT_PUBLIC_SUPABASE_URL) ? (
+          <link rel="preconnect" href={publicOrigin(process.env.NEXT_PUBLIC_SUPABASE_URL) as string} crossOrigin="anonymous" />
+        ) : null}
+        {publicOrigin(process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL) ? (
+          <link rel="preconnect" href={publicOrigin(process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL) as string} crossOrigin="anonymous" />
+        ) : null}
         <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeScript }} />
         <AuthCallbackErrorRouter />
         <SiteMotion />

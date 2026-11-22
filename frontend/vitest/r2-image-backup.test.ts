@@ -8,6 +8,7 @@ import {
   toExactArrayBuffer,
 } from "../packages/image-optimizer/src/optimize";
 import { listBackups, parseBackupListPayload } from "../apps/admin/lib/backup-r2";
+import { dispatchBackupWorkflow } from "../apps/admin/lib/backup-dispatch";
 import { putMediaObject } from "../apps/main/lib/media-r2";
 
 const avatarEditorPath = new URL("../apps/main/app/dashboard/avatar-editor.tsx", import.meta.url);
@@ -56,6 +57,26 @@ describe("R2 image and backup regressions", () => {
       isTruncated: false,
     });
     expect(parseBackupListPayload({ success: true, result: { objects: [] } })).toEqual({ state: "unavailable" });
+  });
+
+  it("names the missing server variables instead of values when unconfigured", async () => {
+    vi.stubEnv("R2_ACCOUNT_ID", "");
+    vi.stubEnv("CLOUDFLARE_API_TOKEN", "");
+    vi.stubEnv("R2_BUCKET_PRIVATE", "test-private");
+
+    const result = await listBackups();
+
+    expect(result).toEqual({ state: "unconfigured", missing: ["R2_ACCOUNT_ID", "CLOUDFLARE_API_TOKEN"] });
+    expect(JSON.stringify(result)).not.toContain("test-private");
+  });
+
+  it("reports unconfigured dispatch with variable names only", async () => {
+    vi.stubEnv("BACKUP_DISPATCH_TOKEN", "");
+    vi.stubEnv("BACKUP_WORKFLOW_REPO", "epelawa/EPE-LAWA");
+
+    const result = await dispatchBackupWorkflow("db-backup.yml", {});
+
+    expect(result).toEqual({ ok: false, reason: "unconfigured", missing: ["BACKUP_DISPATCH_TOKEN"] });
   });
 
   it("follows Cloudflare list cursors and returns complete backup rows only", async () => {

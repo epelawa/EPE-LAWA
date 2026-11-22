@@ -13,8 +13,12 @@
 .field { display:grid; gap:8px; min-width:0; }
 .field label { display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px; color:#17264a; font-size:.875rem; font-weight:750; }
 .field label span,.advanced summary span { color:#687b98; font-size:.72rem; font-weight:600; }
-.field :is(input,textarea,select) { width:100%; min-width:0; min-height:44px; padding:10px 13px; border:1px solid #cbd7e7; border-radius:11px; background:#fbfcff; color:#0a1023; font-size:1rem; line-height:1.5; }
-.field textarea { resize:none; }
+.field :is(input,textarea,select), .ep-live-field :is(input,textarea,select) { width:100%; min-width:0; min-height:44px; padding:10px 13px; border:1px solid #cbd7e7; border-radius:11px; background:#fbfcff; color:#0a1023; font-size:1rem; line-height:1.5; }
+.field textarea, .ep-live-field textarea { resize:none; }
+.ep-live-field__label { color:#17264a !important; font-size:.875rem !important; font-weight:750 !important; justify-content:space-between; }
+.ep-live-field__message { color:#52617a; }
+.stepError { margin:0; padding:10px 14px; border:1px solid #f3c1c1; border-radius:11px; background:#fdf1f1; color:#b91c1c; font-size:.85rem; font-weight:650; }
+.introStatus { display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:10px; }
 .field small,.writingMeta { color:#52617a; font-size:.75rem; line-height:1.5; }
 .field a,.dialogFoot a { color:#294b91; font-weight:700; }
 .writingMeta { display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; }

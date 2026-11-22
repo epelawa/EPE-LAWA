@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState, type ClipboardEvent, type FormEvent, type KeyboardEvent } from "react";
+import { validateField, type FieldRules } from "@epelawa/ui";
 import Link from "next/link";
 import { requestPasswordReset, signIn, signUp, updatePassword, verifyEmailOtp, verifyHandleBeforeContinue, type AuthState } from "./actions";
 
@@ -10,14 +11,23 @@ type StepFlow = {
   formRef: React.RefObject<HTMLFormElement | null>;
   step: number;
   enhanced: boolean;
+  stepError: string;
   next: () => void;
   back: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 };
 
+const AUTH_RULES: Record<string, FieldRules> = {
+  displayName: { required: true, maxLength: 60, message: "Enter your name (up to 60 characters)." },
+  handle: { required: true, pattern: /^[a-zA-Z0-9_]{3,24}$/, message: "Use 3-24 letters, numbers or underscores." },
+  email: { required: true, email: true, maxLength: 254 },
+  password: { required: true, minLength: 10, maxLength: 128, message: "Use at least 10 characters." },
+};
+
 function useAuthSteps(totalSteps: number, validateHandle?: () => Promise<boolean>): StepFlow {
   const formRef = useRef<HTMLFormElement>(null);
   const [step, setStep] = useState(1);
+  const [stepError, setStepError] = useState("");
   const [enhanced, setEnhanced] = useState(false);
 
   useEffect(() => setEnhanced(true), []);
@@ -34,8 +44,16 @@ function useAuthSteps(totalSteps: number, validateHandle?: () => Promise<boolean
     if (!enhanced) return;
     const currentFieldset = formRef.current?.querySelector<HTMLFieldSetElement>(`fieldset[data-step="${step}"]`);
     const fields = Array.from(currentFieldset?.querySelectorAll<HTMLInputElement>("input") ?? []);
-    if (!fields.every((field) => field.reportValidity())) return;
+    for (const field of fields) {
+      const error = validateField(field.value, AUTH_RULES[field.name]);
+      if (error) {
+        field.setAttribute("aria-invalid", "true");
+        setStepError(error);
+        return;
+      }
+    }
     if (step === 2 && validateHandle && !(await validateHandle())) return;
+    setStepError("");
     const target = Math.min(step + 1, totalSteps);
     setStep(target);
     focusStep(target);
@@ -54,7 +72,7 @@ function useAuthSteps(totalSteps: number, validateHandle?: () => Promise<boolean
     }
   };
 
-  return { formRef, step, enhanced, next, back, onSubmit };
+  return { formRef, step, enhanced, stepError, next, back, onSubmit };
 }
 
 function StepProgress({ step, total, label }: { step: number; total: number; label: string }) {
@@ -305,7 +323,7 @@ export function SignUpForm() {
   }
 
   return (
-    <form ref={flow.formRef} action={action} onSubmit={flow.onSubmit} className="auth-form auth-form--stepped" data-enhanced={flow.enhanced} data-step={flow.step} aria-busy={pending}>
+    <form ref={flow.formRef} action={action} noValidate onSubmit={flow.onSubmit} className="auth-form auth-form--stepped" data-enhanced={flow.enhanced} data-step={flow.step} aria-busy={pending}>
       {!flow.enhanced || flow.step === 1 ? <GoogleSignInUnavailable /> : null}
       {flow.enhanced ? <StepProgress step={flow.step} total={4} label={["Your name", "Choose a handle", "Email address", "Password"][flow.step - 1] ?? "Your name"} /> : null}
       <fieldset className="auth-step" data-step="1" hidden={flow.enhanced && flow.step !== 1}>
@@ -341,6 +359,7 @@ export function SignUpForm() {
         </div>
       </fieldset>
       <Feedback state={state} />
+      {flow.enhanced && flow.stepError ? <p className="auth-error" role="alert" aria-live="polite">{flow.stepError}</p> : null}
       <StepActions enhanced={flow.enhanced} step={flow.step} total={4} pending={pending || checkingHandle} submitLabel="Create account" pendingLabel="Creating account…" onNext={flow.next} onBack={flow.back} />
     </form>
   );
@@ -352,7 +371,7 @@ export function SignInForm() {
     return <OtpCard defaultEmail={state.values?.email ?? ""} message={state.message} />;
   }
   return (
-    <form action={action} className="auth-form" aria-busy={pending} draggable={false} onDragStart={(event) => event.preventDefault()}>
+    <form action={action} noValidate className="auth-form" aria-busy={pending} draggable={false} onDragStart={(event) => event.preventDefault()}>
       <GoogleSignInUnavailable />
       <div className="auth-field">
         <label htmlFor="login-email">Email address</label>
