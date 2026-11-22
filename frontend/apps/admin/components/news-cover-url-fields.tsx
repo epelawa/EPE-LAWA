@@ -44,9 +44,7 @@ export default function NewsCoverUrlFields({ idPrefix, initial = {}, uploadAvail
     const form = root?.form;
     if (!root || !form) return;
     const cover = root.querySelector<HTMLInputElement>('[name="coverUrl"]');
-    const source = root.querySelector<HTMLInputElement>('[name="coverSourceUrl"]');
-    const license = root.querySelector<HTMLInputElement>('[name="coverLicenseUrl"]');
-    if (!cover || !source || !license) return;
+    if (!cover) return;
     function validate() {
       const linked = cover!.value.trim();
       const upload = form!.elements.namedItem("coverUpload");
@@ -55,18 +53,11 @@ export default function NewsCoverUrlFields({ idPrefix, initial = {}, uploadAvail
         linked && picked ? "Choose only one cover source: a link or an upload."
         : linked && !normalizeExternalNewsCoverUrl(linked) ? "Use a public HTTPS image URL without credentials or a private host."
         : "");
-      for (const field of [source!, license!]) {
-        const value = field.value.trim();
-        field.setCustomValidity(
-          (linked || picked) && value && !normalizeExternalNewsCoverUrl(value) ? "Use a public HTTPS URL without credentials or a private host."
-          : (linked || picked) && !value ? "An uploaded or linked cover needs its source page."
-          : "");
-      }
     }
     form.addEventListener("input", validate);
     form.addEventListener("change", validate);
     validate();
-    return () => { form.removeEventListener("input", validate); form.removeEventListener("change", validate); cover.setCustomValidity(""); source.setCustomValidity(""); license.setCustomValidity(""); };
+    return () => { form.removeEventListener("input", validate); form.removeEventListener("change", validate); cover.setCustomValidity(""); };
   }, []);
 
   return (
@@ -74,14 +65,14 @@ export default function NewsCoverUrlFields({ idPrefix, initial = {}, uploadAvail
       <legend className={`label ${styles.legend}`}>{uploadAvailable ? "Cover image" : "Or link a cover image"}</legend>
       {uploadAvailable ? (
         <>
-          <p className="ui-meta">Upload an image from this device, or paste a publicly accessible HTTPS image link; either way provide its alt text, credit, source and license. Choose only one cover source. The browser requests a linked image directly, so its host can see visitors’ IP addresses; page referrers are not sent.</p>
+          <p className="ui-meta">Upload an image from this device, or paste a publicly accessible HTTPS image link. Choose only one cover source. The browser requests a linked image directly, so its host can see visitors’ IP addresses; page referrers are not sent.</p>
           <div className="ui-field">
             <span className="ui-row">
               <button type="button" className="btn-secondary" aria-haspopup="dialog" onClick={() => setUploadOpen(true)}>Upload from this device</button>
               <span className="ui-meta" role="status">{uploadName ? `Selected: ${uploadName}` : "No file selected"}</span>
             </span>
           </div>
-          <BrandedDialog open={uploadOpen} onClose={() => setUploadOpen(false)} title="Upload cover image" description="Choose an image from this device. You can still fill in alt text, credit, source and license after closing this dialog.">
+          <BrandedDialog open={uploadOpen} onClose={() => setUploadOpen(false)} title="Upload cover image" description="Choose an image from this device. You can still fill in alt text,  after closing this dialog.">
             <div className="ui-stack-sm">
               <label className="label" htmlFor={labelId("upload")}>Cover image file</label>
               <input
@@ -114,7 +105,7 @@ export default function NewsCoverUrlFields({ idPrefix, initial = {}, uploadAvail
           {uploadName ? <p className="ui-meta" role="status">Selected file: {uploadName}. Clear the file input to switch back to a linked image.</p> : null}
         </>
       ) : (
-        <p className="ui-meta">An EPE LAWA image-storage bucket is not configured, so direct uploads are unavailable. Paste a publicly accessible HTTPS image link; provide its alt text, credit, source and license. The browser requests the image directly, so its host can see visitors’ IP addresses; page referrers are not sent. Use only a trusted public image host: obvious private/local hosts are rejected, but a domain’s DNS can change later.</p>
+        <p className="ui-meta">An EPE LAWA image-storage bucket is not configured, so direct uploads are unavailable. Paste a publicly accessible HTTPS image link. The browser requests the image directly, so its host can see visitors’ IP addresses; page referrers are not sent. Use only a trusted public image host: obvious private/local hosts are rejected, but a domain’s DNS can change later.</p>
       )}
       <div className="ui-field">
         <label className="label" htmlFor={labelId("url")}>{uploadAvailable ? "Or link a cover image URL" : "Cover image URL"}</label>
@@ -124,13 +115,10 @@ export default function NewsCoverUrlFields({ idPrefix, initial = {}, uploadAvail
       </div>
       {!uploadPreview && normalizedPreview ? <img className={styles.preview} src={normalizedPreview} alt="" loading="eager" decoding="async" referrerPolicy="no-referrer" onLoad={() => setPreviewFailed(false)} onError={() => setPreviewFailed(true)} /> : null}
       {!uploadPreview && normalizedPreview && previewFailed ? <p className="ui-meta" role="status">The image preview could not load. Check that the URL is public and serves an image.</p> : null}
-      <div className="ui-form-grid">
-        <div className="ui-field"><label className="label" htmlFor={labelId("alt")}>Cover alt text</label><input id={labelId("alt")} name="coverAlt" className="input" maxLength={500} defaultValue={initial.alt ?? ""} required={needsMetadata} /></div>
-        <div className="ui-field"><label className="label" htmlFor={labelId("credit")}>Image credit</label><input id={labelId("credit")} name="coverCredit" className="input" maxLength={300} defaultValue={initial.credit ?? ""} required={needsMetadata} /></div>
-        <div className="ui-field"><label className="label" htmlFor={labelId("source")}>Source page URL</label><input id={labelId("source")} name="coverSourceUrl" className="input" type="url" maxLength={2048} defaultValue={initial.sourceUrl ?? ""} required={needsMetadata} /></div>
-        <div className="ui-field"><label className="label" htmlFor={labelId("license")}>License URL</label><input id={labelId("license")} name="coverLicenseUrl" className="input" type="url" maxLength={2048} defaultValue={initial.licenseUrl ?? ""} required={needsMetadata} /></div>
+      <div className="ui-field">
+        <label className="label" htmlFor={labelId("alt")}>Cover alt text (optional)</label>
+        <input id={labelId("alt")} name="coverAlt" className="input" maxLength={500} defaultValue={initial.alt ?? ""} />
       </div>
-      <div className="ui-field"><label className="label" htmlFor={labelId("caption")}>Credit caption (optional)</label><input id={labelId("caption")} name="coverCaption" className="input" maxLength={500} defaultValue={initial.caption ?? ""} /></div>
     </fieldset>
   );
 }

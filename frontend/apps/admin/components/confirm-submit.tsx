@@ -1,8 +1,10 @@
 "use client";
 
-import { useRef, useState, type ReactNode } from "react";
+import { useRef, useState, useTransition, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
+import { SubmitButton } from "@epelawa/ui";
 import BrandedDialog from "./branded-dialog";
+import { pushToast } from "../../main/components/toast";
 
 export default function ConfirmSubmit({
   message,
@@ -11,6 +13,8 @@ export default function ConfirmSubmit({
   confirmFirst = true,
   confirmLabel = "Confirm",
   cancelLabel = "Cancel",
+  successMessage,
+  errorMessage,
   ...rest
 }: {
   message: string;
@@ -19,21 +23,46 @@ export default function ConfirmSubmit({
   confirmFirst?: boolean;
   confirmLabel?: string;
   cancelLabel?: string;
+  successMessage?: string;
+  errorMessage?: string;
   name?: string;
   value?: string;
 }) {
   const { pending } = useFormStatus();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
-  const busy = pending || open;
+  const [isConfirming, startConfirming] = useTransition();
+  const busy = pending || isConfirming;
 
   if (!confirmFirst) {
     return (
       <button ref={buttonRef} type="submit" className={className} aria-busy={pending} disabled={pending} data-pending-self-managed="true" {...rest}>
-        {pending ? "Working…" : children}
+        {pending ? "Working" : children}
       </button>
     );
   }
+
+  const handleConfirm = async () => {
+    setOpen(false);
+    const button = buttonRef.current;
+    if (button?.form && button.isConnected) {
+      startConfirming(async () => {
+        try {
+          await button.form.requestSubmit(button);
+          if (successMessage) {
+            pushToast("success", successMessage);
+          }
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "An error occurred";
+          if (errorMessage) {
+            pushToast("error", errorMessage);
+          } else {
+            pushToast("error", message);
+          }
+        }
+      });
+    }
+  };
 
   return (
     <>
@@ -46,7 +75,7 @@ export default function ConfirmSubmit({
         onClick={() => setOpen(true)}
         {...rest}
       >
-        {pending ? "Working…" : children}
+        {pending ? "Working" : children}
       </button>
       <BrandedDialog
         open={open}
@@ -60,20 +89,18 @@ export default function ConfirmSubmit({
             type="button"
             className="btn-secondary"
             onClick={() => setOpen(false)}
+            disabled={isConfirming}
           >
             {cancelLabel}
           </button>
           <button
             type="button"
             className="btn-primary"
-            data-autofocus
-            onClick={() => {
-              setOpen(false);
-              const button = buttonRef.current;
-              if (button?.form && button.isConnected) button.form.requestSubmit(button);
-            }}
+            onClick={handleConfirm}
+            disabled={isConfirming}
+            aria-busy={isConfirming}
           >
-            {confirmLabel}
+            {isConfirming ? "Working" : confirmLabel}
           </button>
         </div>
       </BrandedDialog>

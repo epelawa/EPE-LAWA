@@ -33,6 +33,13 @@ export type StaffCreateState = { status: "idle" | "success" | "error"; message: 
 
 export async function staffCreateBusiness(_prev: StaffCreateState, formData: FormData): Promise<StaffCreateState> {
   const db = await createStaffClient();
+  
+  // Check business.review capability
+  const { data: hasCapability } = await db.rpc("has_capability", { p_capability: "business.review" });
+  if (hasCapability !== true) {
+    return { status: "error", message: "You need business.review access to create listings. Contact an administrator." };
+  }
+  
   const field = (key: string) => { const raw = formData.get(key); return typeof raw === "string" ? raw.trim() : ""; };
   const name = field("name");
   const categoryId = field("category_id");
@@ -115,6 +122,13 @@ const phoneRx = /^\+?[0-9][0-9 ()-]{6,19}$/;
 /** Update a published listing in place, including its public text and category. */
 export async function staffUpdateBusiness(_prev: StaffUpdateState, formData: FormData): Promise<StaffUpdateState> {
   const db = await createStaffClient();
+  
+  // Check business.review capability
+  const { data: hasCapability } = await db.rpc("has_capability", { p_capability: "business.review" });
+  if (hasCapability !== true) {
+    return { status: "error", message: "You need business.review access to edit listings. Contact an administrator." };
+  }
+  
   const field = (key: string) => { const raw = formData.get(key); return typeof raw === "string" ? raw.trim() : ""; };
   const businessId = field("business_id");
   const name = field("name");
@@ -136,6 +150,23 @@ export async function staffUpdateBusiness(_prev: StaffUpdateState, formData: For
   if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { status: "error", message: "Enter a valid email address." };
   if (website && !/^https:\/\//.test(website)) return { status: "error", message: "The website address must start with https://" };
   if (logoUrl && !/^https:\/\//.test(logoUrl)) return { status: "error", message: "The logo link must start with https://" };
+  
+  // Handle logo file upload
+  let logoKey: string | null = logoUrl || null;
+  const logoFileRaw = formData.get("logo_file");
+  if (logoFileRaw instanceof File && logoFileRaw.size > 0) {
+    const extension = mediaExtensionFor(logoFileRaw.type);
+    if (!extension) return { status: "error", message: "Logos must be JPEG, PNG, WebP or AVIF images." };
+    if (logoFileRaw.size > 5_000_000) return { status: "error", message: "The logo is larger than 5 MB. Choose a smaller file." };
+    const random = Array.from(crypto.getRandomValues(new Uint8Array(6)), (b) => b.toString(16).padStart(2, "0")).join("");
+    const stem = logoFileRaw.name.replace(/\.[^.]*$/, "").replace(/[^a-z0-9_-]+/gi, "-").replace(/^-+|-+$/g, "").toLowerCase().slice(0, 40) || "logo";
+    const objectKey = `media/business/${new Date().getUTCFullYear()}/${random}-${stem}${extension}`;
+    const written = await putMediaObject("public", objectKey, await logoFileRaw.arrayBuffer(), logoFileRaw.type);
+    if (written.state === "unconfigured") return { status: "error", message: "Image storage is not connected on this deployment yet. Paste a public HTTPS logo link instead, or save without a logo." };
+    if (written.state !== "ready") return { status: "error", message: "The logo could not be stored right now. Remove it and try again in a moment." };
+    logoKey = written.key;
+  }
+  
   let hours: Record<string, string> | null = null;
   const hoursRaw = field("hours_json");
   if (hoursRaw) {
@@ -146,7 +177,7 @@ export async function staffUpdateBusiness(_prev: StaffUpdateState, formData: For
     p_business_id: businessId, p_name: name, p_category_id: categoryId, p_description: description || null,
     p_area: area || null, p_address: address || null, p_landmark: landmark || null, p_phone: phone || null,
     p_whatsapp: whatsapp || null, p_email: email || null, p_website: website || null, p_hours: hours,
-    p_logo_key: logoUrl || null,
+    p_logo_key: logoKey,
   });
   if (error) return { status: "error", message: error.message === "business_category_unavailable" ? "That category is no longer active. Choose another one." : "The listing could not be saved. Check your business.review access, reload and try again." };
   revalidatePath(adminHref("/business-review"));

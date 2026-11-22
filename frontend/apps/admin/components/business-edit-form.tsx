@@ -4,6 +4,7 @@ import { useActionState, useEffect, useRef, useState, type ChangeEvent } from "r
 import { LiveField, SubmitButton, validateField, type FieldRules } from "@epelawa/ui";
 import { staffUpdateBusiness, type StaffUpdateState } from "../app/(protected)/business-review/actions";
 import { pushToast } from "../../main/components/toast";
+import UploadModalField from "./upload-modal-field";
 import BusinessHoursEditor from "../../main/components/business-hours-editor";
 
 type Option = { id: string; label: string };
@@ -61,6 +62,7 @@ export default function BusinessEditForm({ business, categories }: { business: B
         <LiveField label="Email" optional rules={EMAIL_RULES} value={values.email ?? ""} onChange={change}><input name="email" type="email" value={values.email ?? ""} onChange={change} maxLength={254} className="input" /></LiveField>
         <LiveField label="Website (HTTPS)" optional rules={WEBSITE_RULES} value={values.website ?? ""} onChange={change}><input name="website" value={values.website ?? ""} onChange={change} maxLength={2048} className="input" placeholder="https://" /></LiveField>
         <LiveField label="Logo link (HTTPS)" optional rules={WEBSITE_RULES} value={values.logo_url ?? ""} onChange={change}><input name="logo_url" value={values.logo_url ?? ""} onChange={change} maxLength={2048} className="input" placeholder="https://" /></LiveField>
+        <UploadModalField name="logo_file" label="Or upload logo image" accept="image/jpeg,image/png,image/webp,image/avif" hint="JPEG, PNG, WebP or AVIF. The logo uploads through the EPE LAWA server when the listing is saved." description="Choose a logo for this business from your device." />
       </div>
       <BusinessHoursEditor initial={business.hours_json || undefined} name="hours_json" />
       <div className="ui-actions"><SubmitButton pendingLabel="Saving…" disabled={blocked}>Save changes</SubmitButton></div>
