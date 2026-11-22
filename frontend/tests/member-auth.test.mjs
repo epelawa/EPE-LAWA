@@ -50,7 +50,10 @@ test("signup remains guided while member sign-in is one accessible screen", asyn
   assert.match(forms, /data-enhanced=\{flow\.enhanced\}/);
   assert.match(forms, /onSubmit=\{flow\.onSubmit\}/);
   assert.match(forms, /hidden=\{flow\.enhanced && flow\.step !== 1\}/);
-  assert.match(forms, /field\.reportValidity\(\)/);
+  // Step gating now runs the shared live-validation rules, never the browser's popup UI.
+  assert.doesNotMatch(forms, /reportValidity/);
+  assert.match(forms, /AUTH_RULES/);
+  assert.match(forms, /validateField/);
   assert.match(forms, /focus\(\{ preventScroll: true \}\)/);
   assert.match(forms, /aria-live="polite"/);
   assert.match(forms, /role=\{state\.status === "error" \? "alert" : "status"\}/);

@@ -15,6 +15,12 @@ export type DispatchResult =
 
 const API_ROOT = "https://api.github.com";
 
+export function backupDispatchConfigured(): boolean {
+  const token = process.env.BACKUP_DISPATCH_TOKEN?.trim();
+  const repo = process.env.BACKUP_WORKFLOW_REPO?.trim();
+  return Boolean(token && repo && /^[\w.-]+\/[\w.-]+$/.test(repo));
+}
+
 export async function dispatchBackupWorkflow(
   workflowFile: "db-backup.yml" | "db-restore.yml",
   inputs: Record<string, string>,

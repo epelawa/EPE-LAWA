@@ -45,7 +45,7 @@ async function audit(
 
 function describe(result: DispatchResult): ActionState {
   if (result.ok) return { status: "success", message: "Workflow accepted. Track progress in GitHub Actions." };
-  if (result.reason === "unconfigured") return { status: "error", message: "Backup automation is not configured on the server." };
+  if (result.reason === "unconfigured") return { status: "error", message: "Backup automation is not configured on the server. Set BACKUP_DISPATCH_TOKEN and BACKUP_WORKFLOW_REPO in Vercel, then redeploy." };
   if (result.reason === "rejected") return { status: "error", message: "The automation provider rejected this request." };
   return { status: "error", message: "The automation provider is unavailable. Nothing was dispatched." };
 }

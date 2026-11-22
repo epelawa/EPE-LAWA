@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
+import { controlError } from "@epelawa/ui";
 import styles from "./progressive-editor.module.css";
 import Link from "next/link";
 import SessionRecovery, { clearSessionRecovery } from "./session-recovery";
@@ -21,6 +22,7 @@ export default function ProgressiveEditor({ action, feedbackAction, recoveryActo
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState<{status: "error" | "uncertain"; message: string} | null>(null);
   const [step, setStep] = useState(0);
+  const [stepError, setStepError] = useState("");
   const [enhanced, setEnhanced] = useState(false);
   const form = useRef<HTMLFormElement>(null);
   useEffect(() => setEnhanced(true), []);
@@ -29,15 +31,34 @@ export default function ProgressiveEditor({ action, feedbackAction, recoveryActo
     requestAnimationFrame(() => form.current?.querySelector<HTMLElement>(`[data-editor-step="${to}"]`)?.focus());
   }
   function next() {
-    const fields = form.current?.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(`[data-editor-step="${step}"] input, [data-editor-step="${step}"] select, [data-editor-step="${step}"] textarea`);
-    for (const field of Array.from(fields ?? [])) if (!field.reportValidity()) return;
+    const fields = form.current?.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(`[data-editor-step="${step}"] input:not([type=hidden]), [data-editor-step="${step}"] select, [data-editor-step="${step}"] textarea`);
+    for (const control of Array.from(fields ?? [])) {
+      const error = controlError(control);
+      if (error) {
+        setStepError(error);
+        control.setAttribute("aria-invalid", "true");
+        return;
+      }
+    }
+    setStepError("");
     move(Math.min(step + 1, steps.length - 1));
   }
   const percent = Math.round((step + 1) / steps.length * 100);
-  return <form id="article-editor" ref={form} action={action} className="ui-stack" onSubmit={event => {
+  return <form id="article-editor" ref={form} action={action} noValidate className="ui-stack" onSubmit={event => {
     if (!enhanced || !feedbackAction) return;
     event.preventDefault();
     if (saving || saved || saveError?.status === "uncertain") return;
+    const allFields = form.current?.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>("input:not([type=hidden]), select, textarea") ?? [];
+    for (const control of Array.from(allFields)) {
+      const error = controlError(control);
+      if (!error) continue;
+      const owner = Number(control.closest<HTMLElement>("[data-editor-step]")?.dataset.editorStep ?? -1);
+      if (owner >= 0 && owner !== step) move(owner);
+      setStepError(error);
+      control.setAttribute("aria-invalid", "true");
+      return;
+    }
+    setStepError("");
     const data = new FormData(event.currentTarget);
     if (intent) data.set("intent", intent);
     setSaveError(null);
@@ -51,6 +72,6 @@ export default function ProgressiveEditor({ action, feedbackAction, recoveryActo
     <input type="hidden" name="articleId" value={articleId} /><input type="hidden" name="revision" value={revision} />
     {enhanced && <div className={styles.progress} aria-live="polite"><p>Step {step + 1} of {steps.length} · {percent}%</p><div role="progressbar" aria-label="Article edit progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent}><span style={{ width: `${percent}%` }} /></div></div>}
     {steps.map((item, index) => <section key={item.title} data-editor-step={index} tabIndex={-1} hidden={enhanced && index !== step} className={styles.step} aria-label={item.title}><h3>{item.title}</h3>{item.content}</section>)}
-    <div className="ui-actions">{enhanced && step > 0 && <button className="btn-secondary" type="button" onClick={() => move(step - 1)}>Back</button>}{enhanced && step < steps.length - 1 && <button className="btn-primary" type="button" onClick={next}>Continue</button>}<SubmitButton label={submitLabel} intent={intent} busy={saving || saved || saveError?.status === "uncertain"} hidden={enhanced && step !== steps.length - 1} /></div>
+    <div className="ui-actions">{enhanced && step > 0 && <button className="btn-secondary" type="button" onClick={() => move(step - 1)}>Back</button>}{enhanced && step < steps.length - 1 && <button className="btn-primary" type="button" onClick={next}>Continue</button>}{stepError ? <p role="alert" aria-live="polite" className="ep-live-field__message">{stepError}</p> : null}<SubmitButton label={submitLabel} intent={intent} busy={saving || saved || saveError?.status === "uncertain"} hidden={enhanced && step !== steps.length - 1} /></div>
   </form>;
 }

@@ -2,7 +2,7 @@
 
 import { useActionState, useId, useState } from "react";
 // useId is used for the confirmation field id below.
-import { Alert, Button } from "@epelawa/ui";
+import { Alert, SubmitButton } from "@epelawa/ui";
 import { requestBackup, restoreBackup, type ActionState } from "../app/(protected)/backups/actions";
 import type { BackupListResult } from "../lib/backup-r2";
 import styles from "../app/(protected)/backups/backups.module.css";
@@ -25,10 +25,12 @@ export default function BackupControls({
   initial,
   canCreate,
   canRestore,
+  dispatchConfigured = true,
 }: {
   initial: BackupListResult;
   canCreate: boolean;
   canRestore: boolean;
+  dispatchConfigured?: boolean;
 }) {
   const [restoreKey, setRestoreKey] = useState<string | null>(null);
   const confirmId = useId();
@@ -45,15 +47,20 @@ export default function BackupControls({
           </div>
           {canCreate ? (
             <form action={createAction}>
-              <Button type="submit" disabled={createPending}>
-                {createPending ? "Requesting…" : "Backup now"}
-              </Button>
+              <SubmitButton pendingLabel="Requesting…" disabled={createState.status === "success"}>
+                Backup now
+              </SubmitButton>
             </form>
           ) : null}
         </div>
         <p className={styles.muted}>
           Streams a full database dump to private R2 from GitHub Actions. The database connection string never leaves the workflow.
         </p>
+        {!dispatchConfigured ? (
+          <Alert variant="warning">
+            <strong>Dispatch automation needs two server variables in Vercel:</strong> <code>BACKUP_DISPATCH_TOKEN</code> (a GitHub token with <em>actions:write</em> on the repository) and <code>BACKUP_WORKFLOW_REPO</code> (set it to <code>epelawa/EPE-LAWA</code>). Redeploy after saving; the workflows themselves already carry the database and R2 secrets.
+          </Alert>
+        ) : null}
         {createState.status !== "idle" ? (
           <Alert variant={createState.status === "success" ? "success" : "error"}>{createState.message}</Alert>
         ) : null}
@@ -130,9 +137,9 @@ export default function BackupControls({
               disabled={restorePending}
               placeholder="Paste the full key above"
             />
-            <Button type="submit" variant="secondary" disabled={restorePending}>
-              {restorePending ? "Dispatching…" : "Restore from this backup"}
-            </Button>
+            <SubmitButton variant="secondary" pendingLabel="Dispatching…">
+              Restore from this backup
+            </SubmitButton>
           </form>
           {restoreState.status !== "idle" ? (
             <Alert variant={restoreState.status === "success" ? "success" : "error"}>{restoreState.message}</Alert>

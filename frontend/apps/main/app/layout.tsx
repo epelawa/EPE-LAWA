@@ -1,6 +1,7 @@
 import "@fontsource-variable/plus-jakarta-sans";
 import "@epelawa/ui/tokens.css";
 import "@epelawa/ui/ui.css";
+import "@epelawa/ui/forms.css";
 import "./globals.css";
 import "./native-controls.css";
 
@@ -65,12 +66,23 @@ async function AuthenticatedMobileNavigation() {
   }
 }
 
+function publicOrigin(raw: string | undefined): string | null {
+  if (!raw) return null;
+  try { return new URL(raw).origin; } catch { return null; }
+}
+
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   const siteLanguage = await readSiteLanguage();
   return (
     <html lang={siteLanguage === "yo" ? "yo" : "en"} data-theme="light" style={{ colorScheme: "light" }} suppressHydrationWarning>
       <body>
+        {publicOrigin(process.env.NEXT_PUBLIC_SUPABASE_URL) ? (
+          <link rel="preconnect" href={publicOrigin(process.env.NEXT_PUBLIC_SUPABASE_URL) as string} crossOrigin="anonymous" />
+        ) : null}
+        {publicOrigin(process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL) ? (
+          <link rel="preconnect" href={publicOrigin(process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL) as string} crossOrigin="anonymous" />
+        ) : null}
         <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeScript }} />
         <AuthCallbackErrorRouter />
         <SiteMotion />
