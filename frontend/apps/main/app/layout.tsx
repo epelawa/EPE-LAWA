@@ -17,7 +17,7 @@ import FloatingSupport from "../components/floating-support";
 import NewsFooter from "../components/news-footer";
 import SiteFooter from "../components/site-footer";
 import { mainNavigation } from "../lib/navigation";
-import { isIndexingAllowed, siteUrl } from "../lib/site";
+import { isIndexingAllowed, siteUrl, verificationTags } from "../lib/site";
 import { themeScript } from "../lib/theme";
 import SiteMotion from "../components/site-motion";
 import ScrollToTop from "../components/scroll-to-top";
@@ -34,11 +34,14 @@ import SlashFocus from "../components/slash-focus";
 const description =
   "News, community history, local discussion, maps, local business, tourism, radio and Who-is-Who for Epe Division.";
 
+const verification = verificationTags();
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: { default: "EPE LAWA — The Voice of Epe Division", template: "%s | EPE LAWA" },
   description,
   robots: isIndexingAllowed() ? undefined : { index: false, follow: false },
+  ...(verification.present ? { verification: verification.tags } : {}),
   alternates: { canonical: "/", types: { "application/rss+xml": "/feed.xml" } },
   openGraph: {
     type: "website",
@@ -65,12 +68,28 @@ async function AuthenticatedMobileNavigation() {
   }
 }
 
+function preconnectOrigins(): string[] {
+  const origins = new Set<string>();
+  try {
+    const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (supabase) origins.add(new URL(supabase).origin);
+  } catch { /* ignore malformed configuration */ }
+  try {
+    const r2 = process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL;
+    if (r2) origins.add(new URL(r2).origin);
+  } catch { /* ignore malformed configuration */ }
+  return [...origins];
+}
+
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   const siteLanguage = await readSiteLanguage();
   return (
     <html lang={siteLanguage === "yo" ? "yo" : "en"} data-theme="light" style={{ colorScheme: "light" }} suppressHydrationWarning>
       <body>
+        {preconnectOrigins().map((origin) => (
+          <link key={origin} rel="preconnect" href={origin} crossOrigin="anonymous" />
+        ))}
         <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeScript }} />
         <AuthCallbackErrorRouter />
         <SiteMotion />

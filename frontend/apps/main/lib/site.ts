@@ -34,6 +34,20 @@ export function absoluteUrl(pathname: string): string {
   return new URL(pathname, siteUrl).toString();
 }
 
+export type VerificationTags = { google?: string; yandex?: string; other?: Record<string, string> };
+
+/** Search-console verification tokens; absent variables contribute nothing. */
+export function verificationTags(): { tags: VerificationTags; present: boolean } {
+  const google = process.env.GOOGLE_SITE_VERIFICATION?.trim() || undefined;
+  const yandex = process.env.YANDEX_SITE_VERIFICATION?.trim() || undefined;
+  const bing = process.env.BING_SITE_VERIFICATION?.trim() || undefined;
+  const tags: VerificationTags = {};
+  if (google) tags.google = google;
+  if (yandex) tags.yandex = yandex;
+  if (bing) tags.other = { "msvalidate.01": bing };
+  return { tags, present: Object.keys(tags).length > 0 };
+}
+
 /**
  * Indexing gate.
  *
