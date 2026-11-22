@@ -18,7 +18,7 @@ import FloatingSupport from "../components/floating-support";
 import NewsFooter from "../components/news-footer";
 import SiteFooter from "../components/site-footer";
 import { mainNavigation } from "../lib/navigation";
-import { isIndexingAllowed, siteUrl } from "../lib/site";
+import { isIndexingAllowed, siteUrl, verificationTags } from "../lib/site";
 import { themeScript } from "../lib/theme";
 import SiteMotion from "../components/site-motion";
 import ScrollToTop from "../components/scroll-to-top";
@@ -35,11 +35,14 @@ import SlashFocus from "../components/slash-focus";
 const description =
   "News, community history, local discussion, maps, local business, tourism, radio and Who-is-Who for Epe Division.";
 
+const verification = verificationTags();
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: { default: "EPE LAWA — The Voice of Epe Division", template: "%s | EPE LAWA" },
   description,
   robots: isIndexingAllowed() ? undefined : { index: false, follow: false },
+  ...(verification.present ? { verification: verification.tags } : {}),
   alternates: { canonical: "/", types: { "application/rss+xml": "/feed.xml" } },
   openGraph: {
     type: "website",

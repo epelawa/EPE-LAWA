@@ -16,6 +16,8 @@ import { HomeSectionReveal } from "../components/home-sections";
 import SitePoll from "../components/site-poll";
 import HomeLivePill from "../components/home-live-pill";
 import { readSiteLanguage, t } from "../lib/i18n";
+import StructuredData from "../components/structured-data";
+import { organizationSchema, websiteSchema } from "../lib/structured-data";
 
 export default async function Home() {
   const renderedAt = Date.now();
@@ -25,6 +27,7 @@ export default async function Home() {
 
   return (
     <div className="public-home">
+      <StructuredData data={[websiteSchema(), organizationSchema()]} />
       <section className="home-hero" aria-labelledby="home-title">
         <HeroCarousel>
           <div className="home-hero__content ep-container">
