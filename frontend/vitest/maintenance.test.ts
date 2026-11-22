@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { isGateExempt, maintenanceHtml, maintenanceState } from "../apps/main/lib/maintenance";
+import { isGateExempt, maintenanceHtml, maintenanceState, resetMaintenanceStateCache } from "../apps/main/lib/maintenance";
 // Load Next's server runtime once at module scope. Under a full suite the cold
 // import costs several seconds and must not be charged to the test timeout;
 // the request behaviour asserted below is unchanged.
@@ -16,6 +16,20 @@ describe("maintenance gate",()=>{
   expect(await maintenanceState(env,fetcher)).toBe("on");expect(await maintenanceState(env,fetcher)).toBe("off");expect(await maintenanceState(env,fetcher)).toBe("unavailable");expect(await maintenanceState(env,fetcher)).toBe("unavailable");
   expect(fetcher.mock.calls[0][1]).toMatchObject({cache:"no-store",method:"POST"});
   expect(await maintenanceState({...env,MAINTENANCE_GATE_ENABLED:"false"},fetcher)).toBe("off");
+ });
+ it("treats an unset gate flag as enabled and caches global-fetch results briefly",async()=>{
+  resetMaintenanceStateCache();
+  const globalFetch = vi.fn().mockResolvedValue(new Response("true"));
+  vi.stubGlobal("fetch", globalFetch);
+  try {
+   const withoutFlag = {...env}; delete withoutFlag.MAINTENANCE_GATE_ENABLED;
+   expect(await maintenanceState(withoutFlag)).toBe("on");
+   expect(await maintenanceState(withoutFlag)).toBe("on");
+   expect(globalFetch).toHaveBeenCalledTimes(1);
+   resetMaintenanceStateCache();
+   vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("false")));
+   expect(await maintenanceState(withoutFlag)).toBe("off");
+  } finally { vi.unstubAllGlobals(); resetMaintenanceStateCache(); }
  });
  it("varies the illustration without revealing staff access",()=>{
   const pages=[0,1,2,3].map(maintenanceHtml);expect(new Set(pages.map(p=>p.match(/\/maintenance\/\w+\.webp/)?.[0])).size).toBe(4);
