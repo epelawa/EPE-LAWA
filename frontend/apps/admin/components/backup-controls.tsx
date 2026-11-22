@@ -76,7 +76,9 @@ export default function BackupControls({
         </div>
 
         {initial.state === "unconfigured" ? (
-          <Alert variant="warning">Backup storage is not configured on the server. Set the server-only R2 variables to list backups.</Alert>
+          <Alert variant="warning">
+            Backup storage is not configured on the server. Missing variables: {initial.missing.join(", ")}. Set them in Vercel for the admin app, then reload this page.
+          </Alert>
         ) : initial.state === "unavailable" ? (
           <Alert variant="error">Backup metadata could not be read right now. No action was taken.</Alert>
         ) : initial.backups.length === 0 ? (

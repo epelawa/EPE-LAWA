@@ -80,13 +80,13 @@ Cross-cutting: member signup/OTP email verification/login/recovery, secure separ
 | --- | --- |
 | Hosting | Vercel; verified live on `https://epelawa.vercel.app` (preview deploys per PR). |
 | Database/auth | Supabase `igqmybuiovaxqmrteebd` (eu-west-3), live and used for all reads/writes. |
-| R2 image uploads | **Pending PR/deployment:** application image writes use the Cloudflare REST API and current `r2.dev` setup; server-side optimization normalizes accepted raster images to metadata-stripped WebP, caps dimensions at 2048px and stored output at 900 KiB. Avatar preview payloads are capped at 200 KiB. Existing R2 objects have not been rewritten. |
+| R2 image uploads | **Shipped (merged via PR #249, 2026-11-22):** application image writes use the Cloudflare REST API and current `r2.dev` setup; server-side optimization normalizes accepted raster images to metadata-stripped WebP, caps dimensions at 2048px and stored output at 900 KiB. Avatar preview payloads are capped at 200 KiB. Existing R2 objects have not been rewritten. |
 | Advert payment | **Manual** for now (owner decision). No PSP in the app. |
 | Transactional email | Supabase Auth mail hook with branded PNG-logo template. Newsletter SMTP (`NEWSLETTER_SMTP_*`, `NEWSLETTER_FROM`) not yet configured/verified — the digest composer deliberately copies text for manual sending. |
 | Payments | Removed. Never claim live payment behavior. |
 | Maps | Outbound search/directions URLs only; no API key. |
 | Analytics | Admin analytics from real queries (`article_views`, `business_contact_clicks`, `profiles`); unavailable ≠ zero. |
-| Backup metadata listing | **Pending PR/deployment:** Cloudflare’s R2 `result` array and `last_modified` field are parsed; `.sha256` sidecars are excluded, and cursor pages are followed (up to five). If the safety bound is exceeded, the page reports unavailable rather than showing a partial inventory. Dispatch configuration is separate; the required variable names were last verified absent on 2026-11-21, and no backup was dispatched. |
+| Backup metadata listing | **Shipped (merged via PR #249, 2026-11-22):** Cloudflare’s R2 `result` array and `last_modified` field are parsed; `.sha256` sidecars are excluded, and cursor pages are followed (up to five). If the safety bound is exceeded, the page reports unavailable rather than showing a partial inventory. **Configuration on Vercel is the remaining owner step:** the admin app needs `R2_ACCOUNT_ID`, `R2_BUCKET_PRIVATE`, `CLOUDFLARE_API_TOKEN` (listing) and `BACKUP_DISPATCH_TOKEN`, `BACKUP_WORKFLOW_REPO` (dispatch; `BACKUP_WORKFLOW_REF` optional) as server-only variables. The backups desk and settings desk now name exactly which of these are missing. |
 
 ## 7. Staff destinations (canonical map)
 
