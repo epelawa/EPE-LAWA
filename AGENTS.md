@@ -4,17 +4,17 @@ Read `docs/00-master-plan.md` first — it is the single consolidated source of 
 
 ## 1. Current scope
 
-The current release includes all eight client-approved web areas (sections 3.1–3.8): Trending News; Itan Ilu Mi / My Community History; Chat Forum / Digital Village Square; Map & Navigation; Epe Business Directory & Marketplace; Historical Sites & Tourism; EPE LAWA Radio; and Who is Who in Epe. Cross-cutting requirements: member signup/email verification/login/recovery, secure staff sessions and capabilities, admin analytics, news publishing, branded transactional email templates, audit, privacy, accessibility and full Playwright testing. Native mobile apps alone are deferred. Keep all six section 5 future enhancements in the full roadmap, distinct from the eight current web areas.
+The current release includes all eight client-approved web areas (sections 3.1–3.8): Trending News; Itan Ilu Mi / My Community History; Chat Forum / Digital Village Square; Map & Navigation; Epe Business Directory; Historical Sites & Tourism; EPE LAWA Radio; and Who is Who in Epe. Cross-cutting requirements: member signup/email verification/login/recovery, secure staff sessions and capabilities, admin analytics, news publishing, branded transactional email templates, audit, privacy, accessibility and full Playwright testing. Native mobile apps alone are deferred. Keep all six section 5 future enhancements in the full roadmap, distinct from the eight current web areas.
 
 ## 2. Truthfulness and privacy
 
-Never invent local facts, history, people, businesses, prices, reviews, map locations, metrics or article content. Use approved public records only; distinguish loading, empty, error and denied states. A trend requires real signals; a verification badge requires recorded human review. Current map code builds safe outbound Google Maps search/directions URLs only; there is no configured Maps API key or verified Places/geocoding integration. Offline maps are optional future work. Do not claim email or Paystack providers are operational without evidence.
+Never invent local facts, history, people, businesses, prices, reviews, map locations, metrics or article content. Use approved public records only; distinguish loading, empty, error and denied states. A trend requires real signals; a verification badge requires recorded human review. Current map code builds safe outbound Google Maps search/directions URLs only; there is no configured Maps API key or verified Places/geocoding integration. Offline maps are optional future work. Do not claim email providers are operational without evidence. Selling, checkout and in-app payments are REMOVED from the product by owner decision (2026-11): advertisements are paid manually off-platform, so no selling/payment code, provider references or env vars may be reintroduced without a new owner decision.
 
-Test content stays private in isolated environments. Production is read-only: no test articles or other test writes. Never expose private member data. Commerce/payments are removed from scope by owner decision; advert placements are paid manually.
+Test content stays private in isolated environments. Production is read-only: no test articles or other synthetic writes. Never expose private member or verification data.
 
 ## 3. Identity, authorization and publishing
 
-Authorization is enforced server-side and in database policies; hiding a button is not authorization. Staff and member sessions are separate. Protected staff actions require a verified staff session and a fresh capability check. An active verified staff member with `article.publish` may publish directly; no second reviewer is required. Every transition uses the expected revision, rejects stale revisions and is audited. Never trust browser-supplied prices or payment state; payment flows remain unavailable until provider setup and isolated testing are evidenced.
+Authorization is enforced server-side and in database policies; hiding a button is not authorization. Staff and member sessions are separate. Protected staff actions require a verified staff session and a fresh capability check. An active verified staff member with `article.publish` may publish directly; no second reviewer is required. Every transition uses the expected revision, rejects stale revisions and is audited. Site contact identity is "Epe Lawa" with inbox `info.epelawa@gmail.com`, sourced only from `frontend/apps/main/lib/site-identity.ts`.
 
 ## 4. Verification and delivery
 
@@ -36,4 +36,4 @@ Use Sckooly’s public-site structure as reference, with original EPE-LAWA brand
 
 ## 8. Documentation
 
-Keep `docs/00-master-plan.md` truthful and current; `[x]`-style status claims require named evidence. Archive/historical database inventory may mention legacy objects factually, but must not present them as current release features.
+Keep `docs/00-master-plan.md` truthful and current; status claims require named evidence. Archive/historical database inventory may mention legacy objects factually, but must not present them as current release features.

@@ -58,6 +58,7 @@ Cross-cutting: member signup/OTP email verification/login/recovery, secure separ
 ## 4. Security and permissions
 
 - Authorization enforced server-side and in RLS policy — hiding a button is not authorization. Staff and member sessions are separate; staff actions re-check capability fresh per action.
+- Public contact identity is "Epe Lawa" with inbox `info.epelawa@gmail.com`, sourced only from `frontend/apps/main/lib/site-identity.ts`.
 - Editing staff member with `article.publish` publishes directly; revision transitions validate `expectedRevision`, reject stale values, and audit.
 - Form actions return `{status, message}` states; RPC errors mapped to honest member-facing messages.
 - Member security: email verified at signup (OTP), password change re-verifies the current password via `signInWithPassword` then `auth.updateUser`, sign-out-everywhere on demand.
@@ -110,6 +111,11 @@ Compiled from code state on 2026-11-23, not from stale checklists:
 13. **Offline maps** — optional future work; needs owner decision.
 14. **Radio playback verification** — official stream URL, rights/permission, browser playback testing.
 15. **Admin analytics breadth** — add forum/thread activity + events/radio-request metrics when data volume justifies.
+16. **Push notifications** — dashboard components exist but are unmounted; no `sw.js` or subscribe route. Backend subscription capability is live; needs owner decision + front-end finish.
+17. **AI Scheduler** — admin nav entry is `comingSoon`; no feature behind it. Build it or retire the entry.
+18. **Live radio stream** — schedule/on-air/`.ics` shipped; the live stream depends on the Guts FM rights decision (O12).
+19. **Who is Who human verification evidence** (O9) — verification badges require recorded human review.
+20. **Branch protection on `main`** — false (free-plan private repo; enable via GitHub Pro or public repo).
 
 ## 9. Known honest limitations
 
@@ -131,4 +137,5 @@ Compiled from code state on 2026-11-23, not from stale checklists:
 
 - **Foundation:** eight web areas, auth/staff sessions, editorial workflow, schema rollout, business directory, tourism, radio player, who-is-who.
 - **2026-11-20/21:** master audit + migration reconciliation (34 applied / 12 not applied / 9 broken classification), maintenance mode, security headers/health endpoint, visual tokens.
+- **Earlier 2026-11-23 batch (PR #243, on main):** site-wide search, RSS feed, forum sort, related destinations, radio on-air + schedule .ics, gallery lightbox, business opening hours, member avatar upload (R2), sign-out-everywhere, profile strength, CSV export, Lagos timestamps, print styles, web app manifest, share-on-X, sitemap lastmod, and the "suggest a correction" flow (member modal + staff corrections desk, migrations `20261123010000`/`20261123020000` + site identity module). Upload pickers as blur-backdrop popup modals (PR #242); CSP with per-request nonce (PR #241); orders/selling/payments UI removal (PR #240).
 - **Feature program (this branch, 2026-11-23):** Paystack/orders/storefront removal (code + env + UI); comment helpful votes; topic follows + notifications; article tags end-to-end (incl. `published_articles.tags` fix); author byline pages; site poll + admin composer + public results; business gallery/claims/click tracking/featured slots; community events calendar + ICS; radio archive + song-request desk; dashboard security card; moderation appeals (member + staff); staff analytics; Yoruba starter toggle; revision diff viewer; weekly digest composer; new admin nav group; `.webp` asset pass (public dir 37MB→8MB, unused 22MB hero originals deleted); docs consolidated into this file; `manus-routes.json` refreshed.
