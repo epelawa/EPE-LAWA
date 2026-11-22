@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "../../lib/supabase";
-import { storeAvatarDataUrl } from "../../lib/media-r2";
+import { deleteMediaObject, storeAvatarDataUrl } from "../../lib/media-r2";
 
 export type MemberProfileState = {
   status: "idle" | "success" | "error";
@@ -70,8 +70,17 @@ export async function updateMemberAvatar(_state: MemberProfileState, data: FormD
       if (stored.error === "unavailable") return { status: "error", message: "The photo could not be stored right now. Try again in a moment." };
       return { status: "error", message: "That image could not be used. Choose a JPEG, PNG or WebP image smaller than 5 MB." };
     }
-    const { error } = await supabase.from("profiles").update({ avatar_key: stored.key }).eq("user_id", user.id);
-    if (error) return { status: "error", message: genericError };
+    const { data: updated, error } = await supabase
+      .from("profiles")
+      .update({ avatar_key: stored.key })
+      .eq("user_id", user.id)
+      .select("avatar_key")
+      .maybeSingle();
+    if (error || !updated) {
+      console.error("member avatar profile update failed", { code: error?.code ?? "no_profile_row" });
+      await deleteMediaObject(stored.key);
+      return { status: "error", message: genericError };
+    }
     revalidatePath("/dashboard");
     return { status: "success", message: "Your profile photo has been saved." };
   } catch (error) {

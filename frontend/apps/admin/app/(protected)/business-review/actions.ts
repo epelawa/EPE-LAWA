@@ -68,7 +68,7 @@ export async function staffCreateBusiness(_prev: StaffCreateState, formData: For
     const written = await putMediaObject("public", objectKey, await logoFileRaw.arrayBuffer(), logoFileRaw.type);
     if (written.state === "unconfigured") return { status: "error", message: "Image storage is not connected on this deployment yet. Paste a public HTTPS logo link instead, or publish without a logo." };
     if (written.state !== "ready") return { status: "error", message: "The logo could not be stored right now. Remove it and try again in a moment." };
-    logoKey = objectKey;
+    logoKey = written.key;
   }
   let hours: Record<string, string> | null = null;
   const hoursRaw = field("hours_json");

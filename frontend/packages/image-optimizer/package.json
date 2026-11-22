@@ -1,0 +1,12 @@
+{
+  "name": "@epelawa/image-optimizer",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    "./optimize": "./src/optimize.ts"
+  },
+  "dependencies": {
+    "sharp": "^0.35.5"
+  }
+}
