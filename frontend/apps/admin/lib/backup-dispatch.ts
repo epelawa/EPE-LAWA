@@ -11,7 +11,8 @@ import "server-only";
 
 export type DispatchResult =
   | { ok: true }
-  | { ok: false; reason: "unconfigured" | "rejected" | "unavailable" };
+  | { ok: false; reason: "unconfigured"; missing: string[] }
+  | { ok: false; reason: "rejected" | "unavailable" };
 
 const API_ROOT = "https://api.github.com";
 
@@ -24,7 +25,11 @@ export async function dispatchBackupWorkflow(
   const ref = process.env.BACKUP_WORKFLOW_REF?.trim() || "main";
 
   if (!token || !repo || !/^[\w.-]+\/[\w.-]+$/.test(repo)) {
-    return { ok: false, reason: "unconfigured" };
+    const missing = [
+      "BACKUP_DISPATCH_TOKEN",
+      "BACKUP_WORKFLOW_REPO",
+    ].filter(name => !({ BACKUP_DISPATCH_TOKEN: token, BACKUP_WORKFLOW_REPO: repo }[name]));
+    return { ok: false, reason: "unconfigured", missing };
   }
   if (workflowFile !== "db-backup.yml" && workflowFile !== "db-restore.yml") {
     return { ok: false, reason: "rejected" };
