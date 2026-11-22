@@ -23,7 +23,6 @@ async function textFiles(directory) {
 test('web apps keep Coming Soon labels limited to explicit unavailable-state disclosures', async () => {
   const files = await textFiles(appsRoot);
   const allowed = new Set([
-    'admin/app/(protected)/ai-scheduler/page.tsx',
     'admin/components/admin-sidebar.tsx',
     'main/app/about/page.tsx',
     'main/app/auth/auth-forms.tsx',

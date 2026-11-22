@@ -22,9 +22,9 @@ type NewsroomArticle = {
 };
 
 /** Admin newsroom — private articles and their current publication state. */
-export default async function NewsroomPage({ searchParams }: { searchParams: Promise<{ state: string; deleted: string; error: string }> }) {
+export default async function NewsroomPage({ searchParams }: { searchParams: Promise<{ state: string; deleted: string; error: string; compose: string }> }) {
   const supabase = await createClient();
-  const { state: requestedState, deleted, error: errorFlag } = await searchParams;
+  const { state: requestedState, deleted, error: errorFlag, compose } = await searchParams;
   const allowedStates = new Set(["draft", "review", "approved", "rejected", "published"]);
   const state = requestedState && allowedStates.has(requestedState) ? requestedState : undefined;
 
@@ -71,7 +71,7 @@ export default async function NewsroomPage({ searchParams }: { searchParams: Pro
   return (
     <PageFrame className="ui-stack">
       <PageIntro eyebrow="Staff workspace · Editorial" title="Newsroom" actions={(canEdit && (categoryList.data ?? []).length > 0 && (authorList.data ?? []).length > 0) ? (
-        <ComposerModal triggerLabel="Upload an article" title="Publish an article">
+        <ComposerModal triggerLabel="Upload an article" title="Publish an article" defaultOpen={compose === "1"}>
           <NewsArticleComposer
             categories={(categoryList.data ?? []) as { id: string; label: string }[]}
             authors={(authorList.data ?? []) as { id: string; display_name: string }[]}
@@ -101,7 +101,7 @@ export default async function NewsroomPage({ searchParams }: { searchParams: Pro
           const stateLabel = currentIsPublic ? "published" : version?.state ?? "unknown";
           const tone = stateLabel === "published" || stateLabel === "approved" ? "success" : stateLabel === "rejected" ? "danger" : stateLabel === "review" ? "warning" : "neutral";
           return <li key={article.id} className={styles.card}><h3 className={styles.title}>{version?.title || "Untitled article"}</h3><div className={styles.meta}><StatusBadge tone={tone}>{stateLabel}</StatusBadge><time dateTime={article.updated_at}>Updated {new Date(article.updated_at).toLocaleDateString("en-NG")}</time></div>{article.published_version_id && !currentIsPublic ? <span className="ui-meta">Earlier version is public</span> : null}<div className={styles.actions}><Link href={adminHref(`/newsroom/${article.id}`)} className={buttonClassName("secondary")}>Open article</Link>{canEdit ? <Link href={`${adminHref(`/newsroom/${article.id}`)}#article-editor`} className={buttonClassName("secondary")}>Edit article</Link> : null}{canDelete ? <div className={styles.deleteDisclosure}><form action={deleteArticle} className={styles.deleteConfirm}><input type="hidden" name="articleId" value={article.id} /><label className="ui-row"><input type="checkbox" name="confirmDelete" value="yes" required /> Delete everywhere, for good.</label><button className={buttonClassName("danger")} type="submit">Yes, delete forever</button><span className="ui-meta">Removes the story, its versions and its comments from the database.</span></form></div> : null}</div></li>;
-        })}</ul> : <EmptyPanel title={state ? `No ${state} articles` : "No articles yet"} description={state ? "No article currently matches this state." : "Publish your first article — it appears on the public site the moment you save it."} actions={!state ? <Link href={adminHref("/newsroom/new")} className={buttonClassName("primary")}>Upload an article</Link> : undefined} />}
+        })}</ul> : <EmptyPanel title={state ? `No ${state} articles` : "No articles yet"} description={state ? "No article currently matches this state." : "Publish your first article — it appears on the public site the moment you save it."} actions={!state ? <Link href={canEdit && (categoryList.data ?? []).length > 0 && (authorList.data ?? []).length > 0 ? `${adminHref("/newsroom")}?compose=1` : adminHref("/newsroom/new")} className={buttonClassName("primary")}>Upload an article</Link> : undefined} />}
       </section>
     </PageFrame>
   );

@@ -48,7 +48,6 @@ const staffPages: NavItem[] = [
   { label: "Legal pages", href: "/legal-pages", hint: "Maintain the Privacy, Terms and Guidelines notes", group: "Administration" },
   { label: "Gallery & media", href: "/media", hint: "Public photo archive and media records", group: "Administration" },
   { label: "Backups", href: "/backups", hint: "Database backups and restore in R2", group: "Administration" },
-  { label: "AI Scheduler", href: "/ai-scheduler", hint: "Automated story scheduling", comingSoon: true, group: "Administration" },
   { label: "Settings", href: "/settings", hint: "Deployment configuration and setup", group: "Administration" },
 ];
 
