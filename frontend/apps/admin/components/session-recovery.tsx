@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type RefObject } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 
 // An opt-in, tab-local convenience, not a server draft or a security boundary.
 const FIELDS = ["title", "summary", "body", "categoryId", "authorId", "coverUrl", "coverAlt", "coverCredit", "coverSourceUrl", "coverLicenseUrl", "coverCaption", "seoTitle", "seoDescription"] as const;
@@ -35,10 +35,14 @@ function apply(form: HTMLFormElement, fields: Record<string, string>) {
   return unavailable;
 }
 
-export default function SessionRecovery({ form, actor, article, revision, saved = false }: { form: RefObject<HTMLFormElement | null>; actor?: string; article: string; revision: string; saved?: boolean }) {
+export type DraftSaveState = "saving" | "saved" | "error";
+
+export default function SessionRecovery({ form, actor, article, revision, saved = false, onDraftState }: { form: RefObject<HTMLFormElement | null>; actor?: string; article: string; revision: string; saved?: boolean; onDraftState?: (state: DraftSaveState, savedAt?: number) => void }) {
   const [enabled, setEnabled] = useState(false);
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [message, setMessage] = useState("");
+  const draftStateRef = useRef(onDraftState);
+  draftStateRef.current = onDraftState;
   const key = actor ? recoveryKey(actor, article) : "";
   useEffect(() => { if (key) setSnapshot(read(key)); }, [key]);
   useEffect(() => {
@@ -49,11 +53,12 @@ export default function SessionRecovery({ form, actor, article, revision, saved 
       const fields: Record<string, string> = {};
       const data = new FormData(el!);
       for (const field of FIELDS) { const value = data.get(field); if (typeof value === "string") fields[field] = value; }
-      try { sessionStorage.setItem(key, JSON.stringify({ version: 1, savedAt: Date.now(), revision, fields })); setMessage("Recovery copy saved in this tab; it has not been saved to the newsroom."); }
-      catch { setEnabled(false); setMessage("Browser recovery is unavailable. Copy your work somewhere safe before leaving."); }
+      const savedAt = Date.now();
+      try { sessionStorage.setItem(key, JSON.stringify({ version: 1, savedAt, revision, fields })); setMessage("Recovery copy saved in this tab; it has not been saved to the newsroom."); draftStateRef.current?.("saved", savedAt); }
+      catch { setEnabled(false); setMessage("Browser recovery is unavailable. Copy your work somewhere safe before leaving."); draftStateRef.current?.("error"); }
     }
-    function schedule() { clearTimeout(timer); timer = setTimeout(save, 500); }
-    el.addEventListener("input", schedule); el.addEventListener("change", schedule);
+    function schedule() { clearTimeout(timer); draftStateRef.current?.("saving"); timer = setTimeout(save, 500); }
+        el.addEventListener("input", schedule); el.addEventListener("change", schedule);
     return () => { clearTimeout(timer); el.removeEventListener("input", schedule); el.removeEventListener("change", schedule); };
   }, [enabled, form, key, revision, saved]);
   if (!actor || saved) return null;

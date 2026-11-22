@@ -10,9 +10,20 @@ import type { NavItem } from "../lib/navigation";
 import { signOutStaffSameOrigin } from "../lib/session-actions";
 import { BrandLockup } from "./brand";
 import QueueLiveCounts from "./queue-live-counts";
+import { useLiveQueueCounts, type QueueCounts } from "./use-live-queue-counts";
 
 const isCurrent = (path: string, href: string) =>
   href === "/" ? path === "/" : path === href || path.startsWith(`${href}/`);
+
+const BADGE_KEYS: Partial<Record<string, keyof QueueCounts>> = {
+  "/business-review": "submissions",
+  "/people": "corrections",
+  "/enquiries": "enquiries",
+  "/events": "events",
+  "/radio/requests": "songRequests",
+  "/appeals": "appeals",
+  "/moderation/forum": "forumReports",
+};
 
 export default function AdminSidebar({
   items,
@@ -43,6 +54,13 @@ export default function AdminSidebar({
     }
   }, [open]);
   const sections = groupedNavigation(items);
+  const { counts, flick } = useLiveQueueCounts();
+  const badgeFor = (href: string) => {
+    const key = BADGE_KEYS[href];
+    if (!key || !counts || typeof counts[key] !== "number" || (counts[key] as number) <= 0) return null;
+    return counts[key] as number;
+  };
+  const flickFor = (href: string) => flick !== null && BADGE_KEYS[href] === flick;
   const displayName = userEmail && userEmail.trim() ? userEmail : "Staff";
   const close = () => {
     setOpen(false);
@@ -75,6 +93,7 @@ export default function AdminSidebar({
                   onClick={onNavigate}
                 >
                   <span className="admin-sidebar__label">{item.label}</span>
+                  {badgeFor(item.href) !== null ? <sup className={flickFor(item.href) ? "admin-sidebar__badge admin-sidebar__badge--hot" : "admin-sidebar__badge"} aria-label={`${badgeFor(item.href)} waiting`} title={`${badgeFor(item.href)} waiting on you`}>{badgeFor(item.href)}</sup> : null}
                   {item.comingSoon ? <span className="admin-sidebar__soon">Coming soon</span> : null}
                 </Link>
               </li>
