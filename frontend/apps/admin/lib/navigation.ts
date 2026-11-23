@@ -61,6 +61,54 @@ export function staffNavigation(canManageStaff: boolean): NavItem[] {
   return canManageStaff ? [...sectionPages, ...staffPages] : sectionPages;
 }
 
+/**
+ * Maps navigation items to required capabilities
+ */
+const itemCapabilities: Record<string, string[]> = {
+  "/": [],
+  "/analytics": ["audit.read"],
+  "/newsroom": ["article.create", "article.review", "article.publish"],
+  "/itan-ilu-mi/review": ["article.create"],
+  "/radio": ["radio.manage"],
+  "/corrections": ["article.review"],
+  "/digest": ["article.publish"],
+  "/poll": ["article.publish"],
+  "/events": ["article.publish"],
+  "/radio/requests": ["radio.manage"],
+  "/moderation/forum": ["moderation.review"],
+  "/moderation/comments": ["moderation.review"],
+  "/business-review": ["business.review"],
+  "/business-review/moderation": ["business.review"],
+  "/tourism": ["article.publish"],
+  "/people": ["people.manage"],
+  "/ads": ["article.publish"],
+  "/appeals": ["moderation.review"],
+  "/enquiries": ["moderation.review"],
+  "/members": ["staff.manage"],
+  "/users": ["staff.manage"],
+  "/roles": ["staff.roles.manage"],
+  "/broadcast": ["staff.manage"],
+  "/site-pages": ["staff.manage"],
+  "/legal-pages": ["staff.manage"],
+  "/media": ["staff.manage"],
+  "/backups": ["staff.manage"],
+  "/settings": ["staff.manage"],
+  "/settings/cron": ["staff.manage"],
+};
+
+export function filterNavigationByCapabilities(
+  items: NavItem[],
+  capabilities: string[]
+): NavItem[] {
+  const hasAllCapabilities = capabilities.includes("admin.access");
+  if (hasAllCapabilities) return items;
+  return items.filter((item) => {
+    const requiredCaps = itemCapabilities[item.href] || [];
+    if (requiredCaps.length === 0) return true;
+    return requiredCaps.some((cap) => capabilities.includes(cap));
+  });
+}
+
 export function groupedNavigation(items: NavItem[]): NavSection[] {
   return GROUP_ORDER
     .map((label) => ({ label, items: items.filter((item) => item.group === label) }))
