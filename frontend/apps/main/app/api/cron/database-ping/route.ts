@@ -127,7 +127,7 @@ export async function POST(request: Request): Promise<NextResponse> {
  * GET - Get database ping status
  * Returns the last ping result
  */
-export async function GET(): Promise<NextResponse> {
+export async function GET(request: Request): Promise<NextResponse> {
   const cronSecret = process.env.CRON_SECRET;
   const authHeader = request.headers.get("x-cron-secret");
   
