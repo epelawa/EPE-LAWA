@@ -43,9 +43,9 @@ export default async function SongRequestsPage({ searchParams }: { searchParams:
           <p className="ui-prose"><strong>{row.song}</strong></p>
           {row.note ? <p className="ui-meta">“{row.note}” — {row.member_email ?? "member"}</p> : null}
           <div className="ui-actions">
-            <form action={decideSongRequest}><input type="hidden" name="request_id" value={row.id} /><input type="hidden" name="status" value="queued" /><SubmitButton pendingLabel="Working…" className="btn-secondary" useLegacyClasses useLegacyClasses>Queue for airtime</SubmitButton></form>
-            <form action={decideSongRequest}><input type="hidden" name="request_id" value={row.id} /><input type="hidden" name="status" value="played" /><SubmitButton pendingLabel="Working…" className="btn-primary" useLegacyClasses useLegacyClasses>Mark as played</SubmitButton></form>
-            <form action={decideSongRequest}><input type="hidden" name="request_id" value={row.id} /><input type="hidden" name="status" value="declined" /><SubmitButton pendingLabel="Working…" className="btn-ghost" useLegacyClasses useLegacyClasses>Decline</SubmitButton></form>
+            <form action={decideSongRequest}><input type="hidden" name="request_id" value={row.id} /><input type="hidden" name="status" value="queued" /><SubmitButton pendingLabel="Working…" className="btn-secondary" useLegacyClasses>Queue for airtime</SubmitButton></form>
+            <form action={decideSongRequest}><input type="hidden" name="request_id" value={row.id} /><input type="hidden" name="status" value="played" /><SubmitButton pendingLabel="Working…" className="btn-primary" useLegacyClasses>Mark as played</SubmitButton></form>
+            <form action={decideSongRequest}><input type="hidden" name="request_id" value={row.id} /><input type="hidden" name="status" value="declined" /><SubmitButton pendingLabel="Working…" className="btn-ghost" useLegacyClasses>Decline</SubmitButton></form>
           </div>
         </Panel></li>)}</ul> : <EmptyPanel title="Queue is clear" description="No requests are waiting on the desk." />}
 

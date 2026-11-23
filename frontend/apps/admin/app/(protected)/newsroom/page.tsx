@@ -76,7 +76,6 @@ export default async function NewsroomPage({ searchParams }: { searchParams: Pro
       composer={canCompose ? <NewsArticleComposer
         categories={(categoryList.data ?? []) as { id: string; label: string }[]}
         authors={(authorList.data ?? []) as { id: string; display_name: string }[]}
-        recoveryActor={session.error ? undefined : session.data.user?.id}
         coverUploadAvailable={coverUploadState().state === "ready"}
       /> : null}
     >
