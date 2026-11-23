@@ -29,7 +29,8 @@ export async function GET(request: Request): Promise<NextResponse> {
   }
 
   try {
-    const limit = request.nextUrl.searchParams.get("limit") || "100";
+    const url = new URL(request.url);
+    const limit = url.searchParams.get("limit") || "100";
     const limitNum = Math.min(Number(limit), 500);
     
     const supabase = await createClient();
@@ -141,41 +142,4 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 }
 
-/**
- * GET - Get cron job statistics
- * Requires CRON_SECRET header for authentication
- */
-export async function STATS(request: Request): Promise<NextResponse> {
-  const cronSecret = process.env.CRON_SECRET;
-  const authHeader = request.headers.get("x-cron-secret");
-  
-  if (!cronSecret || authHeader !== cronSecret) {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401, headers: NO_STORE }
-    );
-  }
 
-  try {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .rpc("get_cron_job_stats");
-    
-    if (error) {
-      return NextResponse.json(
-        { error: "Failed to fetch stats" },
-        { status: 500, headers: NO_STORE }
-      );
-    }
-    
-    return NextResponse.json(
-      { success: true, data: data || [] },
-      { status: 200, headers: NO_STORE }
-    );
-  } catch {
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500, headers: NO_STORE }
-    );
-  }
-}
