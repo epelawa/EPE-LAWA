@@ -492,3 +492,32 @@ body[data-admin-shell="sidebar"] .admin-sidebar__link {
 body[data-admin-shell="sidebar"] .admin-sidebar__user {
   padding: 12px 16px 16px;
 }
+
+/* Instant spinner - no transition delay */
+.btn-busy::before, button[aria-busy="true"]::before {
+  animation: ep-spin-instant .6s linear infinite;
+}
+@keyframes ep-spin-instant {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Ensure spinner shows immediately on click */
+.admin-sidebar__link--busy::before,
+.admin-theme-toggle.btn-busy::before {
+  animation: ep-spin-instant .6s linear infinite;
+}
+
+/* Show spinner on active state for instant feedback */
+button:active:not(:disabled):not(.btn-busy)::before {
+  content: "";
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  margin-right: .5em;
+  vertical-align: -.125em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: ep-spin .6s linear infinite;
+}
