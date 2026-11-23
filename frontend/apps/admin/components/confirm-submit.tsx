@@ -48,7 +48,7 @@ export default function ConfirmSubmit({
     if (button?.form && button.isConnected) {
       startConfirming(async () => {
         try {
-          await button.form.requestSubmit(button);
+          await button.form?.requestSubmit(button);
           if (successMessage) {
             pushToast("success", successMessage);
           }
