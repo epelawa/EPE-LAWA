@@ -30,6 +30,7 @@ const mediaPages: NavItem[] = [
 ];
 
 const peopleAndWorkPages: NavItem[] = [
+  { label: "Upload Article", href: "/newsroom/new", hint: "Create new article", primary: true, group: "PEOPLE & WORK" },
   { label: "Newsroom", href: "/newsroom", hint: "Articles and editorial review", primary: true, group: "PEOPLE & WORK" },
   { label: "History", href: "/itan-ilu-mi/review", hint: "Private contributions and reviewed publication", group: "PEOPLE & WORK" },
   { label: "Corrections", href: "/corrections", hint: "Reader correction reports", group: "PEOPLE & WORK" },
@@ -84,6 +85,7 @@ const itemCapabilities: Record<string, string[]> = {
   "/": [],
   "/analytics": ["audit.read"],
   "/newsroom": ["article.create", "article.review", "article.publish"],
+  "/newsroom/new": ["article.create"],
   "/itan-ilu-mi/review": ["article.create"],
   "/radio": ["radio.manage"],
   "/corrections": ["article.review"],
