@@ -6,8 +6,6 @@ export type QueueCounts = {
   submissions: number | null;
   corrections: number | null;
   enquiries: number | null;
-  events: number | null;
-  songRequests: number | null;
   appeals: number | null;
   forumReports: number | null;
 };
@@ -18,8 +16,6 @@ const EMPTY: QueueCounts = {
   submissions: null,
   corrections: null,
   enquiries: null,
-  events: null,
-  songRequests: null,
   appeals: null,
   forumReports: null,
 };

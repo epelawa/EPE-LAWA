@@ -13,6 +13,7 @@ import SiteFooter from "../components/site-footer";
 import { staffNavigation, filterNavigationByCapabilities } from "../lib/navigation";
 import { createClient } from "../lib/supabase";
 import { siteUrl } from "../lib/site";
+import { ADMIN_BASE_PATH } from "../lib/admin-path";
 import { themeScript } from "../lib/theme";
 import SiteMotion from "../components/site-motion";
 import ToastRegion from "../../main/components/toast";
@@ -100,9 +101,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <GlobalSubmitBusy />
         <a className="skip-link" href="#skip-target">Skip to content</a>
         {staffWorkspace ? (
-          <AdminSidebar items={navigation} userEmail={identity?.email ?? null} userRole={identity?.role} />
+          <AdminSidebar items={navigation} userEmail={identity?.email ?? null} userRole={identity?.role} basePath={ADMIN_BASE_PATH} />
         ) : (
-          <SiteHeader items={navigation} />
+          <SiteHeader items={navigation} basePath={ADMIN_BASE_PATH} />
         )}
         <main className="site-main" id="skip-target" tabIndex={-1} aria-label="Admin workspace content">{children}</main>
         <SiteFooter />

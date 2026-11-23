@@ -31,7 +31,9 @@ export default function ConfirmSubmit({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
   const [isConfirming, startConfirming] = useTransition();
-  const busy = pending || isConfirming;
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isClicking, setIsClicking] = useState(false);
+  const busy = pending || isConfirming || isDialogOpen || isClicking;
 
   // Extract button variant from className
   const getVariant = (cls?: string): "primary" | "secondary" | "danger" | "ghost" => {
@@ -54,9 +56,9 @@ export default function ConfirmSubmit({
       <button 
         ref={buttonRef} 
         type="submit" 
-        className={`${btnClass} ${pending ? "btn-busy" : ""} ${className || ""}`.trim()}
-        aria-busy={pending} 
-        disabled={pending} 
+        className={`${btnClass} ${busy ? "btn-busy" : ""} ${className || ""}`.trim()}
+        aria-busy={busy} 
+        disabled={busy} 
         data-pending-self-managed="true" 
         {...rest}
       >
@@ -66,6 +68,7 @@ export default function ConfirmSubmit({
   }
 
   const handleConfirm = async () => {
+    setIsDialogOpen(true);
     setOpen(false);
     const button = buttonRef.current;
     if (button?.form && button.isConnected) {
@@ -82,8 +85,14 @@ export default function ConfirmSubmit({
           } else {
             pushToast("error", message);
           }
+        } finally {
+          setIsDialogOpen(false);
+          setIsClicking(false);
         }
       });
+    } else {
+      setIsDialogOpen(false);
+      setIsClicking(false);
     }
   };
 
@@ -95,7 +104,11 @@ export default function ConfirmSubmit({
         className={`${btnClass} ${busy ? "btn-busy" : ""} ${className || ""}`.trim()}
         aria-haspopup="dialog"
         disabled={busy}
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setIsClicking(true);
+          setOpen(true);
+          setIsDialogOpen(true);
+        }}
         {...rest}
       >
         {children}
@@ -111,17 +124,21 @@ export default function ConfirmSubmit({
           <button
             type="button"
             className="btn-secondary"
-            onClick={() => setOpen(false)}
-            disabled={isConfirming}
+            onClick={() => {
+              setOpen(false);
+              setIsDialogOpen(false);
+              setIsClicking(false);
+            }}
+            disabled={busy}
           >
             {cancelLabel}
           </button>
           <button
             type="button"
-            className={`btn-primary ${isConfirming ? "btn-busy" : ""}`}
+            className={`btn-primary ${busy ? "btn-busy" : ""}`}
             onClick={handleConfirm}
-            disabled={isConfirming}
-            aria-busy={isConfirming}
+            disabled={busy}
+            aria-busy={busy}
           >
             {confirmLabel}
           </button>

@@ -8,8 +8,6 @@ const labels: { key: keyof QueueCounts; label: string; href: string }[] = [
   { key: "submissions", label: "Directory submissions", href: "/business-review" },
   { key: "corrections", label: "Corrections", href: "/people" },
   { key: "enquiries", label: "Enquiries", href: "/enquiries" },
-  { key: "events", label: "Events queue", href: "/events" },
-  { key: "songRequests", label: "Song requests", href: "/radio/requests" },
   { key: "appeals", label: "Appeals", href: "/appeals" },
   { key: "forumReports", label: "Forum reports", href: "/moderation/forum" },
 ];
