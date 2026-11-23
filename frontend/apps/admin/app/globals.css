@@ -324,3 +324,171 @@ textarea.input, .admin-textarea { resize: none; }
 .revision-paragraph-added { background: var(--ep-success-soft, #E5F3EC); }
 .revision-paragraph-removed { background: var(--ep-danger-soft, #F8E5E7); }
 .revision-marker { font-weight: 700; }
+
+/* Admin Theme Toggle Styles */
+.admin-theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: transparent;
+  border: 1px solid rgb(255 255 255 / .24);
+  color: #FFFFFF;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease;
+}
+.admin-theme-toggle:hover {
+  background: rgb(255 255 255 / .08);
+  color: #FFFFFF;
+}
+
+/* Admin Theme Variables */
+:root {
+  --admin-accent-green: #66B98A;
+  --admin-accent-green-dark: #1D5A38;
+}
+
+/* Light Admin Theme (Default) - Sidebar stays dark, main content light */
+html:not([data-admin-theme="dark"]) body[data-admin-shell="sidebar"] .site-main {
+  background: #F1F4FA;
+}
+
+/* Dark Admin Theme - Sidebar and main content both dark */
+html[data-admin-theme="dark"] body[data-admin-shell="sidebar"] .site-main {
+  background: #0A1023;
+}
+
+/* Admin Light Theme (Default) */
+html:not([data-admin-theme="dark"]) body[data-admin-shell="sidebar"] .admin-sidebar {
+  background: #FFFFFF;
+  color: var(--admin-text-light);
+}
+
+html:not([data-admin-theme="dark"]) body[data-admin-shell="sidebar"] .admin-sidebar__link {
+  color: var(--admin-text-light);
+}
+
+html:not([data-admin-theme="dark"]) body[data-admin-shell="sidebar"] .admin-sidebar__link:hover {
+  background: var(--admin-card-light);
+  color: var(--admin-primary);
+}
+
+html:not([data-admin-theme="dark"]) body[data-admin-shell="sidebar"] .admin-sidebar__link--active {
+  background: var(--admin-success);
+  color: #FFFFFF;
+  box-shadow: inset 3px 0 0 var(--admin-primary);
+}
+
+html:not([data-admin-theme="dark"]) body[data-admin-shell="sidebar"] .admin-sidebar__group-label {
+  color: var(--admin-text-light);
+}
+
+html:not([data-admin-theme="dark"]) body[data-admin-shell="sidebar"] .admin-sidebar__user {
+  border-top: 1px solid var(--admin-border-light);
+}
+
+html:not([data-admin-theme="dark"]) body[data-admin-shell="sidebar"] .admin-sidebar__public,
+html:not([data-admin-theme="dark"]) body[data-admin-shell="sidebar"] .admin-sidebar__signout {
+  border: 1px solid var(--admin-border-light);
+  color: var(--admin-text-light);
+}
+
+html:not([data-admin-theme="dark"]) body[data-admin-shell="sidebar"] .admin-sidebar__public:hover,
+html:not([data-admin-theme="dark"]) body[data-admin-shell="sidebar"] .admin-sidebar__signout:hover {
+  background: var(--admin-card-light);
+  color: var(--admin-text-light);
+}
+
+/* Admin Dark Theme */
+html[data-admin-theme="dark"] body[data-admin-shell="sidebar"] .admin-sidebar {
+  background: var(--ep-color-midnight);
+  color: #FFFFFF;
+}
+
+html[data-admin-theme="dark"] body[data-admin-shell="sidebar"] .admin-sidebar__link {
+  color: #C7D1E4;
+}
+
+html[data-admin-theme="dark"] body[data-admin-shell="sidebar"] .admin-sidebar__link:hover {
+  background: rgb(255 255 255 / .08);
+  color: #FFFFFF;
+}
+
+html[data-admin-theme="dark"] body[data-admin-shell="sidebar"] .admin-sidebar__link--active {
+  background: var(--admin-accent-green-dark);
+  color: #FFFFFF;
+  box-shadow: inset 3px 0 0 var(--admin-accent-green);
+}
+
+html[data-admin-theme="dark"] body[data-admin-shell="sidebar"] .admin-sidebar__group-label {
+  color: #93A2C2;
+}
+
+html[data-admin-theme="dark"] body[data-admin-shell="sidebar"] .admin-sidebar__user {
+  border-top: 1px solid rgb(255 255 255 / .12);
+}
+
+html[data-admin-theme="dark"] body[data-admin-shell="sidebar"] .admin-sidebar__public,
+html[data-admin-theme="dark"] body[data-admin-shell="sidebar"] .admin-sidebar__signout {
+  border: 1px solid rgb(255 255 255 / .18);
+  color: #C7D1E4;
+}
+
+html[data-admin-theme="dark"] body[data-admin-shell="sidebar"] .admin-sidebar__public:hover,
+html[data-admin-theme="dark"] body[data-admin-shell="sidebar"] .admin-sidebar__signout:hover {
+  background: rgb(255 255 255 / .08);
+  color: #FFFFFF;
+}
+
+/* Compact Admin Layout - 45% height reduction at top and bottom */
+body[data-admin-shell="sidebar"] .site-main {
+  padding: 20px 32px 40px;
+}
+
+body[data-admin-shell="sidebar"] .ui-page {
+  width: min(1200px, calc(100% - 48px));
+}
+
+/* Centered content for admin pages */
+body[data-admin-shell="sidebar"] .ui-page-intro {
+  text-align: center;
+  align-items: center;
+}
+
+body[data-admin-shell="sidebar"] .ui-page-intro h1 {
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+}
+
+/* More compact sidebar */
+body[data-admin-shell="sidebar"] .admin-sidebar {
+  padding: 16px 0;
+}
+
+body[data-admin-shell="sidebar"] .admin-sidebar__brand {
+  padding: 16px 16px 8px;
+}
+
+body[data-admin-shell="sidebar"] .admin-sidebar__nav {
+  padding: 8px 12px;
+}
+
+body[data-admin-shell="sidebar"] .admin-sidebar__group {
+  margin-bottom: 12px;
+}
+
+body[data-admin-shell="sidebar"] .admin-sidebar__group-label {
+  margin: 0 8px 6px;
+  font-size: 10px;
+}
+
+body[data-admin-shell="sidebar"] .admin-sidebar__link {
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+body[data-admin-shell="sidebar"] .admin-sidebar__user {
+  padding: 12px 16px 16px;
+}

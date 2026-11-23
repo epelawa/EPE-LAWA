@@ -10,6 +10,7 @@ import type { NavItem } from "../lib/navigation";
 import { signOutStaffSameOrigin } from "../lib/session-actions";
 import { BrandLockup } from "./brand";
 import QueueLiveCounts from "./queue-live-counts";
+import ThemeToggle from "./theme-toggle";
 import { useLiveQueueCounts, type QueueCounts } from "./use-live-queue-counts";
 
 const isCurrent = (path: string, href: string) =>
@@ -168,6 +169,7 @@ export default function AdminSidebar({
       <header className="admin-topbar">
         <NavLink className="nav-brand" href={staffHref("/", basePath)}><BrandLockup size={28} /></NavLink>
         <div className="admin-topbar__actions">
+          <ThemeToggle />
           <form action={signOutStaffSameOrigin}>
             <button className="admin-topbar__signout" type="submit">Sign out</button>
           </form>
