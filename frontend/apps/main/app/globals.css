@@ -561,6 +561,3 @@ html { transition: background-color var(--ep-dur-base, 200ms) var(--ep-ease-out)
 @media (prefers-contrast: high) { body { background: #fff; color: #000; } a { text-decoration: underline; } }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
-
-/* Dark mode */
-[data-theme="dark"] { --background: 220 47.37% 8.82%; --foreground: 218.8 54.8% 93.9%; --card: 218.8 54.8% 15%; --primary: 218.04 71.16% 80.78%; }

@@ -589,5 +589,5 @@
 
 /* Force immediate color scheme change to prevent flash */
 html {
-  color-scheme: light dark;
+  color-scheme: light;
 }
