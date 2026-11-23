@@ -5,6 +5,35 @@
   display: grid;
   gap: 12px;
 }
+.create, .role { border: 1px solid var(--palette-border); border-radius: 16px; background: var(--palette-cloud, #f1f4fa); overflow: clip; }
+.create > summary, .roleSummary { display: flex; min-height: 64px; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 18px; cursor: pointer; list-style: none; }
+.create > summary::-webkit-details-marker, .roleSummary::-webkit-details-marker, .section > summary::-webkit-details-marker { display: none; }
+.create > summary::marker, .roleSummary::marker, .section > summary::marker { content: ""; }
+.create > summary > span:first-child, .roleName { display: grid; gap: 4px; min-width: 0; }
+.create strong, .roleName strong { color: var(--palette-midnight, #0a1023); font-size: 16px; }
+.create small, .roleName small { color: var(--palette-royal-steel, #294b91); font-size: 13px; overflow-wrap: anywhere; }
+.expandLabel { color: var(--palette-royal-steel, #294b91); font-size: 13px; font-weight: 700; white-space: nowrap; }
+.create[open] > summary, .role[open] > summary { border-bottom: 1px solid var(--palette-border); }
+.form { display: grid; gap: 18px; padding: 18px; }
+.roleList { display: grid; gap: 12px; }
+.roleList > h2 { display: flex; align-items: center; gap: 10px; margin: 8px 0 2px; font-size: 18px; }
+.roleList > h2 span, .counts > span:not(.expandIcon) { color: var(--palette-royal-steel, #294b91); font-size: 12px; font-weight: 700; }
+.roleSummary { min-height: 76px; }
+.counts { display: flex; flex: 0 0 auto; align-items: center; gap: 10px; }
+.counts > span:not(.expandIcon) { padding: 6px 9px; border-radius: 999px; background: #fff; white-space: nowrap; }
+.expandIcon { color: var(--palette-royal-steel, #294b91); font-size: 18px; transition: transform 160ms ease; }
+.role[open] .expandIcon { transform: rotate(180deg); }
+.roleBody { display: grid; gap: 12px; padding: 14px; }
+.section { border: 1px solid var(--palette-border); border-radius: 12px; background: #fff; }
+.section > summary { display: flex; min-height: 48px; align-items: center; justify-content: space-between; padding: 10px 14px; cursor: pointer; color: var(--palette-midnight, #0a1023); font-weight: 700; list-style: none; }
+.section[open] > summary { border-bottom: 1px solid var(--palette-border); }
+.assignmentList { display: grid; gap: 8px; padding: 12px; }
+.assignment { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 4px; border-bottom: 1px solid rgb(41 54 80 / .12); }
+.assignment:last-child { border-bottom: 0; }
+.assignment > span { min-width: 0; overflow-wrap: anywhere; font-size: 13px; }
+.delete { padding: 0 4px; }
+.create :is(summary,button), .role :is(summary,button) { min-height: 44px; }
+.create summary:focus-visible, .role summary:focus-visible { outline: 3px solid var(--palette-cobalt, #477fe0); outline-offset: -3px; }
 
 .capabilities legend {
   padding: 0 8px;
@@ -12,5 +41,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .capabilities { transition: none; }
+  .capabilities, .expandIcon { transition: none; }
+}
+@media (max-width: 640px) {
+  .roleSummary { align-items: flex-start; flex-direction: column; }
+  .counts { width: 100%; flex-wrap: wrap; }
+  .counts .expandIcon { margin-left: auto; }
+  .assignment { align-items: flex-start; flex-direction: column; }
+  .assignment button { width: 100%; }
 }

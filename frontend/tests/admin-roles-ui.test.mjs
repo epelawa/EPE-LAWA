@@ -27,3 +27,13 @@ test('Roles page keeps server-side authorization and shows staff email', async (
   assert.match(source, /person\.email/);
   assert.match(source, /CapabilityPicker groups=\{groups\}/);
 });
+
+test('Roles page starts compact and separates editing from staff assignments', async () => {
+  const source = await readFile(page, 'utf8');
+  assert.match(source, /<details className=\{styles\.create\}>/);
+  assert.match(source, /<details key=\{role\.id\} className=\{styles\.role\}>/);
+  assert.match(source, /\{granted\.length\} permissions/);
+  assert.match(source, /\{assignedCount\} staff/);
+  assert.match(source, /Edit role and permissions/);
+  assert.match(source, /Manage staff access/);
+});

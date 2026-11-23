@@ -5,7 +5,7 @@ import { createStaffClient } from "../../../lib/supabase";
 import { deleteArticle } from "../../../lib/actions";
 import { adminHref } from "../../../lib/admin-path";
 import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, StatusBadge, SubmitButton, buttonClassName } from "@epelawa/ui";
-import ComposerModal from "../../../components/composer-modal";
+import ComposerModal, { ComposerTrigger } from "../../../components/composer-modal";
 import NewsArticleComposer from "../../../components/news-article-composer";
 import { coverUploadState } from "../../../lib/media-r2";
 
@@ -63,22 +63,26 @@ export default async function NewsroomPage({ searchParams }: { searchParams: Pro
   ]);
   const canEdit = !editCapability.error && editCapability.data === true;
   const canDelete = !deleteCapability.error && deleteCapability.data === true;
+  const canCompose = canEdit && (categoryList.data ?? []).length > 0 && (authorList.data ?? []).length > 0;
   if (error) {
     return <PageFrame className="ui-stack"><PageIntro eyebrow="Staff workspace" title="Newsroom" description="Every save publishes straight away — the stories you see here are what readers get." /><Notice tone="danger" role="alert"><strong>Articles could not be loaded.</strong><p>The newsroom could not verify article data. Try again in a moment.</p></Notice></PageFrame>;
   }
 
   const articles = (data ?? []) as unknown as NewsroomArticle[];
   return (
+    <ComposerModal
+      title="Publish an article"
+      defaultOpen={compose === "1" && canCompose}
+      composer={canCompose ? <NewsArticleComposer
+        categories={(categoryList.data ?? []) as { id: string; label: string }[]}
+        authors={(authorList.data ?? []) as { id: string; display_name: string }[]}
+        recoveryActor={session.error ? undefined : session.data.user?.id}
+        coverUploadAvailable={coverUploadState().state === "ready"}
+      /> : null}
+    >
     <PageFrame className="ui-stack">
-      <PageIntro eyebrow="Staff workspace · Editorial" title="Newsroom" actions={(canEdit && (categoryList.data ?? []).length > 0 && (authorList.data ?? []).length > 0) ? (
-        <ComposerModal triggerLabel="Upload an article" title="Publish an article" defaultOpen={compose === "1"}>
-          <NewsArticleComposer
-            categories={(categoryList.data ?? []) as { id: string; label: string }[]}
-            authors={(authorList.data ?? []) as { id: string; display_name: string }[]}
-            recoveryActor={session.error ? undefined : session.data.user?.id}
-            coverUploadAvailable={coverUploadState().state === "ready"}
-          />
-        </ComposerModal>
+      <PageIntro eyebrow="Staff workspace · Editorial" title="Newsroom" actions={canCompose ? (
+        <ComposerTrigger className={buttonClassName("primary")}>Upload an article</ComposerTrigger>
       ) : <Link href={adminHref("/newsroom/new")} className={buttonClassName("primary")}>Upload an article</Link>} />
       {deleted ? <Notice tone="neutral" role="status">The story and all its records were permanently deleted.</Notice> : null}
       {errorFlag === "delete_confirmation" ? <Notice tone="warning" role="alert">Tick the confirm box before a story can be deleted.</Notice> : null}
@@ -101,8 +105,9 @@ export default async function NewsroomPage({ searchParams }: { searchParams: Pro
           const stateLabel = currentIsPublic ? "published" : version?.state ?? "unknown";
           const tone = stateLabel === "published" || stateLabel === "approved" ? "success" : stateLabel === "rejected" ? "danger" : stateLabel === "review" ? "warning" : "neutral";
           return <li key={article.id} className={styles.card}><h3 className={styles.title}>{version?.title || "Untitled article"}</h3><div className={styles.meta}><StatusBadge tone={tone}>{stateLabel}</StatusBadge><time dateTime={article.updated_at}>Updated {new Date(article.updated_at).toLocaleDateString("en-NG")}</time></div>{article.published_version_id && !currentIsPublic ? <span className="ui-meta">Earlier version is public</span> : null}<div className={styles.actions}><Link href={adminHref(`/newsroom/${article.id}`)} className={buttonClassName("secondary")}>Open article</Link>{canEdit ? <Link href={`${adminHref(`/newsroom/${article.id}`)}#article-editor`} className={buttonClassName("secondary")}>Edit article</Link> : null}{canDelete ? <div className={styles.deleteDisclosure}><form action={deleteArticle} className={styles.deleteConfirm}><input type="hidden" name="articleId" value={article.id} /><label className="ui-row"><input type="checkbox" name="confirmDelete" value="yes" required /> Delete everywhere, for good.</label><SubmitButton pendingLabel="Deleting…" className={buttonClassName("danger")}>Yes, delete forever</SubmitButton><span className="ui-meta">Removes the story, its versions and its comments from the database.</span></form></div> : null}</div></li>;
-        })}</ul> : <EmptyPanel title={state ? `No ${state} articles` : "No articles yet"} description={state ? "No article currently matches this state." : "Publish your first article — it appears on the public site the moment you save it."} actions={!state ? <Link href={canEdit && (categoryList.data ?? []).length > 0 && (authorList.data ?? []).length > 0 ? `${adminHref("/newsroom")}?compose=1` : adminHref("/newsroom/new")} className={buttonClassName("primary")}>Upload an article</Link> : undefined} />}
+        })}</ul> : <EmptyPanel title={state ? `No ${state} articles` : "No articles yet"} description={state ? "No article currently matches this state." : "Publish your first article — it appears on the public site the moment you save it."} actions={!state ? canCompose ? <ComposerTrigger className={buttonClassName("primary")}>Upload an article</ComposerTrigger> : <Link href={adminHref("/newsroom/new")} className={buttonClassName("primary")}>Upload an article</Link> : undefined} />}
       </section>
     </PageFrame>
+    </ComposerModal>
   );
 }

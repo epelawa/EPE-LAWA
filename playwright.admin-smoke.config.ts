@@ -71,7 +71,7 @@ export default defineConfig({
     },
     {
       command: appCommand,
-      url: `http://127.0.0.1:${appPort}`,
+      url: `http://127.0.0.1:${appPort}/admin`,
       reuseExistingServer: false,
       timeout: 120_000,
     },
@@ -80,7 +80,7 @@ export default defineConfig({
       url: baseURL,
       ignoreHTTPSErrors: true,
       reuseExistingServer: false,
-      timeout: 10_000,
+      timeout: 120_000,
     },
   ],
 });

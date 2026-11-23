@@ -20,7 +20,9 @@ test('the newsroom publish composer opens as a blur-backdrop popup modal, not on
   assert.match(modal, /useState\(defaultOpen\)/);
   assert.match(modal, /dialog\.showModal\(\)/);
 
-  assert.match(listing, /defaultOpen=\{compose === "1"\}/);
+  assert.match(listing, /defaultOpen=\{compose === "1" && canCompose\}/);
+  assert.equal((listing.match(/<ComposerTrigger/g) ?? []).length, 2);
+  assert.match(modal, /ComposerContext\.Provider/);
   assert.match(dashboard, /href=\{`\$\{adminHref\("\/newsroom"\)\}\?compose=1`\}/);
   assert.match(listing, /adminHref\("\/newsroom\/new"\)/);
 });
