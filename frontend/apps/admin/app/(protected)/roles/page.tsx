@@ -62,15 +62,15 @@ export default async function RolesPage() {
       <PageIntro
         eyebrow="Access control"
         title="Roles"
-        description="Create configurable staff roles, then assign them to staff profiles. Effective access is evaluated by the database on every protected request."
+        description="Choose a role to edit permissions or manage staff access. Changes take effect on protected requests."
       />
       {rolesResult.error || capsResult.error ? (
         <Panel role="alert"><p>Role data is unavailable until the reviewed database migration is applied.</p></Panel>
       ) : null}
 
-      <Panel className="ui-stack-sm">
-        <h2>Create a role</h2>
-        <form action={saveRole} className="ui-stack-sm">
+      <details className={styles.create}>
+        <summary><span><strong>Create a role</strong><small>Start with a name, then choose the access it needs.</small></span><span className={styles.expandLabel}>Open form</span></summary>
+        <form action={saveRole} className={`${styles.form} ui-stack-sm`}>
           <div className="ui-form-grid">
             <div className="ui-field"><label className="label" htmlFor="role-new-name">Role name</label><input className="input" id="role-new-name" name="name" required maxLength={80} /></div>
             <div className="ui-field"><label className="label" htmlFor="role-new-description">Description</label><input className="input" id="role-new-description" name="description" maxLength={500} /></div>
@@ -81,15 +81,23 @@ export default async function RolesPage() {
           </fieldset>
           <div className="ui-actions"><SubmitButton pendingLabel="Creating…" className="btn-primary">Create role</SubmitButton></div>
         </form>
-      </Panel>
+      </details>
 
-      {roles.map((role) => {
+      <section className={styles.roleList} aria-label="Configured roles">
+      <h2>Configured roles <span>{roles.length}</span></h2>
+      {roles.length === 0 ? <Panel><p>No roles are configured yet. Create one when you are ready.</p></Panel> : roles.map((role) => {
         const granted = roleCaps.filter((item) => item.role_id === role.id).map((item) => item.capability);
+        const assignedCount = directory.filter((person) => assignments.some((item) => item.user_id === person.user_id && item.role_id === role.id)).length;
         return (
-          <Panel key={role.id} className="ui-stack-sm">
-            <h2>{role.name}</h2>
-            {role.description ? <p className="ui-muted">{role.description}</p> : null}
-            <form action={saveRole} className="ui-stack-sm">
+          <details key={role.id} className={styles.role}>
+            <summary className={styles.roleSummary}>
+              <span className={styles.roleName}><strong>{role.name}</strong><small>{role.description || "No description"}</small></span>
+              <span className={styles.counts}><span>{granted.length} permissions</span><span>{assignedCount} staff</span><span className={styles.expandIcon} aria-hidden="true">⌄</span></span>
+            </summary>
+            <div className={styles.roleBody}>
+            <details className={styles.section}>
+              <summary>Edit role and permissions</summary>
+            <form action={saveRole} className={`${styles.form} ui-stack-sm`}>
               <input type="hidden" name="id" value={role.id} />
               <div className="ui-form-grid">
                 <div className="ui-field"><label className="label" htmlFor={`role-name-${role.id}`}>Role name</label><input className="input" id={`role-name-${role.id}`} name="name" required maxLength={80} defaultValue={role.name} /></div>
@@ -101,16 +109,19 @@ export default async function RolesPage() {
               </fieldset>
               <div className="ui-actions"><SubmitButton pendingLabel="Saving…" className="btn-primary">Save role</SubmitButton></div>
             </form>
+            </details>
             <form action={deleteRole}>
               <input type="hidden" name="id" value={role.id} />
               <ConfirmSubmit className="btn-secondary" message={"Delete the role \""+role.name+"\"? Staff members will lose its access immediately. This cannot be undone."}>Delete role</ConfirmSubmit>
             </form>
 
-            <h3>Staff assignments</h3>
+            <details className={styles.section}>
+            <summary>Manage staff access <span>({directory.length} staff)</span></summary>
+            <div className={styles.assignmentList}>
             {directory.length === 0 ? <p className="ui-muted">No staff profiles found.</p> : directory.map((person) => {
               const assigned = assignments.some((item) => item.user_id === person.user_id && item.role_id === role.id);
               return (
-                <form key={`${person.user_id}-${role.id}`} action={assignRole} className="ui-row">
+                <form key={`${person.user_id}-${role.id}`} action={assignRole} className={styles.assignment}>
                   <input type="hidden" name="user_id" value={person.user_id} />
                   <input type="hidden" name="role_id" value={role.id} />
                   <input type="hidden" name="assigned" value={String(!assigned)} />
@@ -123,9 +134,13 @@ export default async function RolesPage() {
                 </form>
               );
             })}
-          </Panel>
+            </div>
+            </details>
+            </div>
+          </details>
         );
       })}
+      </section>
     </PageFrame>
   );
 }

@@ -114,6 +114,11 @@ test("authorized Admin dashboard keeps unavailable counts honest without workflo
   await expect(page.getByRole("heading", { level: 1, name: "Welcome back" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Write a new story" })).toBeVisible();
   await expectNoHorizontalOverflow(page, 390);
+  await page.getByRole("button", { name: "Open menu" }).click();
+  const drawer = page.getByRole("dialog", { name: "Staff workspace" });
+  await expect(drawer).toBeVisible();
+  await drawer.getByRole("link", { name: "Newsroom", exact: true }).click();
+  await expect(page).toHaveURL(/\/admin\/newsroom$/);
   await capture(page, "admin-dashboard-mobile-390x844.png");
 });
 

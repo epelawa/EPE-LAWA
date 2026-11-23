@@ -118,11 +118,12 @@ button:not([class]) { display:inline-flex; align-items:center; justify-content:c
 .admin-nav a { display:inline-flex; min-height:44px; padding:10px 13px; align-items:center; border-radius:999px; font-size:13px; color:hsl(var(--muted-foreground)); }
 .admin-nav a:hover { background:hsl(var(--secondary)); color:hsl(var(--link)); }.admin-nav a[aria-current=page] { background:hsl(var(--primary)); color:hsl(var(--primary-foreground)); }
 .admin-menu-button { display:none; }
-.drawer-root { position:fixed; inset:0; z-index:80; display:none; }
-.drawer-root[data-open=true] { display:block; }
+.drawer-root { position:fixed; inset:0; z-index:80; display:block; visibility:hidden; opacity:0; pointer-events:none; transition:opacity 180ms ease,visibility 0s linear 180ms; }
+.drawer-root[data-open=true] { visibility:visible; opacity:1; pointer-events:auto; transition-delay:0s; }
 .drawer-scrim { position:absolute; inset:0; width:100%; height:100%; border:0; background:var(--ep-scrim, rgb(10 16 35/.58)); -webkit-backdrop-filter:blur(var(--ep-glass-blur, 10px)); backdrop-filter:blur(var(--ep-glass-blur, 10px)); }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .drawer-scrim { background: var(--palette-midnight); } }
-.drawer { position:absolute; inset:12px 12px 12px auto; width:min(400px,calc(100% - 24px)); padding:24px; overflow-y:auto; background:hsl(var(--card)); border:1px solid hsl(var(--border)); border-radius:24px; }
+.drawer { position:absolute; inset:12px auto 12px 12px; width:min(400px,calc(100% - 24px)); padding:24px; overflow-y:auto; background:hsl(var(--card)); border:1px solid hsl(var(--border)); border-radius:24px; transform:translateX(calc(-100% - 24px)); transition:transform 220ms cubic-bezier(.2,.75,.25,1); }
+.drawer-root[data-open=true] .drawer { transform:translateX(0); }
 .drawer__head { display:flex; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid hsl(var(--border)); padding-bottom:16px; }
 .drawer__head h2 { font-size:18px; }
 .admin-drawer-links { list-style:none; margin:16px 0; padding:0; display:grid; gap:4px; }
@@ -242,8 +243,14 @@ body[data-admin-shell="sidebar"] { --admin-sidebar-width: 256px; }
 }
 .admin-sidebar__link--active .admin-sidebar__badge { background: #FFFFFF; color: #1D5A38; }
 .admin-sidebar__badge--hot { animation: queue-pulse 1.2s ease-in-out 2; }
+.admin-sidebar__nav-spinner { display:inline-block; width:14px; height:14px; flex:0 0 14px; margin-left:auto; border:2px solid currentColor; border-right-color:transparent; border-radius:50%; opacity:0; }
+.admin-sidebar__nav-spinner[data-active=true] { opacity:1; animation:ep-spin .62s linear infinite; }
+.admin-sidebar__link .admin-sidebar__nav-spinner[data-active=true] { visibility:visible; }
+.admin-sidebar__link .admin-sidebar__nav-spinner[data-active=false] { visibility:hidden; }
 @media (prefers-reduced-motion: reduce) {
   .admin-sidebar__link, .admin-sidebar__link:hover { transition: none; transform: none; }
+  .drawer { transition:none; }
+  .admin-sidebar__nav-spinner[data-active=true] { animation:none; }
 }
 .admin-sidebar__user { padding: 16px 16px 18px; border-top: 1px solid rgb(255 255 255 / .12); display: flex; flex-direction: column; gap: 8px; }
 .admin-sidebar__identity { display: flex; align-items: center; gap: 10px; min-width: 0; }

@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import Link, { useLinkStatus } from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { CloseIcon, MenuIcon } from "@epelawa/ui";
 import { staffHref } from "../lib/admin-path";
@@ -25,6 +25,12 @@ const BADGE_KEYS: Partial<Record<string, keyof QueueCounts>> = {
   "/moderation/forum": "forumReports",
 };
 
+function NavigationFeedback({ active, label }: { active: boolean; label: string }) {
+  const { pending } = useLinkStatus();
+  const busy = active || pending;
+  return <><span className="admin-sidebar__nav-spinner" data-active={busy ? "true" : "false"} aria-hidden="true" /><span className="sr-only" role="status" aria-live="polite">{busy ? `Loading ${label}` : ""}</span></>;
+}
+
 export default function AdminSidebar({
   items,
   basePath = "",
@@ -37,13 +43,16 @@ export default function AdminSidebar({
   userRole?: string;
 }) {
   const pathname = usePathname() ?? "/";
+  const router = useRouter();
   const base = basePath === "/" ? "" : basePath.replace(/\/+$/, "");
   const path = base && (pathname === base || pathname.startsWith(`${base}/`))
     ? pathname.slice(base.length) || "/"
     : pathname;
   const [open, setOpen] = useState(false);
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
   const panel = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
+  const previousPath = useRef(pathname);
 
   useEffect(() => {
     if (open && panel.current) {
@@ -54,6 +63,13 @@ export default function AdminSidebar({
     }
   }, [open]);
   const sections = groupedNavigation(items);
+  useEffect(() => {
+    if (previousPath.current === pathname) return;
+    previousPath.current = pathname;
+    setPendingHref(null);
+    setOpen(false);
+    requestAnimationFrame(() => trigger.current?.focus());
+  }, [pathname]);
   const { counts, flick } = useLiveQueueCounts();
   const badgeFor = (href: string) => {
     const key = BADGE_KEYS[href];
@@ -78,7 +94,7 @@ export default function AdminSidebar({
     return () => document.removeEventListener("keydown", onKey);
   });
 
-  const nav = (onNavigate?: () => void) => (
+  const nav = () => (
     <nav className="admin-sidebar__nav" aria-label="Staff sections">
       {sections.map((section) => (
         <div className="admin-sidebar__group" key={section.label}>
@@ -88,13 +104,19 @@ export default function AdminSidebar({
               <li key={item.href}>
                 <Link
                   href={staffHref(item.href, basePath)}
+                  prefetch
                   className={isCurrent(path, item.href) ? "admin-sidebar__link admin-sidebar__link--active" : "admin-sidebar__link"}
                   aria-current={isCurrent(path, item.href) ? "page" : undefined}
-                  onClick={onNavigate}
+                  onPointerEnter={() => router.prefetch(staffHref(item.href, basePath))}
+                  onFocus={() => router.prefetch(staffHref(item.href, basePath))}
+                  onNavigate={() => {
+                    setPendingHref(isCurrent(path, item.href) ? null : item.href);
+                  }}
                 >
                   <span className="admin-sidebar__label">{item.label}</span>
                   {badgeFor(item.href) !== null ? <sup className={flickFor(item.href) ? "admin-sidebar__badge admin-sidebar__badge--hot" : "admin-sidebar__badge"} aria-label={`${badgeFor(item.href)} waiting`} title={`${badgeFor(item.href)} waiting on you`}>{badgeFor(item.href)}</sup> : null}
                   {item.comingSoon ? <span className="admin-sidebar__soon">Coming soon</span> : null}
+                  <NavigationFeedback active={pendingHref === item.href} label={item.label} />
                 </Link>
               </li>
             ))}
@@ -165,7 +187,7 @@ export default function AdminSidebar({
             <h2 id="admin-drawer-title">Staff workspace</h2>
             <button className="btn-icon" type="button" aria-label="Close menu" onClick={close}><CloseIcon size={20} /></button>
           </div>
-          {nav(close)}
+          {nav()}
           {identity}
         </div>
       </div>
