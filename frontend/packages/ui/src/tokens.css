@@ -133,6 +133,7 @@
   --ep-z-scrim: 70;
   --ep-z-overlay: 90;
   --ep-z-dialog: 100;
+}
 
 /* Backward-compatible aliases. Old code resolves to the same values. */
   --ep-ui-midnight: var(--ep-color-midnight);
