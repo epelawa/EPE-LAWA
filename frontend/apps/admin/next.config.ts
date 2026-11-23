@@ -1,8 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Admin app is mounted under /admin
+  basePath: "/admin",
   // Stop the default `x-powered-by: Next.js` fingerprint on every response.
   poweredByHeader: false,
+  env: {
+    NEXT_PUBLIC_ADMIN_BASE_PATH: "/admin",
+  },
   allowedDevOrigins: ["*.e2b.app"],
   transpilePackages: ["@epelawa/ui", "@epelawa/image-optimizer"],
   async headers() {

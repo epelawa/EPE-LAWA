@@ -5,8 +5,6 @@ export type QueueCountsData = {
   submissions?: number;
   corrections?: number;
   enquiries?: number;
-  events?: number;
-  songRequests?: number;
   appeals?: number;
   forumReports?: number;
 } | null;
@@ -65,18 +63,6 @@ export function LiveQueues({ queues }: { queues: QueueCountsData }) {
         badge
       />
       <QueueItem
-        label="Events"
-        count={queues?.events || 0}
-        href="/events"
-        badge
-      />
-      <QueueItem
-        label="Song Requests"
-        count={queues?.songRequests || 0}
-        href="/radio/requests"
-        badge
-      />
-      <QueueItem
         label="Appeals"
         count={queues?.appeals || 0}
         href="/appeals"
@@ -95,8 +81,6 @@ export function LiveQueues({ queues }: { queues: QueueCountsData }) {
 LiveQueues.Skeleton = function LiveQueuesSkeleton() {
   return (
     <div className="admin-live-queues">
-      <QueueItemSkeleton />
-      <QueueItemSkeleton />
       <QueueItemSkeleton />
       <QueueItemSkeleton />
       <QueueItemSkeleton />

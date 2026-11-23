@@ -2,7 +2,7 @@
 
 import Link, { useLinkStatus } from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, startTransition } from "react";
 import { CloseIcon, MenuIcon } from "@epelawa/ui";
 import { staffHref } from "../lib/admin-path";
 import { groupedNavigation } from "../lib/navigation";
@@ -19,11 +19,37 @@ const BADGE_KEYS: Partial<Record<string, keyof QueueCounts>> = {
   "/business-review": "submissions",
   "/people": "corrections",
   "/enquiries": "enquiries",
-  "/events": "events",
-  "/radio/requests": "songRequests",
   "/appeals": "appeals",
   "/moderation/forum": "forumReports",
 };
+
+// NavLink component with immediate spinner and full page reload
+function NavLink({ href, children, className, isActive }: { href: string; children: React.ReactNode; className?: string; isActive?: boolean }) {
+  const [isPending, setIsPending] = useState(false);
+  
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    setIsPending(true);
+    // Use startTransition for better UX
+    startTransition(() => {
+      // Full page reload
+      window.location.href = href;
+    });
+  };
+  
+  return (
+    <a
+      href={href}
+      onClick={handleClick}
+      className={`${className || ""} ${isPending ? "admin-sidebar__link--busy" : ""}`.trim()}
+      aria-busy={isPending}
+      aria-current={isActive ? "page" : undefined}
+    >
+      {children}
+      {isPending && <span className="admin-sidebar__nav-spinner" data-active="true" aria-hidden="true" />}
+    </a>
+  );
+}
 
 function NavigationFeedback({ active, label }: { active: boolean; label: string }) {
   const { pending } = useLinkStatus();
@@ -102,22 +128,15 @@ export default function AdminSidebar({
           <ul>
             {section.items.map((item) => (
               <li key={item.href}>
-                <Link
+                <NavLink
                   href={staffHref(item.href, basePath)}
-                  prefetch
                   className={isCurrent(path, item.href) ? "admin-sidebar__link admin-sidebar__link--active" : "admin-sidebar__link"}
-                  aria-current={isCurrent(path, item.href) ? "page" : undefined}
-                  onPointerEnter={() => router.prefetch(staffHref(item.href, basePath))}
-                  onFocus={() => router.prefetch(staffHref(item.href, basePath))}
-                  onNavigate={() => {
-                    setPendingHref(isCurrent(path, item.href) ? null : item.href);
-                  }}
+                  isActive={isCurrent(path, item.href)}
                 >
                   <span className="admin-sidebar__label">{item.label}</span>
                   {badgeFor(item.href) !== null ? <sup className={flickFor(item.href) ? "admin-sidebar__badge admin-sidebar__badge--hot" : "admin-sidebar__badge"} aria-label={`${badgeFor(item.href)} waiting`} title={`${badgeFor(item.href)} waiting on you`}>{badgeFor(item.href)}</sup> : null}
                   {item.comingSoon ? <span className="admin-sidebar__soon">Coming soon</span> : null}
-                  <NavigationFeedback active={pendingHref === item.href} label={item.label} />
-                </Link>
+                </NavLink>
               </li>
             ))}
           </ul>
@@ -147,7 +166,7 @@ export default function AdminSidebar({
   return (
     <>
       <header className="admin-topbar">
-        <Link className="nav-brand" href={staffHref("/", basePath)}><BrandLockup size={28} /></Link>
+        <NavLink className="nav-brand" href={staffHref("/", basePath)}><BrandLockup size={28} /></NavLink>
         <div className="admin-topbar__actions">
           <form action={signOutStaffSameOrigin}>
             <button className="admin-topbar__signout" type="submit">Sign out</button>
@@ -164,7 +183,7 @@ export default function AdminSidebar({
         </div>
       </header>
       <aside className="admin-sidebar" aria-label="Staff workspace">
-        <div className="admin-sidebar__brand"><Link href={staffHref("/", basePath)}><BrandLockup size={30} /></Link></div>
+        <div className="admin-sidebar__brand"><NavLink href={staffHref("/", basePath)}><BrandLockup size={30} /></NavLink></div>
         {nav()}
         <QueueLiveCounts />
         {identity}

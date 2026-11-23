@@ -585,31 +585,3 @@ export async function saveArticleTags(formData: FormData): Promise<void> {
   revalidatePath("/news");
   redirect(adminHref(`/newsroom/${articleId}?tags=1`));
 }
-
-/** Publish a new site-wide poll; the database closes any previous active poll (caps at article.publish). */
-export async function saveSitePoll(formData: FormData): Promise<void> {
-  const question = text(formData, "question", 200);
-  const daysRaw = text(formData, "days", 3);
-  const options = formData
-    .getAll("options")
-    .map((value) => (typeof value === "string" ? value.trim() : ""))
-    .filter((value) => value.length > 0)
-    .slice(0, 6);
-  const days = Number(daysRaw);
-  if (question.length < 6 || options.length < 2 || !Number.isSafeInteger(days) || days < 1 || days > 90) {
-    fail("/poll?error=invalid");
-  }
-  let errorCode: string | null = null;
-  const supabase = await createStaffClient();
-  try {
-    const { error } = await supabase.rpc("site_poll_save", { p_question: question, p_options: options, p_days: days });
-    if (error) errorCode = error.code;
-  } catch (error) { errorCode = queryErrorCode(error); }
-  if (errorCode) {
-    console.error("site poll save failed", { code: errorCode });
-    fail("/poll?error=invalid");
-  }
-  revalidatePath(adminHref("/poll"));
-  revalidatePath("/");
-  redirect(adminHref("/poll?saved=1"));
-}

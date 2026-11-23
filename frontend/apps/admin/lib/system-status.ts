@@ -48,11 +48,10 @@ export function systemReadiness(env: NodeJS.ProcessEnv): ReadinessTile[] {
   const email = allSet(env, ["NEWSLETTER_SMTP_HOST", "NEWSLETTER_SMTP_USER", "NEWSLETTER_SMTP_PASSWORD", "NEWSLETTER_FROM"]);
   tiles.push({
     label: "Newsletter sending",
-    description: email.missing.length === 0 ? "Digest delivery can send through SMTP." : "Digest delivery stays disabled until SMTP is complete.",
+    description: email.missing.length === 0 ? "Newsletter delivery can send through SMTP." : "Newsletter delivery stays disabled until SMTP is complete.",
     state: email.missing.length === 0 ? "ready" : "off",
     missing: email.missing,
     set: email.set,
-    href: "/digest",
   });
 
   const pushFlag = env.NEXT_PUBLIC_WEB_PUSH_ENABLED === "true";
