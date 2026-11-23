@@ -1,12 +1,36 @@
 "use client";
 
-import { SunIcon } from "./icons";
+import { useEffect, useState } from "react";
+import { SunIcon, MoonIcon } from "@epelawa/ui";
 
-// Theme toggle is disabled - light theme only
-export function ThemeToggle({ className = "" }: { className?: string }) {
-  return null;
-}
+export default function ThemeToggle() {
+  const [theme, setTheme] = useState<"light" | "dark">("light");
 
-export function ThemeToggleWithLabel({ className = "" }: { className?: string }) {
-  return null;
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("admin-theme") as "light" | "dark" | null;
+    const initialTheme = savedTheme || "light";
+    setTheme(initialTheme);
+    document.documentElement.setAttribute("data-admin-theme", initialTheme);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("admin-theme", theme);
+    document.documentElement.setAttribute("data-admin-theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={toggleTheme}
+      className="admin-theme-toggle"
+      aria-label={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
+    >
+      {theme === "light" ? <MoonIcon size={18} /> : <SunIcon size={18} />}
+    </button>
+  );
 }

@@ -1,4 +1,4 @@
-export type NavGroup = "Overview" | "Newsroom" | "Community" | "Trust" | "Inbox" | "Administration";
+export type NavGroup = "OVERVIEW" | "MEDIA" | "PEOPLE & WORK" | "SYSTEM";
 
 export type NavItem = {
   label: string;
@@ -16,45 +16,65 @@ export type NavSection = {
   items: NavItem[];
 };
 
-const GROUP_ORDER: NavGroup[] = ["Overview", "Newsroom", "Community", "Trust", "Inbox", "Administration"];
+const GROUP_ORDER: NavGroup[] = ["OVERVIEW", "MEDIA", "PEOPLE & WORK", "SYSTEM"];
 
-const sectionPages: NavItem[] = [
-  { label: "Dashboard", href: "/", hint: "Real counts and queues", primary: true, group: "Overview" },
-  { label: "Newsroom", href: "/newsroom", hint: "Articles and editorial review", primary: true, group: "Newsroom" },
-  { label: "History", href: "/itan-ilu-mi/review", hint: "Private contributions and reviewed publication", group: "Newsroom" },
-  { label: "Radio", href: "/radio", hint: "Programmes, rights, episodes and schedule", primary: true, group: "Newsroom" },
-  { label: "Corrections", href: "/corrections", hint: "Reader correction reports", group: "Newsroom" },
-  { label: "Analytics", href: "/analytics", hint: "Reads, clicks and member trends", group: "Overview" },
-  { label: "Appeals", href: "/appeals", hint: "Member appeals against moderation", group: "Trust" },
-  { label: "Forum", href: "/moderation/forum", hint: "Reports, chats and message removal", primary: true, group: "Community" },
-  { label: "Comments", href: "/moderation/comments", hint: "Edit and remove article comments", group: "Community" },
-  { label: "Businesses", href: "/business-review", hint: "Submissions and verification", group: "Community" },
-  { label: "Reviews", href: "/business-review/moderation", hint: "Business review moderation", group: "Community" },
-  { label: "Tourism", href: "/tourism", hint: "Tourism submissions", group: "Community" },
-  { label: "People", href: "/people", hint: "Who is Who records", group: "Community" },
-  { label: "Ads", href: "/ads", hint: "Businesses shown in the public ad carousel", group: "Community" },
-  { label: "Enquiries", href: "/enquiries", hint: "Restricted private messages and corrections", group: "Inbox" },
+const overviewPages: NavItem[] = [
+  { label: "Dashboard", href: "/", hint: "Real counts and queues", primary: true, group: "OVERVIEW" },
+  { label: "Analytics", href: "/analytics", hint: "Reads, clicks and member trends", group: "OVERVIEW" },
 ];
 
-const staffPages: NavItem[] = [
-  { label: "Members", href: "/members", hint: "Manage member accounts and messages", group: "Administration" },
-  { label: "Staff users", href: "/users", hint: "Invite and manage staff accounts", group: "Administration" },
-  { label: "Roles", href: "/roles", hint: "Configure staff roles and capabilities", group: "Administration" },
-  { label: "Broadcast", href: "/broadcast", hint: "Notify verified members", group: "Administration" },
-  { label: "Site pages", href: "/site-pages", hint: "Edit the About page and public page notes", group: "Administration" },
-  { label: "Legal pages", href: "/legal-pages", hint: "Maintain the Privacy, Terms and Guidelines notes", group: "Administration" },
-  { label: "Gallery & media", href: "/media", hint: "Public photo archive and media records", group: "Administration" },
-  { label: "Backups", href: "/backups", hint: "Database backups and restore in R2", group: "Administration" },
-  { label: "Settings", href: "/settings", hint: "Maintenance and workspace status", group: "Administration" },
-  { label: "Cron Jobs", href: "/settings/cron", hint: "Cron job execution history and monitoring", group: "Administration" },
+const mediaPages: NavItem[] = [
+  { label: "Media library", href: "/media", hint: "Public photo archive and media records", group: "MEDIA" },
+  { label: "Gallery", href: "/gallery", hint: "Photo galleries", group: "MEDIA" },
+  { label: "Radio", href: "/radio", hint: "Programmes, rights, episodes and schedule", primary: true, group: "MEDIA" },
+];
+
+const peopleAndWorkPages: NavItem[] = [
+  { label: "Newsroom", href: "/newsroom", hint: "Articles and editorial review", primary: true, group: "PEOPLE & WORK" },
+  { label: "History", href: "/itan-ilu-mi/review", hint: "Private contributions and reviewed publication", group: "PEOPLE & WORK" },
+  { label: "Corrections", href: "/corrections", hint: "Reader correction reports", group: "PEOPLE & WORK" },
+  { label: "People", href: "/people", hint: "Who is Who records", group: "PEOPLE & WORK" },
+  { label: "Businesses", href: "/business-review", hint: "Submissions and verification", group: "PEOPLE & WORK" },
+  { label: "Reviews", href: "/business-review/moderation", hint: "Business review moderation", group: "PEOPLE & WORK" },
+  { label: "Tourism", href: "/tourism", hint: "Tourism submissions", group: "PEOPLE & WORK" },
+  { label: "Ads", href: "/ads", hint: "Businesses shown in the public ad carousel", group: "PEOPLE & WORK" },
+];
+
+const communityPages: NavItem[] = [
+  { label: "Forum", href: "/moderation/forum", hint: "Reports, chats and message removal", primary: true, group: "PEOPLE & WORK" },
+  { label: "Comments", href: "/moderation/comments", hint: "Edit and remove article comments", group: "PEOPLE & WORK" },
+  { label: "Appeals", href: "/appeals", hint: "Member appeals against moderation", group: "PEOPLE & WORK" },
+  { label: "Enquiries", href: "/enquiries", hint: "Restricted private messages and corrections", group: "SYSTEM" },
+];
+
+const systemPages: NavItem[] = [
+  { label: "Members", href: "/members", hint: "Manage member accounts and messages", group: "SYSTEM" },
+  { label: "Staff users", href: "/users", hint: "Invite and manage staff accounts", group: "SYSTEM" },
+  { label: "Roles", href: "/roles", hint: "Configure staff roles and capabilities", group: "SYSTEM" },
+  { label: "Broadcast", href: "/broadcast", hint: "Notify verified members", group: "SYSTEM" },
+  { label: "Site pages", href: "/site-pages", hint: "Edit the About page and public page notes", group: "SYSTEM" },
+  { label: "Legal pages", href: "/legal-pages", hint: "Maintain the Privacy, Terms and Guidelines notes", group: "SYSTEM" },
+  { label: "Backups", href: "/backups", hint: "Database backups and restore in R2", group: "SYSTEM" },
+  { label: "Settings", href: "/settings", hint: "Maintenance and workspace status", group: "SYSTEM" },
+  { label: "Cron Jobs", href: "/settings/cron", hint: "Cron job execution history and monitoring", group: "SYSTEM" },
+];
+
+// Combine all pages in order
+const allPages: NavItem[] = [
+  ...overviewPages,
+  ...mediaPages,
+  ...peopleAndWorkPages,
+  ...communityPages,
+  ...systemPages,
 ];
 
 export function mainNavigation(): NavItem[] {
-  return sectionPages;
+  return allPages;
 }
 
 export function staffNavigation(canManageStaff: boolean): NavItem[] {
-  return canManageStaff ? [...sectionPages, ...staffPages] : sectionPages;
+  // All pages are available to staff, filtering is done by capabilities
+  return allPages;
 }
 
 /**
@@ -83,6 +103,7 @@ const itemCapabilities: Record<string, string[]> = {
   "/site-pages": ["staff.manage"],
   "/legal-pages": ["staff.manage"],
   "/media": ["staff.manage"],
+  "/gallery": ["staff.manage"],
   "/backups": ["staff.manage"],
   "/settings": ["staff.manage"],
   "/settings/cron": ["staff.manage"],
