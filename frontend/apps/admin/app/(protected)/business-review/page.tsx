@@ -4,6 +4,7 @@ import { reviewBusiness, decideBusinessClaim, featureBusiness, deleteBusiness } 
 import BusinessCreateForm from "../../../components/business-create-form";
 import BusinessEditForm from "../../../components/business-edit-form";
 import ConfirmSubmit from "../../../components/confirm-submit";
+import FormSubmitButton from "../../../components/form-submit-button";
 import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "@epelawa/ui";
 
 type PublishedRow = {
@@ -117,7 +118,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
             <label className="ui-field"><span className="label">Decision</span><select name="status" required defaultValue="" className="input"><option value="" disabled>Choose a decision</option><option value="approved">Approve — link the member as owner</option><option value="rejected">Reject — with a reason</option></select></label>
             <label className="ui-field"><span className="label">Decision note (required when rejecting)</span><textarea name="note" maxLength={1000} className="input" /></label>
           </div>
-          <div className="ui-actions"><button className="btn-primary" type="submit">Record claim decision</button></div>
+          <div className="ui-actions"><FormSubmitButton className="btn-primary">Record claim decision</FormSubmitButton></div>
         </form>
       </Panel></li>)}</ul>}
     </section>
@@ -130,7 +131,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
           <label className="ui-field"><span className="label">Business</span><select name="business_id" required defaultValue="" className="input"><option value="" disabled>Choose a published business</option>{publishedBusinesses.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}</select></label>
           <label className="ui-field"><span className="label">Run for (days)</span><input className="input" name="days" type="number" min={1} max={90} defaultValue={7} required /></label>
         </div>
-        <div className="ui-actions"><button className="btn-primary" type="submit">Feature this business</button></div>
+        <div className="ui-actions"><FormSubmitButton className="btn-primary">Feature this business</FormSubmitButton></div>
       </form>
     </Panel>
     {error ? <EmptyPanel title="Queue unavailable" description="No listing details are shown. Try again later." /> : !data?.length ? <EmptyPanel title="No submissions awaiting review" description="New business submissions will appear here for staff review." /> : <section className="ui-stack-sm"><SectionHeading eyebrow="Review queue" title="Pending submissions" description="Review each listing and record a clear, auditable decision." action={<a className="btn-secondary" href="/admin/business-review/export">Download CSV</a>} />
@@ -148,7 +149,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
             <label className="ui-field"><span className="label">Reason (at least 5 characters)</span><textarea name="note" required minLength={5} maxLength={1000} className="input" /></label>
             <label className="ui-field"><span className="label">Verification evidence (required to publish, at least 10 characters)</span><textarea name="evidence" maxLength={2000} className="input" /></label>
           </div>
-          <div className="ui-actions"><button className="btn-primary" type="submit">Record review decision</button></div>
+          <div className="ui-actions"><FormSubmitButton className="btn-primary">Record review decision</FormSubmitButton></div>
         </form>
       </Panel></li>)}</ul>
     </section>}

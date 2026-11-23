@@ -69,7 +69,7 @@ export default async function ForumModerationPage({ searchParams }: { searchPara
               <div className="ui-field"><label className="label" htmlFor={`action-${report.id}`}>Resolution</label><select className="input" id={`action-${report.id}`} name="action" defaultValue="dismiss"><option value="dismiss">Dismiss report</option><option value="hide">Hide post</option><option value="restore">Restore post</option></select></div>
               <div className="ui-field"><label className="label" htmlFor={`reason-${report.id}`}>Staff reason (required, at least 5 characters)</label><textarea className="input" id={`reason-${report.id}`} name="resolutionReason" required minLength={5} maxLength={1000} rows={3} /></div>
             </div>
-            <div className="ui-actions"><SubmitButton pendingLabel="Recording…" className="btn-primary">Record resolution</SubmitButton></div>
+            <div className="ui-actions"><SubmitButton pendingLabel="Recording…" className="btn-primary" useLegacyClasses>Record resolution</SubmitButton></div>
           </form>
         </article>)}
       </div>}

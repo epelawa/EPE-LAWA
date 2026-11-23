@@ -86,7 +86,7 @@ export default async function AppealsPage({ searchParams }: { searchParams: Prom
           </label>
           <label className="ui-field"><span className="label">Decision note (required, shown to the member)</span><textarea name="note" maxLength={1000} className="input" /></label>
         </div>
-        <div className="ui-actions"><SubmitButton pendingLabel="Recording…" className="btn-primary">Record appeal decision</SubmitButton></div>
+        <div className="ui-actions"><SubmitButton pendingLabel="Recording…" className="btn-primary" useLegacyClasses useLegacyClasses>Record appeal decision</SubmitButton></div>
       </form>
     ) : (
       <p className="ui-meta">Decision: {row.decision_note ?? "—"} · {new Date(row.updated_at).toLocaleString("en-NG")}</p>

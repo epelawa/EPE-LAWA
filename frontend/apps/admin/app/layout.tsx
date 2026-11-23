@@ -10,7 +10,7 @@ import "./native-controls.css";
 import AdminSidebar from "../components/admin-sidebar";
 import SiteHeader from "../components/site-header";
 import SiteFooter from "../components/site-footer";
-import { staffNavigation } from "../lib/navigation";
+import { staffNavigation, filterNavigationByCapabilities } from "../lib/navigation";
 import { createClient } from "../lib/supabase";
 import { siteUrl } from "../lib/site";
 import { themeScript } from "../lib/theme";
@@ -32,7 +32,7 @@ export const viewport: Viewport = { themeColor: "#F1F4FA" };
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 
-type AdminIdentity = { email: string | null; role: string };
+type AdminIdentity = { email: string | null; role: string; capabilities: string[] };
 
 async function loadIdentity(): Promise<AdminIdentity> {
   try {
@@ -70,8 +70,14 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   try {
     const db = await createClient();
     const { data: canManageStaff, error } = await db.rpc("staff_roles_authorized");
-    navigation = staffNavigation(!error && canManageStaff === true);
+    const allNavItems = staffNavigation(!error && canManageStaff === true);
     identity = await loadIdentity();
+    // Filter navigation based on user's capabilities
+    if (identity?.capabilities) {
+      navigation = filterNavigationByCapabilities(allNavItems, identity.capabilities);
+    } else {
+      navigation = allNavItems;
+    }
   } catch (error) {
     if (!(error instanceof Error) || error.message !== "Unauthorized") throw error;
   }

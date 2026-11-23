@@ -61,7 +61,7 @@ export default async function PollPage({ searchParams }: { searchParams: Promise
           {[1, 2, 3, 4, 5, 6].map((slot) => <label key={slot} className="ui-field"><span className="label">Option {slot}{slot <= 2 ? " (required)" : " (optional)"}</span><input className="input" name="options" maxLength={120} required={slot <= 2} /></label>)}
         </div>
         <label className="ui-field"><span className="label">Run for (days)</span><input className="input" name="days" type="number" min={1} max={90} defaultValue={7} required /></label>
-        <div className="ui-actions"><SubmitButton pendingLabel="Publishing…" className="btn-primary w-fit">Publish poll</SubmitButton></div>
+        <div className="ui-actions"><SubmitButton pendingLabel="Publishing…" className="btn-primary w-fit" useLegacyClasses>Publish poll</SubmitButton></div>
       </form>
     </Panel>
 

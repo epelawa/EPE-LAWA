@@ -96,7 +96,7 @@ function NotificationPreferencesPanel({ preferences }: { preferences: Notificati
         <legend>Push (this device, after browser opt-in)</legend>
         {pushPreferenceRows.map((row) => <PreferenceRow key={row.key} name={row.key} title={row.title} description={row.description} checked={preferences[row.key]} />)}
       </fieldset>
-      <SubmitButton pendingLabel="Saving…" className="btn-primary">Save preferences</SubmitButton>
+      <SubmitButton pendingLabel="Saving…" className="btn-primary" useLegacyClasses>Save preferences</SubmitButton>
     </form>
   </section>;
 }
@@ -196,7 +196,7 @@ async function DashboardSaved() {
               <input type="hidden" name="articleId" value={story.id} />
               <input type="hidden" name="slug" value={story.slug} />
               <input type="hidden" name="intent" value="remove" />
-              <SubmitButton pendingLabel="Removing…" className="btn-secondary">Remove</SubmitButton>
+              <SubmitButton pendingLabel="Removing…" className="btn-secondary" useLegacyClasses>Remove</SubmitButton>
             </form>
           </li>)}
         </ul>}
@@ -217,7 +217,7 @@ function DashboardNotifications({ notifications, error, preferences }: { notific
         <h1 id="notifications-title">Your notifications</h1>
         <p className={styles.helper}>Replies, moderation decisions and newsroom updates addressed to your member account.</p>
       </div>
-      {unread > 0 ? <form action={markNotificationsRead}><SubmitButton pendingLabel="Marking…" className="btn-secondary">Mark all as read</SubmitButton></form> : <span className={styles.handle}>All read</span>}
+      {unread > 0 ? <form action={markNotificationsRead}><SubmitButton pendingLabel="Marking…" className="btn-secondary" useLegacyClasses>Mark all as read</SubmitButton></form> : <span className={styles.handle}>All read</span>}
     </header>
     <NotificationSoundSettings />
     {preferences ? <NotificationPreferencesPanel preferences={preferences} /> : null}
@@ -251,7 +251,7 @@ function DashboardNotifications({ notifications, error, preferences }: { notific
 function setupScreen({ title, description, children }: { title: string; description: string; children: ReactNode }) {
   return <AccountShell eyebrow="Member dashboard" title={title} description={description}>
     {children}
-    <form action={signOut}><SubmitButton pendingLabel="Signing out…" className="btn-secondary">Sign out</SubmitButton></form>
+    <form action={signOut}><SubmitButton pendingLabel="Signing out…" className="btn-secondary" useLegacyClasses>Sign out</SubmitButton></form>
   </AccountShell>;
 }
 
@@ -292,7 +292,7 @@ export default async function MemberDashboardPage({ searchParams }: { searchPara
   let profile = initialProfile.data as MemberProfileSnapshot | null;
 
   if (error) {
-    return <main className={`${styles.shell} member-dashboard-shell`}><section className={styles.unavailable}><p className={styles.eyebrow}>Member dashboard</p><h1>Profile unavailable</h1><p>We couldn’t load your member profile. Your account is still protected; try again later.</p><form action={signOut}><SubmitButton pendingLabel="Signing out…" className="btn-secondary">Sign out</SubmitButton></form></section></main>;
+    return <main className={`${styles.shell} member-dashboard-shell`}><section className={styles.unavailable}><p className={styles.eyebrow}>Member dashboard</p><h1>Profile unavailable</h1><p>We couldn’t load your member profile. Your account is still protected; try again later.</p><form action={signOut}><SubmitButton pendingLabel="Signing out…" className="btn-secondary" useLegacyClasses>Sign out</SubmitButton></form></section></main>;
   }
 
   let bootstrap: MemberEntryInput["bootstrap"] = "not-needed";
@@ -392,7 +392,7 @@ export default async function MemberDashboardPage({ searchParams }: { searchPara
                   <SecurityCard email={user.email ?? "your email address"} memberSince={profile.created_at ? formatPublishedDate(profile.created_at) : null} />
                   <AppealsPanel />
                   <form action={signOutEverywhere} className="ui-stack-sm ui-divider">
-                    <SubmitButton pendingLabel="Signing out…" className="btn-ghost">Sign out everywhere</SubmitButton>
+                    <SubmitButton pendingLabel="Signing out…" className="btn-ghost" useLegacyClasses>Sign out everywhere</SubmitButton>
                     <p className={styles.helper}>Ends this session and every other signed-in session for your account on all devices.</p>
                   </form>
                 </section>

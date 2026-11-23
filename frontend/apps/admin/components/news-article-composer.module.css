@@ -1,4 +1,4 @@
-.composer { display:grid; gap:18px; color:#17264a; }
+.composer { display:grid; gap:18px; color:#17264a; min-height:80vh; }
 .intro { display:flex; justify-content:space-between; align-items:center; gap:14px; padding:clamp(14px,2vw,20px); border:1px solid #d4e2f5; border-radius:16px; background:linear-gradient(115deg,#eaf2ff,#f9fbff 75%); }
 .intro h2 { margin:4px 0; font-size:clamp(1.35rem,2.5vw,1.7rem); letter-spacing:-.04em; }
 .intro p,.sectionTop p,.publishInfo p,.dialogHeader p { margin:0; color:#52617a; line-height:1.6; font-size:.875rem; }
@@ -14,7 +14,7 @@
 .field label { display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px; color:#17264a; font-size:.875rem; font-weight:750; }
 .field label span,.advanced summary span { color:#687b98; font-size:.72rem; font-weight:600; }
 .field :is(input,textarea,select), .ep-live-field :is(input,textarea,select) { width:100%; min-width:0; min-height:44px; padding:10px 13px; border:1px solid #cbd7e7; border-radius:11px; background:#fbfcff; color:#0a1023; font-size:1rem; line-height:1.5; }
-.field textarea, .ep-live-field textarea { resize:none; }
+.field textarea, .ep-live-field textarea { resize:vertical; min-height:100px; }
 .ep-live-field__label { color:#17264a !important; font-size:.875rem !important; font-weight:750 !important; justify-content:space-between; }
 .ep-live-field__message { color:#52617a; }
 .stepError { margin:0; padding:10px 14px; border:1px solid #f3c1c1; border-radius:11px; background:#fdf1f1; color:#b91c1c; font-size:.85rem; font-weight:650; }

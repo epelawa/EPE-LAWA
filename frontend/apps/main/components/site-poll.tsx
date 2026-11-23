@@ -51,7 +51,7 @@ export default async function SitePoll() {
           <span>{option.label}</span>
         </label>)}
       </fieldset>
-      <div className="ui-actions"><SubmitButton pendingLabel="Voting…" className="btn-primary w-fit">Cast your vote</SubmitButton></div>
+      <div className="ui-actions"><SubmitButton pendingLabel="Voting…" className="btn-primary w-fit" useLegacyClasses>Cast your vote</SubmitButton></div>
       <p className="ui-meta">One vote per member; you can change it until the poll closes.</p>
     </form> : <div className="ui-stack-sm pt-1">
       {options.map((option) => {

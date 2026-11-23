@@ -520,3 +520,47 @@ html { transition: background-color var(--ep-dur-base, 200ms) var(--ep-ease-out)
   cursor: pointer;
 }
 .lang-toggle:hover { border-color: var(--ep-primary, #477fe0); color: var(--ep-primary, #477fe0); }
+
+/* Mobile Responsiveness */
+@media (max-width: 639px) {
+  body { --gutter: 16px; --header-h: 56px; --section-y: 40px; }
+  button, [role="button"], a[href] { min-height: 48px; min-width: 48px; }
+  .ui-panel, .ep-glass { padding: 16px; }
+  .container, .site-main, main { width: 100%; padding-inline: var(--gutter); }
+  .ui-stack { display: flex; flex-direction: column; gap: 16px; }
+  .ui-row { flex-direction: column; align-items: flex-start; }
+  .ui-form-grid { grid-template-columns: 1fr; gap: 16px; }
+  .ui-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+  table { width: 100%; display: block; overflow-x: auto; }
+  input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; }
+}
+
+@media (min-width: 640px) and (max-width: 767px) {
+  body { --gutter: 20px; --section-y: 48px; }
+  .ui-form-grid { grid-template-columns: repeat(2, 1fr); }
+  dialog, [role="dialog"] { width: calc(100% - 40px); max-width: 500px; }
+}
+
+@media (min-width: 768px) {
+  body { --gutter: 24px; --section-y: 64px; }
+  .ui-form-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (min-width: 1024px) {
+  body { --gutter: 32px; --section-y: 80px; }
+  .site-main { max-width: var(--content-max, 1160px); margin-inline: auto; }
+  .ui-form-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* Accessibility */
+.skip-link { position: absolute; top: -40px; left: 0; background: var(--ep-primary); color: var(--ep-primary-fg); padding: 8px 16px; z-index: 9999; transition: top 0.3s; }
+.skip-link:focus { top: 0; }
+
+.sr-only, .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+
+@media (prefers-contrast: high) { body { background: #fff; color: #000; } a { text-decoration: underline; } }
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+
+/* Dark mode */
+[data-theme="dark"] { --background: 220 47.37% 8.82%; --foreground: 218.8 54.8% 93.9%; --card: 218.8 54.8% 15%; --primary: 218.04 71.16% 80.78%; }

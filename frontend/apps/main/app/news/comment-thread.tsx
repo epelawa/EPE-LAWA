@@ -130,7 +130,7 @@ export async function CommentThread({ articleId, slug, notice }: Props) {
             <input type="hidden" name="slug" value={slug} /><input type="hidden" name="comment_id" value={comment.id} />
             <label className={field}>Reason<select className="input" name="reason" required defaultValue=""><option value="" disabled>Choose a reason</option>{[["spam","Spam"],["harassment","Harassment"],["hate","Hate or slurs"],["misinformation","Misinformation"],["privacy","Privacy concern"],["other","Other"]].map(([value,label]) => <option value={value} key={value}>{label}</option>)}</select></label>
             <label className={field}>Additional context (optional)<textarea className={textarea} name="note" maxLength={1000} rows={3} /></label>
-            <SubmitButton pendingLabel="Sending…" className="btn-secondary w-fit">Send private report</SubmitButton>
+            <SubmitButton pendingLabel="Sending…" className="btn-secondary w-fit" useLegacyClasses>Send private report</SubmitButton>
           </form>
         </details> : null}
       </div>
@@ -156,7 +156,7 @@ export async function CommentThread({ articleId, slug, notice }: Props) {
       {user && comment.state === "visible" ? <form action={postArticleComment} className="ui-divider ui-stack-sm mt-4 max-w-2xl pt-3">
         <input type="hidden" name="slug" value={slug} /><input type="hidden" name="article_id" value={articleId} /><input type="hidden" name="parent_id" value={comment.id} />
         <label className={field} htmlFor={`reply-${comment.id}`}>Reply<textarea id={`reply-${comment.id}`} name="body" required maxLength={4000} rows={3} className={textarea} /></label>
-        <SubmitButton pendingLabel="Posting…" className="btn-primary w-fit">Post reply</SubmitButton>
+        <SubmitButton pendingLabel="Posting…" className="btn-primary w-fit" useLegacyClasses>Post reply</SubmitButton>
       </form> : null}
     </li>)}</ol> : null}
     {user ? <details className={styles.commentComposerPanel}><summary className={styles.commentComposeToggle}>Write a comment</summary>

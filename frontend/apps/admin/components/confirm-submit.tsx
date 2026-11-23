@@ -2,7 +2,6 @@
 
 import { useRef, useState, useTransition, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
-import { SubmitButton } from "@epelawa/ui";
 import BrandedDialog from "./branded-dialog";
 import { pushToast } from "../../main/components/toast";
 
@@ -34,10 +33,34 @@ export default function ConfirmSubmit({
   const [isConfirming, startConfirming] = useTransition();
   const busy = pending || isConfirming;
 
+  // Extract button variant from className
+  const getVariant = (cls?: string): "primary" | "secondary" | "danger" | "ghost" => {
+    if (cls?.includes("btn-danger")) return "danger";
+    if (cls?.includes("btn-secondary")) return "secondary";
+    if (cls?.includes("btn-ghost")) return "ghost";
+    return "primary";
+  };
+
+  const variant = getVariant(className);
+  const btnClass = {
+    primary: "btn-primary",
+    secondary: "btn-secondary",
+    danger: "btn-danger",
+    ghost: "btn-ghost",
+  }[variant];
+
   if (!confirmFirst) {
     return (
-      <button ref={buttonRef} type="submit" className={className} aria-busy={pending} disabled={pending} data-pending-self-managed="true" {...rest}>
-        {pending ? "Working" : children}
+      <button 
+        ref={buttonRef} 
+        type="submit" 
+        className={`${btnClass} ${pending ? "btn-busy" : ""} ${className || ""}`.trim()}
+        aria-busy={pending} 
+        disabled={pending} 
+        data-pending-self-managed="true" 
+        {...rest}
+      >
+        {children}
       </button>
     );
   }
@@ -69,13 +92,13 @@ export default function ConfirmSubmit({
       <button
         ref={buttonRef}
         type="button"
-        className={className}
+        className={`${btnClass} ${busy ? "btn-busy" : ""} ${className || ""}`.trim()}
         aria-haspopup="dialog"
         disabled={busy}
         onClick={() => setOpen(true)}
         {...rest}
       >
-        {pending ? "Working" : children}
+        {children}
       </button>
       <BrandedDialog
         open={open}
@@ -95,12 +118,12 @@ export default function ConfirmSubmit({
           </button>
           <button
             type="button"
-            className="btn-primary"
+            className={`btn-primary ${isConfirming ? "btn-busy" : ""}`}
             onClick={handleConfirm}
             disabled={isConfirming}
             aria-busy={isConfirming}
           >
-            {isConfirming ? "Working" : confirmLabel}
+            {confirmLabel}
           </button>
         </div>
       </BrandedDialog>
