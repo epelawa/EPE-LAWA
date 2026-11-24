@@ -301,7 +301,7 @@
 .articlePage :global([data-layout-variant="3"]) .articleHeroCopy { text-align: center; justify-items: center; padding: 12px 0; }
 .articlePage :global([data-layout-variant="3"]) .articleMetaBar { justify-content: center; }
 @media (min-width: 760px) {
-  .articlePage :global([data-layout-variant="2"]) .articleHero { grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); align-items: center; }
+  .articlePage :global([data-layout-variant="2"]) .articleHero { grid-template-columns: minmax(0, 1fr); align-items: center; }
   .articlePage :global([data-layout-variant="2"]) .articleHeroTop { grid-column: 1 / -1; }
 }
 
