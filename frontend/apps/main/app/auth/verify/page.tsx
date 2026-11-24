@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import styles from "./otp-styles.module.css";
+import "./otp-styles.css";
 
 export default function VerifyPage() {
   const [digits, setDigits] = useState<string[]>(Array(4).fill(""));
@@ -81,7 +81,7 @@ export default function VerifyPage() {
         const dy = Math.sin(angle) * radius;
 
         const node = document.createElement('div');
-        node.className = styles.orbitNode;
+        node.className = 'orbit-node';
         node.textContent = currentDigits[i] || '';
         node.style.setProperty('--dx', `${dx}px`);
         node.style.setProperty('--dy', `${dy}px`);
@@ -93,31 +93,31 @@ export default function VerifyPage() {
     const playOrbit = () => {
       buildOrbit();
       if (orbitLayerRef.current) {
-        orbitLayerRef.current.classList.add(styles.active);
+        orbitLayerRef.current.classList.add('active');
       }
       if (orbitRingRef.current) {
         void orbitRingRef.current.offsetWidth;
-        orbitRingRef.current.classList.add(styles.spin);
+        orbitRingRef.current.classList.add('spin');
       }
-      document.querySelectorAll(`.${styles.orbitNode}`).forEach((n: Element) => {
-        (n as HTMLElement).classList.add(styles.nodeFly);
+      document.querySelectorAll('.orbit-node').forEach((n: Element) => {
+        (n as HTMLElement).classList.add('node-fly');
       });
     };
 
     // Trigger orbit when loading starts
     if (isLoading) {
       if (inputStageRef.current) {
-        inputStageRef.current.classList.add(styles.hidden);
+        inputStageRef.current.classList.add('hidden');
       }
       playOrbit();
 
       const orbitTotal = 1600 + 180;
       const orbitTimer = setTimeout(() => {
         if (orbitLayerRef.current) {
-          orbitLayerRef.current.classList.remove(styles.active);
+          orbitLayerRef.current.classList.remove('active');
         }
         if (orbitRingRef.current) {
-          orbitRingRef.current.classList.remove(styles.spin);
+          orbitRingRef.current.classList.remove('spin');
           orbitRingRef.current.innerHTML = '';
         }
         if (inputStageRef.current) {
@@ -129,7 +129,7 @@ export default function VerifyPage() {
           subtitleRef.current.textContent = 'Securely checking your credentials.';
         }
         if (loadingWrapRef.current) {
-          loadingWrapRef.current.classList.add(styles.active);
+          loadingWrapRef.current.classList.add('active');
         }
 
         const start = performance.now();
@@ -163,17 +163,17 @@ export default function VerifyPage() {
     if (!isSuccess) return;
 
     if (loadingWrapRef.current) {
-      loadingWrapRef.current.classList.remove(styles.active);
+      loadingWrapRef.current.classList.remove('active');
     }
     
     // Spawn confetti/bubbles
     spawnSplash();
     
     if (successWrapRef.current) {
-      successWrapRef.current.classList.add(styles.active);
+      successWrapRef.current.classList.add('active');
     }
     if (cardRef.current) {
-      cardRef.current.classList.add(styles.successTint);
+      cardRef.current.classList.add('success-tint');
     }
 
     if (titleRef.current && subtitleRef.current) {
@@ -198,13 +198,13 @@ export default function VerifyPage() {
     if (!isError) return;
 
     if (loadingWrapRef.current) {
-      loadingWrapRef.current.classList.remove(styles.active);
+      loadingWrapRef.current.classList.remove('active');
     }
     if (cardRef.current) {
-      cardRef.current.classList.add(styles.shake);
+      cardRef.current.classList.add('shake');
     }
     if (errorMsgRef.current) {
-      errorMsgRef.current.classList.add(styles.show);
+      errorMsgRef.current.classList.add('show');
     }
     if (titleRef.current && subtitleRef.current) {
       titleRef.current.textContent = 'Verification Failed';
@@ -213,7 +213,7 @@ export default function VerifyPage() {
 
     const shakeTimer = setTimeout(() => {
       if (cardRef.current) {
-        cardRef.current.classList.remove(styles.shake);
+        cardRef.current.classList.remove('shake');
       }
     }, 500);
 
@@ -232,7 +232,7 @@ export default function VerifyPage() {
   const spawnSplash = () => {
     if (!successWrapRef.current) return;
     
-    successWrapRef.current.querySelectorAll(`.${styles.confetti}`).forEach((c: Element) => {
+    successWrapRef.current.querySelectorAll('.confetti').forEach((c: Element) => {
       c.remove();
     });
 
@@ -247,7 +247,7 @@ export default function VerifyPage() {
       const cy = Math.sin(angle) * dist;
 
       const dot = document.createElement('div');
-      dot.className = styles.confetti;
+      dot.className = 'confetti';
       dot.style.background = colors[i % colors.length];
       dot.style.setProperty('--cx', `${cx}px`);
       dot.style.setProperty('--cy', `${cy}px`);
@@ -272,10 +272,10 @@ export default function VerifyPage() {
     setDigits(Array(4).fill(""));
 
     if (cardRef.current) {
-      cardRef.current.classList.remove(styles.shake, styles.successTint);
+      cardRef.current.classList.remove('shake', 'success-tint');
     }
     if (errorMsgRef.current) {
-      errorMsgRef.current.classList.remove(styles.show);
+      errorMsgRef.current.classList.remove('show');
     }
     if (titleRef.current && subtitleRef.current) {
       titleRef.current.textContent = 'Enter Access Code';
@@ -283,26 +283,26 @@ export default function VerifyPage() {
     }
 
     if (orbitLayerRef.current) {
-      orbitLayerRef.current.classList.remove(styles.active);
+      orbitLayerRef.current.classList.remove('active');
     }
     if (orbitRingRef.current) {
-      orbitRingRef.current.classList.remove(styles.spin);
+      orbitRingRef.current.classList.remove('spin');
       orbitRingRef.current.innerHTML = '';
     }
 
     if (loadingWrapRef.current) {
-      loadingWrapRef.current.classList.remove(styles.active);
+      loadingWrapRef.current.classList.remove('active');
     }
     if (loadingPercentRef.current) {
       loadingPercentRef.current.textContent = '0';
     }
 
     if (successWrapRef.current) {
-      successWrapRef.current.classList.remove(styles.active);
-      successWrapRef.current.querySelectorAll(`.${styles.confetti}`).forEach((c: Element) => {
+      successWrapRef.current.classList.remove('active');
+      successWrapRef.current.querySelectorAll('.confetti').forEach((c: Element) => {
         c.remove();
       });
-      successWrapRef.current.querySelectorAll(`.${styles.bubble}, .${styles.successFlash}`).forEach((el: Element) => {
+      successWrapRef.current.querySelectorAll('.bubble, .success-flash').forEach((el: Element) => {
         (el as HTMLElement).style.animation = 'none';
         void (el as HTMLElement).offsetWidth;
         (el as HTMLElement).style.animation = '';
@@ -312,7 +312,7 @@ export default function VerifyPage() {
     if (inputStageRef.current) {
       inputStageRef.current.style.display = 'flex';
       void inputStageRef.current.offsetWidth;
-      inputStageRef.current.classList.remove(styles.hidden);
+      inputStageRef.current.classList.remove('hidden');
     }
 
     if (resendBtnRef.current) {
@@ -322,6 +322,18 @@ export default function VerifyPage() {
     if (immediateFocus !== false) {
       inputRefs.current[0]?.focus();
     }
+  };
+
+  const handleSuccess = () => {
+    setIsLoading(false);
+    setIsSuccess(true);
+    setIsError(false);
+  };
+
+  const handleError = () => {
+    setIsLoading(false);
+    setIsSuccess(false);
+    setIsError(true);
   };
 
   const handleDigitChange = (index: number, value: string) => {
@@ -381,27 +393,27 @@ export default function VerifyPage() {
   };
 
   return (
-    <div className={styles.container}>
+    <div className="container">
       {/* Background elements */}
-      <div className={styles.pointerLight} id="pointerLight"></div>
-      <div className={styles.noise}></div>
+      <div className="pointer-light" id="pointerLight"></div>
+      <div className="noise"></div>
 
       {/* Main card */}
-      <main className={styles.card} id="card" ref={cardRef}>
-        <h1 className={styles.title} id="title" ref={titleRef}>Enter Access Code</h1>
-        <p className={styles.subtitle} id="subtitle" ref={subtitleRef}>
+      <main className="card" id="card" ref={cardRef}>
+        <h1 className="title" id="title" ref={titleRef}>Enter Access Code</h1>
+        <p className="subtitle" id="subtitle" ref={subtitleRef}>
           A 4-digit code has been sent to your device.
         </p>
 
-        <div className={styles.stage} id="stage">
+        <div className="stage" id="stage">
           {/* OTP Inputs */}
-          <div className={styles.inputStage} id="inputStage" ref={inputStageRef}>
+          <div className="input-stage" id="inputStage" ref={inputStageRef}>
             {Array.from({ length: 4 }, (_, index) => (
               <input
                 key={index}
                 ref={(el) => (inputRefs.current[index] = el)}
                 type="text"
-                className={`${styles.inputPill} ${digits[index] ? styles.filled : ''} ${isError ? styles.error : ''}`}
+                className={`input-pill ${digits[index] ? 'filled' : ''} ${isError ? 'error' : ''}`}
                 maxLength={1}
                 inputMode="numeric"
                 pattern="[0-9]*"
@@ -422,30 +434,30 @@ export default function VerifyPage() {
           </div>
 
           {/* Orbit layer (visual effect) */}
-          <div className={styles.orbitLayer} id="orbitLayer" ref={orbitLayerRef}>
-            <div className={styles.orbitRing} id="orbitRing" ref={orbitRingRef}></div>
+          <div className="orbit-layer" id="orbitLayer" ref={orbitLayerRef}>
+            <div className="orbit-ring" id="orbitRing" ref={orbitRingRef}></div>
           </div>
 
           {/* Loading animation */}
-          <div className={styles.loadingWrap} id="loadingWrap" ref={loadingWrapRef}>
-            <div className={styles.loadingCore}>
-              <div className={styles.loadingRing}></div>
-              <div className={styles.loadingPulse}></div>
-              <div className={styles.loadingInner} id="loadingPercent" ref={loadingPercentRef}>
+          <div className="loading-wrap" id="loadingWrap" ref={loadingWrapRef}>
+            <div className="loading-core">
+              <div className="loading-ring"></div>
+              <div className="loading-pulse"></div>
+              <div className="loading-inner" id="loadingPercent" ref={loadingPercentRef}>
                 0
               </div>
             </div>
           </div>
 
           {/* Success animation */}
-          <div className={styles.successWrap} id="successWrap" ref={successWrapRef}>
-            <div className={styles.successFlash}></div>
-            <div className={styles.bubble}></div>
-            <div className={styles.bubble}></div>
-            <div className={styles.bubble}></div>
-            <div className={styles.successVault}>
+          <div className="success-wrap" id="successWrap" ref={successWrapRef}>
+            <div className="success-flash"></div>
+            <div className="bubble"></div>
+            <div className="bubble"></div>
+            <div className="bubble"></div>
+            <div className="success-vault">
               <svg
-                className={styles.checkmark}
+                className="checkmark"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -456,18 +468,18 @@ export default function VerifyPage() {
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
             </div>
-            <div className={styles.successBadge}>Verified</div>
+            <div className="success-badge">Verified</div>
           </div>
         </div>
 
         {/* Error message */}
-        <div className={styles.errorMsg} id="errorMsg" ref={errorMsgRef}>
+        <div className="error-msg" id="errorMsg" ref={errorMsgRef}>
           Incorrect code. Please try again.
         </div>
 
         {/* Resend button */}
         <button
-          className={styles.resendBtn}
+          className="resend-btn"
           id="resendBtn"
           ref={resendBtnRef}
           onClick={handleResend}
@@ -478,7 +490,7 @@ export default function VerifyPage() {
 
         {/* Countdown display */}
         {!canResend && countdown > 0 && (
-          <p className={styles.countdown}>Resend in {countdown}s</p>
+          <p className="countdown">Resend in {countdown}s</p>
         )}
       </main>
     </div>
