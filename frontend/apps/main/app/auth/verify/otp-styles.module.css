@@ -1,0 +1,469 @@
+/* ===== CSS Variables ===== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #09090b;
+    --card-bg: rgba(24, 24, 27, 0.85);
+    --text-main: #f4f4f5;
+    --text-muted: #a1a1aa;
+    --shadow-card: 0 20px 40px -15px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+    --shadow-input: 0 4px 12px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  }
+}
+
+:root {
+  --bg-color: #fafafa;
+  --card-bg: rgba(255, 255, 255, 0.85);
+  --text-main: #1e1b4b;
+  --text-muted: #64748b;
+  --accent: #6366f1;
+  --accent-glow: rgba(99, 102, 241, 0.2);
+  --success: #10b981;
+  --success-glow: rgba(16, 185, 129, 0.35);
+  --error: #f43f5e;
+  --error-glow: rgba(244, 63, 94, 0.2);
+  --shadow-card: 0 20px 40px -15px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+  --shadow-input: 0 4px 12px rgba(0, 0, 0, 0.03), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  --shadow-focus: 0 0 0 3px var(--accent-glow), 0 4px 12px rgba(0, 0, 0, 0.03);
+  --radius-card: 24px;
+  --radius-input: 14px;
+  --radius-pill: 999px;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --transition-smooth: 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* ===== Reset & Base ===== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.container {
+  font-family: var(--font);
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  transition: background-color var(--transition-smooth);
+}
+
+/* ===== Pointer Light Effect ===== */
+.pointerLight {
+  position: fixed;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  mix-blend-mode: multiply;
+  top: 0;
+  left: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .pointerLight {
+    mix-blend-mode: screen;
+  }
+}
+
+/* ===== Noise Background ===== */
+.noise {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ===== Card ===== */
+.card {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 420px;
+  background: var(--card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--radius-card);
+  padding: 48px 32px 40px;
+  box-shadow: var(--shadow-card);
+  animation: cardEnter 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes cardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ===== Title & Subtitle ===== */
+.title {
+  color: var(--text-main);
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.05em;
+  margin-bottom: 8px;
+  animation: textEnter 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 32px;
+  animation: textEnter 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+
+@keyframes textEnter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== Stage ===== */
+.stage {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+/* ===== Input Stage ===== */
+.inputStage {
+  display: flex;
+  gap: 16px;
+  position: relative;
+  z-index: 3;
+}
+
+/* ===== Input Pills ===== */
+.inputPill {
+  width: 56px;
+  height: 64px;
+  border-radius: var(--radius-pill);
+  border: 2px solid hsl(var(--border));
+  background: transparent;
+  color: var(--text-main);
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.inputPill:focus {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-focus);
+  transform: scale(1.05);
+}
+
+.inputPill:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== Orbit Layer ===== */
+.orbitLayer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.orbitRing {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border: 2px solid transparent;
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 10s linear infinite;
+  opacity: 0.3;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ===== Loading Animation ===== */
+.loadingWrap {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  z-index: 4;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.loadingWrap[data-visible="true"] {
+  opacity: 1;
+}
+
+.loadingCore {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.loadingRing {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 4px solid transparent;
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loadingPulse {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  50% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.5; }
+}
+
+.loadingInner {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* ===== Success Animation ===== */
+.successWrap {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 4;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.successWrap[data-visible="true"] {
+  opacity: 1;
+}
+
+.successFlash {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, var(--success-glow) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: flash 1s ease-out both;
+}
+
+@keyframes flash {
+  from { transform: scale(0); opacity: 1; }
+  to { transform: scale(1); opacity: 0; }
+}
+
+.bubble {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: var(--success);
+  border-radius: 50%;
+  animation: bubbleFloat 1.5s ease-out infinite;
+}
+
+.bubble:nth-child(2) { animation-delay: 0.2s; left: 30%; }
+.bubble:nth-child(3) { animation-delay: 0.4s; right: 30%; }
+
+@keyframes bubbleFloat {
+  0% { transform: translateY(0) scale(0); opacity: 0; }
+  50% { transform: translateY(-30px) scale(1); opacity: 1; }
+  100% { transform: translateY(-60px) scale(0); opacity: 0; }
+}
+
+.successVault {
+  width: 80px;
+  height: 80px;
+  background: var(--success);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: vaultOpen 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes vaultOpen {
+  from { transform: scale(0) rotate(-180deg); opacity: 0; }
+  to { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+.checkmark {
+  width: 40px;
+  height: 40px;
+  color: white;
+  animation: checkmarkDraw 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.3s both;
+}
+
+@keyframes checkmarkDraw {
+  from { stroke-dashoffset: 100; }
+  to { stroke-dashoffset: 0; }
+}
+
+.successBadge {
+  margin-top: 16px;
+  color: var(--success);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  animation: textEnter 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
+}
+
+/* ===== Error Message ===== */
+.errorMsg {
+  color: var(--error);
+  font-size: 0.9rem;
+  text-align: center;
+  margin-top: 16px;
+  animation: shake 0.5s ease both;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-5px); }
+  40%, 80% { transform: translateX(5px); }
+}
+
+/* ===== Resend Button ===== */
+.resendBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 24px;
+  padding: 12px 24px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.resendBtn:hover:not(:disabled) {
+  color: var(--text-main);
+}
+
+.resendBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.resendBtn span {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ===== Countdown ===== */
+.countdown {
+  text-align: center;
+  margin-top: 8px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 480px) {
+  .card {
+    padding: 32px 24px 28px;
+    margin: 0 16px;
+  }
+  
+  .title {
+    font-size: 1.5rem;
+  }
+  
+  .inputPill {
+    width: 48px;
+    height: 56px;
+    font-size: 1.25rem;
+  }
+  
+  .inputStage {
+    gap: 12px;
+  }
+  
+  .orbitRing {
+    width: 180px;
+    height: 180px;
+  }
+}
+
+/* ===== Focus States ===== */
+.inputPill:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ===== Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
