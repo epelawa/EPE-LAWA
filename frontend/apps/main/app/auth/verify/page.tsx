@@ -93,11 +93,11 @@ export default function VerifyPage() {
     const playOrbit = () => {
       buildOrbit();
       if (orbitLayerRef.current) {
-        orbitLayerRef.current.classList.add('active');
+        orbitLayerRef.current?.classList.add('active');
       }
       if (orbitRingRef.current) {
-        void orbitRingRef.current.offsetWidth;
-        orbitRingRef.current.classList.add('spin');
+        void orbitRingRef.current?.offsetWidth;
+        orbitRingRef.current?.classList.add('spin');
       }
       document.querySelectorAll('.orbit-node').forEach((n: Element) => {
         (n as HTMLElement).classList.add('node-fly');
@@ -107,29 +107,27 @@ export default function VerifyPage() {
     // Trigger orbit when loading starts
     if (isLoading) {
       if (inputStageRef.current) {
-        inputStageRef.current.classList.add('hidden');
+        inputStageRef.current?.classList.add('hidden');
       }
       playOrbit();
 
       const orbitTotal = 1600 + 180;
       const orbitTimer = setTimeout(() => {
         if (orbitLayerRef.current) {
-          orbitLayerRef.current.classList.remove('active');
+          orbitLayerRef.current?.classList.remove('active');
         }
         if (orbitRingRef.current) {
-          orbitRingRef.current.classList.remove('spin');
-          orbitRingRef.current.innerHTML = '';
+          orbitRingRef.current?.classList.remove('spin');
+          orbitRingRef.current?.innerHTML = '';
         }
         if (inputStageRef.current) {
-          inputStageRef.current.style.display = 'none';
+          inputStageRef.current?.style.display = 'none';
         }
 
-        if (titleRef.current && subtitleRef.current) {
-          titleRef.current.textContent = 'Verifying...';
-          subtitleRef.current.textContent = 'Securely checking your credentials.';
-        }
+        titleRef.current?.textContent = 'Verifying...';
+        subtitleRef.current?.textContent = 'Securely checking your credentials.';
         if (loadingWrapRef.current) {
-          loadingWrapRef.current.classList.add('active');
+          loadingWrapRef.current?.classList.add('active');
         }
 
         const start = performance.now();
@@ -137,7 +135,7 @@ export default function VerifyPage() {
           const p = Math.min((now - start) / 2000, 1);
           const eased = 1 - Math.pow(1 - p, 2.2);
           if (loadingPercentRef.current) {
-            loadingPercentRef.current.textContent = Math.round(eased * 100).toString();
+            loadingPercentRef.current?.textContent = Math.round(eased * 100).toString();
           }
           if (p < 1) requestAnimationFrame(tick);
         }
@@ -163,28 +161,26 @@ export default function VerifyPage() {
     if (!isSuccess) return;
 
     if (loadingWrapRef.current) {
-      loadingWrapRef.current.classList.remove('active');
+      loadingWrapRef.current?.classList.remove('active');
     }
     
     // Spawn confetti/bubbles
     spawnSplash();
     
     if (successWrapRef.current) {
-      successWrapRef.current.classList.add('active');
+      successWrapRef.current?.classList.add('active');
     }
     if (cardRef.current) {
-      cardRef.current.classList.add('success-tint');
+      cardRef.current?.classList.add('success-tint');
     }
 
-    if (titleRef.current && subtitleRef.current) {
-      setTimeout(() => {
-        titleRef.current.textContent = 'Access Granted';
-        subtitleRef.current.textContent = 'Welcome back. Redirecting to your vault...';
-      }, 250);
-    }
+    setTimeout(() => {
+      titleRef.current?.textContent = 'Access Granted';
+      subtitleRef.current?.textContent = 'Welcome back. Redirecting to your vault...';
+    }, 250);
 
     if (resendBtnRef.current) {
-      resendBtnRef.current.style.display = 'none';
+      resendBtnRef.current?.style.display = 'none';
     }
 
     // Redirect after success animation
@@ -198,22 +194,20 @@ export default function VerifyPage() {
     if (!isError) return;
 
     if (loadingWrapRef.current) {
-      loadingWrapRef.current.classList.remove('active');
+      loadingWrapRef.current?.classList.remove('active');
     }
     if (cardRef.current) {
-      cardRef.current.classList.add('shake');
+      cardRef.current?.classList.add('shake');
     }
     if (errorMsgRef.current) {
-      errorMsgRef.current.classList.add('show');
+      errorMsgRef.current?.classList.add('show');
     }
-    if (titleRef.current && subtitleRef.current) {
-      titleRef.current.textContent = 'Verification Failed';
-      subtitleRef.current.textContent = 'The code you entered is incorrect.';
-    }
+    titleRef.current?.textContent = 'Verification Failed';
+    subtitleRef.current?.textContent = 'The code you entered is incorrect.';
 
     const shakeTimer = setTimeout(() => {
       if (cardRef.current) {
-        cardRef.current.classList.remove('shake');
+        cardRef.current?.classList.remove('shake');
       }
     }, 500);
 
@@ -232,7 +226,7 @@ export default function VerifyPage() {
   const spawnSplash = () => {
     if (!successWrapRef.current) return;
     
-    successWrapRef.current.querySelectorAll('.confetti').forEach((c: Element) => {
+    successWrapRef.current?.querySelectorAll('.confetti').forEach((c: Element) => {
       c.remove();
     });
 
@@ -261,7 +255,7 @@ export default function VerifyPage() {
       else if (i % 4 === 1) dot.style.borderRadius = '50% 0 50% 0';
       else dot.style.borderRadius = '50%';
 
-      successWrapRef.current.appendChild(dot);
+      successWrapRef.current?.appendChild(dot);
     }
   };
 
@@ -272,37 +266,35 @@ export default function VerifyPage() {
     setDigits(Array(4).fill(""));
 
     if (cardRef.current) {
-      cardRef.current.classList.remove('shake', 'success-tint');
+      cardRef.current?.classList.remove('shake', 'success-tint');
     }
     if (errorMsgRef.current) {
-      errorMsgRef.current.classList.remove('show');
+      errorMsgRef.current?.classList.remove('show');
     }
-    if (titleRef.current && subtitleRef.current) {
-      titleRef.current.textContent = 'Enter Access Code';
-      subtitleRef.current.textContent = 'A 4-digit code has been sent to your device.';
-    }
+    titleRef.current?.textContent = 'Enter Access Code';
+    subtitleRef.current?.textContent = 'A 4-digit code has been sent to your device.';
 
     if (orbitLayerRef.current) {
-      orbitLayerRef.current.classList.remove('active');
+      orbitLayerRef.current?.classList.remove('active');
     }
     if (orbitRingRef.current) {
-      orbitRingRef.current.classList.remove('spin');
-      orbitRingRef.current.innerHTML = '';
+      orbitRingRef.current?.classList.remove('spin');
+      orbitRingRef.current?.innerHTML = '';
     }
 
     if (loadingWrapRef.current) {
-      loadingWrapRef.current.classList.remove('active');
+      loadingWrapRef.current?.classList.remove('active');
     }
     if (loadingPercentRef.current) {
-      loadingPercentRef.current.textContent = '0';
+      loadingPercentRef.current?.textContent = '0';
     }
 
     if (successWrapRef.current) {
-      successWrapRef.current.classList.remove('active');
-      successWrapRef.current.querySelectorAll('.confetti').forEach((c: Element) => {
+      successWrapRef.current?.classList.remove('active');
+      successWrapRef.current?.querySelectorAll('.confetti').forEach((c: Element) => {
         c.remove();
       });
-      successWrapRef.current.querySelectorAll('.bubble, .success-flash').forEach((el: Element) => {
+      successWrapRef.current?.querySelectorAll('.bubble, .success-flash').forEach((el: Element) => {
         (el as HTMLElement).style.animation = 'none';
         void (el as HTMLElement).offsetWidth;
         (el as HTMLElement).style.animation = '';
@@ -310,13 +302,13 @@ export default function VerifyPage() {
     }
 
     if (inputStageRef.current) {
-      inputStageRef.current.style.display = 'flex';
-      void inputStageRef.current.offsetWidth;
-      inputStageRef.current.classList.remove('hidden');
+      inputStageRef.current?.style.display = 'flex';
+      void inputStageRef.current?.offsetWidth;
+      inputStageRef.current?.classList.remove('hidden');
     }
 
     if (resendBtnRef.current) {
-      resendBtnRef.current.style.display = 'inline-block';
+      resendBtnRef.current?.style.display = 'inline-block';
     }
 
     if (immediateFocus !== false) {
@@ -411,7 +403,7 @@ export default function VerifyPage() {
             {Array.from({ length: 4 }, (_, index) => (
               <input
                 key={index}
-                ref={(el) => (inputRefs.current[index] = el)}
+                ref={(el: HTMLInputElement | null) => { inputRefs.current[index] = el; }}
                 type="text"
                 className={`input-pill ${digits[index] ? 'filled' : ''} ${isError ? 'error' : ''}`}
                 maxLength={1}
