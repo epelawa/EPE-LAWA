@@ -159,3 +159,83 @@
   .home-section-reveal .home-shortcuts a { transition: none; }
 }
 .home-shortcuts a, .home-story-cover-link { -webkit-tap-highlight-color: transparent; }
+
+/* Match the compact, inset mobile hero: deep navy panel, left-led copy and a
+   centered outlined action, while retaining the shared page gutter. */
+.home-hero {
+  width: min(var(--content-max), calc(100% - var(--gutter) * 2));
+  margin-inline: auto;
+}
+.home-hero__visual {
+  min-height: clamp(420px, 42vw, 560px);
+  overflow: hidden;
+  background: #071936;
+}
+.home-hero__media::after {
+  background: linear-gradient(112deg, rgb(5 18 42 / .98), rgb(10 29 63 / .96));
+}
+.home-hero__content,
+.public-home:has(.storage-notice) .home-hero__content {
+  width: 100%;
+  max-width: none;
+  align-items: flex-start;
+  justify-content: center;
+  margin: 0;
+  padding: clamp(36px, 6vw, 64px) clamp(24px, 5.6vw, 56px);
+  text-align: left;
+}
+.home-hero__content h1 {
+  max-width: 16ch;
+  margin: 14px 0 18px;
+  font-size: clamp(2.25rem, 5vw, 4.6rem);
+  line-height: 1.08;
+  letter-spacing: -.045em;
+}
+.home-hero__lede {
+  max-width: 100%;
+  margin: 0;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: #ffdb29;
+  color: #0a1023;
+  font-size: clamp(15px, 1.5vw, 20px);
+  font-weight: 750;
+  line-height: 1.5;
+}
+.home-hero__actions {
+  justify-content: center;
+  padding-top: clamp(22px, 3.4vh, 34px);
+}
+.home-hero__actions .btn-primary {
+  background: transparent;
+  border: 1px solid rgb(255 255 255 / .9);
+  color: #fff;
+  box-shadow: none;
+}
+.home-hero__actions .btn-primary:hover {
+  background: rgb(255 255 255 / .1);
+  box-shadow: none;
+}
+.home-hero__pause,
+.home-hero__slide-control {
+  clip-path: inset(50%);
+}
+.home-hero__pause:focus-visible,
+.home-hero__slide-control:focus-visible {
+  clip-path: none;
+}
+@media (max-width: 700px) {
+  .home-hero__visual { min-height: 360px; }
+  .home-hero__content,
+  .public-home:has(.storage-notice) .home-hero__content {
+    padding: 36px 24px;
+  }
+  .home-hero__content h1 {
+    max-width: 14ch;
+    margin: 14px 0 16px;
+    font-size: clamp(2.15rem, 9vw, 3.2rem);
+  }
+  .home-hero__lede { font-size: 15px; }
+  .home-hero__actions { padding-top: 22px; }
+  .home-hero__actions .btn-primary { min-height: 46px; }
+}

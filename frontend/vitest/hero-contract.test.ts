@@ -15,4 +15,11 @@ describe("community home", () => {
     expect(css).toContain("@media (max-width: 700px)");
     expect(css).toContain("prefers-reduced-motion: reduce");
   });
+  it("keeps the hero inset with the dark panel, yellow strapline and outlined CTA", () => {
+    expect(css).toMatch(/\.home-hero\s*\{[^}]*width:\s*min\(var\(--content-max\),\s*calc\(100%\s*-\s*var\(--gutter\)\s*\*\s*2\)\)/);
+    expect(css).toMatch(/\.home-hero__media::after\s*\{[^}]*linear-gradient\(112deg/);
+    expect(css).toMatch(/\.home-hero__lede\s*\{[^}]*background:\s*#ffdb29/);
+    expect(css).toMatch(/\.home-hero__actions\s*\{[^}]*justify-content:\s*center/);
+    expect(css).not.toMatch(/\.home-hero__content\s*\{[^}]*width:\s*100%\s*!important/);
+  });
 });
