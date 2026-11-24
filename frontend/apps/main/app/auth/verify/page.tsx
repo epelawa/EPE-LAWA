@@ -118,14 +118,18 @@ export default function VerifyPage() {
         }
         if (orbitRingRef.current) {
           orbitRingRef.current?.classList.remove(styles.spin);
-          orbitRingRef.current?.innerHTML = '';
+          orbitRingRef.current.innerHTML = '';
         }
         if (inputStageRef.current) {
-          inputStageRef.current?.style.display = 'none';
+          inputStageRef.current.style.display = 'none';
         }
 
-        titleRef.current?.textContent = 'Verifying...';
-        subtitleRef.current?.textContent = 'Securely checking your credentials.';
+        if (titleRef.current) {
+          titleRef.current.textContent = 'Verifying...';
+        }
+        if (subtitleRef.current) {
+          subtitleRef.current.textContent = 'Securely checking your credentials.';
+        }
         if (loadingWrapRef.current) {
           loadingWrapRef.current?.classList.add(styles.active);
         }
@@ -135,7 +139,7 @@ export default function VerifyPage() {
           const p = Math.min((now - start) / 2000, 1);
           const eased = 1 - Math.pow(1 - p, 2.2);
           if (loadingPercentRef.current) {
-            loadingPercentRef.current?.textContent = Math.round(eased * 100).toString();
+            loadingPercentRef.current.textContent = Math.round(eased * 100).toString();
           }
           if (p < 1) requestAnimationFrame(tick);
         }
@@ -175,12 +179,16 @@ export default function VerifyPage() {
     }
 
     setTimeout(() => {
-      titleRef.current?.textContent = 'Access Granted';
-      subtitleRef.current?.textContent = 'Welcome back. Redirecting to your vault...';
+      if (titleRef.current) {
+        titleRef.current.textContent = 'Access Granted';
+      }
+      if (subtitleRef.current) {
+        subtitleRef.current.textContent = 'Welcome back. Redirecting to your vault...';
+      }
     }, 250);
 
     if (resendBtnRef.current) {
-      resendBtnRef.current?.style.display = 'none';
+      resendBtnRef.current.style.display = 'none';
     }
 
     // Redirect after success animation
@@ -202,8 +210,12 @@ export default function VerifyPage() {
     if (errorMsgRef.current) {
       errorMsgRef.current?.classList.add(styles.show);
     }
-    titleRef.current?.textContent = 'Verification Failed';
-    subtitleRef.current?.textContent = 'The code you entered is incorrect.';
+    if (titleRef.current) {
+      titleRef.current.textContent = 'Verification Failed';
+    }
+    if (subtitleRef.current) {
+      subtitleRef.current.textContent = 'The code you entered is incorrect.';
+    }
 
     const shakeTimer = setTimeout(() => {
       if (cardRef.current) {
@@ -271,22 +283,26 @@ export default function VerifyPage() {
     if (errorMsgRef.current) {
       errorMsgRef.current?.classList.remove(styles.show);
     }
-    titleRef.current?.textContent = 'Enter Access Code';
-    subtitleRef.current?.textContent = 'A 4-digit code has been sent to your device.';
+    if (titleRef.current) {
+      titleRef.current.textContent = 'Enter Access Code';
+    }
+    if (subtitleRef.current) {
+      subtitleRef.current.textContent = 'A 4-digit code has been sent to your device.';
+    }
 
     if (orbitLayerRef.current) {
       orbitLayerRef.current?.classList.remove(styles.active);
     }
     if (orbitRingRef.current) {
       orbitRingRef.current?.classList.remove(styles.spin);
-      orbitRingRef.current?.innerHTML = '';
+      orbitRingRef.current.innerHTML = '';
     }
 
     if (loadingWrapRef.current) {
       loadingWrapRef.current?.classList.remove(styles.active);
     }
     if (loadingPercentRef.current) {
-      loadingPercentRef.current?.textContent = '0';
+      loadingPercentRef.current.textContent = '0';
     }
 
     if (successWrapRef.current) {
@@ -302,13 +318,13 @@ export default function VerifyPage() {
     }
 
     if (inputStageRef.current) {
-      inputStageRef.current?.style.display = 'flex';
+      inputStageRef.current.style.display = 'flex';
       void inputStageRef.current?.offsetWidth;
       inputStageRef.current?.classList.remove(styles.hidden);
     }
 
     if (resendBtnRef.current) {
-      resendBtnRef.current?.style.display = 'inline-block';
+      resendBtnRef.current.style.display = 'inline-block';
     }
 
     if (immediateFocus !== false) {

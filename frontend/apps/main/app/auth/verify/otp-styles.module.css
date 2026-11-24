@@ -1,45 +1,35 @@
-/* Global CSS variables - must use :global in CSS Modules */
-:global({
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg-color: #09090b;
-      --card-bg: rgba(24, 24, 27, 0.85);
-      --text-main: #f4f4f5;
-      --text-muted: #a1a1aa;
-      --shadow-card:
-        0 20px 40px -15px rgba(0, 0, 0, 0.5),
-        0 0 0 1px rgba(255, 255, 255, 0.05) inset;
-      --shadow-input:
-        0 4px 12px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1);
-    }
+.container {
+  --bg-color: #fafafa;
+  --card-bg: rgba(255, 255, 255, 0.85);
+  --text-main: #1e1b4b;
+  --text-muted: #64748b;
+  --accent: #6366f1;
+  --accent-glow: rgba(99, 102, 241, 0.2);
+  --success: #10b981;
+  --success-glow: rgba(16, 185, 129, 0.35);
+  --error: #f43f5e;
+  --error-glow: rgba(244, 63, 94, 0.2);
+  --shadow-card: 0 20px 40px -15px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+  --shadow-input: 0 4px 12px rgba(0, 0, 0, 0.03), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  --shadow-focus: 0 0 0 3px var(--accent-glow), 0 4px 12px rgba(0, 0, 0, 0.03);
+  --radius-card: 24px;
+  --radius-input: 14px;
+  --radius-pill: 999px;
+  --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --transition-smooth: 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+@media (prefers-color-scheme: dark) {
+  .container {
+    --bg-color: #09090b;
+    --card-bg: rgba(24, 24, 27, 0.85);
+    --text-main: #f4f4f5;
+    --text-muted: #a1a1aa;
+    --shadow-card: 0 20px 40px -15px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+    --shadow-input: 0 4px 12px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1);
   }
-
-  :root {
-    --bg-color: #fafafa;
-    --card-bg: rgba(255, 255, 255, 0.85);
-    --text-main: #1e1b4b;
-    --text-muted: #64748b;
-    --accent: #6366f1;
-    --accent-glow: rgba(99, 102, 241, 0.2);
-    --success: #10b981;
-    --success-glow: rgba(16, 185, 129, 0.35);
-    --error: #f43f5e;
-    --error-glow: rgba(244, 63, 94, 0.2);
-    --shadow-card:
-      0 20px 40px -15px rgba(0, 0, 0, 0.05),
-      0 0 0 1px rgba(255, 255, 255, 0.5) inset;
-    --shadow-input: 0 4px 12px rgba(0, 0, 0, 0.03), 0 0 0 1px rgba(0, 0, 0, 0.05);
-    --shadow-focus: 0 0 0 3px var(--accent-glow), 0 4px 12px rgba(0, 0, 0, 0.03);
-    --radius-card: 24px;
-    --radius-input: 14px;
-    --radius-pill: 999px;
-    --font:
-      "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    --transition-smooth: 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
-  }
-)
-
-:global(*) {
+}
+.container,
+.container :global(*) {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -714,9 +704,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  .container,
+  .container :global(*),
+  .container :global(*)::before,
+  .container :global(*)::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
