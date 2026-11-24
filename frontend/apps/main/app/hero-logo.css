@@ -372,7 +372,7 @@
 
 .home-community {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
   gap: 32px;
   padding-block: 56px 72px;

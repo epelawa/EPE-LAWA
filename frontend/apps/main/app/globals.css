@@ -179,7 +179,7 @@ body:has(.focused-error-shell) .site-main { display: grid; min-height: calc(100d
 .ui-toolbar input[type="search"] { min-width: 0; }
 .filter-panel { display: grid; gap: 16px; padding: 20px; border: 1px solid hsl(var(--border)); border-radius: var(--ep-radius-md, 12px); background: linear-gradient(135deg, hsl(var(--card)), hsl(var(--secondary) / .58)); box-shadow: var(--shadow-1); }
 .filter-panel.ui-form-grid { grid-template-columns: minmax(0, 1fr) !important; align-items: end; }
-.filter-panel:not(.ui-form-grid) { grid-template-columns: minmax(0, 1fr) auto; align-items: end; }
+.filter-panel:not(.ui-form-grid) { grid-template-columns: minmax(0, 1fr); align-items: end; }
 .filter-panel--map { grid-template-columns: minmax(0, 1fr) !important; }
 .filter-panel__heading { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; min-width: 0; }
 .filter-panel__icon { display: grid; flex: 0 0 42px; width: 42px; height: 42px; place-items: center; border: 1px solid hsl(var(--border)); border-radius: var(--ep-radius-md, 12px); color: hsl(var(--link)); background: hsl(var(--secondary)); }

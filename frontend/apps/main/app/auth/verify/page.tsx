@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import "./otp-styles.css";
+import styles from "./otp-styles.module.css";
 
 export default function VerifyPage() {
   const [digits, setDigits] = useState<string[]>(Array(4).fill(""));
@@ -10,18 +10,18 @@ export default function VerifyPage() {
   const [isError, setIsError] = useState(false);
   const [canResend, setCanResend] = useState(false);
   const [countdown, setCountdown] = useState(45);
-  const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
-  const cardRef = useRef<HTMLDivElement>(null);
-  const titleRef = useRef<HTMLHeadingElement>(null);
-  const subtitleRef = useRef<HTMLParagraphElement>(null);
-  const inputStageRef = useRef<HTMLDivElement>(null);
-  const orbitLayerRef = useRef<HTMLDivElement>(null);
-  const orbitRingRef = useRef<HTMLDivElement>(null);
-  const loadingWrapRef = useRef<HTMLDivElement>(null);
-  const loadingPercentRef = useRef<HTMLDivElement>(null);
-  const successWrapRef = useRef<HTMLDivElement>(null);
-  const errorMsgRef = useRef<HTMLDivElement>(null);
-  const resendBtnRef = useRef<HTMLButtonElement>(null);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const cardRef = useRef<HTMLDivElement | null>(null);
+  const titleRef = useRef<HTMLHeadingElement | null>(null);
+  const subtitleRef = useRef<HTMLParagraphElement | null>(null);
+  const inputStageRef = useRef<HTMLDivElement | null>(null);
+  const orbitLayerRef = useRef<HTMLDivElement | null>(null);
+  const orbitRingRef = useRef<HTMLDivElement | null>(null);
+  const loadingWrapRef = useRef<HTMLDivElement | null>(null);
+  const loadingPercentRef = useRef<HTMLDivElement | null>(null);
+  const successWrapRef = useRef<HTMLDivElement | null>(null);
+  const errorMsgRef = useRef<HTMLDivElement | null>(null);
+  const resendBtnRef = useRef<HTMLButtonElement | null>(null);
 
   // Countdown timer
   useEffect(() => {
@@ -81,7 +81,7 @@ export default function VerifyPage() {
         const dy = Math.sin(angle) * radius;
 
         const node = document.createElement('div');
-        node.className = 'orbit-node';
+        node.className = styles.orbitNode;
         node.textContent = currentDigits[i] || '';
         node.style.setProperty('--dx', `${dx}px`);
         node.style.setProperty('--dy', `${dy}px`);
@@ -93,31 +93,31 @@ export default function VerifyPage() {
     const playOrbit = () => {
       buildOrbit();
       if (orbitLayerRef.current) {
-        orbitLayerRef.current?.classList.add('active');
+        orbitLayerRef.current?.classList.add(styles.active);
       }
       if (orbitRingRef.current) {
         void orbitRingRef.current?.offsetWidth;
-        orbitRingRef.current?.classList.add('spin');
+        orbitRingRef.current?.classList.add(styles.spin);
       }
-      document.querySelectorAll('.orbit-node').forEach((n: Element) => {
-        (n as HTMLElement).classList.add('node-fly');
+      document.querySelectorAll(`.${styles.orbitNode}`).forEach((n: Element) => {
+        (n as HTMLElement).classList.add(styles.nodeFly);
       });
     };
 
     // Trigger orbit when loading starts
     if (isLoading) {
       if (inputStageRef.current) {
-        inputStageRef.current?.classList.add('hidden');
+        inputStageRef.current?.classList.add(styles.hidden);
       }
       playOrbit();
 
       const orbitTotal = 1600 + 180;
       const orbitTimer = setTimeout(() => {
         if (orbitLayerRef.current) {
-          orbitLayerRef.current?.classList.remove('active');
+          orbitLayerRef.current?.classList.remove(styles.active);
         }
         if (orbitRingRef.current) {
-          orbitRingRef.current?.classList.remove('spin');
+          orbitRingRef.current?.classList.remove(styles.spin);
           orbitRingRef.current?.innerHTML = '';
         }
         if (inputStageRef.current) {
@@ -127,7 +127,7 @@ export default function VerifyPage() {
         titleRef.current?.textContent = 'Verifying...';
         subtitleRef.current?.textContent = 'Securely checking your credentials.';
         if (loadingWrapRef.current) {
-          loadingWrapRef.current?.classList.add('active');
+          loadingWrapRef.current?.classList.add(styles.active);
         }
 
         const start = performance.now();
@@ -161,17 +161,17 @@ export default function VerifyPage() {
     if (!isSuccess) return;
 
     if (loadingWrapRef.current) {
-      loadingWrapRef.current?.classList.remove('active');
+      loadingWrapRef.current?.classList.remove(styles.active);
     }
     
     // Spawn confetti/bubbles
     spawnSplash();
     
     if (successWrapRef.current) {
-      successWrapRef.current?.classList.add('active');
+      successWrapRef.current?.classList.add(styles.active);
     }
     if (cardRef.current) {
-      cardRef.current?.classList.add('success-tint');
+      cardRef.current?.classList.add(styles.successTint);
     }
 
     setTimeout(() => {
@@ -194,20 +194,20 @@ export default function VerifyPage() {
     if (!isError) return;
 
     if (loadingWrapRef.current) {
-      loadingWrapRef.current?.classList.remove('active');
+      loadingWrapRef.current?.classList.remove(styles.active);
     }
     if (cardRef.current) {
-      cardRef.current?.classList.add('shake');
+      cardRef.current?.classList.add(styles.shake);
     }
     if (errorMsgRef.current) {
-      errorMsgRef.current?.classList.add('show');
+      errorMsgRef.current?.classList.add(styles.show);
     }
     titleRef.current?.textContent = 'Verification Failed';
     subtitleRef.current?.textContent = 'The code you entered is incorrect.';
 
     const shakeTimer = setTimeout(() => {
       if (cardRef.current) {
-        cardRef.current?.classList.remove('shake');
+        cardRef.current?.classList.remove(styles.shake);
       }
     }, 500);
 
@@ -226,7 +226,7 @@ export default function VerifyPage() {
   const spawnSplash = () => {
     if (!successWrapRef.current) return;
     
-    successWrapRef.current?.querySelectorAll('.confetti').forEach((c: Element) => {
+    successWrapRef.current?.querySelectorAll(`.${styles.confetti}`).forEach((c: Element) => {
       c.remove();
     });
 
@@ -241,7 +241,7 @@ export default function VerifyPage() {
       const cy = Math.sin(angle) * dist;
 
       const dot = document.createElement('div');
-      dot.className = 'confetti';
+      dot.className = styles.confetti;
       dot.style.background = colors[i % colors.length];
       dot.style.setProperty('--cx', `${cx}px`);
       dot.style.setProperty('--cy', `${cy}px`);
@@ -266,35 +266,35 @@ export default function VerifyPage() {
     setDigits(Array(4).fill(""));
 
     if (cardRef.current) {
-      cardRef.current?.classList.remove('shake', 'success-tint');
+      cardRef.current?.classList.remove(styles.shake, styles.successTint);
     }
     if (errorMsgRef.current) {
-      errorMsgRef.current?.classList.remove('show');
+      errorMsgRef.current?.classList.remove(styles.show);
     }
     titleRef.current?.textContent = 'Enter Access Code';
     subtitleRef.current?.textContent = 'A 4-digit code has been sent to your device.';
 
     if (orbitLayerRef.current) {
-      orbitLayerRef.current?.classList.remove('active');
+      orbitLayerRef.current?.classList.remove(styles.active);
     }
     if (orbitRingRef.current) {
-      orbitRingRef.current?.classList.remove('spin');
+      orbitRingRef.current?.classList.remove(styles.spin);
       orbitRingRef.current?.innerHTML = '';
     }
 
     if (loadingWrapRef.current) {
-      loadingWrapRef.current?.classList.remove('active');
+      loadingWrapRef.current?.classList.remove(styles.active);
     }
     if (loadingPercentRef.current) {
       loadingPercentRef.current?.textContent = '0';
     }
 
     if (successWrapRef.current) {
-      successWrapRef.current?.classList.remove('active');
-      successWrapRef.current?.querySelectorAll('.confetti').forEach((c: Element) => {
+      successWrapRef.current?.classList.remove(styles.active);
+      successWrapRef.current?.querySelectorAll(`.${styles.confetti}`).forEach((c: Element) => {
         c.remove();
       });
-      successWrapRef.current?.querySelectorAll('.bubble, .success-flash').forEach((el: Element) => {
+      successWrapRef.current?.querySelectorAll(`.${styles.bubble}, .${styles.successFlash}`).forEach((el: Element) => {
         (el as HTMLElement).style.animation = 'none';
         void (el as HTMLElement).offsetWidth;
         (el as HTMLElement).style.animation = '';
@@ -304,7 +304,7 @@ export default function VerifyPage() {
     if (inputStageRef.current) {
       inputStageRef.current?.style.display = 'flex';
       void inputStageRef.current?.offsetWidth;
-      inputStageRef.current?.classList.remove('hidden');
+      inputStageRef.current?.classList.remove(styles.hidden);
     }
 
     if (resendBtnRef.current) {
@@ -385,27 +385,27 @@ export default function VerifyPage() {
   };
 
   return (
-    <div className="container">
+    <div className={styles.container}>
       {/* Background elements */}
-      <div className="pointer-light" id="pointerLight"></div>
-      <div className="noise"></div>
+      <div className={styles.pointerLight} id="pointerLight"></div>
+      <div className={styles.noise}></div>
 
       {/* Main card */}
-      <main className="card" id="card" ref={cardRef}>
-        <h1 className="title" id="title" ref={titleRef}>Enter Access Code</h1>
-        <p className="subtitle" id="subtitle" ref={subtitleRef}>
+      <main className={styles.card} id="card" ref={cardRef}>
+        <h1 className={styles.title} id="title" ref={titleRef}>Enter Access Code</h1>
+        <p className={styles.subtitle} id="subtitle" ref={subtitleRef}>
           A 4-digit code has been sent to your device.
         </p>
 
-        <div className="stage" id="stage">
+        <div className={styles.stage} id="stage">
           {/* OTP Inputs */}
-          <div className="input-stage" id="inputStage" ref={inputStageRef}>
+          <div className={styles.inputStage} id="inputStage" ref={inputStageRef}>
             {Array.from({ length: 4 }, (_, index) => (
               <input
                 key={index}
-                ref={(el: HTMLInputElement | null) => { inputRefs.current[index] = el; }}
+                ref={(el) => { inputRefs.current[index] = el; }}
                 type="text"
-                className={`input-pill ${digits[index] ? 'filled' : ''} ${isError ? 'error' : ''}`}
+                className={`${styles.inputPill} ${digits[index] ? styles.filled : ''} ${isError ? styles.error : ''}`}
                 maxLength={1}
                 inputMode="numeric"
                 pattern="[0-9]*"
@@ -426,30 +426,30 @@ export default function VerifyPage() {
           </div>
 
           {/* Orbit layer (visual effect) */}
-          <div className="orbit-layer" id="orbitLayer" ref={orbitLayerRef}>
-            <div className="orbit-ring" id="orbitRing" ref={orbitRingRef}></div>
+          <div className={styles.orbitLayer} id="orbitLayer" ref={orbitLayerRef}>
+            <div className={styles.orbitRing} id="orbitRing" ref={orbitRingRef}></div>
           </div>
 
           {/* Loading animation */}
-          <div className="loading-wrap" id="loadingWrap" ref={loadingWrapRef}>
-            <div className="loading-core">
-              <div className="loading-ring"></div>
-              <div className="loading-pulse"></div>
-              <div className="loading-inner" id="loadingPercent" ref={loadingPercentRef}>
+          <div className={styles.loadingWrap} id="loadingWrap" ref={loadingWrapRef}>
+            <div className={styles.loadingCore}>
+              <div className={styles.loadingRing}></div>
+              <div className={styles.loadingPulse}></div>
+              <div className={styles.loadingInner} id="loadingPercent" ref={loadingPercentRef}>
                 0
               </div>
             </div>
           </div>
 
           {/* Success animation */}
-          <div className="success-wrap" id="successWrap" ref={successWrapRef}>
-            <div className="success-flash"></div>
-            <div className="bubble"></div>
-            <div className="bubble"></div>
-            <div className="bubble"></div>
-            <div className="success-vault">
+          <div className={styles.successWrap} id="successWrap" ref={successWrapRef}>
+            <div className={styles.successFlash}></div>
+            <div className={styles.bubble}></div>
+            <div className={styles.bubble}></div>
+            <div className={styles.bubble}></div>
+            <div className={styles.successVault}>
               <svg
-                className="checkmark"
+                className={styles.checkmark}
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -460,18 +460,18 @@ export default function VerifyPage() {
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
             </div>
-            <div className="success-badge">Verified</div>
+            <div className={styles.successBadge}>Verified</div>
           </div>
         </div>
 
         {/* Error message */}
-        <div className="error-msg" id="errorMsg" ref={errorMsgRef}>
+        <div className={styles.errorMsg} id="errorMsg" ref={errorMsgRef}>
           Incorrect code. Please try again.
         </div>
 
         {/* Resend button */}
         <button
-          className="resend-btn"
+          className={styles.resendBtn}
           id="resendBtn"
           ref={resendBtnRef}
           onClick={handleResend}
@@ -482,7 +482,7 @@ export default function VerifyPage() {
 
         {/* Countdown display */}
         {!canResend && countdown > 0 && (
-          <p className="countdown">Resend in {countdown}s</p>
+          <p className={styles.countdown}>Resend in {countdown}s</p>
         )}
       </main>
     </div>
