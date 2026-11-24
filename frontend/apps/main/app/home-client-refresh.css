@@ -28,15 +28,15 @@
 .home-news__heading { align-items: center; margin-bottom: 16px; }
 .home-news__heading h2 { margin: 0; padding-left: 14px; border-left: 5px solid #294b91; font-size: clamp(1.5rem, 2.6vw, 2.2rem); }
 .home-news__heading > a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 16px; border: 1px solid #17264a; border-radius: 999px; text-decoration: none; white-space: nowrap; }
-.home-story-list--3 { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); }
-.home-story-list--3 .home-story-item--lead { grid-row: span 2; }
+.home-story-list--3 { grid-template-columns: minmax(0, 1fr); }
+.home-story-list--3 .home-story-item--lead { grid-row: auto; }
 .home-story-card { overflow: hidden; border: 1px solid #dce3ee; border-radius: 14px; background: #fff; }
 .home-story-cover-link, .home-story-item--lead .home-story-cover-link, .home-story-item--support .home-story-cover-link { aspect-ratio: 16 / 9; border-radius: 0; }
 .home-story-cover figcaption { padding: 0 14px; }
 .home-story-cover--unavailable { border: 0; border-radius: 0; }
 .home-story-copy { margin: 0; padding: 16px; border: 0; }
 .home-updates { padding-block: 16px 34px; }
-.home-updates__list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 24px; margin: 0; padding: 0; list-style: none; }
+.home-updates__list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px 24px; margin: 0; padding: 0; list-style: none; }
 .home-updates__list article { display: flex; gap: 14px; padding: 12px; border: 1px solid #dce3ee; border-radius: 12px; background: #fff; }
 .home-updates__list img { width: 110px; height: 86px; flex: 0 0 auto; border-radius: 8px; object-fit: cover; }
 .home-updates__list img[data-news-fallback="true"] { object-fit: contain; padding: 14px; background: #edf3fc; }
@@ -94,7 +94,7 @@
 @keyframes home-photo-slide-in { from { opacity: .45; transform: translateX(7%) scale(1.04); } to { opacity: 1; transform: translateX(0) scale(1); } }
 .public-home .home-news { padding-block: 30px 24px; }
 .home-story-list { gap: 14px; }
-.home-story-list--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.home-story-list--3 { grid-template-columns: minmax(0, 1fr); }
 .home-story-list--3 .home-story-item--lead { grid-row: auto; }
 .home-story-card { border: 1px solid #dce4f0; border-radius: 18px; box-shadow: 0 8px 24px rgb(10 16 35 / .05); }
 .home-story-copy { gap: 8px; padding: 16px 18px 18px; }
