@@ -7,24 +7,15 @@ export default function ThemeToggle() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
 
   useEffect(() => {
-    // Check for saved theme in localStorage
     const savedTheme = localStorage.getItem("admin-theme") as "light" | "dark" | null;
     const initialTheme = savedTheme || "light";
     setTheme(initialTheme);
     document.documentElement.setAttribute("data-admin-theme", initialTheme);
-    document.documentElement.style.colorScheme = initialTheme;
   }, []);
 
   useEffect(() => {
     localStorage.setItem("admin-theme", theme);
     document.documentElement.setAttribute("data-admin-theme", theme);
-    document.documentElement.style.colorScheme = theme;
-    
-    // Update theme-color meta tag
-    const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) {
-      meta.setAttribute("content", theme === "dark" ? "#0A1023" : "#F1F4FA");
-    }
   }, [theme]);
 
   const toggleTheme = () => {

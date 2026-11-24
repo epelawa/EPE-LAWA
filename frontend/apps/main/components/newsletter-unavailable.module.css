@@ -1,6 +1,6 @@
 .signup { display: grid; gap: 8px; min-width: 0; }
 .label { color: var(--palette-navy); font-size: .75rem; font-weight: 700; }
-.row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; min-width: 0; }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; min-width: 0; }
 .email { box-sizing: border-box; min-width: 0; min-height: 46px; padding: 0 13px; border: 1px solid var(--palette-border); border-radius: 12px; background: hsl(var(--card)); color: hsl(var(--muted-foreground)); font: inherit; font-size: .8125rem; }
 .email::placeholder { color: hsl(var(--muted-foreground)); opacity: 1; }
 .button { min-width: 94px; min-height: 46px; padding: 0 13px; border: 1px solid transparent; border-radius: 999px; background: var(--palette-cobalt); color: var(--palette-midnight); font: inherit; font-size: .8125rem; font-weight: 750; transition: transform .2s ease, filter .2s ease; }
