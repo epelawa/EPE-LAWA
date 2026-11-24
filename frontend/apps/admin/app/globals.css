@@ -184,7 +184,7 @@ html { overscroll-behavior-y: none; }
 /* ---------------------------------------------------------------- sidebar —
    Staff workspace shell. Fixed dark rail on desktop; top bar + drawer on
    small screens. Half Broken Language friendly labels come from navigation. */
-body[data-admin-shell="sidebar"] { --admin-sidebar-width: 256px; }
+body[data-admin-shell="sidebar"] { --admin-sidebar-width: 220px; }
 .admin-topbar { display: none; }
 @media(min-width: 961px) {
   body[data-admin-shell="sidebar"] .admin-sidebar {
