@@ -160,11 +160,11 @@
 }
 .home-shortcuts a, .home-story-cover-link { -webkit-tap-highlight-color: transparent; }
 
-/* Match the compact, inset mobile hero: deep navy panel, left-led copy and a
-   centered outlined action, while retaining the shared page gutter. */
+/* Full-bleed photographic hero: keep the image edge-to-edge while its copy
+   and primary action align together on the shared left content gutter. */
 .home-hero {
-  width: min(var(--content-max), calc(100% - var(--gutter) * 2));
-  margin-inline: auto;
+  width: 100%;
+  margin: 0;
 }
 .home-hero__visual {
   min-height: clamp(420px, 42vw, 560px);
@@ -172,15 +172,16 @@
   background: #071936;
 }
 .home-hero__media::after {
-  background: linear-gradient(112deg, rgb(5 18 42 / .98), rgb(10 29 63 / .96));
+  background: linear-gradient(90deg, rgb(4 16 37 / .82), rgb(4 16 37 / .55) 58%, rgb(4 16 37 / .16)),
+    linear-gradient(0deg, rgb(4 16 37 / .48), transparent 55%);
 }
 .home-hero__content,
 .public-home:has(.storage-notice) .home-hero__content {
-  width: 100%;
+  width: min(var(--content-max), calc(100% - var(--gutter) * 2));
   max-width: none;
   align-items: flex-start;
   justify-content: center;
-  margin: 0;
+  margin-inline: auto;
   padding: clamp(36px, 6vw, 64px) clamp(24px, 5.6vw, 56px);
   text-align: left;
 }
@@ -203,7 +204,7 @@
   line-height: 1.5;
 }
 .home-hero__actions {
-  justify-content: center;
+  justify-content: flex-start;
   padding-top: clamp(22px, 3.4vh, 34px);
 }
 .home-hero__actions .btn-primary {
@@ -215,14 +216,6 @@
 .home-hero__actions .btn-primary:hover {
   background: rgb(255 255 255 / .1);
   box-shadow: none;
-}
-.home-hero__pause,
-.home-hero__slide-control {
-  clip-path: inset(50%);
-}
-.home-hero__pause:focus-visible,
-.home-hero__slide-control:focus-visible {
-  clip-path: none;
 }
 @media (max-width: 700px) {
   .home-hero__visual { min-height: 360px; }
