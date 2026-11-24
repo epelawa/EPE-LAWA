@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRightIcon, ArrowUpRightIcon, UsersIcon, ListenShortcutIcon, NewsShortcutIcon, CompassIcon, BuildingIcon, MessageCircleIcon, ClockIcon, EyeIcon } from "../components/icons";
+import { ArrowRightIcon, ArrowUpRightIcon, UsersIcon, ListenShortcutIcon, NewsShortcutIcon, CompassIcon, BuildingIcon, MessageCircleIcon, CalendarShortcutIcon, ClockIcon, EyeIcon } from "../components/icons";
 import { formatPublishedDate } from "../lib/dates";
 import { getLatestStories, getHomeBreakingStories } from "../lib/home-data";
 import "./hero-logo.css";
@@ -13,22 +13,29 @@ import { HomeBreakingTicker } from "../components/home-breaking-ticker";
 import { BreakingBadge } from "../components/breaking-news";
 import SponsorSlot from "../components/sponsor-slot";
 import { HomeSectionReveal } from "../components/home-sections";
+import SitePoll from "../components/site-poll";
+import HomeLivePill from "../components/home-live-pill";
+import { readSiteLanguage, t } from "../lib/i18n";
+import StructuredData from "../components/structured-data";
+import { organizationSchema, websiteSchema } from "../lib/structured-data";
 
 export default async function Home() {
   const renderedAt = Date.now();
   const [stories, breaking] = await Promise.all([getLatestStories(3), getHomeBreakingStories(renderedAt)]);
   const topStories = stories.items.slice(0, 3);
+  const lang = await readSiteLanguage();
 
   return (
     <div className="public-home">
+      <StructuredData data={[websiteSchema(), organizationSchema()]} />
       <section className="home-hero" aria-labelledby="home-title">
         <HeroCarousel>
           <div className="home-hero__content ep-container">
-            <p className="home-hero__eyebrow">EPE DIVISION</p>
-            <h1 id="home-title">Stay Connected,<br />Stay Informed</h1>
-            <p className="home-hero__lede">Your community, your stories, your Epe.</p>
+            <p className="home-hero__eyebrow">{t(lang, "home.eyebrow")}</p>
+            <h1 id="home-title">{t(lang, "home.title.line1")}<br />{t(lang, "home.title.line2")}</h1>
+            <p className="home-hero__lede">{t(lang, "home.lede")}</p>
             <div className="home-hero__actions">
-              <Link href="/news" className="btn-primary">Read latest news <ArrowRightIcon size={17} aria-hidden="true" /></Link>
+              <Link href="/news" className="btn-primary">{t(lang, "home.cta.news")} <ArrowRightIcon size={17} aria-hidden="true" /></Link>
             </div>
           </div>
         </HeroCarousel>
@@ -41,25 +48,26 @@ export default async function Home() {
       <HomeSectionReveal><div className="ep-container home-discovery">
         <section className="home-radio" aria-labelledby="home-radio-title">
           <span className="home-radio__icon" aria-hidden="true"><ListenShortcutIcon size={32} /></span>
-          <div><p className="home-radio__eyebrow">EPE LAWA RADIO</p><h2 id="home-radio-title">Radio Lagos 107.5 FM</h2><p>Listen to the station and explore our programmes.</p></div>
-          <Link href="/radio" className="home-radio__action">Listen to radio <ArrowRightIcon size={17} aria-hidden="true" /></Link>
+          <div><p className="home-radio__eyebrow">{t(lang, "home.radio.eyebrow")}</p><h2 id="home-radio-title">Radio Lagos 107.5 FM</h2><p>{t(lang, "home.radio.subtitle")}</p></div>
+          <Link href="/radio" className="home-radio__action">{t(lang, "home.radio.cta")} <ArrowRightIcon size={17} aria-hidden="true" /></Link>
         </section>
         <nav className="home-shortcuts" aria-label="Explore EPE LAWA">
           {[
-            { href: "/news", label: "Latest news", Icon: NewsShortcutIcon },
-            { href: "/radio", label: "Listen to radio", Icon: ListenShortcutIcon },
-            { href: "/itan-ilu-mi", label: "Community history", Icon: CompassIcon },
-            { href: "/forum", label: "Join the conversation", Icon: MessageCircleIcon },
-            { href: "/business-directory", label: "Local businesses", Icon: BuildingIcon },
-            { href: "/advertise", label: "Advertise with us", Icon: UsersIcon },
+            { href: "/news", label: t(lang, "home.shortcut.news"), Icon: NewsShortcutIcon },
+            { href: "/radio", label: t(lang, "home.shortcut.radio"), Icon: ListenShortcutIcon },
+            { href: "/itan-ilu-mi", label: t(lang, "home.shortcut.history"), Icon: CompassIcon },
+            { href: "/forum", label: t(lang, "home.shortcut.forum"), Icon: MessageCircleIcon },
+            { href: "/business-directory", label: t(lang, "home.shortcut.business"), Icon: BuildingIcon },
+            { href: "/events", label: t(lang, "home.shortcut.events"), Icon: CalendarShortcutIcon },
+            { href: "/advertise", label: t(lang, "home.shortcut.advertise"), Icon: UsersIcon },
           ].map(({ href, label, Icon }) => <Link href={href} key={href}><span aria-hidden="true"><Icon size={25} /></span><span>{label}</span></Link>)}
         </nav>
       </div></HomeSectionReveal>
 
       <HomeSectionReveal><section className="ep-container home-news" aria-labelledby="latest-title">
         <div className="home-news__heading">
-          <div><h2 id="latest-title">Latest News</h2></div>
-          <Link className="ui-text-link" href="/news">View all news <ArrowRightIcon size={17} aria-hidden="true" /></Link>
+          <div><h2 id="latest-title">{t(lang, "home.news.title")}</h2><HomeLivePill since={renderedAt} label="story" /></div>
+          <Link className="ui-text-link" href="/news">{t(lang, "home.news.viewAll")} <ArrowRightIcon size={17} aria-hidden="true" /></Link>
         </div>
         {stories.state === "ok" && topStories.length > 0 ? (
           <ul className={`home-story-list home-story-list--${topStories.length}`}>
@@ -72,14 +80,15 @@ export default async function Home() {
                       <Link className="home-story-cover-link" href={storyHref} aria-label={`Read story: ${story.title}`}>
                         <NewsImage className="home-story-image" src={story.cover?.src} alt={story.cover?.alt ?? "EPE LAWA logo"} loading="lazy" />
                       </Link>
+                      {null}
                     </figure>
                     <div className="home-story-copy">
                       <span className="home-story-meta">{story.category ?? "News"} {story.breakingUntil ? <BreakingBadge until={story.breakingUntil} initialTime={renderedAt} /> : null}{story.publishedAt ? <> <span aria-hidden="true">·</span> <time dateTime={story.publishedAt}>{formatPublishedDate(story.publishedAt)}</time></> : null}</span>
                       <h3><Link href={storyHref}>{story.title}</Link></h3>
                       {story.summary ? <p className="home-story-summary">{story.summary}</p> : null}
-                      {story.engagement ? <div className="home-story-engagement" aria-label="Story engagement"><span><ClockIcon size={14} /> {story.engagement.readMinutes} min read</span><span><EyeIcon size={14} /> {story.engagement.views.toLocaleString("en-NG")} views</span><span><MessageCircleIcon size={14} /> {story.engagement.comments.toLocaleString("en-NG")} comments</span></div> : null}
-                      <p className="home-story-byline">{story.authorName ? <ArticleByline name={story.authorName} /> : "Byline unavailable"}</p>
-                      <Link className="home-story-read" href={storyHref}>Read story <ArrowUpRightIcon size={16} aria-hidden="true" /></Link>
+                      {story.engagement ? <div className="home-story-engagement" aria-label="Story engagement"><span><ClockIcon size={14} /> {story.engagement.readMinutes} {t(lang, "home.engagement.read")}</span><span><EyeIcon size={14} /> {story.engagement.views.toLocaleString("en-NG")} {t(lang, "home.engagement.views")}</span><span><MessageCircleIcon size={14} /> {story.engagement.comments.toLocaleString("en-NG")} {t(lang, "home.engagement.comments")}</span></div> : null}
+                      <p className="home-story-byline">{story.authorName ? <ArticleByline name={story.authorName} /> : t(lang, "home.byline.unavailable")}</p>
+                      <Link className="home-story-read" href={storyHref}>{t(lang, "home.story.read")} <ArrowUpRightIcon size={16} aria-hidden="true" /></Link>
                     </div>
                   </article>
                 </li>
@@ -88,25 +97,26 @@ export default async function Home() {
           </ul>
         ) : (
           <div className={`home-story-state${stories.state === "error" ? " home-story-state--error" : ""}`} role={stories.state === "error" ? "status" : undefined}>
-            <h3>{stories.state === "ok" ? "No stories published yet" : "The newsroom is unavailable right now"}</h3>
-            <p>{stories.state === "ok" ? "New reporting will appear here when it is published." : "No stories are shown while the published newsroom cannot be reached."}</p>
-            <Link href="/news" className="ui-text-link">Visit the newsroom <ArrowRightIcon size={16} aria-hidden="true" /></Link>
+            <h3>{stories.state === "ok" ? t(lang, "home.empty.title") : "The newsroom is unavailable right now"}</h3>
+            <p>{stories.state === "ok" ? t(lang, "home.empty.body") : "No stories are shown while the published newsroom cannot be reached."}</p>
+            <Link href="/news" className="ui-text-link">{t(lang, "home.empty.cta")} <ArrowRightIcon size={16} aria-hidden="true" /></Link>
           </div>
         )}
       </section>
 
       <section className="ep-container home-community connection-panel" aria-labelledby="community-title">
         <div>
-          <p className="ui-eyebrow">OUR PLACE. OUR VOICES.</p>
-          <h2 id="community-title">Good things begin with <em>connection.</em></h2>
-          <p>Join conversations and share community knowledge through the features available on EPE LAWA.</p>
+          <p className="ui-eyebrow">{t(lang, "home.community.eyebrow")}</p>
+          <h2 id="community-title">{t(lang, "home.community.title1")} <em>{t(lang, "home.community.emphasis")}</em></h2>
+          <p>{t(lang, "home.community.body")}</p>
         </div>
         <div className="home-community__actions">
-          <Link className="btn-primary" href="/auth">Create an account <ArrowUpRightIcon size={16} aria-hidden="true" /></Link>
-          <Link className="ui-text-link" href="/guidelines">Read the community guidelines</Link>
+          <Link className="btn-primary" href="/auth">{t(lang, "home.community.cta")} <ArrowUpRightIcon size={16} aria-hidden="true" /></Link>
+          <Link className="ui-text-link" href="/guidelines">{t(lang, "home.community.guidelines")}</Link>
         </div>
         <span className="connection-panel__icon" aria-hidden="true"><UsersIcon size={96} /></span>
       </section></HomeSectionReveal>
+      <HomeSectionReveal><div className="ep-container home-poll"><SitePoll /></div></HomeSectionReveal>
       <SponsorSlot footer />
       <CookieBanner />
     </div>

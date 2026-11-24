@@ -79,7 +79,7 @@
 }
 .compact .logo, .compact .logoFallback { width: 40px; height: 40px; }
 @media (min-width: 640px) {
-  .link:has(.logo), .link:has(.logoFallback) { grid-template-columns: minmax(0, 1fr); align-items: start; }
+  .link:has(.logo), .link:has(.logoFallback) { grid-template-columns: auto 1fr; align-items: start; }
 }
 .copy { display: grid; gap: var(--ep-space-2, 8px); }
 .link:has(.logo), .link:has(.logoFallback) { column-gap: var(--ep-space-4, 16px); }

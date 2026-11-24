@@ -14,7 +14,7 @@
 .searchSummary::-webkit-details-marker { display:none; }
 .searchSummary:hover,.searchSummary:focus-visible { border-color:var(--news-blue); background:var(--news-blue-soft); }
 .searchRegion { display:block; width:min(100%,32.5rem); margin-inline-start:auto; padding-block-start:10px; }
-.newsSearchForm { position:static; display:grid; width:100%; margin:0; grid-template-columns: minmax(0, 1fr); align-items:center; gap:8px; }
+.newsSearchForm { position:static; display:grid; width:100%; margin:0; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:8px; }
 .newsSearchForm input { min-width:0; min-height:48px; padding:0 12px; border:1px solid var(--news-border); border-radius:7px; color:var(--news-ink); background:#fff; font:inherit; }
 .newsSearchForm input:focus-visible { outline:2px solid #477FE0; outline-offset:2px; }
 .newsSearchForm button { min-height:48px; }
@@ -26,14 +26,14 @@
 .categoryLink { display:inline-flex; min-height:48px; align-items:center; justify-content:center; padding:0 13px; border:1px solid var(--news-border); border-radius:999px; color:#293650; background:#fff; font-size:.8125rem; font-weight:650; text-decoration:none; white-space:nowrap; }
 .categoryLink:hover { border-color:#A7C5F5; color:#17264A; background:#F1F4FA; }
 .categoryLink[aria-current="page"] { border-color:var(--news-blue); color:#fff; background:var(--news-blue); }
-.breakingBanner { display:grid; grid-template-columns: minmax(0, 1fr); align-items:center; gap:12px; padding:10px 14px; border:1px solid #A7C5F5; border-radius:999px; color:#17264A; background:#E9EFF9; }
+.breakingBanner { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:12px; padding:10px 14px; border:1px solid #A7C5F5; border-radius:999px; color:#17264A; background:#E9EFF9; }
 .breakingLabel { padding:6px 10px; border-radius:999px; color:#fff; background:#b43f2a; font-size:.6875rem; font-weight:850; letter-spacing:.08em; text-transform:uppercase; }
 .breakingBanner a { min-width:0; overflow:hidden; color:#17264A; font-size:.8125rem; font-weight:800; text-overflow:ellipsis; white-space:nowrap; }
 .breakingBanner a:hover { color:#294B91; text-decoration:underline; text-underline-offset:3px; }
 .breakingMeta { color:#5C677C; font-size:.6875rem; white-space:nowrap; }
-.newsPageGrid { display:grid; grid-template-columns:minmax(0,1fr); align-items:start; gap:28px; min-width:0; }
+.newsPageGrid { display:grid; grid-template-columns:minmax(0,1fr) 294px; align-items:start; gap:28px; min-width:0; }
 .newsMain { display:grid; align-content:start; gap:28px; min-width:0; }
-.leadGrid { display:grid; grid-template-columns:minmax(0,1fr); align-items:stretch; gap:20px; min-width:0; }
+.leadGrid { display:grid; grid-template-columns:minmax(0,1.55fr) minmax(250px,.85fr); align-items:stretch; gap:20px; min-width:0; }
 .featureSection { min-width:0; }
 .featureCard { position:relative; display:block; width:100%; min-height:24.375rem; aspect-ratio:1.57; overflow:hidden; border-radius:16px; color:#fff; background:#17264A; text-decoration:none; box-shadow:0 12px 30px rgb(10 16 35 / .12); }
 .featureImage,.featureImageFallback { position:absolute; inset:0; display:grid; width:100%; height:100%; place-items:center; overflow:hidden; color:#fff; background:linear-gradient(135deg,#17264A,#477FE0); object-fit:cover; object-position:center; }
@@ -64,7 +64,7 @@
 .headlineMeta { color:#5C677C; font-size:.625rem; }
 .headlineLink:hover .headlineTitle,.storyLink:hover .storyTitle { color:#294B91; text-decoration:underline; text-underline-offset:3px; }
 .latestSection,.moreSection { display:grid; gap:14px; min-width:0; }
-.latestGrid { display:grid; grid-template-columns:minmax(0,1fr); gap:14px; margin:0; padding:0; list-style:none; }
+.latestGrid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin:0; padding:0; list-style:none; }
 .storyCard { min-width:0; overflow:hidden; border:1px solid var(--news-border); border-radius:14px; background:#fff; box-shadow:0 7px 18px rgb(10 16 35 / .05); }
 .storyCardLink { display:grid; align-content:start; height:100%; color:inherit; text-decoration:none; }
 .storyImageWrap { display:block; width:100%; aspect-ratio:1.48; overflow:hidden; background:#F1F4FA; }
@@ -77,7 +77,7 @@
 .storySummary { display:-webkit-box; overflow:hidden; color:#5C677C; font-size:.75rem; line-height:1.5; -webkit-box-orient:vertical; -webkit-line-clamp:3; }
 .storyMeta { color:#5C677C; font-size:.625rem; line-height:1.45; }
 .topicSection { display:grid; gap:14px; min-width:0; }
-.topicGrid { display:grid; grid-template-columns:minmax(0,1fr); gap:14px; margin:0; padding:0; list-style:none; }
+.topicGrid { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:14px; margin:0; padding:0; list-style:none; }
 .topicItem { min-width:0; }
 .topicLink { display:grid; justify-items:center; gap:8px; color:#17264A; font-size:.75rem; font-weight:750; line-height:1.25; text-align:center; text-decoration:none; }
 .topicImage { display:block; width:clamp(58px,7vw,82px); aspect-ratio:1; overflow:hidden; border:3px solid #E9EFF9; border-radius:50%; background:#E9EFF9; box-shadow:0 0 0 1px #D9E0EC,0 6px 14px rgb(10 16 35 / .1); }
@@ -155,7 +155,7 @@
 .commentSignInLink { display:flex; min-height:48px; align-items:center; justify-content:space-between; gap:10px; padding:0 4px 0 12px; border:1px solid var(--news-border); color:#5C677C; background:#fff; font-size:.8125rem; text-decoration:none; }
 .commentSignInLink svg { width:36px; height:36px; padding:9px; }
 .relatedSection { display:grid; gap:14px; padding-top:18px; border-top:1px solid var(--news-border); }
-.relatedGrid { display:grid; grid-template-columns:minmax(0,1fr); gap:14px; margin:0; padding:0; list-style:none; }
+.relatedGrid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin:0; padding:0; list-style:none; }
 .relatedCard { min-width:0; overflow:hidden; border:1px solid var(--news-border); background:#fff; }
 .relatedLink { display:grid; align-content:start; gap:8px; height:100%; color:inherit; text-decoration:none; }
 .relatedImage,.relatedImageFallback { display:grid; width:100%; aspect-ratio:16/9; place-items:center; overflow:hidden; color:#294B91; background:#F1F4FA; object-fit:cover; object-position:center; }
@@ -168,21 +168,21 @@
 .newsPage :where(a,button,summary,input):focus-visible,.articlePage :where(a,button,summary,input):focus-visible { outline:2px solid #477FE0; outline-offset:3px; }
 @media (max-width:1000px) {
   .newsPageGrid { grid-template-columns:minmax(0,1fr); }
-  .newsAside { grid-template-columns:minmax(0,1fr); }
+  .newsAside { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .popularCard { grid-column:1/-1; }
 }
 @media (max-width:760px) {
   .leadGrid { grid-template-columns:minmax(0,1fr); }
   .featureCard { min-height:20rem; aspect-ratio:1.65; }
-  .latestGrid { grid-template-columns:minmax(0,1fr); }
-  .relatedGrid { grid-template-columns:minmax(0,1fr); }
-  .topicGrid { grid-template-columns:minmax(0,1fr); row-gap:18px; }
+  .latestGrid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .relatedGrid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .topicGrid { grid-template-columns:repeat(3,minmax(0,1fr)); row-gap:18px; }
 }
 .newsPage .pagination > a { min-height:48px; }
 @media (max-width:600px) {
   .newsPage,.articlePage { width:calc(100% - 28px); gap:18px; margin:0 auto 30px; padding:18px 14px 28px; border:0; border-radius:0 0 16px 16px; background:#F1F4FA; box-shadow:none; }
   .pageTitle { font-size:2rem; }
-  .breakingBanner { grid-template-columns: minmax(0, 1fr); gap:7px 10px; }
+  .breakingBanner { grid-template-columns:auto minmax(0,1fr); gap:7px 10px; }
   .breakingMeta { grid-column:2; }
   .categoryList { gap:6px; }
   .categoryLink { min-height:48px; padding-inline:11px; font-size:.75rem; }
@@ -301,7 +301,7 @@
 .articlePage :global([data-layout-variant="3"]) .articleHeroCopy { text-align: center; justify-items: center; padding: 12px 0; }
 .articlePage :global([data-layout-variant="3"]) .articleMetaBar { justify-content: center; }
 @media (min-width: 760px) {
-  .articlePage :global([data-layout-variant="2"]) .articleHero { grid-template-columns: minmax(0, 1fr); align-items: center; }
+  .articlePage :global([data-layout-variant="2"]) .articleHero { grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); align-items: center; }
   .articlePage :global([data-layout-variant="2"]) .articleHeroTop { grid-column: 1 / -1; }
 }
 
