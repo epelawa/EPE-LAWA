@@ -3,28 +3,7 @@
 import { useRef, useState } from "react";
 import BrandedDialog from "./branded-dialog";
 import styles from "./business-logo-input.module.css";
-
-const MAX_BYTES = 5 * 1024 * 1024;
-const ACCEPTED = ["image/jpeg", "image/png", "image/webp"];
-
-async function compress(file: File): Promise<string> {
-  const bitmap = await createImageBitmap(file);
-  try {
-    const maxSide = 512;
-    const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
-    const width = Math.max(1, Math.round(bitmap.width * scale));
-    const height = Math.max(1, Math.round(bitmap.height * scale));
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    const context = canvas.getContext("2d");
-    if (!context) throw new Error("canvas unavailable");
-    context.drawImage(bitmap, 0, 0, width, height);
-    return canvas.toDataURL("image/jpeg", 0.82);
-  } finally {
-    bitmap.close();
-  }
-}
+import { imageErrorMessage, prepareImage } from "../lib/client-image";
 
 export default function BusinessLogoInput({ label = "Business logo (optional)" }: { label?: string }) {
   const [preview, setPreview] = useState<string | null>(null);
@@ -34,20 +13,14 @@ export default function BusinessLogoInput({ label = "Business logo (optional)" }
 
   async function onPick(file: File | null | undefined) {
     if (!file) return;
-    if (!ACCEPTED.includes(file.type) || file.size > MAX_BYTES) {
-      setMessage("Logos must be a JPEG, PNG or WebP image smaller than 5 MB.");
-      setPreview(null);
-      if (hiddenRef.current) hiddenRef.current.value = "";
-      return;
-    }
     setMessage("Preparing logo…");
     try {
-      const dataUrl = await compress(file);
+      const dataUrl = await prepareImage(file, 512, 300 * 1024);
       if (hiddenRef.current) hiddenRef.current.value = dataUrl;
       setPreview(dataUrl);
-      setMessage("Logo ready. It is stored once your listing is submitted.");
-    } catch {
-      setMessage("This logo could not be prepared. You can paste a logo link instead.");
+      setMessage("Logo ready. It is stored once the form is submitted.");
+    } catch (error) {
+      setMessage(`${imageErrorMessage(error, "logo")} You can paste a logo link instead.`);
       if (hiddenRef.current) hiddenRef.current.value = "";
       setPreview(null);
     }
@@ -71,9 +44,9 @@ export default function BusinessLogoInput({ label = "Business logo (optional)" }
         <div className={styles.pickerStack}>
           <label className="btn-secondary">
             Browse files
-            <input type="file" accept={ACCEPTED.join(",")} data-autofocus onChange={(event) => { setOpen(false); void onPick(event.target.files?.[0]); }} />
+            <input type="file" accept="image/*" data-autofocus onChange={(event) => { setOpen(false); void onPick(event.target.files?.[0]); }} />
           </label>
-          <p className="ui-meta">JPEG, PNG or WebP, smaller than 5 MB.</p>
+          <p className="ui-meta">JPEG, PNG, WebP or a phone photo up to 25 MB. It is resized in your browser first.</p>
         </div>
       </BrandedDialog>
       <input ref={hiddenRef} type="hidden" name="logo_data" />
@@ -81,7 +54,7 @@ export default function BusinessLogoInput({ label = "Business logo (optional)" }
         <div className={styles.preview}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={preview} alt="Business logo preview" width={56} height={56} />
-          <button type="button" className="btn-ghost" onClick={clear}>Remove logo</button>
+          <button type="button" className="btn-secondary" onClick={clear}>Remove logo</button>
         </div>
       ) : null}
       {message ? <p className="ui-meta">{message}</p> : null}

@@ -1,13 +1,27 @@
 import { createClient } from "../../../../lib/supabase";
-import { formRateAllowance, formRateLimitedMessage } from "../../../../lib/form-server";
+import { formAdminClient, formRateAllowance, formRateMessage } from "../../../../lib/form-server";
 import { WEB_PUSH_READY } from "../../../../lib/vapid";
+import { endpointHash, pushCryptoReady, sealPushValue } from "../../../../lib/push-crypto";
+import { pushServiceUrl } from "../../../../lib/web-push-send";
 
 export const runtime = "nodejs";
+
+/**
+ * Web Push subscriptions for everyone — no account needed (owner brief, turn 4).
+ *
+ * A device is identified by its own push endpoint, which only that browser
+ * knows; possession of it is what authorises changing or removing that one
+ * device's topics. Endpoints and keys are encrypted before storage
+ * (lib/push-crypto.ts) in web_push_devices, which only the service role can
+ * read. Signed-in members additionally get their account-wide preference row
+ * (notification_preferences) kept in step, so the dashboard shows the same
+ * choice. Consent is collected in components/push-onboarding.tsx and the
+ * Notification Centre; permission is only requested from a click.
+ */
 
 const ENDPOINT = /^https:\/\/[^\s"'<>\\]{8,2048}$/;
 const P256DH = /^[A-Za-z0-9_-]{40,512}$/;
 const AUTH = /^[A-Za-z0-9_-]{8,512}$/;
-const USER_AGENT = /^[^\u0000-\u001f]{0,500}$/;
 const MAX_BYTES = 16 * 1024;
 const NO_STORE = { "cache-control": "no-store" };
 
@@ -39,57 +53,46 @@ function parseTopics(record: Record<string, unknown>): Topics | null | "invalid"
   return { news, radio };
 }
 
-async function sessionClient() {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getUser();
-  return { supabase, user: data?.user ?? null };
+function validEndpoint(value: unknown): string | null {
+  const endpoint = typeof value === "string" ? value : "";
+  return ENDPOINT.test(endpoint) && pushServiceUrl(endpoint) ? endpoint : null;
 }
 
-type SessionClient = Awaited<ReturnType<typeof sessionClient>>["supabase"];
-
-/**
- * Writes the member's own push topic flags. RLS limits the row to the caller
- * and `/api/push/dispatch` reads exactly these columns, so a topic left off is
- * never sent.
- */
-async function writeTopics(supabase: SessionClient, userId: string, topics: Topics): Promise<Topics | null> {
-  const result = await supabase
-    .from("notification_preferences")
-    .upsert({ user_id: userId, push_news: topics.news, push_radio: topics.radio }, { onConflict: "user_id" })
-    .select("push_news,push_radio")
-    .maybeSingle();
-  if (result.error || !result.data) {
-    if (result.error) console.error("notification_preferences write failed", { code: result.error.code });
+/** The signed-in member, if any. Guests are fully supported; this never fails the request. */
+async function optionalMember() {
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase.auth.getUser();
+    return data?.user ? { supabase, userId: data.user.id } : null;
+  } catch {
     return null;
   }
-  return { news: result.data.push_news === true, radio: result.data.push_radio === true };
 }
 
-/** Current member's push topics (never another member's). */
+/** Keeps a member's account-wide preference row in step (RLS: own row only). */
+async function writeMemberTopics(member: NonNullable<Awaited<ReturnType<typeof optionalMember>>>, topics: Topics): Promise<void> {
+  const result = await member.supabase
+    .from("notification_preferences")
+    .upsert({ user_id: member.userId, push_news: topics.news, push_radio: topics.radio }, { onConflict: "user_id" });
+  if (result.error) console.error("notification_preferences write failed", { code: result.error.code });
+}
+
+function serviceReady(): boolean {
+  return WEB_PUSH_READY && pushCryptoReady();
+}
+
+/** Account-wide topics for a signed-in member (legacy dashboard read). Guests read via /status. */
 export async function GET(): Promise<Response> {
-  try {
-    const { supabase, user } = await sessionClient();
-    if (!user) return error(401, "Sign in to manage notification settings");
-    const result = await supabase.from("notification_preferences").select("push_news,push_radio").eq("user_id", user.id).maybeSingle();
-    if (result.error) return error(503, "Notification settings are unavailable");
-    return Response.json({ topics: { news: result.data?.push_news === true, radio: result.data?.push_radio === true } }, { headers: NO_STORE });
-  } catch {
-    return error(503, "Notification settings are unavailable");
-  }
+  const member = await optionalMember();
+  if (!member) return Response.json({ topics: null, guest: true }, { headers: NO_STORE });
+  const result = await member.supabase.from("notification_preferences").select("push_news,push_radio").eq("user_id", member.userId).maybeSingle();
+  if (result.error) return error(503, "Notification settings are unavailable");
+  return Response.json({ topics: { news: result.data?.push_news === true, radio: result.data?.push_radio === true } }, { headers: NO_STORE });
 }
 
-/**
- * Stores the subscribing member's Web Push subscription and, when supplied,
- * their topic choices. The user id always comes from the session (the database
- * RPC re-checks it); the browser only supplies the subscription shape. Consent
- * is collected in components/push-onboarding.tsx and the Notification Centre;
- * nothing here can send a message.
- */
+/** Registers (or refreshes) this browser's subscription and its topics. */
 export async function POST(request: Request): Promise<Response> {
-  if (!WEB_PUSH_READY) return error(503, "Web push is not available");
-
-  const allowed = await formRateAllowance("push_subscribe", 5);
-  if (!allowed) return error(429, formRateLimitedMessage);
+  if (!serviceReady()) return error(503, "Web push is not available");
 
   const record = await readJson(request);
   if (!record) return error(400, "Invalid request");
@@ -98,73 +101,96 @@ export async function POST(request: Request): Promise<Response> {
   const subscription = typeof record.subscription === "object" && record.subscription !== null
     ? (record.subscription as Record<string, unknown>)
     : record;
-  const endpoint = typeof subscription.endpoint === "string" ? subscription.endpoint : "";
+  const endpoint = validEndpoint(subscription.endpoint);
   const keys = typeof subscription.keys === "object" && subscription.keys !== null
     ? (subscription.keys as Record<string, unknown>)
     : {};
   const p256dh = typeof keys.p256dh === "string" ? keys.p256dh : "";
   const auth = typeof keys.auth === "string" ? keys.auth : "";
-  const userAgent = (request.headers.get("user-agent") ?? "").slice(0, 500);
-  if (!ENDPOINT.test(endpoint) || !P256DH.test(p256dh) || !AUTH.test(auth) || !USER_AGENT.test(userAgent)) {
-    return error(400, "Invalid subscription");
-  }
+  if (!endpoint || !P256DH.test(p256dh) || !AUTH.test(auth)) return error(400, "Invalid subscription");
 
+  // Counted only for well-formed requests, so a broken browser call never uses up the allowance.
+  const allowed = await formRateAllowance("push_subscribe", 5);
+  if (!allowed) return error(429, await formRateMessage());
+
+  const chosen: Topics = topics ?? { news: true, radio: true };
   try {
-    const { supabase, user } = await sessionClient();
-    if (!user) return error(401, "Sign in to save notification settings");
-    const result = await supabase.rpc("push_subscription_register", {
-      p_endpoint: endpoint,
-      p_p256dh: p256dh,
-      p_auth: auth,
-      p_user_agent: userAgent,
-    });
-    if (result.error) {
-      console.error("push_subscription_register failed", { code: result.error.code });
+    const member = await optionalMember();
+    const db = formAdminClient();
+    const hash = endpointHash(endpoint);
+    const result = await db.from("web_push_devices").upsert({
+      endpoint_hash: hash,
+      endpoint_enc: sealPushValue(endpoint),
+      p256dh_enc: sealPushValue(p256dh),
+      auth_enc: sealPushValue(auth),
+      key_version: 1,
+      user_id: member?.userId ?? null,
+      push_news: chosen.news,
+      push_radio: chosen.radio,
+      failed_count: 0,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "endpoint_hash" }).select("push_news,push_radio").maybeSingle();
+    if (result.error || !result.data) {
+      console.error("web_push_devices upsert failed", { code: result.error?.code });
       return error(503, "Could not save the subscription");
     }
-    if (result.data !== true) return error(403, "Notification settings unavailable for this account");
-    if (!topics) return Response.json({ saved: true }, { headers: NO_STORE });
-    const stored = await writeTopics(supabase, user.id, topics);
-    if (!stored) return error(503, "The device was registered but your topics could not be saved. Please try again.");
-    return Response.json({ saved: true, topics: stored }, { headers: NO_STORE });
-  } catch {
+    if (member) {
+      // The device now lives in web_push_devices; drop the legacy copy so it is never notified twice.
+      await db.from("push_subscriptions").delete().eq("user_id", member.userId).eq("endpoint", endpoint);
+      await writeMemberTopics(member, chosen);
+    }
+    return Response.json({ saved: true, topics: { news: result.data.push_news === true, radio: result.data.push_radio === true } }, { headers: NO_STORE });
+  } catch (cause) {
+    console.error("push subscribe failed", { message: cause instanceof Error ? cause.message : "unknown" });
     return error(503, "Could not save the subscription");
   }
 }
 
-/** Changes topics without touching device subscriptions. */
+/** Changes this device's topics. The endpoint proves which device is being changed. */
 export async function PATCH(request: Request): Promise<Response> {
-  const allowed = await formRateAllowance("push_subscribe", 20);
-  if (!allowed) return error(429, formRateLimitedMessage);
+  if (!serviceReady()) return error(503, "Web push is not available");
   const record = await readJson(request);
   const topics = record ? parseTopics(record) : "invalid";
   if (!topics || topics === "invalid") return error(400, "Invalid topics");
+  const endpoint = validEndpoint(record?.endpoint);
+  if (!endpoint) return error(400, "Invalid subscription");
+  const allowed = await formRateAllowance("push_subscribe", 20);
+  if (!allowed) return error(429, await formRateMessage());
   try {
-    const { supabase, user } = await sessionClient();
-    if (!user) return error(401, "Sign in to save notification settings");
-    const stored = await writeTopics(supabase, user.id, topics);
-    if (!stored) return error(503, "Your choice could not be saved");
-    return Response.json({ saved: true, topics: stored }, { headers: NO_STORE });
+    const db = formAdminClient();
+    const result = await db.from("web_push_devices")
+      .update({ push_news: topics.news, push_radio: topics.radio, updated_at: new Date().toISOString() })
+      .eq("endpoint_hash", endpointHash(endpoint))
+      .select("push_news,push_radio")
+      .maybeSingle();
+    if (result.error) return error(503, "Your choice could not be saved");
+    if (!result.data) return error(404, "This device is not subscribed yet");
+    const member = await optionalMember();
+    if (member) await writeMemberTopics(member, topics);
+    return Response.json({ saved: true, topics: { news: result.data.push_news === true, radio: result.data.push_radio === true } }, { headers: NO_STORE });
   } catch {
     return error(503, "Your choice could not be saved");
   }
 }
 
-/** Removes one of the member's own device subscriptions (RLS: owner-only delete). */
+/** Removes this device's subscription (guest or member). */
 export async function DELETE(request: Request): Promise<Response> {
-  const allowed = await formRateAllowance("push_subscribe", 20);
-  if (!allowed) return error(429, formRateLimitedMessage);
   const record = await readJson(request);
-  const endpoint = record && typeof record.endpoint === "string" ? record.endpoint : "";
-  if (!ENDPOINT.test(endpoint)) return error(400, "Invalid subscription");
+  const endpoint = validEndpoint(record?.endpoint);
+  if (!endpoint) return error(400, "Invalid subscription");
+  const allowed = await formRateAllowance("push_subscribe", 20);
+  if (!allowed) return error(429, await formRateMessage());
   try {
-    const { supabase, user } = await sessionClient();
-    if (!user) return error(401, "Sign in to manage notification settings");
-    const result = await supabase.from("push_subscriptions").delete().eq("user_id", user.id).eq("endpoint", endpoint);
-    if (result.error) {
-      console.error("push_subscriptions delete failed", { code: result.error.code });
-      return error(503, "Could not remove the subscription");
+    const db = formAdminClient();
+    if (pushCryptoReady()) {
+      const removed = await db.from("web_push_devices").delete().eq("endpoint_hash", endpointHash(endpoint));
+      if (removed.error) {
+        console.error("web_push_devices delete failed", { code: removed.error.code });
+        return error(503, "Could not remove the subscription");
+      }
     }
+    // Legacy member rows store the endpoint in clear; remove any copy for this device.
+    await db.from("push_subscriptions").delete().eq("endpoint", endpoint);
     return Response.json({ removed: true }, { headers: NO_STORE });
   } catch {
     return error(503, "Could not remove the subscription");

@@ -12,6 +12,9 @@ type Report = {
   status: string;
   resolution_note: string | null;
   created_at: string;
+  reporter_id: string | null;
+  reporter_name: string | null;
+  reporter_email: string | null;
   articles: { slug: string } | null;
 };
 
@@ -20,8 +23,9 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ r
   const db = await createStaffClient();
   const { data: allowed, error: ge } = await db.rpc("has_capability", { p_capability: "article.review" });
   if (ge || allowed !== true) return <PageFrame className="ui-stack"><PageIntro eyebrow="Newsroom · Staff" title="Correction reports" description="Reader-reported corrections on published stories." /><Notice tone="danger" role="alert">Article review capability is required to read correction reports.</Notice></PageFrame>;
-  const { data, error } = await db.from("article_correction_reports").select("id,article_id,reason,status,resolution_note,created_at,articles(slug)").order("created_at", { ascending: false }).limit(100);
+  const { data, error } = await db.from("article_correction_reports").select("id,article_id,reason,status,resolution_note,created_at,reporter_id,reporter_name,reporter_email,articles(slug)").order("created_at", { ascending: false }).limit(100);
   const rows = (data ?? []) as unknown as Report[];
+  if (error) console.error("correction reports unavailable", { code: error.code });
   const open = rows.filter((r) => r.status === "open");
   const handled = rows.filter((r) => r.status !== "open");
   return <PageFrame className="ui-stack">
@@ -35,6 +39,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ r
         {open.length ? <ul className="ui-list ui-stack-sm">{open.map((r) => <li key={r.id}><Panel className="ui-stack-sm">
           <div className="ui-row"><StatusBadge tone="warning">open</StatusBadge><span className="ui-meta">Filed {new Date(r.created_at).toLocaleString("en-NG")}{r.articles?.slug ? <> · <Link href={`/news/${r.articles.slug}`} className="ui-text-link">Open article</Link></> : null}</span></div>
           <p className="ui-prose">{r.reason}</p>
+          <p className="ui-meta">Reported by {r.reporter_id ? "a member account" : "a guest"}{r.reporter_name ? ` · ${r.reporter_name}` : ""}{r.reporter_email ? <> · <a className="ui-text-link" href={`mailto:${r.reporter_email}`}>{r.reporter_email}</a></> : null} (private)</p>
           <form action={resolveCorrection} className="ui-stack-sm ui-divider">
             <input type="hidden" name="report_id" value={r.id} />
             <div className="ui-form-grid">

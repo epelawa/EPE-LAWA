@@ -28,8 +28,12 @@ describe("i18n dictionaries", () => {
     expect(messages).toMatch(/return value \?\? fallback/);
   });
 
-  it("server wrapper uses English while full-site Yoruba is unavailable", () => {
-    expect(wrapper).toMatch(/export async function readSiteLanguage\(\)[\s\S]*return "en"/);
-    expect(wrapper).not.toMatch(/cookies\(/);
+  // Turn 4 owner brief: Yoruba is now complete enough to switch on, so the server wrapper reads
+  // the ep_lang cookie and still falls back to English for anything but an explicit "yo".
+  it("server wrapper reads the language cookie and defaults to English", () => {
+    expect(wrapper).toMatch(/export async function readSiteLanguage\(\)/);
+    expect(wrapper).toMatch(/cookies\(/);
+    expect(wrapper).toMatch(/SITE_LANG_COOKIE/);
+    expect(wrapper).toMatch(/"en"/);
   });
 });

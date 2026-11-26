@@ -1,0 +1,17 @@
+.box {
+  display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 12px;
+  border: 1px solid #c9d3e3; border-radius: 8px; background: #f8fafd; color: #17264a;
+  max-width: 340px;
+}
+.box[data-status="done"] { border-color: #8fb3ec; }
+.box[data-status="error"] { border-color: #d9a3a3; background: #fdf7f7; }
+.mark { display: inline-grid; place-items: center; flex: 0 0 28px; width: 28px; height: 28px; border-radius: 6px; background: #fff; border: 1px solid #c9d3e3; color: #294b91; }
+.box[data-status="done"] .mark { background: #477fe0; border-color: #477fe0; color: #0a1023; }
+.box[data-status="error"] .mark { color: #9d1c1c; }
+.copy { display: grid; gap: 1px; min-width: 0; flex: 1 1 auto; }
+.title { font-size: .9rem; font-weight: 700; }
+.hint { font-size: .75rem; color: #5d6a80; }
+.spinner { width: 16px; height: 16px; border: 2px solid #c9d3e3; border-top-color: #294b91; border-radius: 50%; animation: spin 800ms linear infinite; }
+.box :global(.btn-secondary) { flex: 0 0 auto; min-height: 44px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2400ms; } }

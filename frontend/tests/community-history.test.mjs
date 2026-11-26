@@ -27,23 +27,25 @@ test('history migration separates private contributions from public records and 
 
 test('history page reads bounded public records and keeps empty/error states distinct', async () => {
   const page = await readFile(pagePath, 'utf8');
-  assert.match(page, /from\("history_records"\)\.select\("id,title,account,published_at,community,category,family_name,lineage_description"\)/);
+  // Turn 4: approved records may carry a staff-approved image.
+  assert.match(page, /from\("history_records"\)\.select\("id,title,account,published_at,community,category,family_name,lineage_description,image_key,image_alt"\)/);
   assert.match(page, /\.range\(offset, offset \+ PAGE_SIZE\)/);
   assert.match(page, /aria-label="History pagination"/);
   assert.match(page, /No approved history records yet/);
   assert.match(page, /History records could not be loaded/);
-  assert.match(page, /Submissions and evidence are private/);
+  assert.match(page, /Submissions, photos and evidence stay private/);
   assert.match(page, /Sources/);
   assert.doesNotMatch(page, /SERVICE_ROLE|service_role/i);
 });
 
 test('history contribution action authenticates, validates consent, and persists no public content directly', async () => {
   const action = await readFile(actionPath, 'utf8');
-  assert.match(action, /supabase\.auth\.getUser\(\)/);
+  // Turn 4 owner brief: signing in is optional; the member or guest is resolved server-side.
+  assert.match(action, /resolvePublicSubmitter\(formData\)/);
   assert.match(action, /formData\.get\("consent"\) !== "yes"/);
   assert.match(action, /consent_version: CONSENT_VERSION/);
-  assert.match(action, /consent_text: CONSENT_TEXT/);
-  assert.match(action, /contributor_id: user\.id/);
+  assert.match(action, /consent_text: HISTORY_CONSENT_TEXT/);
+  assert.match(action, /contributor_id: submitter\.memberId/);
   assert.match(action, /from\("history_contributions"\)\.insert/);
   assert.doesNotMatch(action, /from\("history_records"\)/);
   assert.doesNotMatch(action, /SERVICE_ROLE|service_role/i);
@@ -51,14 +53,16 @@ test('history contribution action authenticates, validates consent, and persists
 
 
 // Turn 3 brief: corrections move to their own page; the archive page links to it.
-test('published-history correction and removal requests use the working private enquiry channel', async () => {
+// Turn 4 brief: requests go to their own private staff queue (history_correction_requests), not enquiries.
+test('published-history correction and removal requests use their own private staff queue', async () => {
   const archive = await readFile(pagePath, 'utf8');
   assert.match(archive, /Correction and removal requests/);
   assert.match(archive, /href="\/itan-ilu-mi\/correction"/);
   const page = await readFile(new URL('../apps/main/app/itan-ilu-mi/correction/page.tsx', import.meta.url), 'utf8');
   assert.match(page, /Correction and removal requests/);
-  assert.match(page, /EnquiryForm kind="correction"/);
-  assert.match(page, /ENQUIRY_INTAKE_ENABLED === "true"/);
+  assert.match(page, /<CorrectionForm /);
+  const correctionAction = await readFile(new URL('../apps/main/app/itan-ilu-mi/correction/actions.ts', import.meta.url), 'utf8');
+  assert.match(correctionAction, /from\("history_correction_requests"\)\.insert/);
   assert.match(page, /never published/);
   assert.doesNotMatch(page, /Coming\s+Soon/i);
   assert.doesNotMatch(page, /not configured/i);

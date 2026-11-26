@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type SyntheticEvent } from "react";
 import type { NavItem } from "../lib/navigation";
 import { MOBILE_GROUPS } from "../lib/mobile-navigation";
+import LanguageSwitch from "./language-switch";
 import { type SiteLanguage, fullNavLabel, navGroupLabel, navLabel } from "../lib/i18n-messages";
 import { ArrowRightIcon, ArrowUpRightIcon } from "./icons";
 import { BrandLockup } from "./brand";
@@ -14,9 +15,9 @@ import "./navigation-refinement.css";
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input, [tabindex]:not([tabindex="-1"])';
 const DESKTOP_GROUPS = [
-  { label: "Community", routes: [["/itan-ilu-mi", "Ìtàn Ilú Mi"], ["/forum", "Forum"], ["/who-is-who", "Who is Who"]] },
+  { label: "Community", routes: [["/events", "Events"], ["/itan-ilu-mi", "Ìtàn Ilú Mi"], ["/forum", "Forum"], ["/who-is-who", "Who is Who"]] },
   { label: "Discover", routes: [["/map", "Map & Navigation"], ["/business-directory", "Business Directory"], ["/tourism", "Tourism"], ["/gallery", "Gallery"], ["/radio", "Radio"]] },
-  { label: "About", routes: [["/about", "About"], ["/contact", "Contact"], ["/guidelines", "Guidelines"], ["/advertise", "Advertise"], ["/photo-credits", "Photo credits"], ["/privacy", "Privacy"], ["/terms", "Terms"]] },
+  { label: "About", routes: [["/about", "About"], ["/contact", "Contact"], ["/guidelines", "Guidelines"], ["/advertise", "Advertise"], ["/newsletter", "Newsletter"], ["/support", "Support"], ["/photo-credits", "Photo credits"], ["/privacy", "Privacy"], ["/terms", "Terms"]] },
 ] as const;
 
 
@@ -59,11 +60,11 @@ export default function SiteHeader({ items, lang = "en" }: { items: NavItem[]; l
   };
 
   const renderMobileGroup = (group: typeof MOBILE_GROUPS[number]) => (
-    <section className="drawer-group" key={group.label} aria-labelledby={`drawer-${group.label.toLowerCase().replaceAll(" ", "-")}`}>
+    <section className="drawer-group" data-cols={group.routes.length > 4 ? "3" : "2"} key={group.label} aria-labelledby={`drawer-${group.label.toLowerCase().replaceAll(" ", "-")}`}>
       <h2 id={`drawer-${group.label.toLowerCase().replaceAll(" ", "-")}`}>{navGroupLabel(lang, group.label)}</h2>
       <ul>{group.routes.map(([href, label]) => {
         const item = navItem(href, label);
-        return <li key={href}><Link className="drawer-link" href={item.href} aria-current={isCurrent(pathname, item.href) ? "page" : undefined}>{label}</Link></li>;
+        return <li key={href}><Link className="drawer-link" href={item.href} aria-current={isCurrent(pathname, item.href) ? "page" : undefined}>{lang === "en" ? label : navLabel(lang, item.href, label)}</Link></li>;
       })}</ul>
     </section>
   );
@@ -170,6 +171,7 @@ export default function SiteHeader({ items, lang = "en" }: { items: NavItem[]; l
           </ul>
         </nav>
         <div className="masthead-actions">
+          <LanguageSwitch lang={lang} className="lang-switch--masthead" buttonsOnly />
           <SiteSearch />
           <NotificationCentre />
           <Link className="header-signin" href="/login">Sign in</Link>
@@ -195,13 +197,14 @@ export default function SiteHeader({ items, lang = "en" }: { items: NavItem[]; l
         <div ref={drawerRef} id="site-drawer" className="drawer" role="dialog" aria-modal="true" aria-labelledby="site-drawer-title" inert={!drawerOpen}>
           <div className="drawer-heading">
             <div><p className="drawer-eyebrow">EPE LAWA</p><p id="site-drawer-title">Find your place in Epe.</p></div>
-            <button className="btn-icon" type="button" aria-label="Close navigation menu" onClick={closeDrawer}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg></button>
+            <div className="drawer-heading__tools">
+            <button className="btn-icon" type="button" aria-label="Close navigation menu" onClick={closeDrawer}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg></button></div>
           </div>
           <nav className="drawer-nav" aria-label="All sections">
             {MOBILE_GROUPS.map(renderMobileGroup)}
           </nav>
           <section className="drawer-account" aria-labelledby="drawer-account-title">
-            <h2 id="drawer-account-title">Account</h2>
+            <div className="drawer-account__head"><h2 id="drawer-account-title">Account</h2><LanguageSwitch lang={lang} buttonsOnly /></div>
             <div className="drawer-account__actions">
               {renderLink("/auth", "Create account", "btn-primary")}
               {renderLink("/login", "Sign in", "btn-secondary")}

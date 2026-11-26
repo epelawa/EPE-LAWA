@@ -7,8 +7,11 @@ const staffPage = await readFile(new URL('../apps/admin/app/(protected)/business
 const directoryPage = await readFile(new URL('../apps/main/app/business-directory/page.tsx', import.meta.url), 'utf8');
 const detailPage = await readFile(new URL('../apps/main/app/business-directory/[slug]/page.tsx', import.meta.url), 'utf8');
 const reviewAction = await readFile(new URL('../apps/main/app/business-directory/review-actions.ts', import.meta.url), 'utf8');
-test('member submissions require verified auth and use the forced-unpublished RPC', () => {
- assert.match(memberAction, /auth\.getUser\(\)/); assert.match(memberAction, /email_confirmed_at/); assert.match(memberAction, /rpc\("business_submit"/);
+// Turn 4 owner brief: business submission works signed in or out. The action resolves the
+// member (verified session) or guest contact server-side and always inserts status "submitted".
+test('public submissions resolve member or guest server-side and are always forced unpublished', () => {
+ assert.match(memberAction, /resolvePublicSubmitter\(f\)/); assert.match(memberAction, /status:"submitted"/);
+ assert.match(memberAction, /owner_user_id:submitter\.memberId/); assert.match(memberAction, /verifyHumanCheck\(f\)/);
  assert.match(memberAction, /return fail\(/);
  assert.match(migration, /if not public\.is_member_active\(\) then[\s\S]*?member_profile_required/); assert.match(migration, /'submitted'\s*\n\s*\);/);
  assert.doesNotMatch(memberAction, /service_role|SUPABASE_SERVICE/);

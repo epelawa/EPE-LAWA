@@ -34,7 +34,8 @@ test('web apps keep Coming Soon labels limited to explicit unavailable-state dis
   for (const file of files) {
     const source = await readFile(file, 'utf8');
     const relative = path.relative(appsRoot, file);
-    if (!allowed.has(relative)) assert.doesNotMatch(source, /coming\s+soon/i, relative);
+    // lib/yo/* only translates the allowed disclosures above (keys are the English source text).
+    if (!allowed.has(relative) && !relative.startsWith('main/lib/yo/')) assert.doesNotMatch(source, /coming\s+soon/i, relative);
   }
 });
 

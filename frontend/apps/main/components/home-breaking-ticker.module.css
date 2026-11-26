@@ -26,13 +26,14 @@
   letter-spacing: .06em;
 }
 .label svg { width: 16px; height: 16px; flex: none; color: var(--palette-ice-blue); }
-.viewport { min-width: 0; flex: 1; overflow: hidden; display: flex; align-items: center; }
-.track { display: flex; width: max-content; animation:scroll 18s linear infinite; }
-.items { display: flex; flex:none; align-items:center; width:max-content; list-style:none; margin:0; padding:0; }
-.items li { display: flex; align-items: center; gap: var(--ep-space-2, 8px); padding: 0 var(--ep-space-6, 24px); white-space: nowrap; font-size: var(--ep-type-sm, 14px); }
-.items li svg { width: 10px; height: 10px; flex: none; color: var(--palette-ice-blue); }
+.viewport { min-width: 0; flex: 1; overflow: hidden; display: flex; align-items: stretch; }
+.track { display: flex; align-items: stretch; width: max-content; animation:scroll 18s linear infinite; }
+.items { display: flex; flex:none; align-items:stretch; width:max-content; list-style:none; margin:0; padding:0; }
+/* One shared text baseline: the stamp and headline align on their baselines,
+   separated by a hairline divider rather than dot bullets. */
+.items li { display: flex; align-items: baseline; gap: 10px; padding: 0 var(--ep-space-6, 24px); border-right: 1px solid rgb(167 197 245 / .22); white-space: nowrap; font-size: var(--ep-type-sm, 14px); line-height: 20px; }
 /* Headlines are the ticker's only targets: full 44px height (was 23px on desktop). */
-.items a { display: inline-flex; align-items: center; min-height: var(--ep-touch-min, 44px); color: var(--palette-cloud); font-weight: var(--ep-weight-semibold); text-decoration: none; }
+.items a { display: inline-block; padding-block: 12px; margin: 0; color: var(--palette-cloud); font-size: inherit; font-weight: var(--ep-weight-semibold); line-height: 20px; vertical-align: baseline; text-decoration: none; }
 .items a:hover,.items a:focus-visible { text-decoration: underline; }
 /* News-page variant: one compact centred bar, so several breaking stories
    slide in the same strip and the listing stays easy to read. */
@@ -40,7 +41,7 @@
   width: min(680px, 100%);
   margin-inline: auto;
 }
-.items time { flex: none; color: var(--palette-ice-blue); font-size: var(--ep-hint-min, 12px); font-weight: 400; }
+.items time { display: inline-block; flex: none; padding-block: 12px; color: var(--palette-ice-blue); font-size: 11px; font-weight: 600; letter-spacing: .04em; line-height: 20px; font-variant-numeric: tabular-nums; }
 /* WCAG 2.2.2: auto-scroll lasts >5s, so keyboard focus into a link pauses it.
    No visible button: it read as "paused" to users when the ticker was playing. */
 .banner:focus-within .track { animation-play-state:paused; }
@@ -50,7 +51,7 @@
   .banner { min-height: var(--ep-touch-min, 44px); margin-top: var(--ep-space-3, 12px); }
   .label { padding: var(--ep-space-2, 8px); font-size: 11px; gap: var(--ep-space-1, 4px); letter-spacing: .03em; }
   .label svg { width: 14px; height: 14px; }
-  .items li { padding: 0 var(--ep-space-3, 12px); font-size: var(--ep-hint-min, 12px); }
+  .items li { padding: 0 var(--ep-space-4, 16px); font-size: 13px; }
 }
 @media (prefers-reduced-motion:reduce) {
   .track { animation:none; width:auto; }

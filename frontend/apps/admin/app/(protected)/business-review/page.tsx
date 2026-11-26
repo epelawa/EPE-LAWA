@@ -52,6 +52,9 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
   const featuredNow = (featuredResult.data ?? []) as unknown as { businesses: { name: string; slug: string } | null; ends_at: string }[];
   const publishedBusinesses = (publishedResult.data ?? []) as unknown as PublishedRow[];
   const labels = new Map((cats ?? []).map(c => [c.id, c.label]));
+  // Private submitter contact (guest name/email) for queued listings.
+  const submitterRows = data?.length ? (await db.rpc("staff_business_submitters", { p_ids: data.map(b => b.id) })).data : null;
+  const submitters = new Map(((submitterRows ?? []) as { business_id: string; submitter_name: string | null; submitter_email: string | null }[]).map(r => [r.business_id, r]));
   return <PageFrame className="ui-stack">
     <PageIntro eyebrow="Business Directory · Staff" title="Business submissions" description="Review unpublished submissions, record evidence, then publish or reject with a reason." />
     {p.error ? <Notice tone="danger" role="alert">Review action failed. Confirm evidence and capability, then retry.</Notice> : null}
@@ -138,6 +141,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
       <ul className="ui-list ui-stack-sm">{data.map(b => <li key={b.id}><Panel className="ui-stack-sm">
         <div className="ui-row"><StatusBadge tone={b.status === "submitted" ? "warning" : "neutral"}>{b.status}</StatusBadge><span className="ui-meta">{labels.get(b.category_id) ?? "Category"} · Received {new Date(b.created_at).toLocaleString("en-NG")}</span></div>
         <div><h2 className="ui-item-title">{b.name}</h2><p className="ui-prose">{b.description || "No description provided."}</p></div>
+        {(() => { const who = submitters.get(b.id); return who && (who.submitter_name || who.submitter_email) ? <p className="ui-meta"><strong>Submitted by (private):</strong> {who.submitter_name ?? "Guest"}{who.submitter_email ? <> · <a className="ui-text-link" href={`mailto:${who.submitter_email}`}>{who.submitter_email}</a></> : null}</p> : null; })()}
         <dl className="ui-grid ui-grid--2 ui-meta">{(["area", "address", "landmark", "phone", "whatsapp", "email", "website"] as const).map(k => b[k] ? <div key={k}><dt className="ui-eyebrow">{k}</dt><dd>{b[k]}</dd></div> : null)}</dl>
         {(() => { const hours = parseBusinessHours((b as { hours: unknown }).hours); const rows = hourRows(hours).filter(row => row.range); if (!rows.length) return null;
           const open = businessOpenNow(hours);

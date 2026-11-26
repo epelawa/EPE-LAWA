@@ -13,6 +13,7 @@ const items: NavItem[] = [
   { label: "Business", href: "/business-directory", hint: "Business Directory", primary: true },
   { label: "Tourism", href: "/tourism", hint: "Historical Sites & Tourism" },
   { label: "Radio", href: "/radio", hint: "EPE LAWA Radio" },
+  { label: "Events", href: "/events", hint: "Community events calendar" },
   { label: "Who is Who", href: "/who-is-who", hint: "People and public office holders" },
   { label: "About", href: "/about", hint: "About EPE LAWA" },
   { label: "Contact", href: "/contact", hint: "Contact the team" },

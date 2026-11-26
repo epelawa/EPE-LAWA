@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "../../lib/supabase";
-import { formRateAllowance, formRateLimitedMessage } from "../../lib/form-server";
+import { formRateAllowance, formRateMessage } from "../../lib/form-server";
 
 export type SongRequestState = { status: "idle" | "error" | "success"; message: string };
 
@@ -17,7 +17,7 @@ export async function requestSong(_prev: SongRequestState, form: FormData): Prom
   if (note && (note.length < 2 || note.length > 500)) return { status: "error", message: "Keep the note between 2 and 500 characters." };
   if (programmeId && !/^[0-9a-f-]{36}$/i.test(programmeId)) return { status: "error", message: "Choose a programme from the list." };
   if (!(await formRateAllowance("song_request", 8))) {
-    return { status: "error", message: formRateLimitedMessage };
+    return { status: "error", message: await formRateMessage() };
   }
   const { error } = await db.rpc("member_request_song", {
     p_song: song, p_note: note || null, p_programme_id: programmeId || null,

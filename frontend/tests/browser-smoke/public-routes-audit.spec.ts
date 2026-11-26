@@ -71,10 +71,8 @@ test("radio keeps listening separate from listings and reminder settings", async
   await expect(page.getByRole("heading", { name: "Programmes and archive" })).toBeVisible();
   // Reminder settings are reached through the header bell's Notification Centre.
   await page.getByRole("button", { name: /^Notifications/ }).click();
-  await page.getByRole("dialog", { name: "Notifications" }).getByRole("link", { name: "Thursday radio reminder" }).click();
+  await page.getByRole("dialog", { name: "Notifications" }).getByRole("link", { name: "Radio schedule and reminders" }).click();
   await expect(page).toHaveURL(/\/radio\/reminders$/);
-  await expect(page.getByText(/Works only while this site is open/)).toBeVisible();
-  await page.getByRole("button", { name: "Enable alert" }).click();
-  await expect(page.getByRole("button", { name: "Disable alert" })).toBeVisible();
-  await page.getByRole("button", { name: "Disable alert" }).click();
+  // Turn 4: radio reminders are real scheduled push notifications, no open page or account needed.
+  await expect(page.getByText(/sent automatically the moment a scheduled EPE LAWA programme goes on air/)).toBeVisible();
 });

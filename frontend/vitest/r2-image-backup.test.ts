@@ -181,6 +181,7 @@ describe("R2 image and backup regressions", () => {
     expect(fileInput).not.toMatch(/\bname=/);
     expect(source).not.toContain('name="avatar_file"');
     expect(source).toMatch(/type="hidden" name="avatar_data" value=\{preview\}/);
-    expect(source).toContain("MAX_COMPRESSED_BYTES = 200 * 1024");
+    // Turn 4: the shared client-side resizer (lib/client-image.ts) keeps the same 256px / 200 KB budget.
+    expect(source).toContain("prepareImage(file, 256, 200 * 1024)");
   });
 });

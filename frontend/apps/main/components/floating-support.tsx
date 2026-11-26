@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import styles from "./floating-support.module.css";
 import EnquiryForm from "./enquiry-form";
 type Position = {x:number;y:number};
@@ -23,7 +24,14 @@ function SupportAvatar({ eyesClassName }: { eyesClassName: string }) {
   <path d="M13 20.4q3 2.3 6 0" fill="none" stroke="#0A1023" strokeWidth="1.5" strokeLinecap="round" />
  </svg>;
 }
-export default function FloatingSupport({ href = "/support", privacyHref = "/privacy", enabled = false }: { href?: string; privacyHref?: string; enabled?: boolean }) {
+type SupportProps = { href?: string; privacyHref?: string; enabled?: boolean };
+/** Owner brief (turn 4): never shown on the staff side (/admin), where it covered admin controls. */
+export default function FloatingSupport(props: SupportProps) {
+ const pathname = usePathname() ?? "/";
+ if (pathname === "/admin" || pathname.startsWith("/admin/")) return null;
+ return <PublicFloatingSupport {...props} />;
+}
+function PublicFloatingSupport({ href = "/support", privacyHref = "/privacy", enabled = false }: SupportProps) {
  const [position,setPosition]=useState<Position | null>(null);
  const box=useRef<HTMLDivElement>(null);
  const opener=useRef<HTMLButtonElement>(null);

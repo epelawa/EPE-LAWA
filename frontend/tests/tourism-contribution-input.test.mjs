@@ -85,11 +85,12 @@ test("tourism contribution rejects raw over-limit values even when trimming woul
 test("tourism action validates the complete form before creating a client and inserts parsed values", async () => {
   const action = await readFile(new URL("../apps/main/app/tourism/actions.ts", import.meta.url), "utf8");
   const parseAt = action.indexOf("parseTourismContribution(data)");
-  const clientAt = action.indexOf("await createClient()");
+  // Turn 4: guests may contribute, so the insert uses the server-only form client after validation.
+  const clientAt = action.indexOf("formAdminClient()", action.indexOf("export async function"));
 
   assert.ok(parseAt >= 0, "the action uses the tested parser");
   assert.ok(clientAt > parseAt, "invalid values are rejected before provider access");
-  assert.match(action, /if \(!contribution\) redirect\("\/tourism\?submission=invalid"\)/);
+  assert.match(action, /if \(!contribution\) redirect\("\/tourism\?submission=invalid#contribute-title"\)/);
   assert.match(action, /description: contribution\.description/);
   assert.doesNotMatch(action, /\.slice\(/, "the server action must not silently truncate submitted fields");
 });

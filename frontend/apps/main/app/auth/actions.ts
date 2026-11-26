@@ -5,7 +5,7 @@ import { createClient } from "../../lib/supabase";
 import { siteUrl } from "../../lib/site";
 import { ACTIVITY_COOKIE, ACTIVITY_COOKIE_MAX_AGE_SECONDS } from "../../lib/session-policy";
 import { mapAuthProviderError } from "./auth-error";
-import { formRateAllowance, formRateLimitedMessage } from "../../lib/form-server";
+import { formRateAllowance, formRateMessage } from "../../lib/form-server";
 import { availabilityFromRpc, isValidHandle, normalizeHandle } from "../../lib/member-handle";
 import { handleResendSignupVerification, handleVerifyEmailOtp, type AuthState } from "../../lib/auth-otp";
 export type { AuthState } from "../../lib/auth-otp";
@@ -54,7 +54,7 @@ export async function signUp(_state: AuthState, data: FormData): Promise<AuthSta
   const displayName = field(data, "displayName");
   const validationError = signupValidationError({ email, password, handle, displayName });
   if (validationError) return { status: "error", message: validationError };
-  if (!(await formRateAllowance("auth_signup"))) return { status: "error", message: formRateLimitedMessage };
+  if (!(await formRateAllowance("auth_signup"))) return { status: "error", message: await formRateMessage() };
   const availability = await checkHandleAvailability(handle);
   if (availability === "taken") return { status: "error", message: "That handle is already in use. Choose another handle." };
   if (availability !== "available") return { status: "error", message: "Handle availability could not be checked because account setup is temporarily unavailable. Please try again later." };
@@ -106,7 +106,7 @@ export async function signIn(_state: AuthState, data: FormData): Promise<AuthSta
   if (!validEmail(email)) return { status: "error", message: "Enter a valid email address.", fieldErrors: { email: "Enter a valid email address." } };
   if (!password) return { status: "error", message: "Enter your password.", fieldErrors: { password: "Enter your password." } };
   if (password.length > 128) return { status: "error", message: "Your password must be no more than 128 characters.", fieldErrors: { password: "Your password must be no more than 128 characters." } };
-  if (!(await formRateAllowance("auth_signin", 15))) return { status: "error", message: formRateLimitedMessage };
+  if (!(await formRateAllowance("auth_signin", 15))) return { status: "error", message: await formRateMessage() };
   try {
     const supabase = await createClient();
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -150,7 +150,7 @@ export async function signIn(_state: AuthState, data: FormData): Promise<AuthSta
 export async function requestPasswordReset(_state: AuthState, data: FormData): Promise<AuthState> {
   const email = field(data, "email").toLowerCase();
   if (!validEmail(email)) return { status: "error", message: "Enter a valid email address." };
-  if (!(await formRateAllowance("auth_reset"))) return { status: "error", message: formRateLimitedMessage };
+  if (!(await formRateAllowance("auth_reset"))) return { status: "error", message: await formRateMessage() };
   try {
     const supabase = await createClient();
     await supabase.auth.resetPasswordForEmail(email, { redirectTo: authCallbackUrl("/auth/new-password") });
@@ -158,7 +158,7 @@ export async function requestPasswordReset(_state: AuthState, data: FormData): P
   } catch { return { status: "error", message: genericError }; }
 }
 export async function resendSignupVerification(_state: AuthState, data: FormData): Promise<AuthState> {
-  if (!(await formRateAllowance("auth_resend"))) return { status: "error", message: formRateLimitedMessage };
+  if (!(await formRateAllowance("auth_resend"))) return { status: "error", message: await formRateMessage() };
   return handleResendSignupVerification(data, createClient, authCallbackUrl("/dashboard"));
 }
 export async function updatePassword(_state: AuthState, data: FormData): Promise<AuthState> {
@@ -177,7 +177,7 @@ export async function updatePassword(_state: AuthState, data: FormData): Promise
   }
 }
 export async function verifyEmailOtp(_state: AuthState, data: FormData): Promise<AuthState> {
-  if (!(await formRateAllowance("auth_otp", 10))) return { status: "error", message: formRateLimitedMessage };
+  if (!(await formRateAllowance("auth_otp", 10))) return { status: "error", message: await formRateMessage() };
   const outcome = await handleVerifyEmailOtp(data, createClient, authCallbackUrl("/dashboard"));
   if ("redirectTo" in outcome) redirect(outcome.redirectTo);
   return outcome;

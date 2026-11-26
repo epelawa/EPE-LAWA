@@ -6,9 +6,13 @@ import { PGlite } from '@electric-sql/pglite';
 const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), 'utf8');
 
 test('public placements and the incomplete language switch are not mounted', async () => {
-  for (const file of ['app/page.tsx', 'app/layout.tsx', 'app/radio/page.tsx', 'app/dashboard/news-content.tsx']) {
+  for (const file of ['app/page.tsx', 'app/layout.tsx', 'app/dashboard/news-content.tsx']) {
     assert.doesNotMatch(await read(`frontend/apps/main/${file}`), /<Sponsor(?:Slot|PopupPlacement)/);
   }
+  // Turn 4 owner brief: the radio player shows the business ad selected in admin (compact slot only).
+  const radio = await read('frontend/apps/main/app/radio/page.tsx');
+  assert.match(radio, /<SponsorSlot compact \/>/);
+  assert.doesNotMatch(radio, /<SponsorPopupPlacement/);
   assert.doesNotMatch(await read('frontend/apps/main/components/news-footer.tsx'), /<LangToggle/);
   assert.doesNotMatch(await read('frontend/apps/main/app/page.tsx'), /home-hero__brand/);
 });

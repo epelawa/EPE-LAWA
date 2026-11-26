@@ -6,7 +6,8 @@ const viewportWidths = [320, 375, 768, 1024, 1440] as const;
 const fixtureURL = `http://localhost:${process.env.SMOKE_FIXTURE_PORT ?? "54321"}`;
 const noResultsQuery = "browser-smoke-no-results";
 const mainNavigationName = /^Primary navigation$/;
-const newsLinkName = /News/;
+// Turn 4: the nav now also lists "Newsletter", so match the News link exactly.
+const newsLinkName = /^News$/;
 
 async function setFixtureMode(request: APIRequestContext, mode: "empty" | "error" | "stories" | "news-many") {
   const response = await request.post(`${fixtureURL}/__smoke__/mode`, { data: { mode } });
@@ -265,16 +266,14 @@ test("reduced-motion preference is honored by the public shell", async ({ page, 
   expect(maxCssDurationMilliseconds(motion.animationDuration)).toBeLessThanOrEqual(0.01);
 });
 
-test("radio reminder bell explains its limits and supports opt-in and opt-out", async ({ page, context }) => {
+test("radio notifications page explains scheduled push delivery", async ({ page, context }) => {
   await context.grantPermissions(["notifications"]);
   await page.goto("/");
   // The bell now opens the Notification Centre; the open-page radio reminder is linked from it.
   await page.getByRole("button", { name: /^Notifications/ }).click();
-  await page.getByRole("dialog", { name: "Notifications" }).getByRole("link", { name: "Thursday radio reminder" }).click();
+  await page.getByRole("dialog", { name: "Notifications" }).getByRole("link", { name: "Radio schedule and reminders" }).click();
   await expect(page).toHaveURL(/\/radio\/reminders$/);
-  await expect(page.getByText(/Works only while this site is open/)).toBeVisible();
-  await page.getByRole("button", { name: "Enable alert" }).click();
-  await expect(page.getByRole("button", { name: "Disable alert" })).toBeVisible();
-  await page.getByRole("button", { name: "Disable alert" }).click();
-  await expect(page.getByRole("button", { name: "Enable alert" })).toBeVisible();
+  // Turn 4: radio reminders are real scheduled push notifications, no open page or account needed.
+  await expect(page.getByText(/sent automatically the moment a scheduled EPE LAWA programme goes on air/)).toBeVisible();
+  await expect(page.getByText(/open-page|Works only while this site is open/)).toHaveCount(0);
 });

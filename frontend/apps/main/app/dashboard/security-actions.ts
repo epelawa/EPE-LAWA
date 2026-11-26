@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "../../lib/supabase";
-import { formRateAllowance, formRateLimitedMessage } from "../../lib/form-server";
+import { formRateAllowance, formRateMessage } from "../../lib/form-server";
 
 export type MemberPasswordState = {
   status: "idle" | "success" | "error";
@@ -28,7 +28,7 @@ export async function changeMemberPassword(_state: MemberPasswordState, data: Fo
     return { status: "error", message: "Choose a password different from your current one." };
   }
   if (!(await formRateAllowance("auth_password_change", 5))) {
-    return { status: "error", message: formRateLimitedMessage };
+    return { status: "error", message: await formRateMessage() };
   }
   try {
     const supabase = await createClient();

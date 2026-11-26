@@ -153,3 +153,51 @@ body:has(.focused-error-shell) .mobile-bottom-nav,body:has(.auth-link-issue) .mo
 /* The dropdown summaries draw their own SVG chevron; suppress the generic native <details> chevron
    from native-controls.css so the header does not show two arrows. */
 .nav-disclosure > summary::after { content: none; display: none; }
+
+/* Turn 4: the drawer fits one phone screen without scrolling, and it always
+   stacks above page chrome (the member top bar is z-index 70 inside its own
+   context, so the sticky header must lift while the drawer is open). */
+.site-head:has(.drawer-root[data-open="true"]) { z-index: 120; }
+.drawer { padding: 18px clamp(16px,4vw,26px) 14px; }
+.drawer-heading { padding-bottom: 8px; }
+.drawer-heading > div { gap: 1px; }
+.drawer-eyebrow { font-size: 10px; }
+.drawer-heading p:last-child { font-size: 15px; line-height: 1.25; }
+.drawer-nav { margin: 4px -8px; padding: 0 8px; scrollbar-width: none; }
+.drawer-nav::-webkit-scrollbar { display: none; }
+.drawer-group { padding: 6px 0 4px; }
+.drawer-group h2, .drawer-account h2 { margin: 0 0 1px; font-size: 10px; line-height: 1.3; }
+.drawer-group ul { gap: 0 4px; }
+.drawer-group[data-cols="3"] ul { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.drawer-link { min-height: 44px; padding: 4px 8px; font-size: 13px; line-height: 1.2; overflow-wrap: anywhere; }
+.drawer-group[data-cols="3"] .drawer-link { font-size: 12.5px; padding-inline: 6px; }
+.drawer-account { padding-top: 8px; }
+.drawer-account h2 { margin-bottom: 6px; }
+.drawer-account__actions > a { padding: 8px; font-size: 13px; }
+.drawer-foot { margin-top: 8px; font-size: 11px; }
+@media (max-width: 420px) {
+  .drawer { padding: 14px 14px 12px; }
+  .drawer-group ul { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .drawer-group[data-cols="3"] ul { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .drawer-foot { display: none; }
+}
+@media (max-height: 620px) { .drawer-link { min-height: 44px; } }
+
+/* Turn 4: on desktop every section is already in the bar (News + the three
+   dropdowns), so the hamburger is hidden there; it returns at 960px and below. */
+@media (min-width: 961px) {
+  .site-head__menu { display: none; }
+}
+
+/* Turn 4: the drawer (which holds the EN/YO switch) is hidden on desktop, so the
+   switch sits in the masthead there. Small screens keep it inside the drawer. */
+.lang-switch--masthead { display: none; }
+@media (min-width: 961px) {
+  .lang-switch--masthead { display: inline-flex; background: transparent; border-color: rgba(167, 197, 245, .45); }
+  .lang-switch--masthead button { min-height: 36px; min-width: 40px; color: #F1F4FA; }
+  .lang-switch--masthead button[aria-pressed="true"] { background: #477FE0; color: #0A1023; }
+}
+/* EN/YO switch sits on the Account heading row so the drawer's focus order stays
+   Close → sections → language → account actions. */
+.drawer-account__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+.drawer-account__head h2 { margin: 0; }

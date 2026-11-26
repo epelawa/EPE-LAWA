@@ -1,3 +1,4 @@
+import HumanCheck from "../../components/human-check";
 import { SubmitButton } from "@epelawa/ui";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -5,6 +6,7 @@ import { FilterIcon, SearchIcon } from "../../components/icons";
 import { createClient } from "../../lib/supabase";
 import { PageFrame, PageIntro, Panel, SectionHeading, Notice, EmptyPanel } from "../../components/design-system";
 import { submitTourismContribution } from "./actions";
+import GuestContactFields from "../../components/guest-contact-fields";
 import Image from "next/image";
 import styles from "./tourism.module.css";
 
@@ -55,7 +57,8 @@ export default async function TourismPage({ searchParams }: { searchParams: Prom
     console.error("tourism public read failed", { reason: error instanceof Error ? error.name : "unknown" });
   }
   let signedIn = false;
-  if (supabase) { try { const result = await supabase.auth.getUser(); signedIn = Boolean(result.data.user); } catch {} }
+  let accountEmail: string | null = null;
+  if (supabase) { try { const result = await supabase.auth.getUser(); signedIn = Boolean(result.data.user); accountEmail = result.data.user?.email ?? null; } catch {} }
 
   return <PageFrame className="ui-stack">
     <PageIntro eyebrow="Epe Lawa · Public record" title="Historical Sites &amp; Tourism" description="A guide to Epe destinations, built from verified sources. Visitor and location details appear only when checked by our editorial team." />
@@ -101,12 +104,15 @@ export default async function TourismPage({ searchParams }: { searchParams: Prom
     {page > 1 || hasOlder ? <nav className="ui-actions" aria-label="Tourism pages">{page > 1 ? <Link className="btn-secondary" href={pageHref(page - 1, query)}>Newer destinations</Link> : null}<span className="ui-meta" aria-live="polite">Page {page}</span>{hasOlder ? <Link className="btn-secondary" href={pageHref(page + 1, query)}>Older destinations</Link> : null}</nav> : null}
 
     <section className="ui-stack" aria-labelledby="contribute-title">
-      <SectionHeading eyebrow="02 · Community contribution" title="Suggest a destination" id="contribute-title" description="Contributions stay private until staff verify the source and publication rights. Do not submit sensitive access details or personal residential addresses. Submission is not approval." />
+      <SectionHeading eyebrow="02 · Community contribution" title="Suggest a destination" id="contribute-title" description="Anyone can suggest a place — signing in is optional. Contributions stay private until staff verify the source and publication rights. Do not submit sensitive access details or personal residential addresses. Submission is not approval." />
       {submission === "sent" ? <Notice tone="success" role="status">Your suggestion was received privately for editorial review. It is not published.</Notice> : null}
       {submission === "invalid" ? <Notice tone="warning" role="alert">Please check the required fields, HTTPS links, media-rights description and consent.</Notice> : null}
       {submission === "limited" ? <Notice tone="warning" role="alert">Too many suggestions from this network this hour. Please wait a while and try again.</Notice> : null}
-      {submission === "error" ? <Notice tone="danger" role="alert">The private suggestion could not be saved. Confirm your member profile is active and try again later.</Notice> : null}
-      {signedIn ? <Panel><details className="ui-disclosure"><summary className="btn-primary">Suggest a destination</summary><form action={submitTourismContribution} className="ui-stack">
+      {submission === "verify" ? <Notice tone="warning" role="alert">The human check did not finish. Wait for “Verified” under the form, then send again — nothing was saved.</Notice> : null}
+      {submission === "verify" ? <Notice tone="warning" role="alert">The human check did not finish. Wait for “Verified” under the form, then send again — nothing was saved.</Notice> : null}
+      {submission === "contact" ? <Notice tone="warning" role="alert">Add your name and a valid email address so our team can reply, then send the suggestion again.</Notice> : null}
+      {submission === "error" ? <Notice tone="danger" role="alert">The private suggestion could not be saved. Please try again in a moment.</Notice> : null}
+      <Panel><details className="ui-disclosure"><summary className="btn-primary">Suggest a destination</summary><form action={submitTourismContribution} className="ui-stack">
         <div className="ui-form-grid">
           <div className="ui-field"><label className="label" htmlFor="tourism-name">Destination name</label><input className="input" id="tourism-name" name="name" required minLength={2} maxLength={180} /></div>
           <div className="ui-field"><label className="label" htmlFor="tourism-source">Source citation</label><textarea className="input" id="tourism-source" name="source_citation" required minLength={5} maxLength={2000} /></div>
@@ -117,9 +123,12 @@ export default async function TourismPage({ searchParams }: { searchParams: Prom
           <div className="ui-field"><label className="label" htmlFor="tourism-media">Media URL (optional, HTTPS)</label><input className="input" id="tourism-media" name="media_url" type="url" pattern="https://.*" maxLength={1000} /></div>
           <div className="ui-field"><label className="label" htmlFor="tourism-rights">Media rights / permission basis (required if media supplied)</label><textarea className="input" id="tourism-rights" name="media_rights" maxLength={2000} /></div>
         </div>
+        <GuestContactFields signedIn={signedIn} accountEmail={accountEmail} idPrefix="tourism" />
+        <HumanCheck />
+        <div hidden aria-hidden="true"><label>Leave this field empty<input name="website" autoComplete="off" tabIndex={-1} /></label></div>
         <label className="ui-subtle ui-row"><input type="checkbox" name="consent" value="yes" required /><span>I confirm these details are submitted for private editorial review, the source is identified, and any media rights basis is accurately described. I understand nothing will be published unless provenance and rights are verified.</span></label>
         <div className="ui-actions"><SubmitButton pendingLabel="Submitting…" className="btn-primary" useLegacyClasses>Submit privately for review</SubmitButton></div>
-      </form></details></Panel> : <p><Link className="btn-secondary" href="/login?next=%2Ftourism">Sign in to suggest a destination</Link></p>}
+      </form></details></Panel>
     </section>
     <p className="ui-meta">Directions open in Google Maps. Verify the route before travel.</p>
   </PageFrame>;

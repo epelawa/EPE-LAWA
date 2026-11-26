@@ -1,28 +1,30 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { pushDispatchAuthorized, pushSenderReady, webPushDeliver, type WebPushPayload } from "../../../../lib/web-push-send";
+import { pushDispatchAuthorized, pushSenderReady, type WebPushPayload } from "../../../../lib/web-push-send";
+import { fanoutPush } from "../../../../lib/push-fanout";
 
 export const dynamic = "force-dynamic";
 
 /**
  * Server-to-server web-push dispatch. The admin server action publishes a story,
  * then calls this route with a shared secret; the route needs the service role
- * because notification_preferences and push_subscriptions have no grants for
- * end-user roles. Endpoints the push service reports as gone are retired here.
+ * because web_push_devices, notification_preferences and push_subscriptions
+ * have no grants for end-user roles. Delivery reaches every opted-in device,
+ * guest or member, and endpoints the push service reports as gone are retired
+ * in lib/push-fanout.ts.
  */
 
-const MAX_SUBSCRIPTIONS = 500;
-const KIND_COLUMNS = { news_published: "push_news", radio_live: "push_radio" } as const;
+const KIND_TOPICS = { news_published: "news", radio_live: "radio" } as const;
 const URL_PATTERN = /^\/[A-Za-z0-9/_?=&%.-]*$/;
 
-type DispatchBody = { kind: keyof typeof KIND_COLUMNS; title: string; body: string; url?: string };
+type DispatchBody = { kind: keyof typeof KIND_TOPICS; title: string; body: string; url?: string };
 
 function parseBody(raw: unknown): DispatchBody | null {
   if (!raw || typeof raw !== "object") return null;
   const source = raw as Record<string, unknown>;
   const kindRaw = typeof source.kind === "string" ? source.kind : "";
   if (kindRaw !== "news_published" && kindRaw !== "radio_live") return null;
-  const kind = kindRaw as keyof typeof KIND_COLUMNS;
+  const kind = kindRaw as keyof typeof KIND_TOPICS;
   const title = typeof source.title === "string" ? source.title.trim() : "";
   const body = typeof source.body === "string" ? source.body.trim() : "";
   if (!title || title.length > 140 || !body || body.length > 1000) return null;
@@ -66,52 +68,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ state: "invalid" }, { status: 400, headers: { "cache-control": "no-store" } });
     }
 
-    const column = KIND_COLUMNS[dispatch.kind];
-    const prefs = await supabase
-      .from("notification_preferences")
-      .select("user_id")
-      .eq(column, true)
-      .limit(MAX_SUBSCRIPTIONS + 1);
-    if (prefs.error) {
-      return NextResponse.json({ state: "unavailable" }, { status: 503, headers: { "cache-control": "no-store" } });
-    }
-    const userIds = (prefs.data ?? []).map((row) => String(row.user_id));
-    if (!userIds.length) {
-      return NextResponse.json({ state: "ok", sent: 0, gone: 0, failed: 0 }, { headers: { "cache-control": "no-store" } });
-    }
-    const stored = await supabase
-      .from("push_subscriptions")
-      .select("id,endpoint,p256dh,auth")
-      .in("user_id", userIds)
-      .limit(MAX_SUBSCRIPTIONS + 1);
-    if (stored.error) {
-      return NextResponse.json({ state: "unavailable" }, { status: 503, headers: { "cache-control": "no-store" } });
-    }
-    const subscriptions = (stored.data ?? []).slice(0, MAX_SUBSCRIPTIONS);
-
     const payload: WebPushPayload = { title: dispatch.title, body: dispatch.body, kind: dispatch.kind, url: dispatch.url };
-    let sent = 0;
-    let gone = 0;
-    let failed = 0;
-    for (const subscription of subscriptions) {
-      if (typeof subscription.endpoint !== "string" || typeof subscription.p256dh !== "string" || typeof subscription.auth !== "string") {
-        failed += 1;
-        continue;
-      }
-      try {
-        const status = await webPushDeliver(subscription.endpoint, subscription.p256dh, subscription.auth, payload);
-        if (status >= 200 && status < 300) {
-          sent += 1;
-        } else if (status === 404 || status === 410) {
-          gone += 1;
-          await supabase.from("push_subscriptions").delete().eq("id", String(subscription.id));
-        } else {
-          failed += 1;
-        }
-      } catch {
-        failed += 1;
-      }
+    // Guests and members (web_push_devices) plus legacy member rows from
+    // notification_preferences/push_subscriptions; see lib/push-fanout.ts.
+    const result = await fanoutPush(supabase, KIND_TOPICS[dispatch.kind], payload);
+    if (!result) {
+      return NextResponse.json({ state: "unavailable" }, { status: 503, headers: { "cache-control": "no-store" } });
     }
+    const { sent, gone, failed } = result;
     return NextResponse.json({ state: "ok", sent, gone, failed }, { headers: { "cache-control": "no-store" } });
   } catch {
     return NextResponse.json({ state: "unavailable" }, { status: 503, headers: { "cache-control": "no-store" } });

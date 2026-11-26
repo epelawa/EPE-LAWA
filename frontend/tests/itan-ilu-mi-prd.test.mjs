@@ -29,20 +29,24 @@ test('public browsing only queries published archive table and supports family/c
   assert.match(page, /Published accounts/);
   assert.match(page, /family_name/);
   assert.match(page, /lineage_description/);
-  assert.match(page, /Images and video are not currently accepted/);
-  assert.match(page, /storage provider is configured/);
+  // Turn 4 brief: one reviewed photograph may be attached; video is still not accepted.
+  assert.match(page, /Video is not accepted/);
+  assert.match(page, /published only if staff approve them/);
   assert.doesNotMatch(page, /SERVICE_ROLE|service_role/i);
 });
 
 test('intake validates provenance, rights, category and consent before private insert', () => {
-  assert.match(action, /categories\.includes/);
+  assert.match(action, /HISTORY_CATEGORIES\.includes/);
   assert.match(action, /rightsDescription\.length < 5/);
   assert.match(action, /formData\.get\("consent"\) !== "yes"/);
-  assert.match(action, /supabase\.auth\.getUser\(\)/);
+  // Turn 4 brief: guests may contribute; the member/guest is resolved server-side.
+  assert.match(action, /resolvePublicSubmitter\(formData\)/);
   assert.match(action, /from\("history_contributions"\)\.insert/);
   assert.match(action, /rights_description: rightsDescription/);
   assert.doesNotMatch(action, /from\("history_records"\)/);
+  // Turn 4: a reviewed photo is stored privately (image_key), never a raw media/video URL.
   assert.doesNotMatch(action, /media_url|image_url|video_url|service_role/i);
+  assert.match(action, /storeSubmissionImage/);
 });
 
 test('staff review sees rights and lineage evidence and retains explicit decision controls', () => {
