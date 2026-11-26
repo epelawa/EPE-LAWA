@@ -59,11 +59,11 @@ export default function SiteHeader({ items, lang = "en" }: { items: NavItem[]; l
   };
 
   const renderMobileGroup = (group: typeof MOBILE_GROUPS[number]) => (
-    <section className="drawer-group" key={group.label} aria-labelledby={`drawer-${group.label.toLowerCase().replaceAll(" ", "-")}`}>
+    <section className="drawer-group" data-cols={group.routes.length === 3 || group.routes.length > 4 ? "3" : "2"} key={group.label} aria-labelledby={`drawer-${group.label.toLowerCase().replaceAll(" ", "-")}`}>
       <h2 id={`drawer-${group.label.toLowerCase().replaceAll(" ", "-")}`}>{navGroupLabel(lang, group.label)}</h2>
       <ul>{group.routes.map(([href, label]) => {
         const item = navItem(href, label);
-        return <li key={href}><Link className="drawer-link" href={item.href} aria-current={isCurrent(pathname, item.href) ? "page" : undefined}>{label}</Link></li>;
+        return <li key={href}><Link className="drawer-link" href={item.href} aria-current={isCurrent(pathname, item.href) ? "page" : undefined}>{lang === "en" ? label : navLabel(lang, item.href, label)}</Link></li>;
       })}</ul>
     </section>
   );

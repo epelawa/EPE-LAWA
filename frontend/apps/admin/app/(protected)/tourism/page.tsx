@@ -24,6 +24,9 @@ type Submission = {
   media_url: string | null;
   media_rights: string | null;
   submitted_at: string;
+  submitter_name: string | null;
+  submitter_email: string | null;
+  contributor_id: string | null;
 };
 
 export default async function TourismReviewPage({
@@ -48,7 +51,7 @@ export default async function TourismReviewPage({
       const result = await supabase
         .from("tourism_submissions")
         .select(
-          "id,name,description,visitor_context,visit_details,source_citation,source_url,media_url,media_rights,submitted_at",
+          "id,name,description,visitor_context,visit_details,source_citation,source_url,media_url,media_rights,submitted_at,submitter_name,submitter_email,contributor_id",
         )
         .eq("status", "pending")
         .order("submitted_at")
@@ -111,6 +114,10 @@ export default async function TourismReviewPage({
                   <StatusBadge tone="warning">Pending review</StatusBadge>
                 </div>
                 <SectionHeading title={row.name} />
+                <p className="ui-meta">
+                  From {row.contributor_id ? "a member account" : "a guest"}{row.submitter_name ? ` · ${row.submitter_name}` : ""}
+                  {row.submitter_email ? <> · <a className="ui-text-link" href={`mailto:${row.submitter_email}`}>{row.submitter_email}</a></> : null} (private)
+                </p>
                 <div className="ui-prose">
                   <p className="whitespace-pre-wrap">{row.description}</p>
                   {row.visitor_context ? (

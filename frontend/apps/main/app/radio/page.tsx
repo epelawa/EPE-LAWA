@@ -7,6 +7,7 @@ import styles from "./radio-page.module.css";
 import { pageMetadata } from "../../lib/metadata";
 import { createClient } from "../../lib/supabase";
 import SongRequestModal from "./request-modal";
+import SponsorSlot from "../../components/sponsor-slot";
 import { onAirSlotId } from "./programmes/on-air";
 
 export const dynamic = "force-dynamic";
@@ -33,7 +34,8 @@ export default async function RadioPage() {
 
   return <PageFrame className={styles.listeningPage}>
     <section id="live-player" className={styles.playerWrap} aria-label="Radio stations">
-      <RadioPlayer />
+      {/* The sponsor card is the business picked on the admin Ads desk, with its logo. */}
+      <RadioPlayer><SponsorSlot compact /></RadioPlayer>
       {/* Only a scheduled EPE LAWA programme earns the red on-air marker; otherwise the stations run their own programming. */}
       <div className={styles.nowPlaying} role="status" data-on-air={onAirName ? "scheduled" : "idle"}>
         <span className={onAirName ? styles.onAirDot : styles.idleDot} aria-hidden="true" />

@@ -1,5 +1,6 @@
 import { createStaffClient } from "../../../../lib/supabase";
-import { decideHistoryContribution } from "../../../../lib/history-actions";
+import { decideHistoryContribution, resolveHistoryCorrection } from "../../../../lib/history-actions";
+import { publicMediaUrl } from "../../../../../main/lib/media";
 import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "@epelawa/ui";
 
 type Contribution = {
@@ -7,7 +8,9 @@ type Contribution = {
   source_url: string | null; consent_version: string; consent_text: string;
   consented_at: string; submitted_at: string; community: string | null;
   category: string; family_name: string | null; lineage_description: string | null; rights_description: string;
+  contributor_id: string | null; submitter_name: string | null; submitter_email: string | null; image_key: string | null; image_alt: string | null;
 };
+type CorrectionRequest = { id: string; record_ref: string; request_kind: string; message: string; sender_name: string; sender_email: string; submitter_id: string | null; created_at: string };
 const labels: Record<string, string> = { "community-history": "Community history", "family-lineage": "Family / house lineage", "cultural-practice": "Cultural practice", "place-history": "Place history", "oral-history": "Oral history", other: "Other" };
 
 export default async function HistoryReviewPage({ searchParams }: { searchParams: Promise<{ result?: string }> }) {
@@ -17,14 +20,23 @@ export default async function HistoryReviewPage({ searchParams }: { searchParams
   ]);
   const permitted = !capabilityError && capability === true;
   let rows: Contribution[] = [];
+  let corrections: CorrectionRequest[] = [];
   let failed = false;
+  let correctionsFailed = false;
   if (permitted) {
-    const { data, error } = await supabase.from("history_contributions")
-      .select("id,title,account,source_description,source_url,consent_version,consent_text,consented_at,submitted_at,community,category,family_name,lineage_description,rights_description")
-      .eq("status", "pending").order("submitted_at", { ascending: true }).limit(100);
-    failed = !!error;
-    if (error) console.error("history review queue failed", { code: error.code });
-    rows = (data ?? []) as Contribution[];
+    const [queue, requests] = await Promise.all([
+      supabase.from("history_contributions")
+        .select("id,title,account,source_description,source_url,consent_version,consent_text,consented_at,submitted_at,community,category,family_name,lineage_description,rights_description,contributor_id,submitter_name,submitter_email,image_key,image_alt")
+        .eq("status", "pending").order("submitted_at", { ascending: true }).limit(100),
+      supabase.from("history_correction_requests")
+        .select("id,record_ref,request_kind,message,sender_name,sender_email,submitter_id,created_at")
+        .eq("status", "open").order("created_at", { ascending: true }).limit(100),
+    ]);
+    failed = !!queue.error;
+    correctionsFailed = !!requests.error;
+    if (queue.error) console.error("history review queue failed", { code: queue.error.code });
+    rows = (queue.data ?? []) as Contribution[];
+    corrections = (requests.data ?? []) as CorrectionRequest[];
   }
 
   const resultNotices: Record<string, { tone: "success" | "warning" | "danger"; text: string }> = {
@@ -32,6 +44,8 @@ export default async function HistoryReviewPage({ searchParams }: { searchParams
     stale: { tone: "warning", text: "This contribution may already have been reviewed. Refresh the queue before taking another action." },
     denied: { tone: "danger", text: "Your account is not authorized to review contributions." },
     invalid: { tone: "danger", text: "The submitted decision was invalid." },
+    correction_saved: { tone: "success", text: "Correction request closed." },
+    correction_stale: { tone: "warning", text: "That correction request may already be closed. Refresh before acting again." },
     missing_public_text: { tone: "warning", text: "Publishing requires an edited or redacted public account (20–20,000 characters) and an explicitly approved public citation (3–1,000 characters). Only explicitly approved account, family/lineage and citation fields are public. Revision and rejection do not require public text." },
   };
   const notice = params.result ? resultNotices[params.result] : undefined;
@@ -45,12 +59,6 @@ export default async function HistoryReviewPage({ searchParams }: { searchParams
         meta={<StatusBadge tone="neutral">History review</StatusBadge>}
       />
       {notice ? <Notice tone={notice.tone} role={params.result === "saved" ? "status" : "alert"}>{notice.text}</Notice> : null}
-      <Notice tone="warning" role="note">
-        <div className="ui-stack-sm">
-          <div className="ui-row"><StatusBadge tone="warning">Unavailable</StatusBadge><strong>Published-record corrections and removals</strong></div>
-          <p>This queue accepts new contributions only. It cannot receive correction/removal reports or edit or withdraw a published record. No safe, persisted correction workflow is available; do not process such requests here.</p>
-        </div>
-      </Notice>
       {!permitted ? (
         <EmptyPanel title="Review access required" description="This staff account does not have the history.review capability." />
       ) : failed ? (
@@ -70,7 +78,19 @@ export default async function HistoryReviewPage({ searchParams }: { searchParams
                   {row.community ? <span>{row.community}</span> : null}
                   {row.family_name ? <span>{row.family_name} family</span> : null}
                 </div>
+                <p className="ui-meta">
+                  From {row.contributor_id ? "a member account" : "a guest"}{row.submitter_name ? ` · ${row.submitter_name}` : ""}
+                  {row.submitter_email ? <> · <a className="ui-text-link" href={`mailto:${row.submitter_email}`}>{row.submitter_email}</a></> : null}
+                  {" "}(private)
+                </p>
               </header>
+              {publicMediaUrl(row.image_key) ? (
+                <figure className="ui-stack-sm" style={{ margin: 0 }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={publicMediaUrl(row.image_key) ?? ""} alt={row.image_alt ?? ""} style={{ maxWidth: "min(100%, 420px)", height: "auto", borderRadius: 10 }} />
+                  <figcaption className="ui-meta">Submitted photo{row.image_alt ? ` · ${row.image_alt}` : ""}. Not public unless you tick “Publish the submitted photo”.</figcaption>
+                </figure>
+              ) : null}
 
               <section className="ui-subtle ui-stack-sm" aria-label="Private submission details">
                 <SectionHeading title="Submitted account" />
@@ -121,6 +141,7 @@ export default async function HistoryReviewPage({ searchParams }: { searchParams
                     <p className="ui-muted">Blank by default. Only this explicitly approved HTTPS link will be public; the submitted source URL remains private.</p>
                   </div>
                 </div>
+                {row.image_key ? <label className="ui-row"><input type="checkbox" name="publishImage" value="yes" /> Publish the submitted photo with this record (rights confirmed)</label> : null}
                 <div className="ui-actions">
                   <button className="btn-primary" name="decision" value="published">Publish verified record</button>
                   <button className="btn-secondary" name="decision" value="needs_revision">Request revision</button>
@@ -131,6 +152,32 @@ export default async function HistoryReviewPage({ searchParams }: { searchParams
           ))}
         </div>
       )}
+      {permitted ? (
+        <section id="corrections" className="ui-stack" aria-label="Corrections and removal requests">
+          <SectionHeading eyebrow="Public requests" title="Corrections and removal requests" description="Sent from the public “Request a correction” form. Edit the published record separately, then close the request with a note." />
+          {correctionsFailed ? <EmptyPanel title="Requests unavailable" description="Correction requests could not be loaded. Try again later." />
+            : corrections.length === 0 ? <EmptyPanel title="No open requests" description="New correction and removal requests will appear here." />
+            : corrections.map((req) => (
+              <Panel className="ui-stack-sm" key={req.id}>
+                <p className="ui-eyebrow">{req.request_kind === "removal" ? "Removal request" : "Correction request"} · {new Date(req.created_at).toLocaleString("en-NG")}</p>
+                <h3 className="ui-item-title">{req.record_ref}</h3>
+                <p className="ui-prose" style={{ whiteSpace: "pre-wrap" }}>{req.message}</p>
+                <p className="ui-meta">{req.sender_name} · <a className="ui-text-link" href={`mailto:${req.sender_email}`}>{req.sender_email}</a>{req.submitter_id ? " · member account" : " · guest"} (private)</p>
+                <form action={resolveHistoryCorrection} className="ui-stack-sm">
+                  <input type="hidden" name="requestId" value={req.id} />
+                  <div className="ui-field">
+                    <label className="label" htmlFor={`staff-note-${req.id}`}>Staff note (optional)</label>
+                    <textarea className="input" id={`staff-note-${req.id}`} name="staffNote" rows={2} maxLength={2000} />
+                  </div>
+                  <div className="ui-actions">
+                    <button className="btn-primary" name="status" value="resolved">Mark resolved</button>
+                    <button className="btn-secondary" name="status" value="dismissed">Dismiss</button>
+                  </div>
+                </form>
+              </Panel>
+            ))}
+        </section>
+      ) : null}
     </PageFrame>
   );
 }

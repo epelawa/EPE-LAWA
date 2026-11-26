@@ -54,6 +54,7 @@ export async function decideHistoryContribution(formData: FormData): Promise<voi
       p_public_lineage_description: typeof publicLineageDescription === "string" && publicLineageDescription.trim() ? publicLineageDescription.trim() : null,
       p_public_citation: decision === "published" && typeof publicCitation === "string" ? publicCitation.trim() : null,
       p_public_source_url: decision === "published" && typeof publicSourceUrl === "string" && publicSourceUrl.trim() ? publicSourceUrl.trim() : null,
+      p_publish_image: decision === "published" && formData.get("publishImage") === "yes",
     });
     resultError = !!error;
     if (error) console.error("history decision failed", { code: error.code });
@@ -66,4 +67,26 @@ export async function decideHistoryContribution(formData: FormData): Promise<voi
   revalidatePath(adminHref("/itan-ilu-mi/review"));
   revalidatePath("/itan-ilu-mi");
   staffRedirect(`/itan-ilu-mi/review?result=${resultError ? "stale" : "saved"}`);
+}
+
+/** Close a public correction/removal request about a published Ìtàn record. */
+export async function resolveHistoryCorrection(formData: FormData): Promise<void> {
+  const id = String(formData.get("requestId") ?? "");
+  const status = String(formData.get("status") ?? "");
+  const note = String(formData.get("staffNote") ?? "").trim().slice(0, 2000);
+  if (!/^[0-9a-f-]{36}$/i.test(id) || !["resolved", "dismissed"].includes(status)) {
+    staffRedirect("/itan-ilu-mi/review?result=invalid#corrections");
+  }
+  let failed = false;
+  try {
+    const supabase = await createStaffClient();
+    const { error } = await supabase.rpc("staff_history_correction_resolve", { p_request_id: id, p_status: status, p_note: note || null });
+    failed = !!error;
+    if (error) console.error("history correction resolve failed", { code: error.code });
+  } catch (error) {
+    if (error && typeof error === "object" && "digest" in error) throw error;
+    failed = true;
+  }
+  revalidatePath(adminHref("/itan-ilu-mi/review"));
+  staffRedirect(`/itan-ilu-mi/review?result=${failed ? "correction_stale" : "correction_saved"}#corrections`);
 }
