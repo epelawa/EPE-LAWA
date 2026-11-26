@@ -1,3 +1,5 @@
+/* Positioning context for the Notification Centre unread badge. */
+.header-notification { position: relative; }
 .site-head {
   position: sticky;
   top: 0;

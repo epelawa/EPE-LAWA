@@ -10,8 +10,12 @@ import { NotificationSoundSettings } from "./notification-sound";
 const OPT_IN = "epe-radio-open-page-reminder";
 const LAST_SENT = "epe-radio-last-open-page-reminder";
 
-/** The bell stays compact; the open-page reminder continues across public routes. */
-export default function RadioReminder() {
+/**
+ * The Thursday open-page radio reminder. It runs only after the visitor opted in
+ * on /radio/reminders and granted permission, and only while a page is open.
+ * The header bell (Notification Centre) mounts it on every public route.
+ */
+export function useRadioOpenPageReminder() {
   useEffect(() => {
     const check = () => {
       if (!("Notification" in window) || Notification.permission !== "granted") return;
@@ -29,7 +33,11 @@ export default function RadioReminder() {
     const timer = window.setInterval(check, 30_000);
     return () => window.clearInterval(timer);
   }, []);
+}
 
+/** Legacy standalone bell, kept for pages that link straight to radio reminder settings. */
+export default function RadioReminder() {
+  useRadioOpenPageReminder();
   return <Link href="/radio/reminders" className="btn-icon header-notification" aria-label="Radio notification settings"><BellIcon size={20} /></Link>;
 }
 
