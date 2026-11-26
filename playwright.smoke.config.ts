@@ -22,6 +22,7 @@ const appCommand = [
   `SUPABASE_ANON_KEY=${shellQuote(syntheticKey)}`,
   `NEXT_PUBLIC_SUPABASE_ANON_KEY=${shellQuote(syntheticKey)}`,
   "NEXT_TELEMETRY_DISABLED=1",
+  "BROWSER_SMOKE_TEST=true",
   "MAINTENANCE_GATE_ENABLED=false",
   `NEXT_PUBLIC_SITE_URL=${shellQuote(baseURL)}`,
   `PORT=${port}`,
