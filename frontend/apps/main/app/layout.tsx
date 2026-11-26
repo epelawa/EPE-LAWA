@@ -79,7 +79,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   return (
     <html lang={siteLanguage === "yo" ? "yo" : "en"} data-theme="light" style={{ colorScheme: "light" }} suppressHydrationWarning>
       <head>
-        <script nonce={nonce} data-plerdy_code="1" dangerouslySetInnerHTML={{ __html: `(function(w,d){
+        {process.env.BROWSER_SMOKE_TEST !== "true" && (
+          <script nonce={nonce} data-plerdy_code="1" dangerouslySetInnerHTML={{ __html: `(function(w,d){
   if(w.__plerdyCode)return;
   w.__plerdyCode=1;
   w._protocol=w.location.protocol==="https:"?"https://":"http://";
@@ -91,6 +92,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   s.src="https://a.plerdy.com/public/js/click/main.js?v="+Math.random();
   d.head.appendChild(s);
 })(window,document);` }} />
+        )}
       </head>
       <body>
         {publicOrigin(process.env.NEXT_PUBLIC_SUPABASE_URL) ? (

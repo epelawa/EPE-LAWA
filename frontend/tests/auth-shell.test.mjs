@@ -165,7 +165,7 @@ test("Plerdy verification bootstrap is installed in the shared head, not the coo
     read(components, "cookie-banner.tsx"),
     read(app, "privacy/page.tsx"),
   ]);
-  assert.match(layout, /<head>\s*<script nonce=\{nonce\} data-plerdy_code="1"/);
+  assert.match(layout, /<head>\s*\{process\.env\.BROWSER_SMOKE_TEST !== "true" && \(\s*<script nonce=\{nonce\} data-plerdy_code="1"/);
   assert.match(layout, /_site_hash_code="ae78ac2f6688b1ba8f347e3350b8a6a1"/);
   assert.match(layout, /_suid=83869/);
   assert.match(layout, /s\.async=true/);

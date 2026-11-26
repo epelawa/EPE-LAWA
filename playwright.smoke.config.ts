@@ -7,7 +7,7 @@ const baseURL = process.env.SMOKE_BASE_URL ?? `http://127.0.0.1:${port}`;
 const fixtureURL = `http://localhost:${fixturePort}`;
 const appDir = resolve(process.env.SMOKE_APP_DIR ?? process.cwd());
 const appPackageDir = resolve(appDir, "frontend/apps/main");
-const pnpmBin = process.env.PNPM_BIN ?? "pnpm";
+const nextBin = resolve(appPackageDir, "node_modules/.bin/next");
 const syntheticKey = "browser-smoke-placeholder-not-a-secret";
 
 function shellQuote(value: string): string {
@@ -15,19 +15,19 @@ function shellQuote(value: string): string {
 }
 
 const appCommand = [
-  "env -i",
+  `cd ${shellQuote(appPackageDir)} && env -i`,
   `PATH=${shellQuote(process.env.PATH ?? "")}`,
   `HOME=${shellQuote(process.env.HOME ?? "/tmp")}`,
   `NEXT_PUBLIC_SUPABASE_URL=${shellQuote(fixtureURL)}`,
   `SUPABASE_ANON_KEY=${shellQuote(syntheticKey)}`,
   `NEXT_PUBLIC_SUPABASE_ANON_KEY=${shellQuote(syntheticKey)}`,
   "NEXT_TELEMETRY_DISABLED=1",
+  "BROWSER_SMOKE_TEST=true",
+  "MAINTENANCE_GATE_ENABLED=false",
   `NEXT_PUBLIC_SITE_URL=${shellQuote(baseURL)}`,
   `PORT=${port}`,
-  shellQuote(pnpmBin),
-  "--dir",
-  shellQuote(appPackageDir),
-  "exec next dev --webpack --hostname 127.0.0.1 --port",
+  shellQuote(nextBin),
+  "dev --webpack --hostname 127.0.0.1 --port",
   String(port),
 ].join(" ");
 
