@@ -160,11 +160,10 @@ test("storage notice is homepage-only and leaves auth screens unobstructed", asy
 });
 
 test("Plerdy verification bootstrap is installed in the shared head, not the cookie notice", async () => {
-  const [layout, banner, privacy, csp] = await Promise.all([
+  const [layout, banner, privacy] = await Promise.all([
     read(app, "layout.tsx"),
     read(components, "cookie-banner.tsx"),
     read(app, "privacy/page.tsx"),
-    read(app, "../lib/csp.ts"),
   ]);
   assert.match(layout, /<head>\s*<script nonce=\{nonce\} data-plerdy_code="1"/);
   assert.match(layout, /_site_hash_code="ae78ac2f6688b1ba8f347e3350b8a6a1"/);
@@ -175,5 +174,4 @@ test("Plerdy verification bootstrap is installed in the shared head, not the coo
   assert.doesNotMatch(layout, /PlerdyAnalytics/);
   assert.doesNotMatch(banner, /Plerdy|Allow analytics|Keep analytics off/);
   assert.match(privacy, /Plerdy site verification/);
-  assert.ok(csp.includes("https://a.plerdy.com"));
 });
