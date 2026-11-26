@@ -1,14 +1,13 @@
 /* Homepage direction: a compact community front page, built on verified content. */
 .public-home { background: #f1f4fa; }
-.home-hero__visual { min-height: clamp(370px, 38vw, 500px); justify-content: flex-start; }
-.home-hero__media::after { background: linear-gradient(90deg, rgb(4 16 37 / .88), rgb(4 16 37 / .35) 72%, rgb(4 16 37 / .12)), linear-gradient(0deg, rgb(4 16 37 / .52), transparent 55%); }
-.home-hero__content, .public-home:has(.storage-notice) .home-hero__content { align-items: flex-start; justify-content: center; text-align: left; padding-block: 60px; }
+.home-hero__visual { min-height: clamp(370px, 38vw, 500px); justify-content: center; }
+.home-hero__media::after { background: linear-gradient(0deg, rgb(4 16 37 / .76), rgb(4 16 37 / .55)); }
+.home-hero__content, .public-home:has(.storage-notice) .home-hero__content { align-items: center; justify-content: center; text-align: center; padding-block: 60px; }
 .home-hero__content h1 { max-width: 18ch; margin: 12px 0; font-size: clamp(2.4rem, 4.5vw, 4.6rem); line-height: 1.08; letter-spacing: -.045em; }
 .home-hero__eyebrow { margin: 0; padding: 6px 12px; border-radius: 7px; background: #294b91; color: white; font-size: 12px; font-weight: 800; letter-spacing: .08em; }
 .home-hero__lede { margin: 0; font-size: clamp(16px, 1.4vw, 20px); }
-.home-hero__actions { justify-content: flex-start; padding-top: 22px; }
+.home-hero__actions { justify-content: center; padding-top: 22px; }
 .home-hero__actions .btn-primary { background: #a7c5f5; border: 1px solid #a7c5f5; color: #0a1023; }
-.home-hero__brand { margin-inline: 0; }
 .home-hero__pause, .home-hero__slide-control { clip-path: none; }
 .home-hero__slide-control { top: auto; bottom: 16px; transform: none; }
 .home-hero__slide-control--previous { left: auto; right: 64px; }
@@ -171,3 +170,13 @@
 .home-radio__action { background: #a7c5f5; border-color: #a7c5f5; color: #0a1023; }
 .home-radio__action:hover { background: #dbe9ff; color: #0a1023; }
 .home-news__heading h2 { border-color: #477fe0; }
+
+/* Only live homepage news uses a loading placeholder; real empty/error states replace it. */
+.home-news-skeleton { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+.home-news-skeleton__card { overflow:hidden; border:1px solid #dce4f0; border-radius:18px; background:#fff; }
+.home-news-skeleton__image { aspect-ratio:16 / 9; background:#e1e8f3; }
+.home-news-skeleton__copy { display:grid; gap:12px; padding:20px 18px 24px; }
+.home-news-skeleton__copy span { height:14px; border-radius:7px; background:#e1e8f3; }
+.home-news-skeleton__copy span:nth-child(2) { width:80%; }
+.home-news-skeleton__copy span:nth-child(3) { width:55%; }
+@media (max-width:700px) { .home-news-skeleton { grid-template-columns:minmax(0,1fr); } .home-news-skeleton__card:not(:first-child) { display:none; } .home-news-skeleton__image { aspect-ratio:2 / 1; } }

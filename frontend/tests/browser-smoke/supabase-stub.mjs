@@ -92,7 +92,7 @@ const server = createServer((request, response) => {
     request.on("end", () => {
       try {
         const value = JSON.parse(body).mode;
-        if (value !== "empty" && value !== "error" && value !== "stories" && value !== "ranking" && value !== "news-many" && value !== "news-many-breaking" && value !== "history") {
+        if (value !== "empty" && value !== "error" && value !== "stories" && value !== "ranking" && value !== "news-many" && value !== "news-many-breaking" && value !== "history" && value !== "slow-stories") {
           respond(response, 400, { error: "Unsupported fixture mode" });
           return;
         }
@@ -132,6 +132,11 @@ const server = createServer((request, response) => {
     return;
   }
   if (request.method === "GET" && url.pathname.startsWith("/rest/v1/")) {
+    if (mode === "slow-stories" && url.pathname === "/rest/v1/published_articles") {
+      const items = filteredStories(url);
+      setTimeout(() => respond(response, 200, items, { "content-range": `0-${Math.max(0, items.length - 1)}/${items.length}` }), 5000);
+      return;
+    }
     if (mode === "error" && (url.pathname === "/rest/v1/published_articles" || url.pathname === "/rest/v1/categories")) {
       respond(response, 503, {
         code: "SMOKE503",

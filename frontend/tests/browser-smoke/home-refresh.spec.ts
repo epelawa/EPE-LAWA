@@ -32,6 +32,8 @@ test("homepage offers compact news, radio and community navigation", async ({ pa
   await openHome(page, request);
   for (const [width, height] of [[320, 800], [375, 900], [768, 900], [1024, 768], [1440, 900]]) {
     await page.setViewportSize({ width, height });
+    await expect(page.locator(".home-hero__content")).toHaveCSS("text-align", "center");
+    await expect(page.locator(".home-hero__brand")).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Read latest news", exact: true })).toHaveAttribute("href", "/news");
     await expect(page.getByRole("link", { name: /Listen to radio/ }).first()).toHaveAttribute("href", "/radio");
     await expect(page.getByRole("navigation", { name: "Explore EPE LAWA" })).toBeVisible();
@@ -73,13 +75,11 @@ test("reduced motion disables hero autoplay while retaining the accessible slide
   await expect(page.locator(".home-photo-control__button")).toHaveCount(0);
 });
 
-test("hero photos rotate with an accessible pause control", async ({ page, request }) => {
+test("hero photos rotate without a visible pause button", async ({ page, request }) => {
   await page.setViewportSize({ width: 1024, height: 768 });
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await openHome(page, request);
-  const carousel = page.locator('[aria-roledescription="carousel"]');
-  const pause = page.getByRole("button", { name: "Pause photos" });
-  await expect(pause).toBeVisible();
+  await expect(page.getByRole("button", { name: /pause photos|play photos/i })).toHaveCount(0);
   const initialPhoto = await activePhotoKey(page);
   await page.waitForTimeout(rotationWindowMs + 500);
   expect(await activePhotoKey(page)).not.toBe(initialPhoto);
@@ -93,4 +93,32 @@ test("photo credits remain available off-hero for all 52 credited photos and the
   await expect(attributions).toBeVisible();
   await expect(attributions.getByRole("listitem")).toHaveCount(54);
   await expect(attributions.locator('a[rel*="license"]')).toHaveCount(54);
+});
+
+
+test("hero streams before slow news and only news displays a skeleton", async ({ page, request }) => {
+  const response = await request.post(`${fixtureURL}/__smoke__/mode`, { data: { mode: "slow-stories" } });
+  expect(response.ok()).toBeTruthy();
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/", { waitUntil: "commit" });
+  await expect(page.getByRole("heading", { level: 1, name: "Stay Connected, Stay Informed" })).toBeVisible({ timeout: 4000 });
+  await expect(page.getByRole("status", { name: "Latest news" })).toBeVisible();
+  await expect(page.locator(".home-news-skeleton__card")).toHaveCount(3);
+  await expect(page.locator(".home-hero__brand")).toHaveCount(0);
+  await expect(page.locator(".home-hero__content")).toHaveCSS("text-align", "center");
+  await expect(page.locator(".home-story-card").first()).toBeVisible({ timeout: 15000 });
+  await expect(page.locator(".home-news-skeleton")).toHaveCount(0);
+  await setFixtureMode(request, "empty");
+});
+
+
+test("homepage fonts load from the site rather than Google", async ({ page, request }) => {
+  const fontRequests: string[] = [];
+  const isGoogleFontHost = (url: string) => ["fonts.googleapis.com", "fonts.gstatic.com"].includes(new URL(url).hostname);
+  page.on("request", (request) => { if (request.resourceType() === "font" || isGoogleFontHost(request.url())) fontRequests.push(request.url()); });
+  await openHome(page, request);
+  await page.evaluate(() => document.fonts.ready);
+  expect(await page.evaluate(() => document.fonts.check('400 16px "Plus Jakarta Sans Variable"'))).toBeTruthy();
+  expect(fontRequests.some((url) => url.includes(".woff2") && new URL(url).origin === new URL(smokeBaseURL).origin)).toBeTruthy();
+  expect(fontRequests.some(isGoogleFontHost)).toBeFalsy();
 });

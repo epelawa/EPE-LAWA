@@ -10,7 +10,16 @@ test('public placements and the incomplete language switch are not mounted', asy
     assert.doesNotMatch(await read(`frontend/apps/main/${file}`), /<Sponsor(?:Slot|PopupPlacement)/);
   }
   assert.doesNotMatch(await read('frontend/apps/main/components/news-footer.tsx'), /<LangToggle/);
-  assert.match(await read('frontend/apps/main/app/page.tsx'), /src="\/brand-logo\.webp"/);
+  assert.doesNotMatch(await read('frontend/apps/main/app/page.tsx'), /home-hero__brand/);
+});
+
+test('hero rotation has no pause button and retains motion safeguards', async () => {
+  const carousel = await read('frontend/apps/main/components/hero-carousel.tsx');
+  const css = await read('frontend/apps/main/app/hero-logo.css');
+  assert.doesNotMatch(carousel, /Pause photos|Play photos|home-hero__rotation|setPaused/);
+  assert.doesNotMatch(css, /home-hero__rotation/);
+  assert.match(carousel, /ROTATION_DELAY_MS/);
+  assert.match(carousel, /focused \|\| hovered \|\| !pageVisible \|\| reducedMotion/);
 });
 
 test('support enters the private queue and staff can reply with its reference', async () => {

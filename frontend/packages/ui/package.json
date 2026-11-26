@@ -7,7 +7,8 @@
     ".": "./src/index.tsx",
     "./tokens.css": "./src/tokens.css",
     "./ui.css": "./src/ui.css",
-    "./forms.css": "./src/forms.css"
+    "./forms.css": "./src/forms.css",
+    "./fonts.css": "./src/fonts.css"
   },
   "peerDependencies": {
     "react": "^19.0.0"

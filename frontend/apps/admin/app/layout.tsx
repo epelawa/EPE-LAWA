@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
-import "@fontsource-variable/plus-jakarta-sans";
+import "@epelawa/ui/fonts.css";
 import { headers } from "next/headers";
 import "@epelawa/ui/tokens.css";
 import "@epelawa/ui/ui.css";

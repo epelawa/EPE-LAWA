@@ -1,7 +1,8 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { ArrowRightIcon, ArrowUpRightIcon, UsersIcon, ListenShortcutIcon, NewsShortcutIcon, CompassIcon, BuildingIcon, MessageCircleIcon, CalendarShortcutIcon, ClockIcon, EyeIcon } from "../components/icons";
 import { formatPublishedDate } from "../lib/dates";
-import { getLatestStories, getHomeBreakingStories } from "../lib/home-data";
+import { getLatestStories, getHomeBreakingStories, type LatestStory, type HomeBreakingStory, type PublicListResult } from "../lib/home-data";
 import "./hero-logo.css";
 import "./connection-panel.css";
 import "./home-client-refresh.css";
@@ -14,14 +15,15 @@ import { BreakingBadge } from "../components/breaking-news";
 import { HomeSectionReveal } from "../components/home-sections";
 import SitePoll from "../components/site-poll";
 import HomeLivePill from "../components/home-live-pill";
-import { readSiteLanguage, t } from "../lib/i18n";
+import { readSiteLanguage, t, type SiteLanguage } from "../lib/i18n";
 import StructuredData from "../components/structured-data";
 import { organizationSchema, websiteSchema } from "../lib/structured-data";
 
 export default async function Home() {
   const renderedAt = Date.now();
-  const [stories, breaking] = await Promise.all([getLatestStories(3), getHomeBreakingStories(renderedAt)]);
-  const topStories = stories.items.slice(0, 3);
+  // Start both reads together; neither blocks the static hero and discovery content.
+  const storiesPromise = getLatestStories(3);
+  const breakingPromise = getHomeBreakingStories(renderedAt);
   const lang = await readSiteLanguage();
 
   return (
@@ -30,7 +32,6 @@ export default async function Home() {
       <section className="home-hero" aria-labelledby="home-title">
         <HeroCarousel>
           <div className="home-hero__content ep-container">
-            <img className="home-hero__brand" src="/brand-logo.webp" alt="EPE LAWA" width={104} height={90} />
             <p className="home-hero__eyebrow">{t(lang, "home.eyebrow")}</p>
             <h1 id="home-title">{t(lang, "home.title.line1")}<br />{t(lang, "home.title.line2")}</h1>
             <p className="home-hero__lede">{t(lang, "home.lede")}</p>
@@ -42,7 +43,7 @@ export default async function Home() {
         </HeroCarousel>
       </section>
 
-      {breaking.state === "ok" ? <HomeBreakingTicker stories={breaking.items} initialTime={renderedAt} /> : null}
+      <Suspense fallback={null}><HomeBreaking storiesPromise={breakingPromise} renderedAt={renderedAt} /></Suspense>
 
 
       <HomeSectionReveal><div className="ep-container home-discovery">
@@ -63,7 +64,46 @@ export default async function Home() {
         </nav>
       </div></HomeSectionReveal>
 
-      <HomeSectionReveal><section className="ep-container home-news" aria-labelledby="latest-title">
+      <HomeSectionReveal><Suspense fallback={<HomeNewsSkeleton />}><HomeNews storiesPromise={storiesPromise} renderedAt={renderedAt} lang={lang} /></Suspense>
+
+      <section className="ep-container home-community connection-panel" aria-labelledby="community-title">
+        <div>
+          <p className="ui-eyebrow">{t(lang, "home.community.eyebrow")}</p>
+          <h2 id="community-title">{t(lang, "home.community.title1")} <em>{t(lang, "home.community.emphasis")}</em></h2>
+          <p>{t(lang, "home.community.body")}</p>
+        </div>
+        <div className="home-community__actions">
+          <Link className="btn-primary" href="/auth">{t(lang, "home.community.cta")} <ArrowUpRightIcon size={16} aria-hidden="true" /></Link>
+          <Link className="ui-text-link" href="/guidelines">{t(lang, "home.community.guidelines")}</Link>
+        </div>
+        <span className="connection-panel__icon" aria-hidden="true"><UsersIcon size={96} /></span>
+      </section></HomeSectionReveal>
+      <HomeSectionReveal><div className="ep-container home-poll"><Suspense fallback={null}><SitePoll /></Suspense></div></HomeSectionReveal>
+      <CookieBanner />
+    </div>
+  );
+}
+
+async function HomeBreaking({ storiesPromise, renderedAt }: { storiesPromise: Promise<PublicListResult<HomeBreakingStory>>; renderedAt: number }) {
+  const breaking = await storiesPromise;
+  return breaking.state === "ok" ? <HomeBreakingTicker stories={breaking.items} initialTime={renderedAt} /> : null;
+}
+
+function HomeNewsSkeleton() {
+  return <section className="ep-container home-news" aria-label="Latest news" aria-busy="true" role="status">
+    <div className="home-news__heading"><h2>Latest News</h2></div>
+    <span className="sr-only">Loading latest news</span>
+    <div className="home-news-skeleton" aria-hidden="true">
+      {[0, 1, 2].map((item) => <div className="home-news-skeleton__card" key={item}><div className="home-news-skeleton__image" /><div className="home-news-skeleton__copy"><span /><span /><span /></div></div>)}
+    </div>
+  </section>;
+}
+
+async function HomeNews({ storiesPromise, renderedAt, lang }: { storiesPromise: Promise<PublicListResult<LatestStory>>; renderedAt: number; lang: SiteLanguage }) {
+  const stories = await storiesPromise;
+  const topStories = stories.items.slice(0, 3);
+  return (
+      <section className="ep-container home-news" aria-labelledby="latest-title">
         <div className="home-news__heading">
           <div><h2 id="latest-title">{t(lang, "home.news.title")}</h2><HomeLivePill since={renderedAt} label="story" /></div>
           <Link className="ui-text-link" href="/news">{t(lang, "home.news.viewAll")} <ArrowRightIcon size={17} aria-hidden="true" /></Link>
@@ -102,21 +142,5 @@ export default async function Home() {
           </div>
         )}
       </section>
-
-      <section className="ep-container home-community connection-panel" aria-labelledby="community-title">
-        <div>
-          <p className="ui-eyebrow">{t(lang, "home.community.eyebrow")}</p>
-          <h2 id="community-title">{t(lang, "home.community.title1")} <em>{t(lang, "home.community.emphasis")}</em></h2>
-          <p>{t(lang, "home.community.body")}</p>
-        </div>
-        <div className="home-community__actions">
-          <Link className="btn-primary" href="/auth">{t(lang, "home.community.cta")} <ArrowUpRightIcon size={16} aria-hidden="true" /></Link>
-          <Link className="ui-text-link" href="/guidelines">{t(lang, "home.community.guidelines")}</Link>
-        </div>
-        <span className="connection-panel__icon" aria-hidden="true"><UsersIcon size={96} /></span>
-      </section></HomeSectionReveal>
-      <HomeSectionReveal><div className="ep-container home-poll"><SitePoll /></div></HomeSectionReveal>
-      <CookieBanner />
-    </div>
   );
 }
