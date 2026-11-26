@@ -45,7 +45,7 @@ function EnquiryFormInner({kind,privacyHref,onPendingChange,onReset}:{kind:Kind;
     <div className="ui-field"><label htmlFor={`${id}-ticket`}>Ticket number</label><input id={`${id}-ticket`} readOnly value={state.ticket} onFocus={e=>e.currentTarget.select()} /></div>
     <button className="btn-secondary" type="button" onClick={()=>void copyTicket()}>Copy ticket number</button>
     {copyMessage && <p role="status">{copyMessage}</p>}
-    <p role="status">{state.acknowledgement === "accepted" ? "We sent an acknowledgement to your email provider. Check your inbox and spam folder; delivery is not guaranteed." : "We couldn’t confirm the acknowledgement email was sent. Please copy your ticket number now."}</p>
+    <p role="status">{state.acknowledgement === "accepted" ? "We sent an acknowledgement to your email provider. Check your inbox and spam folder." : "We couldn’t confirm the acknowledgement email was sent. Please copy your ticket number now."}</p>
     <button type="button" className="btn-secondary" onClick={onReset}>Start another request</button>
   </section>;
   return <form action={action} noValidate className="ui-stack" onSubmit={event=>{ if (step === 0) { event.preventDefault(); next(); } else { const error = message.trim().length < 10 ? "Write at least 10 characters so staff can act on it." : ""; if (error) { event.preventDefault(); setStepError(error); return; } setStepError(""); } }}>

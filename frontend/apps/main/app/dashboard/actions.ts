@@ -98,11 +98,12 @@ export async function markNotificationsRead(): Promise<void> {
   const supabase = await createClient();
   const { data: { user }, error } = await supabase.auth.getUser();
   if (error || !user) redirect("/login?next=%2Fdashboard");
-  await supabase
+  const result = await supabase
     .from("notifications")
     .update({ read_at: new Date().toISOString() })
     .eq("user_id", user.id)
     .is("read_at", null);
+  if (result.error) throw new Error("Could not mark notifications as read");
   revalidatePath("/dashboard");
 }
 
@@ -112,8 +113,7 @@ export async function markNotificationsRead(): Promise<void> {
  * always taking user_id from auth, never from the form.
  */
 const NOTIFICATION_PREFERENCE_KEYS = [
-  "in_app_news", "in_app_radio", "in_app_comments", "in_app_forum",
-  "push_news", "push_radio", "push_comments", "push_forum",
+  "in_app_news",
 ] as const;
 
 export async function updateNotificationPreferences(data: FormData): Promise<void> {
@@ -122,8 +122,9 @@ export async function updateNotificationPreferences(data: FormData): Promise<voi
   if (error || !user) redirect("/login?next=%2Fdashboard");
   const preferences: Partial<Record<(typeof NOTIFICATION_PREFERENCE_KEYS)[number], boolean>> = {};
   for (const key of NOTIFICATION_PREFERENCE_KEYS) preferences[key] = data.get(key) === "on";
-  await supabase
+  const result = await supabase
     .from("notification_preferences")
     .upsert({ user_id: user.id, ...preferences });
+  if (result.error) throw new Error("Could not save notification preferences");
   revalidatePath("/dashboard");
 }

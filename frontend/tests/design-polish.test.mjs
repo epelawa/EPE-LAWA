@@ -37,7 +37,7 @@ test("public shell stays light and the all-viewport drawer is account-only", () 
   assert.doesNotMatch(brand + staffBrand + footer, /Epe Division|brand__place|brand-lockup__tagline|showPlace/);
   assert.match(home, /<HeroCarousel>/, "homepage logo hero exists");
   assert.match(home, /"home.title.line1"/);
-  assert.doesNotMatch(home, /home-hero__brand|BrandLockup/);
+  assert.match(home, /home-hero__brand/);
   assert.match(home, /href="\/news" className="btn-primary">\{t\(lang, "home.cta.news"\)\}/);
   assert.doesNotMatch(home, /Stories worth knowing|History worth keeping|Places worth finding|People worth connecting|home-topics/);
   assert.equal(heroManifest.length, 54);

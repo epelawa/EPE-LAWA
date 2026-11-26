@@ -6,6 +6,7 @@ import {
   webPushEncrypt,
   pushSenderReady,
   pushDispatchAuthorized,
+  pushServiceUrl,
 } from '../apps/main/lib/web-push-send.ts';
 import { createECDH, createDecipheriv, createPublicKey, hkdfSync, randomBytes, verify as cryptoVerify } from 'node:crypto';
 
@@ -136,4 +137,10 @@ test('the newsroom publish hooks fire the dispatch after the article goes live',
   assert.match(actions, /after\(\(\) => dispatchNewsroomPush/);
   assert.match(actions, /kind: "news_published"/);
   assert.match(actions, /url: `\/news\/\$\{article\.slug\}`/);
+});
+
+
+test('push destinations are restricted to known providers and cannot use credentials or ports', () => {
+  for (const url of ['https://fcm.googleapis.com/fcm/send/test', 'https://updates.push.services.mozilla.com/wpush/v2/test', 'https://web.push.apple.com/test']) assert.ok(pushServiceUrl(url), url);
+  for (const url of ['https://localhost/', 'https://127.0.0.1/', 'https://evil.test/', 'https://fcm.googleapis.com.evil.test/', 'https://fcm.googleapis.com:8443/', 'https://user@fcm.googleapis.com/', 'http://fcm.googleapis.com/']) assert.equal(pushServiceUrl(url), null, url);
 });

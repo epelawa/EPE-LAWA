@@ -286,7 +286,7 @@ body[data-admin-shell="sidebar"] { --admin-sidebar-width: 256px; }
 
 /* Button busy spinner for staff forms. */
 .btn-busy, button[aria-busy="true"] { position: relative; opacity: .8; }
-.btn-busy::before, button[aria-busy="true"]::before { content: ""; display: inline-block; width: 1em; height: 1em; margin-right: .5em; vertical-align: -.125em; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: ep-spin .6s linear infinite; }
+.btn-busy::before, button[aria-busy="true"]:not(.ep-btn)::before { content: ""; display: inline-block; width: 1em; height: 1em; margin-right: .5em; vertical-align: -.125em; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: ep-spin .6s linear infinite; }
 @keyframes ep-spin { to { transform: rotate(360deg); } }
 
 /* Toasts: small stack that slides in and self-dismisses. */

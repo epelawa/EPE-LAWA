@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import EnquiryForm from "../../components/enquiry-form";
-import SponsorSlot from "../../components/sponsor-slot";
 import { PageFrame } from "../../components/design-system";
 import { pageMetadata } from "../../lib/metadata";
 import styles from "./advertise.module.css";
@@ -29,8 +28,7 @@ export default function AdvertisePage() {
             </div>
             <span className={styles.statusBadge}>{process.env.ENQUIRY_INTAKE_ENABLED === "true" ? "Enquiries open" : "Enquiries unavailable"}</span>
           </div>
-          <p>Paid placements are shown only when a business has an approved, verified sponsorship window. We never present an advertisement as reporting.</p>
-          <SponsorSlot compact />
+          <p>Contact our team to discuss your business and advertising needs.</p>
           {process.env.ENQUIRY_INTAKE_ENABLED === "true" ? <EnquiryForm kind="advertising" /> : <div className={styles.notice} role="status">
             <strong>Online enquiry intake is not connected.</strong>
             <span>This page does not collect or store contact details. We will enable enquiries only after a secure delivery channel is configured.</span>

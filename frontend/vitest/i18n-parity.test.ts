@@ -28,8 +28,8 @@ describe("i18n dictionaries", () => {
     expect(messages).toMatch(/return value \?\? fallback/);
   });
 
-  it("server wrapper falls back to English when cookies are unavailable", () => {
-    expect(wrapper).toMatch(/return isSiteLanguage\(value\) \? value : "en"/);
-    expect(wrapper).toMatch(/catch \{[\s\S]*return "en"/);
+  it("server wrapper uses English while full-site Yoruba is unavailable", () => {
+    expect(wrapper).toMatch(/export async function readSiteLanguage\(\)[\s\S]*return "en"/);
+    expect(wrapper).not.toMatch(/cookies\(/);
   });
 });

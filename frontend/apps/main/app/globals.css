@@ -448,9 +448,9 @@ html { transition: background-color var(--ep-dur-base, 200ms) var(--ep-ease-out)
 /* Button busy spinner: any submit button carrying aria-busy or the .btn-busy
    class shows an inline ring while the action runs. */
 .btn-busy, button[aria-busy="true"] { position: relative; opacity: .8; }
-.btn-busy::before, button[aria-busy="true"]::before { content: ""; display: inline-block; width: 1em; height: 1em; margin-right: .5em; vertical-align: -.125em; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: ep-spin .6s linear infinite; }
+.btn-busy::before, button[aria-busy="true"]:not(.ep-btn)::before { content: ""; display: inline-block; width: 1em; height: 1em; margin-right: .5em; vertical-align: -.125em; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: ep-spin .6s linear infinite; }
 @keyframes ep-spin { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .btn-busy::before, button[aria-busy="true"]::before { animation-duration: 1.2s; } }
+@media (prefers-reduced-motion: reduce) { .btn-busy::before, button[aria-busy="true"]:not(.ep-btn)::before { animation-duration: 1.2s; } }
 
 /* ---------------------------------------------------------------------------
    Form inset. The old :where(form) rule had zero specificity and lost to every
