@@ -100,6 +100,3 @@
 .home-hero__secondary:focus-visible { outline:3px solid var(--palette-ice-blue); outline-offset:3px; }
 .home-hero__actions .btn-primary { color:var(--palette-midnight); }
 @media (max-width:600px) { .home-hero__brand { width:76px; height:68px; margin-bottom:16px; } .home-hero__content h1 { font-size:clamp(2.65rem, 11vw, 4rem); line-height:1; } }
-
-.home-hero__rotation { position:absolute; right:clamp(16px, 3vw, 36px); bottom:20px; z-index:2; min-height:44px; padding:0 16px; color:#fff; background:rgb(10 16 35 / .8); border:1px solid rgb(255 255 255 / .7); border-radius:999px; font-size:13px; }
-.home-hero__rotation:focus-visible { outline:3px solid var(--palette-ice-blue); outline-offset:3px; }

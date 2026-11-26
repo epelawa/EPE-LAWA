@@ -73,13 +73,11 @@ test("reduced motion disables hero autoplay while retaining the accessible slide
   await expect(page.locator(".home-photo-control__button")).toHaveCount(0);
 });
 
-test("hero photos rotate with an accessible pause control", async ({ page, request }) => {
+test("hero photos rotate without a visible pause button", async ({ page, request }) => {
   await page.setViewportSize({ width: 1024, height: 768 });
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await openHome(page, request);
-  const carousel = page.locator('[aria-roledescription="carousel"]');
-  const pause = page.getByRole("button", { name: "Pause photos" });
-  await expect(pause).toBeVisible();
+  await expect(page.getByRole("button", { name: /pause photos|play photos/i })).toHaveCount(0);
   const initialPhoto = await activePhotoKey(page);
   await page.waitForTimeout(rotationWindowMs + 500);
   expect(await activePhotoKey(page)).not.toBe(initialPhoto);
