@@ -8,15 +8,26 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const readProjectFile = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'utf8');
 const mainApp = (relativePath) => readProjectFile(path.join('frontend/apps/main', relativePath));
 
-test('site-wide search page queries every public collection', () => {
-  const page = mainApp('app/search/page.tsx');
-  assert.match(page, /published_articles/);
-  assert.match(page, /business_discovery_search/);
-  assert.match(page, /tourism_destinations/);
-  assert.match(page, /published_people/);
-  assert.match(page, /forum_threads/);
-  assert.match(page, /action="\/search"/);
-  assert.match(page, /data-slash-focus/);
+// Owner brief (turn 3): the standalone /search page is replaced by the header search dialog.
+// The same five public collections are still searched, now through /api/search.
+test('site-wide search queries every public collection through the search API and dialog', () => {
+  const search = mainApp('lib/site-search.ts');
+  assert.match(search, /published_articles/);
+  assert.match(search, /business_discovery_search/);
+  assert.match(search, /tourism_destinations/);
+  assert.match(search, /published_people/);
+  assert.match(search, /forum_threads/);
+  assert.match(search, /import "server-only"/);
+  const api = mainApp('app/api/search/route.ts');
+  assert.match(api, /searchSite/);
+  const dialog = mainApp('components/site-search.tsx');
+  assert.match(dialog, /fetch\(`\/api\/search\?/);
+  assert.match(dialog, /Search EPE LAWA/);
+  assert.match(dialog, /What are you looking for\?/);
+  assert.throws(() => mainApp('app/search/page.tsx'), /ENOENT/, 'the /search page is retired');
+  const legacy = mainApp('app/search/route.ts');
+  assert.match(legacy, /new URLSearchParams\(\{ open: "search" \}\)/, 'old /search links redirect to the dialog');
+  assert.match(legacy, /status: 308/);
 });
 
 test('RSS feed route publishes an RSS 2.0 document from published_articles', () => {
@@ -51,7 +62,7 @@ test('tourism detail page lists more destinations', () => {
 
 test('404 page suggests popular sections and site search', () => {
   const page = mainApp('app/not-found.tsx');
-  assert.match(page, /\/search/);
+  assert.match(page, /<OpenSearchButton \/>/);
   assert.match(page, /Popular sections/i);
   assert.match(page, /\/business-directory/);
   assert.match(page, /\/tourism/);
@@ -89,6 +100,7 @@ test('slash key focuses page search via a global listener', () => {
   const component = mainApp('components/slash-focus.tsx');
   assert.match(component, /"use client"/);
   assert.match(component, /data-slash-focus/);
+  assert.match(component, /openSiteSearch\(\)/, 'pages without their own field open the search dialog');
   const layout = mainApp('app/layout.tsx');
   assert.match(layout, /SlashFocus/);
   const directory = mainApp('app/business-directory/page.tsx');

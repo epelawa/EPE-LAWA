@@ -8,6 +8,7 @@ const styles = await readFile(new URL("app/news/listing.module.css", root), "utf
 const breaking = await readFile(new URL("components/breaking-news.tsx", root), "utf8");
 const tickerStyles = await readFile(new URL("components/home-breaking-ticker.module.css", root), "utf8");
 const header = await readFile(new URL("components/site-header.tsx", root), "utf8");
+const siteSearch = await readFile(new URL("components/site-search.tsx", root), "utf8");
 const mobileNavigation = await readFile(new URL("lib/mobile-navigation.ts", root), "utf8");
 const headerStyles = await readFile(new URL("components/navigation-refinement.css", root), "utf8");
 const footer = await readFile(new URL("components/site-footer.tsx", root), "utf8");
@@ -75,7 +76,9 @@ test("News uses the shared public shell and keeps its cobalt search and route en
   assert.match(header, /const DESKTOP_GROUPS =/);
   assert.match(header, /import \{ MOBILE_GROUPS \}/);
   // Owner decision (2026-11-26): one search icon beside notifications replaces the two drawer search links.
-  assert.match(header, /className="btn-icon header-search" href="\/search"/);
+  // Turn 3 brief: the icon now opens the search dialog instead of linking to the retired /search page.
+  assert.match(header, /<SiteSearch \/>/);
+  assert.match(siteSearch, /className="btn-icon header-search" aria-label="Search EPE LAWA" aria-haspopup="dialog"/);
   assert.doesNotMatch(header, /Search news|Search the whole site/);
   assert.match(headerStyles, /\.site-head--news-reference\s*\{\s*display: block/);
   assert.match(header, /"\/advertise"/);
