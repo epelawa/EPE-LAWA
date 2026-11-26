@@ -1,3 +1,4 @@
+import HumanCheck from "../../components/human-check";
 import { SubmitButton } from "@epelawa/ui";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -107,6 +108,8 @@ export default async function TourismPage({ searchParams }: { searchParams: Prom
       {submission === "sent" ? <Notice tone="success" role="status">Your suggestion was received privately for editorial review. It is not published.</Notice> : null}
       {submission === "invalid" ? <Notice tone="warning" role="alert">Please check the required fields, HTTPS links, media-rights description and consent.</Notice> : null}
       {submission === "limited" ? <Notice tone="warning" role="alert">Too many suggestions from this network this hour. Please wait a while and try again.</Notice> : null}
+      {submission === "verify" ? <Notice tone="warning" role="alert">The human check did not finish. Wait for “Verified” under the form, then send again — nothing was saved.</Notice> : null}
+      {submission === "verify" ? <Notice tone="warning" role="alert">The human check did not finish. Wait for “Verified” under the form, then send again — nothing was saved.</Notice> : null}
       {submission === "contact" ? <Notice tone="warning" role="alert">Add your name and a valid email address so our team can reply, then send the suggestion again.</Notice> : null}
       {submission === "error" ? <Notice tone="danger" role="alert">The private suggestion could not be saved. Please try again in a moment.</Notice> : null}
       <Panel><details className="ui-disclosure"><summary className="btn-primary">Suggest a destination</summary><form action={submitTourismContribution} className="ui-stack">
@@ -121,6 +124,7 @@ export default async function TourismPage({ searchParams }: { searchParams: Prom
           <div className="ui-field"><label className="label" htmlFor="tourism-rights">Media rights / permission basis (required if media supplied)</label><textarea className="input" id="tourism-rights" name="media_rights" maxLength={2000} /></div>
         </div>
         <GuestContactFields signedIn={signedIn} accountEmail={accountEmail} idPrefix="tourism" />
+        <HumanCheck />
         <div hidden aria-hidden="true"><label>Leave this field empty<input name="website" autoComplete="off" tabIndex={-1} /></label></div>
         <label className="ui-subtle ui-row"><input type="checkbox" name="consent" value="yes" required /><span>I confirm these details are submitted for private editorial review, the source is identified, and any media rights basis is accurately described. I understand nothing will be published unless provenance and rights are verified.</span></label>
         <div className="ui-actions"><SubmitButton pendingLabel="Submitting…" className="btn-primary" useLegacyClasses>Submit privately for review</SubmitButton></div>

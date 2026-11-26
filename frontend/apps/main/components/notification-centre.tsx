@@ -15,7 +15,7 @@ import styles from "./notification-centre.module.css";
 
 type Item = { id: string; kind: string; title: string; body: string; url: string | null; read_at: string | null; created_at: string };
 type FeedState = "loading" | "signedout" | "ready" | "error";
-type DeviceState = "checking" | "disabled" | "unsupported" | "signedout" | "denied" | "revoked" | "off" | "on";
+type DeviceState = "checking" | "disabled" | "unsupported" | "denied" | "revoked" | "off" | "on";
 
 export const OPEN_NOTIFICATIONS_EVENT = "ep-open-notifications";
 const KIND_LABEL: Record<string, string> = {
@@ -92,14 +92,14 @@ export default function NotificationCentre() {
     const support: PushSupport = pushSupport();
     if (support === "disabled") { setDevice("disabled"); return; }
     if (support === "unsupported") { setDevice("unsupported"); return; }
-    if (!userId) { setDevice(userId === null ? "signedout" : "checking"); return; }
+    // Push works for every visitor, signed in or not: the device itself is the subscriber.
     const permission: PushPermission = pushPermission();
     const [subscription, stored] = await Promise.all([currentSubscription(), readTopics()]);
     if (permission === "denied") { setDevice(rememberedSubscribed() ? "revoked" : "denied"); return; }
-    // Stored flags only describe what this member receives while subscribed; an unsubscribed device keeps the suggested defaults.
-    if (permission === "granted" && subscription) { if (stored?.signedIn) setTopics(stored.topics); setDevice("on"); return; }
+    // Stored flags only describe what this device receives while subscribed; an unsubscribed device keeps the suggested defaults.
+    if (permission === "granted" && subscription && stored?.subscribed !== false) { if (stored?.subscribed) setTopics(stored.topics); setDevice("on"); return; }
     setDevice(rememberedSubscribed() ? "revoked" : "off");
-  }, [userId]);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -151,7 +151,6 @@ export default function NotificationCentre() {
     setBusy("");
     if (result.ok) { setTopics(result.topics); setDevice("on"); setPushMessage({ tone: "ok", text: "Notifications are on for this device." }); return; }
     if (result.reason === "denied") setDevice("denied");
-    if (result.reason === "signin") setDevice("signedout");
     setPushMessage({ tone: "error", text: result.message });
   }
 
@@ -241,7 +240,7 @@ export default function NotificationCentre() {
           </div>
           {device === "disabled" ? <p className={styles.muted}>Push notifications are not available on EPE LAWA yet.</p> : null}
           {device === "unsupported" ? <p className={styles.muted}>This browser cannot receive push notifications. On iPhone or iPad, add EPE LAWA to your Home Screen first, then open it from there.</p> : null}
-          {device === "signedout" ? <p className={styles.muted}>Push notifications are linked to a member account so you can manage them on every device. <Link className={styles.inlineLink} href={signIn}>Sign in</Link> to turn them on.</p> : null}
+          {device === "off" ? <p className={styles.muted}>No account needed. Your browser will ask for permission when you turn this on.</p> : null}
           {device === "denied" ? <p className={styles.muted}>Notifications are blocked for this site in your browser settings. Allow them there, then reopen this panel.</p> : null}
           {device === "revoked" ? <p className={styles.muted}>Notifications were turned off in this browser. Turn them on again to keep receiving updates.</p> : null}
           {topicsEditable ? <fieldset className={styles.topics} disabled={busy !== ""}>
@@ -257,7 +256,7 @@ export default function NotificationCentre() {
           {pushMessage ? <p className={styles.status} data-tone={pushMessage.tone} role={pushMessage.tone === "error" ? "alert" : "status"}>{pushMessage.text}</p> : null}
         </section>
 
-        <p className={styles.foot}><Link className={styles.inlineLink} href="/radio/reminders" onClick={() => setOpen(false)}>Thursday radio reminder</Link> works while this site is open, without an account.</p>
+        <p className={styles.foot}>Radio notifications arrive automatically when a programme goes on air. <Link className={styles.inlineLink} href="/radio/reminders" onClick={() => setOpen(false)}>Radio schedule and reminders</Link></p>
       </div> : null}
     </dialog>
   </>;

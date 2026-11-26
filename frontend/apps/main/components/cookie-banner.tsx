@@ -15,7 +15,9 @@ import Link from "next/link";
  * notice. It is cleared on dismissal and when leaving the homepage.
  */
 export default function CookieBanner() {
-  const [show, setShow] = useState(true);
+  // Unknown until the stored choice is read, so a returning visitor never sees
+  // the notice flash in and then vanish (which read as the banner "moving").
+  const [show, setShow] = useState<boolean | null>(null);
   const bannerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -23,10 +25,12 @@ export default function CookieBanner() {
       if (localStorage.getItem("epelawa_cookie_consent")) {
         document.documentElement.style.setProperty("--storage-notice-height", "0px");
         setShow(false);
+        return;
       }
     } catch {
       // The notice remains visible when browser storage is unavailable.
     }
+    setShow(true);
   }, []);
 
   useEffect(() => {
@@ -65,7 +69,7 @@ export default function CookieBanner() {
     setShow(false);
   };
 
-  if (!show) return null;
+  if (show !== true) return null;
 
   return (
     <div ref={bannerRef} className="storage-notice" role="region" aria-label="Storage notice">

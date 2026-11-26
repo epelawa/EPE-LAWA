@@ -1,5 +1,6 @@
 "use client";
 
+import HumanCheck from "../../components/human-check";
 import { useActionState, useEffect, useRef, useState, type ChangeEvent } from "react";
 import BrandedDialog from "../../components/branded-dialog";
 import GuestContactFields from "../../components/guest-contact-fields";
@@ -181,6 +182,7 @@ export default function SubmitEventModal({ signedIn, accountEmail = null, varian
             <div><dt>Where</dt><dd>{values.venue || "—"}</dd></div>
           </dl>
           <GuestContactFields signedIn={signedIn} accountEmail={accountEmail} idPrefix="event" />
+          <HumanCheck />
           <div hidden aria-hidden="true"><label>Leave this field empty<input name="website" autoComplete="off" tabIndex={-1} /></label></div>
         </section>
 

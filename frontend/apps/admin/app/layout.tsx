@@ -19,7 +19,6 @@ import SiteMotion from "../components/site-motion";
 import ToastRegion from "../../main/components/toast";
 import FeedbackToasts from "../components/feedback-toasts";
 import GlobalSubmitBusy from "../components/global-submit-busy";
-import FloatingSupport from "../../main/components/floating-support";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -107,7 +106,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         )}
         <main className="site-main" id="skip-target" tabIndex={-1} aria-label="Admin workspace content">{children}</main>
         <SiteFooter />
-        <FloatingSupport href={`${siteUrl}/support`} privacyHref={`${siteUrl}/privacy`} enabled={process.env.ENQUIRY_INTAKE_ENABLED === "true"} />
+        {/* Turn 4 owner brief: no floating Support button on the staff side. */}
       </body>
     </html>
   );

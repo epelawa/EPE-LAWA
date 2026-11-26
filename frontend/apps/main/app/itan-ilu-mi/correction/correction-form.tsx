@@ -1,5 +1,6 @@
 "use client";
 
+import HumanCheck from "../../../components/human-check";
 import { useActionState, useEffect, useRef } from "react";
 import { submitHistoryCorrection, type CorrectionState } from "./actions";
 
@@ -30,6 +31,7 @@ export default function CorrectionForm({ accountEmail, defaultRecord = "" }: { a
     </div>
     <p className="ui-meta">Signing in is optional. We use your email only to reply about this request. See our <a className="ui-text-link" href="/privacy">privacy notice</a>.</p>
     <div hidden aria-hidden="true"><label>Leave this field empty<input name="website" autoComplete="off" tabIndex={-1} /></label></div>
+    <HumanCheck />
     <div className="ui-actions"><button type="submit" className="btn-primary" disabled={pending}>{pending ? "Sending…" : "Send request"}</button></div>
     {state.message ? <p ref={outcome} tabIndex={-1} role={state.status === "error" ? "alert" : "status"} className={state.status === "error" ? "ui-form-error" : "ui-form-success"}>{state.message}</p> : null}
   </form>;

@@ -1,5 +1,6 @@
 "use client";
 
+import HumanCheck from "../../components/human-check";
 import { useActionState, useEffect, useRef } from "react";
 import GuestContactFields from "../../components/guest-contact-fields";
 import SubmissionImageInput from "../../components/submission-image-input";
@@ -39,6 +40,7 @@ export default function ContributeForm({ signedIn, accountEmail }: { signedIn: b
       rightsNote="Photos stay private. Staff decide separately whether a photo is published with the approved record."
     />
     <GuestContactFields signedIn={signedIn} accountEmail={accountEmail} idPrefix="history" />
+    <HumanCheck />
     <div className="ui-subtle ui-card"><label className="ui-row"><input className="size-5 shrink-0" type="checkbox" name="consent" value="yes" required aria-invalid={invalid("consent")} /><span>{HISTORY_CONSENT_TEXT}</span></label></div>
     <div hidden aria-hidden="true"><label>Leave this field empty<input name="website" autoComplete="off" tabIndex={-1} /></label></div>
     <div className="ui-actions"><button type="submit" className="btn-primary" disabled={pending}>{pending ? "Submitting…" : "Submit privately for review"}</button></div>

@@ -19,7 +19,6 @@ export function anotherDialogIsOpen(): boolean {
     ".drawer-root[data-open=\"true\"]",
     "[role=\"dialog\"][aria-modal=\"true\"]:not([inert])",
     "[data-push-onboarding]",
-    ".storage-notice",
   ].join(", ")));
 }
 

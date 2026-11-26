@@ -25,7 +25,7 @@ type Outcome = { ok: true; slug: string } | { ok: false; message: string };
 
 /** Shared validation and write for a new thread; never redirects on failure. */
 async function createThreadCore(data: FormData): Promise<Outcome> {
-  if (!(await formRateAllowance("forum_post"))) return { ok: false, message: formRateMessage() };
+  if (!(await formRateAllowance("forum_post"))) return { ok: false, message: await formRateMessage() };
   const { supabase } = await memberClient("/forum/new");
   const categoryId = text(data, "category_id");
   const title = text(data, "title");
@@ -82,7 +82,7 @@ export async function voteInPoll(data: FormData) {
 }
 
 async function replyCore(data: FormData): Promise<Outcome> {
-  if (!(await formRateAllowance("forum_post"))) return { ok: false, message: formRateMessage() };
+  if (!(await formRateAllowance("forum_post"))) return { ok: false, message: await formRateMessage() };
   const slug = text(data, "thread_slug");
   const { supabase, user } = await memberClient(slug ? `/forum/thread/${slug}` : "/forum");
   const threadId = text(data, "thread_id");

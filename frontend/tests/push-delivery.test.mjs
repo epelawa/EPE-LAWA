@@ -117,15 +117,20 @@ test('dispatch readiness and bearer checks fail closed', () => {
 
 test('the dispatch route gates on the shared secret, validates kinds and relative urls, caps and retires', async () => {
   const route = await read('frontend/apps/main/app/api/push/dispatch/route.ts');
+  // Turn 4: delivery moved to lib/push-fanout.ts so scheduled radio pushes share it; guests included.
+  const fanout = await read('frontend/apps/main/lib/push-fanout.ts');
+  assert.match(route, /fanoutPush\(/);
   assert.match(route, /pushDispatchAuthorized\(request\.headers\.get\("authorization"\)\)/);
   assert.match(route, /pushSenderReady\(\)/);
   assert.match(route, /news_published/, 'push_news');
   assert.match(route, /radio_live/, 'push_radio');
-  assert.match(route, /MAX_SUBSCRIPTIONS = 500/);
-  assert.match(route, /status === 404 \|\| status === 410/);
-  assert.match(route, /\.delete\(\)\.eq\("id"/, 'gone subscriptions are retired');
-  assert.match(route, /from\("notification_preferences"\)/);
-  assert.match(route, /from\("push_subscriptions"\)/);
+  assert.match(fanout, /MAX_DEVICES = 2000/);
+  assert.match(fanout, /status === 404 \|\| status === 410/);
+  assert.match(fanout, /\.delete\(\)\.eq\("id"/, 'gone subscriptions are retired');
+  assert.match(fanout, /from\("notification_preferences"\)/);
+  assert.match(fanout, /from\("push_subscriptions"\)/);
+  assert.match(fanout, /from\("web_push_devices"\)/);
+  assert.match(fanout, /openPushValue/, 'device keys are decrypted only at send time');
   assert.match(route, /SUPABASE_SERVICE_ROLE_KEY/);
   assert.match(route, /!url\.startsWith\("\/"\) \|\| url\.startsWith\("\/\/"\)/, 'urls are same-site relative paths only');
 });

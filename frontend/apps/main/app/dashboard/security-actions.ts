@@ -28,7 +28,7 @@ export async function changeMemberPassword(_state: MemberPasswordState, data: Fo
     return { status: "error", message: "Choose a password different from your current one." };
   }
   if (!(await formRateAllowance("auth_password_change", 5))) {
-    return { status: "error", message: formRateMessage() };
+    return { status: "error", message: await formRateMessage() };
   }
   try {
     const supabase = await createClient();

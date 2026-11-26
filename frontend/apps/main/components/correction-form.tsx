@@ -1,5 +1,6 @@
 "use client";
 
+import HumanCheck from "./human-check";
 import { useActionState, useState } from "react";
 import BrandedDialog from "./branded-dialog";
 import GuestContactFields from "./guest-contact-fields";
@@ -35,6 +36,7 @@ export default function CorrectionForm({ articleId, articleTitle, signedIn = fal
             <textarea className="input" id="correction-reason" name="reason" required minLength={10} maxLength={2000} rows={5} data-autofocus />
           </div>
           <GuestContactFields signedIn={signedIn} accountEmail={accountEmail} idPrefix="article-correction" />
+          <HumanCheck />
           {state.status === "error" ? <p role="alert" className="ui-form-error">{state.message}</p> : null}
           <div className="ui-actions">
             <button className="btn-secondary" type="button" onClick={() => setOpen(false)}>Cancel</button>

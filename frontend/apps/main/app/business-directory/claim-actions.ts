@@ -19,7 +19,7 @@ export async function submitBusinessClaim(_prev: ClaimState, form: FormData): Pr
     return { status: "error", message: "Describe your connection to this business in 10–1000 characters." };
   }
   if (!(await formRateAllowance("business_claim"))) {
-    return { status: "error", message: formRateMessage() };
+    return { status: "error", message: await formRateMessage() };
   }
   const { error } = await db.rpc("member_business_claim", { p_business_id: businessId, p_message: message });
   if (error) {

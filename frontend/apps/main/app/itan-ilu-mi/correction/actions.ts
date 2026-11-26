@@ -1,6 +1,7 @@
 "use server";
 
 import { formAdminClient, formRateAllowance, formRateMessage } from "../../../lib/form-server";
+import { humanCheckFailedMessage, verifyHumanCheck } from "../../../lib/human-check";
 import { createClient } from "../../../lib/supabase";
 import { validateGuestContact } from "../../../lib/public-submitter";
 import { authMailConfig, deliverAuthMessage } from "../../../lib/auth-mail-hook";
@@ -38,7 +39,8 @@ export async function submitHistoryCorrection(_prev: CorrectionState, form: Form
   const problem = validateGuestContact(name, email);
   if (problem) return fail(problem, name.length < 2 ? "sender_name" : "sender_email");
 
-  if (!(await formRateAllowance("history_correction"))) return fail(formRateMessage());
+  if ((await verifyHumanCheck(form)) === "fail") return fail(humanCheckFailedMessage);
+  if (!(await formRateAllowance("history_correction"))) return fail(await formRateMessage());
   let db;
   try { db = formAdminClient(); } catch { return fail("Requests are temporarily unavailable. Nothing was saved — please try again shortly."); }
   const { data, error } = await db.from("history_correction_requests").insert({

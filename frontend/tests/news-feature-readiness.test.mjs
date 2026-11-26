@@ -86,6 +86,7 @@ test('unconfigured web push never asks permission and contains no fabricated VAP
   assert.doesNotMatch(vapid, /BGp7Y1q7/);
   assert.match(client, /if \(!WEB_PUSH_READY\) return "disabled"/);
   assert.match(prompt, /pushSupport\(\) !== "supported"/, 'unconfigured push never shows onboarding');
-  assert.match(prompt, /auth\.getSession\(\)/);
+  // Turn 4 owner brief: guests can subscribe; permission is still only requested from a click.
+  assert.doesNotMatch(prompt, /requestPermission/);
   assert.doesNotMatch(layout, /<NotificationPrompt \/>/);
 });

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { formAdminClient, formRateAllowance, formRateMessage } from "../../lib/form-server";
+import { humanCheckFailedMessage, verifyHumanCheck } from "../../lib/human-check";
 import { resolvePublicSubmitter, validateGuestContact } from "../../lib/public-submitter";
 import { storeSubmissionImage } from "../../lib/media-r2";
 import { authMailConfig, deliverAuthMessage } from "../../lib/auth-mail-hook";
@@ -50,7 +51,8 @@ export async function submitHistoryContribution(_prev: HistoryFormState, formDat
     if (problem) return fail(problem, "submitter_email");
   }
 
-  if (!(await formRateAllowance("history_submit"))) return fail(formRateMessage());
+  if ((await verifyHumanCheck(formData)) === "fail") return fail(humanCheckFailedMessage);
+  if (!(await formRateAllowance("history_submit"))) return fail(await formRateMessage());
   let db;
   try { db = formAdminClient(); } catch { return fail("Submissions are temporarily unavailable. Nothing was saved — please try again shortly."); }
 

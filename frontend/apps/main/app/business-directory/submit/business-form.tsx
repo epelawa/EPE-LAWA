@@ -1,5 +1,6 @@
 "use client";
 
+import HumanCheck from "../../../components/human-check";
 import { useActionState, useEffect, useRef, useState, type ChangeEvent } from "react";
 import { LiveField, SubmitButton, validateField, type FieldRules } from "@epelawa/ui";
 import { submitBusiness } from "./actions";
@@ -60,6 +61,7 @@ export default function BusinessForm({ categories, signedIn = false, accountEmai
       <BusinessHoursEditor />
       <p className="ui-muted">Contact information is listing content and may appear publicly after approval.</p>
       <GuestContactFields signedIn={signedIn} accountEmail={accountEmail} idPrefix="business" />
+      <HumanCheck />
     </section>
     <div className={styles.actions}>{enhanced && step === 2 && <button className="btn-secondary" type="button" onClick={() => move(1)}>Back</button>}{enhanced && step === 1 && <button className="btn-primary" type="button" onClick={next}>Continue</button>}<SubmitButton pendingLabel="Sending…" disabled={state.status === "success"} hidden={enhanced && step !== 2}>Send for review</SubmitButton></div>
     {state.message && <p role={state.status === "error" ? "alert" : "status"} aria-live="polite">{state.message}</p>}

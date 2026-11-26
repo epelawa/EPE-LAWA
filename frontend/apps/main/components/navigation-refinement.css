@@ -182,3 +182,9 @@ body:has(.focused-error-shell) .mobile-bottom-nav,body:has(.auth-link-issue) .mo
   .drawer-foot { display: none; }
 }
 @media (max-height: 620px) { .drawer-link { min-height: 44px; } }
+
+/* Turn 4: on desktop every section is already in the bar (News + the three
+   dropdowns), so the hamburger is hidden there; it returns at 960px and below. */
+@media (min-width: 961px) {
+  .site-head__menu { display: none; }
+}

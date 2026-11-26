@@ -4,14 +4,14 @@ import { authMailConfig, deliverAuthMessage } from "../../../lib/auth-mail-hook"
 import { storeLogoDataUrl } from "../../../lib/media-r2";
 import { parseBusinessHours } from "../../../lib/business-hours";
 import { formAdminClient, formRateAllowance, formRateMessage } from "../../../lib/form-server";
+import { humanCheckFailedMessage, verifyHumanCheck } from "../../../lib/human-check";
 import { resolvePublicSubmitter, slugifyTitle } from "../../../lib/public-submitter";
 
-async function rateGate(): Promise<string | null> { return (await formRateAllowance("business_submit")) ? null : formRateMessage(); }
+async function rateGate(): Promise<string | null> { return (await formRateAllowance("business_submit")) ? null : await formRateMessage(); }
 export type BusinessSubmitState = { status: "idle" | "success" | "error"; message: string };
 const field=(f:FormData,k:string)=>{const v=f.get(k);return typeof v==="string"?v.trim():""};
 const fail=(message:string):BusinessSubmitState=>({status:"error",message});
 export async function submitBusiness(_previous:BusinessSubmitState, f:FormData):Promise<BusinessSubmitState> {
- const limiter=await rateGate();if(limiter)return fail(limiter);
  const who=await resolvePublicSubmitter(f);
  if(!who.ok)return fail(who.message);
  const submitter=who.submitter;
@@ -23,6 +23,9 @@ export async function submitBusiness(_previous:BusinessSubmitState, f:FormData):
  if(website){try{if(new URL(website).protocol!=="https:")return fail("Website must use a valid HTTPS address.")}catch{return fail("Website must use a valid HTTPS address.")}}
  const logoUrl=field(f,"logo_url");
  if(logoUrl){try{if(new URL(logoUrl).protocol!=="https:")return fail("The logo link must use a valid HTTPS address.")}catch{return fail("The logo link must use a valid HTTPS address.")}}
+ // Count only well-formed submissions, so correcting a typo never uses up this network's allowance.
+ if((await verifyHumanCheck(f))==="fail")return fail(humanCheckFailedMessage);
+ const limiter=await rateGate();if(limiter)return fail(limiter);
  let logoKey:string|null=logoUrl||null;
  const logoData=field(f,"logo_data");
  if(logoData){

@@ -26,7 +26,7 @@ export async function submitBanAppeal(_state: MemberAppealState, data: FormData)
     return { status: "error", message: "Give your appeal in 10 to 2000 characters." };
   }
   if (!(await formRateAllowance("moderation_appeal", 5))) {
-    return { status: "error", message: formRateMessage() };
+    return { status: "error", message: await formRateMessage() };
   }
   try {
     const supabase = await createClient();

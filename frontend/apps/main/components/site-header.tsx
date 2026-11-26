@@ -15,9 +15,9 @@ import "./navigation-refinement.css";
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input, [tabindex]:not([tabindex="-1"])';
 const DESKTOP_GROUPS = [
-  { label: "Community", routes: [["/itan-ilu-mi", "Ìtàn Ilú Mi"], ["/forum", "Forum"], ["/who-is-who", "Who is Who"]] },
+  { label: "Community", routes: [["/events", "Events"], ["/itan-ilu-mi", "Ìtàn Ilú Mi"], ["/forum", "Forum"], ["/who-is-who", "Who is Who"]] },
   { label: "Discover", routes: [["/map", "Map & Navigation"], ["/business-directory", "Business Directory"], ["/tourism", "Tourism"], ["/gallery", "Gallery"], ["/radio", "Radio"]] },
-  { label: "About", routes: [["/about", "About"], ["/contact", "Contact"], ["/guidelines", "Guidelines"], ["/advertise", "Advertise"], ["/photo-credits", "Photo credits"], ["/privacy", "Privacy"], ["/terms", "Terms"]] },
+  { label: "About", routes: [["/about", "About"], ["/contact", "Contact"], ["/guidelines", "Guidelines"], ["/advertise", "Advertise"], ["/newsletter", "Newsletter"], ["/support", "Support"], ["/photo-credits", "Photo credits"], ["/privacy", "Privacy"], ["/terms", "Terms"]] },
 ] as const;
 
 
@@ -60,7 +60,7 @@ export default function SiteHeader({ items, lang = "en" }: { items: NavItem[]; l
   };
 
   const renderMobileGroup = (group: typeof MOBILE_GROUPS[number]) => (
-    <section className="drawer-group" data-cols={group.routes.length === 3 || group.routes.length > 4 ? "3" : "2"} key={group.label} aria-labelledby={`drawer-${group.label.toLowerCase().replaceAll(" ", "-")}`}>
+    <section className="drawer-group" data-cols={group.routes.length > 4 ? "3" : "2"} key={group.label} aria-labelledby={`drawer-${group.label.toLowerCase().replaceAll(" ", "-")}`}>
       <h2 id={`drawer-${group.label.toLowerCase().replaceAll(" ", "-")}`}>{navGroupLabel(lang, group.label)}</h2>
       <ul>{group.routes.map(([href, label]) => {
         const item = navItem(href, label);

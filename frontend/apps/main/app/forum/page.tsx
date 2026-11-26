@@ -5,6 +5,7 @@ import { formatLagosDateTime } from "../../lib/dates";
 import { publicMediaUrl } from "../../lib/media";
 import { EmptyPanel, Notice, PageFrame } from "../../components/design-system";
 import { pageMetadata } from "../../lib/metadata";
+import { formRateLimitedMessage, formRateUnavailableMessage } from "../../lib/form-server";
 import { countActive } from "./active-count";
 import ForumLiveCount from "./live-count";
 import styles from "./forum.module.css";
@@ -34,7 +35,8 @@ export default async function ForumPage({ searchParams }: { searchParams: Promis
     "The thread was created but its page could not be opened.",
     "Write a reply of up to 20,000 characters.",
     "Your reply could not be posted. The thread may be locked or your membership may be inactive.",
-    "Too many attempts from this network this hour. Please wait a while and try again.",
+    formRateLimitedMessage,
+    formRateUnavailableMessage,
   ]);
   const actionError = safeErrors.has(requestedError) ? requestedError : null;
   let categories: Category[] = [];

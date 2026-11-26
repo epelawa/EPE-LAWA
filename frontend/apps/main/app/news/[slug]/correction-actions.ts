@@ -2,6 +2,7 @@
 
 import { createClient } from "../../../lib/supabase";
 import { formAdminClient, formRateAllowance, formRateMessage } from "../../../lib/form-server";
+import { humanCheckFailedMessage, verifyHumanCheck } from "../../../lib/human-check";
 import { validateGuestContact } from "../../../lib/public-submitter";
 
 export type CorrectionState = { status: "idle" | "success" | "error"; message: string };
@@ -10,8 +11,9 @@ const genericError = "We could not record the correction. Please try again in a 
 
 export async function reportCorrection(_previous: CorrectionState, data: FormData): Promise<CorrectionState> {
   try {
+    if ((await verifyHumanCheck(data)) === "fail") return { status: "error", message: humanCheckFailedMessage };
     if (!(await formRateAllowance("article_correction"))) {
-      return { status: "error", message: formRateMessage() };
+      return { status: "error", message: await formRateMessage() };
     }
     const articleId = data.get("article_id");
     const reasonRaw = data.get("reason");

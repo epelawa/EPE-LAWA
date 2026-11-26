@@ -5,10 +5,9 @@ import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import { BellIcon } from "./icons";
 import { OPEN_NOTIFICATIONS_EVENT } from "./notification-centre";
-import { createClient } from "../lib/supabase.client";
 import { anotherDialogIsOpen } from "../lib/site-search-events";
 import {
-  currentSubscription, enablePush, markOnboarding, onboardingSeen, pushPermission, pushSupport, type PushTopics,
+  currentSubscription, enablePush, markOnboarding, onboardingSeen, pushPermission, pushSupport, syncPush, type PushTopics,
 } from "../lib/push-client";
 import styles from "./push-onboarding.module.css";
 
@@ -16,7 +15,8 @@ type Phase = "intro" | "working" | "success" | "denied" | "error";
 
 /** Routes where an interruption would get in the way of a task. */
 const QUIET_ROUTES = /^\/(login|auth|forgot-password|newsletter|support|contact|advertise|enquiry|business-directory\/submit|forum\/new|itan-ilu-mi\/correction|dashboard)(\/|$)/;
-const SHOW_AFTER_MS = 9000;
+/** Owner brief (turn 4): shown as soon as a visitor arrives; the short delay only lets the page paint first. */
+const SHOW_AFTER_MS = 600;
 
 function busyWithForm() {
   const active = document.activeElement;
@@ -24,10 +24,11 @@ function busyWithForm() {
 }
 
 /**
- * First-visit push onboarding. Shown once, only to signed-in members (a push
- * subscription belongs to a member account), only when web push is enabled and
- * the browser supports it, never on task routes, over another dialog or while
- * the visitor is typing. The native permission prompt is requested only from
+ * First-visit push onboarding. Shown once to every visitor (no account needed:
+ * the browser subscription itself is the subscriber), as soon as they arrive,
+ * sliding up from the bottom centre. Only when web push is enabled and the
+ * browser supports it, never on task routes, over another dialog or while the
+ * visitor is typing. The native permission prompt is requested only from
  * the "Enable notifications" click, and success is shown only after the server
  * confirms the subscription and topics were stored.
  */
@@ -43,6 +44,9 @@ export default function PushOnboarding() {
   const titleId = useId();
   const quiet = QUIET_ROUTES.test(pathname);
 
+  // Keeps an existing, already-permitted subscription registered (never prompts).
+  useEffect(() => { void syncPush(); }, []);
+
   useEffect(() => {
     if (visible || quiet) return;
     if (pushSupport() !== "supported" || pushPermission() !== "default" || onboardingSeen()) return;
@@ -55,8 +59,6 @@ export default function PushOnboarding() {
         return;
       }
       try {
-        const { data } = await createClient().auth.getSession();
-        if (cancelled || !data.session?.user) return;
         if (await currentSubscription()) { markOnboarding("enabled"); return; }
       } catch { return; }
       if (cancelled || onboardingSeen() || anotherDialogIsOpen() || busyWithForm()) return;
