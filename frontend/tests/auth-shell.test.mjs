@@ -175,5 +175,5 @@ test("Plerdy verification bootstrap is installed in the shared head, not the coo
   assert.doesNotMatch(layout, /PlerdyAnalytics/);
   assert.doesNotMatch(banner, /Plerdy|Allow analytics|Keep analytics off/);
   assert.match(privacy, /Plerdy site verification/);
-  assert.match(csp, /https:\/\/a\.plerdy\.com/);
+  assert.ok(csp.includes("https://a.plerdy.com"));
 });
