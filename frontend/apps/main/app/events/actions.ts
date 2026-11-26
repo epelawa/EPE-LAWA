@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { formAdminClient, formRateAllowance, formRateLimitedMessage } from "../../lib/form-server";
+import { formAdminClient, formRateAllowance, formRateMessage } from "../../lib/form-server";
 import { resolvePublicSubmitter, slugifyTitle } from "../../lib/public-submitter";
 import { storeSubmissionImage } from "../../lib/media-r2";
 import { authMailConfig, deliverAuthMessage } from "../../lib/auth-mail-hook";
@@ -54,7 +54,7 @@ export async function submitEvent(_prev: EventSubmitState, form: FormData): Prom
   if (!who.ok) return fail(who.message, "submitter_email");
   const submitter = who.submitter;
 
-  if (!(await formRateAllowance("event_submit"))) return fail(formRateLimitedMessage);
+  if (!(await formRateAllowance("event_submit"))) return fail(formRateMessage());
 
   let db;
   try { db = formAdminClient(); } catch { return fail("Event submissions are temporarily unavailable. Nothing was saved — please try again shortly."); }

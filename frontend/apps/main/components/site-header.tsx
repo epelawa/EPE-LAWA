@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type SyntheticEvent } from "react";
 import type { NavItem } from "../lib/navigation";
 import { MOBILE_GROUPS } from "../lib/mobile-navigation";
+import LanguageSwitch from "./language-switch";
 import { type SiteLanguage, fullNavLabel, navGroupLabel, navLabel } from "../lib/i18n-messages";
 import { ArrowRightIcon, ArrowUpRightIcon } from "./icons";
 import { BrandLockup } from "./brand";
@@ -195,7 +196,8 @@ export default function SiteHeader({ items, lang = "en" }: { items: NavItem[]; l
         <div ref={drawerRef} id="site-drawer" className="drawer" role="dialog" aria-modal="true" aria-labelledby="site-drawer-title" inert={!drawerOpen}>
           <div className="drawer-heading">
             <div><p className="drawer-eyebrow">EPE LAWA</p><p id="site-drawer-title">Find your place in Epe.</p></div>
-            <button className="btn-icon" type="button" aria-label="Close navigation menu" onClick={closeDrawer}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg></button>
+            <div className="drawer-heading__tools"><LanguageSwitch lang={lang} />
+            <button className="btn-icon" type="button" aria-label="Close navigation menu" onClick={closeDrawer}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg></button></div>
           </div>
           <nav className="drawer-nav" aria-label="All sections">
             {MOBILE_GROUPS.map(renderMobileGroup)}

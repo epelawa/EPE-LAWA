@@ -27,6 +27,7 @@ import AuthCallbackErrorRouter from "../components/auth-callback-error-router";
 import MobileBottomNav from "../components/mobile-bottom-nav";
 import { createClient } from "../lib/supabase";
 import { readSiteLanguage } from "../lib/i18n";
+import YorubaTranslator from "../components/yoruba-translator";
 import { NotificationSoundListener } from "../components/notification-sound";
 import ToastRegion from "../components/toast";
 import SlashFocus from "../components/slash-focus";
@@ -124,6 +125,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <Connectivity />
         <FloatingSupport enabled={process.env.ENQUIRY_INTAKE_ENABLED === "true"} />
         <PushOnboarding />
+        <YorubaTranslator lang={siteLanguage} />
 
       </body>
     </html>

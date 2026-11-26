@@ -5,6 +5,7 @@ import NewsletterForm from "./newsletter-form";
 import styles from "./news-footer.module.css";
 import { MOBILE_GROUPS, MOBILE_EXTRA_LINKS } from "../lib/mobile-navigation";
 import { readSiteLanguage, t } from "../lib/i18n";
+import LanguageSwitch from "./language-switch";
 
 const quickLinks: ReadonlyArray<readonly [string, string]> = [["/", "Home"], ...MOBILE_GROUPS.flatMap(group => [...group.routes] as ReadonlyArray<readonly [string, string]>), ...MOBILE_EXTRA_LINKS];
 function QuickLinks() { return <nav aria-label="Quick links"><ul className={styles.quickLinks}>{quickLinks.map(([href, label]) => <li key={href}><Link href={href}>{label}</Link></li>)}</ul></nav>; }
@@ -45,7 +46,7 @@ export default async function NewsFooter({ categories, listing = false }: { cate
       <section className={styles.listingColumn}><h2>{t(lang, "footer.browseTopics")}</h2><nav aria-label="News footer categories">{links.length ? links.slice(0, 8).map((category) => <Link key={category.slug} href={`/news?category=${encodeURIComponent(category.slug)}`}>{category.label}</Link>) : <Link href="/news">All news</Link>}</nav></section>
       <section className={styles.listingNewsletter} aria-labelledby="footer-newsletter-heading"><h2 id="footer-newsletter-heading">{t(lang, "footer.newsletter")}</h2><p>{t(lang, "footer.newsletterNote")}</p><NewsletterForm id="news-listing-signup" variant="footer" /></section>
     </div>
-    <div className={styles.listingBottom}><span>© {new Date().getFullYear()} EPE LAWA</span><span>{t(lang, "footer.tagline")}</span><Link href="/photo-credits">{t(lang, "footer.photoCredits")}</Link><Link href="/privacy">{t(lang, "footer.privacy")}</Link><Link href="/terms">{t(lang, "footer.terms")}</Link></div>
+    <div className={styles.listingBottom}><span>© {new Date().getFullYear()} EPE LAWA</span><span>{t(lang, "footer.tagline")}</span><Link href="/photo-credits">{t(lang, "footer.photoCredits")}</Link><Link href="/privacy">{t(lang, "footer.privacy")}</Link><Link href="/terms">{t(lang, "footer.terms")}</Link><LanguageSwitch lang={lang} /></div>
   </footer>;
   return (
     <footer className={styles.footer} aria-label="EPE LAWA site footer">
@@ -73,6 +74,7 @@ export default async function NewsFooter({ categories, listing = false }: { cate
       <div className={styles.bottom}>
         <span>© {new Date().getFullYear()} EPE LAWA. All rights reserved.</span>
         <span>{t(lang, "footer.tagline")}</span>
+        <LanguageSwitch lang={lang} />
       </div>
     </footer>
   );

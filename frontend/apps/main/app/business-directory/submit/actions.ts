@@ -3,10 +3,10 @@ import { revalidatePath } from "next/cache";
 import { authMailConfig, deliverAuthMessage } from "../../../lib/auth-mail-hook";
 import { storeLogoDataUrl } from "../../../lib/media-r2";
 import { parseBusinessHours } from "../../../lib/business-hours";
-import { formAdminClient, formRateAllowance, formRateLimitedMessage } from "../../../lib/form-server";
+import { formAdminClient, formRateAllowance, formRateMessage } from "../../../lib/form-server";
 import { resolvePublicSubmitter, slugifyTitle } from "../../../lib/public-submitter";
 
-async function rateGate(): Promise<string | null> { return (await formRateAllowance("business_submit")) ? null : formRateLimitedMessage; }
+async function rateGate(): Promise<string | null> { return (await formRateAllowance("business_submit")) ? null : formRateMessage(); }
 export type BusinessSubmitState = { status: "idle" | "success" | "error"; message: string };
 const field=(f:FormData,k:string)=>{const v=f.get(k);return typeof v==="string"?v.trim():""};
 const fail=(message:string):BusinessSubmitState=>({status:"error",message});

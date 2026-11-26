@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { formAdminClient, formRateAllowance, formRateLimitedMessage } from "../../lib/form-server";
+import { formAdminClient, formRateAllowance, formRateMessage } from "../../lib/form-server";
 import { resolvePublicSubmitter, validateGuestContact } from "../../lib/public-submitter";
 import { storeSubmissionImage } from "../../lib/media-r2";
 import { authMailConfig, deliverAuthMessage } from "../../lib/auth-mail-hook";
@@ -50,7 +50,7 @@ export async function submitHistoryContribution(_prev: HistoryFormState, formDat
     if (problem) return fail(problem, "submitter_email");
   }
 
-  if (!(await formRateAllowance("history_submit"))) return fail(formRateLimitedMessage);
+  if (!(await formRateAllowance("history_submit"))) return fail(formRateMessage());
   let db;
   try { db = formAdminClient(); } catch { return fail("Submissions are temporarily unavailable. Nothing was saved — please try again shortly."); }
 

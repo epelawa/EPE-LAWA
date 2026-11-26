@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "../../lib/supabase";
-import { formRateAllowance, formRateLimitedMessage } from "../../lib/form-server";
+import { formRateAllowance, formRateMessage } from "../../lib/form-server";
 
 export type MemberAppealState = {
   status: "idle" | "success" | "error";
@@ -26,7 +26,7 @@ export async function submitBanAppeal(_state: MemberAppealState, data: FormData)
     return { status: "error", message: "Give your appeal in 10 to 2000 characters." };
   }
   if (!(await formRateAllowance("moderation_appeal", 5))) {
-    return { status: "error", message: formRateLimitedMessage };
+    return { status: "error", message: formRateMessage() };
   }
   try {
     const supabase = await createClient();
