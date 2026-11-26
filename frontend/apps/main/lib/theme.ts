@@ -2,7 +2,7 @@
  * Theme handling for EPE LAWA
  * Light theme only
  */
-export const themeScript = `(function(){var d=document.documentElement;d.classList.add("js-enabled");d.dataset.theme="light";d.style.colorScheme="light";var meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.setAttribute("content","#F1F4FA");})();`;
+export const themeScript = `(function(){var d=document.documentElement;d.classList.add("js-enabled");d.dataset.theme="light";d.style.colorScheme="light";try{localStorage.removeItem("epelawa-theme")}catch(e){}var meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.setAttribute("content","#F1F4FA");})();`;
 
 export function readStoredTheme(): "light" {
   return "light";

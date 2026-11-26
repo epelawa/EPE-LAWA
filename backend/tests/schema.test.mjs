@@ -48,6 +48,8 @@ const SUPABASE_SURFACE = `
     as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
   grant usage on schema public, auth to anon, authenticated, service_role;
   grant execute on function auth.uid() to anon, authenticated, service_role;
+  -- Every Supabase project ships with this (initially empty) publication for Realtime.
+  create publication supabase_realtime;
 `;
 
 /**

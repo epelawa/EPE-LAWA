@@ -1,0 +1,82 @@
+{
+  "lh-before-mobile.json": {
+    "fetchTime": "2026-11-26T12:29:29.369Z",
+    "formFactor": "mobile",
+    "throttling": "simulate",
+    "benchmarkIndex": 2533.5,
+    "scores": {
+      "performance": 37,
+      "accessibility": 100,
+      "best-practices": 96,
+      "seo": 69,
+      "agentic-browsing": 100
+    },
+    "metrics": {
+      "first-contentful-paint": "1.8 s",
+      "largest-contentful-paint": "7.9 s",
+      "total-blocking-time": "6,600 ms",
+      "cumulative-layout-shift": "0",
+      "speed-index": "7.6 s",
+      "interactive": "9.9 s",
+      "total-byte-weight": "Total size was 1,886 KiB"
+    },
+    "failing": [
+      "largest-contentful-paint (7.9 s)",
+      "speed-index (7.6 s)",
+      "total-blocking-time (6,600 ms)",
+      "max-potential-fid (6,990 ms)",
+      "interactive (9.9 s)",
+      "image-aspect-ratio",
+      "mainthread-work-breakdown (10.8 s)",
+      "label-content-name-mismatch",
+      "unused-css-rules (Est savings of 10 KiB)",
+      "unused-javascript (Est savings of 48 KiB)",
+      "is-crawlable",
+      "forced-reflow-insight",
+      "image-delivery-insight (Est savings of 122 KiB)",
+      "lcp-breakdown-insight",
+      "lcp-discovery-insight",
+      "legacy-javascript-insight (Est savings of 12 KiB)",
+      "network-dependency-tree-insight",
+      "render-blocking-insight (Est savings of 450 ms)"
+    ]
+  },
+  "lh-before-desktop.json": {
+    "fetchTime": "2026-11-26T12:30:29.337Z",
+    "formFactor": "desktop",
+    "throttling": "simulate",
+    "benchmarkIndex": 2307,
+    "scores": {
+      "performance": 60,
+      "accessibility": 100,
+      "best-practices": 100,
+      "seo": 69,
+      "agentic-browsing": 100
+    },
+    "metrics": {
+      "first-contentful-paint": "0.3 s",
+      "largest-contentful-paint": "0.8 s",
+      "total-blocking-time": "2,810 ms",
+      "cumulative-layout-shift": "0",
+      "speed-index": "5.8 s",
+      "interactive": "3.2 s",
+      "total-byte-weight": "Total size was 1,918 KiB"
+    },
+    "failing": [
+      "speed-index (5.8 s)",
+      "total-blocking-time (2,810 ms)",
+      "max-potential-fid (2,870 ms)",
+      "interactive (3.2 s)",
+      "mainthread-work-breakdown (3.9 s)",
+      "label-content-name-mismatch",
+      "unused-css-rules (Est savings of 10 KiB)",
+      "unused-javascript (Est savings of 48 KiB)",
+      "is-crawlable",
+      "forced-reflow-insight",
+      "image-delivery-insight (Est savings of 63 KiB)",
+      "legacy-javascript-insight (Est savings of 12 KiB)",
+      "network-dependency-tree-insight",
+      "render-blocking-insight (Est savings of 40 ms)"
+    ]
+  }
+}

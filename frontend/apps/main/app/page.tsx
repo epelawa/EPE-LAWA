@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { ArrowRightIcon, ArrowUpRightIcon, UsersIcon, ListenShortcutIcon, NewsShortcutIcon, CompassIcon, BuildingIcon, MessageCircleIcon, CalendarShortcutIcon, ClockIcon, EyeIcon } from "../components/icons";
+import { ArrowRightIcon, ArrowUpRightIcon, UsersIcon, ListenShortcutIcon, CompassIcon, BuildingIcon, MessageCircleIcon, CalendarShortcutIcon, RoadIcon, MapPinIcon, ClockIcon, EyeIcon } from "../components/icons";
 import { formatPublishedDate } from "../lib/dates";
 import { getLatestStories, getHomeBreakingStories, type LatestStory, type HomeBreakingStory, type PublicListResult } from "../lib/home-data";
 import "./hero-logo.css";
@@ -15,16 +15,22 @@ import { BreakingBadge } from "../components/breaking-news";
 import { HomeSectionReveal } from "../components/home-sections";
 import SitePoll from "../components/site-poll";
 import HomeLivePill from "../components/home-live-pill";
-import { readSiteLanguage, t, type SiteLanguage } from "../lib/i18n";
+import { t, type SiteLanguage } from "../lib/i18n";
 import StructuredData from "../components/structured-data";
 import { organizationSchema, websiteSchema } from "../lib/structured-data";
 
-export default async function Home() {
+// The homepage component does not await anything before rendering the hero. readSiteLanguage()
+// always resolves "en" while full Yoruba is unavailable, so awaiting it only added a suspension
+// point in front of the hero. If Yoruba is re-enabled, read the language without suspending the
+// hero (for example inside a child Suspense boundary).
+const HOME_LANGUAGE: SiteLanguage = "en";
+
+export default function Home() {
   const renderedAt = Date.now();
   // Start both reads together; neither blocks the static hero and discovery content.
   const storiesPromise = getLatestStories(3);
   const breakingPromise = getHomeBreakingStories(renderedAt);
-  const lang = await readSiteLanguage();
+  const lang = HOME_LANGUAGE;
 
   return (
     <div className="public-home">
@@ -37,7 +43,7 @@ export default async function Home() {
             <p className="home-hero__lede">{t(lang, "home.lede")}</p>
             <div className="home-hero__actions">
               <Link href="/news" className="btn-primary">{t(lang, "home.cta.news")} <ArrowRightIcon size={17} aria-hidden="true" /></Link>
-              <Link href="/itan-ilu-mi" className="home-hero__secondary">Explore community history <ArrowRightIcon size={17} aria-hidden="true" /></Link>
+              <Link href="/itan-ilu-mi" className="home-hero__secondary">{t(lang, "home.cta.history")} <ArrowRightIcon size={17} aria-hidden="true" /></Link>
             </div>
           </div>
         </HeroCarousel>
@@ -47,21 +53,22 @@ export default async function Home() {
 
 
       <HomeSectionReveal><div className="ep-container home-discovery">
+        {/* Shortcuts come first in the DOM as well as visually, so reading and tab order match what is seen. */}
+        <nav className="home-shortcuts" aria-label="Explore EPE LAWA">
+          {[
+            { href: "/itan-ilu-mi", label: t(lang, "home.shortcut.history"), Icon: CompassIcon },
+            { href: "/tourism", label: t(lang, "home.shortcut.places"), Icon: MapPinIcon },
+            { href: "/map", label: t(lang, "home.shortcut.map"), Icon: RoadIcon },
+            { href: "/business-directory", label: t(lang, "home.shortcut.business"), Icon: BuildingIcon },
+            { href: "/events", label: t(lang, "home.shortcut.events"), Icon: CalendarShortcutIcon },
+            { href: "/forum", label: t(lang, "home.shortcut.forum"), Icon: MessageCircleIcon },
+          ].map(({ href, label, Icon }) => <Link href={href} key={href}><span aria-hidden="true"><Icon size={25} /></span><span>{label}</span></Link>)}
+        </nav>
         <section className="home-radio" aria-labelledby="home-radio-title">
           <span className="home-radio__icon" aria-hidden="true"><ListenShortcutIcon size={32} /></span>
           <div><p className="home-radio__eyebrow">{t(lang, "home.radio.eyebrow")}</p><h2 id="home-radio-title">Radio Lagos 107.5 FM</h2><p>{t(lang, "home.radio.subtitle")}</p></div>
           <Link href="/radio" className="home-radio__action">{t(lang, "home.radio.cta")} <ArrowRightIcon size={17} aria-hidden="true" /></Link>
         </section>
-        <nav className="home-shortcuts" aria-label="Explore EPE LAWA">
-          {[
-            { href: "/news", label: t(lang, "home.shortcut.news"), Icon: NewsShortcutIcon },
-            { href: "/radio", label: t(lang, "home.shortcut.radio"), Icon: ListenShortcutIcon },
-            { href: "/itan-ilu-mi", label: t(lang, "home.shortcut.history"), Icon: CompassIcon },
-            { href: "/forum", label: t(lang, "home.shortcut.forum"), Icon: MessageCircleIcon },
-            { href: "/business-directory", label: t(lang, "home.shortcut.business"), Icon: BuildingIcon },
-            { href: "/events", label: t(lang, "home.shortcut.events"), Icon: CalendarShortcutIcon },
-          ].map(({ href, label, Icon }) => <Link href={href} key={href}><span aria-hidden="true"><Icon size={25} /></span><span>{label}</span></Link>)}
-        </nav>
       </div></HomeSectionReveal>
 
       <HomeSectionReveal><Suspense fallback={<HomeNewsSkeleton />}><HomeNews storiesPromise={storiesPromise} renderedAt={renderedAt} lang={lang} /></Suspense>
@@ -76,9 +83,14 @@ export default async function Home() {
           <Link className="btn-primary" href="/auth">{t(lang, "home.community.cta")} <ArrowUpRightIcon size={16} aria-hidden="true" /></Link>
           <Link className="ui-text-link" href="/guidelines">{t(lang, "home.community.guidelines")}</Link>
         </div>
+        <ul className="home-community__contribute" aria-label={t(lang, "home.community.contributeLabel")}>
+          <li><Link href="/itan-ilu-mi#contribute">{t(lang, "home.community.shareHistory")} <ArrowRightIcon size={15} aria-hidden="true" /></Link></li>
+          <li><Link href="/business-directory/submit">{t(lang, "home.community.listBusiness")} <ArrowRightIcon size={15} aria-hidden="true" /></Link></li>
+        </ul>
         <span className="connection-panel__icon" aria-hidden="true"><UsersIcon size={96} /></span>
       </section></HomeSectionReveal>
-      <HomeSectionReveal><div className="ep-container home-poll"><Suspense fallback={null}><SitePoll /></Suspense></div></HomeSectionReveal>
+      {/* SitePoll renders its own .home-poll wrapper only when an active poll exists, so no empty band is left above the footer. */}
+      <Suspense fallback={null}><SitePoll /></Suspense>
       <CookieBanner />
     </div>
   );

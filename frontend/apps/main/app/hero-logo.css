@@ -99,3 +99,9 @@
 .home-hero__secondary:focus-visible { outline:3px solid var(--palette-ice-blue); outline-offset:3px; }
 .home-hero__actions .btn-primary { color:var(--palette-midnight); }
 @media (max-width:600px) { .home-hero__content h1 { font-size:clamp(2.65rem, 11vw, 4rem); line-height:1; } }
+
+/* Homepage only: let the hero photograph run edge to edge like the header and footer. Section
+   content still aligns to the shared .ep-container, so phones no longer get a double gutter
+   (main padding + container margin) and wide screens no longer get a boxed photo floating on
+   the dotted page background. */
+.site-main:has(> .public-home) { max-width: none; padding-inline: 0; }

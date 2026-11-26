@@ -25,7 +25,6 @@ const overviewPages: NavItem[] = [
 
 const mediaPages: NavItem[] = [
   { label: "Media library", href: "/media", hint: "Public photo archive and media records", group: "MEDIA" },
-  { label: "Gallery", href: "/gallery", hint: "Photo galleries", group: "MEDIA" },
   { label: "Radio", href: "/radio", hint: "Programmes, rights, episodes and schedule", primary: true, group: "MEDIA" },
 ];
 
@@ -105,7 +104,6 @@ const itemCapabilities: Record<string, string[]> = {
   "/site-pages": ["staff.manage"],
   "/legal-pages": ["staff.manage"],
   "/media": ["staff.manage"],
-  "/gallery": ["staff.manage"],
   "/backups": ["staff.manage"],
   "/settings": ["staff.manage"],
   "/settings/cron": ["staff.manage"],

@@ -5,8 +5,8 @@ import Link from "next/link";
 
 /**
  * Homepage-only storage notice. Preferences use localStorage; authenticated
- * member sessions use essential cookies. Optional analytics and advertising
- * tracking are not enabled.
+ * member sessions use essential cookies. No advertising cookies are used; the
+ * shared-head site script is disclosed on /privacy, so this copy points there.
  *
  * Not a modal: it must not trap focus or block the page, and "Got it" is enough
  * because nothing is being consented to that could be refused.

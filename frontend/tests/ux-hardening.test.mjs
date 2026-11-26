@@ -60,9 +60,14 @@ test("live queue counts cover every pending-work queue", () => {
   for (const table of ["events", "radio_song_requests", "moderation_appeals", "forum_reports"]) {
     assert.match(route, new RegExp(`from\\("${table}"\\)`), `route should count ${table}`);
   }
+  // The events and song-request admin queues were withdrawn in 43835ed ("Remove digest, poll, events,
+  // and radio/requests pages from admin"), so the sidebar hook exposes only queues with a staff page.
   const hook = repo("frontend/apps/admin/components/use-live-queue-counts.ts");
-  for (const key of ["events", "songRequests", "appeals", "forumReports"]) {
+  for (const key of ["submissions", "corrections", "enquiries", "appeals", "forumReports"]) {
     assert.match(hook, new RegExp(`${key}: number \\| null`));
+  }
+  for (const key of ["events", "songRequests"]) {
+    assert.doesNotMatch(hook, new RegExp(`${key}: number \\| null`), `${key} has no admin page to badge`);
   }
 });
 
@@ -76,9 +81,12 @@ test("admin sidebar renders superscript badges on queue links", () => {
 
 test("admin route links keep normal navigation and expose immediate pending feedback", () => {
   const sidebar = repo("frontend/apps/admin/components/admin-sidebar.tsx");
-  assert.match(sidebar, /useLinkStatus/);
-  assert.match(sidebar, /router\.prefetch/);
-  assert.match(sidebar, /onNavigate=\{\(\) =>/);
+  // Since 43835ed sidebar links are real anchors that show a spinner immediately and then do a
+  // full document navigation (the owner's fix for links that appeared unresponsive).
+  assert.match(sidebar, /function NavLink\(/);
+  assert.match(sidebar, /<a\s+href=\{href\}/);
+  assert.match(sidebar, /aria-busy=\{isPending\}/);
+  assert.match(sidebar, /window\.location\.href = href/);
   assert.match(sidebar, /role="status" aria-live="polite"/);
   assert.match(repo("frontend/apps/admin/app/globals.css"), /\.drawer-root\[data-open=true\] \.drawer/);
   assert.match(repo("frontend/apps/admin/app/globals.css"), /admin-sidebar__nav-spinner\[data-active=true\]/);

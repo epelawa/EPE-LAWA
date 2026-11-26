@@ -179,9 +179,9 @@ and u.email_confirmed_at is not null;
 revoke all on public.primary_administrators from public, anon, authenticated;
 grant select on public.primary_administrators to authenticated;
 
-create policy primary_administrators_read on public.primary_administrators
-  for select to authenticated
-  using (public.staff_roles_authorized());
+-- Reconciled with Production (2026-11-26): Postgres cannot attach a row-level policy to a view, so the
+-- former `create policy primary_administrators_read on public.primary_administrators` statement could
+-- never apply and is absent from the Production catalog. Access is governed by the grants above.
 
 -- Audit: Log any attempt to modify primary administrators
 create or replace function public.log_primary_admin_violation(

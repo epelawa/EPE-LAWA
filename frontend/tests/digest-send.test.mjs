@@ -5,27 +5,8 @@ import { readFile } from 'node:fs/promises';
 const root = new URL('../../', import.meta.url);
 const read = (path) => readFile(new URL(path, root), 'utf8');
 
-test('digest auto-send is capability-gated and reuses the newsroom origin', async () => {
-  const action = await read('frontend/apps/admin/app/(protected)/digest/send-action.ts');
-  assert.match(action, /"use server"/);
-  assert.match(action, /has_capability", \{ p_capability: "article\.publish" \}/);
-  assert.match(action, /NEXT_PUBLIC_SITE_URL/);
-  assert.match(action, /sendWeeklyDigest/);
-  assert.match(action, /revalidatePath\("\/admin\/digest"\)/);
-  assert.match(action, /from "\.\.\/\.\.\/\.\.\/\.\.\/main\/lib\/digest-mailer"/);
-  assert.match(action, /no active newsletter subscribers exist yet/);
-  assert.match(action, /Newsletter SMTP is not configured for this environment/);
-});
-
-test('the digest page mounts the send form and states the SMTP gate honestly', async () => {
-  const page = await read('frontend/apps/admin/app/(protected)/digest/page.tsx');
-  assert.match(page, /digestSmtpConfigured/);
-  assert.match(page, /<DigestSendForm \/>/);
-  const form = await read('frontend/apps/admin/app/(protected)/digest/send-form.tsx');
-  assert.match(form, /useActionState\(sendDigestNow/);
-  assert.match(form, /Sending…/);
-});
-
+// The staff digest page and its send action were withdrawn in 43835ed ("Remove digest, poll, events,
+// and radio/requests pages from admin"). The shared mailer remains and is still covered below.
 test('the digest mailer stays within the recipient cap and escapes every database string', async () => {
   const mailer = await read('frontend/apps/main/lib/digest-mailer.ts');
   assert.match(mailer, /MAX_RECIPIENTS = 500/);

@@ -13,6 +13,10 @@ function normalizeAriaHidden(value?: boolean | string): boolean | undefined {
 export const NewsShortcutIcon = ({ size = 24 }: { size?: number }) => (
   <svg aria-hidden="true" focusable="false" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M5 4h15v15a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7h2"/><path d="M5 4v15a2 2 0 0 1-2 0M8 7h9v4H8zM8 14h9M8 17h6"/></svg>
 );
+/** A road in perspective: two kerbs converging on the horizon with a dashed centre line. */
+export const RoadIcon = ({ size = 24 }: { size?: number }) => (
+  <svg aria-hidden="true" focusable="false" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 3 4 21M14.5 3 20 21"/><path d="M12 4v2.5M12 10v3M12 16.5V20"/></svg>
+);
 export const ListenShortcutIcon = ({ size = 24 }: { size?: number }) => (
   <svg aria-hidden="true" focusable="false" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="8" width="18" height="12" rx="2"/><path d="m7 8 10-5M15 12h3M15 16h3"/><circle cx="9" cy="14" r="2.5"/></svg>
 );

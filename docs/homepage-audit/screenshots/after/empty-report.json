@@ -1,0 +1,572 @@
+{
+  "label": "final",
+  "mode": "empty",
+  "viewports": {
+    "desktop-1440": {
+      "title": "EPE LAWA — The Voice of Epe Division",
+      "metaDescription": "News, community history, local discussion, maps, local business, tourism, radio and Who-is-Who for Epe Division.",
+      "canonical": "http://127.0.0.1:3100/",
+      "ogImage": "http://127.0.0.1:3100/share.png",
+      "jsonLd": [
+        "{\"@context\":\"https://schema.org\",\"@type\":\"WebSite\",\"name\":\"EPE LAWA\",\"alternateName\":\"The Voice of Epe Division\",\"url\":\"http://127.0.0.1:3100/\",\"inLanguage\":[\"en\",\"yo\"],\"potentialAction\":{\"@type\":\"Sea",
+        "{\"@context\":\"https://schema.org\",\"@type\":\"Organization\",\"name\":\"EPE LAWA\",\"url\":\"http://127.0.0.1:3100/\",\"logo\":\"http://127.0.0.1:3100/brand-logo.png\",\"email\":\"info.epelawa@gmail.com\"}"
+      ],
+      "docHeight": 2746,
+      "overflowX": 0,
+      "headings": [
+        "H1 Stay Connected,Stay Informed",
+        "H2 Radio Lagos 107.5 FM",
+        "H2 Latest News",
+        "H3 No stories published yet",
+        "H2 Good things begin with connection.",
+        "H2 Quick Links",
+        "H2 Browse topics",
+        "H2 Subscribe to our newsletter"
+      ],
+      "landmarks": [
+        "header",
+        "nav[Primary navigation]",
+        "nav[All sections]",
+        "section",
+        "section",
+        "section",
+        "section",
+        "section",
+        "main",
+        "section",
+        "nav[Explore EPE LAWA]",
+        "section",
+        "section",
+        "section",
+        "div[Storage notice]",
+        "footer[EPE LAWA news footer]",
+        "nav[Quick links]",
+        "nav[News footer categories]",
+        "section"
+      ],
+      "small": [
+        {
+          "t": "Photo credits",
+          "w": 78,
+          "h": 20
+        },
+        {
+          "t": "Privacy",
+          "w": 41,
+          "h": 20
+        },
+        {
+          "t": "Terms",
+          "w": 33,
+          "h": 20
+        }
+      ],
+      "imgsNoAlt": [],
+      "sections": [
+        "home-hero y=73 h=480",
+        "home-shortcuts y=569 h=124",
+        "home-radio y=709 h=150",
+        "ep-container y=859 h=253",
+        "ep-container y=1176 h=453"
+      ],
+      "heroBox": {
+        "top": 73,
+        "h": 480
+      },
+      "newsTop": 859,
+      "noticeBox": {
+        "top": 764,
+        "h": 124,
+        "w": 380
+      },
+      "axe": [],
+      "consoleErrors": [],
+      "failed": []
+    },
+    "desktop-1366": {
+      "title": "EPE LAWA — The Voice of Epe Division",
+      "metaDescription": "News, community history, local discussion, maps, local business, tourism, radio and Who-is-Who for Epe Division.",
+      "canonical": "http://127.0.0.1:3100/",
+      "ogImage": "http://127.0.0.1:3100/share.png",
+      "jsonLd": [
+        "{\"@context\":\"https://schema.org\",\"@type\":\"WebSite\",\"name\":\"EPE LAWA\",\"alternateName\":\"The Voice of Epe Division\",\"url\":\"http://127.0.0.1:3100/\",\"inLanguage\":[\"en\",\"yo\"],\"potentialAction\":{\"@type\":\"Sea",
+        "{\"@context\":\"https://schema.org\",\"@type\":\"Organization\",\"name\":\"EPE LAWA\",\"url\":\"http://127.0.0.1:3100/\",\"logo\":\"http://127.0.0.1:3100/brand-logo.png\",\"email\":\"info.epelawa@gmail.com\"}"
+      ],
+      "docHeight": 2746,
+      "overflowX": 0,
+      "headings": [
+        "H1 Stay Connected,Stay Informed",
+        "H2 Radio Lagos 107.5 FM",
+        "H2 Latest News",
+        "H3 No stories published yet",
+        "H2 Good things begin with connection.",
+        "H2 Quick Links",
+        "H2 Browse topics",
+        "H2 Subscribe to our newsletter"
+      ],
+      "landmarks": [
+        "header",
+        "nav[Primary navigation]",
+        "nav[All sections]",
+        "section",
+        "section",
+        "section",
+        "section",
+        "section",
+        "main",
+        "section",
+        "nav[Explore EPE LAWA]",
+        "section",
+        "section",
+        "section",
+        "div[Storage notice]",
+        "footer[EPE LAWA news footer]",
+        "nav[Quick links]",
+        "nav[News footer categories]",
+        "section"
+      ],
+      "small": [
+        {
+          "t": "Photo credits",
+          "w": 78,
+          "h": 20
+        },
+        {
+          "t": "Privacy",
+          "w": 41,
+          "h": 20
+        },
+        {
+          "t": "Terms",
+          "w": 33,
+          "h": 20
+        }
+      ],
+      "imgsNoAlt": [],
+      "sections": [
+        "home-hero y=73 h=480",
+        "home-shortcuts y=569 h=124",
+        "home-radio y=709 h=150",
+        "ep-container y=859 h=253",
+        "ep-container y=1176 h=453"
+      ],
+      "heroBox": {
+        "top": 73,
+        "h": 480
+      },
+      "newsTop": 859,
+      "noticeBox": {
+        "top": 632,
+        "h": 124,
+        "w": 380
+      },
+      "axe": [],
+      "consoleErrors": [],
+      "failed": []
+    },
+    "tablet-1024": {
+      "title": "EPE LAWA — The Voice of Epe Division",
+      "metaDescription": "News, community history, local discussion, maps, local business, tourism, radio and Who-is-Who for Epe Division.",
+      "canonical": "http://127.0.0.1:3100/",
+      "ogImage": "http://127.0.0.1:3100/share.png",
+      "jsonLd": [
+        "{\"@context\":\"https://schema.org\",\"@type\":\"WebSite\",\"name\":\"EPE LAWA\",\"alternateName\":\"The Voice of Epe Division\",\"url\":\"http://127.0.0.1:3100/\",\"inLanguage\":[\"en\",\"yo\"],\"potentialAction\":{\"@type\":\"Sea",
+        "{\"@context\":\"https://schema.org\",\"@type\":\"Organization\",\"name\":\"EPE LAWA\",\"url\":\"http://127.0.0.1:3100/\",\"logo\":\"http://127.0.0.1:3100/brand-logo.png\",\"email\":\"info.epelawa@gmail.com\"}"
+      ],
+      "docHeight": 2589,
+      "overflowX": 0,
+      "headings": [
+        "H1 Stay Connected,Stay Informed",
+        "H2 Radio Lagos 107.5 FM",
+        "H2 Latest News",
+        "H3 No stories published yet",
+        "H2 Good things begin with connection.",
+        "H2 Quick Links",
+        "H2 Browse topics",
+        "H2 Subscribe to our newsletter"
+      ],
+      "landmarks": [
+        "header",
+        "nav[Primary navigation]",
+        "nav[All sections]",
+        "section",
+        "section",
+        "section",
+        "section",
+        "section",
+        "main",
+        "section",
+        "nav[Explore EPE LAWA]",
+        "section",
+        "section",
+        "section",
+        "div[Storage notice]",
+        "footer[EPE LAWA news footer]",
+        "nav[Quick links]",
+        "nav[News footer categories]",
+        "section"
+      ],
+      "small": [
+        {
+          "t": "Photo credits",
+          "w": 78,
+          "h": 20
+        },
+        {
+          "t": "Privacy",
+          "w": 41,
+          "h": 20
+        },
+        {
+          "t": "Terms",
+          "w": 33,
+          "h": 20
+        }
+      ],
+      "imgsNoAlt": [],
+      "sections": [
+        "home-hero y=73 h=398",
+        "home-shortcuts y=487 h=124",
+        "home-radio y=627 h=150",
+        "ep-container y=777 h=253",
+        "ep-container y=1082 h=405"
+      ],
+      "heroBox": {
+        "top": 73,
+        "h": 398
+      },
+      "newsTop": 777,
+      "noticeBox": {
+        "top": 632,
+        "h": 124,
+        "w": 380
+      },
+      "axe": [],
+      "consoleErrors": [],
+      "failed": []
+    },
+    "tablet-768": {
+      "title": "EPE LAWA — The Voice of Epe Division",
+      "metaDescription": "News, community history, local discussion, maps, local business, tourism, radio and Who-is-Who for Epe Division.",
+      "canonical": "http://127.0.0.1:3100/",
+      "ogImage": "http://127.0.0.1:3100/share.png",
+      "jsonLd": [
+        "{\"@context\":\"https://schema.org\",\"@type\":\"WebSite\",\"name\":\"EPE LAWA\",\"alternateName\":\"The Voice of Epe Division\",\"url\":\"http://127.0.0.1:3100/\",\"inLanguage\":[\"en\",\"yo\"],\"potentialAction\":{\"@type\":\"Sea",
+        "{\"@context\":\"https://schema.org\",\"@type\":\"Organization\",\"name\":\"EPE LAWA\",\"url\":\"http://127.0.0.1:3100/\",\"logo\":\"http://127.0.0.1:3100/brand-logo.png\",\"email\":\"info.epelawa@gmail.com\"}"
+      ],
+      "docHeight": 2496,
+      "overflowX": 0,
+      "headings": [
+        "H1 Stay Connected,Stay Informed",
+        "H2 Radio Lagos 107.5 FM",
+        "H2 Latest News",
+        "H3 No stories published yet",
+        "H2 Good things begin with connection.",
+        "H2 Quick Links",
+        "H2 Browse topics",
+        "H2 Subscribe to our newsletter"
+      ],
+      "landmarks": [
+        "header",
+        "nav[Primary navigation]",
+        "nav[All sections]",
+        "section",
+        "section",
+        "section",
+        "section",
+        "section",
+        "main",
+        "section",
+        "nav[Explore EPE LAWA]",
+        "section",
+        "section",
+        "section",
+        "div[Storage notice]",
+        "footer[EPE LAWA news footer]",
+        "nav[Quick links]",
+        "nav[News footer categories]",
+        "section"
+      ],
+      "small": [
+        {
+          "t": "Photo credits",
+          "w": 78,
+          "h": 20
+        },
+        {
+          "t": "Privacy",
+          "w": 41,
+          "h": 20
+        },
+        {
+          "t": "Terms",
+          "w": 33,
+          "h": 20
+        }
+      ],
+      "imgsNoAlt": [],
+      "sections": [
+        "home-hero y=65 h=382",
+        "home-shortcuts y=463 h=124",
+        "home-radio y=603 h=150",
+        "ep-container y=753 h=253",
+        "ep-container y=1044 h=378"
+      ],
+      "heroBox": {
+        "top": 65,
+        "h": 382
+      },
+      "newsTop": 753,
+      "noticeBox": {
+        "top": 888,
+        "h": 124,
+        "w": 380
+      },
+      "axe": [],
+      "consoleErrors": [],
+      "failed": []
+    },
+    "mobile-390": {
+      "title": "EPE LAWA — The Voice of Epe Division",
+      "metaDescription": "News, community history, local discussion, maps, local business, tourism, radio and Who-is-Who for Epe Division.",
+      "canonical": "http://127.0.0.1:3100/",
+      "ogImage": "http://127.0.0.1:3100/share.png",
+      "jsonLd": [
+        "{\"@context\":\"https://schema.org\",\"@type\":\"WebSite\",\"name\":\"EPE LAWA\",\"alternateName\":\"The Voice of Epe Division\",\"url\":\"http://127.0.0.1:3100/\",\"inLanguage\":[\"en\",\"yo\"],\"potentialAction\":{\"@type\":\"Sea",
+        "{\"@context\":\"https://schema.org\",\"@type\":\"Organization\",\"name\":\"EPE LAWA\",\"url\":\"http://127.0.0.1:3100/\",\"logo\":\"http://127.0.0.1:3100/brand-logo.png\",\"email\":\"info.epelawa@gmail.com\"}"
+      ],
+      "docHeight": 3241,
+      "overflowX": 0,
+      "headings": [
+        "H1 Stay Connected,Stay Informed",
+        "H2 Radio Lagos 107.5 FM",
+        "H2 Latest News",
+        "H3 No stories published yet",
+        "H2 Good things begin with connection.",
+        "H2 Quick Links",
+        "H2 Browse topics",
+        "H2 Subscribe to our newsletter"
+      ],
+      "landmarks": [
+        "header",
+        "nav[Primary navigation]",
+        "nav[All sections]",
+        "section",
+        "section",
+        "section",
+        "section",
+        "section",
+        "main",
+        "section",
+        "nav[Explore EPE LAWA]",
+        "section",
+        "section",
+        "section",
+        "div[Storage notice]",
+        "footer[EPE LAWA news footer]",
+        "nav[Quick links]",
+        "nav[News footer categories]",
+        "section"
+      ],
+      "small": [],
+      "imgsNoAlt": [],
+      "sections": [
+        "home-hero y=65 h=429",
+        "home-shortcuts y=510 h=225",
+        "home-radio y=751 h=234",
+        "ep-container y=985 h=280",
+        "ep-container y=1293 h=644"
+      ],
+      "heroBox": {
+        "top": 65,
+        "h": 429
+      },
+      "newsTop": 985,
+      "noticeBox": {
+        "top": 712,
+        "h": 124,
+        "w": 374
+      },
+      "axe": [],
+      "consoleErrors": [],
+      "failed": []
+    },
+    "mobile-375": {
+      "title": "EPE LAWA — The Voice of Epe Division",
+      "metaDescription": "News, community history, local discussion, maps, local business, tourism, radio and Who-is-Who for Epe Division.",
+      "canonical": "http://127.0.0.1:3100/",
+      "ogImage": "http://127.0.0.1:3100/share.png",
+      "jsonLd": [
+        "{\"@context\":\"https://schema.org\",\"@type\":\"WebSite\",\"name\":\"EPE LAWA\",\"alternateName\":\"The Voice of Epe Division\",\"url\":\"http://127.0.0.1:3100/\",\"inLanguage\":[\"en\",\"yo\"],\"potentialAction\":{\"@type\":\"Sea",
+        "{\"@context\":\"https://schema.org\",\"@type\":\"Organization\",\"name\":\"EPE LAWA\",\"url\":\"http://127.0.0.1:3100/\",\"logo\":\"http://127.0.0.1:3100/brand-logo.png\",\"email\":\"info.epelawa@gmail.com\"}"
+      ],
+      "docHeight": 3362,
+      "overflowX": 0,
+      "headings": [
+        "H1 Stay Connected,Stay Informed",
+        "H2 Radio Lagos 107.5 FM",
+        "H2 Latest News",
+        "H3 No stories published yet",
+        "H2 Good things begin with connection.",
+        "H2 Quick Links",
+        "H2 Browse topics",
+        "H2 Subscribe to our newsletter"
+      ],
+      "landmarks": [
+        "header",
+        "nav[Primary navigation]",
+        "nav[All sections]",
+        "section",
+        "section",
+        "section",
+        "section",
+        "section",
+        "main",
+        "section",
+        "nav[Explore EPE LAWA]",
+        "section",
+        "section",
+        "section",
+        "div[Storage notice]",
+        "footer[EPE LAWA news footer]",
+        "nav[Quick links]",
+        "nav[News footer categories]",
+        "section"
+      ],
+      "small": [],
+      "imgsNoAlt": [],
+      "sections": [
+        "home-hero y=65 h=426",
+        "home-shortcuts y=507 h=225",
+        "home-radio y=748 h=255",
+        "ep-container y=1003 h=280",
+        "ep-container y=1311 h=640"
+      ],
+      "heroBox": {
+        "top": 65,
+        "h": 426
+      },
+      "newsTop": 1003,
+      "noticeBox": {
+        "top": 680,
+        "h": 124,
+        "w": 359
+      },
+      "axe": [],
+      "consoleErrors": [],
+      "failed": []
+    },
+    "mobile-360": {
+      "title": "EPE LAWA — The Voice of Epe Division",
+      "metaDescription": "News, community history, local discussion, maps, local business, tourism, radio and Who-is-Who for Epe Division.",
+      "canonical": "http://127.0.0.1:3100/",
+      "ogImage": "http://127.0.0.1:3100/share.png",
+      "jsonLd": [
+        "{\"@context\":\"https://schema.org\",\"@type\":\"WebSite\",\"name\":\"EPE LAWA\",\"alternateName\":\"The Voice of Epe Division\",\"url\":\"http://127.0.0.1:3100/\",\"inLanguage\":[\"en\",\"yo\"],\"potentialAction\":{\"@type\":\"Sea",
+        "{\"@context\":\"https://schema.org\",\"@type\":\"Organization\",\"name\":\"EPE LAWA\",\"url\":\"http://127.0.0.1:3100/\",\"logo\":\"http://127.0.0.1:3100/brand-logo.png\",\"email\":\"info.epelawa@gmail.com\"}"
+      ],
+      "docHeight": 3382,
+      "overflowX": 0,
+      "headings": [
+        "H1 Stay Connected,Stay Informed",
+        "H2 Radio Lagos 107.5 FM",
+        "H2 Latest News",
+        "H3 No stories published yet",
+        "H2 Good things begin with connection.",
+        "H2 Quick Links",
+        "H2 Browse topics",
+        "H2 Subscribe to our newsletter"
+      ],
+      "landmarks": [
+        "header",
+        "nav[Primary navigation]",
+        "nav[All sections]",
+        "section",
+        "section",
+        "section",
+        "section",
+        "section",
+        "main",
+        "section",
+        "nav[Explore EPE LAWA]",
+        "section",
+        "section",
+        "section",
+        "div[Storage notice]",
+        "footer[EPE LAWA news footer]",
+        "nav[Quick links]",
+        "nav[News footer categories]",
+        "section"
+      ],
+      "small": [],
+      "imgsNoAlt": [],
+      "sections": [
+        "home-hero y=65 h=451",
+        "home-shortcuts y=532 h=225",
+        "home-radio y=773 h=255",
+        "ep-container y=1029 h=280",
+        "ep-container y=1337 h=635"
+      ],
+      "heroBox": {
+        "top": 65,
+        "h": 451
+      },
+      "newsTop": 1029,
+      "noticeBox": {
+        "top": 668,
+        "h": 124,
+        "w": 344
+      },
+      "axe": [],
+      "consoleErrors": [],
+      "failed": []
+    }
+  },
+  "keyboardMobile": [
+    "a \"Skip to content\" outline=solid",
+    "a \"EPE LAWA The Voice of Epe Division home \" outline=solid",
+    "a \"Radio notification settings\" outline=solid",
+    "button \"Open navigation menu\" outline=solid",
+    "a \"Read latest news\" outline=solid",
+    "a \"Explore community history\" outline=solid",
+    "a \"Community history\" outline=solid",
+    "a \"Places to visit\" outline=solid",
+    "a \"Find your way\" outline=solid",
+    "a \"Local businesses\" outline=solid",
+    "a \"Community events\" outline=solid",
+    "a \"Join the conversation\" outline=solid",
+    "a \"Listen to radio\" outline=solid",
+    "a \"View all news\" outline=solid",
+    "a \"Visit the newsroom\" outline=solid",
+    "a \"Create an account\" outline=solid"
+  ],
+  "menuFocus": "Close navigation menu",
+  "menuAfterEscape": {
+    "open": "false",
+    "focus": "Open navigation menu"
+  },
+  "keyboardDesktop": [
+    "a \"Skip to content\"",
+    "a \"EPE LAWA The Voice of Epe Division home \"",
+    "a \"News\"",
+    "summary \"Community\"",
+    "summary \"Discover\"",
+    "summary \"About\"",
+    "a \"Radio notification settings\"",
+    "a \"Sign in\"",
+    "a \"Join the community\"",
+    "button \"Open navigation menu\"",
+    "a \"Read latest news\"",
+    "a \"Explore community history\"",
+    "a \"Community history\"",
+    "a \"Places to visit\"",
+    "a \"Find your way\"",
+    "a \"Local businesses\"",
+    "a \"Community events\"",
+    "a \"Join the conversation\"",
+    "a \"Listen to radio\"",
+    "a \"View all news\"",
+    "a \"Visit the newsroom\"",
+    "a \"Create an account\""
+  ]
+}
