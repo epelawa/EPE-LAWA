@@ -9,7 +9,9 @@
 .links strong,.links small { display:block; }.links small { margin-top:7px; color:#53627a; line-height:1.4; }
 @media(max-width:760px) { .listeningPage { width:calc(100% - 28px); margin:20px auto 48px; }.explore { grid-template-columns:1fr; gap:14px; margin-top:36px; }.links { grid-template-columns:1fr; }.links a { min-height:85px; } }
 .nowPlaying { display: inline-flex; align-items: center; gap: 10px; min-height: 32px; padding: 4px 14px; border-radius: 999px; background: var(--ep-surface-soft, #E7EDF8); font-size: 0.875rem; }
-.onAirDot { width: 8px; height: 8px; border-radius: 999px; background: #d13c3c; animation: onAirPulse 2s ease-in-out infinite; }
+.onAirDot { flex: none; width: 8px; height: 8px; border-radius: 999px; background: #d13c3c; animation: onAirPulse 2s ease-in-out infinite; }
+.idleDot { flex: none; width: 8px; height: 8px; border-radius: 999px; background: #a6b2c5; }
+.scheduleNote { color: #53627a; font-size: .8rem; }
 .requestRow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 @keyframes onAirPulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 @media (prefers-reduced-motion: reduce) { .onAirDot { animation: none; } }

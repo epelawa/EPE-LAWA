@@ -6,7 +6,8 @@ import { createClient } from "../../../../lib/supabase";
 import { formatLagosDateTime } from "../../../../lib/dates";
 import { publicMediaUrl } from "../../../../lib/media";
 import { EmptyPanel, Notice, PageFrame, StatusBadge } from "../../../../components/design-system";
-import { replyToThread, reportPost, voteInPoll } from "../../actions";
+import { reportPost, voteInPoll } from "../../actions";
+import ReplyComposer from "../../reply-composer";
 import ReactionBar from "../../reaction-bar";
 import ForumReadPing from "../../read-ping";
 import styles from "../../forum.module.css";
@@ -20,7 +21,7 @@ export default async function ThreadPage({ params, searchParams }: Props) {
     supabase.auth.getUser(),
     supabase.from("forum_threads").select("id,category_id,slug,title,state,created_at").eq("slug", slug).maybeSingle(),
   ]);
-  if (error) return <PageFrame><Notice role="status" tone="warning">This discussion could not be loaded. Please try again later.</Notice></PageFrame>;
+  if (error) return <PageFrame><EmptyPanel as="h1" title="This discussion could not be loaded" description="The forum could not be reached. Nothing has changed on your side; please try again in a moment." actions={<><Link className="btn-secondary" href={`/forum/thread/${encodeURIComponent(slug)}`}>Try again</Link><Link className="btn-ghost" href="/forum">Back to the forum</Link></>} /></PageFrame>;
   if (!thread) notFound();
   const [{ data: category }, { data: posts, error: postsError }, { data: poll }] = await Promise.all([
     supabase.from("forum_categories").select("slug,name").eq("id", thread.category_id).maybeSingle(),
@@ -59,11 +60,11 @@ export default async function ThreadPage({ params, searchParams }: Props) {
       <span className={styles.railAvatar} aria-hidden="true">{thread.title.trim().slice(0, 1).toLocaleUpperCase("en-NG")}</span>
       <div className={styles.threadBarCopy}>
         <h1 className={styles.threadTitle}>{thread.title}</h1>
-        <p className={styles.threadBarMeta}>{category ? <Link className={styles.threadChannel} href={`/forum/category/${encodeURIComponent(category.slug)}`}>{category.name}</Link> : null} · {(posts ?? []).length} {(posts ?? []).length === 1 ? "message" : "messages"} · {thread.state === "locked" ? "Locked" : "Open"}</p>
+        <p className={styles.threadBarMeta}>{category ? <Link className={styles.threadChannel} href={`/forum/category/${encodeURIComponent(category.slug)}`}>{category.name}</Link> : null}{category ? "\u00a0· " : ""}{(posts ?? []).length} {(posts ?? []).length === 1 ? "message" : "messages"}{"\u00a0· "}{thread.state === "locked" ? "Locked" : "Open"}</p>
       </div>
       <span className={styles.threadState}>{thread.state === "locked" ? <StatusBadge tone="warning">Locked</StatusBadge> : <StatusBadge tone="success">Open</StatusBadge>}</span>
     </nav>
-    <div className="ui-stack-sm" aria-live="polite">{notice.posted ? <Notice role="status" tone="success">Your reply was posted.</Notice> : null}{notice.reported ? <Notice role="status" tone="success">Your report was submitted for moderator review.</Notice> : null}{notice.voted ? <Notice role="status" tone="success">Your vote was recorded.</Notice> : null}{notice.forum_error ? <Notice role="alert" tone="danger">{notice.forum_error}</Notice> : null}</div>
+    <div className={`ui-stack-sm ${styles.threadNotices}`} aria-live="polite">{notice.posted ? <Notice role="status" tone="success">Your reply was posted.</Notice> : null}{notice.reported ? <Notice role="status" tone="success">Your report was submitted for moderator review.</Notice> : null}{notice.voted ? <Notice role="status" tone="success">Your vote was recorded.</Notice> : null}{notice.forum_error ? <Notice role="alert" tone="danger">{notice.forum_error}</Notice> : null}</div>
     {poll ? <section className={styles.pollCard} aria-labelledby="poll-question">
       <div><p className="ui-eyebrow">Community poll</p><h2 id="poll-question">{poll.question}</h2><p className="ui-meta">{totalVotes} {totalVotes === 1 ? "vote" : "votes"} · totals only; ballots are private</p></div>
       {pollOpen && user && !hasVoted ? <form action={voteInPoll} className="ui-stack-sm"><input type="hidden" name="poll_id" value={poll.id} /><input type="hidden" name="thread_slug" value={thread.slug} /><fieldset className="ui-stack-sm"><legend className="sr-only">Choose one answer</legend>{(options ?? []).map((option) => <label key={option.id} className={styles.pollOption}><input type="radio" name="option_id" value={option.id} required />{option.label}</label>)}</fieldset><SubmitButton pendingLabel="Submitting…" className="btn-primary" useLegacyClasses>Submit vote</SubmitButton></form> : null}
@@ -77,11 +78,11 @@ export default async function ThreadPage({ params, searchParams }: Props) {
       const own = Boolean(user && post.author_id && post.author_id === user.id);
       const avatar = profile && !profile.deleted_at ? publicMediaUrl(profile.avatar_key) : null;
       const bubbleClass = post.state === "deleted" ? styles.bubbleDeleted : own ? styles.bubbleOwn : styles.bubble;
-      return <li key={post.id} className={styles.bubbleRow} data-own={own ? "true" : undefined} aria-label={`Post ${index + 1}`}>
+      return <li key={post.id} id={index === posts.length - 1 ? "latest" : undefined} className={styles.bubbleRow} data-own={own ? "true" : undefined} aria-label={`Post ${index + 1}`}>
         {post.state === "deleted"
           ? <div className={bubbleClass}><p className="ui-meta"><em>This post was removed.</em></p></div>
           : <>
-            <span className={styles.bubbleAvatar} aria-hidden="true">{avatar ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={avatar} alt="" width={34} height={34} className={styles.postAvatar} /> : "•"}</span>
+            <span className={styles.bubbleAvatar} aria-hidden="true">{avatar ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={avatar} alt="" width={34} height={34} className={styles.postAvatar} /> : (profile && !profile.deleted_at ? (profile.display_name || profile.handle || "").trim().slice(0, 1).toLocaleUpperCase("en-NG") : "") || "•"}</span>
             <div className={bubbleClass}>
               <span className={styles.bubbleByline}>
                 <strong>{profile && !profile.deleted_at ? profile.display_name : "Community member"}</strong>
@@ -96,12 +97,6 @@ export default async function ThreadPage({ params, searchParams }: Props) {
           </>}
       </li>;
     })}</ol>}</section>
-    {canReply ? <section className={styles.composerPanel} aria-label="Write a reply">
-      <form action={replyToThread} className={styles.composerForm}><input type="hidden" name="thread_id" value={thread.id} /><input type="hidden" name="thread_slug" value={thread.slug} />
-        <label className="sr-only" htmlFor="reply-body">Your reply</label>
-        <textarea className={styles.composerInput} id="reply-body" name="body" required maxLength={20000} rows={3} placeholder="Write a message…" />
-        <button className={styles.composerSend} type="submit">Send</button>
-      </form>
-    </section> : !user ? <Notice tone="neutral">Sign in to reply or report a post. <Link className="ui-text-link" href={signIn}>Sign in</Link></Notice> : null}
+    {canReply ? <ReplyComposer threadId={thread.id} threadSlug={thread.slug} /> : user && thread.state === "locked" ? <Notice tone="neutral">This discussion is locked. New replies are closed.</Notice> : !user ? <Notice tone="neutral">Sign in to reply or report a post. <Link className="ui-text-link" href={signIn}>Sign in</Link></Notice> : null}
   </PageFrame>;
 }

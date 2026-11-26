@@ -1,0 +1,197 @@
+[
+ {
+  "name": "[320] one h1",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[320] no horizontal overflow",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[320] own message styled as own bubble",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[320] last message is the #latest anchor",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[320] Send is ≥44px",
+  "ok": true,
+  "detail": "76×44"
+ },
+ {
+  "name": "[320] floating Support button does not cover Send",
+  "ok": true,
+  "detail": "widget y=505 send y=637"
+ },
+ {
+  "name": "[320] Send disabled while empty",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[320] failed send shows an error, never success",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[320] draft kept after failure",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[320] focus returned to the composer",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[320] failed reaction reverts count and pressed state",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[320] failed reaction explains itself",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[320] forum listing shows the thread",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[375] one h1",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[375] no horizontal overflow",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[375] own message styled as own bubble",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[375] last message is the #latest anchor",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[375] Send is ≥44px",
+  "ok": true,
+  "detail": "76×44"
+ },
+ {
+  "name": "[375] floating Support button does not cover Send",
+  "ok": true,
+  "detail": "widget y=577 send y=709"
+ },
+ {
+  "name": "[375] Send disabled while empty",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[375] failed send shows an error, never success",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[375] draft kept after failure",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[375] focus returned to the composer",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[375] failed reaction reverts count and pressed state",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[375] failed reaction explains itself",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[375] forum listing shows the thread",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[1440] one h1",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[1440] no horizontal overflow",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[1440] own message styled as own bubble",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[1440] last message is the #latest anchor",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[1440] Send is ≥44px",
+  "ok": true,
+  "detail": "76×44"
+ },
+ {
+  "name": "[1440] floating Support button does not cover Send",
+  "ok": true,
+  "detail": "widget y=767 send y=817"
+ },
+ {
+  "name": "[1440] Send disabled while empty",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[1440] failed send shows an error, never success",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[1440] draft kept after failure",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[1440] focus returned to the composer",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[1440] failed reaction reverts count and pressed state",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[1440] failed reaction explains itself",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "[1440] forum listing shows the thread",
+  "ok": true,
+  "detail": ""
+ }
+]

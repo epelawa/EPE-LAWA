@@ -35,7 +35,7 @@ export default function SponsorPopup({ sponsor }: { sponsor: Sponsor }) {
     }
     const timer = window.setTimeout(() => {
       const active = document.activeElement;
-      if (document.hidden || document.querySelector("dialog[open], [role=dialog][aria-modal=true]") || (active instanceof HTMLElement && active.closest("form"))) return;
+      if (document.hidden || document.querySelector("dialog[open], [role=dialog][aria-modal=true], [data-push-onboarding], .drawer-root[data-open=\"true\"]") || (active instanceof HTMLElement && active.closest("form"))) return;
       try {
         sessionStorage.setItem(sessionKey, "1");
       } catch {

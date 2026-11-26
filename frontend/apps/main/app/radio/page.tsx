@@ -34,9 +34,10 @@ export default async function RadioPage() {
   return <PageFrame className={styles.listeningPage}>
     <section id="live-player" className={styles.playerWrap} aria-label="Radio stations">
       <RadioPlayer />
-      <div className={styles.nowPlaying} role="status">
-        <span className={styles.onAirDot} aria-hidden="true" />
-        {onAirName ? <span><strong>On air now:</strong> {onAirName}</span> : <span><strong>On air now:</strong> station programming</span>}
+      {/* Only a scheduled EPE LAWA programme earns the red on-air marker; otherwise the stations run their own programming. */}
+      <div className={styles.nowPlaying} role="status" data-on-air={onAirName ? "scheduled" : "idle"}>
+        <span className={onAirName ? styles.onAirDot : styles.idleDot} aria-hidden="true" />
+        {onAirName ? <span><strong>On air now:</strong> {onAirName} <span className={styles.scheduleNote}>(per schedule)</span></span> : <span>{unavailable ? "The programme schedule is unavailable right now." : "No EPE LAWA programme is scheduled right now. Stations play their own programming."}</span>}
       </div>
       <div className={styles.requestRow}>
         <SongRequestModal programmes={programmes} signedIn={signedIn} />

@@ -6,10 +6,11 @@ const root = new URL('../../', import.meta.url);
 const read = (path) => readFile(new URL(path, root), 'utf8');
 
 test('web push is fully wired: worker, authenticated subscribe route, registration RPC', async () => {
-  const [sw, route, prompt, layout, migration] = await Promise.all([
+  const [sw, route, prompt, client, layout, migration] = await Promise.all([
     read('frontend/apps/main/public/sw.js'),
     read('frontend/apps/main/app/api/notifications/subscribe/route.ts'),
-    read('frontend/apps/main/components/notification-prompt.tsx'),
+    read('frontend/apps/main/components/push-onboarding.tsx'),
+    read('frontend/apps/main/lib/push-client.ts'),
     read('frontend/apps/main/app/layout.tsx'),
     read('backend/supabase/migrations/20261124130000_push_subscription_register.sql'),
   ]);
@@ -30,9 +31,22 @@ test('web push is fully wired: worker, authenticated subscribe route, registrati
   assert.match(migration, /auth\.uid\(\)\) is null or not public\.is_member_active\(\)/);
   assert.match(migration, /grant execute on function public\.push_subscription_register/);
 
-  assert.match(prompt, /auth\.getUser\(\)/, 'prompt only asks signed-in members');
-  assert.match(prompt, /pushManager\.getSubscription/, 'existing subscriptions are reused');
-  assert.doesNotMatch(layout, /<NotificationPrompt \/>/, "do not offer push until delivery is verified");
+  // Turn 3 owner brief: first-visit onboarding replaces the old unmounted prompt.
+  assert.match(prompt, /auth\.getSession\(\)/, 'prompt only asks signed-in members');
+  assert.match(prompt, /data\.session\?\.user/);
+  assert.match(prompt, /pushPermission\(\) !== "default"/, 'never re-prompts once the browser decided');
+  assert.match(prompt, /onboardingSeen\(\)/, 'never re-prompts after dismissal');
+  assert.match(prompt, /anotherDialogIsOpen\(\)/, 'never stacks over another dialog');
+  assert.match(prompt, /Stay connected to Epe\./);
+  assert.match(client, /pushManager\.getSubscription/, 'existing subscriptions are reused');
+  assert.doesNotMatch(prompt, /requestPermission/, 'permission is only requested via enablePush from a click');
+  assert.match(client, /Notification\.requestPermission\(\)/);
+  assert.match(client, /data\.saved !== true/, 'success only after the server confirms');
+  assert.doesNotMatch(layout, /<NotificationPrompt \/>/);
+  assert.match(layout, /<PushOnboarding \/>/);
+  // Topics chosen by the member are stored where /api/push/dispatch reads them.
+  assert.match(route, /push_news: topics\.news, push_radio: topics\.radio/);
+  assert.match(route, /export async function DELETE/);
 });
 
 test('the AI Scheduler stub is retired from navigation, routes and tests', async () => {

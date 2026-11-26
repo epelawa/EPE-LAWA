@@ -48,7 +48,7 @@ export default function RadioPlayer({ children }: { children?: ReactNode }) {
   <div className={styles.bar}>
    <div className={styles.ident} aria-hidden="true"><img src="/brand-logo.webp" alt="EPE LAWA" width="40" height="36" /><span className={styles.equalizer}>{[0,1,2,3].map(i=><span key={i} />)}</span></div>
    <div className={styles.info}>
-    <h1 id="radio-player-title" className={styles.title}>{station?.name ?? "Radio"} <span className={styles.frequency}>{station?.frequency ?? ""}</span></h1>
+    <h1 id="radio-player-title" className={styles.title}>{station?.name ?? (chosen === "guts" ? "Guts FM" : RADIO_LAGOS_1075.name)} <span className={styles.frequency}>{station?.frequency ?? (chosen === "guts" ? "104.9 FM" : RADIO_LAGOS_1075.frequency)}</span></h1>
     <p className={styles.status} role="status" aria-live="polite"><span className={`${styles.liveDot} ${state==="playing" ? styles.connected : ""}`} aria-hidden="true" />{station ? status : loadingGuts ? "Looking up Guts FM…" : gutsReason === "not_found" ? "No usable Guts FM stream was found in the catalogue." : "Guts FM is temporarily unavailable in this player. Please try again later."}</p>
    </div>
    {station ? <>
@@ -65,6 +65,7 @@ export default function RadioPlayer({ children }: { children?: ReactNode }) {
    <button type="button" aria-pressed={chosen==="guts"} onClick={()=>switchStation("guts")}><span className={`${styles.stationIcon} ${styles.gutsIcon}`} aria-hidden="true">GF</span><span className={styles.stationInfo}><strong>Guts FM</strong><small>104.9 FM</small></span><span className={styles.selectMark} aria-hidden="true">{chosen==="guts" ? "✓" : "→"}</span></button>
   </div>
   {children ? <div className={styles.sponsor}>{children}</div> : null}
-  <p className={styles.provider}>Guts FM catalogue powered by <a href="https://fm.puzzofme.com/" target="_blank" rel="noreferrer">Naija Radio ↗</a></p>
+  {/* One provider credit, named once (the station catalogue comes from Naija Radio). */}
+  <p className={styles.provider}>Station catalogue: <a href="https://fm.puzzofme.com/" target="_blank" rel="noreferrer">Naija Radio<span className="sr-only"> (opens in a new tab)</span> ↗</a></p>
  </section>;
 }

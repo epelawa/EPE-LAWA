@@ -24,11 +24,11 @@ export default async function ForumCategoryPage({ params, searchParams }: Props)
   const pageHref = (number: number) => `/forum/category/${encodeURIComponent(slug)}${number > 1 ? `?page=${number}` : ""}`;
   let supabase: Awaited<ReturnType<typeof createClient>>;
   try { supabase = await createClient(); } catch {
-    return <PageFrame><EmptyPanel title="Category unavailable" description="We couldn’t connect to the forum. Please try again later." actions={<Link className="btn-secondary" href="/forum">Back to the forum</Link>} /></PageFrame>;
+    return <PageFrame><EmptyPanel as="h1" title="Category unavailable" description="We couldn’t connect to the forum. Please try again later." actions={<Link className="btn-secondary" href="/forum">Back to the forum</Link>} /></PageFrame>;
   }
   const { data: { user } } = await supabase.auth.getUser();
   const { data: category, error } = await supabase.from("forum_categories").select("id,name,description,rules").eq("slug", slug).eq("is_active", true).maybeSingle();
-  if (error) return <PageFrame><EmptyPanel title="Category unavailable" description="We couldn’t load this category. Please try again." actions={<Link className="btn-secondary" href="/forum">Back to the forum</Link>} /></PageFrame>;
+  if (error) return <PageFrame><EmptyPanel as="h1" title="Category unavailable" description="We couldn’t load this category. Please try again." actions={<Link className="btn-secondary" href="/forum">Back to the forum</Link>} /></PageFrame>;
   if (!category) notFound();
   const start = (page - 1) * PAGE_SIZE;
   const [{ data, error: threadError }, unreadResult] = await Promise.all([

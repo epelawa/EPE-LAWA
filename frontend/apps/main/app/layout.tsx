@@ -30,6 +30,7 @@ import { readSiteLanguage } from "../lib/i18n";
 import { NotificationSoundListener } from "../components/notification-sound";
 import ToastRegion from "../components/toast";
 import SlashFocus from "../components/slash-focus";
+import PushOnboarding from "../components/push-onboarding";
 
 const description =
   "News, community history, local discussion, maps, local business, tourism, radio and Who-is-Who for Epe Division.";
@@ -122,6 +123,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <Suspense fallback={null}><AuthenticatedMobileNavigation /></Suspense>
         <Connectivity />
         <FloatingSupport enabled={process.env.ENQUIRY_INTAKE_ENABLED === "true"} />
+        <PushOnboarding />
 
       </body>
     </html>

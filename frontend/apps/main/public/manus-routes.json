@@ -40,6 +40,9 @@
       "path": "/itan-ilu-mi"
     },
     {
+      "path": "/itan-ilu-mi/correction"
+    },
+    {
       "path": "/login"
     },
     {
@@ -56,9 +59,6 @@
     },
     {
       "path": "/radio"
-    },
-    {
-      "path": "/search"
     },
     {
       "path": "/support"

@@ -6,9 +6,10 @@ import { useCallback, useEffect, useRef, useState, type SyntheticEvent } from "r
 import type { NavItem } from "../lib/navigation";
 import { MOBILE_GROUPS } from "../lib/mobile-navigation";
 import { type SiteLanguage, fullNavLabel, navGroupLabel, navLabel } from "../lib/i18n-messages";
-import { ArrowRightIcon, ArrowUpRightIcon, SearchIcon } from "./icons";
+import { ArrowRightIcon, ArrowUpRightIcon } from "./icons";
 import { BrandLockup } from "./brand";
-import RadioReminder from "./radio-reminder";
+import NotificationCentre from "./notification-centre";
+import SiteSearch from "./site-search";
 import "./navigation-refinement.css";
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input, [tabindex]:not([tabindex="-1"])';
@@ -169,8 +170,8 @@ export default function SiteHeader({ items, lang = "en" }: { items: NavItem[]; l
           </ul>
         </nav>
         <div className="masthead-actions">
-          <Link className="btn-icon header-search" href="/search" aria-label="Search EPE LAWA"><SearchIcon size={20} /></Link>
-          <RadioReminder />
+          <SiteSearch />
+          <NotificationCentre />
           <Link className="header-signin" href="/login">Sign in</Link>
           <Link className="btn-primary header-cta" href="/auth">Join the community <ArrowRightIcon size={15} aria-hidden="true" /></Link>
           <button

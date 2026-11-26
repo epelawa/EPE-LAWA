@@ -50,11 +50,16 @@ test('history contribution action authenticates, validates consent, and persists
 });
 
 
+// Turn 3 brief: corrections move to their own page; the archive page links to it.
 test('published-history correction and removal requests use the working private enquiry channel', async () => {
-  const page = await readFile(pagePath, 'utf8');
+  const archive = await readFile(pagePath, 'utf8');
+  assert.match(archive, /Correction and removal requests/);
+  assert.match(archive, /href="\/itan-ilu-mi\/correction"/);
+  const page = await readFile(new URL('../apps/main/app/itan-ilu-mi/correction/page.tsx', import.meta.url), 'utf8');
   assert.match(page, /Correction and removal requests/);
   assert.match(page, /EnquiryForm kind="correction"/);
   assert.match(page, /ENQUIRY_INTAKE_ENABLED === "true"/);
+  assert.match(page, /never published/);
   assert.doesNotMatch(page, /Coming\s+Soon/i);
   assert.doesNotMatch(page, /not configured/i);
   assert.doesNotMatch(page, /do not enter correction details as a new contribution/i);

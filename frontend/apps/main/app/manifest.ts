@@ -19,5 +19,11 @@ export default function manifest(): MetadataRoute.Manifest {
       { src: "/apple-touch-icon.png", sizes: "180x180", type: "image/png", purpose: "any" },
       { src: "/favicon.ico", sizes: "48x48", type: "image/x-icon" },
     ],
+    // Long-press shortcuts on installed (PWA) home-screen icons.
+    shortcuts: [
+      { name: "Latest news", short_name: "News", url: "/news", icons: [{ src: "/icon.png", sizes: "192x192", type: "image/png" }] },
+      { name: "Community forum", short_name: "Forum", url: "/forum", icons: [{ src: "/icon.png", sizes: "192x192", type: "image/png" }] },
+      { name: "Listen to radio", short_name: "Radio", url: "/radio", icons: [{ src: "/icon.png", sizes: "192x192", type: "image/png" }] },
+    ],
   };
 }

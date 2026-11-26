@@ -7,11 +7,11 @@ import { pushToast } from "./toast";
 import TurnstileField from "./turnstile-field";
 const initial: EnquiryState = {status:"idle",message:""};
 type Kind = "contact" | "advertising" | "correction" | "support";
-export default function EnquiryForm({ kind, onPendingChange, privacyHref = "/privacy" }: { kind: Kind; onPendingChange?: (pending:boolean)=>void; privacyHref?: string }) {
+export default function EnquiryForm({ kind, onPendingChange, privacyHref = "/privacy", messageLabel }: { kind: Kind; onPendingChange?: (pending:boolean)=>void; privacyHref?: string; messageLabel?: string }) {
   const [generation,setGeneration]=useState(0);
-  return <EnquiryFormInner key={generation} kind={kind} privacyHref={privacyHref} onPendingChange={onPendingChange} onReset={()=>setGeneration(n=>n+1)}/>;
+  return <EnquiryFormInner key={generation} kind={kind} privacyHref={privacyHref} messageLabel={messageLabel} onPendingChange={onPendingChange} onReset={()=>setGeneration(n=>n+1)}/>;
 }
-function EnquiryFormInner({kind,privacyHref,onPendingChange,onReset}:{kind:Kind;privacyHref:string;onPendingChange?:(pending:boolean)=>void;onReset:()=>void}) {
+function EnquiryFormInner({kind,privacyHref,messageLabel,onPendingChange,onReset}:{kind:Kind;privacyHref:string;messageLabel?:string;onPendingChange?:(pending:boolean)=>void;onReset:()=>void}) {
   const [state,action,pending] = useActionState(submitEnquiry,initial);
   const [step,setStep] = useState(0), [copyMessage,setCopyMessage]=useState("");
   const [stepError,setStepError] = useState("");
@@ -59,10 +59,10 @@ function EnquiryFormInner({kind,privacyHref,onPendingChange,onReset}:{kind:Kind;
       <TurnstileField compact />      <button className="btn-primary" type="button" onClick={next}>Continue</button>
     </div>
     <div hidden={step !== 1} className="ui-stack" style={step !== 1 ? {display:"none"} : undefined}>
-      <div className="ui-field"><label htmlFor={`${id}-message`}>{kind === "correction" ? "What needs correcting? Include the article link." : kind === "advertising" ? "Tell us about your business and advertising needs" : kind === "support" ? "How can we help? Include the page and steps to reproduce any error." : "Message"}</label><textarea ref={secondStep} id={`${id}-message`} name="message" minLength={10} maxLength={kind === "advertising" ? 4900 : kind === "support" ? 4980 : 5000} rows={5} required={step === 1} value={message} onChange={e=>setMessage(e.target.value)} /></div>
+      <div className="ui-field"><label htmlFor={`${id}-message`}>{messageLabel ? messageLabel : kind === "correction" ? "What needs correcting? Include the article link." : kind === "advertising" ? "Tell us about your business and advertising needs" : kind === "support" ? "How can we help? Include the page and steps to reproduce any error." : "Message"}</label><textarea ref={secondStep} id={`${id}-message`} name="message" minLength={10} maxLength={kind === "advertising" ? 4900 : kind === "support" ? 4980 : 5000} rows={5} required={step === 1} value={message} onChange={e=>setMessage(e.target.value)} /></div>
       {stepError && step === 1 ? <p role="alert" className="ep-live-field__message">{stepError}</p> : null}
       <p>We store your enquiry for staff review. Please avoid sensitive information. See our <Link href={privacyHref}>privacy notice</Link>.</p>
-      <div className="ui-row"><button type="button" disabled={pending} onClick={()=>setStep(0)}>Back</button><button className="btn-primary" disabled={pending || state.status === "success"} type="submit">{pending ? "Sending…" : kind === "support" ? "Send support request" : "Send enquiry"}</button></div>
+      <div className="ui-row"><button type="button" className="btn-secondary" disabled={pending} onClick={()=>setStep(0)}>Back</button><button className="btn-primary" disabled={pending || state.status === "success"} type="submit">{pending ? "Sending…" : kind === "support" ? "Send support request" : "Send enquiry"}</button></div>
     </div>
     <div hidden aria-hidden="true"><label>Leave this field empty<input name="website" autoComplete="off" tabIndex={-1} /></label></div>
     {state.message && <p role={state.status === "error" ? "alert" : "status"} aria-live="polite">{state.message}</p>}

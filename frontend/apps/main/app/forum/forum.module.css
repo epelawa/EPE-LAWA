@@ -320,7 +320,10 @@
 }
 .threadBarCopy { min-width: 0; flex: 1; }
 .threadTitle { margin: 0; font-size: 17px; font-weight: 700; line-height: 1.25; }
-.threadBarMeta { margin: 2px 0 0; color: var(--ep-color-muted, #52617a); font-size: 12px; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+/* Plain inline text: separators are glued to the item before them with a no-break space, so no line ever starts with "·". */
+.threadBarMeta { margin: 2px 0 0; color: var(--ep-color-muted, #52617a); font-size: 12px; }
+/* The notices live region takes no space until there is a notice. */
+.threadNotices:empty { display: none; }
 .threadChannel { color: var(--palette-cobalt); font-weight: 700; text-decoration: none; }
 .threadChannel:hover { text-decoration: underline; }
 .channelRules { margin: 6px 0 0; padding: 8px 10px; border-radius: 10px; background: var(--palette-ice-blue); color: #27354f; font-size: 12px; line-height: 1.45; }
@@ -343,6 +346,8 @@
 .pollTrack > span { display: block; height: 100%; border-radius: inherit; background: var(--palette-cobalt); }
 
 .bubbleList { display: grid; gap: 10px; list-style: none; margin: 0; padding: 4px 0 0; }
+/* The post-reply redirect lands on #latest; keep it clear of the sticky header. */
+.bubbleRow { scroll-margin-top: calc(var(--header-h, 72px) + 16px); }
 .bubbleRow { display: flex; align-items: flex-start; gap: 8px; }
 .bubbleRow[data-own="true"] { flex-direction: row-reverse; }
 .bubble, .bubbleOwn, .bubbleDeleted {
@@ -392,7 +397,9 @@
 .bubbleBody { white-space: pre-wrap; overflow-wrap: anywhere; }
 .bubbleOwn .bubbleBody a, .bubbleOwn .ui-text-link { color: rgb(255 255 255 / .96); }
 .bubbleFoot { color: var(--ep-color-muted, #52617a); font-size: 11px; }
-.bubbleReport summary { cursor: pointer; font-size: 12px; color: var(--ep-color-muted, #52617a); }
+.bubbleReport summary { display: inline-flex; align-items: center; min-height: 44px; cursor: pointer; font-size: 12px; color: var(--ep-color-muted, #52617a); }
+.bubbleOwn .bubbleReport summary { color: rgb(255 255 255 / .85); }
+.bubbleOwn .bubbleReport summary:hover { color: #fff; }
 .bubbleReport summary:hover { color: var(--palette-cobalt); }
 
 .composerPanel {
@@ -414,18 +421,33 @@
 }
 .composerInput { flex: 1; min-width: 0; border: 0; background: transparent; resize: vertical; font: inherit; font-size: 14.5px; line-height: 1.5; min-height: 24px; max-height: 200px; padding: 4px 0; }
 .composerInput:focus { outline: none; }
+.composerForm:focus-within { border-color: var(--palette-cobalt, #477fe0); box-shadow: 0 0 0 3px rgba(71, 127, 224, .28); }
 .composerSend {
+  display: inline-flex;
   flex: none;
-  padding: 10px 18px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 76px;
+  min-height: 44px;
+  padding: 0 18px;
   border: 0;
   border-radius: 999px;
-  background: var(--palette-cobalt);
-  color: #ffffff;
-  font-weight: 700;
+  background: var(--palette-cobalt, #477fe0);
+  color: #0a1023;
+  font-weight: 750;
   font-size: 14px;
   cursor: pointer;
 }
-.composerSend:hover { background: #2f62c0; }
+.composerSend:hover:not(:disabled) { background: #a7c5f5; }
+.composerSend:focus-visible { outline: 3px solid #0a1023; outline-offset: 2px; }
+.composerSend:disabled { opacity: .55; cursor: not-allowed; }
+.composerForm[aria-busy="true"] .composerSend:disabled { opacity: .85; cursor: progress; }
+.composerSpinner { width: 14px; height: 14px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 999px; animation: composerSpin .8s linear infinite; }
+@keyframes composerSpin { to { transform: rotate(360deg); } }
+.composerError { margin: 0 4px 8px; padding: 10px 14px; border: 1px solid #f0c2c2; border-radius: 12px; background: #fff4f4; color: #8e1b1b; font-size: .9rem; font-weight: 600; }
+.composerHint { margin: 6px 16px 0; color: var(--ep-color-muted, #52617a); font-size: 12px; }
+@media (prefers-reduced-motion: reduce) { .composerSpinner { animation: none; } }
 
 @media (max-width: 860px) {
   .bubble, .bubbleOwn, .bubbleDeleted { max-width: 92%; }

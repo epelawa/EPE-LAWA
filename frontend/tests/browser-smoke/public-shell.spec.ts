@@ -268,7 +268,9 @@ test("reduced-motion preference is honored by the public shell", async ({ page, 
 test("radio reminder bell explains its limits and supports opt-in and opt-out", async ({ page, context }) => {
   await context.grantPermissions(["notifications"]);
   await page.goto("/");
-  await page.getByLabel("Radio notification settings").click();
+  // The bell now opens the Notification Centre; the open-page radio reminder is linked from it.
+  await page.getByRole("button", { name: /^Notifications/ }).click();
+  await page.getByRole("dialog", { name: "Notifications" }).getByRole("link", { name: "Thursday radio reminder" }).click();
   await expect(page).toHaveURL(/\/radio\/reminders$/);
   await expect(page.getByText(/Works only while this site is open/)).toBeVisible();
   await page.getByRole("button", { name: "Enable alert" }).click();

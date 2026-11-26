@@ -40,7 +40,7 @@ export default async function BusinessProfilePage({params}:Props){
   }
  }catch{failed=true;}
  if(!business&&!failed)notFound();
- if(!business)return <PageFrame><EmptyPanel title="Business profile unavailable" description="Please try again later." actions={<Link className="btn-secondary" href={`/business-directory/${encodeURIComponent(slug)}`}>Try again</Link>}/></PageFrame>;
+ if(!business)return <PageFrame><EmptyPanel as="h1" title="Business profile unavailable" description="Please try again later." actions={<Link className="btn-secondary" href={`/business-directory/${encodeURIComponent(slug)}`}>Try again</Link>}/></PageFrame>;
  const logo=logoDisplayUrl(business.logo_key);
  const openNow=businessOpenNow(parseBusinessHours(business.hours));
  const whatsappDigits=business.whatsapp?.replace(/\D/g,"");

@@ -4,7 +4,8 @@ import { breadcrumbSchema, jsonLdScript, newsArticleSchema, organizationSchema, 
 describe("structured data builders", () => {
   it("builds WebSite search action and Organization from real identity only", () => {
     const website = websiteSchema() as { potentialAction: { target: { urlTemplate: string } } };
-    expect(website.potentialAction.target.urlTemplate).toContain("/search?q={search_term_string}");
+    // Turn 3: /search is retired; the template points straight at the search dialog (old /search?q= still 308s there).
+    expect(website.potentialAction.target.urlTemplate).toContain("/?open=search&q={search_term_string}");
     const org = organizationSchema() as { email: string; "@type": string };
     expect(org["@type"]).toBe("Organization");
   });

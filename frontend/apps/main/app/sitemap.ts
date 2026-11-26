@@ -22,7 +22,6 @@ const publicPaths = [
   "/privacy",
   "/terms",
   "/photo-credits",
-  "/search",
 ] as const;
 
 const MAX_ARTICLE_URLS = 1000;

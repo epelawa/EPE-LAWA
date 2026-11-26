@@ -74,15 +74,18 @@ test('News metadata, compact share actions and related cards use the canonical s
 });
 
 test('unconfigured web push never asks permission and contains no fabricated VAPID key', async () => {
-  const [vapid, prompt, layout] = await Promise.all([
+  // Turn 3 owner brief: the unmounted NotificationPrompt was replaced by PushOnboarding + push-client.
+  const [vapid, prompt, client, layout] = await Promise.all([
     text('lib/vapid.ts'),
-    text('components/notification-prompt.tsx'),
+    text('components/push-onboarding.tsx'),
+    text('lib/push-client.ts'),
     text('app/layout.tsx'),
   ]);
   assert.match(vapid, /NEXT_PUBLIC_VAPID_PUBLIC_KEY/);
   assert.match(vapid, /NEXT_PUBLIC_WEB_PUSH_ENABLED/);
   assert.doesNotMatch(vapid, /BGp7Y1q7/);
-  assert.match(prompt, /if \(!WEB_PUSH_READY\)/);
-  assert.match(prompt, /auth\.getUser\(\)/);
+  assert.match(client, /if \(!WEB_PUSH_READY\) return "disabled"/);
+  assert.match(prompt, /pushSupport\(\) !== "supported"/, 'unconfigured push never shows onboarding');
+  assert.match(prompt, /auth\.getSession\(\)/);
   assert.doesNotMatch(layout, /<NotificationPrompt \/>/);
 });

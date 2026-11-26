@@ -69,7 +69,9 @@ test("radio keeps listening separate from listings and reminder settings", async
   await page.getByRole("link", { name: /Programmes & schedule/ }).click();
   await expect(page).toHaveURL(/\/radio\/programmes$/);
   await expect(page.getByRole("heading", { name: "Programmes and archive" })).toBeVisible();
-  await page.getByRole("link", { name: "Radio notification settings" }).click();
+  // Reminder settings are reached through the header bell's Notification Centre.
+  await page.getByRole("button", { name: /^Notifications/ }).click();
+  await page.getByRole("dialog", { name: "Notifications" }).getByRole("link", { name: "Thursday radio reminder" }).click();
   await expect(page).toHaveURL(/\/radio\/reminders$/);
   await expect(page.getByText(/Works only while this site is open/)).toBeVisible();
   await page.getByRole("button", { name: "Enable alert" }).click();

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import OpenSearchButton from "../components/open-search-button";
 import FocusedPageControls from "../components/focused-page-controls";
 import { EmptyPanel, PageFrame, PageIntro } from "../components/design-system";
 
@@ -26,7 +27,7 @@ export default function NotFound() {
           actions={
             <>
               <Link className="btn-primary" href="/">Back to EPE LAWA</Link>
-              <Link className="btn-secondary" href="/search">Search the site</Link>
+              <OpenSearchButton />
             </>
           }
         />
