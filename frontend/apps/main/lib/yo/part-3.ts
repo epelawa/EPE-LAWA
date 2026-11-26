@@ -145,7 +145,7 @@ export const PART_3: Record<string, string> = {
   "When the community starts a discussion, it will appear here.": "Nígbà tí àwùjọ bá bẹ̀rẹ̀ ìjíròrò, yóò hàn níbí.",
   "community guidelines": "àwọn ìlànà àwùjọ",
   "An active member profile is needed to support posts.": "A nílò àkọsílẹ̀ ọmọ ẹgbẹ́ tó ń ṣiṣẹ́ láti ti ìfiránṣẹ́ lẹ́yìn.",
-  "Support": "Ti lẹ́yìn",
+  "Support": "Ìrànlọ́wọ́",
   "This post can no longer be supported.": "A kò lè ti ìfiránṣẹ́ yìí lẹ́yìn mọ́.",
   "Your session ended. Sign in again to support posts.": "Ìgbà ìwọlé rẹ ti parí. Tún wọlé láti ti ìfiránṣẹ́ lẹ́yìn.",
   "Your support could not be saved. Check your connection and try again.": "A kò lè fi àtìlẹ́yìn rẹ pamọ́. Ṣàyẹ̀wò ìsopọ̀ rẹ kí o tún gbìyànjú.",

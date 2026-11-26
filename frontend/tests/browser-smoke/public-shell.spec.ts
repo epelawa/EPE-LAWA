@@ -6,7 +6,8 @@ const viewportWidths = [320, 375, 768, 1024, 1440] as const;
 const fixtureURL = `http://localhost:${process.env.SMOKE_FIXTURE_PORT ?? "54321"}`;
 const noResultsQuery = "browser-smoke-no-results";
 const mainNavigationName = /^Primary navigation$/;
-const newsLinkName = /News/;
+// Turn 4: the nav now also lists "Newsletter", so match the News link exactly.
+const newsLinkName = /^News$/;
 
 async function setFixtureMode(request: APIRequestContext, mode: "empty" | "error" | "stories" | "news-many") {
   const response = await request.post(`${fixtureURL}/__smoke__/mode`, { data: { mode } });

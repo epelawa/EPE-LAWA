@@ -188,3 +188,16 @@ body:has(.focused-error-shell) .mobile-bottom-nav,body:has(.auth-link-issue) .mo
 @media (min-width: 961px) {
   .site-head__menu { display: none; }
 }
+
+/* Turn 4: the drawer (which holds the EN/YO switch) is hidden on desktop, so the
+   switch sits in the masthead there. Small screens keep it inside the drawer. */
+.lang-switch--masthead { display: none; }
+@media (min-width: 961px) {
+  .lang-switch--masthead { display: inline-flex; background: transparent; border-color: rgba(167, 197, 245, .45); }
+  .lang-switch--masthead button { min-height: 36px; min-width: 40px; color: #F1F4FA; }
+  .lang-switch--masthead button[aria-pressed="true"] { background: #477FE0; color: #0A1023; }
+}
+/* EN/YO switch sits on the Account heading row so the drawer's focus order stays
+   Close → sections → language → account actions. */
+.drawer-account__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+.drawer-account__head h2 { margin: 0; }

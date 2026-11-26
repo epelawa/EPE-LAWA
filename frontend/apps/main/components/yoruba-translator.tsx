@@ -28,6 +28,7 @@ export default function YorubaTranslator({ lang }: { lang: "en" | "yo" }) {
     if (lang !== "yo") { root.removeAttribute("data-yo-ready"); return; }
     let cancelled = false;
     let observer: MutationObserver | null = null;
+    let sweepTimer = 0;
 
     void import("../lib/yo").then(({ YO }) => {
       if (cancelled) return;
@@ -44,10 +45,19 @@ export default function YorubaTranslator({ lang }: { lang: "en" | "yo" }) {
         return null;
       };
       const blocked = (el: Element | null) => !!el?.closest('[translate="no"],[data-no-translate],[contenteditable="true"]');
+      // Streamed sections hydrate after this effect runs. Editing a node React has not hydrated
+      // yet causes a hydration mismatch, so only touch elements React already owns (it tags them
+      // with a __reactFiber$ key) and sweep again shortly for the rest.
+      let deferred = false;
+      const hydrated = (el: Element) => {
+        for (const k in el) if (k.startsWith("__reactFiber$")) return true;
+        deferred = true;
+        return false;
+      };
 
       const translateText = (node: Text) => {
         const parent = node.parentElement;
-        if (!parent || SKIP.has(parent.tagName) || blocked(parent)) return;
+        if (!parent || SKIP.has(parent.tagName) || blocked(parent) || !hydrated(parent)) return;
         const value = node.nodeValue ?? "";
         const out = lookup(value);
         if (out === null) return;
@@ -57,7 +67,7 @@ export default function YorubaTranslator({ lang }: { lang: "en" | "yo" }) {
         if (next !== value) node.nodeValue = next;
       };
       const translateAttrs = (el: Element) => {
-        if (blocked(el)) return;
+        if (blocked(el) || !hydrated(el)) return;
         for (const name of ATTRS) {
           const value = el.getAttribute(name);
           if (!value) continue;
@@ -91,6 +101,14 @@ export default function YorubaTranslator({ lang }: { lang: "en" | "yo" }) {
       };
 
       walk(document.body);
+      let sweeps = 0;
+      const sweep = () => {
+        if (cancelled || !deferred || sweeps++ > 40) return;
+        deferred = false;
+        walk(document.body);
+        sweepTimer = window.setTimeout(sweep, 250);
+      };
+      sweepTimer = window.setTimeout(sweep, 250);
       const title = lookup(document.title.replace(/ \| EPE LAWA$/, ""));
       if (title) document.title = `${title} | EPE LAWA`;
       root.setAttribute("data-yo-ready", "true");
@@ -105,7 +123,7 @@ export default function YorubaTranslator({ lang }: { lang: "en" | "yo" }) {
       observer.observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: [...ATTRS, "value", "alt"] });
     }).catch(() => root.setAttribute("data-yo-ready", "true"));
 
-    return () => { cancelled = true; observer?.disconnect(); };
+    return () => { cancelled = true; observer?.disconnect(); window.clearTimeout(sweepTimer); };
   }, [lang]);
   return null;
 }

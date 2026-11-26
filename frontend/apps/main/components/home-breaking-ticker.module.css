@@ -27,7 +27,7 @@
 }
 .label svg { width: 16px; height: 16px; flex: none; color: var(--palette-ice-blue); }
 .viewport { min-width: 0; flex: 1; overflow: hidden; display: flex; align-items: stretch; }
-.track { display: flex; align-items: stretch; width: max-content; animation:scroll 22s linear infinite; }
+.track { display: flex; align-items: stretch; width: max-content; animation:scroll 18s linear infinite; }
 .items { display: flex; flex:none; align-items:stretch; width:max-content; list-style:none; margin:0; padding:0; }
 /* One shared text baseline: the stamp and headline align on their baselines,
    separated by a hairline divider rather than dot bullets. */

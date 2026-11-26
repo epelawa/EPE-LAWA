@@ -78,8 +78,9 @@ export async function resolveHistoryCorrection(formData: FormData): Promise<void
     staffRedirect("/itan-ilu-mi/review?result=invalid#corrections");
   }
   let failed = false;
+  // Created outside the try so an expired staff session still bounces to login.
+  const supabase = await createStaffClient();
   try {
-    const supabase = await createStaffClient();
     const { error } = await supabase.rpc("staff_history_correction_resolve", { p_request_id: id, p_status: status, p_note: note || null });
     failed = !!error;
     if (error) console.error("history correction resolve failed", { code: error.code });

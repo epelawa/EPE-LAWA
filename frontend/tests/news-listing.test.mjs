@@ -118,8 +118,8 @@ test("public footers and correction links do not imply that unavailable contact 
   assert.match(errorPage, /View contact availability/);
   assert.doesNotMatch(errorPage, /contact the team|with the page address/i);
   assert.match(contact, /nothing is sent or stored/);
-  assert.match(article, /Suggest a correction/);
-  assert.match(article, /href="\/contact"/);
+  // Turn 4: corrections use the in-page form for everyone (components/correction-form.tsx).
+  assert.match(article, /<CorrectionForm /);
   assert.doesNotMatch(article, /contact the newsroom/i);
 });
 

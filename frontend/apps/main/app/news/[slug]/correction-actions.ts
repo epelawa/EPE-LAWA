@@ -11,10 +11,6 @@ const genericError = "We could not record the correction. Please try again in a 
 
 export async function reportCorrection(_previous: CorrectionState, data: FormData): Promise<CorrectionState> {
   try {
-    if ((await verifyHumanCheck(data)) === "fail") return { status: "error", message: humanCheckFailedMessage };
-    if (!(await formRateAllowance("article_correction"))) {
-      return { status: "error", message: await formRateMessage() };
-    }
     const articleId = data.get("article_id");
     const reasonRaw = data.get("reason");
     if (typeof articleId !== "string" || !/^[0-9a-f-]{36}$/i.test(articleId)) {
@@ -25,6 +21,18 @@ export async function reportCorrection(_previous: CorrectionState, data: FormDat
     }
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
+    // Signed-out reader: private name and email, validated before anything is counted.
+    const name = String(data.get("submitter_name") ?? "").trim();
+    const email = String(data.get("submitter_email") ?? "").trim().toLowerCase();
+    if (!user) {
+      const problem = validateGuestContact(name, email);
+      if (problem) return { status: "error", message: problem };
+    }
+    // Spam checks run only once the report is complete, so fixing a field never uses up the allowance.
+    if ((await verifyHumanCheck(data)) === "fail") return { status: "error", message: humanCheckFailedMessage };
+    if (!(await formRateAllowance("article_correction"))) {
+      return { status: "error", message: await formRateMessage() };
+    }
     if (user) {
       const { data: reportId, error } = await supabase.rpc("member_file_correction", {
         p_article_id: articleId,
@@ -32,11 +40,6 @@ export async function reportCorrection(_previous: CorrectionState, data: FormDat
       });
       if (error || typeof reportId !== "string") return { status: "error", message: genericError };
     } else {
-      // Signed-out reader: private name and email, inserted server-side.
-      const name = String(data.get("submitter_name") ?? "").trim();
-      const email = String(data.get("submitter_email") ?? "").trim().toLowerCase();
-      const problem = validateGuestContact(name, email);
-      if (problem) return { status: "error", message: problem };
       const db = formAdminClient();
       const { data: article } = await db.from("articles").select("id").eq("id", articleId).maybeSingle();
       if (!article) return { status: "error", message: genericError };

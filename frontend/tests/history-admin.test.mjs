@@ -63,12 +63,12 @@ test('History publication accepts only explicit approved text and keeps private 
 });
 
 
-test('staff History queue clearly blocks unavailable published-record corrections and removals', async () => {
+// Turn 4 brief: correction/removal requests now have a persisted private queue on this page.
+test('staff History queue lists published-record correction and removal requests', async () => {
   const page = await readFile(pagePath, 'utf8');
-  assert.match(page, /<StatusBadge tone="warning">Unavailable<\/StatusBadge>/);
-  assert.match(page, /Published-record corrections and removals/);
-  assert.match(page, /This queue accepts new contributions only/);
-  assert.match(page, /cannot receive correction\/removal reports or edit or withdraw a published record/);
-  assert.match(page, /No safe, persisted correction workflow is available/);
+  assert.match(page, /Corrections and removal requests/);
+  assert.match(page, /from\("history_correction_requests"\)/);
+  assert.match(page, /resolveHistoryCorrection/);
+  assert.doesNotMatch(page, /<StatusBadge tone="warning">Unavailable<\/StatusBadge>/);
   assert.doesNotMatch(page, /Coming\s+Soon/i);
 });

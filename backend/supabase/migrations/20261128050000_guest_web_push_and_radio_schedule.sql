@@ -18,8 +18,19 @@
 -- The legacy member-only push_subscriptions table is left untouched and is
 -- still delivered to, so existing subscribers keep working.
 
-create extension if not exists pg_cron;
-create extension if not exists pg_net with schema extensions;
+-- Guarded so the migration also runs where the extensions are unavailable
+-- (local PGlite schema tests); on Supabase both are available and installed.
+do $$
+begin
+  if exists (select 1 from pg_available_extensions where name = 'pg_cron') then
+    create extension if not exists pg_cron;
+  end if;
+  if exists (select 1 from pg_available_extensions where name = 'pg_net') then
+    create schema if not exists extensions;
+    create extension if not exists pg_net with schema extensions;
+  end if;
+end;
+$$;
 
 create table if not exists public.web_push_devices (
   id uuid primary key default gen_random_uuid(),
@@ -182,10 +193,12 @@ grant execute on function public.push_scheduled_claim() to service_role;
 
 do $$
 begin
-  if exists (select 1 from cron.job where jobname = 'epe-radio-push-tick') then
-    perform cron.unschedule('epe-radio-push-tick');
+  if exists (select 1 from pg_extension where extname = 'pg_cron') then
+    if exists (select 1 from cron.job where jobname = 'epe-radio-push-tick') then
+      perform cron.unschedule('epe-radio-push-tick');
+    end if;
+    perform cron.schedule('epe-radio-push-tick', '* * * * *', 'select public.push_radio_tick()');
   end if;
-  perform cron.schedule('epe-radio-push-tick', '* * * * *', 'select public.push_radio_tick()');
 end;
 $$;
 

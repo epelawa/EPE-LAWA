@@ -212,6 +212,9 @@
     },
     {
       "path": "/admin/corrections"
+    },
+    {
+      "path": "/admin/events"
     }
   ]
 }

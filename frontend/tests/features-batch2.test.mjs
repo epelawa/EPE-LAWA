@@ -27,7 +27,8 @@ test('business submit form collects opening hours and the action serialises them
   const actions = mainApp('app/business-directory/submit/actions.ts');
   assert.match(actions, /hours_json/);
   assert.match(actions, /parseBusinessHours/);
-  assert.match(actions, /p_hours:hours/);
+  // Turn 4: guest-capable direct insert (status forced to "submitted") replaced the member-only RPC.
+  assert.match(actions, /hours,logo_key:logoKey,status:"submitted"/);
 });
 
 test('public business profile renders per-day hours with an open-now badge', () => {
@@ -95,7 +96,9 @@ test('the site ships an installable web manifest', () => {
 test('articles offer an X share and a correction entry point', () => {
   const article = mainApp('app/news/[slug]/page.tsx');
   assert.match(article, /twitter\.com\/intent\/tweet/);
-  assert.match(article, /Suggest a correction/);
+  // Turn 4: the correction form is open to everyone (guests leave a name and email).
+  assert.match(article, /<CorrectionForm articleId=\{article\.id\}/);
+  assert.match(mainApp('components/correction-form.tsx'), /Suggest a correction/);
 });
 
 test('article pages print clean: chrome hidden, story readable', () => {

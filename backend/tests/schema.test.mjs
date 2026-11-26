@@ -291,8 +291,10 @@ test('History publishing requires approved copy, preserves private evidence, and
   const approvedFields = (await as(null, () => rows("select family_name,lineage_description from public.history_records where title='Approved family account'")))[0];
   assert.equal(approvedFields.family_name, 'Approved House');
   assert.equal(approvedFields.lineage_description, 'Approved lineage text');
-  assert.equal((await rows("select count(*)::int as n from pg_proc where proname='history_contribution_decide' and pg_get_function_identity_arguments(oid)='p_contribution_id uuid, p_decision text, p_public_account text, p_public_family_name text, p_public_lineage_description text, p_public_citation text, p_public_source_url text'"))[0].n, 1);
-  assert.equal((await rows("select count(*)::int as n from pg_proc where proname='history_contribution_decide' and pronargs <> 7"))[0].n, 0);
+  // Turn 4 (20261128000000): one optional p_publish_image flag was added (default false), so the
+  // seven-argument calls above still resolve to the single definition and no overload exists.
+  assert.equal((await rows("select count(*)::int as n from pg_proc where proname='history_contribution_decide' and pg_get_function_identity_arguments(oid)='p_contribution_id uuid, p_decision text, p_public_account text, p_public_family_name text, p_public_lineage_description text, p_public_citation text, p_public_source_url text, p_publish_image boolean'"))[0].n, 1);
+  assert.equal((await rows("select count(*)::int as n from pg_proc where proname='history_contribution_decide' and pronargs <> 8"))[0].n, 0);
 });
 
 test('configurable roles allow delegated admin entry and granular access while management stays primary-only', async () => {
