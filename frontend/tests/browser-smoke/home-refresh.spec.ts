@@ -114,10 +114,11 @@ test("hero streams before slow news and only news displays a skeleton", async ({
 
 test("homepage fonts load from the site rather than Google", async ({ page, request }) => {
   const fontRequests: string[] = [];
-  page.on("request", (request) => { if (request.resourceType() === "font" || /fonts\.(googleapis|gstatic)\.com/i.test(request.url())) fontRequests.push(request.url()); });
+  const isGoogleFontHost = (url: string) => ["fonts.googleapis.com", "fonts.gstatic.com"].includes(new URL(url).hostname);
+  page.on("request", (request) => { if (request.resourceType() === "font" || isGoogleFontHost(request.url())) fontRequests.push(request.url()); });
   await openHome(page, request);
   await page.evaluate(() => document.fonts.ready);
   expect(await page.evaluate(() => document.fonts.check('400 16px "Plus Jakarta Sans Variable"'))).toBeTruthy();
   expect(fontRequests.some((url) => url.includes(".woff2") && new URL(url).origin === new URL(smokeBaseURL).origin)).toBeTruthy();
-  expect(fontRequests.some((url) => /fonts\.(googleapis|gstatic)\.com/i.test(url))).toBeFalsy();
+  expect(fontRequests.some(isGoogleFontHost)).toBeFalsy();
 });
