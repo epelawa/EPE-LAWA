@@ -1,12 +1,12 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { createClient } from "../../lib/supabase";
-import { staffHref } from "../../lib/admin-path";
+import { createClient } from "../../../lib/supabase";
+import { staffHref } from "../../../lib/admin-path";
 import { PageFrame, Panel, SectionHeading } from "@epelawa/ui";
-import DashboardStats from "../../components/dashboard-stats";
-import RecentActivity from "../../components/recent-activity";
-import QuickActions from "../../components/quick-actions";
-import LiveQueues from "../../components/live-queues";
+import { DashboardStats } from "../../../components/dashboard-stats";
+import { RecentActivity } from "../../../components/recent-activity";
+import QuickActions from "../../../components/quick-actions";
+import { LiveQueues } from "../../../components/live-queues";
 
 export const dynamic = "force-dynamic";
 
@@ -15,9 +15,9 @@ export default async function DashboardPage() {
 
   // Load dashboard data in parallel
   const [statsPromise, activityPromise, queuesPromise] = await Promise.allSettled([
-    db.rpc("dashboard_stats").catch(() => ({ data: null })),
-    db.from("audit_log").select("*").order("created_at", { ascending: false }).limit(10).catch(() => ({ data: null })),
-    db.rpc("queue_counts").catch(() => ({ data: null })),
+    db.rpc("dashboard_stats"),
+    db.from("audit_log").select("*").order("created_at", { ascending: false }).limit(10),
+    db.rpc("queue_counts"),
   ]);
 
   const stats = statsPromise.status === "fulfilled" ? statsPromise.value.data : null;
