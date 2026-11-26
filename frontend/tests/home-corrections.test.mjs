@@ -10,7 +10,7 @@ test('public placements and the incomplete language switch are not mounted', asy
     assert.doesNotMatch(await read(`frontend/apps/main/${file}`), /<Sponsor(?:Slot|PopupPlacement)/);
   }
   assert.doesNotMatch(await read('frontend/apps/main/components/news-footer.tsx'), /<LangToggle/);
-  assert.match(await read('frontend/apps/main/app/page.tsx'), /src="\/brand-logo\.webp"/);
+  assert.doesNotMatch(await read('frontend/apps/main/app/page.tsx'), /home-hero__brand/);
 });
 
 test('hero rotation has no pause button and retains motion safeguards', async () => {

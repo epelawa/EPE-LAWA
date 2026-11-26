@@ -1,4 +1,4 @@
-import "@fontsource-variable/plus-jakarta-sans";
+import "@epelawa/ui/fonts.css";
 import "@epelawa/ui/tokens.css";
 import "@epelawa/ui/ui.css";
 import "@epelawa/ui/forms.css";
@@ -10,6 +10,7 @@ export const dynamic = "force-dynamic";
 export const viewport: Viewport = { themeColor: "#F1F4FA" };
 
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import { headers } from "next/headers";
 import Connectivity from "./connectivity";
 import SiteHeader from "../components/site-header";
@@ -119,8 +120,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <main id="main" className="site-main" tabIndex={-1}>
           {children}
         </main>
-        <SiteFooter><NewsFooter listing /></SiteFooter>
-        <AuthenticatedMobileNavigation />
+        <SiteFooter><Suspense fallback={null}><NewsFooter listing /></Suspense></SiteFooter>
+        <Suspense fallback={null}><AuthenticatedMobileNavigation /></Suspense>
         <Connectivity />
         <FloatingSupport enabled={process.env.ENQUIRY_INTAKE_ENABLED === "true"} />
 

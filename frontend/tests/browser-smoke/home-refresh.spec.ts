@@ -32,6 +32,8 @@ test("homepage offers compact news, radio and community navigation", async ({ pa
   await openHome(page, request);
   for (const [width, height] of [[320, 800], [375, 900], [768, 900], [1024, 768], [1440, 900]]) {
     await page.setViewportSize({ width, height });
+    await expect(page.locator(".home-hero__content")).toHaveCSS("text-align", "center");
+    await expect(page.locator(".home-hero__brand")).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Read latest news", exact: true })).toHaveAttribute("href", "/news");
     await expect(page.getByRole("link", { name: /Listen to radio/ }).first()).toHaveAttribute("href", "/radio");
     await expect(page.getByRole("navigation", { name: "Explore EPE LAWA" })).toBeVisible();
@@ -91,4 +93,31 @@ test("photo credits remain available off-hero for all 52 credited photos and the
   await expect(attributions).toBeVisible();
   await expect(attributions.getByRole("listitem")).toHaveCount(54);
   await expect(attributions.locator('a[rel*="license"]')).toHaveCount(54);
+});
+
+
+test("hero streams before slow news and only news displays a skeleton", async ({ page, request }) => {
+  const response = await request.post(`${fixtureURL}/__smoke__/mode`, { data: { mode: "slow-stories" } });
+  expect(response.ok()).toBeTruthy();
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/", { waitUntil: "commit" });
+  await expect(page.getByRole("heading", { level: 1, name: "Stay Connected, Stay Informed" })).toBeVisible({ timeout: 4000 });
+  await expect(page.getByRole("status", { name: "Latest news" })).toBeVisible();
+  await expect(page.locator(".home-news-skeleton__card")).toHaveCount(3);
+  await expect(page.locator(".home-hero__brand")).toHaveCount(0);
+  await expect(page.locator(".home-hero__content")).toHaveCSS("text-align", "center");
+  await expect(page.locator(".home-story-card").first()).toBeVisible({ timeout: 15000 });
+  await expect(page.locator(".home-news-skeleton")).toHaveCount(0);
+  await setFixtureMode(request, "empty");
+});
+
+
+test("homepage fonts load from the site rather than Google", async ({ page, request }) => {
+  const fontRequests: string[] = [];
+  page.on("request", (request) => { if (request.resourceType() === "font" || /fonts\.(googleapis|gstatic)\.com/i.test(request.url())) fontRequests.push(request.url()); });
+  await openHome(page, request);
+  await page.evaluate(() => document.fonts.ready);
+  expect(await page.evaluate(() => document.fonts.check('400 16px "Plus Jakarta Sans Variable"'))).toBeTruthy();
+  expect(fontRequests.some((url) => url.includes(".woff2") && new URL(url).origin === new URL(smokeBaseURL).origin)).toBeTruthy();
+  expect(fontRequests.some((url) => /fonts\.(googleapis|gstatic)\.com/i.test(url))).toBeFalsy();
 });

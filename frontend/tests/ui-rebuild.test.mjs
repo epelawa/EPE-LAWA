@@ -28,7 +28,7 @@ test('homepage preserves all 52 credited photos and restores its two original he
   assert.equal(manifest.slice(2).length,52);
   assert.deepEqual(manifest.slice(0,2).map(slide=>slide.slug),['new-epe-road','fish-statue-epe']);
   assert.equal(new Set(manifest.map(slide=>slide.source)).size,54);
-  assert.match(source,/home-hero__brand/);
+  assert.doesNotMatch(source,/home-hero__brand/);
   assert.match(source,/href="\/news" className="btn-primary">\{t\(lang, "home.cta.news"\)\}/);
   assert.doesNotMatch(source,/Stories worth knowing|History worth keeping|Places worth finding|People worth connecting/);
   assert.doesNotMatch(carousel,/Epe · Lagos State|Rooted in the community\. Open to everyone\./);

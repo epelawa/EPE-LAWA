@@ -94,9 +94,8 @@
 }
 
 
-.home-hero__brand { display:block; width:92px; height:80px; object-fit:contain; padding:8px; margin:0 auto 20px; background:#fff; border-radius:16px; box-shadow:0 8px 28px rgb(10 16 35 / .2); }
 .home-hero__secondary { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:50px; padding:0 22px; color:#fff; border:1px solid rgb(255 255 255 / .75); border-radius:999px; text-decoration:none; font-weight:700; background:rgb(10 16 35 / .35); }
 .home-hero__secondary:hover { background:rgb(255 255 255 / .14); }
 .home-hero__secondary:focus-visible { outline:3px solid var(--palette-ice-blue); outline-offset:3px; }
 .home-hero__actions .btn-primary { color:var(--palette-midnight); }
-@media (max-width:600px) { .home-hero__brand { width:76px; height:68px; margin-bottom:16px; } .home-hero__content h1 { font-size:clamp(2.65rem, 11vw, 4rem); line-height:1; } }
+@media (max-width:600px) { .home-hero__content h1 { font-size:clamp(2.65rem, 11vw, 4rem); line-height:1; } }

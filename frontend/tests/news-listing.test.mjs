@@ -91,7 +91,7 @@ test("News page and editorial footer use the same cobalt and navy identity", asy
 
 test("News uses the shared editorial footer once and protected routes do not show it", () => {
   assert.doesNotMatch(page, /<NewsFooter/);
-  assert.match(layout, /<SiteFooter><NewsFooter listing \/><\/SiteFooter>/);
+  assert.match(layout, /<SiteFooter><Suspense fallback=\{null\}><NewsFooter listing \/><\/Suspense><\/SiteFooter>/);
   assert.match(footer, /pathname\.startsWith\("\/admin\/"\)/);
   assert.match(footer, /pathname\.startsWith\("\/dashboard\/"\)/);
   assert.match(footer, /if \(isProtected\) return null/);
