@@ -1,0 +1,417 @@
+{
+  "base": "http://127.0.0.1:3100",
+  "passed": 82,
+  "failed": 0,
+  "results": [
+    {
+      "name": "[375] search trigger is a button with accessible name",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] dialog title + subtitle",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] placeholder",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] input focused on open",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] mobile full-height sheet",
+      "pass": true,
+      "detail": "375×812"
+    },
+    {
+      "name": "[375] no horizontal overflow with dialog open",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] 1 character shows min-length hint, no request",
+      "pass": true,
+      "detail": "calls=0"
+    },
+    {
+      "name": "[375] results grouped",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] ArrowDown moves focus into results",
+      "pass": true,
+      "detail": "/news/fixture-a"
+    },
+    {
+      "name": "[375] ArrowDown again moves to next result",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] stale (slower, older) response ignored",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] no-results state",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] error state from real API (stub lacks collections)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] retry control in error state",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] focus trapped while open",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] Escape closes",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] focus restored to trigger",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] close button closes mobile sheet",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] \"/\" opens the search dialog",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] /search?q= redirects to home with dialog open + query kept",
+      "pass": true,
+      "detail": "status=200 url=http://127.0.0.1:3100/ value=market"
+    },
+    {
+      "name": "[375] redirect params cleaned from the address bar",
+      "pass": true,
+      "detail": "http://127.0.0.1:3100/"
+    },
+    {
+      "name": "[375] bell is a button, no badge when signed out",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] notifications subtitle",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] honest signed-out feed state",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] honest signed-out push state",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] mobile bottom sheet full width",
+      "pass": true,
+      "detail": "375 wide, bottom 812"
+    },
+    {
+      "name": "[375] notifications Escape + focus restore",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] denied permission shows Blocked with recovery steps, no Enable button",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] no unread badge without real unread rows",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] member feed: honest empty state (stub has no rows)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] member push: Off with Enable button and topic switches",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] enabling without browser permission reports failure, no false success",
+      "pass": true,
+      "detail": "This device could not be subscribed. Please try again."
+    },
+    {
+      "name": "[375] onboarding never shown once the browser permission is decided",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] onboarding not shown immediately on load",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] onboarding appears for a signed-in member after a delay",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] onboarding copy",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] onboarding buttons",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] topic toggles revealed",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] Not now remembered",
+      "pass": true,
+      "detail": "dismissed"
+    },
+    {
+      "name": "[375] never re-prompts after dismissal",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[375] onboarding not shown to signed-out visitors",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] search trigger is a button with accessible name",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] dialog title + subtitle",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] placeholder",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] input focused on open",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] desktop width 600–720",
+      "pass": true,
+      "detail": "680px"
+    },
+    {
+      "name": "[1440] no horizontal overflow with dialog open",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] 1 character shows min-length hint, no request",
+      "pass": true,
+      "detail": "calls=0"
+    },
+    {
+      "name": "[1440] results grouped",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] ArrowDown moves focus into results",
+      "pass": true,
+      "detail": "/news/fixture-a"
+    },
+    {
+      "name": "[1440] ArrowDown again moves to next result",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] stale (slower, older) response ignored",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] no-results state",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] error state from real API (stub lacks collections)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] retry control in error state",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] focus trapped while open",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] Escape closes",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] focus restored to trigger",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] backdrop click closes",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] \"/\" opens the search dialog",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] /search?q= redirects to home with dialog open + query kept",
+      "pass": true,
+      "detail": "status=200 url=http://127.0.0.1:3100/ value=market"
+    },
+    {
+      "name": "[1440] redirect params cleaned from the address bar",
+      "pass": true,
+      "detail": "http://127.0.0.1:3100/"
+    },
+    {
+      "name": "[1440] bell is a button, no badge when signed out",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] notifications subtitle",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] honest signed-out feed state",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] honest signed-out push state",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] desktop popover 380–440",
+      "pass": true,
+      "detail": "420px"
+    },
+    {
+      "name": "[1440] notifications Escape + focus restore",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] denied permission shows Blocked with recovery steps, no Enable button",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] no unread badge without real unread rows",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] member feed: honest empty state (stub has no rows)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] member push: Off with Enable button and topic switches",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] enabling without browser permission reports failure, no false success",
+      "pass": true,
+      "detail": "This device could not be subscribed. Please try again."
+    },
+    {
+      "name": "[1440] onboarding never shown once the browser permission is decided",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] onboarding not shown immediately on load",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] onboarding appears for a signed-in member after a delay",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] onboarding copy",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] onboarding buttons",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] topic toggles revealed",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] Not now remembered",
+      "pass": true,
+      "detail": "dismissed"
+    },
+    {
+      "name": "[1440] never re-prompts after dismissal",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[1440] onboarding not shown to signed-out visitors",
+      "pass": true,
+      "detail": ""
+    }
+  ]
+}
