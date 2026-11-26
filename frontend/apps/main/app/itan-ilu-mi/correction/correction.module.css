@@ -1,0 +1,10 @@
+.page { width: min(760px, calc(100% - 40px)); }
+.back { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: #294b91; font-weight: 650; text-decoration: none; }
+.back:hover { text-decoration: underline; text-underline-offset: 3px; }
+.back:focus-visible { outline: 3px solid #477fe0; outline-offset: 2px; border-radius: 6px; }
+.steps { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; counter-reset: step; }
+.steps li { position: relative; padding: 2px 0 2px 40px; color: #4a5872; line-height: 1.5; counter-increment: step; }
+.steps li::before { content: counter(step); position: absolute; left: 0; top: 0; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 999px; background: #f1f4fa; color: #294b91; font-weight: 800; font-size: .85rem; }
+.steps strong { color: #17264a; }
+@media (max-width: 520px) { .page { width: calc(100% - 28px); } }
+.backIcon { transform: rotate(180deg); }

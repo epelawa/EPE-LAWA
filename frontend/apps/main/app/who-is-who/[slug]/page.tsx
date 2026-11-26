@@ -151,7 +151,7 @@ export default async function PersonProfilePage({
 
   if (result.status === "error") {
     return (
-      <PageFrame className="ui-stack"><EmptyPanel title="This profile did not load" description="The directory could not be reached, so nothing is shown rather than a guess at the record. Try again in a moment." actions={<Link href="/who-is-who" className="btn-secondary">Back to the directory</Link>} /></PageFrame>
+      <PageFrame className="ui-stack"><EmptyPanel as="h1" title="This profile did not load" description="The directory could not be reached, so nothing is shown rather than a guess at the record. Try again in a moment." actions={<Link href="/who-is-who" className="btn-secondary">Back to the directory</Link>} /></PageFrame>
     );
   }
 
@@ -201,15 +201,15 @@ export default async function PersonProfilePage({
         </Link>
       </nav>
 
-      <div className="ui-card ui-row items-start">
-        <div className="flex-shrink-0">
+      <div className="ui-card person-head">
+        <div className="person-head__portrait">
           {portrait ? (
             <figure className="m-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={portrait}
                 alt={person.portrait_alt || person.full_name}
-                className="h-32 w-32 rounded-2xl border object-cover"
+                className="person-head__image rounded-2xl border object-cover"
                 loading="eager"
                 decoding="async"
               />
@@ -220,7 +220,7 @@ export default async function PersonProfilePage({
               ) : null}
             </figure>
           ) : (
-            <div className="flex h-32 w-32 items-center justify-center rounded-2xl bg-secondary text-muted-foreground">
+            <div className="person-head__image flex items-center justify-center rounded-2xl bg-secondary text-muted-foreground">
               <UsersIcon size={36} />
             </div>
           )}
@@ -242,6 +242,12 @@ export default async function PersonProfilePage({
           {person.community_note ? (
             <p className="ui-muted mt-2">{person.community_note}</p>
           ) : null}
+
+          <div className="ui-actions person-actions">
+            <Link href="/who-is-who" className="btn-secondary btn-compact">Back to the directory</Link>
+            {sources.length > 0 ? <a href="#sources-heading" className="btn-ghost btn-compact">View sources</a> : null}
+            <Link href="/contact" className="btn-ghost btn-compact">Suggest a correction</Link>
+          </div>
         </div>
       </div>
 
@@ -333,7 +339,7 @@ export default async function PersonProfilePage({
                       href={href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="ui-text-link mt-2"
+                      className="ui-text-link ui-tap-link mt-2"
                     >
                       Open the source
                       <span className="sr-only"> (opens in a new tab)</span>

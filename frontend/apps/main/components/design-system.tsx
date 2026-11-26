@@ -22,10 +22,11 @@ export function SectionHeading({ eyebrow, title, description, action, id }: {
   return <div className="ui-section-heading"><div>{eyebrow ? <p className="ui-eyebrow">{eyebrow}</p> : null}<h2 id={id}>{title}</h2>{description ? <div className="ui-muted">{description}</div> : null}</div>{action ? <div>{action}</div> : null}</div>;
 }
 
-export function EmptyPanel({ title, description, actions, icon }: {
-  title: ReactNode; description: ReactNode; actions?: ReactNode; icon?: ReactNode;
+/** `as="h1"` when the panel is the whole page (error/unavailable states), so the page still has one h1. */
+export function EmptyPanel({ title, description, actions, icon, as: Heading = "h2" }: {
+  title: ReactNode; description: ReactNode; actions?: ReactNode; icon?: ReactNode; as?: "h1" | "h2";
 }) {
-  return <div className="ui-empty">{icon ? <div className="ui-empty__icon" aria-hidden="true">{icon}</div> : <span className="ui-empty__mark" aria-hidden="true" />}<h2>{title}</h2><div className="ui-muted">{description}</div>{actions ? <div className="ui-actions">{actions}</div> : null}</div>;
+  return <div className="ui-empty">{icon ? <div className="ui-empty__icon" aria-hidden="true">{icon}</div> : <span className="ui-empty__mark" aria-hidden="true" />}<Heading>{title}</Heading><div className="ui-muted">{description}</div>{actions ? <div className="ui-actions">{actions}</div> : null}</div>;
 }
 
 export function StatusBadge({ children, tone = "neutral" }: { children: ReactNode; tone?: "neutral" | "success" | "warning" | "danger" }) {

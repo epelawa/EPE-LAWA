@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "../../lib/supabase";
 import { PageFrame, PageIntro, Panel, SectionHeading, EmptyPanel, Notice, StatusBadge } from "../../components/design-system";
-import EnquiryForm from "../../components/enquiry-form";
 import { submitHistoryContribution } from "./actions";
 
 export const metadata: Metadata = {
@@ -70,7 +69,7 @@ export default async function ItanIluMiPage({ searchParams }: { searchParams: Pr
 
     <section className="ui-stack-sm" aria-labelledby="history-corrections">
       <SectionHeading eyebrow="Fix the record" title="Correction and removal requests" id="history-corrections" description="Point us to what is wrong in a published record. Requests go to a private staff queue and are never published; we reply by email after checking." />
-      {process.env.ENQUIRY_INTAKE_ENABLED === "true" ? <Panel className="ui-stack-sm"><EnquiryForm kind="correction" privacyHref="/privacy" /></Panel> : <Notice tone="warning" role="status">The correction form is temporarily unavailable. Please check back later; nothing can be submitted right now.</Notice>}
+      <div><Link className="btn-secondary" href="/itan-ilu-mi/correction">Request a correction or removal</Link></div>
     </section>
 
     <form method="get" className="ui-toolbar" role="search">

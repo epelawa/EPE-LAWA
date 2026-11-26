@@ -31,7 +31,8 @@
 .items { display: flex; flex:none; align-items:center; width:max-content; list-style:none; margin:0; padding:0; }
 .items li { display: flex; align-items: center; gap: var(--ep-space-2, 8px); padding: 0 var(--ep-space-6, 24px); white-space: nowrap; font-size: var(--ep-type-sm, 14px); }
 .items li svg { width: 10px; height: 10px; flex: none; color: var(--palette-ice-blue); }
-.items a { color: var(--palette-cloud); font-weight: var(--ep-weight-semibold); text-decoration: none; }
+/* Headlines are the ticker's only targets: full 44px height (was 23px on desktop). */
+.items a { display: inline-flex; align-items: center; min-height: var(--ep-touch-min, 44px); color: var(--palette-cloud); font-weight: var(--ep-weight-semibold); text-decoration: none; }
 .items a:hover,.items a:focus-visible { text-decoration: underline; }
 /* News-page variant: one compact centred bar, so several breaking stories
    slide in the same strip and the listing stays easy to read. */

@@ -160,3 +160,9 @@
 @media(max-width:520px) { .featureCopy { padding:20px; } }
 .tagFilterBar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 10px 16px; border-radius: 14px; background: color-mix(in srgb, var(--ep-primary, #477fe0) 8%, transparent); font-size: 0.875rem; }
 .tagFilterClear { font-weight: 600; color: var(--ep-primary, #477fe0); text-decoration: underline; }
+/* The category rail scrolls on its own (never the page): contained width, snap, and a focus ring inset so overflow never clips it. */
+.editorialControls { min-width:0; }
+.editorialTabs { min-width:0; max-width:100%; overscroll-behavior-x:contain; scroll-snap-type:x proximity; scroll-padding-inline:8px; }
+.editorialTabs a { scroll-snap-align:start; }
+.editorialTabs a:focus-visible { outline:3px solid #477fe0; outline-offset:-3px; border-radius:6px; }
+@media(max-width:400px) { .editorialSearch button { padding:0 14px; } }
