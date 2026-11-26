@@ -17,6 +17,10 @@ create index if not exists cron_job_history_job_idx on public.cron_job_history (
 create index if not exists cron_job_history_status_idx on public.cron_job_history (status);
 create index if not exists cron_job_history_time_idx on public.cron_job_history (started_at desc);
 
+-- Reconciled with Production (2026-11-26): RLS is enabled there with no policies, so only the
+-- security-definer functions and service_role reach the rows.
+alter table public.cron_job_history enable row level security;
+
 -- Grant read access to authenticated users for admin viewing
 alter publication supabase_realtime add table public.cron_job_history;
 
@@ -33,10 +37,12 @@ language plpgsql
 security definer
 set search_path = ''
 as $$
+declare
+  result uuid;
 begin
   insert into public.cron_job_history (job_name, status, started_at)
   values (p_job_name, 'started', now())
-  returning id into strict result;
+  returning id into result;
   return result;
 end;
 $$;

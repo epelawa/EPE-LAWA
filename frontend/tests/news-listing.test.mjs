@@ -74,7 +74,9 @@ test("News uses the shared public shell and keeps its cobalt search and route en
   assert.match(header, /site-head site-head--home/);
   assert.match(header, /const DESKTOP_GROUPS =/);
   assert.match(header, /import \{ MOBILE_GROUPS \}/);
-  assert.match(header, /href="\/news\?search=1"/);
+  // Owner decision (2026-11-26): one search icon beside notifications replaces the two drawer search links.
+  assert.match(header, /className="btn-icon header-search" href="\/search"/);
+  assert.doesNotMatch(header, /Search news|Search the whole site/);
   assert.match(headerStyles, /\.site-head--news-reference\s*\{\s*display: block/);
   assert.match(header, /"\/advertise"/);
   assert.doesNotMatch(header + headerStyles, /news-utilitybar|#063d2b|#0b4a32/);

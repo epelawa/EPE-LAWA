@@ -212,18 +212,6 @@
     },
     {
       "path": "/admin/corrections"
-    },
-    {
-      "path": "/admin/digest"
-    },
-    {
-      "path": "/admin/events"
-    },
-    {
-      "path": "/admin/poll"
-    },
-    {
-      "path": "/admin/radio/requests"
     }
   ]
 }

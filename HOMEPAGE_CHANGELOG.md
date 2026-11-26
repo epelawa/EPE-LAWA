@@ -1,5 +1,38 @@
 # Homepage changelog
 
+## 2026-11-26: owner design follow-up and test-suite repair (before merge)
+
+### Changed (owner requests)
+- **Scroll-progress bar removed.** `components/scroll-progress.tsx` is deleted, and its usage in `app/layout.tsx` and its CSS in `app/globals.css` are removed.
+- **Map shortcut icon** is now a road (`RoadIcon` in `components/icons.tsx`) instead of a folded map.
+- **Support button redesigned** (`components/floating-support.tsx`, `floating-support.module.css`):
+  - A cobalt pill with Midnight text and a small headset avatar (inline SVG) that glances around and blinks.
+  - A short speech bubble ("Need support?", "Need a human? We’re here.", and 3 others) shows for about 2.6s, at most 3 times per browser session.
+  - The bubble is skipped under `prefers-reduced-motion`, while the dialog is open, while the storage notice covers it on phones, and after any interaction with the widget.
+  - The bubble is `aria-hidden`; the button keeps its accessible name.
+  - Below 768px the button shrinks to the avatar, and the "Support" label stays visually hidden.
+- **Hamburger**: transparent background, two white lines (`components/navigation-refinement.css`).
+- **Logo lockup**: the chip/rectangle behind the logo is removed. The name and tagline sit in one left-aligned column, upright (no italics).
+- **Search** is now an icon button beside the notification bell (`/search`, labelled "Search EPE LAWA"). The "Search news" and "Search the whole site" drawer links are removed.
+
+### Fixed (the 14 node + 4 vitest failures that already existed on `main`)
+All but one were tests left behind by intentional changes already on `main`. Where the code was right, the test was updated, with a comment naming the commit. Where the code was wrong, the code was fixed.
+- **Code fixes**:
+  - `20261126000000_cron_job_history.sql`: `cron_job_start` used an undeclared `result` variable, so the migration failed on a fresh database. It now declares it and enables RLS. Both changes match the Production function and table, which were read-only checked via the Supabase connector.
+  - `20261127000000_primary_admin_immutability.sql`: removed a `create policy` on a **view**, which Postgres rejects. It is absent in Production.
+  - Admin nav: removed the dead "Gallery" link to `/gallery`, which had no page. Gallery photos are managed under Media library.
+  - `lib/theme.ts`: the light-only theme script clears the stale `epelawa-theme` key again.
+- **Test updates for deliberate changes**:
+  - Digest, events, poll and song-request admin pages were removed in `43835ed`. Their route-manifest entries are dropped too.
+  - Full-reload sidebar links (`43835ed`).
+  - Browser recovery was withdrawn (`0eef5db`).
+  - Cover credit, source and licence fields were removed (`1a1b7c9`).
+  - The Privacy date is now 26 November.
+  - The admin app runs under the `/admin` basePath.
+  - The cookie notice no longer claims "optional tracking is off", because Plerdy loads. The test now forbids that claim.
+  - The map iframe uses multi-line JSX.
+- `backend/tests/schema.test.mjs` gains a `supabase_realtime` publication shim, which Supabase provides and PGlite does not.
+
 ## 2026-11-26: audit batch 1 (P0/P1) and batch 2 (P2)
 
 Branch `arena/1a336494-epe-lawa`. This batch adds no dependencies and makes no database, env, auth or payment changes.

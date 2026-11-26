@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { ArrowRightIcon, ArrowUpRightIcon, UsersIcon, ListenShortcutIcon, CompassIcon, BuildingIcon, MessageCircleIcon, CalendarShortcutIcon, MapIcon, MapPinIcon, ClockIcon, EyeIcon } from "../components/icons";
+import { ArrowRightIcon, ArrowUpRightIcon, UsersIcon, ListenShortcutIcon, CompassIcon, BuildingIcon, MessageCircleIcon, CalendarShortcutIcon, RoadIcon, MapPinIcon, ClockIcon, EyeIcon } from "../components/icons";
 import { formatPublishedDate } from "../lib/dates";
 import { getLatestStories, getHomeBreakingStories, type LatestStory, type HomeBreakingStory, type PublicListResult } from "../lib/home-data";
 import "./hero-logo.css";
@@ -58,7 +58,7 @@ export default function Home() {
           {[
             { href: "/itan-ilu-mi", label: t(lang, "home.shortcut.history"), Icon: CompassIcon },
             { href: "/tourism", label: t(lang, "home.shortcut.places"), Icon: MapPinIcon },
-            { href: "/map", label: t(lang, "home.shortcut.map"), Icon: MapIcon },
+            { href: "/map", label: t(lang, "home.shortcut.map"), Icon: RoadIcon },
             { href: "/business-directory", label: t(lang, "home.shortcut.business"), Icon: BuildingIcon },
             { href: "/events", label: t(lang, "home.shortcut.events"), Icon: CalendarShortcutIcon },
             { href: "/forum", label: t(lang, "home.shortcut.forum"), Icon: MessageCircleIcon },

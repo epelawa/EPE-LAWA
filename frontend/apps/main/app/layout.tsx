@@ -23,7 +23,6 @@ import { turnstileSiteKey } from "../lib/turnstile";
 import { themeScript } from "../lib/theme";
 import SiteMotion from "../components/site-motion";
 import ScrollToTop from "../components/scroll-to-top";
-import ScrollProgress from "../components/scroll-progress";
 import AuthCallbackErrorRouter from "../components/auth-callback-error-router";
 import MobileBottomNav from "../components/mobile-bottom-nav";
 import { createClient } from "../lib/supabase";
@@ -110,7 +109,6 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <SiteMotion />
         <NotificationSoundListener />
         <ScrollToTop />
-        <ScrollProgress />
         <ToastRegion />
         <SlashFocus />
         <a className="skip-link" href="#main">

@@ -11,7 +11,42 @@ Every number below comes from a command that was run in this session. The logs w
 - **Production** (`epelawa.vercel.app`) was **not reachable** for tooling (TLS blocked), so no live Lighthouse, axe or screenshots.
 - **Lighthouse caveat**: in this sandbox even `/privacy` shows a ~2.1s unattributed main-thread task, and the homepage ~5–7s. A direct CDP trace with 4× CPU throttling showed no such task. Absolute TBT and Performance scores are therefore dominated by the environment. Compare before against after (same machine, same flags), and do not read them as field values.
 
-## Summary
+## Final verification before merge (owner follow-up, 2026-11-26)
+
+All commands were run from a clean environment (`env -i PATH HOME CI=true`), matching `.github/workflows/ci.yml`.
+
+| Check | Result |
+| --- | --- |
+| `pnpm typecheck` (5 packages) | **pass** |
+| `pnpm build` (main + admin) | **pass** |
+| `pnpm test:node` | **448 pass, 0 fail, 1 skip** of 449. The skip is the schema test's documented PGlite exclusion-constraint limitation. |
+| `pnpm test:unit` (vitest) | **152/152 pass** (49 files) |
+| `pnpm audit --audit-level=high` | **No known vulnerabilities** |
+| `git diff --check` | **clean** |
+| `pnpm test:browser-smoke`, full suite, `CI=true` with retries as in CI (run before the last change, a one-line ≤420px CSS fix letting the brand shrink; the GitHub "Browser smoke" check reruns it on the final commit) | **67/67 pass** (65 first try, 2 flaky that passed on retry). Both first-try failures came from the `next dev` server restarting at its memory threshold mid-run ("approaching the used memory threshold, restarting"): one `ERR_CONNECTION_REFUSED`, one missing `og:image` during recompilation. |
+
+The test count went from 423 to 449 because `schema.test.mjs` now runs its 28 sub-tests instead of crashing at migration time. **The 18 pre-existing failures listed further down are all resolved.** The changelog has the details. In short, 4 were real code defects (2 migrations, 1 dead admin link, the theme script), and 14 were tests left behind by deliberate changes already on `main`. Those tests now assert the current behaviour.
+
+### Owner design changes: browser checks (production build, `stories` fixture, Chromium)
+
+Widths 320/375/768/1024/1440. Screenshots are in `docs/homepage-audit/screenshots/turn2/`.
+
+| Check | Result |
+| --- | --- |
+| Horizontal overflow | **0** at all 5 widths |
+| Scroll-progress bar present | **no** |
+| Hamburger background / line colour | `transparent` / `rgb(255,255,255)` |
+| Brand or tagline italic | **no** |
+| Brand overlaps menu, search or bell; search overlaps bell | **none** at any width (a 22px brand/search overlap at 320px was found and fixed by letting the brand shrink so the tagline wraps) |
+| Search button size | 48×48 (<961px), 44×44 (desktop), links to `/search` |
+| Drawer "Search news" / "Search the whole site" links | **0** ("Search news" remains in the footer quick links, which was not part of the request) |
+| Support bubble | Appears about 4s after load, hides after about 2.6s, varied text, fully inside the viewport at every width. Measured over 20s at 1440: shown 4.0→7.1s, then again at 16.1s. |
+| Bubble under `prefers-reduced-motion: reduce` | **not shown** |
+| Console errors / page errors | **0** |
+
+Not tested: real phones, screen readers, Safari and Firefox. The "looking around" animation was judged visually only.
+
+## Summary (original audit, turn 1)
 
 | Check | Before | After | Notes |
 | --- | --- | --- | --- |
@@ -28,7 +63,7 @@ Every number below comes from a command that was run in this session. The logs w
 | Keyboard order (mobile) | radio CTA before tiles (mismatch) | **matches visual order** | `keyboardMobile` in reports |
 | Drawer focus + Esc | pass | **pass** | |
 
-### Pre-existing failures (unchanged, not caused by this work)
+### Pre-existing failures at the time of the audit (all fixed since; see the final verification above)
 
 **node**:
 

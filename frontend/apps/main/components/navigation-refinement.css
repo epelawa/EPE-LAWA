@@ -103,10 +103,15 @@ body:has(.focused-error-shell) .mobile-bottom-nav,body:has(.auth-link-issue) .mo
 
 /* Home masthead inspired by the client's blue EPE LAWA reference. */
 .site-head--home { border-bottom-color: var(--palette-royal-steel); background: linear-gradient(115deg, var(--palette-royal-steel), var(--palette-navy) 76%, var(--palette-midnight)); color: #fff; }
-.site-head--home .nav-brand { position: relative; }
-.site-head--home .brand__name { color: #fff; font-size: 19px; font-weight: 800; letter-spacing: .02em; }
-.site-head--home .home-brand-tagline { position: absolute; left: 47px; top: 35px; color: var(--palette-ice-blue); font-size: var(--ep-hint-min); font-style: italic; font-weight: 700; white-space: nowrap; }
-@media (max-width: 420px) { .site-head--home .home-brand-tagline { left: 0; } }
+/* Brand: the logo sits directly on the masthead (no chip behind it), with the name and the tagline
+   stacked in one left-aligned, upright text column beside it. */
+.site-head--home .nav-brand { display: inline-grid; grid-template-columns: auto minmax(0, auto); grid-template-rows: auto auto; column-gap: 10px; row-gap: 3px; align-items: center; min-width: 0; color: #fff; }
+.site-head--home .nav-brand .brand { display: contents; }
+.site-head--home .brand__mark { grid-column: 1; grid-row: 1 / span 2; padding: 0; border-radius: 0; background: none; }
+.site-head--home .brand__mark img { height: 44px !important; width: auto !important; max-height: none; filter: drop-shadow(0 2px 6px rgb(4 10 28 / .35)); }
+.site-head--home .brand__word { grid-column: 2; grid-row: 1; align-self: end; min-width: 0; }
+.site-head--home .brand__name { color: #fff; font-size: 19px; font-weight: 800; line-height: 1.05; letter-spacing: .02em; }
+.site-head--home .home-brand-tagline { grid-column: 2; grid-row: 2; align-self: start; min-width: 0; color: var(--palette-ice-blue); font-size: var(--ep-hint-min, 12px); font-style: normal; font-weight: 600; line-height: 1.2; letter-spacing: .01em; white-space: nowrap; }
 .site-head--home .site-head__nav > .nav-items > li > .nav-link,
 .site-head--home .nav-disclosure > summary,
 .site-head--home .header-signin,
@@ -116,20 +121,31 @@ body:has(.focused-error-shell) .mobile-bottom-nav,body:has(.auth-link-issue) .mo
 .site-head--home .nav-disclosure > summary:hover,
 .site-head--home .nav-disclosure > summary[data-active="true"] { color: #fff; background: rgb(255 255 255 / .16); }
 .site-head--home .header-search:hover { background: rgb(255 255 255 / .16); }
-/* Preserve the existing two-line menu icon and its appearance. */
-.site-head--home .site-head__menu { background: #fff; }
-@media (max-width: 960px) {
-  .site-head--home .masthead-bar { position: relative; justify-content: center; }
-  .site-head--home .masthead-actions { position: absolute; inset: 0; margin: 0; pointer-events: none; }
-  .site-head--home .masthead-actions > * { pointer-events: auto; }
-  .site-head--home .site-head__menu { position: absolute; left: 0; top: 50%; transform: translateY(-50%); }
-  .site-head--home .header-search { position: absolute; right: 0; top: 50%; transform: translateY(-50%); }
-}
-
+/* Two-line menu icon: white lines straight on the masthead, no white disc behind them. */
+.site-head--home .site-head__menu { border-color: transparent; background: transparent; color: #fff; }
+.site-head--home .site-head__menu:hover { background: rgb(255 255 255 / .16); }
+.site-head--home .site-head__menu .menu-lines { width: 22px; gap: 6px; }
+.site-head--home .site-head__menu .menu-lines span { height: 2px; background: #fff; }
 .site-head--home .header-notification { color: #fff; }
 .site-head--home .header-notification:hover { background: rgb(255 255 255 / .16); }
 @media (max-width: 960px) {
+  /* Menu on the left, search + notifications on the right; the brand is centred in the space between. */
+  .site-head--home .masthead-bar { position: relative; justify-content: center; padding-inline: 52px 100px; }
+  .site-head--home .masthead-actions { position: absolute; inset: 0; margin: 0; pointer-events: none; }
+  .site-head--home .masthead-actions > * { pointer-events: auto; }
+  .site-head--home .site-head__menu { position: absolute; left: 0; top: 50%; transform: translateY(-50%); }
+  .site-head--home .header-search { position: absolute; right: 48px; top: 50%; transform: translateY(-50%); }
   .site-head--home .header-notification { position: absolute; right: 0; top: 50%; transform: translateY(-50%); }
+  .site-head--home .brand__mark img { height: 38px !important; }
+  .site-head--home .brand__name { font-size: 17px; }
+}
+@media (max-width: 420px) {
+  .site-head--home .masthead-bar { padding-inline: 48px 96px; }
+  .site-head--home .nav-brand { column-gap: 7px; flex-shrink: 1; max-width: 100%; }
+  .site-head--home .brand__mark img { height: 32px !important; }
+  .site-head--home .brand__name { font-size: 15px; }
+  /* On the narrowest phones the tagline may wrap onto two lines rather than run under the icons. */
+  .site-head--home .home-brand-tagline { white-space: normal; }
 }
 
 /* The dropdown summaries draw their own SVG chevron; suppress the generic native <details> chevron

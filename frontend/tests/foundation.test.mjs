@@ -289,10 +289,12 @@ test('main news route reports unavailable data honestly and retains the custom 4
 });
 
 test('admin dashboard is protected and login is noindex with security headers', async () => {
-  await withApp('admin', async (base) => {
-    const response = await fetch(base + '/', { redirect: 'manual' });
+  await withApp('admin', async (origin) => {
+    // The standalone admin app is mounted under its configured basePath (next.config.ts: "/admin").
+    const base = origin + '/admin';
+    const response = await fetch(base, { redirect: 'manual' });
     assert.ok([302, 307, 308].includes(response.status), 'anonymous dashboard access must redirect');
-    assert.match(response.headers.get('location') || '', /\/login/);
+    assert.match(response.headers.get('location') || '', /\/admin\/login/);
     assert.match(response.headers.get('cache-control') || '', /no-store/);
     assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
     assert.equal(response.headers.get('x-frame-options'), 'DENY');

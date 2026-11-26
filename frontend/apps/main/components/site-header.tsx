@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState, type SyntheticEvent } from "r
 import type { NavItem } from "../lib/navigation";
 import { MOBILE_GROUPS } from "../lib/mobile-navigation";
 import { type SiteLanguage, fullNavLabel, navGroupLabel, navLabel } from "../lib/i18n-messages";
-import { ArrowRightIcon, ArrowUpRightIcon } from "./icons";
+import { ArrowRightIcon, ArrowUpRightIcon, SearchIcon } from "./icons";
 import { BrandLockup } from "./brand";
 import RadioReminder from "./radio-reminder";
 import "./navigation-refinement.css";
@@ -169,6 +169,7 @@ export default function SiteHeader({ items, lang = "en" }: { items: NavItem[]; l
           </ul>
         </nav>
         <div className="masthead-actions">
+          <Link className="btn-icon header-search" href="/search" aria-label="Search EPE LAWA"><SearchIcon size={20} /></Link>
           <RadioReminder />
           <Link className="header-signin" href="/login">Sign in</Link>
           <Link className="btn-primary header-cta" href="/auth">Join the community <ArrowRightIcon size={15} aria-hidden="true" /></Link>
@@ -197,8 +198,6 @@ export default function SiteHeader({ items, lang = "en" }: { items: NavItem[]; l
           </div>
           <nav className="drawer-nav" aria-label="All sections">
             {MOBILE_GROUPS.map(renderMobileGroup)}
-            <Link href="/news?search=1" className="drawer-link" onClick={closeDrawer}>Search news</Link>
-            <Link href="/search" className="drawer-link" onClick={closeDrawer}>Search the whole site</Link>
           </nav>
           <section className="drawer-account" aria-labelledby="drawer-account-title">
             <h2 id="drawer-account-title">Account</h2>

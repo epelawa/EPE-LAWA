@@ -63,7 +63,7 @@ test('the map panel embeds OpenStreetMap without any API key and keeps coordinat
   assert.match(ui, /const OSM_ORIGIN = "https:\/\/www\.openstreetmap\.org\/"/);
   assert.match(ui, /new URL\("export\/embed\.html", OSM_ORIGIN\)/);
   assert.match(ui, /url\.searchParams\.set\("layer", "mapnik"\)/);
-  assert.match(ui, /<iframe title="Epe community map" src=\{embedUrl\} loading="lazy"/);
+  assert.match(ui, /<iframe\s+title="Epe community map"\s+src=\{embedUrl\}\s+loading="lazy"/);
   assert.doesNotMatch(ui, /yandex|mapbox|thunderforest|api_key|apiKey|API_KEY/);
   assert.match(ui, /OpenStreetMap contributors/);
   assert.match(ui, /your coordinates stay in this browser tab/);
