@@ -80,6 +80,20 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const siteLanguage = await readSiteLanguage();
   return (
     <html lang={siteLanguage === "yo" ? "yo" : "en"} data-theme="light" style={{ colorScheme: "light" }} suppressHydrationWarning>
+      <head>
+        <script nonce={nonce} data-plerdy_code="1" dangerouslySetInnerHTML={{ __html: `(function(w,d){
+  if(w.__plerdyCode)return;
+  w.__plerdyCode=1;
+  w._protocol=w.location.protocol==="https:"?"https://":"http://";
+  w._site_hash_code="ae78ac2f6688b1ba8f347e3350b8a6a1";
+  w._suid=83869;
+  var s=d.createElement("script");
+  s.async=true;
+  s.referrerPolicy="strict-origin-when-cross-origin";
+  s.src="https://a.plerdy.com/public/js/click/main.js?v="+Math.random();
+  d.head.appendChild(s);
+})(window,document);` }} />
+      </head>
       <body>
         {publicOrigin(process.env.NEXT_PUBLIC_SUPABASE_URL) ? (
           <link rel="preconnect" href={publicOrigin(process.env.NEXT_PUBLIC_SUPABASE_URL) as string} crossOrigin="anonymous" />

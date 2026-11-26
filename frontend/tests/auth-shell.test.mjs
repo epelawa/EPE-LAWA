@@ -153,8 +153,25 @@ test("storage notice is homepage-only and leaves auth screens unobstructed", asy
   assert.doesNotMatch(staffForm, /scrollHeight|scrollTop/);
   assert.match(staffForm, /draggable=\{false\}/);
   assert.match(staffForm, /onDragStart=\{\(event\) => event\.preventDefault\(\)\}/);
-  assert.match(banner, /Sign-in uses essential cookies; optional tracking is off\./);
+  assert.match(banner, /Sign-in uses essential cookies\. See our privacy notice for details about information use\./);
   assert.match(banner, /epelawa_cookie_consent/);
   assert.match(banner, /window\.removeEventListener\("resize", apply\);\s*root\.style\.setProperty\("--storage-notice-height", "0px"\)/);
   assert.doesNotMatch(banner, /role="dialog"/);
+});
+
+test("Plerdy verification bootstrap is installed in the shared head, not the cookie notice", async () => {
+  const [layout, banner, privacy] = await Promise.all([
+    read(app, "layout.tsx"),
+    read(components, "cookie-banner.tsx"),
+    read(app, "privacy/page.tsx"),
+  ]);
+  assert.match(layout, /<head>\s*<script nonce=\{nonce\} data-plerdy_code="1"/);
+  assert.match(layout, /_site_hash_code="ae78ac2f6688b1ba8f347e3350b8a6a1"/);
+  assert.match(layout, /_suid=83869/);
+  assert.match(layout, /s\.async=true/);
+  assert.match(layout, /s\.referrerPolicy="strict-origin-when-cross-origin"/);
+  assert.match(layout, /https:\/\/a\.plerdy\.com\/public\/js\/click\/main\.js\?v="\+Math\.random\(\)/);
+  assert.doesNotMatch(layout, /PlerdyAnalytics/);
+  assert.doesNotMatch(banner, /Plerdy|Allow analytics|Keep analytics off/);
+  assert.match(privacy, /Plerdy site verification/);
 });
