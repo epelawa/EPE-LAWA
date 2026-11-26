@@ -71,7 +71,7 @@ export default function CookieBanner() {
     <div ref={bannerRef} className="storage-notice" role="region" aria-label="Storage notice">
       <p className="storage-notice__title">Your browser, your preferences.</p>
       <div className="storage-notice__copy">
-        Sign-in uses essential cookies; optional tracking is off.
+        Sign-in uses essential cookies. See our privacy notice for details about information use.
       </div>
       <div className="ui-actions">
         <button type="button" className="btn-primary" onClick={accept}>Got it</button>

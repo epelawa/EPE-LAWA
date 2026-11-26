@@ -15,6 +15,8 @@ const DIRECTIVES = [
 
 /** Turnstile needs script, connect, frame and worker access to its origin. */
 function turnstileDirective(name: "script-src" | "connect-src" | "frame-src" | "worker-src", value: string): string {
+  if (name === "script-src") value = `${value} https://a.plerdy.com`;
+  if (name === "connect-src") value = `${value} https://a.plerdy.com`;
   if (!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim()) return name === "frame-src" ? "" : value;
   if (name === "script-src") return `${value} https://challenges.cloudflare.com`;
   if (name === "connect-src") return `${value} https://challenges.cloudflare.com`;

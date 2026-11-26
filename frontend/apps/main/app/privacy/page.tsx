@@ -14,7 +14,7 @@ export default function PrivacyPage() {
   const intake = process.env.ENQUIRY_INTAKE_ENABLED === "true";
   return (
     <InformationPage title="Privacy notice" description="How EPE LAWA collects, uses, stores and protects your personal information.">
-      <p className="legal-date"><strong>Last updated:</strong> 12 November 2026</p>
+      <p className="legal-date"><strong>Last updated:</strong> 26 November 2026</p>
 
       <SitePageNote page="privacy" label="A note from EPE LAWA" />
 
@@ -30,7 +30,7 @@ export default function PrivacyPage() {
 
       <h3>2.2 Information collected automatically</h3>
       <p><strong>Essential cookies and browser storage.</strong> We use essential session cookies so the site can keep you signed in securely, and small browser storage entries to remember your theme choice, the dismissal of the storage notice and the position of the support button. We do not use advertising cookies.</p>
-      <p><strong>No tracking.</strong> No optional analytics tool, advertising pixel or social tracking script is enabled on this website.</p>
+      <p><strong>Plerdy site verification.</strong> We load Plerdy’s asynchronous site script on every page to verify that this website is connected to our Plerdy account. The script may process technical information and page interactions such as clicks to provide Plerdy’s services. Information sent to Plerdy is subject to its own processing practices. We do not use advertising cookies.</p>
       <p><strong>Technical logs.</strong> Our hosting, database and authentication providers (including Vercel and Supabase) may process technical information such as IP address, device and request details needed to serve pages, secure accounts, prevent abuse and investigate failures.</p>
 
       <h3>2.3 Optional device location</h3>
@@ -43,7 +43,7 @@ export default function PrivacyPage() {
       <p>We process personal information only where we have a lawful basis:</p>
       <ul>
         <li><strong>To provide the service you asked for</strong> — creating and operating your account, publishing content you submit, processing enquiries you send (contract / consent).</li>
-        <li><strong>Legitimate interests</strong> — keeping the platform secure, preventing abuse, fraud and spam, moderation, debugging and maintaining service stability.</li>
+        <li><strong>Legitimate interests</strong> — keeping the platform secure, preventing abuse, fraud and spam, moderation, debugging, maintaining service stability and verifying our website connection to Plerdy.</li>
         <li><strong>Legal obligations</strong> — keeping records where required by Nigerian law and responding to lawful requests from authorities.</li>
         <li><strong>Consent</strong> — newsletters you explicitly confirm, and optional features that require a browser permission such as location.</li>
       </ul>
@@ -52,6 +52,7 @@ export default function PrivacyPage() {
       <p>We do not sell personal information. We share it only with:</p>
       <ul>
         <li><strong>Service providers</strong> who help us operate the platform: hosting (Vercel), authentication and database (Supabase), media storage (Cloudflare), and email delivery providers for account, acknowledgement and newsletter emails. They process information on our instructions.</li>
+        <li><strong>Plerdy</strong> receives information through its site script for website verification and its configured site services.</li>
         <li><strong>Authorised staff</strong> who review submissions, contributions and enquiries.</li>
         <li><strong>Authorities</strong> where the law requires or permits it, such as to respond to a valid legal request, or to protect someone's safety.</li>
       </ul>

@@ -75,12 +75,15 @@ test('main has honest indexable metadata, working public links and security head
       const csp = response.headers.get('content-security-policy') || '';
       assert.match(csp, /frame-ancestors 'none'/, path);
       assert.match(csp, /script-src 'self' 'nonce-[A-Za-z0-9+/=]+' 'strict-dynamic'/, path);
+      assert.match(csp, /script-src [^;]*https:\/\/a\.plerdy\.com/, path);
+      assert.match(csp, /connect-src [^;]*https:\/\/a\.plerdy\.com/, path);
       assert.equal(response.headers.get('content-security-policy-report-only'), null, 'CSP is enforced');
       assert.equal(response.headers.get('access-control-allow-origin'), 'https://epelawa.vercel.app', path);
     }
     const response = await fetch(base);
     assert.equal(response.status, 200);
     const html = await response.text();
+    assert.match(html, /<script nonce="[^"]+" data-plerdy_code="1">[\s\S]*?_site_hash_code="ae78ac2f6688b1ba8f347e3350b8a6a1"[\s\S]*?<\/script>/, 'Plerdy verification bootstrap is in the document head');
     for (const module of [
       /Trending News/,
       /Ìtàn Ilú Mi|Itan Ilu Mi/,
@@ -107,6 +110,7 @@ test('main has honest indexable metadata, working public links and security head
     const about = await fetch(base + '/about');
     assert.equal(about.status, 200);
     const aboutHtml = await about.text();
+    assert.match(aboutHtml, /data-plerdy_code="1"/, 'Plerdy verification bootstrap is site-wide');
     assert.doesNotMatch(aboutHtml, /clyvro-verification/, 'unverified third-party verification tag must not ship');
     assert.match(aboutHtml, /<link rel="canonical" href="https:\/\/epelawa\.vercel\.app\/about"/);
     assert.match(aboutHtml, /href="\/"/);
