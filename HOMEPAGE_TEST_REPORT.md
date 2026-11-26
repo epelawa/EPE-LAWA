@@ -53,6 +53,12 @@ Every number below comes from a command that was run in this session. The logs w
 - `newsroom-session-recovery` ×2
 - `progressive-forms` ×1
 
+## GitHub checks on PR #273 (commit 8c177a5)
+
+- Passing: CodeQL and the Vercel preview deployment.
+- `CI / verify` **failed at the "Test" step**. The same workflow also fails on `main` for the base commit `7f6bdcf` and the two merges before it, which is consistent with the pre-existing failures above. The job log could not be downloaded from the sandbox (the log host is blocked), so I could not compare it test by test.
+- `Browser smoke / public shell` was still pending when this report was written.
+
 ## Performance
 
 ### Lighthouse 13, homepage, `stories` fixture, same machine and flags
