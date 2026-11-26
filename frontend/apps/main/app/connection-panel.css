@@ -51,6 +51,34 @@
   color: var(--palette-royal-steel);
 }
 
+/* Contribution paths (history accounts, business listings) sit on their own row beneath the main actions. */
+.connection-panel .home-community__contribute {
+  position: relative;
+  z-index: 1;
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 28px;
+  margin: 0;
+  padding: 16px clamp(0px, 12vw, 150px) 0 0;
+  border-top: 1px solid color-mix(in srgb, var(--palette-royal-steel) 24%, transparent);
+  list-style: none;
+}
+
+.connection-panel .home-community__contribute a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  color: var(--palette-royal-steel);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+.connection-panel .home-community__contribute a:hover { color: var(--palette-midnight); }
+
 .connection-panel__icon {
   position: absolute;
   right: clamp(20px, 4vw, 56px);
@@ -90,6 +118,11 @@
   .connection-panel__icon {
     right: 22px;
     bottom: 18px;
+  }
+
+  .connection-panel .home-community__contribute {
+    flex-direction: column;
+    padding-right: 0;
   }
 }
 

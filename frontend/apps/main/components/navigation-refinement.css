@@ -14,7 +14,7 @@
 .nav-brand { display:inline-flex; flex:0 0 auto; align-items:center; min-height:44px; text-decoration:none; }
 .brand { display:inline-flex; align-items:center; gap:9px; }
 .brand__mark { display:grid; place-items:center; padding:3px; border-radius:8px; background:hsl(var(--secondary)); }
-.brand__mark img { display:block; width:auto; }
+.brand__mark img { display:block; width:auto; object-fit:contain; } /* never squash the logo when max-height applies */
 .brand__word { display:flex; flex-direction:column; gap:2px; }
 .brand__name { color:hsl(var(--foreground)); font-size:14px; font-weight:750; line-height:1.1; letter-spacing:.045em; }
 .site-head__nav { flex:1 1 auto; min-width:0; margin-inline:auto; }
@@ -131,3 +131,7 @@ body:has(.focused-error-shell) .mobile-bottom-nav,body:has(.auth-link-issue) .mo
 @media (max-width: 960px) {
   .site-head--home .header-notification { position: absolute; right: 0; top: 50%; transform: translateY(-50%); }
 }
+
+/* The dropdown summaries draw their own SVG chevron; suppress the generic native <details> chevron
+   from native-controls.css so the header does not show two arrows. */
+.nav-disclosure > summary::after { content: none; display: none; }

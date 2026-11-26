@@ -14,19 +14,32 @@ body:has(.public-home) .storage-notice {
   position: fixed;
   inset: auto auto max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
   z-index: 45;
-  width: min(360px, calc(100% - 24px));
+  width: min(380px, calc(100% - 24px));
   max-height: calc(100dvh - 24px);
   overflow-y: auto;
   margin: 0;
-  padding: 12px;
+  padding: 10px 12px;
   border-radius: 10px;
+  font-size: 12px;
+  line-height: 1.45;
   box-shadow: 0 6px 18px -6px rgb(10 16 35 / .18);
 }
-body:has(.public-home .storage-notice) .public-home { padding-bottom: calc(var(--storage-notice-height, 0px) + 16px); }
-body:has(.public-home) .storage-notice__title { margin-bottom: 4px; font-size: 13px; line-height: 1.375; }
-body:has(.public-home) .storage-notice__copy { font-size: 11px; line-height: 1.5; }
-body:has(.public-home) .storage-notice .ui-actions { margin-top: 8px; gap: 6px; }
-body:has(.public-home) .storage-notice .btn-primary,body:has(.public-home) .storage-notice .btn-ghost { min-height: 44px; padding: 8px 12px; font-size: 11px; }
+/* Reserve room for the notice at the very end of the page (inside the footer's own background), not
+   between the homepage content and the footer, where it left an empty band of up to ~150px. */
+body:has(.public-home .storage-notice) .site-footer { padding-bottom: calc(var(--storage-notice-height, 0px) + 16px); }
+/* Title and copy run as one short paragraph so the notice covers as little of the page as possible. */
+body:has(.public-home) .storage-notice__title { display: inline; margin: 0 4px 0 0; font-size: 12px; line-height: 1.45; }
+body:has(.public-home) .storage-notice__copy { display: inline; font-size: 12px; line-height: 1.45; }
+body:has(.public-home) .storage-notice .ui-actions { margin-top: 6px; gap: 6px; flex-wrap: nowrap; }
+body:has(.public-home) .storage-notice .btn-primary,body:has(.public-home) .storage-notice .btn-ghost { min-height: 44px; padding: 8px 14px; font-size: 12px; }
+
+/* Phones and small tablets: a full-width bar pinned to the bottom edge instead of a floating card. */
+@media (max-width: 767px) {
+  body:has(.public-home) .storage-notice {
+    inset: auto max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+    width: auto;
+  }
+}
 
 @media (max-width: 340px) and (max-height: 640px) {
   body:has(.public-home) .storage-notice { padding: 8px; }

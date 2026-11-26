@@ -69,7 +69,7 @@
 .home-photo-control__button { min-height: 44px; padding: 8px 12px; border: 0; background: transparent; color: #294b91; font-size: 12px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
 .home-photo-control__button:focus-visible { outline: 2px solid #294b91; outline-offset: 2px; }
 .home-discovery { padding-top: 4px; }
-.home-shortcuts { order: -1; gap: 12px; padding: 0; border: 0; background: transparent; box-shadow: none; }
+.home-shortcuts { gap: 12px; padding: 0; border: 0; background: transparent; box-shadow: none; }
 .home-shortcuts a, .home-shortcuts a:last-child { min-height: 124px; padding: 14px 8px; border: 0; border-radius: 17px; color: white; background: linear-gradient(145deg, #2458b1, #071d49); box-shadow: 0 5px 12px rgb(9 33 79 / .2); font-size: 13px; }
 .home-shortcuts a:nth-child(2) { background: linear-gradient(145deg, #258052, #075235); }
 .home-shortcuts a:nth-child(3) { background: linear-gradient(145deg, #7956ad, #493274); }
@@ -90,8 +90,10 @@
 }
 
 /* A compact, editorial reading surface, with credits retained alongside images. */
-.home-hero__photo { animation: home-photo-slide-in 850ms cubic-bezier(.22,.7,.2,1) both; }
-@keyframes home-photo-slide-in { from { opacity: .45; transform: translateX(7%) scale(1.04); } to { opacity: 1; transform: translateX(0) scale(1); } }
+/* Opacity-only slide entrance: a moving/scaled frame changed each slide's painted area, so every
+   rotation could be reported as a new, later Largest Contentful Paint for readers who do not scroll. */
+.home-hero__photo { animation: home-photo-fade-in 600ms cubic-bezier(.22,.7,.2,1) both; }
+@keyframes home-photo-fade-in { from { opacity: .45; } to { opacity: 1; } }
 .public-home .home-news { padding-block: 30px 24px; }
 .home-story-list { gap: 14px; }
 .home-story-list--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -180,3 +182,12 @@
 .home-news-skeleton__copy span:nth-child(2) { width:80%; }
 .home-news-skeleton__copy span:nth-child(3) { width:55%; }
 @media (max-width:700px) { .home-news-skeleton { grid-template-columns:minmax(0,1fr); } .home-news-skeleton__card:not(:first-child) { display:none; } .home-news-skeleton__image { aspect-ratio:2 / 1; } }
+
+/* Stories without a cover photo (or whose photo fails) show the brand mark as a quiet, contained
+   placeholder on a Cloud panel instead of a full-bleed crop, so a row of uncovered stories does
+   not read as three identical banner adverts. */
+.home-story-cover-link:has(> img[data-news-fallback="true"]) { display: grid; place-items: center; background: var(--palette-cloud, #f1f4fa); }
+.home-story-image[data-news-fallback="true"] { width: min(44%, 150px); height: auto; aspect-ratio: 512 / 443; object-fit: contain; opacity: .9; }
+.home-story-card:hover .home-story-image[data-news-fallback="true"] { transform: none; }
+/* When there is no breaking-news strip, keep the shortcut tiles off the bottom edge of the hero photo. */
+.home-hero + .home-section-reveal .home-discovery { padding-top: 16px; }

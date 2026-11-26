@@ -148,7 +148,7 @@ export default function SiteHeader({ items, lang = "en" }: { items: NavItem[]; l
   return (
     <header className="site-head site-head--home">
       <div className="masthead-bar">
-        <Link className="nav-brand" href="/" aria-label="EPE LAWA home"><BrandLockup size={32} /><span className="home-brand-tagline">The Voice of Epe Division</span></Link>
+        <Link className="nav-brand" href="/"><BrandLockup size={32} />{" "}<span className="home-brand-tagline">The Voice of Epe Division</span><span className="sr-only"> home page</span></Link>
         <nav ref={desktopNavRef} className="site-head__nav" aria-label="Primary navigation">
           <ul className="nav-items">
             <li>{renderLink("/news", "News", "nav-link")}</li>

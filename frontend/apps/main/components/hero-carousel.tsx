@@ -45,10 +45,11 @@ function uniqueVariants(format: ImageFormat): ImageVariant[] {
 function responsiveSrcSet(format: ImageFormat) {
   return uniqueVariants(format).map((variant) => `${variant.src} ${variant.width}w`).join(", ");
 }
-function closestVariant(format: ImageFormat, width: number) {
-  return uniqueVariants(format).reduce((best, variant) =>
-    Math.abs(variant.width - width) < Math.abs(best.width - width) ? variant : best,
-  );
+/** Mirrors the browser's srcset choice for sizes="100vw": the smallest variant covering the viewport's device width. */
+function variantForViewport(format: ImageFormat) {
+  const needed = window.innerWidth * (window.devicePixelRatio || 1);
+  const variants = uniqueVariants(format);
+  return variants.find((variant) => variant.width >= needed) ?? variants[variants.length - 1];
 }
 
 export default function HeroCarousel({ children }: { children: ReactNode }) {
@@ -97,15 +98,15 @@ export default function HeroCarousel({ children }: { children: ReactNode }) {
     if (loadedIndex !== index || !activeCurrentSrc || slides.length < 2 || focused || hovered || !pageVisible || reducedMotion || isConstrainedConnection()) return;
     const connection = getNetworkConnection();
     const count = Math.min(slides.length - 1, connection?.effectiveType === "3g" ? 1 : 2);
-    const match = activeCurrentSrc.match(/-(\d+)\.(avif|webp)(?:\?.*)?$/i);
-    const preferredWidth = match ? Number(match[1]) : 1280;
-    const formatName = match?.[2]?.toLowerCase() === "avif" ? "avif" : "webp";
+    // Only the format is taken from the current slide; the width follows the viewport, because some
+    // slides exist only at 640px and copying their width would prefetch the wrong file for the next one.
+    const formatName = /\.avif(?:\?.*)?$/i.test(activeCurrentSrc) ? "avif" : "webp";
     for (let offset = 1; offset <= count; offset += 1) {
       const nextSlide = slides[(index + offset) % slides.length];
       const image = new window.Image();
       image.decoding = "async";
       image.fetchPriority = "low";
-      image.src = closestVariant(nextSlide[formatName], preferredWidth).src;
+      image.src = variantForViewport(nextSlide[formatName]).src;
     }
   }, [loadedIndex, index, activeCurrentSrc, focused, hovered, pageVisible, reducedMotion]);
 
@@ -123,7 +124,9 @@ export default function HeroCarousel({ children }: { children: ReactNode }) {
           onPointerLeave={(event) => { if (event.pointerType === "mouse") setHovered(false); }}
         >
       <div className="home-hero__carousel-stage" role="group" aria-roledescription="slide" aria-label={`${index + 1} of ${slides.length}`}>
-        <picture>
+        {/* Keyed with the image: replacing the whole <picture> keeps the outgoing <img> inside its
+            <picture> parent, so the browser does not re-select (and download) its WebP fallback. */}
+        <picture key={slide.slug}>
           <source type="image/avif" srcSet={responsiveSrcSet(slide.avif)} sizes={IMAGE_SIZES} />
           <img
             key={slide.slug}

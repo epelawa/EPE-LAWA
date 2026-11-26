@@ -1,6 +1,12 @@
 .widget { position:fixed; right:12px; bottom:84px; z-index:50; display:flex; align-items:stretch; border:1px solid #8eb9ff; border-radius:999px; background:#103363; color:#fff; box-shadow:0 5px 18px #001b3d55; }
 .handle { min-width:44px; min-height:44px; border:0; border-right:1px solid #ffffff55; border-radius:999px 0 0 999px; background:transparent; color:inherit; font-size:1.2rem; cursor:grab; touch-action:none; }
 .handle:active { cursor:grabbing; }
+.handle svg { display:block; width:16px; height:16px; margin:auto; }
+/* While the full-width homepage storage notice is open on small screens, the (undragged) pill sits in the
+   notice's empty action row instead of covering page content or the notice text. Screens under 372px,
+   where the row has no room, lift it above the notice instead. */
+@media (min-width:372px) and (max-width:767px) { :global(body:has(.public-home .storage-notice)) .widget:not([style]) { right:max(18px, calc(env(safe-area-inset-right) + 10px)); bottom:calc(max(8px, env(safe-area-inset-bottom)) + 9px); } }
+@media (max-width:371px) { :global(body:has(.public-home .storage-notice)) .widget:not([style]) { bottom:calc(var(--storage-notice-height, 0px) + 16px); } }
 .link { display:flex; align-items:center; min-height:44px; padding:0 16px; border:0; border-radius:0 999px 999px 0; background:transparent; color:#fff; font:inherit; font-weight:700; cursor:pointer; }
 .handle:focus-visible,.link:focus-visible { outline:3px solid #fff; outline-offset:-4px; }
 .modal { box-sizing:border-box; position:fixed; inset:0; width:min(510px,calc(100vw - 28px)); max-width:none; max-height:min(740px,calc(100dvh - 28px)); margin:auto; padding:0; overflow-y:auto; border:1px solid #d8e3f1; border-radius:20px; background:#fff; color:#132341; box-shadow:0 24px 80px #051b3b55; }

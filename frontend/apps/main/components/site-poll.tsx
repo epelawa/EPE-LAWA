@@ -1,5 +1,6 @@
 import { SubmitButton } from "@epelawa/ui";
 import Link from "next/link";
+import { unstable_rethrow } from "next/navigation";
 import { createClient } from "../lib/supabase";
 import { pollVote } from "../app/poll-actions";
 
@@ -7,7 +8,20 @@ type PollRow = { id: string; question: string; ends_at: string | null };
 type OptionRow = { id: string; label: string };
 type ResultRow = { option_id: string; label: string; votes: number };
 
+/**
+ * The poll is optional homepage content. Any configuration, network or query failure hides it
+ * instead of escalating to the route error boundary, which would blank the entire homepage.
+ */
 export default async function SitePoll() {
+  try {
+    return await renderSitePoll();
+  } catch (error) {
+    unstable_rethrow(error);
+    return null;
+  }
+}
+
+async function renderSitePoll() {
   const db = await createClient();
   const [{ data: { user } }, { data: poll }] = await Promise.all([
     db.auth.getUser(),
@@ -40,7 +54,7 @@ export default async function SitePoll() {
     return total > 0 ? Math.round((count / total) * 100) : 0;
   };
 
-  return <section className="site-poll ui-card" aria-labelledby="site-poll-question">
+  return <div className="ep-container home-poll"><section className="site-poll ui-card" aria-labelledby="site-poll-question">
     <p className="ui-eyebrow">Community poll</p>
     <h2 id="site-poll-question" className="text-lg font-semibold">{pollRow.question}</h2>
     {canVote ? <form action={pollVote} className="ui-stack-sm pt-1">
@@ -65,5 +79,5 @@ export default async function SitePoll() {
       {user && myOption ? <p className="ui-meta" role="status">Your vote is counted. You can change it while the poll is open.</p> : null}
       {!user ? <p className="ui-meta"><Link className="ui-text-link" href={`/login?next=${encodeURIComponent("/")}`}>Sign in</Link> to cast your vote.</p> : null}
     </div>}
-  </section>;
+  </section></div>;
 }
