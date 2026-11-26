@@ -3,7 +3,7 @@ import Link from "next/link";
 import { PageFrame, PageIntro, Panel, SectionHeading, EmptyPanel } from "@epelawa/ui";
 import { createStaffClient } from "../../../../lib/supabase";
 import { adminHref } from "../../../../lib/admin-path";
-import CopyButton from "../../../components/copy-button";
+import CopyButton from "../../../../components/copy-button";
 
 export const metadata: Metadata = {
   title: "Cron Job History",
@@ -178,7 +178,7 @@ export default async function CronJobHistoryPage() {
                   <p><strong>Error:</strong> {record.error_message}</p>
                 </div>
               )}
-              {record.details && typeof record.details === "object" && (
+              {record.details !== null && typeof record.details === "object" && (
                 <details className="ui-divider">
                   <summary className="ui-meta cursor-pointer">View details</summary>
                   <pre className="ui-meta text-sm overflow-auto">{JSON.stringify(record.details, null, 2)}</pre>
