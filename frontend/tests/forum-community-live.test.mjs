@@ -46,7 +46,10 @@ test('the community home personalises, counts unread, searches, and floats the c
 test('thread and channel pages read like chat: bubbles, channel rules, composer', async () => {
   const thread = await read('frontend/apps/main/app/forum/thread/[slug]/page.tsx');
   assert.match(thread, /styles\.bubbleOwn/);
-  assert.match(thread, /styles\.composerForm/);
+  // Turn 3: the composer moved into a client component that keeps the draft on failure.
+  assert.match(thread, /<ReplyComposer /);
+  const composer = await read('frontend/apps/main/app/forum/reply-composer.tsx');
+  assert.match(composer, /styles\.composerForm/);
   assert.match(thread, /<ForumReadPing /);
   assert.match(thread, /user_id,handle,display_name,is_verified,verified_at,deleted_at,avatar_key/);
   const channel = await read('frontend/apps/main/app/forum/category/[slug]/page.tsx');

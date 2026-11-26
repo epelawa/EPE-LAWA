@@ -58,3 +58,6 @@
 .fallback { margin:18px 0 0; border-top:1px solid #e0e8f3; padding-top:14px; }
 .fallback a { color:#244f91; }
 @media(max-width:520px) { .modalHeader { padding:20px 18px 16px; }.modalBody { padding:18px; }.modal { max-height:calc(100dvh - 20px); width:calc(100vw - 20px); border-radius:16px; } }
+
+/* Forum threads dock a reply composer at the bottom; keep Send uncovered on phones (unless the member dragged the button). */
+@media (max-width:767px) { :global(body:has([data-forum-composer])) .widget:not([style]) { bottom:calc(var(--forum-composer-h, 140px) + 12px); } }

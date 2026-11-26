@@ -1,12 +1,16 @@
-.bar { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 4px 13px; border: 1px solid var(--palette-border); border-radius: var(--ep-radius-pill, 99px); background: transparent; color: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: border-color 120ms var(--ep-ease-out, ease-out), background-color 120ms var(--ep-ease-out, ease-out), transform 120ms var(--ep-ease-out, ease-out); }
+.bar { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 4px 14px; border: 1px solid var(--palette-border); border-radius: var(--ep-radius-pill, 99px); background: transparent; color: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: border-color 120ms var(--ep-ease-out, ease-out), background-color 120ms var(--ep-ease-out, ease-out), transform 120ms var(--ep-ease-out, ease-out); }
 .bar:hover { border-color: var(--palette-cobalt); background: var(--palette-ice-blue); }
 .bar:active { transform: scale(.96); }
 .bar:disabled { opacity: .7; cursor: default; }
 .barOn { background: rgb(226 64 109 / .1); border-color: #e2406d; color: #b42b56; }
-.heart { color: #e2406d; font-size: 14px; display: inline-block; }
+.heart { color: #e2406d; display: inline-flex; }
 .heartPop { animation: heart-pop 450ms var(--ep-ease-out, ease-out); }
 .count { font-variant-numeric: tabular-nums; }
 .countPop { animation: count-pop 450ms var(--ep-ease-out, ease-out); }
 @keyframes heart-pop { 0% { transform: scale(1); } 40% { transform: scale(1.5); } 100% { transform: scale(1); } }
 @keyframes count-pop { 0% { transform: translateY(0); } 40% { transform: translateY(-3px); } 100% { transform: none; } }
 @media (prefers-reduced-motion: reduce) { .bar, .heart, .count, .heartPop, .countPop { animation: none !important; transition: none; } }
+.bar:focus-visible { outline: 3px solid var(--palette-cobalt, #477fe0); outline-offset: 2px; }
+.bar[aria-busy="true"] { cursor: progress; }
+.wrap { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.error { color: #9d1c1c; font-size: 12.5px; font-weight: 600; }

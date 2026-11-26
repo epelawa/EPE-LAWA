@@ -19,7 +19,13 @@ test("Forum thread view uses user-scoped reads and exposes member reply/report c
   const page = await source("../apps/main/app/forum/thread/[slug]/page.tsx");
   const actions = await source("../apps/main/app/forum/actions.ts");
   assert.match(page, /supabase\.auth\.getUser\(\)/);
-  assert.match(page, /replyToThread/);
+  // Turn 3: the composer is a client component that keeps the draft on failure.
+  assert.match(page, /<ReplyComposer threadId=\{thread\.id\} threadSlug=\{thread\.slug\} \/>/);
+  const composer = await source("../apps/main/app/forum/reply-composer.tsx");
+  assert.match(composer, /useActionState\(replyWithState/);
+  assert.match(composer, /disabled=\{pending \|\| empty\}/);
+  assert.match(composer, /Your message is still here/);
+  assert.match(actions, /export async function replyToThread/, "no-JS redirect action is kept");
   assert.match(page, /reportPost/);
   assert.match(actions, /from\("forum_posts"\)\.insert/);
   assert.match(actions, /from\("forum_reports"\)\.insert/);
@@ -39,7 +45,7 @@ test("anonymous users are redirected to sign-in before creating or replying", as
 
 test("polls use the atomic creation RPC, single-choice authenticated voting, and aggregate-only results", async () => {
   const actions = await source("../apps/main/app/forum/actions.ts");
-  const form = await source("../apps/main/app/forum/new/page.tsx");
+  const form = await source("../apps/main/app/forum/new/new-thread-form.tsx");
   const thread = await source("../apps/main/app/forum/thread/[slug]/page.tsx");
   const migration = await source("../../backend/supabase/migrations/20261107215000_forum_single_vote.sql");
   assert.match(actions, /p_poll_question: pollQuestion \|\| null/);
@@ -76,4 +82,8 @@ test("forum create/reply failures are allow-listed and shown on their redirect r
   assert.match(page, /<Notice role="alert" tone="danger">\{actionError\}<\/Notice>/);
   assert.match(thread, /forum_error\?: string/);
   assert.doesNotMatch(page, /<Notice[^>]*>\{params\.error\}/);
+  // Client forms return the error in place instead of redirecting, so typed input survives.
+  assert.match(actions, /return \{ status: "error", message: outcome\.message, attempt: previous\.attempt \+ 1 \}/);
+  const form = await source("../apps/main/app/forum/new/new-thread-form.tsx");
+  assert.match(form, /Nothing was published and your text is still here/);
 });
