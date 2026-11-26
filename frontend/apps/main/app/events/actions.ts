@@ -1,10 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "../../lib/supabase";
-import { formRateAllowance, formRateLimitedMessage } from "../../lib/form-server";
+import { formAdminClient, formRateAllowance, formRateLimitedMessage } from "../../lib/form-server";
+import { resolvePublicSubmitter, slugifyTitle } from "../../lib/public-submitter";
+import { storeSubmissionImage } from "../../lib/media-r2";
+import { authMailConfig, deliverAuthMessage } from "../../lib/auth-mail-hook";
+import { EVENT_CATEGORIES } from "./event-categories";
 
-export type EventSubmitState = { status: "idle" | "error" | "success"; message: string };
+export type EventSubmitState = { status: "idle" | "error" | "success"; message: string; field?: string };
 
 function partsToIso(date: string, time: string): string | null {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) return null;
@@ -12,46 +15,84 @@ function partsToIso(date: string, time: string): string | null {
   return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
 }
 
+const text = (form: FormData, key: string) => String(form.get(key) ?? "").trim();
+const fail = (message: string, field?: string): EventSubmitState => ({ status: "error", message, field });
+
+/**
+ * Public event submission. Works signed in or signed out: members are linked by
+ * account, everyone else leaves a name and email. Rows land in `events` with
+ * status `submitted`, which the staff Events review page reads — not the
+ * general enquiries inbox.
+ */
 export async function submitEvent(_prev: EventSubmitState, form: FormData): Promise<EventSubmitState> {
-  const db = await createClient();
-  const { data: { user }, error: authError } = await db.auth.getUser();
-  if (authError || !user) return { status: "error", message: "Sign in with your member account to submit an event." };
-  if (!user.email_confirmed_at) return { status: "error", message: "Verify your email address before submitting an event." };
-  const title = String(form.get("title") ?? "").trim();
-  const description = String(form.get("description") ?? "").trim();
-  const venue = String(form.get("venue") ?? "").trim();
-  const category = String(form.get("category") ?? "").trim();
-  const dateInput = String(form.get("date") ?? "").trim();
-  const timeInput = String(form.get("time") ?? "").trim() || "00:00";
-  const endTime = String(form.get("end_time") ?? "").trim();
-  if (title.length < 3 || title.length > 200) return { status: "error", message: "Give the event a clear name (3–200 characters)." };
-  if (description.length < 10 || description.length > 4000) return { status: "error", message: "Describe the event in 10–4000 characters." };
-  if (venue.length < 2 || venue.length > 200) return { status: "error", message: "Name the venue or meeting point (2–200 characters)." };
-  if (!["festival", "community", "business", "civic", "culture", "faith", "sports"].includes(category)) {
-    return { status: "error", message: "Choose a category for the event." };
-  }
+  if (text(form, "website")) return { status: "success", message: "Your event was sent to the desk for review." };
+
+  const title = text(form, "title");
+  const description = text(form, "description");
+  const venue = text(form, "venue");
+  const category = text(form, "category");
+  const dateInput = text(form, "date");
+  const timeInput = text(form, "time") || "00:00";
+  const endDateInput = text(form, "end_date") || dateInput;
+  const endTime = text(form, "end_time");
+  if (title.length < 3 || title.length > 200) return fail("Give the event a clear name (3–200 characters).", "title");
+  if (description.length < 10 || description.length > 4000) return fail("Describe the event in 10–4000 characters.", "description");
+  if (!EVENT_CATEGORIES.some(([value]) => value === category)) return fail("Choose a category for the event.", "category");
+  if (venue.length < 2 || venue.length > 200) return fail("Name the venue or meeting point (2–200 characters).", "venue");
   const startsAt = partsToIso(dateInput, timeInput);
-  if (!startsAt) return { status: "error", message: "Choose a valid date and start time (WAT)." };
-  const endsAt = endTime ? partsToIso(dateInput, endTime) : null;
-  if (endTime && !endsAt) return { status: "error", message: "Choose a valid end time (WAT), or leave it empty." };
-  if (!(await formRateAllowance("event_submit"))) {
-    return { status: "error", message: formRateLimitedMessage };
+  if (!startsAt) return fail("Choose a valid date and start time (WAT).", "date");
+  if (Date.parse(startsAt) < Date.now() - 24 * 60 * 60 * 1000) return fail("The event date must be today or later.", "date");
+  let endsAt: string | null = null;
+  if (endTime || endDateInput !== dateInput) {
+    endsAt = partsToIso(endDateInput, endTime || "23:59");
+    if (!endsAt) return fail("Choose a valid end date and time (WAT), or leave them empty.", "end_time");
+    if (Date.parse(endsAt) <= Date.parse(startsAt)) return fail("The event must end after it starts.", "end_time");
+    if (Date.parse(endsAt) - Date.parse(startsAt) > 30 * 24 * 60 * 60 * 1000) return fail("Events can run for up to 30 days. Submit longer programmes as separate events.", "end_time");
   }
-  const { data, error } = await db.rpc("member_event_submit", {
-    p_title: title, p_description: description, p_venue: venue, p_category: category, p_starts_at: startsAt, p_ends_at: endsAt,
-  });
-  if (error) {
-    const reason = error.message;
-    const text = reason === "event_window_invalid"
-      ? "The event date must be from today onwards, and the end time must be within 30 days of the start."
-      : "The event could not be submitted right now. Please try again.";
-    return { status: "error", message: text };
+
+  const who = await resolvePublicSubmitter(form);
+  if (!who.ok) return fail(who.message, "submitter_email");
+  const submitter = who.submitter;
+
+  if (!(await formRateAllowance("event_submit"))) return fail(formRateLimitedMessage);
+
+  let db;
+  try { db = formAdminClient(); } catch { return fail("Event submissions are temporarily unavailable. Nothing was saved — please try again shortly."); }
+
+  const image = await storeSubmissionImage(form, "events", title);
+  const { data, error } = await db.from("events").insert({
+    slug: slugifyTitle(title, "event"),
+    title,
+    description,
+    venue,
+    category,
+    starts_at: startsAt,
+    ends_at: endsAt,
+    status: "submitted",
+    submitter_id: submitter.userId,
+    submitter_name: submitter.guest ? submitter.name : null,
+    submitter_email: submitter.guest ? submitter.email : null,
+    image_key: image.state === "stored" ? image.key : null,
+    image_alt: image.state === "stored" ? image.alt : null,
+  }).select("id").single();
+  if (error || !data?.id) {
+    console.error("event submission insert failed", { code: error?.code });
+    return fail("Your event could not be saved. Check the details and try again — nothing was published.");
   }
-  revalidatePath("/events");
-  return {
-    status: "success",
-    message: typeof data === "string" && data
-      ? "Your event was submitted. The desk reviews every submission before it appears on the community calendar."
-      : "Your event was submitted for review.",
-  };
+
+  try {
+    const config = authMailConfig(process.env);
+    if (config.kind === "gmail") {
+      await deliverAuthMessage({ to: config.user, subject: "New EPE LAWA event submission", text: "A community event is awaiting review on the Events page of the staff workspace.", html: "<p>A community event is awaiting review on the Events page of the staff workspace.</p>", idempotencyKey: `event-notice/${data.id}` }, config);
+      if (submitter.email) {
+        await deliverAuthMessage({ to: submitter.email, subject: "We received your event", text: "Thank you for sending your event to EPE LAWA. The desk reviews every submission before it appears on the community calendar.", html: "<p>Thank you for sending your event to EPE LAWA. The desk reviews every submission before it appears on the community calendar.</p>", idempotencyKey: `event-ack/${data.id}` }, config);
+      }
+    }
+  } catch {
+    console.error("event submission mail unavailable; check the review queue.");
+  }
+  try { revalidatePath("/events"); } catch { /* cache refresh is best effort */ }
+
+  const base = "Your event was sent to the desk. Every submission is reviewed before it appears on the community calendar.";
+  return { status: "success", message: image.state === "failed" ? `${base} ${image.message}` : base };
 }

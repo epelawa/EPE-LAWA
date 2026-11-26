@@ -4,34 +4,9 @@ import { useActionState, useRef, useState } from "react";
 import BrandedDialog from "../../components/branded-dialog";
 import { updateMemberAvatar, type MemberProfileState } from "./actions";
 import styles from "./dashboard.module.css";
+import { imageErrorMessage, prepareImage } from "../../lib/client-image";
 
 const initialState: MemberProfileState = { status: "idle", message: "" };
-const ACCEPTED = ["image/jpeg", "image/png", "image/webp"];
-const MAX_BYTES = 5 * 1024 * 1024;
-const MAX_COMPRESSED_BYTES = 200 * 1024;
-
-async function compress(file: File): Promise<string> {
-  const bitmap = await createImageBitmap(file);
-  try {
-    const maxSide = 256;
-    const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
-    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
-    const context = canvas.getContext("2d");
-    if (!context) throw new Error("canvas unavailable");
-    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-    for (const quality of [0.82, 0.72, 0.62, 0.52]) {
-      const result = canvas.toDataURL("image/jpeg", quality);
-      const base64Length = result.slice(result.indexOf(",") + 1).length;
-      if (Math.floor(base64Length * 3 / 4) <= MAX_COMPRESSED_BYTES) return result;
-    }
-    throw new Error("compressed_avatar_too_large");
-  } finally {
-    bitmap.close();
-  }
-}
-
 /**
  * Avatar picker as a branded popup modal. The compressed image ships with the
  * form as a data URL and is stored server-side; nothing is uploaded directly.
@@ -45,17 +20,12 @@ export default function AvatarEditor({ avatarUrl, displayName }: { avatarUrl: st
 
   const pick = async (file: File | null | undefined) => {
     if (!file) return;
-    if (!ACCEPTED.includes(file.type) || file.size > MAX_BYTES) {
-      setPreview(null);
-      setPickError("Choose a JPEG, PNG or WebP image smaller than 5 MB.");
-      return;
-    }
     try {
-      setPreview(await compress(file));
+      setPreview(await prepareImage(file, 256, 200 * 1024));
       setPickError("");
-    } catch {
+    } catch (error) {
       setPreview(null);
-      setPickError("This photo could not be compressed. Choose a different image.");
+      setPickError(imageErrorMessage(error, "photo"));
     }
   };
 
@@ -86,7 +56,7 @@ export default function AvatarEditor({ avatarUrl, displayName }: { avatarUrl: st
           <input
             ref={inputRef}
             type="file"
-            accept={ACCEPTED.join(",")}
+            accept="image/*"
             onChange={(event) => void pick(event.target.files?.[0])}
             style={{ position: "absolute", width: 1, height: 1, opacity: 0, overflow: "hidden", clipPath: "inset(50%)" }}
             aria-label="Profile photo file"
@@ -95,7 +65,7 @@ export default function AvatarEditor({ avatarUrl, displayName }: { avatarUrl: st
           {pickError ? <p className={styles.error} role="alert">{pickError}</p> : null}
           {preview ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={preview} alt="Profile photo preview" width={120} height={120} style={{ borderRadius: 9999 }} /> : null}
           <div className="ui-actions">
-            <button className="btn-ghost" type="button" onClick={() => setOpen(false)}>Cancel</button>
+            <button className="btn-secondary" type="button" onClick={() => setOpen(false)}>Cancel</button>
             <button className="btn-primary" type="submit" disabled={pending || !preview}>{pending ? "Saving…" : "Save photo"}</button>
           </div>
         </form>

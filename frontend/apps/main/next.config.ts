@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
   transpilePackages: ["@epelawa/ui", "@epelawa/image-optimizer"],
   env: { NEXT_PUBLIC_ADMIN_BASE_PATH: "/admin" },
   allowedDevOrigins: ["*.e2b.app"],
+  // Public forms send one browser-compressed photo (≤ ~700 KB as base64) with the
+  // text fields. Next's 1 MB default leaves too little headroom, so allow 4 MB;
+  // the server still rejects decoded images over 5 MB.
+  experimental: { serverActions: { bodySizeLimit: "4mb" } },
   async headers() {
     return [{
       source: "/:path*",

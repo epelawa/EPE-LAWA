@@ -32,7 +32,8 @@
 .muted { margin: 0; color: #4a5872; font-size: .9rem; line-height: 1.5; }
 .inlineLink { display: inline-flex; align-items: center; min-height: 44px; color: #294b91; font-weight: 650; text-decoration: underline; text-underline-offset: 3px; }
 .muted .inlineLink { min-height: 0; }
-.textButton { min-height: 44px; padding: 0 6px; border: 0; background: transparent; color: #294b91; font: inherit; font-size: .85rem; font-weight: 650; cursor: pointer; }
+.textButton { min-height: 44px; padding: 0 14px; border: 1px solid #294b91; border-radius: 999px; background: transparent; color: #294b91; font: inherit; font-size: .85rem; font-weight: 650; cursor: pointer; }
+.textButton:hover:not(:disabled) { background: color-mix(in srgb, #294b91 8%, transparent); }
 .textButton:disabled { opacity: .6; cursor: progress; }
 .inlineState { display: grid; justify-items: start; gap: 8px; }
 

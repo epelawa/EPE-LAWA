@@ -111,3 +111,26 @@ export function logoDisplayUrl(value: string | null | undefined): string | null 
   if (trimmed.startsWith("https://")) return trimmed;
   return publicMediaUrl(trimmed);
 }
+
+export type SubmissionImage =
+  | { state: "none" }
+  | { state: "stored"; key: string; alt: string | null }
+  | { state: "failed"; message: string };
+
+/**
+ * Store the optional `image_data` photo of a public submission under
+ * `media/submissions/<kind>/…`. Failures are reported with a plain message so
+ * the caller can still save the text submission and tell the visitor the photo
+ * was not attached, instead of losing everything they typed.
+ */
+export async function storeSubmissionImage(form: FormData, kind: "events" | "history", stem: string): Promise<SubmissionImage> {
+  const raw = form.get("image_data");
+  if (typeof raw !== "string" || !raw.trim()) return { state: "none" };
+  const altRaw = form.get("image_alt");
+  const alt = typeof altRaw === "string" && altRaw.trim() ? altRaw.trim().slice(0, 300) : null;
+  const stored = await storeLogoDataUrl(raw, stem, `media/submissions/${kind}`);
+  if ("key" in stored) return { state: "stored", key: stored.key, alt };
+  if (stored.error === "unconfigured") return { state: "failed", message: "Photo storage is not connected on this site yet, so your photo was not attached." };
+  if (stored.error === "unavailable") return { state: "failed", message: "Your photo could not be stored just now, so it was not attached." };
+  return { state: "failed", message: "That photo could not be used, so it was not attached." };
+}

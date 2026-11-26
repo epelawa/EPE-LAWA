@@ -1,10 +1,10 @@
 "use server";
 import { revalidatePath } from "next/cache";
-import { createClient } from "../../../lib/supabase";
 import { authMailConfig, deliverAuthMessage } from "../../../lib/auth-mail-hook";
 import { storeLogoDataUrl } from "../../../lib/media-r2";
 import { parseBusinessHours } from "../../../lib/business-hours";
-import { formRateAllowance, formRateLimitedMessage } from "../../../lib/form-server";
+import { formAdminClient, formRateAllowance, formRateLimitedMessage } from "../../../lib/form-server";
+import { resolvePublicSubmitter, slugifyTitle } from "../../../lib/public-submitter";
 
 async function rateGate(): Promise<string | null> { return (await formRateAllowance("business_submit")) ? null : formRateLimitedMessage; }
 export type BusinessSubmitState = { status: "idle" | "success" | "error"; message: string };
@@ -12,10 +12,9 @@ const field=(f:FormData,k:string)=>{const v=f.get(k);return typeof v==="string"?
 const fail=(message:string):BusinessSubmitState=>({status:"error",message});
 export async function submitBusiness(_previous:BusinessSubmitState, f:FormData):Promise<BusinessSubmitState> {
  const limiter=await rateGate();if(limiter)return fail(limiter);
- const supabase=await createClient();
- const {data:{user},error:authError}=await supabase.auth.getUser();
- if(authError||!user)return fail("Please sign in before submitting a business. Your entries will remain here while this page is open.");
- if(!user.email_confirmed_at)return fail("Verify your email and sign in again before submitting a business.");
+ const who=await resolvePublicSubmitter(f);
+ if(!who.ok)return fail(who.message);
+ const submitter=who.submitter;
  const name=field(f,"name"),category=field(f,"category_id"),description=field(f,"description"),area=field(f,"area"),address=field(f,"address"),landmark=field(f,"landmark"),phone=field(f,"phone"),whatsapp=field(f,"whatsapp"),email=field(f,"email"),website=field(f,"website");
  if(name.length<2||name.length>160||!category||description.length>4000||area.length>160||address.length>300||landmark.length>200||phone.length>24||whatsapp.length>24||email.length>254||website.length>2048)return fail("Check the listing fields and their length limits.");
  const phoneRx=/^\+?[0-9][0-9 ()-]{6,19}$/;
@@ -35,20 +34,34 @@ export async function submitBusiness(_previous:BusinessSubmitState, f:FormData):
   }
   logoKey=stored.key;
  }
- let result;
+ let result:{data:{id:string}|null;error:{code?:string}|null};
  let hours:Record<string,string>|null=null;
  const hoursRaw=field(f,"hours_json");
  if(hoursRaw){
   try { const parsed=parseBusinessHours(JSON.parse(hoursRaw)); hours=Object.keys(parsed).length?parsed:null; }
   catch { hours=null; }
  }
- try { result=await supabase.rpc("business_submit",{p_name:name,p_category_id:category,p_description:description||null,p_area:area||null,p_address:address||null,p_landmark:landmark||null,p_phone:phone||null,p_whatsapp:whatsapp||null,p_email:email||null,p_website:website||null,p_hours:hours,p_logo_key:logoKey}); }
- catch {return fail("We could not confirm whether the submission was saved. Please contact support before trying again to avoid duplicates.");}
- if(result.error||typeof result.data!=="string")return fail(result.error?.message==="member_profile_required"?"This public form only accepts listings from member accounts, and your account does not have a member profile. If you are staff, add the listing from the Business submissions page in the staff workspace instead. Otherwise finish creating your member profile, or sign in with a different member account.":"We could not confirm whether the submission was saved. Please contact support before trying again to avoid duplicates.");
- const id=result.data;
+ let db;
+ try { db=formAdminClient(); } catch { return fail("Submissions are temporarily unavailable. Nothing was saved — please try again shortly."); }
+ const {data:cat}=await db.from("business_categories").select("id").eq("id",category).eq("is_active",true).maybeSingle();
+ if(!cat)return fail("Choose a category from the list.");
+ try {
+  result=await db.from("businesses").insert({
+   slug:slugifyTitle(name,"business"),owner_user_id:submitter.memberId,name,category_id:category,
+   description:description||null,area:area||null,address:address||null,landmark:landmark||null,
+   phone:phone||null,whatsapp:whatsapp||null,email:email||null,website:website||null,hours,logo_key:logoKey,status:"submitted",
+   submitter_name:submitter.guest?submitter.name:null,submitter_email:submitter.guest?submitter.email:null,
+  }).select("id").single();
+ } catch { return fail("We could not reach the listing service, so nothing was saved. Please try again in a moment."); }
+ if(result.error||!result.data?.id){
+  console.error("Business submission insert failed",result.error?.code);
+  return fail("Your listing could not be saved. Check the fields and try again — nothing was published.");
+ }
+ try { await db.rpc("audit_event",{p_actor_kind:"system",p_action:"business.public_submit",p_resource_type:"business",p_resource_id:result.data.id,p_outcome:"success",p_metadata:{guest:submitter.guest,member:Boolean(submitter.memberId)}}); } catch { /* audit is best effort */ }
+ const id=result.data.id as string;
  // A saved listing remains a success even if mail fails; messages contain no listing details.
  try { const config=authMailConfig(process.env); if(config.kind !== "gmail") throw new Error("staff mailbox unavailable"); await deliverAuthMessage({to:config.user,subject:"New EPE LAWA business submission",text:"A new business listing is awaiting review in the private staff workspace.",html:"<p>A new business listing is awaiting review in the private staff workspace.</p>",idempotencyKey:`business-notice/${id}`},config); } catch { console.error("Business submission staff notification unavailable; check the review queue."); }
- try { if(!user.email) throw new Error("account email unavailable"); const config=authMailConfig(process.env); await deliverAuthMessage({to:user.email,subject:"We received your business submission",text:"Thank you for submitting your business to EPE LAWA. Your listing is awaiting review and our team will get in touch soon.",html:"<p>Thank you for submitting your business to EPE LAWA. Your listing is awaiting review and our team will get in touch soon.</p>",idempotencyKey:`business-ack/${id}`},config); } catch { console.error("Business submission acknowledgement unavailable."); }
+ try { if(!submitter.email) throw new Error("contact email unavailable"); const config=authMailConfig(process.env); await deliverAuthMessage({to:submitter.email,subject:"We received your business submission",text:"Thank you for submitting your business to EPE LAWA. Your listing is awaiting review and our team will get in touch soon.",html:"<p>Thank you for submitting your business to EPE LAWA. Your listing is awaiting review and our team will get in touch soon.</p>",idempotencyKey:`business-ack/${id}`},config); } catch { console.error("Business submission acknowledgement unavailable."); }
  try { revalidatePath("/business-directory"); } catch { console.error("Business directory cache revalidation unavailable."); }
  return {status:"success",message:"Submission received. Your listing is unpublished and awaits staff review. Our team will get in touch soon."};
 }

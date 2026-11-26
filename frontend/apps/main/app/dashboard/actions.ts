@@ -68,7 +68,7 @@ export async function updateMemberAvatar(_state: MemberProfileState, data: FormD
     if ("error" in stored) {
       if (stored.error === "unconfigured") return { status: "error", message: "Image storage is not connected on this deployment yet." };
       if (stored.error === "unavailable") return { status: "error", message: "The photo could not be stored right now. Try again in a moment." };
-      return { status: "error", message: "That image could not be used. Choose a JPEG, PNG or WebP image smaller than 5 MB." };
+      return { status: "error", message: "That image could not be used. Choose a JPEG, PNG, WebP or phone photo and try again." };
     }
     const { data: updated, error } = await supabase
       .from("profiles")

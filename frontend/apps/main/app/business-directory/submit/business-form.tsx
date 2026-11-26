@@ -6,6 +6,7 @@ import { submitBusiness } from "./actions";
 import styles from "./business-form.module.css";
 import BusinessLogoInput from "../../../components/business-logo-input";
 import BusinessHoursEditor from "../../../components/business-hours-editor";
+import GuestContactFields from "../../../components/guest-contact-fields";
 
 type Category = { id: string; label: string };
 
@@ -22,7 +23,7 @@ const CONTACT_FIELDS = [
   ["website", "Website (HTTPS)", 2048, { url: true }],
 ] as const;
 
-export default function BusinessForm({ categories }: { categories: Category[] }) {
+export default function BusinessForm({ categories, signedIn = false, accountEmail = null }: { categories: Category[]; signedIn?: boolean; accountEmail?: string | null }) {
   const [step, setStep] = useState(1);
   const [state, action, pending] = useActionState(submitBusiness,{status:"idle" as const,message:""});
   const [values,setValues] = useState<Record<string,string>>({});
@@ -58,6 +59,7 @@ export default function BusinessForm({ categories }: { categories: Category[] })
       <div className="ui-stack-sm"><BusinessLogoInput /><LiveField label="Logo link" optional hint="Paste an HTTPS image link." rules={{ url: true }} value={values.logo_url ?? ""} onChange={change}><input name="logo_url" type="url" maxLength={2048} className="input" placeholder="https://" /></LiveField></div>
       <BusinessHoursEditor />
       <p className="ui-muted">Contact information is listing content and may appear publicly after approval.</p>
+      <GuestContactFields signedIn={signedIn} accountEmail={accountEmail} idPrefix="business" />
     </section>
     <div className={styles.actions}>{enhanced && step === 2 && <button className="btn-secondary" type="button" onClick={() => move(1)}>Back</button>}{enhanced && step === 1 && <button className="btn-primary" type="button" onClick={next}>Continue</button>}<SubmitButton pendingLabel="Sending…" disabled={state.status === "success"} hidden={enhanced && step !== 2}>Send for review</SubmitButton></div>
     {state.message && <p role={state.status === "error" ? "alert" : "status"} aria-live="polite">{state.message}</p>}

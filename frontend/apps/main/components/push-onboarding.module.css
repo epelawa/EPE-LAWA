@@ -14,7 +14,9 @@
 .copy { margin: 0; color: #4a5872; line-height: 1.5; }
 .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
 .actions > * { flex: 1 1 140px; }
-.link { justify-self: start; min-height: 44px; padding: 0; border: 0; background: transparent; color: #294b91; font: inherit; font-weight: 650; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.link { justify-self: start; display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border: 1px solid #294b91; border-radius: 999px; background: transparent; color: #294b91; font: inherit; font-weight: 650; text-decoration: none; cursor: pointer; }
+.link:hover:not(:disabled) { background: color-mix(in srgb, #294b91 8%, transparent); }
+.link:focus-visible { outline: 3px solid #477FE0; outline-offset: 2px; }
 .link:disabled { opacity: .6; }
 .fine { margin: 0; color: #5d6a80; font-size: .8rem; line-height: 1.45; }
 .fineLink { color: inherit; text-decoration: underline; }

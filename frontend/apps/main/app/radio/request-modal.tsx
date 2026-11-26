@@ -11,14 +11,14 @@ export default function SongRequestModal({ programmes, signedIn }: { programmes:
   const [open, setOpen] = useState(false);
 
   if (!signedIn) {
-    return <a className="btn-ghost" href={`/login?next=${encodeURIComponent("/radio")}`}>Sign in to request a song</a>;
+    return <a className="btn-secondary" href={`/login?next=${encodeURIComponent("/radio")}`}>Sign in to request a song</a>;
   }
   if (state.status === "success") {
     return <p role="status" className="ui-meta">{state.message}</p>;
   }
   return <div className="ui-stack-sm">
     {state.status === "error" ? <p role="alert" className="ui-meta">{state.message}</p> : null}
-    <button className="btn-ghost" type="button" aria-haspopup="dialog" onClick={() => setOpen(true)}>Request a song on air</button>
+    <button className="btn-secondary" type="button" aria-haspopup="dialog" onClick={() => setOpen(true)}>Request a song on air</button>
     <BrandedDialog
       open={open}
       onClose={() => setOpen(false)}
@@ -42,7 +42,7 @@ export default function SongRequestModal({ programmes, signedIn }: { programmes:
           <textarea className="input" id="song-request-note" name="note" minLength={2} maxLength={500} rows={3} placeholder="A dedication, greeting or why it matters…" />
         </div>
         <div className="ui-actions">
-          <button className="btn-ghost" type="button" onClick={() => setOpen(false)}>Cancel</button>
+          <button className="btn-secondary" type="button" onClick={() => setOpen(false)}>Cancel</button>
           <button className="btn-primary" type="submit" disabled={pending}>{pending ? "Sending…" : "Send request"}</button>
         </div>
       </form>
