@@ -46,7 +46,7 @@ function pushOrigin(): string {
 async function dispatchNewsroomPush(supabase: Awaited<ReturnType<typeof createClient>>, articleId: string): Promise<void> {
   if (!pushSenderReady()) return;
   try {
-    const read = await supabase.from("articles").select("title,summary,slug").eq("id", articleId).maybeSingle();
+    const read = await supabase.from("published_articles").select("title,summary,slug").eq("id", articleId).maybeSingle();
     const article = read.data;
     if (!article || typeof article.slug !== "string" || !article.slug) return;
     const response = await fetch(`${pushOrigin()}/api/push/dispatch`, {

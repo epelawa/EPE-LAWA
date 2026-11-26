@@ -5,7 +5,6 @@ import { ArrowRightIcon } from "../../components/icons";
 import { PageFrame } from "../../components/design-system";
 import styles from "./radio-page.module.css";
 import { pageMetadata } from "../../lib/metadata";
-import SponsorSlot from "../../components/sponsor-slot";
 import { createClient } from "../../lib/supabase";
 import SongRequestModal from "./request-modal";
 import { onAirSlotId } from "./programmes/on-air";
@@ -34,7 +33,7 @@ export default async function RadioPage() {
 
   return <PageFrame className={styles.listeningPage}>
     <section id="live-player" className={styles.playerWrap} aria-label="Radio stations">
-      <RadioPlayer><SponsorSlot compact /></RadioPlayer>
+      <RadioPlayer />
       <div className={styles.nowPlaying} role="status">
         <span className={styles.onAirDot} aria-hidden="true" />
         {onAirName ? <span><strong>On air now:</strong> {onAirName}</span> : <span><strong>On air now:</strong> station programming</span>}

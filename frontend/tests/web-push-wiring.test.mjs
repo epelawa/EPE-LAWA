@@ -32,8 +32,7 @@ test('web push is fully wired: worker, authenticated subscribe route, registrati
 
   assert.match(prompt, /auth\.getUser\(\)/, 'prompt only asks signed-in members');
   assert.match(prompt, /pushManager\.getSubscription/, 'existing subscriptions are reused');
-  assert.match(layout, /<NotificationPrompt \/>/);
-  assert.match(layout, /NEXT_PUBLIC_WEB_PUSH_ENABLED/);
+  assert.doesNotMatch(layout, /<NotificationPrompt \/>/, "do not offer push until delivery is verified");
 });
 
 test('the AI Scheduler stub is retired from navigation, routes and tests', async () => {

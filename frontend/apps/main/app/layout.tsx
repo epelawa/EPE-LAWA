@@ -12,7 +12,6 @@ export const viewport: Viewport = { themeColor: "#F1F4FA" };
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import Connectivity from "./connectivity";
-import { SponsorPopupPlacement } from "../components/sponsor-slot";
 import SiteHeader from "../components/site-header";
 import FloatingSupport from "../components/floating-support";
 import NewsFooter from "../components/news-footer";
@@ -29,7 +28,6 @@ import MobileBottomNav from "../components/mobile-bottom-nav";
 import { createClient } from "../lib/supabase";
 import { readSiteLanguage } from "../lib/i18n";
 import { NotificationSoundListener } from "../components/notification-sound";
-import NotificationPrompt from "../components/notification-prompt";
 import ToastRegion from "../components/toast";
 import SlashFocus from "../components/slash-focus";
 
@@ -122,16 +120,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <SiteFooter><NewsFooter listing /></SiteFooter>
         <AuthenticatedMobileNavigation />
         <Connectivity />
-        <SponsorPopupPlacement />
         <FloatingSupport enabled={process.env.ENQUIRY_INTAKE_ENABLED === "true"} />
 
-        {/* Web-push opt-in. The component itself stays dark unless
-            NEXT_PUBLIC_WEB_PUSH_ENABLED === "true" and a real VAPID public key
-            is configured, so enabling delivery is a Vercel-variable change only.
-            The matching private key stays server-side, and the sender (what
-            pushes article/radio events to stored subscriptions) is the last
-            unbuilt half of web push — see docs/00-master-plan.md §8. */}
-        <NotificationPrompt />
       </body>
     </html>
   );

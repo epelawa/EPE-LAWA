@@ -117,10 +117,14 @@ export function pushSenderReady(env: NodeJS.ProcessEnv = process.env): boolean {
   );
 }
 
-function pushServiceUrl(endpoint: string): URL | null {
+export function pushServiceUrl(endpoint: string): URL | null {
   try {
     const url = new URL(endpoint);
-    if (url.protocol !== "https:" || url.username || url.password || /localhost/i.test(url.hostname)) return null;
+    // Browser subscriptions must target a known push service, never an arbitrary
+    // URL supplied by a member. Do not follow redirects to untrusted hosts.
+    const host = url.hostname.toLowerCase();
+    const allowed = host === "fcm.googleapis.com" || host === "updates.push.services.mozilla.com" || host === "web.push.apple.com" || host.endsWith(".push.apple.com");
+    if (url.protocol !== "https:" || !allowed || url.username || url.password || url.port || url.hash) return null;
     return url;
   } catch { return null; }
 }
@@ -139,6 +143,7 @@ export async function webPushDeliver(endpoint: string, p256dh: string, auth: str
   const body = webPushEncrypt(p256dh, auth, payload);
   const response = await fetch(service.href, {
     method: "POST",
+    redirect: "error",
     headers: {
       TTL: "86400",
       Urgency: "normal",

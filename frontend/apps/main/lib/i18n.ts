@@ -1,10 +1,4 @@
-import { cookies } from "next/headers";
-
-import {
-  SITE_LANG_COOKIE,
-  isSiteLanguage,
-  type SiteLanguage,
-} from "./i18n-messages";
+import type { SiteLanguage } from "./i18n-messages";
 
 export {
   SITE_LANG_COOKIE,
@@ -18,11 +12,8 @@ export {
 
 export type { SiteLanguage } from "./i18n-messages";
 
+// Full-site Yoruba translations are not yet available. Ignore the old partial
+// language preference until the entire experience can be translated.
 export async function readSiteLanguage(): Promise<SiteLanguage> {
-  try {
-    const value = (await cookies()).get(SITE_LANG_COOKIE)?.value;
-    return isSiteLanguage(value) ? value : "en";
-  } catch {
-    return "en";
-  }
+  return "en";
 }

@@ -84,6 +84,5 @@ test('unconfigured web push never asks permission and contains no fabricated VAP
   assert.doesNotMatch(vapid, /BGp7Y1q7/);
   assert.match(prompt, /if \(!WEB_PUSH_READY\)/);
   assert.match(prompt, /auth\.getUser\(\)/);
-  assert.match(layout, /<NotificationPrompt \/>/);
-  assert.match(layout, /NEXT_PUBLIC_WEB_PUSH_ENABLED/);
+  assert.doesNotMatch(layout, /<NotificationPrompt \/>/);
 });

@@ -62,9 +62,8 @@ test("reduced-motion swaps the animated track for native swipe", () => {
   assert.match(reduced, /scroll-snap-type: x mandatory/);
 });
 
-test("the homepage carries ads only through the sponsor slot", () => {
+test("the homepage no longer mounts advertising placements", () => {
   const homepage = repoFile("frontend/apps/main/app/page.tsx");
   assert.doesNotMatch(homepage, /AdsSection/);
-  const mountCount = homepage.split("<SponsorSlot").length - 1;
-  assert.ok(mountCount >= 2, "homepage keeps its header and footer sponsor slots");
+  assert.doesNotMatch(homepage, /<SponsorSlot/);
 });

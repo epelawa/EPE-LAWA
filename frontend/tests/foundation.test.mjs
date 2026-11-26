@@ -202,7 +202,7 @@ test('homepage hero gallery is sourced, responsive, eager and resource-aware', a
   const layout = await readProjectFile('frontend/apps/main/app/layout.tsx');
   assert.match(page, /<HeroCarousel>/);
   assert.match(page, /"home.title.line1"/);
-  assert.doesNotMatch(page, /home-hero__brand|BrandLockup/);
+  assert.match(page, /home-hero__brand/);
   assert.match(source, /ROTATION_DELAY_MS\s*=\s*7200/);
   assert.match(source, /window\.setTimeout/);
   assert.match(source, /prefers-reduced-motion/);
@@ -227,7 +227,7 @@ test('homepage hero gallery is sourced, responsive, eager and resource-aware', a
   assert.doesNotMatch(styles, /@media[^{}]*pointer:\s*coarse[^{}]*\.home-hero__slide-control[^{}]*clip-path:\s*none/);
   assert.match(styles, /min-width:\s*44px|width:\s*44px/);
   assert.doesNotMatch(styles, /home-hero__caption|home-hero__credit|home-hero__slide-label|home-hero__counter/);
-  assert.doesNotMatch(styles, /home-hero__brand/);
+  assert.match(styles, /home-hero__brand/);
   assert.match(styles, /prefers-reduced-motion/);
   assert.equal(manifest.length, 54);
   assert.deepEqual(manifest.slice(0, 2).map(({ slug, author, source }) => ({ slug, author, source })), [

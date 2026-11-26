@@ -28,7 +28,7 @@ test('homepage preserves all 52 credited photos and restores its two original he
   assert.equal(manifest.slice(2).length,52);
   assert.deepEqual(manifest.slice(0,2).map(slide=>slide.slug),['new-epe-road','fish-statue-epe']);
   assert.equal(new Set(manifest.map(slide=>slide.source)).size,54);
-  assert.doesNotMatch(source,/home-hero__brand|BrandLockup/);
+  assert.match(source,/home-hero__brand/);
   assert.match(source,/href="\/news" className="btn-primary">\{t\(lang, "home.cta.news"\)\}/);
   assert.doesNotMatch(source,/Stories worth knowing|History worth keeping|Places worth finding|People worth connecting/);
   assert.doesNotMatch(carousel,/Epe · Lagos State|Rooted in the community\. Open to everyone\./);
@@ -59,7 +59,7 @@ test('map location remains explicit and its security policy allows only self on 
   const map=read('frontend/apps/main/app/map/map-search.tsx');assert.match(map,/onClick=\{requestLocation\}/);assert.match(map,/getCurrentPosition/);assert.match(map,/EPE LAWA does not store/);const config=read('frontend/apps/main/next.config.ts');assert.match(config,/source: "\/map"/);assert.match(config,/geolocation=\(self\)/);assert.match(config,/geolocation=\(\)/);
 });
 test('every admin page has actual rebuilt markup and complete workflow navigation',()=>{
-  for(const file of files('frontend/apps/admin/app').filter(f=>f.endsWith('/page.tsx')))assert.match(read(file),/PageIntro/,file);
+  for(const file of files('frontend/apps/admin/app').filter(f=>f.endsWith('/page.tsx')))assert.match(read(file),/PageIntro|export \{ default \} from/,file);
   const nav=read('frontend/apps/admin/lib/navigation.ts');for(const route of ['/itan-ilu-mi/review','/business-review/moderation','/tourism','/radio','/people'])assert.ok(nav.includes(`href: "${route}"`),route);
   assert.doesNotMatch(nav,/label: "Who is Who review", href: "\/itan-ilu-mi/);
   assert.match(read('frontend/apps/admin/app/(protected)/layout.tsx'),/AdminAccessGuard/);assert.match(read('frontend/apps/admin/components/admin-access-guard.tsx'),/getAdminAccessForSession/);assert.ok(!fs.existsSync(path.join(root,'frontend/apps/admin/app/loading.tsx')));assert.ok(fs.existsSync(path.join(root,'frontend/apps/admin/app/(protected)/loading.tsx')));

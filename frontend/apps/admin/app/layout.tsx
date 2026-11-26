@@ -33,7 +33,7 @@ export const viewport: Viewport = { themeColor: "#F1F4FA" };
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 
-type AdminIdentity = { email: string | null; role: string; capabilities: string[] };
+type AdminIdentity = { email: string | null; role: string; capabilities?: string[] };
 
 async function loadIdentity(): Promise<AdminIdentity> {
   try {

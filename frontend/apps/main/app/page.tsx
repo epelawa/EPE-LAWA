@@ -11,7 +11,6 @@ import NewsImage from "../components/news-image";
 import ArticleByline from "../components/article-byline";
 import { HomeBreakingTicker } from "../components/home-breaking-ticker";
 import { BreakingBadge } from "../components/breaking-news";
-import SponsorSlot from "../components/sponsor-slot";
 import { HomeSectionReveal } from "../components/home-sections";
 import SitePoll from "../components/site-poll";
 import HomeLivePill from "../components/home-live-pill";
@@ -31,11 +30,13 @@ export default async function Home() {
       <section className="home-hero" aria-labelledby="home-title">
         <HeroCarousel>
           <div className="home-hero__content ep-container">
+            <img className="home-hero__brand" src="/brand-logo.webp" alt="EPE LAWA" width={104} height={90} />
             <p className="home-hero__eyebrow">{t(lang, "home.eyebrow")}</p>
             <h1 id="home-title">{t(lang, "home.title.line1")}<br />{t(lang, "home.title.line2")}</h1>
             <p className="home-hero__lede">{t(lang, "home.lede")}</p>
             <div className="home-hero__actions">
               <Link href="/news" className="btn-primary">{t(lang, "home.cta.news")} <ArrowRightIcon size={17} aria-hidden="true" /></Link>
+              <Link href="/itan-ilu-mi" className="home-hero__secondary">Explore community history <ArrowRightIcon size={17} aria-hidden="true" /></Link>
             </div>
           </div>
         </HeroCarousel>
@@ -43,7 +44,6 @@ export default async function Home() {
 
       {breaking.state === "ok" ? <HomeBreakingTicker stories={breaking.items} initialTime={renderedAt} /> : null}
 
-      <SponsorSlot />
 
       <HomeSectionReveal><div className="ep-container home-discovery">
         <section className="home-radio" aria-labelledby="home-radio-title">
@@ -59,7 +59,6 @@ export default async function Home() {
             { href: "/forum", label: t(lang, "home.shortcut.forum"), Icon: MessageCircleIcon },
             { href: "/business-directory", label: t(lang, "home.shortcut.business"), Icon: BuildingIcon },
             { href: "/events", label: t(lang, "home.shortcut.events"), Icon: CalendarShortcutIcon },
-            { href: "/advertise", label: t(lang, "home.shortcut.advertise"), Icon: UsersIcon },
           ].map(({ href, label, Icon }) => <Link href={href} key={href}><span aria-hidden="true"><Icon size={25} /></span><span>{label}</span></Link>)}
         </nav>
       </div></HomeSectionReveal>
@@ -117,7 +116,6 @@ export default async function Home() {
         <span className="connection-panel__icon" aria-hidden="true"><UsersIcon size={96} /></span>
       </section></HomeSectionReveal>
       <HomeSectionReveal><div className="ep-container home-poll"><SitePoll /></div></HomeSectionReveal>
-      <SponsorSlot footer />
       <CookieBanner />
     </div>
   );

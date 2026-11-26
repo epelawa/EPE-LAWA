@@ -7,7 +7,8 @@
 .home-hero__eyebrow { margin: 0; padding: 6px 12px; border-radius: 7px; background: #294b91; color: white; font-size: 12px; font-weight: 800; letter-spacing: .08em; }
 .home-hero__lede { margin: 0; font-size: clamp(16px, 1.4vw, 20px); }
 .home-hero__actions { justify-content: flex-start; padding-top: 22px; }
-.home-hero__actions .btn-primary { background: transparent; border: 1px solid white; }
+.home-hero__actions .btn-primary { background: #a7c5f5; border: 1px solid #a7c5f5; color: #0a1023; }
+.home-hero__brand { margin-inline: 0; }
 .home-hero__pause, .home-hero__slide-control { clip-path: none; }
 .home-hero__slide-control { top: auto; bottom: 16px; transform: none; }
 .home-hero__slide-control--previous { left: auto; right: 64px; }
@@ -159,3 +160,14 @@
   .home-section-reveal .home-shortcuts a { transition: none; }
 }
 .home-shortcuts a, .home-story-cover-link { -webkit-tap-highlight-color: transparent; }
+
+/* Keep the homepage accents consistent with the EPE LAWA palette. */
+.home-hero__lede { padding: 0; background: transparent; color: #f1f4fa; font-weight: 500; }
+.home-shortcuts a, .home-shortcuts a:last-child,
+.home-shortcuts a:nth-child(2), .home-shortcuts a:nth-child(3),
+.home-shortcuts a:nth-child(4), .home-shortcuts a:nth-child(5),
+.home-shortcuts a:nth-child(6) { background: #fff; color: #17264a; border: 1px solid #dce3ee; box-shadow: 0 5px 16px rgb(10 16 35 / .06); }
+.home-shortcuts a:hover { color: #294b91; background: #f1f4fa; }
+.home-radio__action { background: #a7c5f5; border-color: #a7c5f5; color: #0a1023; }
+.home-radio__action:hover { background: #dbe9ff; color: #0a1023; }
+.home-news__heading h2 { border-color: #477fe0; }

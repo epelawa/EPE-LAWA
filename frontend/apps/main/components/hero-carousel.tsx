@@ -60,6 +60,7 @@ export default function HeroCarousel({ children }: { children: ReactNode }) {
   const [hovered, setHovered] = useState(false);
   const [pageVisible, setPageVisible] = useState(true);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
     const query = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -84,17 +85,17 @@ export default function HeroCarousel({ children }: { children: ReactNode }) {
   }, [index]);
 
   useEffect(() => {
-    if (loadedIndex !== index || !activeCurrentSrc || slides.length < 2 || focused || hovered || !pageVisible || reducedMotion || isConstrainedConnection()) return;
+    if (loadedIndex !== index || !activeCurrentSrc || slides.length < 2 || focused || hovered || !pageVisible || reducedMotion || paused || isConstrainedConnection()) return;
     const timeout = window.setTimeout(() => {
       setActiveCurrentSrc("");
       setLoadedIndex(-1);
       setIndex((current) => (current + 1) % slides.length);
     }, ROTATION_DELAY_MS);
     return () => window.clearTimeout(timeout);
-  }, [loadedIndex, index, activeCurrentSrc, focused, hovered, pageVisible, reducedMotion]);
+  }, [loadedIndex, index, activeCurrentSrc, focused, hovered, pageVisible, reducedMotion, paused]);
 
   useEffect(() => {
-    if (loadedIndex !== index || !activeCurrentSrc || slides.length < 2 || focused || hovered || !pageVisible || reducedMotion || isConstrainedConnection()) return;
+    if (loadedIndex !== index || !activeCurrentSrc || slides.length < 2 || focused || hovered || !pageVisible || reducedMotion || paused || isConstrainedConnection()) return;
     const connection = getNetworkConnection();
     const count = Math.min(slides.length - 1, connection?.effectiveType === "3g" ? 1 : 2);
     const match = activeCurrentSrc.match(/-(\d+)\.(avif|webp)(?:\?.*)?$/i);
@@ -107,7 +108,7 @@ export default function HeroCarousel({ children }: { children: ReactNode }) {
       image.fetchPriority = "low";
       image.src = closestVariant(nextSlide[formatName], preferredWidth).src;
     }
-  }, [loadedIndex, index, activeCurrentSrc, focused, hovered, pageVisible, reducedMotion]);
+  }, [loadedIndex, index, activeCurrentSrc, focused, hovered, pageVisible, reducedMotion, paused]);
 
   if (!slides.length) return null;
   const slide = slides[index] ?? slides[0];
@@ -147,6 +148,7 @@ export default function HeroCarousel({ children }: { children: ReactNode }) {
       </div>
         </figure>
         {children}
+        {slides.length > 1 && !reducedMotion ? <button type="button" className="home-hero__rotation" onClick={() => setPaused((value) => !value)}>{paused ? "Play photos" : "Pause photos"}</button> : null}
       </div>
     </>
   );

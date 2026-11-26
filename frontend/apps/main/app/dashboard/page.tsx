@@ -1,5 +1,6 @@
 import { SubmitButton } from "@epelawa/ui";
 import { NotificationSoundSettings } from "../../components/notification-sound";
+import NotificationLiveRefresh from "../../components/notification-live-refresh";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { cookies } from "next/headers";
@@ -61,16 +62,7 @@ type NotificationPreferences = {
 };
 
 const inAppPreferenceRows: { key: keyof NotificationPreferences; title: string; description: string }[] = [
-  { key: "in_app_news", title: "Newsroom updates", description: "Headlines and stories from the EPE LAWA desk." },
-  { key: "in_app_radio", title: "Radio", description: "Live shows and radio moments." },
-  { key: "in_app_comments", title: "Comment replies", description: "Replies to your comments on stories." },
-  { key: "in_app_forum", title: "Forum replies", description: "Replies inside forum discussions you take part in." },
-];
-const pushPreferenceRows: { key: keyof NotificationPreferences; title: string; description: string }[] = [
-  { key: "push_news", title: "Breaking news", description: "Push alerts for major stories on this device." },
-  { key: "push_radio", title: "Radio live", description: "Ping when a show goes on air." },
-  { key: "push_comments", title: "Comment replies", description: "Replies to your comments, on this device." },
-  { key: "push_forum", title: "Forum replies", description: "Replies in forum discussions, on this device." },
+  { key: "in_app_news", title: "Newsroom updates", description: "New stories in news topics you follow." },
 ];
 
 function PreferenceRow({ name, title, description, checked }: { name: string; title: string; description: string; checked: boolean }) {
@@ -86,15 +78,11 @@ function PreferenceRow({ name, title, description, checked }: { name: string; ti
 function NotificationPreferencesPanel({ preferences }: { preferences: NotificationPreferences }) {
   return <section className={styles.prefsPanel} aria-labelledby="notification-preferences-title">
     <h2 id="notification-preferences-title">Notification channels</h2>
-    <p className={styles.helper}>Choose what reaches your account in the app. Push channels also need “Allow notifications” in your browser first.</p>
+    <p className={styles.helper}>Choose whether to receive in-app updates for news topics you follow. Reply and radio alerts and browser push are not currently available.</p>
     <form action={updateNotificationPreferences}>
       <fieldset className={styles.prefsGroup}>
         <legend>In-app</legend>
         {inAppPreferenceRows.map((row) => <PreferenceRow key={row.key} name={row.key} title={row.title} description={row.description} checked={preferences[row.key]} />)}
-      </fieldset>
-      <fieldset className={styles.prefsGroup}>
-        <legend>Push (this device, after browser opt-in)</legend>
-        {pushPreferenceRows.map((row) => <PreferenceRow key={row.key} name={row.key} title={row.title} description={row.description} checked={preferences[row.key]} />)}
       </fieldset>
       <SubmitButton pendingLabel="Saving…" className="btn-primary" useLegacyClasses>Save preferences</SubmitButton>
     </form>
@@ -227,7 +215,7 @@ function DashboardNotifications({ notifications, error, preferences }: { notific
         ? <div className={styles.emptyNotifications}>
           <BellIcon size={30} />
           <h2>No notifications yet</h2>
-          <p>When someone replies to your comment, a moderator records a decision or the newsroom publishes something you follow, it will appear here.</p>
+          <p>Updates from the EPE LAWA team and new stories in news topics you follow can appear here.</p>
           <Link className="btn-secondary" href="/dashboard?tab=discover">Browse published stories</Link>
         </div>
         : <ul className={styles.notificationList}>
@@ -366,6 +354,7 @@ export default async function MemberDashboardPage({ searchParams }: { searchPara
 
   return (
     <>
+      <NotificationLiveRefresh userId={user.id} />
       <MemberTopbar displayName={profile.display_name} handle={profile.handle} unreadCount={unreadCount} />
       <SessionGuard scope="member" timeoutMs={MEMBER_INACTIVITY_MS} signOutAction={signOut} />
       <main className={`${styles.shell} member-dashboard-shell`}>
@@ -379,7 +368,7 @@ export default async function MemberDashboardPage({ searchParams }: { searchPara
         </header> : null}
         {activeTab === "home" ? <DashboardHomeNews client={supabase} />
           : activeTab === "discover" ? <DashboardDiscoverNews client={supabase} query={query} category={category} page={page} />
-            : activeTab === "notifications" ? <DashboardNotifications notifications={notifications} error={Boolean(notificationsError)} preferences={(preferenceRow as unknown as NotificationPreferences) ?? null} />
+            : activeTab === "notifications" ? <DashboardNotifications notifications={notifications} error={Boolean(notificationsError)} preferences={preferencesError ? null : ((preferenceRow as unknown as NotificationPreferences) ?? { in_app_news: true, in_app_radio: false, in_app_comments: true, in_app_forum: false, push_news: false, push_radio: false, push_comments: false, push_forum: false })} />
               : activeTab === "saved" ? <DashboardSaved /> : <div className={styles.grid}>
                 <section className={styles.panel} aria-labelledby="profile-title">
                   <div className={styles.profileIdentity}><span className={styles.profileAvatar} aria-hidden="true">{publicMediaUrl(profile.avatar_key) ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={publicMediaUrl(profile.avatar_key) ?? ""} alt="" width={56} height={56} style={{ borderRadius: "inherit" }} /> : profile.display_name.trim().slice(0, 1).toUpperCase()}</span><div><h2 id="profile-title">{profile.display_name}</h2><span className={styles.handle}>@{profile.handle}</span>{profile.created_at ? <span className={styles.helper}>Member since {formatPublishedDate(profile.created_at)}</span> : null}</div></div>
