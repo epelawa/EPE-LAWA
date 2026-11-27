@@ -96,12 +96,11 @@ test("admin route links keep normal navigation and expose immediate pending feed
 
 test("both newsroom upload entry points share the composer and preserve route fallbacks", () => {
   const page = repo("frontend/apps/admin/app/(protected)/newsroom/page.tsx");
-  const modal = repo("frontend/apps/admin/components/composer-modal.tsx");
-  assert.equal((page.match(/<ComposerTrigger/g) ?? []).length, 2);
-  assert.match(page, /defaultOpen=\{compose === "1" && canCompose\}/);
+  const fallback = repo("frontend/apps/admin/app/(protected)/newsroom/new/page.tsx");
+  assert.match(page, /<NewsArticleComposer/);
+  assert.match(fallback, /<NewsArticleComposer/);
   assert.match(page, /adminHref\("\/newsroom\/new"\)/);
-  assert.match(modal, /ComposerContext\.Provider/);
-  assert.match(modal, /onClick=\{\(event\) => openComposer\(event\.currentTarget\)\}/);
+  assert.doesNotMatch(page, /ComposerTrigger|ComposerModal/);
 });
 
 test("backup controls surface an actionable configuration alert", () => {
