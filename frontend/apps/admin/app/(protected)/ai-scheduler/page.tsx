@@ -4,10 +4,10 @@ import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, Status
 import { createStaffClient } from "../../../lib/supabase";
 import { adminHref } from "../../../lib/admin-path";
 import { lagosExact, lagosInputValue } from "../../../lib/lagos-time";
-import { refreshAiModels, runAiJobNow, saveAiModels, saveAiSettings } from "../../../lib/ai-actions";
+import { runAiJobNow, saveAiModels, saveAiSettings } from "../../../lib/ai-actions";
 import { AI_CAPABILITIES, AI_SETTINGS_COLUMNS, MAX_MODELS_PER_JOB, MODEL_JOBS, normaliseSettings } from "../../../../main/lib/ai/settings";
 import { AI_JOB_LABELS } from "../../../../main/lib/ai/runner";
-import { freeModels, keyStatus, modelQueue, modelRank, requestsToday, sortModels, type FreeModel } from "../../../../main/lib/ai/openrouter";
+import { keyStatus, loadFreeModels, modelQueue, requestsToday, type ModelList } from "../../../../main/lib/ai/openrouter";
 import { NEWS_OUTLETS } from "../../../../main/lib/ai/news-sources";
 import { formAdminClient } from "../../../../main/lib/form-server";
 
@@ -25,11 +25,8 @@ const messages: Record<string, { tone: "success" | "danger" | "warning"; text: s
   window: { tone: "warning", text: "Daily working hours need a start and an end time that differ." },
   "models-saved": { tone: "success", text: "Model choices saved. Each job now tries its models in the order you set." },
   "models-failed": { tone: "danger", text: "The model choices could not be saved. Only free models (ending in :free) can be chosen." },
-  "models-refreshed": { tone: "success", text: "Free model list refreshed from OpenRouter." },
-  "models-unreachable": { tone: "warning", text: "OpenRouter's model list could not be reached. The last saved list is shown." },
+  "models-unknown": { tone: "warning", text: "One of the chosen models is not in OpenRouter's free list any more, so nothing was saved. The list below is live from OpenRouter — choose again." },
 };
-
-const MAKER: Record<number, string> = { 0: "NVIDIA", 1: "DeepSeek" };
 
 function statusTone(status: string): "success" | "warning" | "danger" | "neutral" {
   return status === "success" ? "success" : status === "failed" ? "danger" : status === "partial" || status === "running" ? "warning" : "neutral";
@@ -54,14 +51,15 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
       <EmptyPanel title="AI tables are not installed" description="Apply the database migration 20261129080000_ai_autopilot_admin_logs_guest_engagement.sql, then reload this page." />
     </PageFrame>;
   }
-  let models: FreeModel[] = [];
+  let list: ModelList = { models: [], source: "none", loadedAt: null };
   let used = 0;
   try {
     const service = formAdminClient();
-    const [catalogue, count] = await Promise.all([freeModels(service), requestsToday(service)]);
-    models = sortModels(catalogue);
+    const [loaded, count] = await Promise.all([loadFreeModels(service), requestsToday(service)]);
+    list = loaded;
     used = count;
   } catch { /* service key missing: shown below */ }
+  const models = list.models;
   const key = await keyStatus();
   const runs = (runsResult.data ?? []) as Run[];
   const notice = result === "ran" ? { tone: "success" as const, text: summary || "Run finished." } : result ? messages[result] : null;
@@ -93,8 +91,8 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
         </Panel>
         <Panel className="ui-stack-sm">
           <h2>Free models available</h2>
-          <p className="ui-number"><strong>{models.length}</strong> free models on OpenRouter right now.</p>
-          <p className="ui-muted">Choose which ones each job uses below. <a href="#ai-models">Go to model choices ↓</a></p>
+          <p className="ui-number"><strong>{models.length}</strong> free models {list.source === "live" ? "on OpenRouter right now" : "in the last list saved from OpenRouter"}.</p>
+          <p className="ui-muted">{list.source === "live" ? "Loaded live from OpenRouter when this page opened." : list.error ?? "OpenRouter could not be reached."} <a href="#ai-models">Choose models ↓</a></p>
         </Panel>
       </div>
 
@@ -136,8 +134,11 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
       </Panel>
 
       <Panel className="ui-stack" id="ai-models">
-        <SectionHeading title="AI models for each job" description="Pick the free models each job should use, in order. The job always tries your 1st choice first and moves down the list only when a model is busy, too slow or gives an unusable answer. Nothing is shuffled. Jobs with no choices use NVIDIA models first, then DeepSeek." action={<form action={refreshAiModels}><SubmitButton className="btn-secondary" useLegacyClasses pendingLabel="Refreshing…">Refresh model list</SubmitButton></form>} />
-        {!models.length ? <Notice tone="warning" role="status">{key.configured ? "OpenRouter's free model list has not loaded yet. Press “Refresh model list”." : "The free model list appears here once OpenRouter is reachable. Press “Refresh model list”."}</Notice> : null}
+        <SectionHeading title="AI models for each job" description="The list comes live from OpenRouter each time this page opens: every free model it currently offers for writing text, in OpenRouter's own order. Pick the models each job should use, in order. The job always tries your 1st choice first and moves down the list only when a model is busy, too slow or gives an unusable answer. Nothing is shuffled." action={<a className="btn-secondary" href={adminHref("/ai-scheduler#ai-models")}>Reload from OpenRouter</a>} />
+        {list.source === "live" && list.loadedAt ? <p className="ui-meta" style={{ margin: 0 }}>Loaded live from openrouter.ai/api/v1/models at {lagosExact(list.loadedAt)}.</p> : null}
+        {list.source === "saved" ? <Notice tone="warning" role="status">{list.error ?? "OpenRouter could not be reached"}. Showing the list last loaded from OpenRouter{list.loadedAt ? ` at ${lagosExact(list.loadedAt)}` : ""}. Reload to try again.</Notice> : null}
+        {list.source === "none" ? <Notice tone="warning" role="status">{list.error ?? "OpenRouter's free model list could not be loaded"}. Reload this page to try again.</Notice> : null}
+        {list.source !== "none" && !models.length ? <Notice tone="warning" role="status">OpenRouter is not offering any free text models right now.</Notice> : null}
         <form action={saveAiModels} className="ui-stack">
           {MODEL_JOBS.map((job) => {
             const chosen = settings.job_models[job.key] ?? [];
@@ -154,16 +155,16 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
                       <label key={index} className="ui-field">
                         <span className="label">{index === 0 ? "1st choice" : index === 1 ? "2nd choice (backup)" : index === 2 ? "3rd choice (backup)" : `${index + 1}th choice (backup)`}</span>
                         <select className="input" name={`model_${job.key}_${index}`} defaultValue={current}>
-                          <option value="">{index === 0 ? "Default (NVIDIA → DeepSeek)" : "— none —"}</option>
+                          <option value="">{index === 0 ? "Not chosen (automatic)" : "— none —"}</option>
                           {current && missing.has(current) ? <option value={current}>{current} — no longer free, will be skipped</option> : null}
-                          {models.map((model) => <option key={model.id} value={model.id}>{model.name} · {model.id}</option>)}
+                          {models.map((model) => <option key={model.id} value={model.id}>{model.name} · {model.id}{model.expires ? ` · going away ${model.expires}` : ""}</option>)}
                         </select>
                       </label>
                     );
                   })}
                 </div>
                 <p className="ui-meta" style={{ margin: 0 }}>
-                  {plan.usingDefault ? "Now uses the default order: " : "Now tries, in order: "}
+                  {plan.usingDefault ? "Nothing chosen yet, so it tries OpenRouter's free models that support JSON output, largest context first: " : "Now tries, in order: "}
                   {plan.queue.length ? plan.queue.join(" → ") : "no free model available yet"}
                   {plan.missing.length ? <> · <StatusBadge tone="warning">{plan.missing.length} chosen model{plan.missing.length > 1 ? "s" : ""} no longer free</StatusBadge></> : null}
                 </p>
@@ -175,9 +176,17 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
         </form>
         {models.length ? (
           <details>
-            <summary>All {models.length} free models (NVIDIA and DeepSeek first)</summary>
-            <div className="ui-table"><table><thead><tr><th>Model</th><th>ID</th><th>Maker</th><th>Context</th></tr></thead><tbody>
-              {models.map((model) => <tr key={model.id}><td>{model.name}</td><td><code>{model.id}</code></td><td>{MAKER[modelRank(model.id)] ?? model.id.split("/")[0]}</td><td className="ui-number">{model.context.toLocaleString("en-NG")} tokens</td></tr>)}
+            <summary>All {models.length} free models {list.source === "live" ? "OpenRouter offers right now" : "in the saved list"}</summary>
+            <div className="ui-table"><table><thead><tr><th>Model</th><th>Provider</th><th>Context</th><th>JSON output</th><th>Notes</th></tr></thead><tbody>
+              {models.map((model) => (
+                <tr key={model.id}>
+                  <td><a href={`https://openrouter.ai/${model.id}`} target="_blank" rel="noreferrer">{model.name}</a><br /><code>{model.id}</code>{model.description ? <><br /><span className="ui-meta">{model.description}</span></> : null}</td>
+                  <td>{model.provider ?? model.id.split("/")[0]}</td>
+                  <td className="ui-number">{model.context.toLocaleString("en-NG")} tokens</td>
+                  <td>{model.json ? <StatusBadge tone="success">Yes</StatusBadge> : <StatusBadge>Not stated</StatusBadge>}</td>
+                  <td>{[model.reasoning ? "Thinks before answering" : "", model.expires ? `Going away ${model.expires}` : "", model.created ? `Added ${new Date(model.created * 1000).toISOString().slice(0, 10)}` : ""].filter(Boolean).join(" · ") || "—"}</td>
+                </tr>
+              ))}
             </tbody></table></div>
           </details>
         ) : null}

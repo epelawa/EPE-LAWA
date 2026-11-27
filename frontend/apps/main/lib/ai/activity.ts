@@ -16,12 +16,34 @@ export type ActivityEntry = {
   details?: Record<string, unknown>;
 };
 
+const OUTCOME_WORD: Record<Outcome, string> = { done: "Done", skipped: "Skipped", escalated: "Sent to a human", failed: "Failed" };
+
+/**
+ * Live progress for the AI processes page: "what the run is doing now" plus a
+ * step-by-step trail. Never throws; progress must not break a run.
+ */
+export async function runStep(db: SupabaseClient, runId: string | null, text: string): Promise<void> {
+  if (!runId) return;
+  try {
+    const { error } = await db.rpc("ai_run_step", { p_run: runId, p_text: text.slice(0, 300) });
+    if (error) console.error("ai run step write failed", { code: error.code });
+  } catch {
+    /* progress is best-effort */
+  }
+}
+
 export class RunLog {
   readonly counts: Record<Outcome, number> = { done: 0, skipped: 0, escalated: 0, failed: 0 };
   constructor(private readonly db: SupabaseClient, readonly runId: string | null, readonly actorId: string | null) {}
 
+  /** Tells the live view what the run is doing right now. */
+  step(text: string): Promise<void> {
+    return runStep(this.db, this.runId, text);
+  }
+
   async record(entry: ActivityEntry) {
     this.counts[entry.outcome] += 1;
+    void this.step(`${OUTCOME_WORD[entry.outcome]}: ${entry.title ?? entry.action}`);
     const { error } = await this.db.from("ai_activity").insert({
       run_id: this.runId,
       job: entry.job,

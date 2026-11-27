@@ -49,9 +49,13 @@ export async function publicUrl(raw: string): Promise<URL | null> {
 }
 
 export type FetchedText = { url: string; status: number; contentType: string; text: string };
+export type FetchedBytes = { url: string; status: number; contentType: string; bytes: Buffer; truncated: boolean };
 
-export async function fetchPublicText(raw: string, options: { timeoutMs?: number; maxBytes?: number; accept?: string; allowHosts?: (host: string) => boolean } = {}): Promise<FetchedText | null> {
-  const { timeoutMs = 8000, maxBytes = 1_500_000, accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.5", allowHosts } = options;
+type FetchOptions = { timeoutMs?: number; maxBytes?: number; accept?: string; allowHosts?: (host: string) => boolean };
+
+/** Same checks as fetchPublicText, but returns the raw bytes (used for news cover images). */
+export async function fetchPublicBytes(raw: string, options: FetchOptions = {}): Promise<FetchedBytes | null> {
+  const { timeoutMs = 8000, maxBytes = 1_500_000, accept = "*/*", allowHosts } = options;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -75,22 +79,24 @@ export async function fetchPublicText(raw: string, options: { timeoutMs?: number
         current = new URL(next, url).toString();
         continue;
       }
+      const contentType = response.headers.get("content-type") ?? "";
       const reader = response.body?.getReader();
-      if (!reader) return { url: url.toString(), status: response.status, contentType: response.headers.get("content-type") ?? "", text: "" };
+      if (!reader) return { url: url.toString(), status: response.status, contentType, bytes: Buffer.alloc(0), truncated: false };
       const chunks: Uint8Array[] = [];
       let size = 0;
+      let truncated = false;
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
         size += value.byteLength;
         if (size > maxBytes) {
+          truncated = true;
           await reader.cancel();
           break;
         }
         chunks.push(value);
       }
-      const text = new TextDecoder("utf-8", { fatal: false }).decode(Buffer.concat(chunks));
-      return { url: url.toString(), status: response.status, contentType: response.headers.get("content-type") ?? "", text };
+      return { url: url.toString(), status: response.status, contentType, bytes: Buffer.concat(chunks), truncated };
     }
     return null;
   } catch {
@@ -98,4 +104,11 @@ export async function fetchPublicText(raw: string, options: { timeoutMs?: number
   } finally {
     clearTimeout(timer);
   }
+}
+
+export async function fetchPublicText(raw: string, options: FetchOptions = {}): Promise<FetchedText | null> {
+  const { accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.5", maxBytes = 1_500_000 } = options;
+  const fetched = await fetchPublicBytes(raw, { ...options, accept, maxBytes });
+  if (!fetched) return null;
+  return { url: fetched.url, status: fetched.status, contentType: fetched.contentType, text: new TextDecoder("utf-8", { fatal: false }).decode(fetched.bytes) };
 }

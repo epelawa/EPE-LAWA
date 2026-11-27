@@ -5,7 +5,6 @@ import { createClient } from "../../../lib/supabase";
 import { publicMediaUrl } from "../../../lib/media";
 import { logoDisplayUrl as businessLogoUrl } from "../../../lib/media-r2";
 import { pageMetadata } from "../../../lib/metadata";
-import { CONTACT_EMAIL } from "../../../lib/site-identity";
 import { parseBusinessHours, hourRows, businessOpenNow } from "../../../lib/business-hours";
 import { SUMMARY_COLUMNS, directionsHref, directoryHref, safeWebsite, telHref, websiteLabel, whatsappHref, type BusinessSummary } from "../../../lib/business-directory";
 import { EmptyPanel, PageFrame, StatusBadge } from "../../../components/design-system";
@@ -103,7 +102,6 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
   // With no description, hours, photos or claim notice the main column would be an empty gap on desktop;
   // the side cards then flow as one responsive grid instead.
   const hasMain = Boolean(claimSent || b.description || Object.keys(hours).length || gallery.length);
-  const reportSubject = encodeURIComponent(`Incorrect business listing: ${b.name}`);
   return <div className={`${styles.page} page-full-bleed`}>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
     <header className={styles.identityBand}>
@@ -168,7 +166,6 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
           <p className={styles.muted}>Tell the desk what is wrong with this listing and it will be checked.</p>
           <div className={styles.reportActions}>
             <Link className="btn-secondary" href="/support">Report through support</Link>
-            <a className="ui-text-link" href={`mailto:${CONTACT_EMAIL}?subject=${reportSubject}`}>Email {CONTACT_EMAIL}</a>
           </div>
         </section>
       </aside>

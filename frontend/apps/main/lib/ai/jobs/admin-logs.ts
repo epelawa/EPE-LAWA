@@ -44,6 +44,7 @@ export async function runAdminLogJob(db: SupabaseClient, ctx: { log: RunLog; bud
   if (!byActor.size) return "No admin activity in the period.";
 
   const actors = [...byActor.entries()].slice(0, 6);
+  await ctx.log.step(`Explaining what ${actors.length} administrator${actors.length === 1 ? "" : "s"} did in the period…`);
   const result = await chatJson(db, {
     job: "admin_logs",
     runId: ctx.log.runId,

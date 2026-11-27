@@ -6,8 +6,8 @@ import { adminRedirect as redirect } from "./admin-redirect";
 import { adminHref } from "./admin-path";
 import { createStaffClient } from "./supabase";
 import { readAdminSessionFromCookies } from "./supabase-access";
-import { AI_CAPABILITIES, MAX_MODELS_PER_JOB, MODEL_JOBS } from "../../main/lib/ai/settings";
-import { freeModels } from "../../main/lib/ai/openrouter";
+import { AI_CAPABILITIES, MAX_MODELS_PER_JOB, MODEL_JOBS, normaliseJobModels } from "../../main/lib/ai/settings";
+import { loadFreeModels } from "../../main/lib/ai/openrouter";
 import { runAutopilotPass, AI_JOB_LABELS } from "../../main/lib/ai/runner";
 import { formAdminClient } from "../../main/lib/form-server";
 import { sendAiEnquiryReply, type Enquiry } from "../../main/lib/ai/jobs/enquiries";
@@ -71,32 +71,42 @@ export async function saveAiSettings(form: FormData): Promise<void> {
   return await redirect(back(error ? "failed" : "saved"));
 }
 
-/** Per-job model choices, in order. Empty choices are dropped; duplicates keep their first position. */
+/**
+ * Per-job model choices, in order. Each pick must be in OpenRouter's live free
+ * list (or already saved, so a briefly unlisted model is not silently dropped).
+ * Empty choices are dropped; duplicates keep their first position.
+ */
 export async function saveAiModels(form: FormData): Promise<void> {
   const admin = await primaryAdmin();
   if (!admin) return await redirect(back("denied"));
+  const service = formAdminClient();
+  const [list, current] = await Promise.all([
+    loadFreeModels(service),
+    service.from("ai_settings").select("job_models").eq("id", 1).maybeSingle(),
+  ]);
+  const allowed = new Set(list.models.map((model) => model.id));
+  const previous = normaliseJobModels(current.data?.job_models);
   const jobModels: Record<string, string[]> = {};
+  let rejected = false;
   for (const { key } of MODEL_JOBS) {
     const picks: string[] = [];
     for (let index = 0; index < MAX_MODELS_PER_JOB; index += 1) {
       const value = form.get(`model_${key}_${index}`);
-      if (typeof value === "string" && /^[A-Za-z0-9._~-]+\/[A-Za-z0-9._~/-]+:free$/.test(value) && value.length <= 120 && !picks.includes(value)) picks.push(value);
+      if (typeof value !== "string" || !value || picks.includes(value)) continue;
+      const known = allowed.has(value) || (previous[key] ?? []).includes(value);
+      if (!known || !/^[A-Za-z0-9._~-]+\/[A-Za-z0-9._~/-]+:free$/.test(value) || value.length > 120) {
+        rejected = true;
+        continue;
+      }
+      picks.push(value);
     }
     if (picks.length) jobModels[key] = picks;
   }
+  if (rejected) return await redirect(back("models-unknown"));
   const reason = typeof form.get("reason") === "string" ? String(form.get("reason")).trim().slice(0, 500) : "";
   const { error } = await admin.db.rpc("ai_models_save", { p_job_models: jobModels, p_reason: reason });
   revalidatePath(adminHref("/ai-scheduler"));
   return await redirect(back(error ? "models-failed" : "models-saved"));
-}
-
-/** Re-reads OpenRouter's free-model catalogue now instead of waiting for the 6-hour refresh. */
-export async function refreshAiModels(): Promise<void> {
-  const admin = await primaryAdmin();
-  if (!admin) return await redirect(back("denied"));
-  const models = await freeModels(formAdminClient(), true).catch(() => []);
-  revalidatePath(adminHref("/ai-scheduler"));
-  return await redirect(back(models.length ? "models-refreshed" : "models-unreachable"));
 }
 
 const JOBS = Object.keys(AI_JOB_LABELS) as AiJob[];

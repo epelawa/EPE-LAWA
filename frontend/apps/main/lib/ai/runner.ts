@@ -123,6 +123,7 @@ export async function runAutopilotPass(options: { trigger: "schedule" | "manual"
 
     const runId = await startRun(db, job, options.trigger, options.triggeredBy ?? null);
     const log = new RunLog(db, runId, actorId);
+    await log.step(`Started ${AI_JOB_LABELS[job]} (${options.trigger === "manual" ? "Run now" : "scheduled"}${publish ? "" : ", approval mode — results go to a human"}). ${budget.remaining} free model requests left today.`);
     let summary = "";
     try {
       if (job === "news") {

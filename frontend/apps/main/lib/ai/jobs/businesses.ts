@@ -81,7 +81,9 @@ export async function runBusinessJob(db: SupabaseClient, ctx: { log: RunLog; bud
     if (handled >= 1 || Date.now() > ctx.deadline - 20_000 || ctx.budget.remaining <= 0) break;
     if (await openEscalation(db, business.id, "business.escalate")) continue;
     handled += 1;
+    await ctx.log.step(`Checking “${business.name}”: its website and the map for independent evidence…`);
     const evidence = await gather(business);
+    await ctx.log.step(`Evidence for “${business.name}”: website ${evidence.website.reachable ? (evidence.website.mentionsName ? "reachable and names the business" : "reachable but does not name it") : "not reachable"}; ${evidence.map.length} map match${evidence.map.length === 1 ? "" : "es"}. Asking the AI for a decision…`);
     const independent = (evidence.website.reachable && evidence.website.mentionsName) || evidence.map.length > 0;
     const result = await chatJson(db, {
       job: "businesses",

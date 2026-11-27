@@ -16,6 +16,7 @@ export async function runModerationJob(db: SupabaseClient, ctx: { log: RunLog; b
   const comments = data ?? [];
   if (!comments.length) return "No new comments.";
   const ids = new Set(comments.map((row) => String(row.id)));
+  await ctx.log.step(`Reviewing ${comments.length} new comment${comments.length === 1 ? "" : "s"}…`);
   const result = await chatJson(db, {
     job: "moderation",
     runId: ctx.log.runId,

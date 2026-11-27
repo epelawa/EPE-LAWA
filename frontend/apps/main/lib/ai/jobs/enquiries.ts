@@ -73,6 +73,7 @@ export async function runEnquiryJob(db: SupabaseClient, ctx: { log: RunLog; budg
       await ctx.log.record({ job: "enquiries", action: "enquiry.escalate", outcome: "escalated", title: `Correction request from ${enquiry.sender_name}`, reason: "Corrections change published journalism, so an editor must decide. No email was sent.", resourceType: "private_enquiry", resourceId: enquiry.id });
       continue;
     }
+    await ctx.log.step(`Drafting a reply to ${enquiry.sender_name}'s ${enquiry.kind} enquiry…`);
     const result = await chatJson(db, {
       job: "enquiries",
       runId: ctx.log.runId,

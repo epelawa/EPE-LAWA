@@ -1,22 +1,45 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { normaliseJobModels, type ModelJob } from "./settings";
+import { runStep } from "./activity";
 
 /**
- * OpenRouter free models only. The live catalogue (`/api/v1/models`, every
- * price 0, id ending in ":free") is cached for six hours. Administrators pick,
- * per job, which models to use and in what order on the AI Scheduler page; a
- * call tries them in that order (no shuffling) and moves to the next one when a
- * model is busy, empty or slow. With nothing chosen, NVIDIA models are tried
- * first, then DeepSeek. Failed attempts count against the daily free quota, so
- * every attempt is recorded and the run stops at the configured budget. Paid
- * models are never sent, so the key can never be billed by this code.
+ * OpenRouter free models only. The list of models is loaded live from
+ * OpenRouter (`GET /api/v1/models`) every time it is needed. Nothing is
+ * hardcoded: a model is offered when OpenRouter lists it as a ":free" variant
+ * with every price 0 that can write text through chat completions.
+ * Administrators pick, per job, which models to use and in what order on the
+ * AI Scheduler page; a call tries them in that order (no shuffling) and moves to
+ * the next one when a model is busy, empty or slow. A copy of the last good list
+ * is kept only so the page still works if OpenRouter is briefly unreachable.
+ * Failed attempts count against the daily free quota, so every attempt is
+ * recorded and the run stops at the configured budget. Paid models are never
+ * sent, so the key can never be billed by this code.
  */
 
 const API = "https://openrouter.ai/api/v1";
-const CACHE_MS = 6 * 60 * 60 * 1000;
+// Within one server instance the live list is reused for one minute, so a pass
+// that calls several jobs does not download the 600-model catalogue each time.
+const LIVE_REUSE_MS = 60_000;
 
-export type FreeModel = { id: string; name: string; context: number };
+export type FreeModel = {
+  id: string;
+  name: string;
+  context: number;
+  /** The part of the id before "/", as OpenRouter publishes it (e.g. "baidu"). */
+  provider?: string;
+  description?: string;
+  /** OpenRouter's "going away" date, when it announces one. */
+  expires?: string | null;
+  /** Unix seconds when OpenRouter added the model. */
+  created?: number;
+  /** OpenRouter says the model supports response_format / structured outputs (reliable JSON). */
+  json?: boolean;
+  /** OpenRouter says the model thinks before it answers. */
+  reasoning?: boolean;
+  maxOutput?: number | null;
+};
+export type ModelList = { models: FreeModel[]; source: "live" | "saved" | "none"; loadedAt: string | null; error?: string };
 export type ChatMessage = { role: "system" | "user"; content: string };
 export type ModelResult<T> = { ok: true; data: T; model: string; attempts: number } | { ok: false; error: string; attempts: number };
 
@@ -44,26 +67,21 @@ function headers(key: string): Record<string, string> {
   };
 }
 
-/** Display and default order: NVIDIA first, then DeepSeek, then everything else by name. */
-export function modelRank(id: string): number {
-  if (id.startsWith("nvidia/")) return 0;
-  if (id.startsWith("deepseek/")) return 1;
-  return 2;
-}
-
-export function sortModels<T extends { id: string }>(models: readonly T[]): T[] {
-  return [...models].sort((a, b) => modelRank(a.id) - modelRank(b.id) || a.id.localeCompare(b.id));
-}
-
-/** Default when an administrator has not chosen models for a job: NVIDIA, then DeepSeek (all free ones if neither exists). */
+/**
+ * Used only for a job that has no models chosen yet: OpenRouter's own data, no
+ * vendor preference. Models OpenRouter marks as supporting structured (JSON)
+ * output come first, then larger context windows; ties keep OpenRouter's order.
+ */
 export function defaultModelIds(catalogue: readonly FreeModel[]): string[] {
-  const preferred = sortModels(catalogue.filter((model) => modelRank(model.id) < 2)).map((model) => model.id);
-  return preferred.length ? preferred : sortModels(catalogue).map((model) => model.id);
+  return catalogue
+    .map((model, index) => ({ model, index }))
+    .sort((a, b) => Number(Boolean(b.model.json)) - Number(Boolean(a.model.json)) || b.model.context - a.model.context || a.index - b.index)
+    .map(({ model }) => model.id);
 }
 
 /**
  * The exact order a job tries models in: the administrator's choices that are
- * still free in the catalogue, else the default order. No randomness.
+ * still free in OpenRouter's live list, else defaultModelIds. No randomness.
  */
 export function modelQueue(catalogue: readonly FreeModel[], chosen: readonly string[] | undefined, maxAttempts: number): { queue: string[]; missing: string[]; usingDefault: boolean } {
   const available = new Set(catalogue.map((model) => model.id));
@@ -78,43 +96,91 @@ export function modelQueue(catalogue: readonly FreeModel[], chosen: readonly str
 type CatalogueEntry = {
   id?: unknown;
   name?: unknown;
+  description?: unknown;
+  created?: unknown;
   context_length?: unknown;
-  pricing?: { prompt?: unknown; completion?: unknown; request?: unknown };
+  expiration_date?: unknown;
+  pricing?: Record<string, unknown>;
   architecture?: { output_modalities?: unknown; input_modalities?: unknown };
+  supported_parameters?: unknown;
+  endpoints?: unknown;
+  top_provider?: { max_completion_tokens?: unknown };
+  reasoning?: unknown;
 };
 
+/** OpenRouter's catalogue → the free chat models in it, in OpenRouter's order. */
 export function freeModelsFromCatalogue(payload: unknown): FreeModel[] {
   const rows = (payload as { data?: unknown })?.data;
   if (!Array.isArray(rows)) return [];
   const free: FreeModel[] = [];
+  const seen = new Set<string>();
   for (const row of rows as CatalogueEntry[]) {
-    if (typeof row.id !== "string" || !row.id.endsWith(":free")) continue;
-    const prices = [row.pricing?.prompt, row.pricing?.completion, row.pricing?.request ?? "0"];
-    if (!prices.every((price) => Number(price) === 0)) continue;
+    if (typeof row.id !== "string" || !row.id.endsWith(":free") || seen.has(row.id)) continue;
+    // Every listed price must be zero (prompt, completion, per-request, cache, images…).
+    // Web search is the one exception: it is only billed when a request asks for
+    // it, and this code never does.
+    const pricing = row.pricing ?? {};
+    if (!("prompt" in pricing) || !("completion" in pricing)) continue;
+    if (!Object.entries(pricing).every(([kind, price]) => kind === "web_search" || Number(price) === 0)) continue;
     const output = row.architecture?.output_modalities;
     if (Array.isArray(output) && !output.includes("text")) continue;
+    // Decision/rerank/image models are not served on chat completions.
+    if (Array.isArray(row.endpoints) && !row.endpoints.includes("/api/v1/chat/completions")) continue;
     const context = Number(row.context_length) || 0;
     if (context < 8000) continue;
-    free.push({ id: row.id, name: typeof row.name === "string" ? row.name : row.id, context });
+    const params = Array.isArray(row.supported_parameters) ? row.supported_parameters : [];
+    const maxOutput = Number(row.top_provider?.max_completion_tokens);
+    seen.add(row.id);
+    free.push({
+      id: row.id,
+      name: typeof row.name === "string" ? row.name : row.id,
+      context,
+      provider: row.id.split("/")[0],
+      description: typeof row.description === "string" ? row.description.slice(0, 300) : undefined,
+      expires: typeof row.expiration_date === "string" ? row.expiration_date : null,
+      created: Number(row.created) || undefined,
+      json: params.includes("response_format") || params.includes("structured_outputs"),
+      reasoning: params.includes("reasoning") || params.includes("include_reasoning"),
+      maxOutput: Number.isFinite(maxOutput) && maxOutput > 0 ? maxOutput : null,
+    });
   }
   return free;
 }
 
-export async function freeModels(db: SupabaseClient, force = false): Promise<FreeModel[]> {
-  const { data } = await db.from("ai_settings").select("model_cache,model_cache_at").eq("id", 1).maybeSingle();
-  const cachedAt = data?.model_cache_at ? Date.parse(String(data.model_cache_at)) : 0;
-  if (!force && Array.isArray(data?.model_cache) && data.model_cache.length && Date.now() - cachedAt < CACHE_MS) {
-    return data.model_cache as FreeModel[];
-  }
+let liveMemo: { at: number; list: ModelList } | null = null;
+
+/**
+ * Loads the free model list live from OpenRouter. Saves a copy of each good
+ * result; if OpenRouter cannot be reached the last saved copy is returned and
+ * marked as such so the page can say so.
+ */
+export async function loadFreeModels(db: SupabaseClient, options: { reuse?: boolean } = {}): Promise<ModelList> {
+  if (options.reuse && liveMemo && Date.now() - liveMemo.at < LIVE_REUSE_MS) return liveMemo.list;
+  let error = "";
   try {
-    const response = await fetch(`${API}/models`, { cache: "no-store", signal: AbortSignal.timeout(8000) });
-    if (!response.ok) return Array.isArray(data?.model_cache) ? (data.model_cache as FreeModel[]) : [];
-    const models = freeModelsFromCatalogue(await response.json());
-    if (models.length) await db.from("ai_settings").update({ model_cache: models, model_cache_at: new Date().toISOString() }).eq("id", 1);
-    return models;
-  } catch {
-    return Array.isArray(data?.model_cache) ? (data.model_cache as FreeModel[]) : [];
+    const response = await fetch(`${API}/models`, { cache: "no-store", signal: AbortSignal.timeout(10_000) });
+    if (response.ok) {
+      const models = freeModelsFromCatalogue(await response.json());
+      const loadedAt = new Date().toISOString();
+      const list: ModelList = { models, source: "live", loadedAt };
+      liveMemo = { at: Date.now(), list };
+      if (models.length) await db.from("ai_settings").update({ model_cache: models, model_cache_at: loadedAt }).eq("id", 1);
+      return list;
+    }
+    error = `OpenRouter answered HTTP ${response.status}`;
+  } catch (cause) {
+    error = cause instanceof Error && cause.name === "TimeoutError" ? "OpenRouter did not answer within 10 seconds" : "OpenRouter could not be reached";
   }
+  const { data } = await db.from("ai_settings").select("model_cache,model_cache_at").eq("id", 1).maybeSingle();
+  const saved = Array.isArray(data?.model_cache) ? (data.model_cache as FreeModel[]) : [];
+  return saved.length
+    ? { models: saved, source: "saved", loadedAt: data?.model_cache_at ? String(data.model_cache_at) : null, error }
+    : { models: [], source: "none", loadedAt: null, error };
+}
+
+/** Just the models (live, reused for up to a minute within one pass). */
+export async function freeModels(db: SupabaseClient): Promise<FreeModel[]> {
+  return (await loadFreeModels(db, { reuse: true })).models;
 }
 
 export type KeyStatus = {
@@ -211,8 +277,9 @@ export async function chatJson<T>(
   const errors: string[] = [];
   if (missing.length) errors.push(`chosen model${missing.length > 1 ? "s" : ""} no longer free on OpenRouter, skipped: ${missing.join(", ")}`);
   if (!queue.length) return { ok: false, error: [...errors, "no free model available"].join("; "), attempts: 0 };
+  if (missing.length) await runStep(db, options.runId, `Skipped chosen model${missing.length > 1 ? "s" : ""} no longer free on OpenRouter: ${missing.join(", ")}`);
   let attempts = 0;
-  for (const model of queue) {
+  for (const [position, model] of queue.entries()) {
     if (options.budget.remaining <= 0) {
       errors.push("daily request budget reached");
       break;
@@ -224,6 +291,7 @@ export async function chatJson<T>(
     }
     attempts += 1;
     options.budget.remaining -= 1;
+    await runStep(db, options.runId, `Asking ${model} (${position === 0 ? "1st choice" : `backup ${position} of ${queue.length - 1}`})…`);
     const started = Date.now();
     let status: number | null = null;
     let failure: string | null = null;
@@ -258,6 +326,7 @@ export async function chatJson<T>(
             else {
               const used = typeof body?.model === "string" ? body.model : model;
               await recordCall(db, options, used, true, status, Date.now() - started, null);
+              await runStep(db, options.runId, `${used} answered in ${((Date.now() - started) / 1000).toFixed(1)} s.`);
               return { ok: true, data: value, model: used, attempts };
             }
           } catch {
@@ -269,6 +338,7 @@ export async function chatJson<T>(
       failure = error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError") ? "too slow (timed out)" : "network error";
     }
     await recordCall(db, options, model, false, status, Date.now() - started, failure);
+    await runStep(db, options.runId, `${model} failed after ${((Date.now() - started) / 1000).toFixed(1)} s: ${failure}${position < queue.length - 1 ? " — trying the next model" : ""}`);
     errors.push(`${model}: ${failure}`);
   }
   return { ok: false, error: errors.join("; ").slice(0, 900) || "no free model available", attempts };

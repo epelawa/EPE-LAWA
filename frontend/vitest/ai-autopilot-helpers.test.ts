@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { localityScore, NEWS_OUTLETS, newsworthy, parseFeed, similarity, titleTokens, trustedNewsHost, type FeedItem } from "../apps/main/lib/ai/news-sources";
 import { cleanHashtags, rankCandidates, unsupportedClaims, validateDraft } from "../apps/main/lib/ai/jobs/news";
-import { defaultModelIds, freeModelsFromCatalogue, modelQueue, openRouterKey, openRouterKeyIsPlaceholder, parseJsonReply, replyText, sortModels } from "../apps/main/lib/ai/openrouter";
+import { defaultModelIds, freeModelsFromCatalogue, modelQueue, openRouterKey, openRouterKeyIsPlaceholder, parseJsonReply, replyText } from "../apps/main/lib/ai/openrouter";
 import { extractArticle as extractPage, paragraphText } from "../apps/main/lib/ai/news-sources";
 import { bestReportText } from "../apps/main/lib/ai/jobs/news";
 import { normaliseJobModels } from "../apps/main/lib/ai/settings";
@@ -223,23 +223,22 @@ describe("OpenRouter key and free-only rotation", () => {
 });
 
 describe("admin-chosen models, in order (no shuffling)", () => {
+  // Order as OpenRouter returned it.
   const catalogue = [
-    { id: "google/gemma-4-31b-it:free", name: "Gemma", context: 262144 },
-    { id: "deepseek/deepseek-chat-v3.1:free", name: "DeepSeek V3.1", context: 163840 },
-    { id: "nvidia/nemotron-3.5-lightning:free", name: "Nemotron Lightning", context: 1000000 },
-    { id: "nvidia/nemotron-3-ultra-550b-a55b:free", name: "Nemotron Ultra", context: 1000000 },
+    { id: "google/gemma-4-31b-it:free", name: "Gemma", context: 262144, json: true },
+    { id: "deepseek/deepseek-chat-v3.1:free", name: "DeepSeek V3.1", context: 163840, json: false },
+    { id: "nvidia/nemotron-3.5-lightning:free", name: "Nemotron Lightning", context: 1000000, json: true },
+    { id: "nvidia/nemotron-3-ultra-550b-a55b:free", name: "Nemotron Ultra", context: 1000000, json: true },
   ];
-  it("lists NVIDIA first, then DeepSeek, then the rest", () => {
-    expect(sortModels(catalogue).map((model) => model.id)).toEqual([
-      "nvidia/nemotron-3-ultra-550b-a55b:free",
+  it("has no vendor preference: with nothing chosen it uses OpenRouter's own data (JSON support, then context, then OpenRouter's order)", () => {
+    expect(defaultModelIds(catalogue)).toEqual([
       "nvidia/nemotron-3.5-lightning:free",
-      "deepseek/deepseek-chat-v3.1:free",
+      "nvidia/nemotron-3-ultra-550b-a55b:free",
       "google/gemma-4-31b-it:free",
+      "deepseek/deepseek-chat-v3.1:free",
     ]);
-  });
-  it("defaults to NVIDIA then DeepSeek only, and to everything when neither exists", () => {
-    expect(defaultModelIds(catalogue)).toEqual(["nvidia/nemotron-3-ultra-550b-a55b:free", "nvidia/nemotron-3.5-lightning:free", "deepseek/deepseek-chat-v3.1:free"]);
-    expect(defaultModelIds([catalogue[0]])).toEqual(["google/gemma-4-31b-it:free"]);
+    const renamed = catalogue.map((model) => ({ ...model, id: model.id.replace(/^[^/]+/, "vendor") }));
+    expect(defaultModelIds(renamed).map((id) => id.split("/")[1])).toEqual(defaultModelIds(catalogue).map((id) => id.split("/")[1]));
   });
   it("follows the administrator's order exactly and is the same every time", () => {
     const chosen = ["google/gemma-4-31b-it:free", "nvidia/nemotron-3.5-lightning:free"];
@@ -253,7 +252,7 @@ describe("admin-chosen models, in order (no shuffling)", () => {
     expect(partly.missing).toEqual(["vendor/gone:free"]);
     const none = modelQueue(catalogue, ["vendor/gone:free"], 2);
     expect(none.usingDefault).toBe(true);
-    expect(none.queue).toEqual(["nvidia/nemotron-3-ultra-550b-a55b:free", "nvidia/nemotron-3.5-lightning:free"]);
+    expect(none.queue).toEqual(["nvidia/nemotron-3.5-lightning:free", "nvidia/nemotron-3-ultra-550b-a55b:free"]);
   });
   it("never keeps a non-free id from saved settings", () => {
     expect(normaliseJobModels({ news: ["nvidia/a:free", "openai/gpt-paid", "nvidia/a:free"], bogus: ["x/y:free"] })).toEqual({ news: ["nvidia/a:free"] });
@@ -286,5 +285,32 @@ describe("thinking models and readable reports", () => {
   it("picks the longest available report text", () => {
     expect(bestReportText(["short", undefined, "a much longer feed text", null])).toBe("a much longer feed text");
     expect(bestReportText([])).toBe("");
+  });
+});
+
+describe("free models come from OpenRouter's live catalogue", () => {
+  const row = (id: string, extra: Record<string, unknown> = {}) => ({
+    id,
+    name: id,
+    context_length: 131072,
+    pricing: { prompt: "0", completion: "0", input_cache_read: "0" },
+    architecture: { output_modalities: ["text"] },
+    endpoints: ["/api/v1/chat/completions", "/api/v1/responses"],
+    supported_parameters: ["max_tokens", "response_format", "reasoning"],
+    ...extra,
+  });
+  it("keeps OpenRouter's order and its details, and drops anything that is not a free chat model", () => {
+    const models = freeModelsFromCatalogue({ data: [
+      row("newco/brand-new:free", { expiration_date: "2026-12-31", created: 1795705284, description: "A new free model." }),
+      row("paid/model", { pricing: { prompt: "0.000001", completion: "0.000002" } }),
+      row("sneaky/cache-billed:free", { pricing: { prompt: "0", completion: "0", input_cache_read: "0.0000001" } }),
+      row("perplexity/pplx-decider-v1.3:free", { endpoints: ["/api/v1/decisions"] }),
+      row("recraft/image:free", { architecture: { output_modalities: ["image"] } }),
+      row("search/web-priced:free", { pricing: { prompt: "0", completion: "0", web_search: "0.004" }, supported_parameters: [] }),
+      row("newco/brand-new:free"),
+    ] });
+    expect(models.map((model) => model.id)).toEqual(["newco/brand-new:free", "search/web-priced:free"]);
+    expect(models[0]).toMatchObject({ provider: "newco", expires: "2026-12-31", created: 1795705284, json: true, reasoning: true, description: "A new free model." });
+    expect(models[1]).toMatchObject({ json: false, reasoning: false });
   });
 });
