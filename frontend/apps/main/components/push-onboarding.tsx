@@ -123,16 +123,14 @@ export default function PushOnboarding() {
   const toggle = (key: keyof PushTopics) => setTopics((value) => ({ ...value, [key]: !value[key] }));
 
   // An original EPE LAWA permission experience: a light editorial card, cobalt
-  // accents and a browser-owned permission step. The guide is decorative; the
-  // live status text below remains the accessible instruction.
+  // accents and a browser-owned permission step. The arrow stays visible from
+  // consent through the browser prompt; live status text remains the instruction.
   return <div className={styles.overlay} data-push-onboarding data-phase={phase}>
     <div className={styles.scrim} aria-hidden="true" onClick={() => { if (!working) dismiss(); }} />
-    {working ? <div className={styles.permissionGuide} aria-hidden="true">
+    {phase !== "success" && phase !== "denied" ? <div className={styles.permissionGuide} aria-hidden="true">
       <svg viewBox="0 0 160 560" preserveAspectRatio="none" fill="none">
-        <path className={styles.guideTrail} d="M22 548C20 454 43 407 84 353c43-56 63-101 53-170" />
-        <path className={styles.guideArrow} d="m120 202 17-24 17 24" />
+        <path className={styles.guideArrow} d="M22 548C20 454 43 407 84 353c43-56 63-101 53-175m-17 24 17-24 17 24" />
       </svg>
-      <span className={styles.guideLabel}>Browser permission</span>
     </div> : null}
     <section ref={cardRef} className={styles.card} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={copyId} onKeyDown={trapFocus}>
       <button type="button" className={styles.close} onClick={phase === "success" || phase === "denied" ? close : dismiss} disabled={working} aria-label="Close">

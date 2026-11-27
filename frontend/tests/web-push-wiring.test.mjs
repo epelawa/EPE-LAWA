@@ -45,8 +45,12 @@ test('web push is fully wired: worker, guest-capable subscribe route, encrypted 
   assert.match(prompt, /anotherDialogIsOpen\(\)/, 'never stacks over another dialog');
   assert.match(prompt, /Good things happen in Epe/);
   assert.match(prompt, /permissionGuide/, 'the browser step includes a dedicated visual guide');
+  assert.match(prompt, /phase !== "success" && phase !== "denied"/, 'the arrow is visible before the browser prompt and while permission is pending');
+  assert.match(prompt, /<path className=\{styles\.guideArrow\}/, 'the guide is a standalone arrow');
+  assert.doesNotMatch(prompt, /guideTrail|guideLabel/, 'the guide has no dotted trail or extra label');
   assert.match(promptStyles, /\.permissionGuide/);
   assert.match(promptStyles, /height: min\(80dvh, 620px\)/, 'the guide arrow reaches toward the browser permission prompt');
+  assert.match(promptStyles, /\.permissionGuide \{[^}]*display: block;/, 'the guide is visible at all viewport widths');
   assert.doesNotMatch(promptStyles, /\.card::before/, 'the card has no blue stripe along its top edge');
   assert.match(promptStyles, /prefers-reduced-motion/);
   assert.match(client, /pushManager\.getSubscription/, 'existing subscriptions are reused');
