@@ -4,6 +4,7 @@ import { createClient } from "../../lib/supabase";
 import { PageFrame, PageIntro, Panel, SectionHeading, EmptyPanel, Notice, StatusBadge } from "../../components/design-system";
 import ContributeForm from "./contribute-form";
 import { publicMediaUrl } from "../../lib/media";
+import { FilterIcon, SearchIcon } from "../../components/icons";
 
 export const metadata: Metadata = {
   title: "Itan Ilu Mi",
@@ -68,15 +69,11 @@ export default async function ItanIluMiPage({ searchParams }: { searchParams: Pr
   return <PageFrame className="ui-stack">
     <PageIntro eyebrow="Community record" title="Ìtàn Ilú Mi" description="A community archive built from identifiable sources and reviewed contributions. Accounts are not published until evidence, consent and publication rights have been checked." meta={<span>Verified accounts · Private submissions</span>} />
 
-    <section className="ui-stack-sm" aria-labelledby="history-corrections">
-      <SectionHeading eyebrow="Fix the record" title="Correction and removal requests" id="history-corrections" description="Point us to what is wrong in a published record. Requests go to a private staff queue and are never published; we reply by email after checking." />
-      <div><Link className="btn-secondary" href="/itan-ilu-mi/correction">Request a correction or removal</Link></div>
-    </section>
-
-    <form method="get" className="ui-toolbar" role="search">
-      <div className="ui-field"><label className="label" htmlFor="history-search">Family name or community</label><input className="input" id="history-search" name="q" maxLength={120} defaultValue={query} /></div>
-      <div className="ui-field"><label className="label" htmlFor="history-filter">Category</label><select className="input" id="history-filter" name="category" defaultValue={category}><option value="">All categories</option>{categories.map((item) => <option key={item} value={item}>{categoryLabels[item]}</option>)}</select></div>
-      <button className="btn-primary" type="submit">Search published records</button>
+    <form method="get" className="ui-toolbar filter-panel filter-panel--compact" role="search" aria-label="Search published records">
+      <div className="filter-panel__heading"><span className="filter-panel__icon" aria-hidden="true"><FilterIcon/></span><div><h2 className="filter-panel__title">Search the archive</h2></div></div>
+      <div className="ui-field ui-field--wide"><label className="label sr-only" htmlFor="history-search">Family name or community</label><div className="filter-panel__control"><SearchIcon className="filter-panel__input-icon"/><input className="input" id="history-search" name="q" maxLength={120} defaultValue={query} placeholder="Family name or community" autoComplete="off" /></div></div>
+      <div className="ui-field"><label className="label sr-only" htmlFor="history-filter">Category</label><select className="input" id="history-filter" name="category" defaultValue={category}><option value="">All categories</option>{categories.map((item) => <option key={item} value={item}>{categoryLabels[item]}</option>)}</select></div>
+      <div className="ui-actions"><button className="btn-primary" type="submit"><SearchIcon size={16}/>Search<span className="sr-only"> published records</span></button>{query || category ? <Link className="btn-secondary" href="/itan-ilu-mi">Clear</Link> : null}</div>
     </form>
 
     <div id="archive" />

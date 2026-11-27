@@ -1,0 +1,28 @@
+.schedule { display: grid; gap: 16px; min-width: 0; }
+.heading { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 8px 16px; }
+.heading h2 { margin: 6px 0 0; color: #17264A; font-size: clamp(1.35rem, 1.05rem + 1.3vw, 1.9rem); line-height: 1.15; letter-spacing: -.02em; }
+.eyebrow { margin: 0; color: #294B91; font-size: .72rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+.zone { margin: 0; color: #53627A; font-size: .85rem; }
+.empty { display: grid; gap: 6px; padding: clamp(16px, 3vw, 24px); border: 1px dashed #C9D4E5; border-radius: 12px; background: #FFFFFF; }
+.empty h3 { margin: 0; color: #17264A; font-size: 1.05rem; }
+.empty p { margin: 0; color: #53627A; line-height: 1.5; }
+.empty a, .more a { color: #294B91; font-weight: 700; }
+.days { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scroll-snap-type: x proximity; overscroll-behavior-x: contain; }
+.days button { position: relative; flex: 1 0 52px; min-height: 44px; padding: 0 10px; border: 1px solid #D9E3F1; border-radius: 10px; background: #FFFFFF; color: #17264A; font: inherit; font-weight: 700; cursor: pointer; scroll-snap-align: start; }
+.days button[aria-pressed="true"] { border-color: #294B91; background: #17264A; color: #F1F4FA; }
+.days button:focus-visible, .empty a:focus-visible, .more a:focus-visible { outline: 3px solid #477FE0; outline-offset: 2px; }
+.todayMark { position: absolute; top: 6px; right: 6px; width: 6px; height: 6px; border-radius: 50%; background: #477FE0; }
+.list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.item { display: grid; grid-template-columns: minmax(96px, auto) minmax(0, 1fr) auto; align-items: center; gap: 8px 16px; min-width: 0; padding: 14px 16px; border: 1px solid #D9E3F1; border-radius: 12px; background: #FFFFFF; }
+.item[data-current="true"] { border-color: #294B91; box-shadow: inset 3px 0 0 #294B91; }
+.time { color: #294B91; font-variant-numeric: tabular-nums; font-weight: 800; white-space: nowrap; }
+.body { display: grid; gap: 2px; min-width: 0; }
+.body strong { color: #17264A; overflow-wrap: anywhere; }
+.body small { color: #53627A; line-height: 1.4; overflow-wrap: anywhere; }
+.badge { justify-self: start; padding: 3px 10px; border: 1px solid #D9E3F1; border-radius: 999px; color: #294B91; font-size: .75rem; font-weight: 700; white-space: nowrap; }
+.badge[data-kind="now"] { border-color: #294B91; background: #17264A; color: #F1F4FA; }
+.none { margin: 0; color: #53627A; }
+.more { margin: 0; color: #53627A; font-size: .9rem; line-height: 1.6; }
+@media (max-width: 520px) {
+  .item { grid-template-columns: minmax(0, 1fr); }
+}

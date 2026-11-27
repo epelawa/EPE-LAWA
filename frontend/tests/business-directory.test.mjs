@@ -32,7 +32,11 @@ test('member review insert policy requires active non-banned member and publishe
 
 test('discovery page does not expose inline review forms', () => {
  assert.doesNotMatch(directoryPage, /submitBusinessReview/);
- assert.match(directoryPage, /business_discovery_search/);
+ // Turn 5 redesign brief: search must also cover locations and support a verified filter and sorting, which
+ // the fixed-order RPC cannot do. The page now reads the public published_businesses view (still RLS-bound,
+ // published-only); site-wide search keeps business_discovery_search (features-batch1).
+ assert.match(directoryPage, /from\("published_businesses"\)/);
+ assert.match(directoryPage, /searchTerm\(query\.q\)/);
  assert.match(directoryPage, /We couldn’t load the directory/);
 });
 

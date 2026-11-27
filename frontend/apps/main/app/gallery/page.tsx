@@ -54,17 +54,6 @@ export default async function GalleryPage() {
         actions={<TextLink href="/photo-credits">View photo credits</TextLink>}
       />
 
-      <section className={styles.intro} aria-labelledby="gallery-standard-title">
-        <div className={styles.introHeading}>
-          <p className="ui-eyebrow">Our standard</p>
-          <h2 id="gallery-standard-title">A beautiful archive starts with responsible sourcing.</h2>
-        </div>
-        <div className="ui-prose">
-          <p>Images appear here only after their licence, source, credit and public use have been checked. We will not fill the archive with unverified or unlicensed material.</p>
-          <p>Until that review is complete, this page stays intentionally quiet.</p>
-        </div>
-      </section>
-
       {photos.length > 0 ? (
         <section className={styles.archiveSection} aria-labelledby="gallery-archive-title">
           <SectionHeading eyebrow="Now showing" title="Photographs of Epe" id="gallery-archive-title" />

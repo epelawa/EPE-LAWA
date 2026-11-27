@@ -32,6 +32,7 @@ import { NotificationSoundListener } from "../components/notification-sound";
 import ToastRegion from "../components/toast";
 import SlashFocus from "../components/slash-focus";
 import PushOnboarding from "../components/push-onboarding";
+import RadioMiniPlayer from "../components/radio-mini-player";
 
 const description =
   "News, community history, local discussion, maps, local business, tourism, radio and Who-is-Who for Epe Division.";
@@ -125,6 +126,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <Connectivity />
         <FloatingSupport enabled={process.env.ENQUIRY_INTAKE_ENABLED === "true"} />
         <PushOnboarding />
+        <RadioMiniPlayer />
         <YorubaTranslator lang={siteLanguage} />
 
       </body>

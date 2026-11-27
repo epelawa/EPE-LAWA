@@ -13,9 +13,12 @@ test("public Radio keeps direct Lagos stream and honest programme status", () =>
  const programmes = read("frontend/apps/main/app/radio/programmes/page.tsx");
  assert.match(programmes, /Programme information is unavailable/);
  assert.match(station, /https:\/\/azstream\.elektranbroadcast\.com\/listen\/radiolagos1075\/radio\.mp3/);
- assert.match(player, /preload="none"/); assert.match(player, /onPlaying/);
- assert.match(player, /The station stream is unavailable/);
- assert.doesNotMatch(player, /<iframe/i);
+ // Turn 5: playback moved into lib/radio-store.ts (shared with the site-wide mini-player).
+ const store = read("frontend/apps/main/lib/radio-store.ts");
+ assert.match(store, /element\.preload = "none"/); assert.match(store, /addEventListener\("playing"/);
+ assert.match(store, /is not responding right now\. Try again in a moment\./);
+ assert.match(player, /statusMessage\(radio\)/);
+ assert.doesNotMatch(player + store, /<iframe/i);
 });
 
 test("public Tourism has distinct read-failure, empty, and unverified-detail states", () => {

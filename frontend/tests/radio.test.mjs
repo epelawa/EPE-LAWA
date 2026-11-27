@@ -13,38 +13,47 @@ test('radio page uses direct Lagos stream and a server-side Guts lookup', async(
  const lookup=await read('frontend/apps/main/lib/guts-radio.ts');
  assert.match(station,/https:\/\/azstream\.elektranbroadcast\.com\/listen\/radiolagos1075\/radio\.mp3/);
  assert.doesNotMatch(station,/puzzofme/);
- assert.match(player,/src=\{station\.streamUrl\}/);
- assert.match(player,/Radio Lagos/); assert.match(player,/Guts FM/);
- assert.match(lookup,/NAIJA_RADIO_API_KEY/); assert.doesNotMatch(player,/NAIJA_RADIO_API_KEY/);
- assert.doesNotMatch(page,/listeningPerks|Better Listening Desk|styles\.hero/);
- assert.match(player,/src="\/brand-logo.webp"/);
+ // Turn 5 redesign: playback moved into one shared store (lib/radio-store.ts) so the
+ // site-wide mini-player keeps the same stream running across pages.
+ const store=await read('frontend/apps/main/lib/radio-store.ts');
+ assert.match(store,/element\.src = station\.streamUrl/);
+ assert.match(store,/RADIO_LAGOS_1075/); assert.match(store,/Guts FM/);
+ assert.match(lookup,/NAIJA_RADIO_API_KEY/); assert.doesNotMatch(player,/NAIJA_RADIO_API_KEY/); assert.doesNotMatch(store,/NAIJA_RADIO_API_KEY/);
+ assert.doesNotMatch(page,/listeningPerks|Better Listening Desk/);
+ assert.match(page,/The sound of Epe\./);
  assert.match(player,/className=\{styles\.playButton\}/);
+ // Removed at the owner's request: provider credit, idle status pill, song requests and the archive.
+ assert.doesNotMatch(player+page,/Station catalogue|Naija Radio|No EPE LAWA programme is scheduled right now|SongRequestModal|Request a song|radio\/archive/);
  assert.ok(page.indexOf("<RadioPlayer") < page.indexOf("Keep exploring"));
  assert.match(page,/href="\/radio\/programmes"/); assert.match(page,/href="\/radio\/reminders"/);
 });
 
 test('public programmes continue to use database records',async()=>{
  const page=await read('frontend/apps/main/app/radio/programmes/page.tsx');
- for(const table of ['programmes','radio_schedule','episodes']) assert.match(page,new RegExp(`from\\(["']${table}["']\\)`));
+ for(const table of ['programmes','radio_schedule']) assert.match(page,new RegExp(`from\\(["']${table}["']\\)`));
+ // Turn 5: the public archive was removed, so published episodes are no longer read here.
+ assert.doesNotMatch(page,/from\(["']episodes["']\)/);
  assert.match(page,/No programmes published yet/); assert.match(page,/No schedule published yet/);
 });
 
 test('Radio admin distinguishes failed data reads from empty catalogues',async()=>{
  const page=await read('frontend/apps/admin/app/(protected)/radio/page.tsx');
- for(const section of ['programmes','episodes','schedules']) assert.match(page,new RegExp(`error: ${section}Error`));
+ for(const section of ['programmes','schedules']) assert.match(page,new RegExp(`error: ${section}Error`));
+ // Turn 5: the episode (archive) editor was removed from admin at the owner's request.
+ assert.doesNotMatch(page,/from\("episodes"\)|saveEpisode|deleteEpisode/);
  assert.match(page,/failedSections\.length > 0/);
  assert.ok(page.indexOf('if (failedSections.length > 0)') < page.indexOf('const programmeForm'));
  assert.match(page,/Radio records could not be loaded/);
  assert.match(page,/No empty catalogue is inferred and no editing forms are shown/);
  assert.match(page,/No schedule slots/);
- assert.match(page,/No episodes/);
 });
 
 test('Radio writes use one verified-capability RPC instead of direct PostgREST writes',async()=>{
  const actions=await read('frontend/apps/admin/app/(protected)/radio/actions.ts');
  const page=await read('frontend/apps/admin/app/(protected)/radio/page.tsx');
  const migration=await read('backend/supabase/migrations/20261107232000_radio_atomic_authoring.sql');
- for(const action of ['saveProgramme','saveSchedule','saveEpisode']) assert.match(actions,new RegExp(`export async function ${action}`));
+ for(const action of ['saveProgramme','saveSchedule']) assert.match(actions,new RegExp(`export async function ${action}`));
+ assert.doesNotMatch(actions,/export async function (saveEpisode|deleteEpisode)/);
  assert.match(actions,/radio_authoring_save/);
  assert.match(actions,/has_capability/);
  assert.doesNotMatch(actions,/from\("(programmes|episodes|radio_schedule|radio_rights_records)"\)\.(insert|update)/);
@@ -69,17 +78,15 @@ test('Radio publication saves rights atomically, audits no note text and rejects
 	 assert.match(migration,/radio_rights_records_recorded_by_idx/);
 });
 
-test('Radio staff can edit schedule and episode revisions without changing episode slugs',async()=>{
+test('Radio staff can edit schedule and programme revisions',async()=>{
  const page=await read('frontend/apps/admin/app/(protected)/radio/page.tsx');
  const actions=await read('frontend/apps/admin/app/(protected)/radio/actions.ts');
- for(const field of ['day_of_week','starts_at','ends_at','note','programme_id','publication_status','aired_on','external_url','description','title']) assert.match(page,new RegExp(`name="${field}"`));
+ for(const field of ['day_of_week','starts_at','ends_at','note','programme_id','publication_status','description','name']) assert.match(page,new RegExp(`name="${field}"`));
  assert.match(page,/name="id" value=\{s\.id\}/);
  assert.match(page,/name="revision" value=\{s\.revision\}/);
- assert.match(page,/name="id" value=\{e\.id\}/);
- assert.match(page,/name="revision" value=\{e\.revision\}/);
+ assert.match(page,/name="id" value=\{p\.id\}/);
+ assert.match(page,/name="revision" value=\{p\.revision\}/);
  assert.match(actions,/save\(db, "schedule", id, rev/);
- assert.match(actions,/save\(db, "episode", id, rev/);
- assert.match(actions,/slug = data\.slug/);
  assert.match(actions,/radio=\$\{encodeURIComponent\(code\)\}/);
  assert.match(page,/Fresh rights\/source note \(private\)/);
  assert.match(page,/aria-live/);

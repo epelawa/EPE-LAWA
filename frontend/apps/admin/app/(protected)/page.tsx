@@ -105,7 +105,7 @@ export default async function DashboardPage() {
     { label: "Newsroom", detail: "Write, check and publish news stories.", category: "News", href: "/newsroom", icon: "news", allowed: capabilities["article.create"] === true || articleRead === true },
     { label: "Forum moderation", detail: "Check reports from the community.", category: "Community", href: "/moderation/forum", icon: "shield", allowed: capabilities["moderation.review"] === true },
     { label: "Business review", detail: "Approve businesses sent in by owners.", category: "Community", href: "/business-review", icon: "people", allowed: capabilities["business.review"] === true },
-    { label: "Radio studio", detail: "Manage programmes, episodes and the schedule.", category: "Radio", href: "/radio", icon: "radio", allowed: capabilities["radio.manage"] === true },
+    { label: "Radio studio", detail: "Manage programmes and the schedule.", category: "Radio", href: "/radio", icon: "radio", allowed: capabilities["radio.manage"] === true },
     { label: "Who is Who", detail: "Curate people records and verification.", category: "People", href: "/people", icon: "people", allowed: capabilities["people.manage"] === true },
     { label: "Backups", detail: "Save or restore a copy of the website data.", category: "System", href: "/backups", icon: "database", allowed: capabilities["backup.read"] === true },
   ];

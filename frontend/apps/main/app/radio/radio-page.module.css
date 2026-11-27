@@ -1,17 +1,54 @@
-.listeningPage { width:min(920px,calc(100% - 40px)); margin:28px auto 76px; padding:0; }
-.playerWrap { scroll-margin-top:100px; }
-.eyebrow { margin:0; font-size:.72rem; font-weight:800; letter-spacing:.16em; color:#294b91; }
-.explore { display:grid; grid-template-columns:1fr 2fr; gap:28px; margin-top:50px; }
-.explore h2 { margin:10px 0; font-size:clamp(1.8rem,3vw,2.6rem); letter-spacing:-.04em; color:#17264a; }
-.links { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
-.links a { display:flex; min-height:120px; align-items:center; justify-content:space-between; gap:10px; padding:20px; border:1px solid #d9e3f1; border-radius:18px; background:#fff; color:#17264a; text-decoration:none; }
-.links a:hover { border-color:#477fe0; }.links a:focus-visible { outline:3px solid #477fe0; outline-offset:3px; }
-.links strong,.links small { display:block; }.links small { margin-top:7px; color:#53627a; line-height:1.4; }
-@media(max-width:760px) { .listeningPage { width:calc(100% - 28px); margin:20px auto 48px; }.explore { grid-template-columns:1fr; gap:14px; margin-top:36px; }.links { grid-template-columns:1fr; }.links a { min-height:85px; } }
-.nowPlaying { display: inline-flex; align-items: center; gap: 10px; min-height: 32px; padding: 4px 14px; border-radius: 999px; background: var(--ep-surface-soft, #E7EDF8); font-size: 0.875rem; }
-.onAirDot { flex: none; width: 8px; height: 8px; border-radius: 999px; background: #d13c3c; animation: onAirPulse 2s ease-in-out infinite; }
-.idleDot { flex: none; width: 8px; height: 8px; border-radius: 999px; background: #a6b2c5; }
-.scheduleNote { color: #53627a; font-size: .8rem; }
-.requestRow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
-@keyframes onAirPulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
-@media (prefers-reduced-motion: reduce) { .onAirDot { animation: none; } }
+/* /radio — editorial radio-station layout. Hero and player share one dark band
+   (Midnight); the guide and settings sit on the site's light surface below. */
+.page { min-width: 0; }
+.hero { background: #0A1023; color: #F1F4FA; border-bottom: 1px solid #293650; }
+.heroInner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  align-items: center;
+  gap: clamp(24px, 5vw, 64px);
+  width: min(100% - 2rem, 1200px);
+  margin-inline: auto;
+  padding-block: clamp(28px, 6vw, 72px);
+}
+.heroCopy { display: grid; gap: 14px; min-width: 0; }
+.heroEyebrow { margin: 0; color: #A7C5F5; font-size: .75rem; font-weight: 800; letter-spacing: .2em; }
+.heroTitle { margin: 0; color: #F1F4FA; font-size: clamp(2.1rem, 1.2rem + 4.2vw, 4.25rem); line-height: 1.02; letter-spacing: -.035em; }
+.heroLede { max-width: 34ch; margin: 0; color: #C9D4E5; font-size: clamp(1rem, .92rem + .4vw, 1.2rem); line-height: 1.55; }
+.heroActions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+.primaryAction, .secondaryAction {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 48px; padding: 0 22px; border-radius: 999px;
+  font: inherit; font-weight: 800; text-decoration: none; cursor: pointer;
+}
+.primaryAction { border: 0; background: #477FE0; color: #0A1023; }
+.primaryAction:hover { background: #A7C5F5; }
+.secondaryAction { border: 1px solid #A6B2C5; background: transparent; color: #F1F4FA; }
+.secondaryAction:hover { border-color: #F1F4FA; background: #17264A; }
+.primaryAction:focus-visible, .secondaryAction:focus-visible { outline: 3px solid #A7C5F5; outline-offset: 3px; }
+.heroNote { margin: 0; color: #A6B2C5; font-size: .85rem; line-height: 1.5; }
+
+.content { display: grid; gap: clamp(36px, 6vw, 64px); width: min(100% - 2rem, 1200px); margin: clamp(28px, 5vw, 56px) auto clamp(48px, 7vw, 88px); }
+.eyebrow { margin: 0; color: #294B91; font-size: .72rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+.reminder { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 16px 32px; align-items: start; padding: clamp(18px, 3vw, 28px); border: 1px solid #D9E3F1; border-radius: 14px; background: #FFFFFF; }
+.reminder h2, .explore h2 { margin: 6px 0 0; color: #17264A; font-size: clamp(1.35rem, 1.05rem + 1.3vw, 1.9rem); line-height: 1.15; letter-spacing: -.02em; }
+.explore { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 16px 28px; }
+.links { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 12px; }
+.links a { display: flex; min-width: 0; min-height: 96px; align-items: center; justify-content: space-between; gap: 10px; padding: 18px; border: 1px solid #D9E3F1; border-radius: 12px; background: #FFFFFF; color: #17264A; text-decoration: none; }
+.links a:hover { border-color: #477FE0; }
+.links a:focus-visible { outline: 3px solid #477FE0; outline-offset: 3px; }
+.links a > span { min-width: 0; }
+.links strong, .links small { display: block; overflow-wrap: anywhere; }
+.links small { margin-top: 6px; color: #53627A; line-height: 1.4; }
+.links svg { flex: none; }
+
+@media (max-width: 900px) {
+  .heroInner { grid-template-columns: minmax(0, 1fr); }
+  .reminder, .explore { grid-template-columns: minmax(0, 1fr); }
+}
+/* Short landscape phones: keep Play reachable without scrolling past a tall hero. */
+@media (max-height: 480px) and (orientation: landscape) {
+  .heroInner { padding-block: 20px; }
+  .heroTitle { font-size: clamp(1.8rem, 5vw, 2.4rem); }
+  .heroNote { display: none; }
+}

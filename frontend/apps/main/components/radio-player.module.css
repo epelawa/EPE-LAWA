@@ -1,73 +1,94 @@
-/* Radio player: one slim bar — ident, station info, controls — plus a compact
-   station switcher. Dark palette is the owner-locked navy/midnight pair. */
+/* Main /radio player: a dark listening surface (Midnight/Navy from the approved
+   palette), Cobalt actions with Midnight text, and one restrained amber accent
+   that appears only while audio is genuinely playing. No gradients, no glass. */
 .player {
-  --rp-glow: rgb(71 127 224 / .25);
-  padding: var(--ep-space-3, 12px) var(--ep-space-4, 16px);
-  border: var(--ep-space-hair, 1px) solid var(--palette-border);
+  --player-bg: #0A1023;
+  --player-raised: #17264A;
+  --player-line: #293650;
+  --player-text: #F1F4FA;
+  --player-muted: #A6B2C5;
+  --player-accent: #477FE0;
+  --player-live: #F0B14A;
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+  padding: clamp(16px, 3.2vw, 24px);
+  border: 1px solid var(--player-line);
   border-radius: 14px;
-  color: var(--palette-cloud);
-  background: linear-gradient(120deg, var(--palette-midnight), var(--palette-navy));
-  box-shadow: var(--ep-shadow-2);
-  transition: box-shadow var(--ep-dur-base, 200ms) var(--ep-ease-out);
+  background: var(--player-bg);
+  color: var(--player-text);
+  scroll-margin-top: 96px;
 }
-.player.playing { box-shadow: 0 0 0 1px var(--palette-cobalt), 0 8px 30px var(--rp-glow); }
-.bar { display: flex; align-items: center; gap: var(--ep-space-3, 12px); min-height: 56px; }
-.ident { display: flex; flex: none; align-items: flex-end; gap: var(--ep-space-2, 8px); }
-.ident img { width: 40px; height: 36px; object-fit: contain; }
-.equalizer { display: inline-flex; align-items: flex-end; gap: 2px; height: 20px; }
-.equalizer span { width: 3px; height: 6px; border-radius: var(--ep-radius-pill); background: var(--palette-ice-blue); opacity: .5; }
-.player.playing .equalizer span { animation: radioDance 1s var(--ep-ease-inout) infinite; }
-.player.playing .equalizer span:nth-child(2) { animation-delay: .12s; }
-.player.playing .equalizer span:nth-child(3) { animation-delay: .24s; }
-.player.playing .equalizer span:nth-child(4) { animation-delay: .36s; }
-@keyframes radioDance { 0%,100% { height: 6px; opacity: .5; } 50% { height: 18px; opacity: 1; } }
-.info { min-width: 0; flex: 1; }
-.title { margin: 0; color: var(--palette-cloud); font-size: clamp(var(--ep-type-md, 17px), 2vw, var(--ep-type-lg, 20px)); letter-spacing: -.03em; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.frequency { color: var(--palette-ice-blue); font-size: var(--ep-hint-min, 12px); font-weight: var(--ep-weight-bold); }
-.status { display: flex; align-items: center; gap: var(--ep-space-1, 4px); margin: 2px 0 0; color: var(--palette-silver); font-size: var(--ep-hint-min, 12px); line-height: 1.3; }
-.liveDot { flex: none; width: 7px; height: 7px; border-radius: var(--ep-radius-pill); background: var(--palette-silver); }
-.connected { background: #35d07f; animation: radioBreath 1.6s var(--ep-ease-inout) infinite; }
-@keyframes radioBreath { 0%,100% { box-shadow: 0 0 0 0 rgb(53 208 127 / .5); } 50% { box-shadow: 0 0 0 5px rgb(53 208 127 / 0); } }
-.controls { display: flex; flex: none; align-items: center; gap: var(--ep-space-2, 8px); }
-.muteButton { display: grid; place-items: center; min-width: 44px; min-height: 44px; border: 0; border-radius: var(--ep-radius-sm, 8px); background: transparent; color: var(--palette-cloud); cursor: pointer; transition: background-color var(--ep-dur-fast, 120ms) var(--ep-ease-out); }
-.muteButton:hover { background: rgb(255 255 255 / .08); }
-.volume { width: 86px; accent-color: var(--palette-cobalt); }
-.playButton { display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: var(--ep-radius-pill); background: var(--palette-cobalt); color: var(--palette-midnight); box-shadow: 0 0 0 0 var(--rp-glow); cursor: pointer; transition: transform var(--ep-dur-fast, 120ms) var(--ep-ease-out), box-shadow var(--ep-dur-base, 200ms) var(--ep-ease-out), background-color var(--ep-dur-fast, 120ms) var(--ep-ease-out); }
-.playButton:hover { background: var(--palette-ice-blue); transform: scale(1.05); }
-.playButton:active { transform: scale(.94); }
-.player.playing .playButton { animation: radioGlow 2s var(--ep-ease-inout) infinite; }
-@keyframes radioGlow { 0%,100% { box-shadow: 0 0 0 0 var(--rp-glow); } 50% { box-shadow: 0 0 0 8px rgb(71 127 224 / 0); } }
-.external { color: var(--palette-ice-blue); font-weight: var(--ep-weight-semibold); white-space: nowrap; }
-.stationList { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--ep-space-2, 8px); margin-top: var(--ep-space-2, 8px); }
-.stationList button { display: flex; align-items: center; gap: var(--ep-space-2, 8px); min-height: 44px; padding: 6px 10px; border: var(--ep-space-hair, 1px) solid var(--palette-border); border-radius: 10px; background: rgb(255 255 255 / .03); color: var(--palette-cloud); font: inherit; font-size: var(--ep-type-sm, 14px); font-weight: var(--ep-weight-semibold); text-align: left; cursor: pointer; transition: border-color var(--ep-dur-fast, 120ms) var(--ep-ease-out), background-color var(--ep-dur-fast, 120ms) var(--ep-ease-out), transform var(--ep-dur-fast, 120ms) var(--ep-ease-out); }
-.stationList button:hover { border-color: var(--palette-cobalt); }
-.stationList button:active { transform: scale(.98); }
-.stationList button[aria-pressed="true"] { border-color: var(--palette-cobalt); background: var(--palette-royal-steel); }
-.stationIcon { display: grid; place-items: center; flex: none; width: 28px; height: 28px; border-radius: var(--ep-radius-sm, 8px); background: var(--palette-cobalt); color: var(--palette-midnight); font-size: 11px; font-weight: var(--ep-weight-bold); }
-.gutsIcon { background: var(--palette-ice-blue); }
-.stationInfo { min-width: 0; flex: 1; }
-.stationInfo strong, .stationInfo small { display: block; }
-.stationInfo small { margin-top: 1px; color: var(--palette-silver); font-size: var(--ep-hint-min, 12px); font-weight: var(--ep-weight-regular, 400); }
-.selectMark { color: var(--palette-ice-blue); font-weight: var(--ep-weight-bold); }
-.provider { margin: 4px 0 0; color: var(--palette-silver); font-size: 12px; text-align: center; }
-.provider a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 6px; color: var(--palette-ice-blue); }
-.provider a:focus-visible { outline: 2px solid var(--palette-ice-blue); outline-offset: 2px; }
-.sponsor { margin-top: var(--ep-space-2, 8px); }
-.player :where(button, input, a):focus-visible { outline: 2px solid var(--palette-ice-blue); outline-offset: 2px; }
-@media (max-width: 520px) {
-  .volume { display: none; }
-  .stationList { gap: 0; }
-  .stationList button { min-height: 48px; }
-  .stationList button + button { border-left: var(--ep-space-hair, 1px) solid var(--palette-border); border-top-left-radius: 0; border-bottom-left-radius: 0; }
+.head { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-width: 0; }
+.kicker { margin: 0; color: var(--player-muted); font-size: .72rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+.indicator { display: inline-flex; align-items: center; gap: 8px; min-height: 28px; padding: 2px 12px; border: 1px solid var(--player-line); border-radius: 999px; color: var(--player-muted); font-size: .78rem; font-weight: 700; white-space: nowrap; }
+.indicator[data-live="true"] { border-color: var(--player-live); color: var(--player-live); }
+.dot { width: 8px; height: 8px; flex: none; border-radius: 50%; background: currentColor; opacity: .7; }
+.indicator[data-live="true"] .dot { opacity: 1; }
+
+.main { display: flex; align-items: center; gap: clamp(12px, 3vw, 20px); min-width: 0; }
+.playButton {
+  display: grid; flex: 0 0 auto; place-items: center;
+  width: clamp(60px, 14vw, 72px); height: clamp(60px, 14vw, 72px);
+  border: 0; border-radius: 50%;
+  background: var(--player-accent); color: #0A1023;
+  cursor: pointer;
+  transition: transform 120ms ease-out, background-color 120ms ease-out;
 }
-@media (prefers-reduced-motion: reduce) {
-  .player, .playButton, .muteButton, .stationList button { transition-duration: var(--ep-motion-reduced, .01ms) !important; }
-  .playButton:hover { transform: none; }
-  .player.playing .equalizer span, .player.playing .playButton, .connected { animation: none; }
+.playButton:hover { background: #A7C5F5; }
+.playButton:active { transform: scale(.97); }
+.playButton:disabled { opacity: .6; cursor: progress; }
+.playButton:focus-visible, .iconButton:focus-visible, .retry:focus-visible, .stationList button:focus-visible, .volume:focus-visible, .note a:focus-visible {
+  outline: 3px solid #A7C5F5; outline-offset: 3px;
 }
-/* Narrow phones: the station name wraps to two lines instead of truncating to "Radio Lag…" now that Mute is a full 44px target. */
-@media (max-width: 480px) {
-  .title { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; }
-  .status { white-space: nowrap; }
-  .controls { gap: var(--ep-space-1, 4px); }
+.nowPlaying { display: grid; gap: 4px; min-width: 0; }
+.nowLabel { margin: 0; color: var(--player-muted); font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.title { margin: 0; color: var(--player-text); font-size: clamp(1.25rem, 1rem + 1.4vw, 1.75rem); line-height: 1.15; letter-spacing: -.02em; overflow-wrap: anywhere; }
+.frequency { color: var(--player-muted); font-weight: 600; white-space: nowrap; }
+.programme { margin: 0; color: var(--player-text); font-size: .95rem; line-height: 1.4; overflow-wrap: anywhere; }
+.scheduleTag { display: inline-block; margin-right: 6px; padding: 1px 8px; border: 1px solid var(--player-line); border-radius: 999px; color: var(--player-muted); font-size: .72rem; font-weight: 700; vertical-align: 1px; }
+
+.status { min-height: 1.45em; margin: 0; color: var(--player-muted); font-size: .9rem; line-height: 1.45; }
+.retry { justify-self: start; min-height: 44px; padding: 0 18px; border: 1px solid var(--player-accent); border-radius: 999px; background: transparent; color: var(--player-text); font: inherit; font-weight: 700; cursor: pointer; }
+.retry:hover { background: var(--player-raised); }
+
+.controls { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.iconButton { display: grid; flex: none; place-items: center; width: 44px; height: 44px; border: 1px solid var(--player-line); border-radius: 50%; background: transparent; color: var(--player-text); cursor: pointer; }
+.iconButton:hover { background: var(--player-raised); }
+.volumeLabel { display: flex; flex: 1 1 auto; align-items: center; min-width: 0; max-width: 260px; min-height: 44px; }
+.volume { width: 100%; min-width: 0; accent-color: var(--player-accent); }
+
+.stationList { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr)); gap: 8px; }
+.stationList button {
+  display: flex; align-items: center; gap: 10px; min-width: 0; min-height: 52px; padding: 8px 12px;
+  border: 1px solid var(--player-line); border-radius: 10px; background: transparent; color: var(--player-text);
+  font: inherit; text-align: left; cursor: pointer;
 }
+.stationList button:hover { background: var(--player-raised); }
+.stationList button[aria-pressed="true"] { border-color: var(--player-accent); background: var(--player-raised); }
+.stationMark { display: grid; flex: none; place-items: center; width: 34px; height: 34px; border-radius: 8px; background: var(--player-raised); color: #A7C5F5; font-size: .72rem; font-weight: 800; }
+.stationList button[aria-pressed="true"] .stationMark { background: var(--player-accent); color: #0A1023; }
+.stationInfo { display: grid; min-width: 0; }
+.stationInfo strong { font-size: .92rem; overflow-wrap: anywhere; }
+.stationInfo small { color: var(--player-muted); font-size: .78rem; }
+.note { margin: 0; color: var(--player-muted); font-size: .85rem; line-height: 1.45; }
+.note a { color: #A7C5F5; }
+
+.sponsor { min-width: 0; padding-top: 4px; border-top: 1px solid var(--player-line); }
+
+@media (prefers-reduced-motion: reduce) { .playButton { transition: none; } .playButton:active { transform: none; } }
+
+/* Sound-wave cue, rendered only while audio is actually playing (never for "selected" or "connecting").
+   Four bars, amber like the Live pill; static bars under reduced motion. */
+.wave { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; margin-left: 2px; }
+.wave i { display: block; width: 3px; height: 40%; border-radius: 1px; background: currentColor; }
+.wave i:nth-child(2) { height: 100%; }
+.wave i:nth-child(3) { height: 65%; }
+.wave i:nth-child(4) { height: 85%; }
+@media (prefers-reduced-motion: no-preference) {
+  .wave i { animation: wave 1.1s ease-in-out infinite alternate; transform-origin: bottom; }
+  .wave i:nth-child(2) { animation-delay: -.35s; }
+  .wave i:nth-child(3) { animation-delay: -.7s; }
+  .wave i:nth-child(4) { animation-delay: -.2s; }
+}
+@keyframes wave { from { transform: scaleY(.35); } to { transform: scaleY(1); } }

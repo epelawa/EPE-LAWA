@@ -1,56 +1,77 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import RadioPlayer from "../../components/radio-player";
+import RadioListenButton from "../../components/radio-listen-button";
+import RadioSchedule, { type RadioScheduleSlot } from "../../components/radio-schedule";
+import { RadioReminderSettings } from "../../components/radio-reminder";
+import SponsorSlot from "../../components/sponsor-slot";
 import { ArrowRightIcon } from "../../components/icons";
-import { PageFrame } from "../../components/design-system";
 import styles from "./radio-page.module.css";
 import { pageMetadata } from "../../lib/metadata";
 import { createClient } from "../../lib/supabase";
-import SongRequestModal from "./request-modal";
-import SponsorSlot from "../../components/sponsor-slot";
-import { onAirSlotId } from "./programmes/on-air";
+import { lagosNow, onAirSlotId } from "./programmes/on-air";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = pageMetadata({ title: "EPE LAWA Radio", description: "Listen to Radio Lagos and discover Guts FM on EPE LAWA.", path: "/radio" });
+export const metadata: Metadata = pageMetadata({
+  title: "EPE LAWA Radio",
+  description: "The sound of Epe. Listen to Radio Lagos 107.5 FM and Guts FM 104.9 on EPE LAWA, see the programme guide in WAT and get on-air notifications.",
+  path: "/radio",
+});
+
+type ScheduleRow = { id: string; day_of_week: number; starts_at: string; ends_at: string; note: string | null; programmes: { name: string } | Array<{ name: string }> | null };
 
 export default async function RadioPage() {
-  let programmes: Array<{ id: string; name: string }> = [];
-  let slots: Array<{ id: string; day_of_week: number; starts_at: string; ends_at: string; programmes: Array<{ name: string }> }> = [];
-  let signedIn = false;
+  let slots: RadioScheduleSlot[] = [];
   let unavailable = false;
   try {
     const db = await createClient();
-    const [{ data: { user } }, p, s] = await Promise.all([
-      db.auth.getUser(),
-      db.from("programmes").select("id,name").eq("is_active", true).order("name").limit(100),
-      db.from("radio_schedule").select("id,day_of_week,starts_at,ends_at,programmes(name)").limit(200),
-    ]);
-    signedIn = Boolean(user);
-    if (p.error || s.error) unavailable = true;
-    else { programmes = p.data ?? []; slots = s.data ?? []; }
+    const { data, error } = await db.from("radio_schedule").select("id,day_of_week,starts_at,ends_at,note,programmes(name)").order("day_of_week").order("starts_at").limit(200);
+    if (error) unavailable = true;
+    else slots = ((data ?? []) as ScheduleRow[]).map((row) => {
+      const programme = Array.isArray(row.programmes) ? row.programmes[0] : row.programmes;
+      return { id: row.id, day_of_week: row.day_of_week, starts_at: row.starts_at, ends_at: row.ends_at, note: row.note, programme: programme?.name ?? null };
+    });
   } catch { unavailable = true; }
   const onAirId = unavailable ? null : onAirSlotId(slots);
-  const onAirName = onAirId ? slots.find(slot => slot.id === onAirId)?.programmes?.[0]?.name ?? null : null;
+  const onAirName = onAirId ? slots.find((slot) => slot.id === onAirId)?.programme ?? null : null;
 
-  return <PageFrame className={styles.listeningPage}>
-    <section id="live-player" className={styles.playerWrap} aria-label="Radio stations">
-      {/* The sponsor card is the business picked on the admin Ads desk, with its logo. */}
-      <RadioPlayer><SponsorSlot compact /></RadioPlayer>
-      {/* Only a scheduled EPE LAWA programme earns the red on-air marker; otherwise the stations run their own programming. */}
-      <div className={styles.nowPlaying} role="status" data-on-air={onAirName ? "scheduled" : "idle"}>
-        <span className={onAirName ? styles.onAirDot : styles.idleDot} aria-hidden="true" />
-        {onAirName ? <span><strong>On air now:</strong> {onAirName} <span className={styles.scheduleNote}>(per schedule)</span></span> : <span>{unavailable ? "The programme schedule is unavailable right now." : "No EPE LAWA programme is scheduled right now. Stations play their own programming."}</span>}
-      </div>
-      <div className={styles.requestRow}>
-        <SongRequestModal programmes={programmes} signedIn={signedIn} />
-        <Link href="/radio/archive" className="btn-ghost">Browse the archive</Link>
+  return <div className={`${styles.page} page-full-bleed`}>
+    <section className={styles.hero} aria-labelledby="radio-hero-title">
+      <div className={styles.heroInner}>
+        <div className={styles.heroCopy}>
+          <p className={styles.heroEyebrow}>EPE LAWA RADIO</p>
+          <h1 id="radio-hero-title" className={styles.heroTitle}>The sound of Epe.</h1>
+          <p className={styles.heroLede}>Stay connected to the people, stories and conversations shaping our community.</p>
+          <div className={styles.heroActions}>
+            <RadioListenButton className={styles.primaryAction} />
+            <Link className={styles.secondaryAction} href="/radio/programmes">Explore programmes</Link>
+          </div>
+          <p className={styles.heroNote}>Streams start only when you press Play, and keep playing while you browse the rest of EPE LAWA.</p>
+        </div>
+        {/* The sponsor card is the business picked on the admin Ads desk; slimmer than before (turn 5). */}
+        <RadioPlayer programme={onAirName}><SponsorSlot compact radio /></RadioPlayer>
       </div>
     </section>
-    <section className={styles.explore} aria-labelledby="radio-explore-title"><div><p className={styles.eyebrow}>MORE FROM EPE LAWA</p><h2 id="radio-explore-title">Keep exploring</h2></div><div className={styles.links}>
-      <Link href="/radio/programmes"><span><strong>Programmes &amp; schedule</strong><small>Weekly programme grid</small></span><ArrowRightIcon size={20} /></Link>
-      <Link href="/radio/archive"><span><strong>Programme archive</strong><small>Past episodes to replay</small></span><ArrowRightIcon size={20} /></Link>
-      <Link href="/radio/reminders"><span><strong>Radio reminders</strong><small>Choose your listening reminders</small></span><ArrowRightIcon size={20} /></Link>
-      <Link href="/news"><span><strong>Latest news</strong><small>Stories from the newsroom</small></span><ArrowRightIcon size={20} /></Link>
-    </div></section>
-  </PageFrame>;
+
+    <div className={styles.content}>
+      <RadioSchedule slots={slots} initialDay={lagosNow().day} unavailable={unavailable} />
+
+      <section className={styles.reminder} aria-labelledby="radio-reminder-title">
+        <div>
+          <p className={styles.eyebrow}>On-air notifications</p>
+          <h2 id="radio-reminder-title">Never miss a programme</h2>
+        </div>
+        <RadioReminderSettings confirm compact />
+      </section>
+
+      <section className={styles.explore} aria-labelledby="radio-explore-title">
+        <div><p className={styles.eyebrow}>More from EPE LAWA</p><h2 id="radio-explore-title">Keep exploring</h2></div>
+        <div className={styles.links}>
+          <Link href="/radio/programmes"><span><strong>Programmes &amp; schedule</strong><small>Weekly programme grid</small></span><ArrowRightIcon size={20} /></Link>
+          <Link href="/radio/reminders"><span><strong>Radio reminders</strong><small>Browser push when a programme starts</small></span><ArrowRightIcon size={20} /></Link>
+          <Link href="/news"><span><strong>Latest news</strong><small>Stories from the newsroom</small></span><ArrowRightIcon size={20} /></Link>
+        </div>
+      </section>
+    </div>
+  </div>;
 }
