@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { PauseIcon, PlayIcon } from "./icons";
-import { GUTS_LABEL, LAGOS_STATION, currentStation, hideMiniPlayer, isActive, toggle, useRadio } from "../lib/radio-store";
+import { currentStation, hideMiniPlayer, isActive, toggle, useRadio } from "../lib/radio-store";
 import styles from "./radio-mini-player.module.css";
 
 /**
@@ -47,9 +47,7 @@ export default function RadioMiniPlayer() {
   }, [open]);
 
   if (!open) return null;
-  const station = currentStation(radio);
-  const name = station?.name ?? (radio.stationId === "guts" ? GUTS_LABEL.name : LAGOS_STATION.name);
-  const frequency = station?.frequency ?? (radio.stationId === "guts" ? GUTS_LABEL.frequency : LAGOS_STATION.frequency);
+  const { name, frequency } = currentStation(radio);
   const active = isActive(radio.status);
   const state = radio.status === "playing" ? "Live" : radio.status === "connecting" || radio.status === "slow" ? "Connecting…" : radio.status === "offline" ? "Offline" : radio.status === "error" || radio.status === "blocked" ? "Not playing, tap Play to retry" : "Paused";
 

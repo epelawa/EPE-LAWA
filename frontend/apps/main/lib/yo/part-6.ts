@@ -284,8 +284,5 @@ export const PART_6: Record<string, string> = {
   "Guts FM": "Guts FM",
   "Guts FM is temporarily unavailable in this player. Please try again later.": "Guts FM kò sí fún ìgbà díẹ̀ nínú atẹ́tísí yìí. Jọ̀wọ́ gbìyànjú lẹ́ẹ̀kan sí i nígbà míì.",
   "Guts FM page ↗": "Ojú-ìwé Guts FM ↗",
-  "Looking up Guts FM…": "À ń wá Guts FM…",
   "Mute": "Pa ohùn",
-  "Naija Radio": "Naija Radio",
-  "No usable Guts FM stream was found in the catalogue.": "A kò rí ìṣàn Guts FM tó ṣeé lò nínú àkójọ.",
 };
