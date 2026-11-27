@@ -1,4 +1,5 @@
 import { formAdminClient, formRateAllowance, formRateMessage } from "../../../../lib/form-server";
+import { humanCheckFailedMessage, verifyHumanCheck } from "../../../../lib/human-check";
 
 export const runtime = "nodejs";
 export const maxDuration = 10;
@@ -55,9 +56,22 @@ export async function POST(request: Request) {
   if (Number.isFinite(contentLength) && contentLength > MAX_BYTES) return reply(413, { error: "Your correction is too large." });
   const raw = await request.text().catch(() => "");
   if (!raw || new TextEncoder().encode(raw).byteLength > MAX_BYTES) return reply(400, { error: "Please send a shorter correction." });
+  let payload: Record<string, unknown> | null = null;
   let correction: Correction | null = null;
-  try { correction = parseCorrection(JSON.parse(raw)); } catch { correction = null; }
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      payload = parsed as Record<string, unknown>;
+      correction = parseCorrection(parsed);
+    }
+  } catch { payload = null; correction = null; }
+  if (typeof payload?.website === "string" && payload.website.trim()) return reply(201, { message: "Thank you. Your correction is private and will be checked by a human before it can inform the assistant." });
   if (!correction) return reply(400, { error: "Check the place name, correction, and HTTPS source URL, then try again." });
+  const humanForm = new FormData();
+  for (const [key, field] of [["hc-token", payload?.hc_token], ["hc-solution", payload?.hc_solution], ["cf-turnstile-response", payload?.turnstile_token]] as const) {
+    if (typeof field === "string") humanForm.set(key, field);
+  }
+  if ((await verifyHumanCheck(humanForm)) === "fail") return reply(400, { error: humanCheckFailedMessage });
   if (!(await formRateAllowance("map_correction", RATE_LIMIT))) return reply(429, { error: await formRateMessage() });
   let db;
   try { db = formAdminClient(); } catch { return reply(503, { error: "The correction form is unavailable. Nothing was saved." }); }

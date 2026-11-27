@@ -54,8 +54,7 @@ create table public.map_verified_knowledge (
 create index map_verified_knowledge_active_idx on public.map_verified_knowledge(verified_at desc) where status = 'active';
 alter table public.map_verified_knowledge enable row level security;
 revoke all on public.map_verified_knowledge from public, anon, authenticated;
-grant select (id,place_name,details,directions_query,latitude,longitude,source_note,verified_at,verified_by,status) on public.map_verified_knowledge to anon, authenticated;
-create policy map_verified_knowledge_public_active on public.map_verified_knowledge for select to anon, authenticated using (status = 'active');
+grant select (id,place_name,details,directions_query,latitude,longitude,source_note,verified_at,verified_by,status) on public.map_verified_knowledge to service_role;
 
 create or replace function public.map_correction_decide(
  p_submission_id uuid, p_decision text, p_place_name text default null,

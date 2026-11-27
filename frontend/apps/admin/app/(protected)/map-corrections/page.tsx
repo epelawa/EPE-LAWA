@@ -49,7 +49,7 @@ export default async function MapCorrectionsPage({ searchParams }: { searchParam
           <p className="ui-prose whitespace-pre-wrap">{row.details}</p>
           {row.directions_query ? <p><strong>Suggested search phrase:</strong> {row.directions_query}</p> : <p className="ui-meta">No search phrase supplied.</p>}
           {row.source_note ? <p><strong>Submitter source note:</strong> {row.source_note}</p> : <p className="ui-meta">No supporting source note supplied.</p>}
-          {row.source_url ? <p><a className="ui-text-link" href={row.source_url} rel="noreferrer">Open submitted HTTPS source</a></p> : <p className="ui-meta">No source URL supplied. Verify independently before approval.</p>}
+          {row.source_url ? <p><a className="ui-text-link" href={row.source_url} target="_blank" rel="noopener noreferrer">Open submitted HTTPS source</a></p> : <p className="ui-meta">No source URL supplied. Verify independently before approval.</p>}
           <form action={decideMapCorrection} className="ui-stack-sm ui-divider">
             <input type="hidden" name="submission_id" value={row.id} />
             <SectionHeading eyebrow="Human verification" title="Confirm or correct each field before approval" />

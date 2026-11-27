@@ -114,9 +114,12 @@ test('visitor corrections are private, rate-limited, size-limited, and pending-o
   assert.match(ui, /id="map-corrections"/);
   assert.match(ui, /Submit private correction/);
   assert.match(ui, /private and will be checked by a human/);
+  assert.match(ui, /<HumanCheck resetOn=\{humanRound\} \/>/);
+  assert.match(ui, /hc_token: data\.get\("hc-token"\)/);
   assert.match(ui, /fetch\("\/api\/map\/corrections"/);
   assert.match(correctionApi, /origin !== new URL\(request\.url\)\.origin/);
   assert.match(correctionApi, /MAX_BYTES = 8 \* 1024/);
+  assert.ok(correctionApi.indexOf("verifyHumanCheck(humanForm)") < correctionApi.indexOf("formRateAllowance(\"map_correction\""));
   assert.match(correctionApi, /formRateAllowance\("map_correction", RATE_LIMIT\)/);
   assert.match(correctionApi, /insert\(\{ \.\.\.correction, status: "pending" \}\)/);
   assert.match(correctionApi, /protocol !== "https:"/);

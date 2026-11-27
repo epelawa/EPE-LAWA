@@ -2,6 +2,7 @@
 
 import { useId, useMemo, useState, type FormEvent } from "react";
 import { FilterIcon, MapPinIcon, SearchIcon } from "../../components/icons";
+import HumanCheck from "../../components/human-check";
 import { Notice, Panel, SectionHeading } from "../../components/design-system";
 import styles from "./map.module.css";
 import { EPE_DIVISION_BBOX, EPE_TOWN_VIEW, epeScopedQuery, insideEpeDivision } from "../../lib/epe-area";
@@ -48,6 +49,7 @@ export default function MapSearch({ businesses, businessError = false }: { busin
   const [correctionBusy, setCorrectionBusy] = useState(false);
   const [correctionMessage, setCorrectionMessage] = useState("");
   const [correctionError, setCorrectionError] = useState(false);
+  const [humanRound, setHumanRound] = useState(0);
   const correctionId = useId();
   const q = query.trim().toLocaleLowerCase();
   const matches = useMemo(() => q ? businesses.filter((b) => [b.name, b.category_label, b.area, b.address, b.landmark].filter(Boolean).join(" ").toLocaleLowerCase().includes(q)).slice(0, 10) : [], [businesses, q]);
@@ -111,6 +113,10 @@ export default function MapSearch({ businesses, businessError = false }: { busin
           directions_query: data.get("directions_query"),
           source_note: data.get("source_note"),
           source_url: data.get("source_url"),
+          website: data.get("website"),
+          hc_token: data.get("hc-token"),
+          hc_solution: data.get("hc-solution"),
+          turnstile_token: data.get("cf-turnstile-response"),
         }),
       });
       const result = await response.json().catch(() => null) as { error?: string; message?: string } | null;
@@ -126,6 +132,7 @@ export default function MapSearch({ businesses, businessError = false }: { busin
       setCorrectionMessage("You seem to be offline. Your correction was not saved; please try again.");
     } finally {
       setCorrectionBusy(false);
+      setHumanRound((round) => round + 1);
     }
   }
 
@@ -200,8 +207,10 @@ export default function MapSearch({ businesses, businessError = false }: { busin
         <div className="ui-field"><label className="label" htmlFor={`${correctionId}-query`}>Suggested map search phrase (optional)</label><input className="input" id={`${correctionId}-query`} name="directions_query" maxLength={240} /></div>
         <div className="ui-field"><label className="label" htmlFor={`${correctionId}-source`}>How can a reviewer verify this? (optional)</label><textarea className="input" id={`${correctionId}-source`} name="source_note" maxLength={1000} rows={2} /></div>
         <div className="ui-field"><label className="label" htmlFor={`${correctionId}-url`}>Supporting source URL (HTTPS, optional)</label><input className="input" id={`${correctionId}-url`} name="source_url" type="url" maxLength={500} placeholder="https://…" /></div>
+        <div hidden aria-hidden="true"><label>Leave this field empty<input name="website" autoComplete="off" tabIndex={-1} /></label></div>
+        <HumanCheck resetOn={humanRound} />
         <button className="btn-primary" type="submit" disabled={correctionBusy}>{correctionBusy ? "Sending for review…" : "Submit private correction"}</button>
-        {correctionMessage ? <p role={correctionError ? "alert" : "status"} className={correctionError ? "ui-error" : "ui-muted"}>{correctionMessage}</p> : null}
+        {correctionMessage ? <p role={correctionError ? "alert" : "status"} className={correctionError ? "ui-form-error" : "ui-form-success"}>{correctionMessage}</p> : null}
       </form>
     </section>
   </div>;
