@@ -5,7 +5,8 @@ import { createClient } from "../../lib/supabase";
 import { siteUrl } from "../../lib/site";
 import { ACTIVITY_COOKIE, ACTIVITY_COOKIE_MAX_AGE_SECONDS } from "../../lib/session-policy";
 import { mapAuthProviderError } from "./auth-error";
-import { formRateAllowance, formRateMessage } from "../../lib/form-server";
+import { formRateAllowance, formRateMessage, formRateUnavailableMessage } from "../../lib/form-server";
+import { admitSigninAttempt, normaliseSigninEmail, recordSigninOutcome, signinBusyMessage, signinLockedMessage, type SigninOutcome } from "../../../admin/lib/signin-throttle";
 import { availabilityFromRpc, isValidHandle, normalizeHandle } from "../../lib/member-handle";
 import { handleResendSignupVerification, handleVerifyEmailOtp, type AuthState } from "../../lib/auth-otp";
 export type { AuthState } from "../../lib/auth-otp";
@@ -101,21 +102,44 @@ export async function completeVerifiedMemberHandle(_state: AuthState, data: Form
 }
 
 export async function signIn(_state: AuthState, data: FormData): Promise<AuthState> {
-  const email = field(data, "email").toLowerCase();
+  // One normalised spelling for the lock key AND the provider (Strix review on PR #280).
+  const email = normaliseSigninEmail(field(data, "email"));
   const password = passwordField(data);
   if (!validEmail(email)) return { status: "error", message: "Enter a valid email address.", fieldErrors: { email: "Enter a valid email address." } };
   if (!password) return { status: "error", message: "Enter your password.", fieldErrors: { password: "Enter your password." } };
   if (password.length > 128) return { status: "error", message: "Your password must be no more than 128 characters.", fieldErrors: { password: "Your password must be no more than 128 characters." } };
+  // Network budget first, as every signed-out form does: a refused caller writes
+  // nothing to the per-account table (Strix review on PR #280).
   if (!(await formRateAllowance("auth_signin", 15))) return { status: "error", message: await formRateMessage() };
+  // Reserve one of this email's password checks (atomic, so parallel requests
+  // cannot all slip past the lock). Every path below closes the attempt.
+  const gate = await admitSigninAttempt(email);
+  if (!gate.allowed) {
+    if (gate.reason === "locked") return { status: "error", message: signinLockedMessage(gate.retryAfterSeconds), values: { email } };
+    if (gate.reason === "busy") return { status: "error", message: signinBusyMessage(gate.retryAfterSeconds), values: { email } };
+    return { status: "error", message: formRateUnavailableMessage, values: { email } };
+  }
+  let closed = false;
+  const close = async (outcome: SigninOutcome) => { closed = true; return recordSigninOutcome(email, outcome, gate.reservation); };
   try {
     const supabase = await createClient();
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
+      if (error.code === "invalid_credentials") {
+        const lockedFor = await close("rejected");
+        if (lockedFor > 0) return { status: "error", message: signinLockedMessage(lockedFor), values: { email } };
+        return { status: "error", message: mapAuthProviderError(error, "signin") };
+      }
       if (error.code === "email_not_confirmed") {
+        // The password was right; only the address is unconfirmed.
+        await close("verified");
         return { status: "notice", message: "Enter the one-time code we sent to this address to confirm your email and finish signing in. If it has not arrived in a few minutes, resend it from the card below.", values: { email } };
       }
+      // Provider outage or rate limit: no password was judged.
+      await close("unknown");
       return { status: "error", message: mapAuthProviderError(error, "signin") };
     }
+    await close("verified");
     // Sign-in goes straight to the member dashboard for a finished profile;
     // only accounts that still need a handle or bootstrap see the completion step.
     const userId = data.user?.id;
@@ -144,6 +168,7 @@ export async function signIn(_state: AuthState, data: FormData): Promise<AuthSta
     redirect("/dashboard");
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
+    if (!closed) await close("unknown");
     return { status: "error", message: mapAuthProviderError(error, "signin") };
   }
 }
@@ -170,6 +195,8 @@ export async function updatePassword(_state: AuthState, data: FormData): Promise
     if (!user) return { status: "error", message: "Your recovery session is missing or expired. Request a new password reset." };
     const { error } = await supabase.auth.updateUser({ password });
     if (error) return { status: "error", message: genericError };
+    // A completed reset proves control of the inbox, so it lifts any sign-in lock.
+    if (user.email) await recordSigninOutcome(user.email, "verified");
     redirect("/dashboard");
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
@@ -179,7 +206,11 @@ export async function updatePassword(_state: AuthState, data: FormData): Promise
 export async function verifyEmailOtp(_state: AuthState, data: FormData): Promise<AuthState> {
   if (!(await formRateAllowance("auth_otp", 10))) return { status: "error", message: await formRateMessage() };
   const outcome = await handleVerifyEmailOtp(data, createClient, authCallbackUrl("/dashboard"));
-  if ("redirectTo" in outcome) redirect(outcome.redirectTo);
+  if ("redirectTo" in outcome) {
+    // A valid emailed code proves control of the address: lift any sign-in lock on it.
+    await recordSigninOutcome(normaliseSigninEmail(field(data, "email")), "verified");
+    redirect(outcome.redirectTo);
+  }
   return outcome;
 }
 export async function signOut() {

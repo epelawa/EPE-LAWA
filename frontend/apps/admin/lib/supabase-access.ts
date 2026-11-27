@@ -198,6 +198,14 @@ export async function getAdminAccessForToken(
 }
 
 /**
+ * `password` says what the provider decided about the password itself, for the
+ * per-account sign-in throttle: "rejected" (wrong email/password), "verified"
+ * (a session was issued, whatever the later staff checks decide) or "unknown"
+ * (outage, provider rate limit, invalid input — nothing to count).
+ */
+export type AdminSignInResult = { allowed: boolean; password: "rejected" | "verified" | "unknown" };
+
+/**
  * Sign in an admin with email + password. Stages cookies only after identity,
  * active profile, and admin grant are all verified. Fails closed.
  */
@@ -205,18 +213,20 @@ export async function signInAdminWithPassword(
   email: string | null,
   password: string | null,
   cookieStore: CookieStoreLike,
-): Promise<{ allowed: boolean }> {
+): Promise<AdminSignInResult> {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_PUBLISHABLE_KEY;
+  let verified = false;
+  const denied = (): AdminSignInResult => ({ allowed: false, password: verified ? "verified" : "unknown" });
 
   const normalizedEmail = typeof email === "string" ? email.trim() : "";
   const validEmail = normalizedEmail.length <= 254 &&
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail);
   if (!validEmail || typeof password !== "string" || password.length === 0 || password.length > 1024 ||
       !isPublishableKey(key) || !isSecureUrl(url)) {
-    return { allowed: false };
+    return denied();
   }
-  if (!url || !key) return { allowed: false };
+  if (!url || !key) return denied();
 
   let session: AdminSessionValue | null = null;
   try {
@@ -226,11 +236,21 @@ export async function signInAdminWithPassword(
       headers: { apikey: key, "Content-Type": "application/json" },
       body: JSON.stringify({ email: normalizedEmail, password, gotrue_meta_security: {} }),
     });
-    if (!tokenResp.ok) return { allowed: false };
+    if (!tokenResp.ok) {
+      let errorCode: unknown;
+      try { errorCode = ((await tokenResp.json()) as { error_code?: unknown }).error_code; } catch { errorCode = undefined; }
+      // email_not_confirmed is only returned for a correct password; it grants nothing here
+      // (no session, no cookies) but clears the account's failure count (CodeRabbit on PR #280).
+      return {
+        allowed: false,
+        password: errorCode === "invalid_credentials" ? "rejected" : errorCode === "email_not_confirmed" ? "verified" : "unknown",
+      };
+    }
     session = (await tokenResp.json()) as AdminSessionValue;
+    verified = true;
     const sessionUserId = session.user?.id;
     const accessToken = session.access_token;
-    if (typeof accessToken !== "string" || !accessToken || typeof sessionUserId !== "string" || !sessionUserId) return { allowed: false };
+    if (typeof accessToken !== "string" || !accessToken || typeof sessionUserId !== "string" || !sessionUserId) return denied();
 
     const userResp = await fetch(`${url}/auth/v1/user`, {
       cache: "no-store",
@@ -242,7 +262,7 @@ export async function signInAdminWithPassword(
         method: "POST",
         headers: { Authorization: `Bearer ${accessToken}`, apikey: key },
       });
-      return { allowed: false };
+      return denied();
     }
     const user = (await userResp.json()) as { id?: string; email_confirmed_at?: string | null };
     if (user.id !== sessionUserId || typeof user.email_confirmed_at !== "string" || !user.email_confirmed_at) {
@@ -251,7 +271,7 @@ export async function signInAdminWithPassword(
         method: "POST",
         headers: { Authorization: `Bearer ${accessToken}`, apikey: key },
       });
-      return { allowed: false };
+      return denied();
     }
 
     const profileResp = await fetch(`${url}/rest/v1/staff_profiles`, {
@@ -264,7 +284,7 @@ export async function signInAdminWithPassword(
         method: "POST",
         headers: { Authorization: `Bearer ${accessToken}`, apikey: key },
       });
-      return { allowed: false };
+      return denied();
     }
     const profiles = (await profileResp.json()) as Array<{
       user_id: string;
@@ -277,7 +297,7 @@ export async function signInAdminWithPassword(
         method: "POST",
         headers: { Authorization: `Bearer ${accessToken}`, apikey: key },
       });
-      return { allowed: false };
+      return denied();
     }
 
     const capabilityResp = await fetch(`${url}/rest/v1/rpc/has_capability`, {
@@ -288,7 +308,7 @@ export async function signInAdminWithPassword(
     });
     if (!capabilityResp.ok) {
       await fetch(`${url}/auth/v1/logout`, { cache: "no-store", method: "POST", headers: { Authorization: `Bearer ${accessToken}`, apikey: key } });
-      return { allowed: false };
+      return denied();
     }
     const hasAccess = (await capabilityResp.json()) === true;
     if (!hasAccess) {
@@ -297,7 +317,7 @@ export async function signInAdminWithPassword(
         method: "POST",
         headers: { Authorization: `Bearer ${accessToken}`, apikey: key },
       });
-      return { allowed: false };
+      return denied();
     }
 
     // All checks passed — stage cookies.
@@ -313,7 +333,7 @@ export async function signInAdminWithPassword(
     const cookieEntries = sessionCookieEntries(value, maxAge, secure, cookieStore.getAll());
     if (!cookieEntries) throw new Error("Admin session cookie payload is too large");
     cookieStore.setAll(cookieEntries, { "Cache-Control": "no-store" });
-    return { allowed: true };
+    return { allowed: true, password: "verified" };
   } catch {
     // On any failure, attempt logout to clear partial state.
     if (session?.access_token && url && key) {
@@ -327,7 +347,7 @@ export async function signInAdminWithPassword(
         // Ignore logout failures during error handling.
       }
     }
-    return { allowed: false };
+    return denied();
   }
 }
 

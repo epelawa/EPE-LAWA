@@ -33,7 +33,7 @@ This note covers the open-ended cleanup pass after the business, radio and respo
 
 **Fourth Strix pass on PR #277.** `tourism_submit` and `article_correction` had been raised to 1000. Signed-out visitors can store a row with each request, so both went back to 100.
 
-**Follow-ups (not done here; they need a migration or a product decision):** per-account sign-in throttling or a challenge after repeated failures; a cap on total `web_push_devices` rows plus a reaper for devices that never receive a delivery; fanout ordered by most recently active device; recording each solved human-check token as spent, so one solution cannot be replayed from many networks during its lifetime.
+**Follow-ups (not done here; they need a migration or a product decision):** ~~per-account sign-in throttling or a challenge after repeated failures~~ (done, see §5); a cap on total `web_push_devices` rows plus a reaper for devices that never receive a delivery; fanout ordered by most recently active device; recording each solved human-check token as spent, so one solution cannot be replayed from many networks during its lifetime.
 
 **Residual risk.** The mail-sending scopes keep the 100/hour ceiling on purpose. A coordinated flood from many networks can still pause signup, password reset and the business, event and history submission forms for up to an hour. That is the trade-off for not exhausting the email provider's quota.
 
@@ -80,3 +80,83 @@ The same 200 was measured on `/news/<missing>`, `/tourism/<missing>`, `/who-is-w
 - **Removed features:** no UI string for song requests or the programme archive remains. The leftover entries in `lib/yo/part-5.ts` are dictionary rows only. Nothing renders them, so they were left for the owner's Yorùbá review.
 - **Maintenance-gate exemptions:** `/api/human-check` and `/api/push/scheduled` are not exempt from the maintenance gate. This is consistent with the gate's purpose: forms and reminders pause while the site is down. The only scheduled job, `epe-radio-push-tick`, runs `public.push_radio_tick()` in the database and succeeded on every run in the last two days.
 - **Supabase advisory query:** every public table has RLS, and every `SECURITY DEFINER` function pins `search_path`. Five views are owner-rights views readable by `anon`: `published_article_engagement`, `active_business_sponsorships`, `forum_poll_results`, `radio_status` and `business_ad_carousel`. Each one exposes only aggregate or published columns; none exposes personal data or the encrypted stream URL. They were left unchanged, because switching them to `security_invoker` would hide rows that the public pages rely on.
+
+## 5. Per-account sign-in throttle (owner decision, November 2026)
+
+The network limiter (`auth_signin`: 15 per network, 500 shared per hour) cannot stop many networks guessing **one**
+account, and the staff login had no limit at all. Both sign-in forms now share a per-account lock:
+
+- **Order of checks (both forms):** first the shared `auth_signin` network budget (15 per network, 500 shared per hour;
+  the staff form now has it too), then the per-account admission, then the password. A network-refused caller writes
+  nothing to the per-account table.
+- **Rule:** only provider-confirmed wrong passwords count. The 8th wrong password within a 15-minute window locks that
+  email for 15 minutes.
+  - **Admission is atomic.** Each check first reserves a slot under a database row lock (`signin_throttle_admit`) and
+    gets a reservation token. At most 8 checks per email can be spent or in flight in a window, so a burst of parallel
+    requests cannot all slip past the lock (Strix review on PR #280).
+  - **In-flight checks never start a lock.** When 8 checks are already spent or still in flight, a further attempt is
+    refused with "Several sign-in attempts for this email are still being checked. Try again in about a minute." No
+    lock is set; the lock starts only when the 8th wrong password is actually confirmed (CodeRabbit review on PR #280).
+  - **What 15 minutes means:** it is the length of **each** lock, not a cap on disruption. Someone who keeps sending
+    eight wrong passwords every time a lock expires can keep an account locked for longer. The lock is deliberately
+    fixed rather than escalating, so each cycle costs that person eight more attempts and the account holder at most
+    15 minutes. A completed password reset, or a valid emailed sign-up code, normally ends the lock at once.
+  - **Known trade-off (Strix review on PR #280, LOW):** because anyone can type an address, someone who knows a member
+    or staff email can keep re-arming that lock. The network budget makes this cost 8 requests from a network per lock,
+    and the account holder can still get in through a password reset. A challenge on the sign-in forms (CAPTCHA or
+    proof-of-work) would raise the cost further; that changes the sign-in experience for everyone, so it is left as an
+    owner decision. Staff can lift a lock with the per-account unlock below.
+- **Closing each attempt** (`signin_throttle_record(key, outcome, reservation)`):
+  - `"rejected"` (provider-confirmed `invalid_credentials`) counts one confirmed failure.
+  - `"verified"` (successful sign-in, or `email_not_confirmed`, which proves the password) clears the email. A completed
+    password reset and a valid emailed sign-up code also record `"verified"`, with no reservation needed.
+  - `"unknown"` (outage, provider rate limit, or an error thrown after admission) releases the slot without counting it.
+  - **Stale outcomes are ignored.** Every row carries a random generation, renewed when the key is cleared or a lock
+    expires, and the reservation token is that generation. A late outcome from an earlier generation changes nothing,
+    so it cannot lower a newer count (CodeRabbit review on PR #280).
+  - **Window rollover.** A plain rollover keeps the generation, so checks still in flight stay matched. An outcome that
+    lands after its window has closed rolls the window forward and counts in the window it lands in. It never adds to
+    the expired window, so a lock only comes from 8 failures inside one window (CodeRabbit). It is never dropped
+    either, so a batch timed across the boundary cannot win a second set of eight checks (Strix review on PR #280).
+    At a rollover, reservations idle for 2 minutes, which belong to requests that died without recording, stop
+    holding slots.
+- **Table growth bound:** at most 1000 new account keys can be created per rolling hour, twice the shared sign-in
+  ceiling, so the cap never trips in normal use. Beyond it, new addresses get "temporarily unavailable" while known
+  addresses keep their counts. Rows idle for a day are pruned whenever a new key is created.
+- **Privacy:** the database stores only an HMAC of the email, keyed with `FORM_RATE_SECRET` (domain
+  `signin-account:v1:`). Every email string is treated the same way, registered or not, so the lock never reveals
+  whether an account or staff account exists.
+- **One spelling:** both forms lower-case and trim the email once, and send that same string to the auth provider. The
+  lock is therefore keyed on exactly the identifier that is authenticated, and a respelling (for example a capital
+  dotted `İ`) cannot reach the same account under a fresh budget.
+- **Fail-safe:** on Vercel, if the lock cannot be checked (missing secret or service key, database error), sign-in is
+  refused with the existing "temporarily unavailable" message, matching `formRateAllowance`. Local development stays
+  usable.
+- **Code:** `frontend/apps/admin/lib/signin-throttle.ts` (shared helper), `frontend/apps/main/app/auth/actions.ts`
+  (`signIn`, `updatePassword`), `frontend/apps/admin/lib/login-actions.ts`, and
+  `signInAdminWithPassword` in `frontend/apps/admin/lib/supabase-access.ts`, which reports `password:
+  "rejected" | "verified" | "unknown"`.
+- **Database:** `backend/supabase/migrations/20261129000000_signin_account_throttle.sql` (table
+  `auth_signin_throttle`), `20261129010000_signin_throttle_atomic_admission.sql` (atomic admission) and
+  `20261129020000_signin_throttle_reservations.sql` (separate pending and confirmed counts, reservation tokens, new-key
+  cap, prune), `20261129030000_signin_throttle_window_check.sql` and `20261129040000_signin_throttle_rollover.sql`
+  (window-rollover accounting). All of it is service_role only.
+- **Tests:** `backend/tests/signin-account-throttle.test.mjs` and `frontend/tests/signin-account-throttle.test.mjs`.
+
+### Unlocking an account
+
+1. **Self-service (preferred):** the account holder resets their password from `/forgot-password`. Completing the reset
+   lifts the lock. Clearing the lock is best effort: if the database call fails, the new password is still saved and the
+   reset still reports success, but the lock stays until it expires. If the person still sees the "too many
+   unsuccessful attempts" message after a successful reset, use the per-account unlock in step 2.
+2. **One account, by staff:** the row key is an HMAC, so it can only be found with `FORM_RATE_SECRET`. That secret is
+   held in the Vercel project environment, which only the project owner can read. With the secret in the shell
+   environment, compute the key for the address:
+
+   ```sh
+   node -e 'const c=require("node:crypto");process.stdout.write(c.createHmac("sha256",process.env.FORM_RATE_SECRET).update("signin-account:v1:"+process.argv[1].trim().toLowerCase()).digest("hex")+"\n")' 'person@example.com'
+   ```
+
+   Then delete only that row: `delete from public.auth_signin_throttle where account_key = '<the 64-hex key>';`
+3. **Bulk reset (emergency only, clears every account's lock):**
+   `delete from public.auth_signin_throttle where locked_until > now();`

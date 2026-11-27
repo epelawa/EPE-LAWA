@@ -24,6 +24,9 @@ test('password sign-in stages cookies until identity and effective admin capabil
       assert.equal(url.searchParams.get('grant_type'), 'password');
       assert.deepEqual(await req.json(), { email: 'staff@example.invalid', password: 'test-only password', gotrue_meta_security: {} });
       if (scenario === 'invalid') return Response.json({ error: 'invalid_grant' }, { status: 400 });
+      if (scenario === 'wrong-password') return Response.json({ code: 400, error_code: 'invalid_credentials', msg: 'Invalid login credentials' }, { status: 400 });
+      if (scenario === 'unconfirmed-email') return Response.json({ code: 400, error_code: 'email_not_confirmed', msg: 'Email not confirmed' }, { status: 400 });
+      if (scenario === 'provider-limit') return Response.json({ code: 429, error_code: 'over_request_rate_limit' }, { status: 429 });
       if (scenario === 'offline') throw new Error('provider offline');
       return Response.json({ access_token: largeSession ? 'x'.repeat(10000) : 'fake-access', refresh_token: 'fake-refresh', token_type: 'bearer', expires_in: 3600, user: { id: 'staff-a', aud: 'authenticated' } });
     }
@@ -36,7 +39,7 @@ test('password sign-in stages cookies until identity and effective admin capabil
   };
   try {
     const result = store();
-    assert.deepEqual(await signInAdminWithPassword(input.email, input.password, result), { allowed: true });
+    assert.deepEqual(await signInAdminWithPassword(input.email, input.password, result), { allowed: true, password: 'verified' });
     assert.deepEqual(calls, ['/auth/v1/token', '/auth/v1/user', '/rest/v1/staff_profiles', '/rest/v1/rpc/has_capability']);
     assert.ok(result.writes.length > 0);
     for (const { cookies, headers } of result.writes) {
@@ -54,7 +57,7 @@ test('password sign-in stages cookies until identity and effective admin capabil
 
     largeSession = true; calls.length = 0;
     const large = store();
-    assert.deepEqual(await signInAdminWithPassword(input.email, input.password, large), { allowed: true });
+    assert.deepEqual(await signInAdminWithPassword(input.email, input.password, large), { allowed: true, password: 'verified' });
     const largeCookies = large.writes.flatMap(({ cookies }) => cookies).filter(({ options }) => options.maxAge > 0);
     assert.ok(largeCookies.some(({ name }) => name === `${cookieName}.1`), 'large login sessions are split into numbered cookies');
     for (const cookie of largeCookies) {
@@ -66,29 +69,32 @@ test('password sign-in stages cookies until identity and effective admin capabil
     }
     largeSession = false; calls.length = 0;
     const stale = store([{ name: `${cookieName}.1`, value: 'old chunk' }]);
-    assert.deepEqual(await signInAdminWithPassword(input.email, input.password, stale), { allowed: true });
+    assert.deepEqual(await signInAdminWithPassword(input.email, input.password, stale), { allowed: true, password: 'verified' });
     assert.ok(stale.writes.flatMap(({ cookies }) => cookies).some(({ name, options }) => name === `${cookieName}.1` && options.maxAge === 0), 'small login sessions expire old numbered chunks');
 
-    for (const mode of ['invalid', 'offline', 'inactive', 'revoked', 'mismatch', 'unverified', 'user-error', 'profile-error', 'grant-error']) {
+    // `password` feeds the per-account throttle: only a provider-confirmed wrong password counts,
+    // a session that was issued proves the password even when a later staff check refuses.
+    const passwordOutcome = { 'wrong-password': 'rejected', invalid: 'unknown', 'provider-limit': 'unknown', offline: 'unknown' };
+    for (const mode of ['wrong-password', 'unconfirmed-email', 'provider-limit', 'invalid', 'offline', 'inactive', 'revoked', 'mismatch', 'unverified', 'user-error', 'profile-error', 'grant-error']) {
       scenario = mode; calls.length = 0;
       const denied = store();
-      assert.deepEqual(await signInAdminWithPassword(input.email, input.password, denied), { allowed: false }, mode);
+      assert.deepEqual(await signInAdminWithPassword(input.email, input.password, denied), { allowed: false, password: passwordOutcome[mode] ?? 'verified' }, mode);
       assert.equal(denied.writes.length, 0, mode);
       if (['inactive', 'revoked', 'mismatch', 'unverified', 'user-error', 'profile-error', 'grant-error'].includes(mode)) assert.ok(calls.includes('/auth/v1/logout'), mode);
     }
     scenario = 'active'; calls.length = 0;
     const broken = store(); broken.setAll = () => { throw new Error('write failed'); };
-    assert.deepEqual(await signInAdminWithPassword(input.email, input.password, broken), { allowed: false });
+    assert.deepEqual(await signInAdminWithPassword(input.email, input.password, broken), { allowed: false, password: 'verified' });
     assert.ok(calls.includes('/auth/v1/logout'));
     calls.length = 0;
     for (const [email, password] of [[null, 'x'], ['bad', 'x'], ['a@b', ''], ['a@b', 'x'.repeat(1025)], ['a b@c', 'x'], ['x'.repeat(250) + '@a.com', 'x'], ['a@b.com', 'x'.repeat(1025)]]) {
-      assert.deepEqual(await signInAdminWithPassword(email, password, store()), { allowed: false });
+      assert.deepEqual(await signInAdminWithPassword(email, password, store()), { allowed: false, password: 'unknown' });
     }
     assert.equal(calls.length, 0);
     for (const [url, key] of [['http://unit.example.invalid', 'sb_publishable_test_only'], ['https://unit.example.invalid', 'sb_secret_no'], ['', 'sb_publishable_test_only']]) {
       process.env.SUPABASE_URL = url;
       process.env.SUPABASE_PUBLISHABLE_KEY = key;
-      assert.deepEqual(await signInAdminWithPassword(input.email, input.password, store()), { allowed: false });
+      assert.deepEqual(await signInAdminWithPassword(input.email, input.password, store()), { allowed: false, password: 'unknown' });
     }
     assert.equal(calls.length, 0);
   } finally {
