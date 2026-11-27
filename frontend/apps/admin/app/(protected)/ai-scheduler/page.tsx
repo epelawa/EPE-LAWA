@@ -11,6 +11,8 @@ import { keyStatus, loadFreeModels, modelQueue, requestsToday, type ModelList } 
 import { DESK_LABELS, NEWS_OUTLETS, type Desk } from "../../../../main/lib/ai/news-sources";
 import LiveRefresh from "../../../components/live-refresh";
 import styles from "./ai-scheduler.module.css";
+import { ChoiceWithCustom, NewsScheduleField } from "../../../components/ai-limit-fields";
+import { NEWS_LIMITS, nextNewsSlot } from "../../../../main/lib/ai/news-schedule";
 import { formAdminClient } from "../../../../main/lib/form-server";
 
 export const metadata: Metadata = { title: "AI Scheduler", robots: { index: false, follow: false } };
@@ -25,6 +27,8 @@ const messages: Record<string, { tone: "success" | "danger" | "warning"; text: s
   denied: { tone: "danger", text: "Only the primary administrators can change the AI." },
   "past-time": { tone: "warning", text: "Scheduled switch-on and shutdown times must be in the future." },
   window: { tone: "warning", text: "Daily working hours need a start and an end time that differ." },
+  custom: { tone: "warning", text: "A custom value is outside its limits, so nothing was saved. The allowed range is shown under each field." },
+  times: { tone: "warning", text: "Add at least one news time, or switch the news schedule back to “Every …”." },
   "models-saved": { tone: "success", text: "Model choices saved. Each job now tries its models in the order you set." },
   "models-failed": { tone: "danger", text: "The model choices could not be saved. Only free models (ending in :free) can be chosen." },
   "models-unknown": { tone: "warning", text: "One of the chosen models is not in OpenRouter's free list any more, so nothing was saved. The list below is live from OpenRouter — choose again." },
@@ -71,8 +75,9 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
   const runningByJob = new Map(running.map((run) => [run.job, run]));
   const budgetShare = settings.daily_request_budget ? Math.min(100, Math.round((used / settings.daily_request_budget) * 100)) : 0;
   const choiceLabel = (index: number) => (index === 0 ? "1st choice" : `Backup ${index}`);
-  const options = (values: number[], current: number) => [...new Set([...values, current])].sort((x, y) => x - y);
-  const minutesLabel = (value: number) => (value % 60 === 0 ? `Every ${value / 60 === 1 ? "hour" : `${value / 60} hours`}` : `Every ${value} minutes`);
+  const minutesLabel = (value: number) => (value % 1440 === 0 ? `Every ${value / 1440 === 1 ? "day" : `${value / 1440} days`}` : value % 60 === 0 ? `Every ${value / 60 === 1 ? "hour" : `${value / 60} hours`}` : `Every ${value} minutes`);
+  const nextSlot = nextNewsSlot(settings.news_times, Date.now());
+  const newsPlan = `${settings.news_times.length ? `News runs at ${settings.news_times.join(", ")} (Lagos)${nextSlot ? `; next at ${lagosExact(new Date(nextSlot).toISOString())}` : ""}` : `News runs ${minutesLabel(settings.news_interval_minutes).toLowerCase()}`}, up to ${settings.articles_per_run} ${settings.articles_per_run === 1 ? "story" : "stories"} each time.${settings.news_owed ? ` ${settings.news_owed} ${settings.news_owed === 1 ? "story is" : "stories are"} still owed from the last run and will be written at the next pass.` : ""}`;
   const desks = new Map<Desk, Set<string>>();
   for (const outlet of NEWS_OUTLETS) {
     const names = desks.get(outlet.desk) ?? new Set<string>();
@@ -242,29 +247,49 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
           </div>
 
           <div className={styles.section}>
+            <h3>News schedule</h3>
+            <NewsScheduleField
+              interval={settings.news_interval_minutes}
+              times={settings.news_times}
+              intervalOptions={[15, 30, 45, 60, 90, 120, 180, 240, 360, 720, 1440].map((value) => ({ value, label: minutesLabel(value) }))}
+              min={NEWS_LIMITS.interval.min}
+              max={NEWS_LIMITS.interval.max}
+            />
+            <p className="ui-meta" style={{ margin: 0 }}>{newsPlan}</p>
+          </div>
+
+          <div className={styles.section}>
             <h3>Limits</h3>
             <div className={styles.fields}>
-              <label className={styles.field}><span>News runs</span>
-                <select className="input" name="news_interval_minutes" defaultValue={String(settings.news_interval_minutes)}>
-                  {options([30, 45, 60, 90, 120, 180, 240, 360, 720, 1440], settings.news_interval_minutes).map((value) => <option key={value} value={value}>{minutesLabel(value)}</option>)}
-                </select>
-              </label>
-              <label className={styles.field}><span>Stories per news run</span>
-                <select className="input" name="articles_per_run" defaultValue={String(settings.articles_per_run)}>
-                  {[1, 2, 3, 4, 5, 6].map((value) => <option key={value} value={value}>{value} {value === 1 ? "story" : "stories"}</option>)}
-                </select>
-                <small>About one request each. On the free tier keep this at 1–2.</small>
-              </label>
-              <label className={styles.field}><span>Daily model request budget</span>
-                <select className="input" name="daily_request_budget" defaultValue={String(settings.daily_request_budget)}>
-                  {options([10, 20, 30, 40, 50, 100, 200, 500, 1000], settings.daily_request_budget).map((value) => <option key={value} value={value}>{value} requests{value === 50 ? " (free-key limit)" : value > 50 ? " (needs OpenRouter credit history)" : ""}</option>)}
-                </select>
-              </label>
-              <label className={styles.field}><span>Push notifications per day</span>
-                <select className="input" name="push_daily_limit" defaultValue={String(settings.push_daily_limit)}>
-                  {options([0, 1, 2, 3, 4, 5, 6, 8, 10, 15, 20], settings.push_daily_limit).map((value) => <option key={value} value={value}>{value === 0 ? "None" : `Up to ${value}`}</option>)}
-                </select>
-              </label>
+              <ChoiceWithCustom
+                name="articles_per_run"
+                label="Maximum stories per news run"
+                options={[1, 2, 3, 4, 5, 6, 8, 10].map((value) => ({ value, label: `${value} ${value === 1 ? "story" : "stories"}` }))}
+                current={settings.articles_per_run}
+                min={NEWS_LIMITS.articles.min}
+                max={NEWS_LIMITS.articles.max}
+                suffix="stories"
+                hint="Each story takes up to 2 minutes and about one request. Stories that do not fit in one run are written at the next pass, 5 minutes later."
+              />
+              <ChoiceWithCustom
+                name="daily_request_budget"
+                label="Daily model request budget"
+                options={[10, 20, 30, 40, 50, 100, 200, 500, 1000].map((value) => ({ value, label: `${value} requests${value === 50 ? " (free-key limit)" : value > 50 ? " (needs OpenRouter credit history)" : ""}` }))}
+                current={settings.daily_request_budget}
+                min={NEWS_LIMITS.budget.min}
+                max={NEWS_LIMITS.budget.max}
+                suffix="requests"
+                hint="The AI stops for the day when this is used up."
+              />
+              <ChoiceWithCustom
+                name="push_daily_limit"
+                label="Push notifications per day"
+                options={[0, 1, 2, 3, 4, 5, 6, 8, 10, 15, 20].map((value) => ({ value, label: value === 0 ? "None" : `Up to ${value}` }))}
+                current={settings.push_daily_limit}
+                min={NEWS_LIMITS.push.min}
+                max={NEWS_LIMITS.push.max}
+                suffix="per day"
+              />
             </div>
           </div>
 

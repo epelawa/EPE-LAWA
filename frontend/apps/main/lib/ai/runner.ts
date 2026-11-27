@@ -5,6 +5,7 @@ import { finishRun, RunLog, startRun, type AiJob } from "./activity";
 import { ensureAiActor } from "./actor";
 import { keyStatus, openRouterKey, requestsToday, type Budget } from "./openrouter";
 import { loadAiSettings, type AiSettings } from "./settings";
+import { newsDue } from "./news-schedule";
 import { runNewsJob } from "./jobs/news";
 import { runEnquiryJob } from "./jobs/enquiries";
 import { runBusinessJob } from "./jobs/businesses";
@@ -82,10 +83,14 @@ export async function runAutopilotPass(options: { trigger: "schedule" | "manual"
   const budget: Budget = { remaining: Math.max(0, remaining) };
   const publish = settings.autopilot_enabled;
 
+  // Set times or the interval decide when news is due; stories owed from a run
+  // that hit its time limit are written at the next pass.
+  const newsSchedule = newsDue(settings, started);
+  const newsTarget = !options.job && newsSchedule.due && newsSchedule.target === "owed" ? settings.news_owed : settings.articles_per_run;
   const due: AiJob[] = [];
   if (options.job) due.push(options.job);
   else {
-    if (settings.capabilities.news && olderThan(settings.last_news_run_at, settings.news_interval_minutes - 2)) due.push("news");
+    if (settings.capabilities.news && newsSchedule.due) due.push("news");
     if (settings.capabilities.comment_moderation) due.push("moderation");
     if (settings.capabilities.enquiry_reply) due.push("enquiries");
     if (settings.capabilities.business_review) due.push("businesses");
@@ -128,8 +133,11 @@ export async function runAutopilotPass(options: { trigger: "schedule" | "manual"
     let summary = "";
     try {
       if (job === "news") {
-        summary = await runNewsJob(db, { settings, log, budget, deadline, publish });
-        await db.from("ai_settings").update({ last_news_run_at: new Date(started).toISOString() }).eq("id", 1);
+        const continuing = !options.job && newsSchedule.due && newsSchedule.reason === "owed";
+        if (continuing) await log.step(`Continuing the last news run: ${newsTarget} more ${newsTarget === 1 ? "story is" : "stories are"} owed to reach ${settings.articles_per_run} per run.`);
+        // A continuation keeps the schedule's clock; a scheduled or manual run restarts it.
+        if (!continuing) await db.from("ai_settings").update({ last_news_run_at: new Date(started).toISOString() }).eq("id", 1);
+        summary = await runNewsJob(db, { settings, log, budget, deadline, publish, target: newsTarget });
       } else if (job === "moderation") {
         const since = (await lastRunStart(db, "moderation")) ?? new Date(started - 24 * 3600_000).toISOString();
         summary = await runModerationJob(db, { log, budget, deadline, publish, since });

@@ -87,3 +87,51 @@ export async function optimizeUploadedImage(
 
   throw new Error("image_cannot_be_compressed_below_limit");
 }
+
+export type MaximumCompression = {
+  bytes: Buffer;
+  mimeType: "image/webp";
+  width: number;
+  height: number;
+};
+
+/** Longest side kept by "Compress everything": wide enough for a full-width cover on a large phone or laptop. */
+export const MAXIMUM_COMPRESSION_SIDE = 1600;
+/** Logos, avatars and portraits are shown small, so they keep fewer pixels. */
+export const MAXIMUM_COMPRESSION_SMALL_SIDE = 1024;
+export const MAXIMUM_COMPRESSION_QUALITY = 55;
+
+/**
+ * Re-encode an already-stored raster image as small as it will go while it
+ * still looks clean on the site: WebP at quality 55 with the slowest (best)
+ * encoder effort, metadata stripped, longest side capped. Returns null for
+ * anything that is not a single-frame JPEG/PNG/WebP/AVIF image, so callers
+ * leave unknown files untouched.
+ */
+export async function compressImageToMaximum(
+  input: ArrayBuffer | Uint8Array,
+  options: { maxSide?: number; quality?: number } = {},
+): Promise<MaximumCompression | null> {
+  const source = Buffer.from(input instanceof ArrayBuffer ? new Uint8Array(input) : input);
+  if (source.byteLength < 64 || source.byteLength > MAX_IMAGE_INPUT_BYTES) return null;
+  const maxSide = Math.max(256, Math.min(4096, Math.round(options.maxSide ?? MAXIMUM_COMPRESSION_SIDE)));
+  const quality = Math.max(30, Math.min(90, Math.round(options.quality ?? MAXIMUM_COMPRESSION_QUALITY)));
+  try {
+    const metadata = await sharp(source, { failOn: "error", limitInputPixels: 50_000_000 }).metadata();
+    if (
+      !metadata.width || !metadata.height ||
+      !metadata.format || !DECODED_FORMATS.has(metadata.format) ||
+      (metadata.pages ?? 1) > 1
+    ) {
+      return null;
+    }
+    const { data, info } = await sharp(source, { failOn: "error", limitInputPixels: 50_000_000 })
+      .rotate()
+      .resize({ width: maxSide, height: maxSide, fit: "inside", withoutEnlargement: true })
+      .webp({ quality, effort: 6, smartSubsample: true })
+      .toBuffer({ resolveWithObject: true });
+    return { bytes: data, mimeType: "image/webp", width: info.width, height: info.height };
+  } catch {
+    return null;
+  }
+}

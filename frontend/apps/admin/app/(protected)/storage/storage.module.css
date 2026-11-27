@@ -1,0 +1,41 @@
+.chartRow { display: grid; grid-template-columns: minmax(200px, 280px) 1fr; gap: 28px; align-items: center; }
+.chart { position: relative; margin: 0; width: 100%; max-width: 280px; aspect-ratio: 1; justify-self: center; }
+.chart svg { width: 100%; height: 100%; display: block; }
+.chart path { stroke: hsl(var(--card, 0 0% 100%)); stroke-width: 1.2; }
+.centre { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; pointer-events: none; }
+.centre strong { font-size: 22px; line-height: 1.1; }
+.centre span { font-size: 13px; color: hsl(var(--muted-foreground)); }
+
+.legend { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.legend li { display: grid; grid-template-columns: 14px 1fr auto; gap: 12px; align-items: center; padding: 8px 12px; border: 1px solid hsl(var(--border)); border-radius: 12px; }
+.swatch { width: 14px; height: 14px; border-radius: 4px; }
+.legendLabel, .legendValue { display: grid; gap: 2px; font-size: 14px; }
+.legendLabel { font-weight: 600; }
+.legendValue { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.legend small { font-size: 12px; font-weight: 400; color: hsl(var(--muted-foreground)); }
+
+.meters { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.meter p { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; margin: 0 0 6px; font-size: 14px; }
+.meter p span { color: hsl(var(--muted-foreground)); font-variant-numeric: tabular-nums; }
+.bar { height: 10px; border-radius: 999px; background: hsl(var(--muted, 210 20% 94%)); overflow: hidden; }
+.bar span { display: block; height: 100%; min-width: 3px; border-radius: inherit; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 0; }
+.facts div { padding: 10px 12px; border: 1px solid hsl(var(--border)); border-radius: 12px; }
+.facts dt { font-size: 12px; color: hsl(var(--muted-foreground)); }
+.facts dd { margin: 2px 0 0; font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+
+.tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; align-items: start; }
+.rules { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14px; color: hsl(var(--muted-foreground)); }
+.actions { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; }
+.field { display: grid; gap: 6px; font-size: 14px; flex: 1 1 180px; }
+.field > span { font-weight: 600; }
+
+.jobs { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.job { padding: 12px 14px; border: 1px solid hsl(var(--border)); border-radius: 14px; display: grid; gap: 4px; }
+.job p { margin: 0; font-size: 14px; }
+.jobHead { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+
+@media (max-width: 720px) {
+  .chartRow { grid-template-columns: 1fr; }
+}
