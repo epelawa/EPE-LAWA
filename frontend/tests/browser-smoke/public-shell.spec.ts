@@ -124,6 +124,8 @@ for (const width of viewportWidths) {
 
 for (const width of [320, 375, 768, 1024, 1440] as const) {
   test(`news groups, linked covers and pagination at ${width}px`, async ({ page, request }) => {
+    // The first article visit compiles that route in dev mode, which can outlast the default checks.
+    test.setTimeout(90_000);
     await setFixtureMode(request, "news-many");
     await page.setViewportSize({ width, height: 900 });
     await page.route("https://images.example.com/**", (route) => route.fulfill({ status: 200, contentType: "image/svg+xml", body: '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" />' }));
@@ -135,6 +137,8 @@ for (const width of [320, 375, 768, 1024, 1440] as const) {
     await expect(page.getByRole("link", { name: "Load more news" })).toBeVisible();
     await expectNoHorizontalOverflow(page, `grouped News at ${width}px`);
     await page.getByRole("link", { name: "Read: Test story 1" }).click();
+    // Wait for the article itself before reading its metadata (cold compile on the first visit).
+    await expect(page.getByText("Synthetic article for browser testing.")).toBeVisible({ timeout: 45_000 });
     await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", "https://images.example.com/test-cover.jpg");
     await expect(page.getByRole("img", { name: "Synthetic cover" })).toBeVisible();
     await expect(page.getByText("Synthetic article for browser testing.")).toBeVisible();
