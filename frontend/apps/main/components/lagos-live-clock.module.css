@@ -1,0 +1,41 @@
+/* Live Lagos clock card for the news header. The background follows the part
+   of the day; the digits use tabular figures so the seconds never jiggle. */
+.clock {
+  --clock-from: #1d4ed8;
+  --clock-to: #0b1f4d;
+  position: relative;
+  display: grid;
+  flex: 0 1 340px;
+  gap: 6px;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 16px 18px 14px;
+  border-radius: 18px;
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgb(255 255 255 / .18), transparent 55%),
+    linear-gradient(135deg, var(--clock-from), var(--clock-to));
+  color: #fff;
+  box-shadow: 0 14px 34px rgb(10 16 35 / .18);
+  isolation: isolate;
+}
+.clock[data-part="morning"] { --clock-from: #f59e0b; --clock-to: #1e5bb8; }
+.clock[data-part="afternoon"] { --clock-from: #2f80ed; --clock-to: #12396f; }
+.clock[data-part="evening"] { --clock-from: #e8590c; --clock-to: #5b2a86; }
+.clock[data-part="night"] { --clock-from: #1e2a5a; --clock-to: #070b1c; }
+.top { display: flex; min-width: 0; align-items: center; gap: 10px; }
+.icon { display: grid; width: 36px; height: 36px; flex: none; place-items: center; border-radius: 50%; background: rgb(255 255 255 / .18); }
+.greeting { min-width: 0; flex: 1; overflow: hidden; margin: 0; font-size: .95rem; font-weight: 750; letter-spacing: -.01em; text-overflow: ellipsis; white-space: nowrap; }
+.chip { flex: none; padding: 3px 9px; border: 1px solid rgb(255 255 255 / .35); border-radius: 999px; font-size: .68rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.time { display: flex; align-items: baseline; gap: 2px; margin-top: 4px; font-variant-numeric: tabular-nums; line-height: 1; }
+.hm { font-size: clamp(2.3rem, 5vw, 2.9rem); font-weight: 800; letter-spacing: -.04em; }
+.sec { min-width: 2.3ch; font-size: clamp(1.25rem, 2.6vw, 1.5rem); font-weight: 700; opacity: .82; }
+.ampm { margin-left: 6px; padding: 3px 7px; border-radius: 6px; background: rgb(255 255 255 / .2); font-size: .8rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; align-self: center; }
+.date { margin: 2px 0 0; color: rgb(255 255 255 / .88); font-size: .82rem; line-height: 1.4; }
+.zone { white-space: nowrap; }
+.progress { height: 3px; margin-top: 8px; overflow: hidden; border-radius: 999px; background: rgb(255 255 255 / .2); }
+.progress span { display: block; height: 100%; border-radius: inherit; background: rgb(255 255 255 / .85); transition: width 1s linear; }
+@media (max-width: 760px) {
+  .clock { flex: 1 1 100%; }
+}
+@media (prefers-reduced-motion: reduce) { .progress span { transition: none; } }

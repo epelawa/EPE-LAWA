@@ -187,7 +187,7 @@ describe("Lagos time helpers", () => {
   it("formats and buckets in WAT", () => {
     expect(lagosDay("2026-11-25T23:30:00Z")).toBe("2026-11-26");
     expect(lagosHour("2026-11-25T23:30:00Z")).toBe(0);
-    expect(lagosExact("2026-11-25T23:30:05Z")).toMatch(/00:30:05 WAT$/);
+    expect(lagosExact("2026-11-25T23:30:05Z")).toMatch(/12:30:05\s?am WAT$/);
     expect(lagosExact(null)).toBe("—");
     expect(lagosInputValue("2026-11-25T23:30:00.000Z")).toBe("2026-11-26T00:30");
   });

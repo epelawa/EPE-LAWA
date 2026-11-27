@@ -35,7 +35,7 @@ const PAGE_SIZE = 50;
 
 function eventDate(value: string): string {
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "Date to be confirmed" : date.toLocaleString("en-NG", { dateStyle: "full", timeStyle: "short", timeZone: "Africa/Lagos" });
+  return Number.isNaN(date.getTime()) ? "Date to be confirmed" : date.toLocaleString("en-NG", { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" });
 }
 
 export default async function EventsPage() {
@@ -87,7 +87,7 @@ export default async function EventsPage() {
           </div> : null}
           <div className={styles.eventWhen}>
             <time dateTime={event.starts_at}>{eventDate(event.starts_at)}</time>
-            {event.ends_at ? <span className="ui-meta">until {new Date(event.ends_at).toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short", timeZone: "Africa/Lagos" })}</span> : null}
+            {event.ends_at ? <span className="ui-meta">until {new Date(event.ends_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}</span> : null}
           </div>
           <div className="ui-stack-sm">
             <h3 className={styles.eventTitle}>{event.title}</h3>

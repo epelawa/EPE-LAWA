@@ -67,7 +67,7 @@ function digestLines(snapshot: DigestSnapshot, origin: string): string[] {
   if (snapshot.events.length) {
     lines.push("UPCOMING COMMUNITY EVENTS");
     for (const event of snapshot.events) {
-      lines.push(`• ${event.title}${event.venue ? ` — ${event.venue}` : ""} · ${new Date(event.starts_at).toLocaleString("en-NG", { dateStyle: "full", timeStyle: "short" })}`);
+      lines.push(`• ${event.title}${event.venue ? ` — ${event.venue}` : ""} · ${new Date(event.starts_at).toLocaleString("en-NG", { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}`);
     }
     lines.push(`  See all: ${origin}/events`);
     lines.push("");
@@ -104,7 +104,7 @@ export function digestEmailHtml(snapshot: DigestSnapshot, origin: string): strin
   }
   if (snapshot.events.length) {
     const items = snapshot.events.map((event) =>
-      `<li style="margin:0 0 8px">${escapeHtml(event.title)}${event.venue ? ` — ${escapeHtml(event.venue)}` : ""} <span style="color:#52617a">· ${new Date(event.starts_at).toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" })}</span></li>`).join("");
+      `<li style="margin:0 0 8px">${escapeHtml(event.title)}${event.venue ? ` — ${escapeHtml(event.venue)}` : ""} <span style="color:#52617a">· ${new Date(event.starts_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}</span></li>`).join("");
     sections.push(`<h2 style="margin:18px 0 10px;font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:#52617a">Community events</h2><ul style="margin:0;padding:0 0 0 18px;list-style:disc">${items}</ul>`);
   }
   if (snapshot.poll) {

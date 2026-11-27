@@ -91,7 +91,7 @@ export default async function MediaAdminPage({ searchParams }: { searchParams: P
                         <h3 className="ui-item-title">{photo.title}</h3>
                         <StatusBadge tone={photo.is_public ? "success" : "neutral"}>{photo.is_public ? "public" : "private"}</StatusBadge>
                       </div>
-                      <p className="ui-meta">{photo.credit ? photo.credit : "No credit recorded"} · {new Date(photo.created_at).toLocaleString("en-NG")}</p>
+                      <p className="ui-meta">{photo.credit ? photo.credit : "No credit recorded"} · {new Date(photo.created_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}</p>
                       {url ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={url} alt={photo.alt_text ?? photo.title} loading="lazy" style={{ maxWidth: "240px", borderRadius: "12px" }} referrerPolicy="no-referrer" />

@@ -72,7 +72,7 @@ export default async function HistoryReviewPage({ searchParams }: { searchParams
           {rows.map((row) => (
             <Panel className="ui-stack-sm" key={row.id}>
               <header className="ui-stack-sm">
-                <p className="ui-eyebrow">Submitted {new Date(row.submitted_at).toLocaleString("en-NG")}</p>
+                <p className="ui-eyebrow">Submitted {new Date(row.submitted_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}</p>
                 <h2 className="ui-item-title">{row.title}</h2>
                 <div className="ui-meta">
                   <StatusBadge tone="neutral">{labels[row.category] ?? row.category}</StatusBadge>
@@ -112,7 +112,7 @@ export default async function HistoryReviewPage({ searchParams }: { searchParams
                 <section className="ui-card ui-stack-sm">
                   <h3>Consent evidence · private</h3>
                   <p className="ui-prose">{row.consent_text}</p>
-                  <p className="ui-meta">{row.consent_version}; consented {new Date(row.consented_at).toLocaleString("en-NG")}</p>
+                  <p className="ui-meta">{row.consent_version}; consented {new Date(row.consented_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}</p>
                 </section>
               </div>
 
@@ -160,7 +160,7 @@ export default async function HistoryReviewPage({ searchParams }: { searchParams
             : corrections.length === 0 ? <EmptyPanel title="No open requests" description="New correction and removal requests will appear here." />
             : corrections.map((req) => (
               <Panel className="ui-stack-sm" key={req.id}>
-                <p className="ui-eyebrow">{req.request_kind === "removal" ? "Removal request" : "Correction request"} · {new Date(req.created_at).toLocaleString("en-NG")}</p>
+                <p className="ui-eyebrow">{req.request_kind === "removal" ? "Removal request" : "Correction request"} · {new Date(req.created_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}</p>
                 <h3 className="ui-item-title">{req.record_ref}</h3>
                 <p className="ui-prose" style={{ whiteSpace: "pre-wrap" }}>{req.message}</p>
                 <p className="ui-meta">{req.sender_name} · <a className="ui-text-link" href={`mailto:${req.sender_email}`}>{req.sender_email}</a>{req.submitter_id ? " · member account" : " · guest"} (private)</p>

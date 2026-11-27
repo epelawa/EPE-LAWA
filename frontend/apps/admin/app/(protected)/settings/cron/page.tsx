@@ -32,7 +32,7 @@ function formatDuration(ms: number | null): string {
 
 function formatDate(dateString: string | null): string {
   if (!dateString) return "N/A";
-  return new Date(dateString).toLocaleString("en-NG");
+  return new Date(dateString).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" });
 }
 
 function StatusBadge({ status }: { status: string }) {

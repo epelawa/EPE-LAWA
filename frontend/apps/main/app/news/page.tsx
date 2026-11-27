@@ -14,6 +14,7 @@ import ArticleByline from "../../components/article-byline";
 import StoryStats from "../../components/story-stats";
 import { loadEngagementMap } from "../../lib/article-engagement";
 import { BreakingBadge, BreakingNewsBanner } from "../../components/breaking-news";
+import LagosLiveClock from "../../components/lagos-live-clock";
 import { EmptyPanel, PageFrame } from "../../components/design-system";
 import FollowButton from "../../components/follow-button";
 import styles from "./listing.module.css";
@@ -176,7 +177,10 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
           <HomeLivePill since={now} label="story" />
           {category && activeCategory ? <div className="pt-1"><FollowButton topicType="news_category" topicId={activeCategory.id} returnTo={`/news?category=${encodeURIComponent(category)}`} /></div> : null}
         </div>
+        <LagosLiveClock initialTime={now} />
       </header>
+
+      {breakingResult.error ? <p role="status">Breaking news is unavailable right now.</p> : <BreakingNewsBanner stories={breakingStories} initialTime={now} />}
 
       <div className={styles.editorialControls}>
         <form action="/news" method="get" role="search" className={styles.editorialSearch}>
@@ -190,8 +194,6 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
           {categories.map(item => <Link key={item.slug} href={categoryHref(query,item.slug)} aria-current={category === item.slug ? "page" : undefined}>{item.label}</Link>)}
         </nav>
       </div>
-
-      {breakingResult.error ? <p role="status">Breaking news is unavailable right now.</p> : <BreakingNewsBanner stories={breakingStories} initialTime={now} />}
 
       {tag ? <div className={styles.tagFilterBar} role="status">
         <span>Stories tagged <strong>{tagLabel}</strong></span>

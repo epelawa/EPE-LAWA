@@ -38,6 +38,7 @@ const iconFor: Record<string, ReactNode> = {
   "Backup automation": <BoltIcon size={22} />,
   "Newsletter sending": <InboxIcon size={22} />,
   "Web push": <ChartIcon size={22} />,
+  "Firebase Cloud Messaging": <BoltIcon size={22} />,
   "Public media": <ImageIcon size={22} />,
 };
 

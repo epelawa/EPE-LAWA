@@ -37,7 +37,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ r
       <section className="ui-stack-sm">
         <SectionHeading eyebrow="Open" title="Awaiting decision" description="Each report needs a recorded decision before it leaves this queue." />
         {open.length ? <ul className="ui-list ui-stack-sm">{open.map((r) => <li key={r.id}><Panel className="ui-stack-sm">
-          <div className="ui-row"><StatusBadge tone="warning">open</StatusBadge><span className="ui-meta">Filed {new Date(r.created_at).toLocaleString("en-NG")}{r.articles?.slug ? <> · <a href={publicNewsArticleUrl(r.articles.slug)} className="ui-text-link">Open article</a></> : null}</span></div>
+          <div className="ui-row"><StatusBadge tone="warning">open</StatusBadge><span className="ui-meta">Filed {new Date(r.created_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}{r.articles?.slug ? <> · <a href={publicNewsArticleUrl(r.articles.slug)} className="ui-text-link">Open article</a></> : null}</span></div>
           <p className="ui-prose">{r.reason}</p>
           <p className="ui-meta">Reported by {r.reporter_id ? "a member account" : "a guest"}{r.reporter_name ? ` · ${r.reporter_name}` : ""}{r.reporter_email ? <> · <a className="ui-text-link" href={`mailto:${r.reporter_email}`}>{r.reporter_email}</a></> : null} (private)</p>
           <form action={resolveCorrection} className="ui-stack-sm ui-divider">
@@ -53,7 +53,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ r
       {handled.length ? <section className="ui-stack-sm">
         <SectionHeading eyebrow="History" title="Recently handled" description="Decisions already recorded on correction reports." />
         <ul className="ui-list ui-stack-sm">{handled.map((r) => <li key={r.id}><Panel className="ui-stack-sm">
-          <div className="ui-row"><StatusBadge tone={r.status === "resolved" ? "success" : "neutral"}>{r.status}</StatusBadge><span className="ui-meta">Filed {new Date(r.created_at).toLocaleString("en-NG")}{r.articles?.slug ? <> · <a href={publicNewsArticleUrl(r.articles.slug)} className="ui-text-link">Open article</a></> : null}</span></div>
+          <div className="ui-row"><StatusBadge tone={r.status === "resolved" ? "success" : "neutral"}>{r.status}</StatusBadge><span className="ui-meta">Filed {new Date(r.created_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}{r.articles?.slug ? <> · <a href={publicNewsArticleUrl(r.articles.slug)} className="ui-text-link">Open article</a></> : null}</span></div>
           <p className="ui-prose">{r.reason}</p>
           {r.resolution_note ? <p className="ui-meta"><strong>Resolution:</strong> {r.resolution_note}</p> : null}
         </Panel></li>)}</ul>

@@ -31,3 +31,89 @@ button.btn-busy:not(:has(.ep-btn__spinner))::before {
   .admin-sidebar__nav-spinner[data-active="true"],
   button.btn-busy::before { animation: none; }
 }
+
+/* ── Menu overlay with a pinned header (turn 24) ───────────────────────────
+   The header with the X stays put at the top; only the list below scrolls,
+   and use-drawer-memory.ts puts that list back where it was. */
+.drawer-root .drawer.drawer--pinned {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+}
+.drawer-root .drawer.drawer--pinned > .drawer__head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  flex: none;
+  margin: 0;
+  padding: 18px 20px 14px;
+  background: inherit;
+  border-bottom: 1px solid hsl(var(--border));
+  box-shadow: 0 6px 14px -12px rgb(10 16 35 / .45);
+}
+.drawer-root .drawer.drawer--pinned > .drawer__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px 20px 24px;
+  scrollbar-gutter: stable;
+}
+.drawer-root .drawer.drawer--pinned[data-sidebar="true"] > .drawer__body { display: flex; flex-direction: column; padding-inline: 8px; }
+.admin-drawer-links__title { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+
+/* ── Live notification dots ─────────────────────────────────────────────── */
+.live-dots { display: inline-flex; flex: none; align-items: center; gap: 4px; margin-inline-start: 6px; vertical-align: middle; }
+.admin-sidebar__badges { margin-inline-start: auto; }
+.live-dot { display: inline-grid; flex: none; place-items: center; }
+.live-dot--count {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #e4572e;
+  color: #fff;
+  box-shadow: 0 0 0 2px hsl(var(--card, 0 0% 100%));
+  font-size: 10.5px;
+  font-style: normal;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.live-dot--hot { animation: live-dot-bump 1.2s ease-in-out 2; }
+.live-dot--running {
+  position: relative;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 0 2px rgb(34 197 94 / .25);
+}
+.live-dot--running::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border: 2px solid rgb(34 197 94 / .6);
+  border-radius: 50%;
+  animation: live-dot-ring 1.5s ease-out infinite;
+}
+/* Something anywhere needs attention: a small dot on the menu button. */
+.admin-menu-button { position: relative; }
+.admin-menu-button__dot {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #e4572e;
+  box-shadow: 0 0 0 2px hsl(var(--card, 0 0% 100%));
+  pointer-events: none;
+}
+@keyframes live-dot-ring { 0% { transform: scale(.7); opacity: 1; } 100% { transform: scale(1.7); opacity: 0; } }
+@keyframes live-dot-bump { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+@media (prefers-reduced-motion: reduce) {
+  .live-dot--running::after, .live-dot--hot { animation: none; }
+}

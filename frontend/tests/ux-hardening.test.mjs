@@ -56,29 +56,29 @@ test("confirm-submit uses the branded dialog, not window.confirm", () => {
 });
 
 test("live queue counts cover every pending-work queue", () => {
+  // Turn 24: both live-queue routes share admin/lib/live-queues.ts.
   const route = repo("frontend/apps/main/app/api/live/queues/route.ts");
-  for (const table of ["events", "moderation_appeals", "forum_reports"]) {
-    assert.match(route, new RegExp(`from\\("${table}"\\)`), `route should count ${table}`);
+  assert.match(route, /readLiveQueues\(db\)/);
+  const queues = repo("frontend/apps/admin/lib/live-queues.ts");
+  for (const table of ["events", "moderation_appeals", "forum_reports", "comment_reports", "article_correction_reports", "ai_runs", "storage_jobs"]) {
+    assert.match(queues, new RegExp(`from\\("${table}"\\)`), `live queues should count ${table}`);
   }
   // Turn 5 owner brief: song requests were removed from the public site and admin, so the queue
   // endpoint no longer counts radio_song_requests (the table is kept, unchanged, for its history).
-  assert.doesNotMatch(route, /radio_song_requests|songRequests/);
-  // The events and song-request admin queues were withdrawn in 43835ed ("Remove digest, poll, events,
-  // and radio/requests pages from admin"), so the sidebar hook exposes only queues with a staff page.
+  assert.doesNotMatch(queues, /radio_song_requests|songRequests/);
   const hook = repo("frontend/apps/admin/components/use-live-queue-counts.ts");
-  for (const key of ["submissions", "corrections", "enquiries", "appeals", "forumReports"]) {
+  for (const key of ["submissions", "corrections", "enquiries", "events", "appeals", "forumReports", "commentReports", "aiRunning", "storageRunning"]) {
     assert.match(hook, new RegExp(`${key}: number \\| null`));
   }
-  for (const key of ["events", "songRequests"]) {
-    assert.doesNotMatch(hook, new RegExp(`${key}: number \\| null`), `${key} has no admin page to badge`);
-  }
+  assert.doesNotMatch(hook, /songRequests: number \| null/, "song requests have no admin page to badge");
 });
 
 test("admin sidebar renders superscript badges on queue links", () => {
   const sidebar = repo("frontend/apps/admin/components/admin-sidebar.tsx");
   assert.match(sidebar, /useLiveQueueCounts/);
   assert.match(sidebar, /admin-sidebar__badge/);
-  assert.match(sidebar, /\/moderation\/forum/);
+  assert.match(sidebar, /<LiveDots counts=\{counts\} href=\{item.href\}/);
+  assert.match(repo("frontend/apps/admin/components/use-live-queue-counts.ts"), /"\/moderation\/forum"/);
   assert.match(repo("frontend/apps/admin/app/globals.css"), /\.admin-sidebar__badge/);
 });
 

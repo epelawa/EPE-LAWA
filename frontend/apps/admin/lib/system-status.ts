@@ -55,7 +55,8 @@ export function systemReadiness(env: NodeJS.ProcessEnv): ReadinessTile[] {
   });
 
   const pushFlag = env.NEXT_PUBLIC_WEB_PUSH_ENABLED === "true";
-  const push = allSet(env, ["NEXT_PUBLIC_VAPID_PUBLIC_KEY", "VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY"]);
+  // The names the sender actually reads (lib/web-push-send.ts, lib/push-crypto.ts).
+  const push = allSet(env, ["NEXT_PUBLIC_VAPID_PUBLIC_KEY", "WEB_PUSH_VAPID_PUBLIC_KEY", "WEB_PUSH_VAPID_PRIVATE_KEY", "WEB_PUSH_VAPID_SUBJECT", "PUSH_DISPATCH_SECRET"]);
   tiles.push({
     label: "Web push",
     description: !pushFlag ? "Feature flag is off; members are not asked to subscribe." : push.missing.length === 0 ? "Flag and key pair are present." : "Flag is on but the key pair is incomplete.",
@@ -63,6 +64,23 @@ export function systemReadiness(env: NodeJS.ProcessEnv): ReadinessTile[] {
     missing: pushFlag ? push.missing : ["NEXT_PUBLIC_WEB_PUSH_ENABLED"],
     set: pushFlag ? push.set : [],
     href: "/",
+  });
+
+  // Firebase Cloud Messaging is optional: Web Push above already reaches every browser.
+  const fcmServer = allSet(env, ["FIREBASE_PROJECT_ID", "FIREBASE_CLIENT_EMAIL", "FIREBASE_PRIVATE_KEY"]);
+  const fcmBrowser = allSet(env, ["NEXT_PUBLIC_FIREBASE_API_KEY", "NEXT_PUBLIC_FIREBASE_PROJECT_ID", "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID", "NEXT_PUBLIC_FIREBASE_APP_ID"]);
+  const fcmSet = [...fcmServer.set, ...fcmBrowser.set];
+  const fcmMissing = [...fcmServer.missing, ...fcmBrowser.missing];
+  tiles.push({
+    label: "Firebase Cloud Messaging",
+    description: fcmMissing.length === 0
+      ? "Firebase is configured: subscribed devices link an FCM token and are notified through FCM, falling back to Web Push."
+      : fcmSet.length === 0
+        ? "Optional. Paste the Firebase service account and web config into Vercel, then redeploy. Until then notifications go through Web Push."
+        : "Some Firebase variables are set; add the rest and redeploy. Notifications keep going through Web Push meanwhile.",
+    state: fcmMissing.length === 0 ? "ready" : fcmSet.length === 0 ? "optional" : "incomplete",
+    missing: fcmMissing,
+    set: fcmSet,
   });
 
   const storage = allSet(env, ["R2_BUCKET_PUBLIC", "NEXT_PUBLIC_R2_PUBLIC_BASE_URL"]);

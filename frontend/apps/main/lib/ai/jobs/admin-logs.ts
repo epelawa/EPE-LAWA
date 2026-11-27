@@ -11,7 +11,7 @@ Use only the events given; never guess intent beyond the stated reasons.
 Return ONLY JSON: {"summaries":[{"actor_id":"<id>","summary":"80-400 words"}]}`;
 
 function lagos(value: string): string {
-  return new Intl.DateTimeFormat("en-NG", { timeZone: "Africa/Lagos", dateStyle: "medium", timeStyle: "medium" }).format(new Date(value));
+  return new Intl.DateTimeFormat("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", second: "2-digit", hour12: true, timeZone: "Africa/Lagos" }).format(new Date(value));
 }
 
 export async function runAdminLogJob(db: SupabaseClient, ctx: { log: RunLog; budget: Budget; deadline: number; periodStart: Date; periodEnd: Date }): Promise<string> {
