@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "./supabase";
+import { buildOrIlikeContains, escapePostgrestLikeTerm } from "./postgrest-search";
 
 /**
  * Site-wide search shared by the header search dialog (via /api/search).
@@ -43,18 +44,18 @@ export async function searchSite(query: string, category: SearchCategory = "all"
     const empty = Promise.resolve({ data: [] as Row[], error: null });
     const [articles, businesses, destinations, people, threads] = await Promise.all([
       wants("news") ? supabase.from("published_articles").select("slug,title,summary,published_at,category_label")
-        .or(`title.ilike.%${query}%,summary.ilike.%${query}%`)
+        .or(buildOrIlikeContains(["title", "summary"], query))
         .order("published_at", { ascending: false, nullsFirst: false }).limit(limit) : empty,
       wants("businesses") ? supabase.rpc("business_discovery_search", { p_query: query, p_area: "", p_category: "", p_offset: 0 })
         .select("slug,name,category_label,area").limit(limit) : empty,
       wants("places") ? supabase.from("tourism_destinations").select("slug,name,location_label")
-        .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
+        .or(buildOrIlikeContains(["name", "description"], query))
         .order("name", { ascending: true }).limit(limit) : empty,
       wants("people") ? supabase.from("published_people").select("slug,full_name,preferred_name,is_verified")
-        .or(`full_name.ilike.%${query}%,preferred_name.ilike.%${query}%`)
+        .or(buildOrIlikeContains(["full_name", "preferred_name"], query))
         .order("full_name", { ascending: true }).limit(limit) : empty,
       wants("forum") ? supabase.from("forum_threads").select("slug,title,post_count,last_activity_at")
-        .ilike("title", `%${query}%`).in("state", ["open", "locked"]).is("deleted_at", null)
+        .ilike("title", `%${escapePostgrestLikeTerm(query)}%`).in("state", ["open", "locked"]).is("deleted_at", null)
         .order("last_activity_at", { ascending: false, nullsFirst: false }).limit(limit) : empty,
     ]);
     if ([articles, businesses, destinations, people, threads].some((result) => Boolean(result.error))) return { state: "error", query };

@@ -5,6 +5,7 @@ import { formatIsoDay } from "../../lib/dates";
 import { publicMediaUrl } from "../../lib/media";
 import { FilterIcon, SearchIcon, UsersIcon } from "../../components/icons";
 import { EmptyPanel, Notice, PageFrame, PageIntro, StatusBadge } from "../../components/design-system";
+import { buildOrIlikeContains } from "../../lib/postgrest-search";
 
 type PersonListItem = {
   id: string;
@@ -63,7 +64,7 @@ export default async function WhoIsWhoPage({ searchParams }: { searchParams: Pro
   let officeFilterCapped = false;
   if (officeFilter) {
     const { data: matchingOffices, error: officeError } = await supabase.from("people_offices").select("person_id")
-      .or(`title.ilike.%${officeFilter}%,institution.ilike.%${officeFilter}%`).limit(501);
+      .or(buildOrIlikeContains(["title", "institution"], officeFilter)).limit(501);
     if (officeError) {
       console.error("people_offices filter failed", { code: officeError.code });
       return <PageFrame className="ui-stack"><PageIntro eyebrow="People" title="Who is Who" description="A sourced directory of people and public office holders."/><EmptyPanel title="Office search could not be loaded" description="We could not check public office records, so we are not presenting an incomplete result as if it were complete." actions={<Link href={pageHref(1, nameFilter, officeFilter, communityFilter)} className="btn-secondary">Try again</Link>}/></PageFrame>;
@@ -76,7 +77,7 @@ export default async function WhoIsWhoPage({ searchParams }: { searchParams: Pro
   let query = supabase.from("published_people")
     .select("id,slug,full_name,preferred_name,community,is_deceased,is_verified,portrait_key,portrait_alt")
     .order("full_name", { ascending: true }).order("id", { ascending: true });
-  if (nameFilter) query = query.or(`full_name.ilike.%${nameFilter}%,preferred_name.ilike.%${nameFilter}%`);
+  if (nameFilter) query = query.or(buildOrIlikeContains(["full_name", "preferred_name"], nameFilter));
   if (communityFilter) query = query.eq("community", communityFilter);
   if (officePersonIds) query = officePersonIds.length ? query.in("id", officePersonIds) : query.eq("id", "00000000-0000-0000-0000-000000000000");
   const { data, error } = await query.range(start, start + PAGE_SIZE);
