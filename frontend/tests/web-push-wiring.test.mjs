@@ -69,3 +69,23 @@ test('the AI Scheduler stub is retired from navigation, routes and tests', async
   const allowance = await read('frontend/tests/public-copy-availability.test.mjs');
   assert.doesNotMatch(allowance, /ai-scheduler/i);
 });
+
+// Strix review on PR #275 (CWE-770): one shared 100/hour bucket per scope let a handful of networks lock every
+// visitor out of forms, sign-in and notification settings.
+test('shared rate ceilings cannot be drained by a few networks or by invented push endpoints', async () => {
+  const [server, route] = await Promise.all([
+    read('frontend/apps/main/lib/form-server.ts'),
+    read('frontend/apps/main/app/api/notifications/subscribe/route.ts'),
+  ]);
+  assert.match(server, /p_global_limit: sharedHourlyLimit\(scope\)/, 'the helper always sends a shared ceiling');
+  assert.match(server, /DEFAULT_SHARED_HOURLY_LIMIT = 1000/);
+  assert.match(server, /auth_signin: 5000/);
+  assert.match(server, /push_subscribe: 5000/);
+  // Mail-sending auth scopes keep the original ceiling as an SMTP cost guard.
+  for (const scope of ['auth_signup', 'auth_reset', 'auth_resend', 'auth_otp']) assert.match(server, new RegExp(`${scope}: 100\\b`));
+  // PATCH and DELETE look the device up before spending the allowance.
+  const patch = route.slice(route.indexOf('export async function PATCH'), route.indexOf('export async function DELETE'));
+  const del = route.slice(route.indexOf('export async function DELETE'));
+  for (const body of [patch, del]) assert.ok(body.indexOf('select(') < body.indexOf('formRateAllowance('), 'lookup happens before charging');
+  assert.match(del, /if \(!device\.data && !legacy\.data\?\.length\) return Response\.json\(\{ removed: true \}/);
+});

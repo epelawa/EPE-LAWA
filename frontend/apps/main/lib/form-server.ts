@@ -27,10 +27,28 @@ export async function formClientKey(): Promise<string> {
 /**
  * Default submissions per network per hour. Many Nigerian mobile users share a
  * carrier IP (CGNAT), and every attempt counts, so 5 was reached by ordinary
- * visitors correcting a form. 12 still stops scripted floods (the database also
- * caps each scope globally per hour).
+ * visitors correcting a form. 12 still stops scripted floods (each scope also has a
+ * shared hourly ceiling, see sharedHourlyLimit).
  */
 const DEFAULT_PER_NETWORK_LIMIT = 12;
+
+/**
+ * Shared (all networks together) ceiling per scope per hour. A refused network adds nothing to the shared row,
+ * so filling it takes `ceiling / perNetworkLimit` distinct networks. The database default of 100 let about
+ * eight networks lock every visitor out of a form, sign-in or notification settings (Strix review on PR #275),
+ * so non-mail scopes now sit far above any realistic legitimate hour. The four auth scopes that send email
+ * keep the original 100/hour ceiling as a cost guard for the SMTP quota.
+ */
+const SHARED_HOURLY_LIMIT: Readonly<Record<string, number>> = {
+  auth_signup: 100, auth_reset: 100, auth_resend: 100, auth_otp: 100,
+  auth_signin: 5000, auth_password_change: 2000,
+  push_subscribe: 5000,
+  forum_post: 2000, image_upload: 2000,
+};
+const DEFAULT_SHARED_HOURLY_LIMIT = 1000;
+export function sharedHourlyLimit(scope: string): number {
+  return SHARED_HOURLY_LIMIT[scope] ?? DEFAULT_SHARED_HOURLY_LIMIT;
+}
 
 /**
  * True when this network may use the named form this hour. In a Vercel deployment
@@ -46,6 +64,7 @@ export async function formRateAllowance(scope: string, perClientLimit = DEFAULT_
       p_scope: scope,
       p_fingerprint: fingerprint,
       p_limit: perClientLimit,
+      p_global_limit: sharedHourlyLimit(scope),
     });
     if (error) {
       console.error("form rate limiter error", { scope, code: error.code });
