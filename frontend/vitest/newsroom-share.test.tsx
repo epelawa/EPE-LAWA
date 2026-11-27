@@ -7,9 +7,10 @@ import NewsShareTools from "../apps/admin/components/news-share-tools";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-it("provides 50 curated hashtags and suggests only whole matching terms", () => {
-  expect(NEWS_HASHTAGS).toHaveLength(50);
-  expect(new Set(NEWS_HASHTAGS.map(({ tag }) => tag)).size).toBe(50);
+it("provides 150 curated hashtags and suggests only whole matching terms", () => {
+  expect(NEWS_HASHTAGS).toHaveLength(150);
+  expect(new Set(NEWS_HASHTAGS.map(({ tag }) => tag.toLowerCase())).size).toBe(150);
+  expect(suggestNewsHashtags("International news covers climate change, the presidency, tech, an election campaign and palliatives.")).toEqual(expect.arrayContaining(["InternationalNews", "ClimateChange", "Presidency", "TechNews", "ElectionCampaign", "Palliatives"]));
   expect(suggestNewsHashtags("Epe schools and health")).toEqual(expect.arrayContaining(["EpeNews", "Schools", "Health"]));
   expect(suggestNewsHashtags("marketer")).not.toContain("Markets");
   expect(suggestNewsHashtags("" )).toEqual([]);

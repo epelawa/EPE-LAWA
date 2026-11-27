@@ -219,7 +219,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
         </div> : null}
 
         <div className={styles.readingGuide}><span>THE STORY</span><a href="#comments">Join the conversation <span aria-hidden="true">↗</span></a></div>
-        <div className={`ui-prose ${styles.articleBody}`} data-offline-article-body><ArticleBody body={body} /></div>
+        <div className={`ui-prose ${styles.articleBody}`} data-offline-article-body data-no-translate><ArticleBody body={body} /></div>
         {article.tags?.length ? <nav className={styles.tagRow} aria-label="Story topics"><span className={styles.tagRowLabel}>Topics</span><ul className={styles.tagList}>{article.tags.map((tag) => tag.slug ? <li key={tag.slug}><Link className={styles.tagChip} href={`/news?tag=${encodeURIComponent(tag.slug)}`}>{tag.label ?? tag.slug}</Link></li> : null)}</ul></nav> : null}
         <p className={styles.articleAuthorCredit}><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="m4 20 4.3-1 10.2-10.2a2.1 2.1 0 0 0-3-3L5.3 16 4 20Z" /><path d="m13.8 7.2 3 3" /><path d="M4 20h4" /></svg><span><strong>Brought to you by</strong> {article.author_slug ? <Link className="ui-text-link" href={`/news/author/${encodeURIComponent(article.author_slug)}`}>{article.author_name}</Link> : article.author_name}</span></p>
         <CommentThread articleId={article.id} slug={article.slug} notice={notice.comments} />

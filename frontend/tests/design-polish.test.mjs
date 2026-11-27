@@ -96,7 +96,7 @@ test("Tidegate loaders remain wired and public motion is hydration-safe", () => 
   const staffMotion = read("frontend/apps/admin/components/site-motion.tsx");
   const publicLayout = read("frontend/apps/main/app/layout.tsx");
   const staffLayout = read("frontend/apps/admin/app/layout.tsx");
-  const publicLoading = read("frontend/apps/main/app/loading.tsx");
+  const directoryLoading = read("frontend/apps/main/app/business-directory/directory-loading.tsx");
   const staffProtectedLoading = read("frontend/apps/admin/app/(protected)/loading.tsx");
   const publicCss = read("frontend/apps/main/app/globals.css");
   const staffCss = read("frontend/apps/admin/app/globals.css");
@@ -107,7 +107,8 @@ test("Tidegate loaders remain wired and public motion is hydration-safe", () => 
   assert.match(staffMotion, /TidegateSpinner/);
   assert.match(publicLayout, /<SiteMotion\s*\/>/);
   assert.doesNotMatch(staffLayout, /<SiteMotion\s*\/>/);
-  for (const loading of [publicLoading, staffProtectedLoading]) assert.match(loading, /TidegateSpinner/);
+  assert.match(directoryLoading, /BusinessCardSkeleton/);
+  assert.match(staffProtectedLoading, /TidegateSpinner/);
   assert.match(publicCss, /epe-tidegate-orbit/);
   assert.match(publicCss, /prefers-reduced-motion:\s*reduce/);
   assert.doesNotMatch(publicCss, /has-scroll-reveal|data-scroll-reveal/);

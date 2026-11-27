@@ -17,6 +17,7 @@ import SitePoll from "../components/site-poll";
 import HomeLivePill from "../components/home-live-pill";
 import { t, type SiteLanguage } from "../lib/i18n";
 import StructuredData from "../components/structured-data";
+import { AdvertiseCallout } from "../components/sponsor-slot";
 import { organizationSchema, websiteSchema } from "../lib/structured-data";
 
 // The homepage component does not await anything before rendering the hero. readSiteLanguage()
@@ -70,6 +71,8 @@ export default function Home() {
           <Link href="/radio" className="home-radio__action">{t(lang, "home.radio.cta")} <ArrowRightIcon size={17} aria-hidden="true" /></Link>
         </section>
       </div></HomeSectionReveal>
+
+      <AdvertiseCallout />
 
       <HomeSectionReveal><Suspense fallback={<HomeNewsSkeleton />}><HomeNews storiesPromise={storiesPromise} renderedAt={renderedAt} lang={lang} /></Suspense>
 

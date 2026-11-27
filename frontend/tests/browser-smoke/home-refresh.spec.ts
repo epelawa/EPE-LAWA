@@ -43,6 +43,27 @@ test("homepage offers compact news, radio and community navigation", async ({ pa
   }
 });
 
+test("home advertising invitation sits before Latest News and opens advertising information", async ({ page, request }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await openHome(page, request);
+  const invite = page.getByRole("complementary", { name: "Advertising opportunities" });
+  const latestNews = page.getByRole("heading", { name: "Latest News" });
+  for (const width of [320, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await expect(invite).toBeVisible();
+    await expect(invite.getByText("Advertise here", { exact: true })).toBeVisible();
+    await expect(invite.getByText("Put your business in the spotlight.")).toBeVisible();
+    await expect(invite.getByText("Connect with people discovering Epe LAWA.")).toBeVisible();
+    const card = await invite.boundingBox();
+    const news = await latestNews.boundingBox();
+    expect(card!.y + card!.height).toBeLessThanOrEqual(news!.y);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+  }
+  await invite.getByRole("link", { name: /Advertise with EPE LAWA/ }).click();
+  await expect(page).toHaveURL(/\/advertise$/);
+  await expect(page.getByRole("heading", { name: "Advertise with EPE LAWA", level: 1 })).toBeVisible();
+});
+
 test("hero pauses while keyboard focus is inside and resumes after focus leaves", async ({ page, request }) => {
   test.setTimeout(40_000);
   await page.emulateMedia({ reducedMotion: "no-preference" });

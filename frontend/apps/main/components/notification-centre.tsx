@@ -8,14 +8,14 @@ import { useRadioOpenPageReminder } from "./radio-reminder";
 import { createClient } from "../lib/supabase.client";
 import { trapTabKey } from "../lib/site-search-events";
 import {
-  currentSubscription, disablePush, enablePush, pushPermission, pushSupport, readTopics, rememberedSubscribed, saveTopics,
+  disablePush, enablePush, pushPermission, pushSupport, readTopics, rememberedSubscribed, saveTopics,
   type PushPermission, type PushSupport, type PushTopics,
 } from "../lib/push-client";
 import styles from "./notification-centre.module.css";
 
 type Item = { id: string; kind: string; title: string; body: string; url: string | null; read_at: string | null; created_at: string };
 type FeedState = "loading" | "signedout" | "ready" | "error";
-type DeviceState = "checking" | "disabled" | "unsupported" | "denied" | "revoked" | "off" | "on";
+type DeviceState = "checking" | "check-error" | "disabled" | "unsupported" | "denied" | "revoked" | "off" | "on";
 
 export const OPEN_NOTIFICATIONS_EVENT = "ep-open-notifications";
 const KIND_LABEL: Record<string, string> = {
@@ -94,10 +94,13 @@ export default function NotificationCentre() {
     if (support === "unsupported") { setDevice("unsupported"); return; }
     // Push works for every visitor, signed in or not: the device itself is the subscriber.
     const permission: PushPermission = pushPermission();
-    const [subscription, stored] = await Promise.all([currentSubscription(), readTopics()]);
     if (permission === "denied") { setDevice(rememberedSubscribed() ? "revoked" : "denied"); return; }
-    // Stored flags only describe what this device receives while subscribed; an unsubscribed device keeps the suggested defaults.
-    if (permission === "granted" && subscription && stored?.subscribed !== false) { if (stored?.subscribed) setTopics(stored.topics); setDevice("on"); return; }
+    if (permission === "granted") {
+      setDevice("checking");
+      const stored = await readTopics();
+      if (!stored) { setDevice("check-error"); return; }
+      if (stored.subscribed) { setTopics(stored.topics); setDevice("on"); return; }
+    }
     setDevice(rememberedSubscribed() ? "revoked" : "off");
   }, []);
 
@@ -200,10 +203,7 @@ export default function NotificationCentre() {
     >
       {open ? <div className={styles.surface}>
         <div className={styles.head}>
-          <div>
-            <h2 id={titleId} className={styles.title}>Notifications</h2>
-            <p className={styles.subtitle}>Stay updated with what is happening across Epe.</p>
-          </div>
+          <h2 id={titleId} className={styles.title}>Notifications</h2>
           <button type="button" className={styles.close} aria-label="Close notifications" onClick={() => setOpen(false)}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
           </button>
@@ -235,9 +235,10 @@ export default function NotificationCentre() {
           <div className={styles.sectionHead}>
             <h3 id={`${titleId}-push`} className={styles.sectionTitle}>Push notifications</h3>
             <span className={styles.pill} data-tone={device === "on" ? "on" : device === "denied" || device === "revoked" ? "warn" : "off"}>
-              {device === "on" ? "On" : device === "denied" ? "Blocked" : device === "revoked" ? "Turned off" : device === "checking" ? "Checking…" : device === "unsupported" || device === "disabled" ? "Unavailable" : "Off"}
+              {device === "on" ? "On" : device === "denied" ? "Blocked" : device === "revoked" ? "Turned off" : device === "checking" ? "Checking…" : device === "unsupported" || device === "disabled" || device === "check-error" ? "Unavailable" : "Off"}
             </span>
           </div>
+          {device === "check-error" ? <div className={styles.inlineState}><p className={styles.muted} role="status">Could not check notification settings for this device.</p><button type="button" className="btn-secondary" onClick={() => void loadDevice()}>Check again</button></div> : null}
           {device === "disabled" ? <p className={styles.muted}>Push notifications are not available on EPE LAWA yet.</p> : null}
           {device === "unsupported" ? <p className={styles.muted}>This browser cannot receive push notifications. On iPhone or iPad, add EPE LAWA to your Home Screen first, then open it from there.</p> : null}
           {device === "off" ? <p className={styles.muted}>No account needed. Your browser will ask for permission when you turn this on.</p> : null}
