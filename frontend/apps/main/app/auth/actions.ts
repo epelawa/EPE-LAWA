@@ -6,7 +6,7 @@ import { siteUrl } from "../../lib/site";
 import { ACTIVITY_COOKIE, ACTIVITY_COOKIE_MAX_AGE_SECONDS } from "../../lib/session-policy";
 import { mapAuthProviderError } from "./auth-error";
 import { formRateAllowance, formRateMessage, formRateUnavailableMessage } from "../../lib/form-server";
-import { admitSigninAttempt, normaliseSigninEmail, recordSigninOutcome, signinLockedMessage, type SigninOutcome } from "../../../admin/lib/signin-throttle";
+import { admitSigninAttempt, normaliseSigninEmail, recordSigninOutcome, signinBusyMessage, signinLockedMessage, type SigninOutcome } from "../../../admin/lib/signin-throttle";
 import { availabilityFromRpc, isValidHandle, normalizeHandle } from "../../lib/member-handle";
 import { handleResendSignupVerification, handleVerifyEmailOtp, type AuthState } from "../../lib/auth-otp";
 export type { AuthState } from "../../lib/auth-otp";
@@ -108,20 +108,19 @@ export async function signIn(_state: AuthState, data: FormData): Promise<AuthSta
   if (!validEmail(email)) return { status: "error", message: "Enter a valid email address.", fieldErrors: { email: "Enter a valid email address." } };
   if (!password) return { status: "error", message: "Enter your password.", fieldErrors: { password: "Enter your password." } };
   if (password.length > 128) return { status: "error", message: "Your password must be no more than 128 characters.", fieldErrors: { password: "Your password must be no more than 128 characters." } };
+  // Network budget first, as every signed-out form does: a refused caller writes
+  // nothing to the per-account table (Strix review on PR #280).
+  if (!(await formRateAllowance("auth_signin", 15))) return { status: "error", message: await formRateMessage() };
   // Reserve one of this email's password checks (atomic, so parallel requests
   // cannot all slip past the lock). Every path below closes the attempt.
   const gate = await admitSigninAttempt(email);
   if (!gate.allowed) {
-    return gate.reason === "locked"
-      ? { status: "error", message: signinLockedMessage(gate.retryAfterSeconds), values: { email } }
-      : { status: "error", message: formRateUnavailableMessage, values: { email } };
+    if (gate.reason === "locked") return { status: "error", message: signinLockedMessage(gate.retryAfterSeconds), values: { email } };
+    if (gate.reason === "busy") return { status: "error", message: signinBusyMessage(gate.retryAfterSeconds), values: { email } };
+    return { status: "error", message: formRateUnavailableMessage, values: { email } };
   }
   let closed = false;
-  const close = async (outcome: SigninOutcome) => { closed = true; return recordSigninOutcome(email, outcome); };
-  if (!(await formRateAllowance("auth_signin", 15))) {
-    await close("unknown");
-    return { status: "error", message: await formRateMessage() };
-  }
+  const close = async (outcome: SigninOutcome) => { closed = true; return recordSigninOutcome(email, outcome, gate.reservation); };
   try {
     const supabase = await createClient();
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -207,7 +206,11 @@ export async function updatePassword(_state: AuthState, data: FormData): Promise
 export async function verifyEmailOtp(_state: AuthState, data: FormData): Promise<AuthState> {
   if (!(await formRateAllowance("auth_otp", 10))) return { status: "error", message: await formRateMessage() };
   const outcome = await handleVerifyEmailOtp(data, createClient, authCallbackUrl("/dashboard"));
-  if ("redirectTo" in outcome) redirect(outcome.redirectTo);
+  if ("redirectTo" in outcome) {
+    // A valid emailed code proves control of the address: lift any sign-in lock on it.
+    await recordSigninOutcome(normaliseSigninEmail(field(data, "email")), "verified");
+    redirect(outcome.redirectTo);
+  }
   return outcome;
 }
 export async function signOut() {

@@ -86,19 +86,37 @@ The same 200 was measured on `/news/<missing>`, `/tourism/<missing>`, `/who-is-w
 The network limiter (`auth_signin`: 15 per network, 500 shared per hour) cannot stop many networks guessing **one**
 account, and the staff login had no limit at all. Both sign-in forms now share a per-account lock:
 
-- **Rule:** at most 8 password checks per email can be spent or in flight in a 15-minute window. The 8th wrong
-  password locks that email for 15 minutes.
-  - **Admission is atomic.** Each check first reserves a slot under a database row lock (`signin_throttle_admit`), so a
-    burst of parallel requests cannot all slip past the lock (Strix review on PR #280).
+- **Order of checks (both forms):** first the shared `auth_signin` network budget (15 per network, 500 shared per hour;
+  the staff form now has it too), then the per-account admission, then the password. A network-refused caller writes
+  nothing to the per-account table.
+- **Rule:** only provider-confirmed wrong passwords count. The 8th wrong password within a 15-minute window locks that
+  email for 15 minutes.
+  - **Admission is atomic.** Each check first reserves a slot under a database row lock (`signin_throttle_admit`) and
+    gets a reservation token. At most 8 checks per email can be spent or in flight in a window, so a burst of parallel
+    requests cannot all slip past the lock (Strix review on PR #280).
+  - **In-flight checks never start a lock.** When 8 checks are already spent or still in flight, a further attempt is
+    refused with "Several sign-in attempts for this email are still being checked. Try again in about a minute." No
+    lock is set; the lock starts only when the 8th wrong password is actually confirmed (CodeRabbit review on PR #280).
   - **What 15 minutes means:** it is the length of **each** lock, not a cap on disruption. Someone who keeps sending
     eight wrong passwords every time a lock expires can keep an account locked for longer. The lock is deliberately
     fixed rather than escalating, so each cycle costs that person eight more attempts and the account holder at most
-    15 minutes. A completed password reset ends the lock at once.
-- **Closing each attempt** (`signin_throttle_record`):
-  - `"rejected"` (provider-confirmed `invalid_credentials`) keeps the slot as a failure.
+    15 minutes. A completed password reset, or a valid emailed sign-up code, normally ends the lock at once.
+  - **Known trade-off (Strix review on PR #280, LOW):** because anyone can type an address, someone who knows a member
+    or staff email can keep re-arming that lock. The network budget makes this cost 8 requests from a network per lock,
+    and the account holder can still get in through a password reset. A challenge on the sign-in forms (CAPTCHA or
+    proof-of-work) would raise the cost further; that changes the sign-in experience for everyone, so it is left as an
+    owner decision. Staff can lift a lock with the per-account unlock below.
+- **Closing each attempt** (`signin_throttle_record(key, outcome, reservation)`):
+  - `"rejected"` (provider-confirmed `invalid_credentials`) counts one confirmed failure.
   - `"verified"` (successful sign-in, or `email_not_confirmed`, which proves the password) clears the email. A completed
-    password reset also records `"verified"`.
-  - `"unknown"` (outage, provider rate limit, network-limiter refusal, invalid input) gives the slot back.
+    password reset and a valid emailed sign-up code also record `"verified"`, with no reservation needed.
+  - `"unknown"` (outage, provider rate limit, or an error thrown after admission) releases the slot without counting it.
+  - **Stale outcomes are ignored.** Every row carries a random generation, renewed whenever the key is cleared or a new
+    window starts, and the reservation token is that generation. A late outcome from an earlier generation changes
+    nothing, so it cannot lower a newer count (CodeRabbit review on PR #280).
+- **Table growth bound:** at most 1000 new account keys can be created per rolling hour, twice the shared sign-in
+  ceiling, so the cap never trips in normal use. Beyond it, new addresses get "temporarily unavailable" while known
+  addresses keep their counts. Rows idle for a day are pruned whenever a new key is created.
 - **Privacy:** the database stores only an HMAC of the email, keyed with `FORM_RATE_SECRET` (domain
   `signin-account:v1:`). Every email string is treated the same way, registered or not, so the lock never reveals
   whether an account or staff account exists.
@@ -113,14 +131,17 @@ account, and the staff login had no limit at all. Both sign-in forms now share a
   `signInAdminWithPassword` in `frontend/apps/admin/lib/supabase-access.ts`, which reports `password:
   "rejected" | "verified" | "unknown"`.
 - **Database:** `backend/supabase/migrations/20261129000000_signin_account_throttle.sql` (table
-  `auth_signin_throttle`) and `20261129010000_signin_throttle_atomic_admission.sql` (`signin_throttle_admit`,
-  `signin_throttle_record`). All of it is service_role only.
+  `auth_signin_throttle`), `20261129010000_signin_throttle_atomic_admission.sql` (atomic admission) and
+  `20261129020000_signin_throttle_reservations.sql` (separate pending and confirmed counts, reservation tokens, new-key
+  cap, prune). All of it is service_role only.
 - **Tests:** `backend/tests/signin-account-throttle.test.mjs` and `frontend/tests/signin-account-throttle.test.mjs`.
 
 ### Unlocking an account
 
 1. **Self-service (preferred):** the account holder resets their password from `/forgot-password`. Completing the reset
-   lifts the lock.
+   lifts the lock. Clearing the lock is best effort: if the database call fails, the new password is still saved and the
+   reset still reports success, but the lock stays until it expires. If the person still sees the "too many
+   unsuccessful attempts" message after a successful reset, use the per-account unlock in step 2.
 2. **One account, by staff:** the row key is an HMAC, so it can only be found with `FORM_RATE_SECRET`. That secret is
    held in the Vercel project environment, which only the project owner can read. With the secret in the shell
    environment, compute the key for the address:
