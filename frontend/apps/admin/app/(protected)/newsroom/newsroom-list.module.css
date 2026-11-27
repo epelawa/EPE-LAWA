@@ -18,3 +18,25 @@
 .deleteDisclosure > summary::-webkit-details-marker { display:none; }
 .deleteConfirm { display:grid; gap:8px; margin-top:8px; padding:12px; border:1px solid #e3b7b3; border-radius:12px; background:#fdf4f3; min-width:230px; }
 .deleteConfirm .ui-row { color:#7a2c27; font-size:.82rem; }
+
+/* Upload form and article list side by side; stacked on phones and tablets. */
+.workspace { display:grid; gap:24px; align-items:start; }
+@media (min-width:1180px) {
+  .workspace { grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); }
+}
+.uploadColumn, .listColumn { min-width:0; }
+.uploadColumn { scroll-margin-top:88px; }
+.columnHeading { margin:0; font-size:clamp(1.35rem,2vw,1.65rem); }
+.uploadPanel { padding:clamp(14px,2vw,22px); }
+/* The list switches to cards whenever its own column is narrow, not only on phones. */
+.listColumn { container-type:inline-size; }
+@container (max-width:640px) {
+  .table { display:none !important; }
+  .cards { display:grid; gap:12px; margin:0; padding:0; list-style:none; }
+  .card { display:grid; gap:14px; padding:18px; border:1px solid #d9e3f0; border-radius:16px; background:#fff; box-shadow:0 6px 22px rgb(23 38 74 / .04); }
+  .title { margin:0; color:#0a1023; font-size:1.05rem; line-height:1.4; overflow-wrap:anywhere; }
+  .meta { display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; color:#52617a; font-size:.8rem; }
+  .actions { display:flex; flex-wrap:wrap; gap:8px; }
+  .actions a { min-height:44px; }
+  .listHeader { flex-wrap:wrap; }
+}

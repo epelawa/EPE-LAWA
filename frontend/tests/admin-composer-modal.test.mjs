@@ -5,26 +5,22 @@ import { readFile } from 'node:fs/promises';
 const root = new URL('../../', import.meta.url);
 const read = (path) => readFile(new URL(path, root), 'utf8');
 
-test('the newsroom publish composer opens as a blur-backdrop popup modal, not only a full page', async () => {
-  const [modal, css, listing, dashboard] = await Promise.all([
-    read('frontend/apps/admin/components/composer-modal.tsx'),
-    read('frontend/apps/admin/components/article-composer-modal.module.css'),
+test('the newsroom upload form sits beside the article list, not in a popup modal', async () => {
+  const [listing, css, dashboard] = await Promise.all([
     read('frontend/apps/admin/app/(protected)/newsroom/page.tsx'),
+    read('frontend/apps/admin/app/(protected)/newsroom/newsroom-list.module.css'),
     read('frontend/apps/admin/app/(protected)/page.tsx'),
   ]);
-
-  assert.match(css, /\.modal::backdrop[\s\S]*?backdrop-filter:\s*blur\(/);
-  assert.match(css, /\.modal::backdrop[\s\S]*?-webkit-backdrop-filter:\s*blur\(/);
-
-  assert.match(modal, /defaultOpen = false/);
-  assert.match(modal, /useState\(defaultOpen\)/);
-  assert.match(modal, /dialog\.showModal\(\)/);
-
-  assert.match(listing, /defaultOpen=\{compose === "1" && canCompose\}/);
-  assert.equal((listing.match(/<ComposerTrigger/g) ?? []).length, 2);
-  assert.match(modal, /ComposerContext\.Provider/);
-  assert.match(dashboard, /href=\{`\$\{adminHref\("\/newsroom"\)\}\?compose=1`\}/);
+  await assert.rejects(read('frontend/apps/admin/components/composer-modal.tsx'));
+  assert.doesNotMatch(listing, /ComposerModal|ComposerTrigger|showModal|<dialog/);
+  assert.match(listing, /id="upload-article"/);
+  assert.match(listing, /<NewsArticleComposer/);
+  assert.match(listing, /styles\.workspace/);
+  assert.match(listing, /href="#upload-article"/);
   assert.match(listing, /adminHref\("\/newsroom\/new"\)/);
+  assert.match(css, /\.workspace \{ grid-template-columns:minmax\(0,1\.1fr\) minmax\(0,1fr\); \}/);
+  assert.match(css, /@container \(max-width:640px\)/);
+  assert.match(dashboard, /href=\{`\$\{adminHref\("\/newsroom"\)\}#upload-article`\}/);
 });
 
 test('other upload forms keep popup modal entry points with blur backdrops', async () => {

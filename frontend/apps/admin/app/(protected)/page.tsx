@@ -118,7 +118,7 @@ export default async function DashboardPage() {
       eyebrow="Staff workspace"
       title="Welcome back"
       description="This is your EPE LAWA desk: see what needs attention, then open your workspaces below."
-      actions={capabilities["article.create"] === true ? <Link className="btn-primary" href={`${adminHref("/newsroom")}?compose=1`}>Write a new story</Link> : null}
+      actions={capabilities["article.create"] === true ? <Link className="btn-primary" href={`${adminHref("/newsroom")}#upload-article`}>Write a new story</Link> : null}
       meta={
         <span className={styles.metaBadge}>
           <span className={`${styles.statusDot} ${verifiedCount === metrics.length ? styles.statusHealthy : styles.statusPartial}`} aria-hidden="true" />
