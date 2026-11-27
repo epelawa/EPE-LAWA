@@ -365,13 +365,14 @@ export function SignUpForm() {
   );
 }
 
-export function SignInForm() {
+export function SignInForm({ nextPath = "/dashboard" }: { nextPath?: string }) {
   const [state, action, pending] = useActionState(signIn, initial);
   if (state.status === "notice") {
     return <OtpCard defaultEmail={state.values?.email ?? ""} message={state.message} />;
   }
   return (
     <form action={action} noValidate className="auth-form" aria-busy={pending} draggable={false} onDragStart={(event) => event.preventDefault()}>
+      <input type="hidden" name="next" value={nextPath} />
       <GoogleSignInUnavailable />
       <div className="auth-field">
         <label htmlFor="login-email">Email address</label>
