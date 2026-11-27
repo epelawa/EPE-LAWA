@@ -6,13 +6,14 @@ const root = new URL('../../', import.meta.url);
 const read = (path) => readFile(new URL(path, root), 'utf8');
 
 test('web push is fully wired: worker, guest-capable subscribe route, encrypted device store', async () => {
-  const [sw, route, prompt, client, layout, migration] = await Promise.all([
+  const [sw, route, prompt, client, layout, migration, promptStyles] = await Promise.all([
     read('frontend/apps/main/public/sw.js'),
     read('frontend/apps/main/app/api/notifications/subscribe/route.ts'),
     read('frontend/apps/main/components/push-onboarding.tsx'),
     read('frontend/apps/main/lib/push-client.ts'),
     read('frontend/apps/main/app/layout.tsx'),
     read('backend/supabase/migrations/20261124130000_push_subscription_register.sql'),
+    read('frontend/apps/main/components/push-onboarding.module.css'),
   ]);
 
   assert.match(sw, /addEventListener\("push"/);
@@ -42,7 +43,10 @@ test('web push is fully wired: worker, guest-capable subscribe route, encrypted 
   assert.match(prompt, /pushPermission\(\) !== "default"/, 'never re-prompts once the browser decided');
   assert.match(prompt, /onboardingSeen\(\)/, 'never re-prompts after dismissal');
   assert.match(prompt, /anotherDialogIsOpen\(\)/, 'never stacks over another dialog');
-  assert.match(prompt, /Stay connected to Epe\./);
+  assert.match(prompt, /Good things happen in Epe/);
+  assert.match(prompt, /permissionGuide/, 'the browser step includes a dedicated visual guide');
+  assert.match(promptStyles, /\.permissionGuide/);
+  assert.match(promptStyles, /prefers-reduced-motion/);
   assert.match(client, /pushManager\.getSubscription/, 'existing subscriptions are reused');
   assert.doesNotMatch(prompt, /requestPermission/, 'permission is only requested via enablePush from a click');
   assert.match(client, /Notification\.requestPermission\(\)/);
