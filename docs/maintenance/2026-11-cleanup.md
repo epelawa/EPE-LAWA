@@ -111,10 +111,15 @@ account, and the staff login had no limit at all. Both sign-in forms now share a
   - `"verified"` (successful sign-in, or `email_not_confirmed`, which proves the password) clears the email. A completed
     password reset and a valid emailed sign-up code also record `"verified"`, with no reservation needed.
   - `"unknown"` (outage, provider rate limit, or an error thrown after admission) releases the slot without counting it.
-  - **Stale outcomes are ignored.** Every row carries a random generation, renewed whenever the key is cleared or a new
-    window starts, and the reservation token is that generation. A late outcome from an earlier generation changes
-    nothing, so it cannot lower a newer count. An outcome that arrives after its own 15-minute window has expired is
-    also discarded, so a lock only ever comes from 8 failures inside one window (CodeRabbit review on PR #280).
+  - **Stale outcomes are ignored.** Every row carries a random generation, renewed when the key is cleared or a lock
+    expires, and the reservation token is that generation. A late outcome from an earlier generation changes nothing,
+    so it cannot lower a newer count (CodeRabbit review on PR #280).
+  - **Window rollover.** A plain rollover keeps the generation, so checks still in flight stay matched. An outcome that
+    lands after its window has closed rolls the window forward and counts in the window it lands in. It never adds to
+    the expired window, so a lock only comes from 8 failures inside one window (CodeRabbit). It is never dropped
+    either, so a batch timed across the boundary cannot win a second set of eight checks (Strix review on PR #280).
+    At a rollover, reservations idle for 2 minutes, which belong to requests that died without recording, stop
+    holding slots.
 - **Table growth bound:** at most 1000 new account keys can be created per rolling hour, twice the shared sign-in
   ceiling, so the cap never trips in normal use. Beyond it, new addresses get "temporarily unavailable" while known
   addresses keep their counts. Rows idle for a day are pruned whenever a new key is created.
@@ -134,8 +139,8 @@ account, and the staff login had no limit at all. Both sign-in forms now share a
 - **Database:** `backend/supabase/migrations/20261129000000_signin_account_throttle.sql` (table
   `auth_signin_throttle`), `20261129010000_signin_throttle_atomic_admission.sql` (atomic admission) and
   `20261129020000_signin_throttle_reservations.sql` (separate pending and confirmed counts, reservation tokens, new-key
-  cap, prune) and `20261129030000_signin_throttle_window_check.sql` (outcomes count only inside their own window). All
-  of it is service_role only.
+  cap, prune), `20261129030000_signin_throttle_window_check.sql` and `20261129040000_signin_throttle_rollover.sql`
+  (window-rollover accounting). All of it is service_role only.
 - **Tests:** `backend/tests/signin-account-throttle.test.mjs` and `frontend/tests/signin-account-throttle.test.mjs`.
 
 ### Unlocking an account

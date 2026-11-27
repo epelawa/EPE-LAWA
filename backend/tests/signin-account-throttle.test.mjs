@@ -10,6 +10,7 @@ for (const migration of [
   "20261129010000_signin_throttle_atomic_admission.sql",
   "20261129020000_signin_throttle_reservations.sql",
   "20261129030000_signin_throttle_window_check.sql",
+  "20261129040000_signin_throttle_rollover.sql",
 ]) {
   await db.exec(await readFile(new URL(`../supabase/migrations/${migration}`, import.meta.url), "utf8"));
 }
@@ -91,21 +92,58 @@ test("a stale outcome cannot change a newer generation (CodeRabbit on PR #280)",
   await record(k, "verified");
 });
 
-test("a rejection confirmed after its window expired does not count toward it (CodeRabbit on PR #280)", async () => {
+test("a late rejection counts in the window it lands in, never the expired one (CodeRabbit on PR #280)", async () => {
   const k = key("2");
   for (let i = 0; i < 7; i++) await reject(k);
   const late = token(await admit(k));
   // The 15-minute window closes while this check is still in flight.
   await db.query("update public.auth_signin_throttle set window_started_at = now() - interval '15 minutes 1 second' where account_key=$1", [k]);
   assert.equal(await record(k, "rejected", late), 0, "no lock from failures spanning two windows");
-  assert.equal((await row(k)).failures, 7);
-  token(await admit(k));
-  assert.deepEqual([(await row(k)).failures, (await row(k)).pending], [0, 1], "the next admission starts a fresh window");
+  assert.deepEqual([(await row(k)).failures, (await row(k)).pending], [1, 0], "it opens the new window with one failure");
   await record(k, "verified");
   // Eight confirmations inside one window still lock.
   for (let i = 0; i < 7; i++) await reject(k);
   await db.query("update public.auth_signin_throttle set window_started_at = now() - interval '14 minutes' where account_key=$1", [k]);
   assert.ok(near15min(await reject(k)));
+  await record(k, "verified");
+});
+
+test("a batch timed across the window boundary is still counted and locks (Strix on PR #280)", async () => {
+  const k = key("3");
+  const batch = [];
+  for (let i = 0; i < 8; i++) batch.push(token(await admit(k)));
+  // The window closes just before the provider answers.
+  await db.query("update public.auth_signin_throttle set window_started_at = now() - interval '15 minutes 1 second' where account_key=$1", [k]);
+  const results = [];
+  for (const r of batch) results.push(await record(k, "rejected", r));
+  assert.deepEqual(results.slice(0, 7), [0, 0, 0, 0, 0, 0, 0]);
+  assert.ok(near15min(results[7]), "all eight count in the new window and the eighth locks");
+  assert.ok(near15min((await admit(k)).locked));
+  await record(k, "verified");
+});
+
+test("a plain rollover keeps the generation and in-flight checks; lock expiry renews it", async () => {
+  const k = key("1");
+  for (let i = 0; i < 7; i++) await reject(k);
+  const inFlight = token(await admit(k));
+  await db.query("update public.auth_signin_throttle set window_started_at = now() - interval '16 minutes' where account_key=$1", [k]);
+  const next = token(await admit(k));
+  assert.equal(next, inFlight, "same generation across a plain rollover");
+  assert.deepEqual([(await row(k)).failures, (await row(k)).pending], [0, 2], "old failures reset; the in-flight check still holds its slot");
+  await record(k, "rejected", inFlight);
+  assert.equal((await row(k)).failures, 1, "the in-flight check's failure counts in the new window");
+  await record(k, "unknown", next);
+  // Reservations idle for 2 minutes at a rollover belonged to dead requests.
+  await db.query("update public.auth_signin_throttle set pending = 5, window_started_at = now() - interval '16 minutes', last_failure_at = now() - interval '3 minutes' where account_key=$1", [k]);
+  token(await admit(k));
+  assert.equal((await row(k)).pending, 1, "dead reservations released");
+  await record(k, "verified");
+  for (let i = 0; i < 8; i++) await reject(k);
+  const lockedGen = (await row(k)).generation;
+  await db.query("update public.auth_signin_throttle set locked_until = now() - interval '1 second' where account_key=$1", [k]);
+  const afterLock = token(await admit(k));
+  assert.notEqual(afterLock, lockedGen, "a new generation after a lock expires");
+  assert.deepEqual([(await row(k)).failures, (await row(k)).pending], [0, 1]);
   await record(k, "verified");
 });
 
@@ -116,22 +154,6 @@ test("verified clears a lock without a reservation (reset or emailed code)", asy
   assert.equal(await record(k, "verified"), 0);
   assert.equal(await row(k), undefined);
   token(await admit(k));
-  await record(k, "verified");
-});
-
-test("window and lock expiry start a fresh budget and a new generation", async () => {
-  const k = key("1");
-  for (let i = 0; i < 7; i++) await reject(k);
-  const old = token(await admit(k));
-  await db.query("update public.auth_signin_throttle set window_started_at = now() - interval '16 minutes' where account_key=$1", [k]);
-  const fresh = token(await admit(k));
-  assert.notEqual(fresh, old);
-  assert.deepEqual([(await row(k)).failures, (await row(k)).pending], [0, 1], "old failures and reservations no longer count");
-  assert.equal(await record(k, "rejected", old), 0, "an outcome from the old window is ignored");
-  assert.equal((await row(k)).failures, 0);
-  await db.query("update public.auth_signin_throttle set failures = 8, locked_until = now() - interval '1 second' where account_key=$1", [k]);
-  token(await admit(k));
-  assert.equal((await row(k)).failures, 0, "expired lock admits again with a fresh count");
   await record(k, "verified");
 });
 
