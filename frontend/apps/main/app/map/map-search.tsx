@@ -89,7 +89,7 @@ export default function MapSearch({ businesses, businessError = false }: { busin
     <Panel className={`ui-card ${styles.mapPanel}`}>
       <SectionHeading eyebrow="Free map, no sign-in" title="Epe Division on the map" id="epe-embed-map" description="The map shows Epe Division: Epe, Eredo, Ikosi-Ejinrin, Ibeju-Lekki and Lekki. Use my location marks you on it when you are inside Epe Division and sets the start of your directions; your coordinates stay in this browser tab." />
       <iframe 
-        title="Epe Division map" 
+        title="Epe Division map"
         src={embedUrl} 
         loading="lazy" 
         className={styles.mapFrame}

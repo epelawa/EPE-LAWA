@@ -1,5 +1,5 @@
 import "server-only";
-import { createCipheriv, createDecipheriv, createHmac, hkdfSync, randomBytes } from "node:crypto";
+import { createCipheriv, createDecipheriv, hkdfSync, randomBytes, scryptSync } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { PROVIDERS, type ProviderId, type StoredKeys } from "./providers";
 
@@ -55,14 +55,15 @@ export function openKey(provider: ProviderId, sealed: string, env: NodeJS.Proces
 
 /**
  * A fingerprint so the page can tell two saves apart without revealing anything
- * about the key: an HMAC keyed by a separate secret derived from AI_KEYS_SECRET,
+ * about the key: scrypt salted with a separate secret derived from AI_KEYS_SECRET,
  * so it cannot be checked against guesses by anyone without the Vercel secret.
  */
 export function keyFingerprint(plain: string, env: NodeJS.ProcessEnv = process.env): string {
   const secret = env.AI_KEYS_SECRET?.trim();
   if (!secret || secret.length < 32) throw new Error("AI_KEYS_SECRET is not set");
   const macKey = Buffer.from(hkdfSync("sha256", Buffer.from(secret, "utf8"), Buffer.from("epe-lawa-ai-keys", "utf8"), Buffer.from("fingerprint v1", "utf8"), 32));
-  return createHmac("sha256", macKey).update(plain, "utf8").digest("hex").slice(0, 12);
+  // scrypt (memory-hard) rather than a fast hash, salted with the derived secret.
+  return scryptSync(plain, macKey, 6).toString("hex");
 }
 
 let memo: { at: number; keys: StoredKeys } | null = null;
