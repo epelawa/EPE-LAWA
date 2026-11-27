@@ -122,11 +122,18 @@ export default function PushOnboarding() {
   const topicCount = Number(topics.news) + Number(topics.radio);
   const toggle = (key: keyof PushTopics) => setTopics((value) => ({ ...value, [key]: !value[key] }));
 
-  // Owner brief (turn 26): the NEWZIA-style centred modal from the owner's reference —
-  // dimmed page, dark navy card, × top right, centred bold title, grey copy, red pill button.
-  // Tweaks: topic pills (News / Radio), a quiet "Not now" and the privacy line.
+  // An original EPE LAWA permission experience: a light editorial card, cobalt
+  // accents and a browser-owned permission step. The guide is decorative; the
+  // live status text below remains the accessible instruction.
   return <div className={styles.overlay} data-push-onboarding data-phase={phase}>
     <div className={styles.scrim} aria-hidden="true" onClick={() => { if (!working) dismiss(); }} />
+    {working ? <div className={styles.permissionGuide} aria-hidden="true">
+      <svg viewBox="0 0 160 560" preserveAspectRatio="none" fill="none">
+        <path className={styles.guideTrail} d="M22 548C20 454 43 407 84 353c43-56 63-101 53-170" />
+        <path className={styles.guideArrow} d="m120 202 17-24 17 24" />
+      </svg>
+      <span className={styles.guideLabel}>Browser permission</span>
+    </div> : null}
     <section ref={cardRef} className={styles.card} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={copyId} onKeyDown={trapFocus}>
       <button type="button" className={styles.close} onClick={phase === "success" || phase === "denied" ? close : dismiss} disabled={working} aria-label="Close">
         <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round"><path d="M6 6l12 12M18 6 6 18" /></svg>
@@ -141,9 +148,15 @@ export default function PushOnboarding() {
         <p id={copyId} className={styles.copy}>Your browser blocked notifications for EPE LAWA. To turn them on later, allow notifications for this site in your browser&apos;s settings, then use the bell at the top of the page.</p>
         <button type="button" className={`${styles.cta} ${styles.ctaQuiet}`} onClick={close}>Close</button>
       </> : <>
-        <span className={styles.badge} aria-hidden="true"><BellIcon size={20} /></span>
-        <h2 id={titleId} ref={headingRef} tabIndex={-1} className={styles.title}>Stay connected to Epe.</h2>
+        <span className={styles.brandMark} aria-hidden="true"><BellIcon size={21} /></span>
+        <p className={styles.eyebrow}>EPE LAWA · COMMUNITY UPDATES</p>
+        <h2 id={titleId} ref={headingRef} tabIndex={-1} className={styles.title}>Good things happen in Epe. Be there for them.</h2>
         <p id={copyId} className={styles.copy}>Get Epe Division news the moment it breaks, and a nudge when EPE LAWA radio goes on air. Free, and no account needed.</p>
+        <div className={styles.browserNote}>
+          <span className={styles.noteIcon} aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 16v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"/></svg></span>
+          <span><strong>Your browser stays in control</strong><small>Choose topics first. We&apos;ll ask your browser only when you tap below.</small></span>
+          <svg className={styles.noteArrow} aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg>
+        </div>
         <fieldset className={styles.pills} disabled={working}>
           <legend className="sr-only">Send me alerts about</legend>
           <label className={styles.pill} data-checked={topics.news ? "true" : "false"}>
@@ -155,10 +168,10 @@ export default function PushOnboarding() {
             <span>Radio</span>
           </label>
         </fieldset>
-        {working ? <p className={styles.hint} role="status"><span className={styles.pulse} aria-hidden="true" />Your browser is asking now. Choose <strong>Allow</strong> in its pop-up.</p> : null}
+        {working ? <p className={styles.hint} role="status"><span className={styles.pulse} aria-hidden="true" />Look for your browser&apos;s permission prompt and choose <strong>Allow</strong> to turn alerts on.</p> : null}
         {message ? <p className={styles.error} role="alert">{message}</p> : null}
         <button type="button" className={styles.cta} onClick={() => void enable()} disabled={working || topicCount === 0} aria-busy={working}>
-          {working ? "Waiting for your browser…" : phase === "error" ? "Try again" : "Turn on alerts"}
+          {working ? "Waiting for your browser…" : phase === "error" ? "Try again" : "Continue to browser prompt"}
         </button>
         <button type="button" className={styles.later} onClick={dismiss} disabled={working}>Not now</button>
         {phase === "error" ? <button type="button" className={styles.link} onClick={manageLater}>Manage in notification settings</button> : null}
