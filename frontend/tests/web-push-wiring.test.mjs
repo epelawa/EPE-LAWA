@@ -78,11 +78,24 @@ test('shared rate ceilings cannot be drained by a few networks or by invented pu
     read('frontend/apps/main/app/api/notifications/subscribe/route.ts'),
   ]);
   assert.match(server, /p_global_limit: sharedHourlyLimit\(scope\)/, 'the helper always sends a shared ceiling');
-  assert.match(server, /DEFAULT_SHARED_HOURLY_LIMIT = 1000/);
+  assert.match(server, /MAIL_SAFE_SHARED_HOURLY_LIMIT = 100;/, 'unlisted scopes keep the database default');
   assert.match(server, /auth_signin: 5000/);
   assert.match(server, /push_subscribe: 5000/);
-  // Mail-sending auth scopes keep the original ceiling as an SMTP cost guard.
-  for (const scope of ['auth_signup', 'auth_reset', 'auth_resend', 'auth_otp']) assert.match(server, new RegExp(`${scope}: 100\\b`));
+  // Strix review on PR #277: a scope that sends email must never be in the raised table, or anyone could drain
+  // the shared mail quota. Derive the mail-sending scopes from the code, not from a hand-kept list.
+  const table = server.slice(server.indexOf('NON_MAIL_SHARED_HOURLY_LIMIT'), server.indexOf('};', server.indexOf('NON_MAIL_SHARED_HOURLY_LIMIT')));
+  const raised = new Set([...table.matchAll(/([a-z_]+): \d+/g)].map((m) => m[1]));
+  const actions = ['frontend/apps/main/app/auth/actions.ts', 'frontend/apps/main/app/business-directory/submit/actions.ts', 'frontend/apps/main/app/business-directory/claim-actions.ts',
+    'frontend/apps/main/app/events/actions.ts', 'frontend/apps/main/app/itan-ilu-mi/actions.ts', 'frontend/apps/main/app/itan-ilu-mi/correction/actions.ts',
+    'frontend/apps/main/app/tourism/actions.ts', 'frontend/apps/main/app/news/[slug]/correction-actions.ts', 'frontend/apps/main/app/dashboard/appeal-actions.ts', 'frontend/apps/main/app/forum/actions.ts'];
+  let mailScopes = 0;
+  for (const path of actions) {
+    const source = await read(path);
+    if (!/deliverAuthMessage|sendNewsletterConfirmation/.test(source) || path.endsWith('auth/actions.ts')) continue;
+    for (const [, scope] of source.matchAll(/formRateAllowance\("([a-z_]+)"/g)) { mailScopes += 1; assert.ok(!raised.has(scope), `${scope} sends email and must keep the 100/hour ceiling`); }
+  }
+  assert.ok(mailScopes >= 4, 'business, event, history and correction submissions are recognised as mail-sending');
+  for (const scope of ['auth_signup', 'auth_reset', 'auth_resend', 'auth_otp', 'business_submit', 'event_submit', 'history_submit', 'history_correction']) assert.ok(!raised.has(scope), `${scope} keeps 100/hour`);
   // PATCH and DELETE look the device up before spending the allowance.
   const patch = route.slice(route.indexOf('export async function PATCH'), route.indexOf('export async function DELETE'));
   const del = route.slice(route.indexOf('export async function DELETE'));

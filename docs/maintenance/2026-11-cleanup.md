@@ -8,23 +8,24 @@ This note covers the open-ended cleanup pass after the business, radio and respo
 
 **Fix.** No migration was needed: the function already accepts `p_global_limit` from 1 to 10000.
 
-- `frontend/apps/main/lib/form-server.ts` now sends a shared ceiling for each scope (`sharedHourlyLimit`):
+- `frontend/apps/main/lib/form-server.ts` now sends a shared ceiling for each scope (`sharedHourlyLimit`). It **fails safe**: any scope not explicitly raised keeps the original 100/hour. Only scopes verified to send no email are raised. This was tightened after the Strix review on PR #277, which found mail-sending submission scopes on a 1000/hour catch-all.
 
 | Scope | Shared ceiling per hour | Why |
 |---|---|---|
-| `auth_signup`, `auth_reset`, `auth_resend`, `auth_otp` | 100 (unchanged) | These send email, so the old ceiling stays as a guard on the SMTP quota |
-| `auth_signin` | 5000 | Sign-in must not be lockable by a few networks |
-| `auth_password_change` | 2000 | |
-| `push_subscribe` | 5000 | Covers subscribe, topic changes and unsubscribe |
-| `forum_post`, `image_upload` | 2000 | |
-| every other scope | 1000 | |
+| `auth_signin` | 5000 | Sign-in must not be lockable by a few networks; it sends no email |
+| `push_subscribe` | 5000 | Covers subscribe, topic changes and unsubscribe; no email |
+| `auth_password_change`, `forum_post`, `image_upload` | 2000 | No email; signed-in members only |
+| `business_claim`, `tourism_submit`, `gallery_submit`, `article_correction`, `moderation_appeal` | 1000 | No email sent by these actions |
+| `auth_signup`, `auth_reset`, `auth_resend`, `auth_otp`, `business_submit`, `event_submit`, `history_submit`, `history_correction`, and any scope not listed | 100 (unchanged) | These send a staff notice and/or an acknowledgement over the shared auth-mail transport, so the ceiling guards the mail quota |
 
+- `newsletter` and `enquiry` call the database function directly and still use its 100/hour default.
+- The regression test works out which scopes send mail from the action files themselves (any file that calls `deliverAuthMessage`). It fails if one of those scopes is ever added to the raised table.
 - The per-network limits are unchanged (the default is 12; `push_subscribe` is 5 to subscribe and 20 to change topics or remove).
 - `PATCH /api/notifications/subscribe` looks the device up first. An unknown endpoint gets the same `404` as before but no longer costs any allowance.
 - `DELETE /api/notifications/subscribe` looks up both the device table and the legacy table first. If neither holds the endpoint, it answers `{removed: true}` without charging. A read failure answers `503`.
 - Regression test: `frontend/tests/web-push-wiring.test.mjs`, "shared rate ceilings cannot be drained by a few networks or by invented push endpoints".
 
-**Residual risk.** The email scopes keep the 100/hour ceiling on purpose. A coordinated flood from many networks can still pause signup and password-reset email for up to an hour. That is the trade-off for not exhausting the email provider's quota.
+**Residual risk.** The mail-sending scopes keep the 100/hour ceiling on purpose. A coordinated flood from many networks can still pause signup, password reset and the business, event and history submission forms for up to an hour. That is the trade-off for not exhausting the email provider's quota.
 
 ## 2. Unknown slugs return HTTP 200, not 404 (measured; not changed)
 
@@ -60,7 +61,7 @@ The same 200 was measured on `/news/<missing>`, `/tourism/<missing>`, `/who-is-w
 | Radio volume slider | 251×32 | `min-height: 44px` (`components/radio-player.module.css`) |
 
 - The 24×24 consent checkboxes on `/tourism` and `/itan-ilu-mi` sit inside their `<label>`, so the whole label is the hit target. They were left alone.
-- The desktop masthead language switch (40×36, desktop only) is part of the header the owner specified, so it was not resized. It meets the WCAG 2.2 AA floor of 24 px.
+- The desktop masthead language switch was 40×36. CodeRabbit flagged it on PR #277, and it is now 44×44 (`components/navigation-refinement.css`). The pill stays inside the existing 72 px masthead bar. The header height and layout measurements are in the PR.
 
 ## 4. Other checks
 

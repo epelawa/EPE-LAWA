@@ -194,7 +194,7 @@ body:has(.focused-error-shell) .mobile-bottom-nav,body:has(.auth-link-issue) .mo
 .lang-switch--masthead { display: none; }
 @media (min-width: 961px) {
   .lang-switch--masthead { display: inline-flex; background: transparent; border-color: rgba(167, 197, 245, .45); }
-  .lang-switch--masthead button { min-height: 36px; min-width: 40px; color: #F1F4FA; }
+  .lang-switch--masthead button { min-height: 44px; min-width: 44px; color: #F1F4FA; }
   .lang-switch--masthead button[aria-pressed="true"] { background: #477FE0; color: #0A1023; }
 }
 /* EN/YO switch sits on the Account heading row so the drawer's focus order stays

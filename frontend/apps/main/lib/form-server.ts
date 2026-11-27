@@ -35,19 +35,24 @@ const DEFAULT_PER_NETWORK_LIMIT = 12;
 /**
  * Shared (all networks together) ceiling per scope per hour. A refused network adds nothing to the shared row,
  * so filling it takes `ceiling / perNetworkLimit` distinct networks. The database default of 100 let about
- * eight networks lock every visitor out of a form, sign-in or notification settings (Strix review on PR #275),
- * so non-mail scopes now sit far above any realistic legitimate hour. The four auth scopes that send email
- * keep the original 100/hour ceiling as a cost guard for the SMTP quota.
+ * eight networks lock every visitor out of sign-in, notification settings or a form (Strix review on PR #275).
+ *
+ * Fail-safe by design: any scope NOT listed here keeps the original 100/hour, because scopes that send email
+ * (auth_signup/reset/resend/otp, business_submit, event_submit, history_submit, history_correction: a staff
+ * notice and/or an acknowledgement over the shared auth-mail transport) need that ceiling as a guard on the
+ * mail quota (Strix review on PR #277). Only scopes verified to send no email are raised. A new scope that
+ * starts sending email must not be added here without its own cost guard.
  */
-const SHARED_HOURLY_LIMIT: Readonly<Record<string, number>> = {
-  auth_signup: 100, auth_reset: 100, auth_resend: 100, auth_otp: 100,
+const NON_MAIL_SHARED_HOURLY_LIMIT: Readonly<Record<string, number>> = {
   auth_signin: 5000, auth_password_change: 2000,
   push_subscribe: 5000,
   forum_post: 2000, image_upload: 2000,
+  business_claim: 1000, tourism_submit: 1000, gallery_submit: 1000, article_correction: 1000, moderation_appeal: 1000,
 };
-const DEFAULT_SHARED_HOURLY_LIMIT = 1000;
+/** The database function's own default; kept for every email-sending or unlisted scope. */
+const MAIL_SAFE_SHARED_HOURLY_LIMIT = 100;
 export function sharedHourlyLimit(scope: string): number {
-  return SHARED_HOURLY_LIMIT[scope] ?? DEFAULT_SHARED_HOURLY_LIMIT;
+  return Object.hasOwn(NON_MAIL_SHARED_HOURLY_LIMIT, scope) ? NON_MAIL_SHARED_HOURLY_LIMIT[scope] : MAIL_SAFE_SHARED_HOURLY_LIMIT;
 }
 
 /**
