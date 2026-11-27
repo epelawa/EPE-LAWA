@@ -366,7 +366,7 @@
 /* Print: the story is the page. */
 @media print {
   .articleHeroTop, .memberReadingBar, .readingGuide, .shareLinks, .articleExtras,
-  .coverStats, .coverCredit, .articleAuthorCredit, .correctionNote { display: none !important; }
+  .coverStats, .coverCredit, .articleAuthorCredit, .correctionNote, .commentSection { display: none !important; }
   .articlePage { padding: 0 !important; }
   .articleBody { font-size: 12pt; line-height: 1.5; }
   .article a { color: inherit; text-decoration: none; }
@@ -381,3 +381,15 @@
 .tagChip { display: inline-flex; align-items: center; min-height: 34px; padding: 4px 14px; border-radius: 999px; background: var(--ep-surface-soft, #E7EDF8); color: var(--ep-text, #1F2A44); font-size: 0.8125rem; font-weight: 500; transition: background 150ms ease, transform 150ms ease; }
 .tagChip:hover { background: color-mix(in srgb, var(--ep-primary, #477fe0) 14%, transparent); }
 .tagChip:active { transform: scale(.97); }
+/* Guest comments and replies (no account needed). */
+.guestComposerWrap { display:grid; gap:8px; }
+.guestComposeRow,.guestReplyToggleRow { display:grid; gap:6px; }
+.guestComposeToggle { display:flex; width:100%; min-height:52px; align-items:center; padding:0 16px; border:1px solid #D9E0EC; border-radius:14px; color:#5C677C; background:#fff; font:inherit; font-size:.9375rem; text-align:left; cursor:text; }
+.guestComposeToggle:hover { border-color:#477FE0; }
+.guestReplyToggle { width:fit-content; min-height:44px; padding:0 4px; border:0; color:#294B91; background:transparent; font:inherit; font-size:.8125rem; font-weight:750; cursor:pointer; }
+.guestComposer { display:grid; gap:12px; margin-top:8px; padding:14px; border:1px solid #D9E0EC; border-radius:14px; background:#fff; }
+.guestComposer textarea { min-height:96px; resize:vertical; }
+.guestNotice { margin:0; color:#067647; font-size:.8125rem; font-weight:650; }
+.commentSignInNote { margin:0; color:#5C677C; font-size:.75rem; }
+.commentSignInNote .commentSignInLink { display:inline; min-height:0; padding:0; border:0; background:none; color:#294B91; font-weight:750; text-decoration:underline; }
+.guestDeleteForm { display:inline-flex; }

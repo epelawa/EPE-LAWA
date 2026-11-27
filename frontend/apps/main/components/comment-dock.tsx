@@ -42,7 +42,7 @@ export default function CommentDock({
         open={open}
         onClose={() => setOpen(false)}
         title="Join the conversation"
-        description={count === null ? "Comment count is currently unavailable." : count > 0 ? `${count} ${count === 1 ? "comment" : "comments"} on this story so far.` : "Be the first member to comment on this story."}
+        description={count === null ? "Comment count is currently unavailable." : count > 0 ? `${count} ${count === 1 ? "comment" : "comments"} on this story so far.` : "Be the first to comment on this story."}
         className="comment-dock__dialog"
       >
         {signedIn ? (
@@ -68,10 +68,11 @@ export default function CommentDock({
           </form>
         ) : (
           <div className="comment-dock__signed-out">
-            <p>Sign in with an active member account to post a comment.</p>
+            <p>No account needed: comment as a guest, or sign in to comment under your member account.</p>
             <div className="ui-dialog__actions">
               <a className="btn-secondary" href="#comments" onClick={() => setOpen(false)}>Read comments</a>
-              <a className="btn-primary" href={signInHref}>Sign in to comment</a>
+              <a className="btn-secondary" href={signInHref}>Sign in</a>
+              <a className="btn-primary" href="#write-comment" onClick={() => setOpen(false)} data-autofocus>Comment as a guest</a>
             </div>
           </div>
         )}

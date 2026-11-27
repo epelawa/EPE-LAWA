@@ -218,6 +218,15 @@
     },
     {
       "path": "/admin/settings/cron"
+    },
+    {
+      "path": "/admin/ai-scheduler"
+    },
+    {
+      "path": "/admin/ai-processes"
+    },
+    {
+      "path": "/admin/logs"
     }
   ]
 }

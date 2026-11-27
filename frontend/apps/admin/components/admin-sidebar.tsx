@@ -8,7 +8,7 @@ import { CloseIcon, MenuIcon } from "@epelawa/ui";
 import { staffHref } from "../lib/admin-path";
 import { groupedNavigation } from "../lib/navigation";
 import type { NavItem } from "../lib/navigation";
-import { signOutStaffSameOrigin } from "../lib/session-actions";
+import { signOutStaffManual } from "../lib/session-actions";
 import { BrandLockup } from "./brand";
 import QueueLiveCounts from "./queue-live-counts";
 import ThemeToggle from "./theme-toggle";
@@ -136,7 +136,7 @@ export default function AdminSidebar({
         <a className="admin-sidebar__public" href="https://epelawa.vercel.app">
           View public site <span aria-hidden="true">↗</span>
         </a>
-        <form action={signOutStaffSameOrigin}>
+        <form action={signOutStaffManual}>
           <SubmitButton className="admin-sidebar__signout" pendingLabel="Signing out…">Sign out</SubmitButton>
         </form>
       </div>
@@ -149,7 +149,7 @@ export default function AdminSidebar({
         <AdminLink className="nav-brand" href={staffHref("/", basePath)}><BrandLockup size={28} /></AdminLink>
         <div className="admin-topbar__actions">
           <ThemeToggle />
-          <form action={signOutStaffSameOrigin}>
+          <form action={signOutStaffManual}>
             <SubmitButton className="admin-topbar__signout" pendingLabel="Signing out…">Sign out</SubmitButton>
           </form>
           <button

@@ -55,19 +55,23 @@ test('web push is fully wired: worker, guest-capable subscribe route, encrypted 
   assert.match(route, /export async function DELETE/);
 });
 
-test('the AI Scheduler stub is retired from navigation, routes and tests', async () => {
+test('the AI Scheduler is a working admin section restricted to the primary administrators', async () => {
   const navigation = await read('frontend/apps/admin/lib/navigation.ts');
-  assert.doesNotMatch(navigation, /ai-scheduler/i);
+  for (const href of ['/ai-scheduler', '/ai-processes', '/logs']) assert.match(navigation, new RegExp(`href: "${href}"`));
 
-  await assert.rejects(() => read('frontend/apps/admin/app/(protected)/ai-scheduler/page.tsx'));
-  await assert.rejects(() => read('frontend/apps/main/app/admin/(protected)/ai-scheduler/page.tsx'));
-
-  const routes = JSON.parse(await read('frontend/apps/main/public/manus-routes.json'));
-  const paths = JSON.stringify(routes);
-  assert.doesNotMatch(paths, /ai-scheduler/i);
-
-  const allowance = await read('frontend/tests/public-copy-availability.test.mjs');
-  assert.doesNotMatch(allowance, /ai-scheduler/i);
+  const routes = JSON.stringify(JSON.parse(await read('frontend/apps/main/public/manus-routes.json')));
+  for (const page of ['ai-scheduler', 'ai-processes', 'logs']) {
+    const admin = await read(`frontend/apps/admin/app/(protected)/${page}/page.tsx`);
+    assert.match(admin, /staff_roles_authorized/, `${page} is limited to the primary administrators`);
+    assert.match(await read(`frontend/apps/main/app/admin/(protected)/${page}/page.tsx`), new RegExp(`admin/app/\\(protected\\)/${page}/page`));
+    assert.match(routes, new RegExp(`/admin/${page}`));
+  }
+  const scheduler = await read('frontend/apps/admin/app/(protected)/ai-scheduler/page.tsx');
+  assert.match(scheduler, /name="autopilot"/);
+  assert.match(scheduler, /name="auto_on_at"/);
+  assert.match(scheduler, /name="auto_off_at"/);
+  assert.match(scheduler, /name="daily_start"/);
+  assert.match(scheduler, /name="daily_stop"/);
 });
 
 // Strix review on PR #275 (CWE-770): one shared 100/hour bucket per scope let a handful of networks lock every

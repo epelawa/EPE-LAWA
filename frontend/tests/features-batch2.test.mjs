@@ -93,9 +93,12 @@ test('the site ships an installable web manifest', () => {
   assert.match(manifest, /theme_color/);
 });
 
-test('articles offer an X share and a correction entry point', () => {
+test('articles share only through the image share button and keep a correction entry point', () => {
   const article = mainApp('app/news/[slug]/page.tsx');
-  assert.match(article, /twitter\.com\/intent\/tweet/);
+  // Turn 15 owner brief: the share button that attaches the cover image is the only share option.
+  assert.doesNotMatch(article, /twitter\.com\/intent|wa\.me\/|facebook\.com\/sharer/);
+  assert.match(article, /<ArticleShareActions title=\{article\.title\} imageUrl=\{imageUrl\}/);
+  assert.match(mainApp('components/article-share-actions.tsx'), /files: \[cover\]/);
   // Turn 4: the correction form is open to everyone (guests leave a name and email).
   assert.match(article, /<CorrectionForm articleId=\{article\.id\}/);
   assert.match(mainApp('components/correction-form.tsx'), /Suggest a correction/);

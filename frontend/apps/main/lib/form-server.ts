@@ -54,6 +54,8 @@ const NON_MAIL_SHARED_HOURLY_LIMIT: Readonly<Record<string, number>> = {
   // Signed-in, email-confirmed members only. Signed-out write scopes (tourism_submit, article_correction, gallery_submit)
   // store a row per request, so they stay on the 100/hour default (Strix review on PR #277).
   business_claim: 1000, moderation_appeal: 1000,
+  // Like toggles: one row per (story or comment, reader) at most, no email, no free text.
+  engagement_like: 5000,
 };
 /** The database function's own default; kept for every email-sending or unlisted scope. */
 const MAIL_SAFE_SHARED_HOURLY_LIMIT = 100;
