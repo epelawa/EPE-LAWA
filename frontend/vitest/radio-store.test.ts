@@ -72,16 +72,38 @@ describe("radio store", () => {
     expect(store.getRadioSnapshot().status).toBe("offline");
   });
 
-  it("does not start playback after the listener cancels a pending station lookup", async () => {
-    let resolve!: (response: Response) => void;
-    vi.stubGlobal("fetch", vi.fn(() => new Promise<Response>((done) => { resolve = done; })));
+  it("plays the Guts FM source directly after a station is selected and Play is pressed", async () => {
+    const fetch = vi.fn();
+    vi.stubGlobal("fetch", fetch);
+    store.selectStation("guts");
+    expect(FakeAudio.instances).toHaveLength(0);
+
+    await store.play();
+
+    expect(fetch).not.toHaveBeenCalled();
+    expect(FakeAudio.instances[0].src).toBe(store.GUTS_STATION.streamUrl);
+    expect(store.statusMessage(store.getRadioSnapshot())).toBe("Playing Guts FM 104.9 FM");
+    store.selectStation("lagos");
+    expect(FakeAudio.instances).toHaveLength(1);
+    expect(FakeAudio.instances[0].src).toBe(store.LAGOS_STATION.streamUrl);
+    store.pause();
+  });
+
+  it("keeps playback paused when a cancelled audio request later rejects", async () => {
+    await store.play();
+    store.pause();
+    const audio = FakeAudio.instances[0];
+    let reject!: (reason: Error) => void;
+    audio.playImpl = () => new Promise<void>((_, fail) => { reject = fail; });
+
     store.selectStation("guts");
     const playing = store.play();
     store.pause();
-    resolve(Response.json({ station: { streamUrl: "https://radio.example/fixture" } }));
+    reject(new DOMException("Playback cancelled", "AbortError"));
     await playing;
-    expect(store.getRadioSnapshot().status).toBe("idle");
-    expect(FakeAudio.instances).toHaveLength(0);
+
+    expect(store.getRadioSnapshot().status).toBe("paused");
+    expect(audio.src).toBe("");
   });
 
   it("hiding the mini-player never stops playback", async () => {
