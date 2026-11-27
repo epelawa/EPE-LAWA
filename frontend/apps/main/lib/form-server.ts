@@ -40,8 +40,9 @@ const DEFAULT_PER_NETWORK_LIMIT = 12;
  * Fail-safe by design: any scope NOT listed here keeps the original 100/hour, because scopes that send email
  * (auth_signup/reset/resend/otp, business_submit, event_submit, history_submit, history_correction: a staff
  * notice and/or an acknowledgement over the shared auth-mail transport) need that ceiling as a guard on the
- * mail quota (Strix review on PR #277). Only scopes verified to send no email are raised. A new scope that
- * starts sending email must not be added here without its own cost guard.
+ * mail quota (Strix review on PR #277). Only scopes verified to send no email are raised, and among those only
+ * member-only scopes, sign-in and push are listed. A scope that sends email or lets signed-out visitors store
+ * rows must not be added here without its own cost guard.
  */
 const NON_MAIL_SHARED_HOURLY_LIMIT: Readonly<Record<string, number>> = {
   // Sign-in and push-subscribe are also the only cross-network brake on password guessing and on anonymous
@@ -50,7 +51,9 @@ const NON_MAIL_SHARED_HOURLY_LIMIT: Readonly<Record<string, number>> = {
   auth_signin: 500, auth_password_change: 500,
   push_subscribe: 500,
   forum_post: 2000, image_upload: 2000,
-  business_claim: 1000, tourism_submit: 1000, gallery_submit: 1000, article_correction: 1000, moderation_appeal: 1000,
+  // Signed-in, email-confirmed members only. Signed-out write scopes (tourism_submit, article_correction, gallery_submit)
+  // store a row per request, so they stay on the 100/hour default (Strix review on PR #277).
+  business_claim: 1000, moderation_appeal: 1000,
 };
 /** The database function's own default; kept for every email-sending or unlisted scope. */
 const MAIL_SAFE_SHARED_HOURLY_LIMIT = 100;

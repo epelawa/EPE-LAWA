@@ -97,6 +97,8 @@ test('shared rate ceilings cannot be drained by a few networks or by invented pu
   }
   assert.ok(mailScopes >= 4, 'business, event, history and correction submissions are recognised as mail-sending');
   for (const scope of ['auth_signup', 'auth_reset', 'auth_resend', 'auth_otp', 'business_submit', 'event_submit', 'history_submit', 'history_correction']) assert.ok(!raised.has(scope), `${scope} keeps 100/hour`);
+  // Signed-out write scopes store a row per request, so they keep the default too.
+  for (const scope of ['tourism_submit', 'article_correction', 'gallery_submit']) assert.ok(!raised.has(scope), `${scope} is a signed-out write and keeps 100/hour`);
   // PATCH and DELETE look the device up before spending the allowance.
   const patch = route.slice(route.indexOf('export async function PATCH'), route.indexOf('export async function DELETE'));
   const del = route.slice(route.indexOf('export async function DELETE'));

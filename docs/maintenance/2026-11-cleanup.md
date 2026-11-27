@@ -16,8 +16,9 @@ This note covers the open-ended cleanup pass after the business, radio and respo
 | `push_subscribe` | 500 | No email. Every accepted subscribe writes a device row, so the ceiling bounds fake rows: about 100 networks at 5 each to fill it. Covers subscribe, topic changes and unsubscribe |
 | `auth_password_change` | 500 | No email; signed-in members only |
 | `forum_post`, `image_upload` | 2000 | No email; signed-in members only |
-| `business_claim`, `tourism_submit`, `gallery_submit`, `article_correction`, `moderation_appeal` | 1000 | No email sent by these actions |
-| `auth_signup`, `auth_reset`, `auth_resend`, `auth_otp`, `business_submit`, `event_submit`, `history_submit`, `history_correction`, and any scope not listed | 100 (unchanged) | These send a staff notice and/or an acknowledgement over the shared auth-mail transport, so the ceiling guards the mail quota |
+| `business_claim`, `moderation_appeal` | 1000 | No email; signed-in members with a confirmed email only |
+| `auth_signup`, `auth_reset`, `auth_resend`, `auth_otp`, `business_submit`, `event_submit`, `history_submit`, `history_correction` | 100 (unchanged) | These send a staff notice and/or an acknowledgement over the shared auth-mail transport, so the ceiling guards the mail quota |
+| `tourism_submit`, `article_correction`, `gallery_submit`, and any scope not listed | 100 (unchanged) | Signed-out visitors can store a row per request, so the ceiling bounds stored junk |
 
 - `newsletter` and `enquiry` call the database function directly and still use its 100/hour default.
 - The regression test works out which scopes send mail from the action files themselves (any file that calls `deliverAuthMessage`). It fails if one of those scopes is ever added to the raised table.
@@ -30,7 +31,9 @@ This note covers the open-ended cleanup pass after the business, radio and respo
 
 **Third Strix pass on PR #277.** `confirmNewsletter` charged the shared `newsletter` bucket, which guards sign-up mail, before checking the token. Confirmation sends no email and its 256-bit token cannot be guessed, so the charge was removed, matching `unsubscribeNewsletter`. The vitest case that asserted the old "through the limiter" order was outdated by this deliberate change, so it now asserts that invented tokens never call `form_rate_limit`. (Newsletter sign-up is off unless `NEWSLETTER_SIGNUP_ENABLED=true`.)
 
-**Follow-ups (not done here; they need a migration or a product decision):** per-account sign-in throttling or a challenge after repeated failures; a cap on total `web_push_devices` rows plus a reaper for devices that never receive a delivery; fanout ordered by most recently active device.
+**Fourth Strix pass on PR #277.** `tourism_submit` and `article_correction` had been raised to 1000. Signed-out visitors can store a row with each request, so both went back to 100.
+
+**Follow-ups (not done here; they need a migration or a product decision):** per-account sign-in throttling or a challenge after repeated failures; a cap on total `web_push_devices` rows plus a reaper for devices that never receive a delivery; fanout ordered by most recently active device; recording each solved human-check token as spent, so one solution cannot be replayed from many networks during its lifetime.
 
 **Residual risk.** The mail-sending scopes keep the 100/hour ceiling on purpose. A coordinated flood from many networks can still pause signup, password reset and the business, event and history submission forms for up to an hour. That is the trade-off for not exhausting the email provider's quota.
 
