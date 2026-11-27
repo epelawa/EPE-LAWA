@@ -14,7 +14,9 @@ test('News comments are rendered from published article scope with anonymous mem
   assert.match(page, /CommentThread articleId=\{article\.id\}/);
   assert.match(page, /"id,slug,title/);
   assert.match(component, /Community member/);
-  assert.match(component, /select\("id,parent_id,body,state,created_at"\)/);
+  // guest_name is the optional name a signed-out commenter chose; members stay anonymous.
+  assert.match(component, /select\("id,parent_id,body,state,created_at,guest_name"\)/);
+  assert.doesNotMatch(component, /select\([^)]*guest_key[^)]*\)[^;]*createClient/);
   assert.doesNotMatch(component, /select\([^)]*(email|display_name|author_name)/i);
   assert.match(component, /aria-label="Comments"/);
   assert.match(component, /aria-label="Sign in to comment"/);

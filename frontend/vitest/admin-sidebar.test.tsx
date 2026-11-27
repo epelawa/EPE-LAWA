@@ -13,7 +13,7 @@ vi.mock("../apps/admin/components/admin-link", () => ({
 vi.mock("../apps/admin/components/use-live-queue-counts", () => ({
   useLiveQueueCounts: () => ({ counts: null, flick: null }),
 }));
-vi.mock("../apps/admin/lib/session-actions", () => ({ signOutStaffSameOrigin: vi.fn() }));
+vi.mock("../apps/admin/lib/session-actions", () => ({ signOutStaffManual: vi.fn() }));
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 

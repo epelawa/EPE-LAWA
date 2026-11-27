@@ -9,8 +9,7 @@ import { newsArticlePath, publicNewsArticleUrl } from "../../../lib/news-urls";
 import { absoluteUrl, siteUrl } from "../../../lib/site";
 import { publishedNewsCover } from "../../../lib/published-news-cover";
 import { readPublishedArticleBody } from "../../../lib/published-article-body";
-import { formatPublishedDate } from "../../../lib/dates";
-import { CONTACT_EMAIL } from "../../../lib/site-identity";
+import { formatLagosDateTime, formatPublishedDate } from "../../../lib/dates";
 import { ArticleBody } from "../../../lib/editorial-body";
 import { loadArticleEngagement, type ArticleEngagement } from "../../../lib/article-engagement";
 import { CommentThread } from "../comment-thread";
@@ -23,10 +22,13 @@ import ArticleShareActions from "../../../components/article-share-actions";
 import CorrectionForm from "../../../components/correction-form";
 import SaveArticleButton from "../../../components/save-article-button";
 import NewsImage from "../../../components/news-image";
-import ArticleByline from "../../../components/article-byline";
-import LayoutVariation from "../../../components/layout-variation";
+import ArticleLikeButton from "../../../components/article-like-button";
+import { formAdminClient } from "../../../lib/form-server";
+import { CONTACT_EMAIL } from "../../../lib/site-identity";
+import { memberVoterKey, readGuestKey } from "../../../lib/guest-identity";
 import { PageFrame } from "../../../components/design-system";
 import styles from "../news.module.css";
+import a from "./article.module.css";
 
 type PublishedArticle = {
   id: string;
@@ -57,6 +59,7 @@ type RelatedArticle = {
   cover_alt: string | null;
   category_label: string;
 };
+type AiSource = { outlet: string; title?: string; url: string };
 type ArticleResult = { status: "found"; article: PublishedArticle } | { status: "missing" } | { status: "error" };
 
 const loadArticle = cache(async (slug: string): Promise<ArticleResult> => {
@@ -106,7 +109,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 function ArticleUnavailable() {
-  return <PageFrame className={`${styles.articlePage} ui-stack`}><div className="ui-empty"><h1>This story did not load</h1><p className="ui-muted">The newsroom could not reach the published story, so no article text is shown rather than a guess. Try again in a moment.</p><Link href="/news" className="btn-secondary">Back to News</Link></div></PageFrame>;
+  return <PageFrame className={`${styles.articlePage} ${a.page} ui-stack`}><div className="ui-empty"><h1>This story did not load</h1><p className="ui-muted">The newsroom could not reach the published story, so no article text is shown rather than a guess. Try again in a moment.</p><Link href="/news" className="btn-secondary">Back to News</Link></div></PageFrame>;
 }
 
 export default async function ArticlePage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ comments?: string }> }) {
@@ -120,18 +123,23 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
   let related: RelatedArticle[] = [];
   let engagement: ArticleEngagement | null = null;
   let signedIn = false;
+  let userId: string | null = null;
   let accountEmail: string | null = null;
   let visibleComments: number | null = null;
   let saved = false;
+  let likes: number | null = null;
+  let aiSources: AiSource[] = [];
   try {
     const supabase = await createClient();
-    const [bodyResult, relatedResult, sessionResult, commentCountResult, savedResult, engagementResult] = await Promise.all([
+    const [bodyResult, relatedResult, sessionResult, commentCountResult, savedResult, engagementResult, likeTotal, aiMeta] = await Promise.all([
       readPublishedArticleBody(supabase, article.id),
       supabase.from("published_articles").select("slug,title,summary,published_at,cover_url,cover_alt,category_label").eq("category_slug", article.category_slug).neq("slug", article.slug).order("published_at", { ascending: false, nullsFirst: false }).order("slug", { ascending: true }).limit(3),
       supabase.auth.getUser(),
       supabase.from("comments").select("id", { count: "exact", head: true }).eq("article_id", article.id).eq("state", "visible"),
       supabase.from("saved_articles").select("id", { count: "exact", head: true }).eq("article_id", article.id),
       loadArticleEngagement(supabase, article.id),
+      supabase.rpc("article_like_total", { p_article_id: article.id }),
+      supabase.from("ai_article_meta").select("sources").eq("article_id", article.id).maybeSingle(),
     ]);
     if (bodyResult.error || !bodyResult.data) {
       console.error("published article body read failed", { code: bodyResult.error?.code ?? "missing_published_version" });
@@ -141,24 +149,37 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
     if (relatedResult.error) console.error("related published articles read failed", { code: relatedResult.error.code });
     else related = (relatedResult.data ?? []) as RelatedArticle[];
     engagement = engagementResult;
-    signedIn = Boolean(sessionResult.data?.user);
+    userId = sessionResult.data?.user?.id ?? null;
+    signedIn = Boolean(userId);
     accountEmail = sessionResult.data?.user?.email ?? null;
     visibleComments = commentCountResult.error ? null : commentCountResult.count;
-    saved = Boolean(sessionResult.data?.user) && (savedResult.count ?? 0) > 0;
+    saved = signedIn && (savedResult.count ?? 0) > 0;
+    likes = likeTotal.error ? null : Number(likeTotal.data ?? 0);
+    const sources = (aiMeta.data as { sources?: unknown } | null)?.sources;
+    if (Array.isArray(sources)) aiSources = sources.filter((item): item is AiSource => Boolean(item) && typeof (item as AiSource).url === "string" && /^https:\/\//.test((item as AiSource).url) && typeof (item as AiSource).outlet === "string").slice(0, 8);
   } catch {
     console.error("published article body client unavailable", { reason: "configuration_or_provider" });
     return <ArticleUnavailable />;
   }
 
+  // Whether this reader already liked the story (account for members, browser for guests).
+  let liked = false;
+  try {
+    const voterKey = userId ? memberVoterKey(userId) : await readGuestKey();
+    if (voterKey) liked = (await formAdminClient().rpc("article_like_state", { p_article_id: article.id, p_voter_key: voterKey })).data === true;
+  } catch { liked = false; }
+
   const articleUrl = publicNewsArticleUrl(article.slug);
   const publishedCover = publishedNewsCover(article);
   const imageUrl = publishedCover?.url;
-  const date = formatPublishedDate(article.published_at);
+  const uploaded = formatLagosDateTime(article.published_at);
   const commentCount = engagement?.comments ?? visibleComments;
   const signInHref = `/login?next=${encodeURIComponent(`/news/${article.slug}#comments`)}`;
+  const breaking = article.is_breaking && (!article.breaking_until || Date.parse(article.breaking_until) > Date.now());
+  const authorInitials = article.author_name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("") || "E";
 
   return (
-    <div className={signedIn ? "member-reading-mode" : undefined}>
+    <>
     <StructuredData
       data={[
         newsArticleSchema({
@@ -182,54 +203,71 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
         ]),
       ]}
     />
-    {signedIn ? <nav className={styles.memberReadingBar} aria-label="Member reading navigation">
-      <Link href="/dashboard?tab=discover" className={styles.memberReadingBack}>← <span>Discover</span></Link>
-      <span className={styles.memberReadingLabel}>EPE LAWA <span>· Member reading</span></span>
-      <Link href="/dashboard?tab=saved" className={styles.memberReadingSaved}>Saved stories</Link>
-    </nav> : null}
-    <PageFrame className={`${styles.articlePage} ui-stack ${signedIn ? styles.memberArticlePage : styles.publicArticlePage}`}>
+    <PageFrame className={`${styles.articlePage} ${a.page}`}>
       <ArticleViewPing articleId={article.id} />
-      <LayoutVariation area="article"><article className={styles.article}>
-        <header className={styles.articleHero}>
-          <div className={styles.articleHeroTop}>
-            <Link href={signedIn ? "/dashboard?tab=discover" : "/news"} className={styles.heroControl} aria-label={signedIn ? "Back to Discover" : "Back to News"}>
-              <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/><path d="M9 12h12"/></svg>
-              <span className="sr-only">{signedIn ? "Back to Discover" : "Back to News"}</span>
-            </Link>
-            {signedIn ? <SaveArticleButton articleId={article.id} slug={article.slug} saved={saved} className={styles.heroControl} /> : null}
-            <ArticleShareActions title={article.title} imageUrl={imageUrl} url={articleUrl} compact showCopyButton={false} className={styles.heroShareActions} shareButtonClassName={styles.heroControl} feedbackClassName={styles.heroShareFeedback} fallbackClassName={styles.shareFallback} />
+      <article className={a.article}>
+        <nav className={a.topBar} aria-label="Story controls">
+          <Link href="/news" className={`${a.iconControl} ${a.backLink}`} aria-label="Back to News">
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/><path d="M9 12h12"/></svg>
+            <span className="sr-only">Back to News</span>
+          </Link>
+          <div className={a.topBarEnd}>
+            {signedIn ? <SaveArticleButton articleId={article.id} slug={article.slug} saved={saved} className={a.iconControl} /> : null}
+            <ArticleShareActions title={article.title} imageUrl={imageUrl} url={articleUrl} compact showCopyButton={false} className={a.shareGroup} shareButtonClassName={a.shareButton} feedbackClassName={a.shareFeedback} fallbackClassName={a.shareFallback} />
           </div>
-          <div className={styles.articleHeroCopy}>
-            {!signedIn ? <p className={styles.articleCategory}>{article.category_label}</p> : null}
-            <h1>{article.title}</h1>
-            <ReaderPresence slug={article.slug} />
-            {!signedIn && article.summary ? <p className={styles.articleStandfirst}>{article.summary}</p> : null}
-            {!signedIn ? <div className={styles.publicStoryMeta}><ArticleByline name={article.author_name} />{date ? <time dateTime={article.published_at ?? undefined}>{date}</time> : null}</div> : null}
+        </nav>
+
+        <header className={`${a.header} ${a.column}`}>
+          <p className={a.kicker}>
+            {breaking ? <span className={a.breaking}>Breaking</span> : null}
+            {article.category_slug ? <Link className={a.category} href={`/news?category=${encodeURIComponent(article.category_slug)}`}>{article.category_label}</Link> : null}
+          </p>
+          <h1 className={a.title}>{article.title}</h1>
+          {article.summary ? <p className={a.standfirst}>{article.summary}</p> : null}
+          <div className={a.meta} aria-label="Story details">
+            <span className={a.metaItem}>By {article.author_slug ? <Link href={`/news/author/${encodeURIComponent(article.author_slug)}`}>{article.author_name}</Link> : <strong>{article.author_name}</strong>}</span>
+            {uploaded ? <span className={a.metaItem}>Published <time dateTime={article.published_at ?? undefined} title={article.published_at ?? undefined}><strong>{uploaded}</strong></time> <span aria-label="West Africa Time">WAT</span></span> : null}
           </div>
-          <div className={styles.articleCoverFrame}>
-            <NewsImage className={styles.articleHeroImage} src={imageUrl} alt={publishedCover?.alt ?? ""} loading="eager" fetchPriority="high" />
-            <ArticleCoverStats body={body} engagement={engagement} commentCount={commentCount} />
-          </div>
+          <ReaderPresence slug={article.slug} />
         </header>
-        {article.cover_credit && imageUrl ? <p className={styles.coverCredit}>{article.cover_caption ? `${article.cover_caption} · ` : ""}Photo: {article.cover_credit}</p> : null}
 
-        {signedIn ? <div className={styles.articleMetaBar} aria-label="Story details">
-          <span className={styles.byline}><ArticleByline name={article.author_name} /></span>
-          {date ? <time dateTime={article.published_at ?? undefined}>{date}</time> : null}
-        </div> : null}
+        <figure className={a.cover}>
+          <NewsImage className={a.coverImage} src={imageUrl} alt={publishedCover?.alt ?? ""} loading="eager" fetchPriority="high" />
+          <ArticleCoverStats body={body} engagement={engagement} commentCount={commentCount} />
+          {article.cover_credit && imageUrl ? <figcaption className={a.coverCaption}>{article.cover_caption ? `${article.cover_caption} · ` : ""}Photo: {article.cover_credit}</figcaption> : null}
+        </figure>
 
-        <div className={styles.readingGuide}><span>THE STORY</span><a href="#comments">Join the conversation <span aria-hidden="true">↗</span></a></div>
-        <div className={`ui-prose ${styles.articleBody}`} data-offline-article-body data-no-translate><ArticleBody body={body} /></div>
-        {article.tags?.length ? <nav className={styles.tagRow} aria-label="Story topics"><span className={styles.tagRowLabel}>Topics</span><ul className={styles.tagList}>{article.tags.map((tag) => tag.slug ? <li key={tag.slug}><Link className={styles.tagChip} href={`/news?tag=${encodeURIComponent(tag.slug)}`}>{tag.label ?? tag.slug}</Link></li> : null)}</ul></nav> : null}
-        <p className={styles.articleAuthorCredit}><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="m4 20 4.3-1 10.2-10.2a2.1 2.1 0 0 0-3-3L5.3 16 4 20Z" /><path d="m13.8 7.2 3 3" /><path d="M4 20h4" /></svg><span><strong>Brought to you by</strong> {article.author_slug ? <Link className="ui-text-link" href={`/news/author/${encodeURIComponent(article.author_slug)}`}>{article.author_name}</Link> : article.author_name}</span></p>
-        <CommentThread articleId={article.id} slug={article.slug} notice={notice.comments} />
+        <div className={`ui-prose ${a.body} ${a.column}`} data-offline-article-body data-no-translate><ArticleBody body={body} /></div>
+
+        {aiSources.length ? <aside className={`${a.sources} ${a.column}`} aria-labelledby="story-sources">
+          <h2 id="story-sources">How this story was produced</h2>
+          <p>The {article.author_name} prepared this report with the help of an AI assistant, using only the published reporting below. Figures and quotes are checked against these sources before publication. Spotted a problem? Use “Suggest a correction” below or email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.</p>
+          <ul>{aiSources.map((source) => <li key={source.url}><a href={source.url} target="_blank" rel="noopener noreferrer nofollow">{source.outlet}{source.title ? `: ${source.title}` : ""}</a></li>)}</ul>
+        </aside> : null}
+
+        {article.tags?.length ? <nav className={a.column} aria-label="Story topics"><ul className={a.hashtags}>{article.tags.map((tag) => tag.slug ? <li key={tag.slug}><Link className={a.hashtag} href={`/news?tag=${encodeURIComponent(tag.slug)}`}>#{(tag.label ?? tag.slug).replace(/^#/, "").replace(/\s+/g, "")}</Link></li> : null)}</ul></nav> : null}
+
+        <div className={`${a.actions} ${a.column}`} role="group" aria-label="React to this story">
+          <div className={a.actionsStart}>
+            <ArticleLikeButton articleId={article.id} initialLiked={liked} initialCount={likes} className={a.pill} activeClassName={a.pillActive} />
+            <a className={a.pill} href="#comments"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 0 1-11.8 7L3 21l2-6.2A8 8 0 1 1 21 12Z"/></svg><span>{commentCount ? `${commentCount.toLocaleString("en-NG")} comments` : "Comment"}</span></a>
+          </div>
+          <ArticleShareActions title={article.title} imageUrl={imageUrl} url={articleUrl} showCopyButton={false} className={a.shareGroup} shareButtonClassName={a.pill} feedbackClassName={a.shareFeedback} fallbackClassName={a.shareFallback} />
+        </div>
+
+        <p className={`${a.author} ${a.column}`}><span className={a.authorMark} aria-hidden="true">{authorInitials}</span><span><strong>Brought to you by</strong> {article.author_slug ? <Link href={`/news/author/${encodeURIComponent(article.author_slug)}`}>{article.author_name}</Link> : article.author_name}{uploaded ? <> · {uploaded} WAT</> : null}</span></p>
+
+        <div className={a.column}><CommentThread articleId={article.id} slug={article.slug} notice={notice.comments} /></div>
         <CommentDock articleId={article.id} slug={article.slug} count={commentCount} signedIn={signedIn} signInHref={signInHref} />
-        <nav aria-label="Share this story" className={styles.shareLinks}><a href={`https://wa.me/?text=${encodeURIComponent(`${article.title} ${articleUrl}`)}`} target="_blank" rel="noopener noreferrer">Share on WhatsApp</a><a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(articleUrl)}`} target="_blank" rel="noopener noreferrer">Share on Facebook</a><a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(article.title)}&url=${encodeURIComponent(articleUrl)}`} target="_blank" rel="noopener noreferrer">Share on X</a><ArticleShareActions title={article.title} url={articleUrl} imageUrl={imageUrl} /></nav>
-        <details className={styles.articleExtras}><summary>More story options</summary><OfflineArticleDownload article={{ slug: article.slug, title: article.title, summary: article.summary, publishedAt: article.published_at, author: article.author_name, category: article.category_label, sourceUrl: articleUrl }} /></details>
-        {related.length ? <section className={styles.relatedSection} aria-labelledby="related-heading"><div className={styles.sectionHeading}><div><h2 id="related-heading">Related stories</h2></div></div><ul className={styles.relatedGrid}>{related.map((item) => { const relatedImage = publishedNewsCover(item)?.url; return <li className={styles.relatedCard} key={item.slug}><Link href={newsArticlePath(item.slug)} className={styles.relatedLink}><NewsImage className={styles.relatedImage} src={relatedImage} alt="" /><span className={styles.relatedCategory}>{item.category_label}</span><span className={styles.relatedTitle}>{item.title}</span></Link></li>; })}</ul></section> : null}
-        <CorrectionForm articleId={article.id} articleTitle={article.title} signedIn={signedIn} accountEmail={accountEmail} />
-      </article></LayoutVariation>
+
+        {related.length ? <section className={a.related} aria-labelledby="related-heading"><h2 id="related-heading">Related stories</h2><ul className={a.relatedGrid}>{related.map((item) => { const relatedImage = publishedNewsCover(item)?.url; const when = formatPublishedDate(item.published_at); return <li key={item.slug}><Link href={newsArticlePath(item.slug)} className={a.relatedLink}><NewsImage className={a.relatedImage} src={relatedImage} alt="" /><span className={a.relatedCategory}>{item.category_label}</span><span className={a.relatedTitle}>{item.title}</span>{when ? <span className={a.relatedTime}>{when}</span> : null}</Link></li>; })}</ul></section> : null}
+
+        <div className={`${a.extras} ${a.column}`}>
+          <CorrectionForm articleId={article.id} articleTitle={article.title} signedIn={signedIn} accountEmail={accountEmail} />
+          <details><summary>Save this story for offline reading</summary><OfflineArticleDownload article={{ slug: article.slug, title: article.title, summary: article.summary, publishedAt: article.published_at, author: article.author_name, category: article.category_label, sourceUrl: articleUrl }} /></details>
+        </div>
+      </article>
     </PageFrame>
-    </div>
+    </>
   );
 }

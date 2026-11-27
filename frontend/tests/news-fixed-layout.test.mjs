@@ -12,6 +12,10 @@ const styles = await readFile(
   new URL("app/news/news.module.css", root),
   "utf8",
 );
+const articleStyles = await readFile(
+  new URL("app/news/[slug]/article.module.css", root),
+  "utf8",
+);
 const listingStyles = await readFile(
   new URL("app/news/listing.module.css", root),
   "utf8",
@@ -64,16 +68,10 @@ test("the lead image and top headline covers eagerly load and fill their contain
 
 test("article hero cover eagerly loads, never lazily, and uses full-container cover fit", () => {
   assert.match(article, /loading="eager" fetchPriority="high"/);
-  assert.match(article, /className=\{styles\.articleCoverFrame\}/);
+  assert.match(article, /className=\{a\.coverImage\}[^>]*loading="eager" fetchPriority="high"/);
   assert.doesNotMatch(article, /articleHeroImage[^\n]*loading="lazy"/);
-  assert.match(
-    styles,
-    /\.articleHeroImage,\.articleHeroFallback \{[^}]*object-fit:cover/,
-  );
-  assert.match(
-    styles,
-    /\.relatedImage,\.relatedImageFallback \{[^}]*object-fit:cover/,
-  );
+  assert.match(articleStyles, /\.coverImage \{[^}]*object-fit: cover/);
+  assert.match(articleStyles, /\.relatedImage \{[^}]*object-fit: cover/);
 });
 
 test("editorial text scales with user settings and headlines wrap cleanly", () => {

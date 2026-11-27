@@ -360,10 +360,13 @@ test('every foreign key is indexed, except the documented singleton', async () =
       )
     order by 1, 2
   `);
-  // stream_config is a singleton (check id = 1); an index over a one-row table is pure overhead.
+  // stream_config and ai_settings are singletons (check id = 1); an index over a one-row table is pure overhead.
   const allowed = new Set([
     'stream_config.embedding_permitted_by',
     'stream_config.updated_by',
+    // ai_settings is also a singleton (check id = 1).
+    'ai_settings.actor_user_id',
+    'ai_settings.updated_by',
   ]);
   const offenders = unindexed
     .map((r) => `${r.tbl}.${r.col}`)

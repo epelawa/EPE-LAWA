@@ -58,6 +58,9 @@ const systemPages: NavItem[] = [
   { label: "Backups", href: "/backups", hint: "Database backups and restore in R2", group: "SYSTEM" },
   { label: "Settings", href: "/settings", hint: "Maintenance and workspace status", group: "SYSTEM" },
   { label: "Cron Jobs", href: "/settings/cron", hint: "Cron job execution history and monitoring", group: "SYSTEM" },
+  { label: "AI Scheduler", href: "/ai-scheduler", hint: "Autopilot, schedule and what the AI may do", primary: true, group: "SYSTEM" },
+  { label: "AI processes", href: "/ai-processes", hint: "Everything the AI did, skipped or escalated", group: "SYSTEM" },
+  { label: "Logs", href: "/logs", hint: "Admin sign-ins, actions, devices and locations", group: "SYSTEM" },
 ];
 
 // Combine all pages in order
