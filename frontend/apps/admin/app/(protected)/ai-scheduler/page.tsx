@@ -4,18 +4,20 @@ import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, Status
 import { createStaffClient } from "../../../lib/supabase";
 import { adminHref } from "../../../lib/admin-path";
 import { lagosExact, lagosInputValue } from "../../../lib/lagos-time";
-import { refreshAiModels, runAiJobNow, saveAiModels, saveAiSettings } from "../../../lib/ai-actions";
+import { runAiJobNow, saveAiModels, saveAiSettings } from "../../../lib/ai-actions";
 import { AI_CAPABILITIES, AI_SETTINGS_COLUMNS, MAX_MODELS_PER_JOB, MODEL_JOBS, normaliseSettings } from "../../../../main/lib/ai/settings";
 import { AI_JOB_LABELS } from "../../../../main/lib/ai/runner";
-import { freeModels, keyStatus, modelQueue, modelRank, requestsToday, sortModels, type FreeModel } from "../../../../main/lib/ai/openrouter";
-import { NEWS_OUTLETS } from "../../../../main/lib/ai/news-sources";
+import { keyStatus, loadFreeModels, modelQueue, requestsToday, type ModelList } from "../../../../main/lib/ai/openrouter";
+import { DESK_LABELS, NEWS_OUTLETS, type Desk } from "../../../../main/lib/ai/news-sources";
+import LiveRefresh from "../../../components/live-refresh";
+import styles from "./ai-scheduler.module.css";
 import { formAdminClient } from "../../../../main/lib/form-server";
 
 export const metadata: Metadata = { title: "AI Scheduler", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 
-type Run = { id: string; job: string; trigger: string; started_at: string; finished_at: string | null; status: string; summary: string | null; stats: Record<string, unknown> };
+type Run = { id: string; job: string; trigger: string; started_at: string; finished_at: string | null; status: string; summary: string | null; stats: Record<string, unknown>; progress?: string | null; progress_at?: string | null };
 
 const messages: Record<string, { tone: "success" | "danger" | "warning"; text: string }> = {
   saved: { tone: "success", text: "AI settings saved and recorded in AI processes." },
@@ -25,11 +27,8 @@ const messages: Record<string, { tone: "success" | "danger" | "warning"; text: s
   window: { tone: "warning", text: "Daily working hours need a start and an end time that differ." },
   "models-saved": { tone: "success", text: "Model choices saved. Each job now tries its models in the order you set." },
   "models-failed": { tone: "danger", text: "The model choices could not be saved. Only free models (ending in :free) can be chosen." },
-  "models-refreshed": { tone: "success", text: "Free model list refreshed from OpenRouter." },
-  "models-unreachable": { tone: "warning", text: "OpenRouter's model list could not be reached. The last saved list is shown." },
+  "models-unknown": { tone: "warning", text: "One of the chosen models is not in OpenRouter's free list any more, so nothing was saved. The list below is live from OpenRouter — choose again." },
 };
-
-const MAKER: Record<number, string> = { 0: "NVIDIA", 1: "DeepSeek" };
 
 function statusTone(status: string): "success" | "warning" | "danger" | "neutral" {
   return status === "success" ? "success" : status === "failed" ? "danger" : status === "partial" || status === "running" ? "warning" : "neutral";
@@ -46,7 +45,7 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
   const { result, summary } = await searchParams;
   const [settingsResult, runsResult] = await Promise.all([
     db.from("ai_settings").select(AI_SETTINGS_COLUMNS).eq("id", 1).maybeSingle(),
-    db.from("ai_runs").select("id,job,trigger,started_at,finished_at,status,summary,stats").order("started_at", { ascending: false }).limit(25),
+    db.from("ai_runs").select("id,job,trigger,started_at,finished_at,status,summary,stats,progress,progress_at").order("started_at", { ascending: false }).limit(25),
   ]);
   const settings = normaliseSettings(settingsResult.data as Record<string, unknown> | null);
   if (settingsResult.error || !settings) {
@@ -54,157 +53,252 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
       <EmptyPanel title="AI tables are not installed" description="Apply the database migration 20261129080000_ai_autopilot_admin_logs_guest_engagement.sql, then reload this page." />
     </PageFrame>;
   }
-  let models: FreeModel[] = [];
+  let list: ModelList = { models: [], source: "none", loadedAt: null };
   let used = 0;
   try {
     const service = formAdminClient();
-    const [catalogue, count] = await Promise.all([freeModels(service), requestsToday(service)]);
-    models = sortModels(catalogue);
+    const [loaded, count] = await Promise.all([loadFreeModels(service), requestsToday(service)]);
+    list = loaded;
     used = count;
   } catch { /* service key missing: shown below */ }
+  const models = list.models;
   const key = await keyStatus();
   const runs = (runsResult.data ?? []) as Run[];
   const notice = result === "ran" ? { tone: "success" as const, text: summary || "Run finished." } : result ? messages[result] : null;
   const budgetLeft = Math.max(0, settings.daily_request_budget - used);
+
+  const running = runs.filter((run) => run.status === "running" && Date.now() - Date.parse(run.progress_at ?? run.started_at) < 6 * 60_000);
+  const runningByJob = new Map(running.map((run) => [run.job, run]));
+  const budgetShare = settings.daily_request_budget ? Math.min(100, Math.round((used / settings.daily_request_budget) * 100)) : 0;
+  const choiceLabel = (index: number) => (index === 0 ? "1st choice" : `Backup ${index}`);
+  const options = (values: number[], current: number) => [...new Set([...values, current])].sort((x, y) => x - y);
+  const minutesLabel = (value: number) => (value % 60 === 0 ? `Every ${value / 60 === 1 ? "hour" : `${value / 60} hours`}` : `Every ${value} minutes`);
+  const desks = new Map<Desk, Set<string>>();
+  for (const outlet of NEWS_OUTLETS) {
+    const names = desks.get(outlet.desk) ?? new Set<string>();
+    names.add(`${outlet.name}${outlet.country === "NG" ? "" : " (intl)"}`);
+    desks.set(outlet.desk, names);
+  }
 
   return (
     <PageFrame className="ui-stack">
       <PageIntro
         eyebrow="System · AI"
         title="AI Scheduler"
-        description="The EPE LAWA AI desk: hourly news from trusted outlets, business checks, enquiry replies, approved ads, comment moderation, push alerts and admin log explanations. It runs on free OpenRouter models only. You choose which models each job uses and in what order; when one is busy or fails, the job moves to the next one on your list."
-        meta={<><StatusBadge tone={settings.autopilot_enabled ? "success" : "neutral"}>{settings.autopilot_enabled ? "Autopilot ON — acting without approval" : "Autopilot OFF — drafts and recommendations only"}</StatusBadge>{" "}<Link href={adminHref("/ai-processes")}>Open AI processes →</Link></>}
+        description="The EPE LAWA AI desk writes news from trusted outlets, checks businesses, replies to enquiries, places approved ads, moderates comments and explains admin activity — on free OpenRouter models only."
+        meta={<Link href={adminHref("/ai-processes")}>Open AI processes →</Link>}
       />
       {notice ? <Notice tone={notice.tone} role={notice.tone === "success" ? "status" : "alert"}>{notice.text}</Notice> : null}
 
-      <div className="ui-grid--3">
-        <Panel className="ui-stack-sm">
-          <h2>OpenRouter</h2>
-          {key.placeholder ? <p><StatusBadge tone="warning">Test key in place</StatusBadge> <code>OPENROUTER_API_KEY</code> holds a test value. Replace it in Vercel → Settings → Environment Variables with your OpenRouter key (it starts with <code>sk-or-</code>), then redeploy. Nothing runs until then.</p>
-            : !key.configured ? <p><StatusBadge tone="danger">No API key</StatusBadge> Add <code>OPENROUTER_API_KEY</code> in Vercel → Settings → Environment Variables (Production), then redeploy. Nothing runs until then.</p>
-            : !key.reachable ? <p><StatusBadge tone="warning">Key set, not reachable</StatusBadge> OpenRouter did not answer; check the key.</p>
-              : <p><StatusBadge tone="success">Connected</StatusBadge>{key.isFreeTier ? " Free models only — OpenRouter allows 50 free-model requests a day on this key, and nothing is ever billed." : " Free models only — nothing is ever billed."}</p>}
-          {typeof key.freeDailyRemaining === "number" ? <p className="ui-number">OpenRouter reports {key.freeDailyRemaining} of {key.freeDailyLimit ?? "?"} free requests left today.</p> : null}
-        </Panel>
-        <Panel className="ui-stack-sm">
-          <h2>Today’s budget</h2>
-          <p className="ui-number"><strong>{used}</strong> model requests used of <strong>{settings.daily_request_budget}</strong> (resets 01:00 WAT). {budgetLeft} left.</p>
-          <p className="ui-muted">Failed attempts count too, so the AI stops at the budget instead of being cut off.</p>
-        </Panel>
-        <Panel className="ui-stack-sm">
-          <h2>Free models available</h2>
-          <p className="ui-number"><strong>{models.length}</strong> free models on OpenRouter right now.</p>
-          <p className="ui-muted">Choose which ones each job uses below. <a href="#ai-models">Go to model choices ↓</a></p>
-        </Panel>
+      <div className={styles.stats}>
+        <div className={styles.stat}>
+          <p className={styles.statLabel}>Autopilot</p>
+          <p className={styles.statValue}><StatusBadge tone={settings.autopilot_enabled ? "success" : "neutral"}>{settings.autopilot_enabled ? "ON" : "OFF"}</StatusBadge></p>
+          <p className={styles.statNote}>{settings.autopilot_enabled ? "Acting without approval." : "Drafts and recommendations only."}</p>
+        </div>
+        <div className={styles.stat}>
+          <p className={styles.statLabel}>OpenRouter</p>
+          <p className={styles.statValue}>{key.placeholder ? <StatusBadge tone="warning">Test key</StatusBadge> : !key.configured ? <StatusBadge tone="danger">No key</StatusBadge> : !key.reachable ? <StatusBadge tone="warning">Not reachable</StatusBadge> : <StatusBadge tone="success">Connected</StatusBadge>}</p>
+          <p className={styles.statNote}>{key.placeholder ? <>Replace <code>OPENROUTER_API_KEY</code> in Vercel with your <code>sk-or-</code> key, then redeploy.</> : !key.configured ? <>Add <code>OPENROUTER_API_KEY</code> in Vercel, then redeploy.</> : typeof key.freeDailyRemaining === "number" ? `${key.freeDailyRemaining} of ${key.freeDailyLimit ?? "?"} free requests left today. Never billed.` : "Free models only. Never billed."}</p>
+        </div>
+        <div className={styles.stat}>
+          <p className={styles.statLabel}>Today’s requests</p>
+          <p className={styles.statValue}>{used} <span className={styles.statNote}>of {settings.daily_request_budget}</span></p>
+          <div className={styles.meter} aria-hidden="true"><span style={{ width: `${budgetShare}%`, background: budgetShare > 85 ? "#dc2626" : budgetShare > 60 ? "#d97706" : "#16a34a" }} /></div>
+          <p className={styles.statNote}>{budgetLeft} left · resets 01:00 WAT. Failed attempts count too.</p>
+        </div>
+        <div className={styles.stat}>
+          <p className={styles.statLabel}>Free models</p>
+          <p className={styles.statValue}>{models.length}</p>
+          <p className={styles.statNote}>{list.source === "live" ? "Live from OpenRouter." : list.error ?? "OpenRouter could not be reached."} <a href="#ai-models">Choose ↓</a></p>
+        </div>
       </div>
 
-      <Panel>
-        <form action={saveAiSettings} className="ui-stack">
-          <SectionHeading title="Autopilot and schedule" description="Times are Lagos time (WAT). The schedule is checked every 5 minutes by the database." />
-          <label className="ui-row" style={{ alignItems: "flex-start", gap: 12 }}>
-            <input type="checkbox" name="autopilot" defaultChecked={settings.autopilot_enabled} style={{ width: 24, height: 24, marginTop: 2 }} />
-            <span><strong>Autopilot</strong><br /><span className="ui-muted">On: the AI publishes, replies, verifies, places ads and moderates without asking. Off: nothing runs on its own; “Run now” only drafts and recommends, and every result waits in AI processes for a human.</span></span>
-          </label>
-          <div className="ui-form-grid">
-            <label className="ui-field"><span className="label">Switch autopilot ON at (one-off)</span><input className="input" type="datetime-local" name="auto_on_at" defaultValue={lagosInputValue(settings.auto_on_at)} /><small>Leave empty for none.</small></label>
-            <label className="ui-field"><span className="label">Shut autopilot DOWN at (one-off)</span><input className="input" type="datetime-local" name="auto_off_at" defaultValue={lagosInputValue(settings.auto_off_at)} /><small>Leave empty for none.</small></label>
-          </div>
-          <label className="ui-row" style={{ gap: 12 }}><input type="checkbox" name="schedule_enabled" defaultChecked={settings.schedule_enabled} style={{ width: 24, height: 24 }} /> <span><strong>Daily working hours</strong> — switch on and off at the same times every day</span></label>
-          <div className="ui-form-grid">
-            <label className="ui-field"><span className="label">Daily auto-on</span><input className="input" type="time" name="daily_start" defaultValue={settings.daily_start?.slice(0, 5) ?? "06:00"} /></label>
-            <label className="ui-field"><span className="label">Daily auto-shutdown</span><input className="input" type="time" name="daily_stop" defaultValue={settings.daily_stop?.slice(0, 5) ?? "23:00"} /><small>An end earlier than the start runs overnight.</small></label>
-          </div>
+      <Panel className="ui-stack">
+        <SectionHeading title="Run a job now" description={settings.autopilot_enabled ? "Starts straight away with autopilot rules and opens a live view of what it is doing." : "Autopilot is off: the job only drafts and recommends; results wait in AI processes for approval."} action={<LiveRefresh active={running.length > 0} seconds={5} />} />
+        <div className={styles.runGrid}>
+          {Object.entries(AI_JOB_LABELS).map(([job, label]) => {
+            const active = runningByJob.get(job);
+            const last = runs.find((run) => run.job === job && run.status !== "running");
+            return (
+              <div className={styles.runCard} key={job}>
+                <div className="ui-stack-sm">
+                  <h3>{label}</h3>
+                  <p>{active ? <><StatusBadge tone="warning">running</StatusBadge> {active.progress ?? "Starting…"}</> : last ? <>Last: <StatusBadge tone={statusTone(last.status)}>{last.status}</StatusBadge> {lagosExact(last.started_at)}</> : "Not run yet."}</p>
+                </div>
+                {active ? <a className="btn-primary" href={adminHref(`/ai-processes/runs/${active.id}`)}>Watch live</a> : (
+                  <form action={runAiJobNow}><input type="hidden" name="job" value={job} /><SubmitButton className="btn-secondary" useLegacyClasses pendingLabel="Starting…">Run now</SubmitButton></form>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </Panel>
 
-          <SectionHeading title="Limits" />
-          <div className="ui-form-grid">
-            <label className="ui-field"><span className="label">News run every (minutes)</span><input className="input" type="number" name="news_interval_minutes" min={30} max={1440} defaultValue={settings.news_interval_minutes} /></label>
-            <label className="ui-field"><span className="label">Stories per news run</span><input className="input" type="number" name="articles_per_run" min={1} max={6} defaultValue={settings.articles_per_run} /><small>Each story costs about one request. On the free tier keep this at 1.</small></label>
-            <label className="ui-field"><span className="label">Daily model request budget</span><input className="input" type="number" name="daily_request_budget" min={5} max={5000} defaultValue={settings.daily_request_budget} /><small>Keep this at 50 or below: OpenRouter allows 50 free-model requests a day per free key.</small></label>
-            <label className="ui-field"><span className="label">Push notifications per day (max)</span><input className="input" type="number" name="push_daily_limit" min={0} max={20} defaultValue={settings.push_daily_limit} /></label>
-          </div>
-
-          <SectionHeading title="What the AI may do" />
-          <ul className="ui-list ui-stack-sm">
-            {AI_CAPABILITIES.map((capability) => (
-              <li key={capability.key}><label className="ui-row" style={{ alignItems: "flex-start", gap: 12 }}><input type="checkbox" name={`cap_${capability.key}`} defaultChecked={settings.capabilities[capability.key]} style={{ width: 24, height: 24, marginTop: 2 }} /><span><strong>{capability.label}</strong><br /><span className="ui-muted">{capability.hint}</span></span></label></li>
+      <Panel className="ui-stack">
+        <SectionHeading title="Recent runs" description="Click a run to see every step it took, live while it is running." action={<Link href={adminHref("/ai-processes")}>Full audit →</Link>} />
+        {runs.length === 0 ? <p className="ui-muted">No runs yet.</p> : (
+          <div className="ui-table"><table><thead><tr><th>Started (WAT)</th><th>Job</th><th>Status</th><th>Result</th><th><span className="sr-only">Open</span></th></tr></thead><tbody>
+            {runs.slice(0, 15).map((run) => (
+              <tr key={run.id} className={styles.runRow}>
+                <td className="ui-number"><a href={adminHref(`/ai-processes/runs/${run.id}`)}>{lagosExact(run.started_at)}</a></td>
+                <td>{AI_JOB_LABELS[run.job as keyof typeof AI_JOB_LABELS] ?? run.job}{run.trigger === "manual" ? <span className="ui-meta"> · Run now</span> : null}</td>
+                <td><StatusBadge tone={statusTone(run.status)}>{run.status}</StatusBadge></td>
+                <td>{run.status === "running" ? run.progress ?? "Starting…" : run.summary ?? "—"}</td>
+                <td><a className="ui-text-link" href={adminHref(`/ai-processes/runs/${run.id}`)}>{run.status === "running" ? "Watch live" : "Details"}</a></td>
+              </tr>
             ))}
-          </ul>
-          <label className="ui-field"><span className="label">Reason for this change (optional, saved in the audit)</span><input className="input" name="reason" maxLength={500} /></label>
-          <SubmitButton className="btn-primary" useLegacyClasses pendingLabel="Saving…">Save AI settings</SubmitButton>
-          <p className="ui-muted">Last saved {lagosExact(settings.updated_at)}.</p>
-        </form>
+          </tbody></table></div>
+        )}
       </Panel>
 
       <Panel className="ui-stack" id="ai-models">
-        <SectionHeading title="AI models for each job" description="Pick the free models each job should use, in order. The job always tries your 1st choice first and moves down the list only when a model is busy, too slow or gives an unusable answer. Nothing is shuffled. Jobs with no choices use NVIDIA models first, then DeepSeek." action={<form action={refreshAiModels}><SubmitButton className="btn-secondary" useLegacyClasses pendingLabel="Refreshing…">Refresh model list</SubmitButton></form>} />
-        {!models.length ? <Notice tone="warning" role="status">{key.configured ? "OpenRouter's free model list has not loaded yet. Press “Refresh model list”." : "The free model list appears here once OpenRouter is reachable. Press “Refresh model list”."}</Notice> : null}
+        <SectionHeading title="AI models for each job" description="Loaded live from OpenRouter each time this page opens. Pick the models each job uses, in order: it always tries the 1st choice first and moves to a backup only when a model is busy, too slow or gives an unusable answer. Nothing is shuffled." action={<a className="btn-secondary" href={adminHref("/ai-scheduler#ai-models")}>Reload list</a>} />
+        {list.source === "live" && list.loadedAt ? <p className="ui-meta" style={{ margin: 0 }}>{models.length} free models loaded from openrouter.ai at {lagosExact(list.loadedAt)}.</p> : null}
+        {list.source === "saved" ? <Notice tone="warning" role="status">{list.error ?? "OpenRouter could not be reached"}. Showing the list last loaded from OpenRouter{list.loadedAt ? ` at ${lagosExact(list.loadedAt)}` : ""}.</Notice> : null}
+        {list.source === "none" ? <Notice tone="warning" role="status">{list.error ?? "OpenRouter's free model list could not be loaded"}. Reload to try again.</Notice> : null}
         <form action={saveAiModels} className="ui-stack">
-          {MODEL_JOBS.map((job) => {
-            const chosen = settings.job_models[job.key] ?? [];
-            const plan = modelQueue(models, chosen, MAX_MODELS_PER_JOB);
-            const missing = new Set(plan.missing);
-            return (
-              <fieldset key={job.key} className="ui-stack-sm" style={{ border: "1px solid #d9e3f0", borderRadius: 14, padding: 16, margin: 0 }}>
-                <legend style={{ padding: "0 6px" }}><strong>{job.label}</strong></legend>
-                <p className="ui-muted" style={{ margin: 0 }}>{job.hint}</p>
-                <div className="ui-form-grid">
-                  {Array.from({ length: MAX_MODELS_PER_JOB }, (_, index) => {
-                    const current = chosen[index] ?? "";
-                    return (
-                      <label key={index} className="ui-field">
-                        <span className="label">{index === 0 ? "1st choice" : index === 1 ? "2nd choice (backup)" : index === 2 ? "3rd choice (backup)" : `${index + 1}th choice (backup)`}</span>
-                        <select className="input" name={`model_${job.key}_${index}`} defaultValue={current}>
-                          <option value="">{index === 0 ? "Default (NVIDIA → DeepSeek)" : "— none —"}</option>
-                          {current && missing.has(current) ? <option value={current}>{current} — no longer free, will be skipped</option> : null}
-                          {models.map((model) => <option key={model.id} value={model.id}>{model.name} · {model.id}</option>)}
-                        </select>
-                      </label>
-                    );
-                  })}
-                </div>
-                <p className="ui-meta" style={{ margin: 0 }}>
-                  {plan.usingDefault ? "Now uses the default order: " : "Now tries, in order: "}
-                  {plan.queue.length ? plan.queue.join(" → ") : "no free model available yet"}
-                  {plan.missing.length ? <> · <StatusBadge tone="warning">{plan.missing.length} chosen model{plan.missing.length > 1 ? "s" : ""} no longer free</StatusBadge></> : null}
-                </p>
-              </fieldset>
-            );
-          })}
-          <label className="ui-field"><span className="label">Reason for this change (optional, saved in the audit)</span><input className="input" name="reason" maxLength={500} /></label>
-          <SubmitButton className="btn-primary" useLegacyClasses pendingLabel="Saving…">Save model choices</SubmitButton>
+          <div className={styles.jobs}>
+            {MODEL_JOBS.map((job) => {
+              const chosen = settings.job_models[job.key] ?? [];
+              const plan = modelQueue(models, chosen, MAX_MODELS_PER_JOB);
+              const missing = new Set(plan.missing);
+              return (
+                <fieldset key={job.key} className={styles.job}>
+                  <div className={styles.jobHead}><h3>{job.label}</h3><p>{job.hint}</p></div>
+                  <div className={styles.choices}>
+                    {Array.from({ length: MAX_MODELS_PER_JOB }, (_, index) => {
+                      const current = chosen[index] ?? "";
+                      return (
+                        <label key={index} className={styles.choice}>
+                          {choiceLabel(index)}
+                          <select className="input" name={`model_${job.key}_${index}`} defaultValue={current} aria-label={`${job.label}: ${choiceLabel(index)}`}>
+                            <option value="">{index === 0 ? "Automatic" : "None"}</option>
+                            {current && missing.has(current) ? <option value={current}>{current} (no longer free)</option> : null}
+                            {models.map((model) => <option key={model.id} value={model.id} title={model.id}>{model.name.replace(/\s*\(free\)\s*$/i, "")}{model.expires ? " · ending soon" : ""}</option>)}
+                          </select>
+                        </label>
+                      );
+                    })}
+                  </div>
+                  <p className={styles.queue}>
+                    {plan.usingDefault ? "Automatic — " : "Tries: "}
+                    {plan.queue.length ? plan.queue.map((id, index) => <span key={id}>{index ? " → " : ""}<code>{id}</code></span>) : "no free model available yet"}
+                    {plan.missing.length ? <> · <StatusBadge tone="warning">{plan.missing.length} chosen model{plan.missing.length > 1 ? "s" : ""} no longer free</StatusBadge></> : null}
+                  </p>
+                </fieldset>
+              );
+            })}
+          </div>
+          <div className={styles.formFooter}>
+            <label className={styles.field}><span>Reason for this change (optional, saved in the audit)</span><input className="input" name="reason" maxLength={500} /></label>
+            <SubmitButton className="btn-primary" useLegacyClasses pendingLabel="Saving…">Save model choices</SubmitButton>
+          </div>
         </form>
         {models.length ? (
           <details>
-            <summary>All {models.length} free models (NVIDIA and DeepSeek first)</summary>
-            <div className="ui-table"><table><thead><tr><th>Model</th><th>ID</th><th>Maker</th><th>Context</th></tr></thead><tbody>
-              {models.map((model) => <tr key={model.id}><td>{model.name}</td><td><code>{model.id}</code></td><td>{MAKER[modelRank(model.id)] ?? model.id.split("/")[0]}</td><td className="ui-number">{model.context.toLocaleString("en-NG")} tokens</td></tr>)}
+            <summary>Details of all {models.length} free models</summary>
+            <div className="ui-table"><table><thead><tr><th>Model</th><th>Provider</th><th>Context</th><th>JSON output</th><th>Notes</th></tr></thead><tbody>
+              {models.map((model) => (
+                <tr key={model.id}>
+                  <td><a href={`https://openrouter.ai/${model.id}`} target="_blank" rel="noreferrer">{model.name}</a><br /><code>{model.id}</code>{model.description ? <><br /><span className="ui-meta">{model.description}</span></> : null}</td>
+                  <td>{model.provider ?? model.id.split("/")[0]}</td>
+                  <td className="ui-number">{model.context.toLocaleString("en-NG")} tokens</td>
+                  <td>{model.json ? <StatusBadge tone="success">Yes</StatusBadge> : <StatusBadge>Not stated</StatusBadge>}</td>
+                  <td>{[model.reasoning ? "Thinks before answering" : "", model.expires ? `Going away ${model.expires}` : "", model.created ? `Added ${new Date(model.created * 1000).toISOString().slice(0, 10)}` : ""].filter(Boolean).join(" · ") || "—"}</td>
+                </tr>
+              ))}
             </tbody></table></div>
           </details>
         ) : null}
       </Panel>
 
+      <Panel>
+        <form action={saveAiSettings} className="ui-stack">
+          <SectionHeading title="Autopilot, schedule and limits" description="Times are Lagos time (WAT). The schedule is checked every 5 minutes." />
+
+          <div className={styles.section}>
+            <h3>Autopilot</h3>
+            <label className={styles.toggle}>
+              <input type="checkbox" name="autopilot" defaultChecked={settings.autopilot_enabled} />
+              <span><strong>Let the AI act on its own</strong><span>On: it publishes, replies, verifies, places ads and moderates without asking. Off: nothing runs by itself; “Run now” only drafts and recommends.</span></span>
+            </label>
+            <div className={styles.fields}>
+              <label className={styles.field}><span>Switch ON at (one-off)</span><input className="input" type="datetime-local" name="auto_on_at" defaultValue={lagosInputValue(settings.auto_on_at)} /><small>Leave empty for none.</small></label>
+              <label className={styles.field}><span>Switch OFF at (one-off)</span><input className="input" type="datetime-local" name="auto_off_at" defaultValue={lagosInputValue(settings.auto_off_at)} /><small>Leave empty for none.</small></label>
+            </div>
+          </div>
+
+          <div className={styles.section}>
+            <h3>Daily working hours</h3>
+            <label className={styles.toggle}>
+              <input type="checkbox" name="schedule_enabled" defaultChecked={settings.schedule_enabled} />
+              <span><strong>Switch on and off at the same times every day</strong><span>An end earlier than the start runs overnight.</span></span>
+            </label>
+            <div className={styles.fields}>
+              <label className={styles.field}><span>Starts at</span><input className="input" type="time" name="daily_start" defaultValue={settings.daily_start?.slice(0, 5) ?? "06:00"} /></label>
+              <label className={styles.field}><span>Stops at</span><input className="input" type="time" name="daily_stop" defaultValue={settings.daily_stop?.slice(0, 5) ?? "23:00"} /></label>
+            </div>
+          </div>
+
+          <div className={styles.section}>
+            <h3>Limits</h3>
+            <div className={styles.fields}>
+              <label className={styles.field}><span>News runs</span>
+                <select className="input" name="news_interval_minutes" defaultValue={String(settings.news_interval_minutes)}>
+                  {options([30, 45, 60, 90, 120, 180, 240, 360, 720, 1440], settings.news_interval_minutes).map((value) => <option key={value} value={value}>{minutesLabel(value)}</option>)}
+                </select>
+              </label>
+              <label className={styles.field}><span>Stories per news run</span>
+                <select className="input" name="articles_per_run" defaultValue={String(settings.articles_per_run)}>
+                  {[1, 2, 3, 4, 5, 6].map((value) => <option key={value} value={value}>{value} {value === 1 ? "story" : "stories"}</option>)}
+                </select>
+                <small>About one request each. On the free tier keep this at 1–2.</small>
+              </label>
+              <label className={styles.field}><span>Daily model request budget</span>
+                <select className="input" name="daily_request_budget" defaultValue={String(settings.daily_request_budget)}>
+                  {options([10, 20, 30, 40, 50, 100, 200, 500, 1000], settings.daily_request_budget).map((value) => <option key={value} value={value}>{value} requests{value === 50 ? " (free-key limit)" : value > 50 ? " (needs OpenRouter credit history)" : ""}</option>)}
+                </select>
+              </label>
+              <label className={styles.field}><span>Push notifications per day</span>
+                <select className="input" name="push_daily_limit" defaultValue={String(settings.push_daily_limit)}>
+                  {options([0, 1, 2, 3, 4, 5, 6, 8, 10, 15, 20], settings.push_daily_limit).map((value) => <option key={value} value={value}>{value === 0 ? "None" : `Up to ${value}`}</option>)}
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <div className={styles.section}>
+            <h3>What the AI may do</h3>
+            <div className={styles.toggles}>
+              {AI_CAPABILITIES.map((capability) => (
+                <label key={capability.key} className={styles.toggle}>
+                  <input type="checkbox" name={`cap_${capability.key}`} defaultChecked={settings.capabilities[capability.key]} />
+                  <span><strong>{capability.label}</strong><span>{capability.hint}</span></span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className={styles.formFooter}>
+            <label className={styles.field}><span>Reason for this change (optional, saved in the audit)</span><input className="input" name="reason" maxLength={500} /></label>
+            <SubmitButton className="btn-primary" useLegacyClasses pendingLabel="Saving…">Save settings</SubmitButton>
+          </div>
+          <p className="ui-meta" style={{ margin: 0 }}>Last saved {lagosExact(settings.updated_at)}.</p>
+        </form>
+      </Panel>
+
       <Panel className="ui-stack">
-        <SectionHeading title="Run a job now" description={settings.autopilot_enabled ? "Runs immediately with autopilot rules (acts without approval)." : "Autopilot is off: the job drafts and recommends only; results wait in AI processes for approval."} />
-        <div className="ui-actions" style={{ flexWrap: "wrap", gap: 10 }}>
-          {Object.entries(AI_JOB_LABELS).map(([job, label]) => (
-            <form action={runAiJobNow} key={job}><input type="hidden" name="job" value={job} /><SubmitButton className="btn-secondary" useLegacyClasses pendingLabel="Running… (up to 4 minutes)">{label}</SubmitButton></form>
+        <SectionHeading title="Where the news comes from" description="The only outlets the AI reads, at home and abroad, by subject. Stories rank Epe first, then Lagos, Nigeria and the world, and every subject desk gets its turn." />
+        <div className={styles.desks}>
+          {[...desks.entries()].map(([desk, names]) => (
+            <div key={desk} className={styles.desk}>
+              <h3>{DESK_LABELS[desk]}</h3>
+              <ul className={styles.chips}>{[...names].map((name) => <li key={name}>{name}</li>)}</ul>
+            </div>
           ))}
         </div>
-      </Panel>
-
-      <Panel className="ui-stack">
-        <SectionHeading title="Recent runs" action={<Link href={adminHref("/ai-processes")}>Full audit →</Link>} />
-        {runs.length === 0 ? <p className="ui-muted">No runs yet.</p> : (
-          <div className="ui-table"><table><thead><tr><th>Started</th><th>Job</th><th>Trigger</th><th>Status</th><th>Summary</th></tr></thead><tbody>
-            {runs.map((run) => <tr key={run.id}><td className="ui-number">{lagosExact(run.started_at)}</td><td>{AI_JOB_LABELS[run.job as keyof typeof AI_JOB_LABELS] ?? run.job}</td><td>{run.trigger}</td><td><StatusBadge tone={statusTone(run.status)}>{run.status}</StatusBadge></td><td>{run.summary ?? "—"}</td></tr>)}
-          </tbody></table></div>
-        )}
-      </Panel>
-
-      <Panel className="ui-stack-sm">
-        <SectionHeading title="Trusted news outlets" description="The only sources the AI reads or cites. Stories are ranked Epe first, then Lagos, Nigeria and the world; sport and business get their own slots." />
-        <ul className="ui-list">{[...new Map(NEWS_OUTLETS.map((outlet) => [outlet.name, outlet])).values()].map((outlet) => <li key={outlet.name}>{outlet.name} <span className="ui-meta">· {outlet.country === "NG" ? "Nigeria" : "International"}</span></li>)}</ul>
-        <p className="ui-muted">Every figure and direct quote in an AI story must appear in the source reports; otherwise the story is saved as a draft and escalated instead of published. Each story lists its sources and says it was compiled by the AI desk, under the Epe Lawa Editorial Desk byline.</p>
+        <p className="ui-muted" style={{ margin: 0 }}>Every figure and direct quote in an AI story must appear in the source reports; otherwise it is saved as a draft for an editor instead of being published.</p>
       </Panel>
     </PageFrame>
   );

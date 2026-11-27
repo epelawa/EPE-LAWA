@@ -32,7 +32,7 @@ const PHONE_RULES: FieldRules = { pattern: /^\+?[0-9][0-9 ()-]{6,19}$/, message:
 const EMAIL_RULES: FieldRules = { email: true };
 const WEBSITE_RULES: FieldRules = { url: true, message: "Enter a full link starting with https://" };
 
-export default function BusinessEditForm({ business, categories }: { business: BusinessEditValues; categories: Option[] }) {
+export default function BusinessEditForm({ business, categories, areas = [] }: { business: BusinessEditValues; categories: Option[]; areas?: string[] }) {
   const initial: StaffUpdateState = { status: "idle", message: "" };
   const [state, action] = useActionState(staffUpdateBusiness, initial);
   const [values, setValues] = useState<Record<string, string>>(() => ({ ...business }));
@@ -54,7 +54,8 @@ export default function BusinessEditForm({ business, categories }: { business: B
           <select name="category_id" value={values.category_id ?? ""} onChange={change} className="input">{categories.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}</select>
         </LiveField>
         <LiveField label="Description" optional rules={DESCRIPTION_RULES} value={values.description ?? ""} onChange={change}><textarea name="description" value={values.description ?? ""} onChange={change} rows={3} className="input" /></LiveField>
-        <LiveField label="Area or community" optional value={values.area ?? ""} onChange={change}><input name="area" value={values.area ?? ""} onChange={change} maxLength={160} className="input" /></LiveField>
+        <LiveField label="Area or community" optional value={values.area ?? ""} onChange={change}><input name="area" value={values.area ?? ""} onChange={change} maxLength={160} className="input" list={`business-areas-${business.id}`} autoComplete="off" placeholder="Pick or type an area" /></LiveField>
+        <datalist id={`business-areas-${business.id}`}>{areas.map((area) => <option key={area} value={area} />)}</datalist>
         <LiveField label="Address" optional value={values.address ?? ""} onChange={change}><input name="address" value={values.address ?? ""} onChange={change} maxLength={300} className="input" /></LiveField>
         <LiveField label="Landmark" optional value={values.landmark ?? ""} onChange={change}><input name="landmark" value={values.landmark ?? ""} onChange={change} maxLength={200} className="input" /></LiveField>
         <LiveField label="Phone" optional rules={PHONE_RULES} value={values.phone ?? ""} onChange={change}><input name="phone" value={values.phone ?? ""} onChange={change} maxLength={24} className="input" placeholder="+234…" /></LiveField>

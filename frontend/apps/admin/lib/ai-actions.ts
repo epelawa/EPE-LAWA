@@ -1,13 +1,14 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { adminRedirect as redirect } from "./admin-redirect";
 import { adminHref } from "./admin-path";
 import { createStaffClient } from "./supabase";
 import { readAdminSessionFromCookies } from "./supabase-access";
-import { AI_CAPABILITIES, MAX_MODELS_PER_JOB, MODEL_JOBS } from "../../main/lib/ai/settings";
-import { freeModels } from "../../main/lib/ai/openrouter";
+import { AI_CAPABILITIES, MAX_MODELS_PER_JOB, MODEL_JOBS, normaliseJobModels } from "../../main/lib/ai/settings";
+import { loadFreeModels } from "../../main/lib/ai/openrouter";
 import { runAutopilotPass, AI_JOB_LABELS } from "../../main/lib/ai/runner";
 import { formAdminClient } from "../../main/lib/form-server";
 import { sendAiEnquiryReply, type Enquiry } from "../../main/lib/ai/jobs/enquiries";
@@ -71,32 +72,42 @@ export async function saveAiSettings(form: FormData): Promise<void> {
   return await redirect(back(error ? "failed" : "saved"));
 }
 
-/** Per-job model choices, in order. Empty choices are dropped; duplicates keep their first position. */
+/**
+ * Per-job model choices, in order. Each pick must be in OpenRouter's live free
+ * list (or already saved, so a briefly unlisted model is not silently dropped).
+ * Empty choices are dropped; duplicates keep their first position.
+ */
 export async function saveAiModels(form: FormData): Promise<void> {
   const admin = await primaryAdmin();
   if (!admin) return await redirect(back("denied"));
+  const service = formAdminClient();
+  const [list, current] = await Promise.all([
+    loadFreeModels(service),
+    service.from("ai_settings").select("job_models").eq("id", 1).maybeSingle(),
+  ]);
+  const allowed = new Set(list.models.map((model) => model.id));
+  const previous = normaliseJobModels(current.data?.job_models);
   const jobModels: Record<string, string[]> = {};
+  let rejected = false;
   for (const { key } of MODEL_JOBS) {
     const picks: string[] = [];
     for (let index = 0; index < MAX_MODELS_PER_JOB; index += 1) {
       const value = form.get(`model_${key}_${index}`);
-      if (typeof value === "string" && /^[A-Za-z0-9._~-]+\/[A-Za-z0-9._~/-]+:free$/.test(value) && value.length <= 120 && !picks.includes(value)) picks.push(value);
+      if (typeof value !== "string" || !value || picks.includes(value)) continue;
+      const known = allowed.has(value) || (previous[key] ?? []).includes(value);
+      if (!known || !/^[A-Za-z0-9._~-]+\/[A-Za-z0-9._~/-]+:free$/.test(value) || value.length > 120) {
+        rejected = true;
+        continue;
+      }
+      picks.push(value);
     }
     if (picks.length) jobModels[key] = picks;
   }
+  if (rejected) return await redirect(back("models-unknown"));
   const reason = typeof form.get("reason") === "string" ? String(form.get("reason")).trim().slice(0, 500) : "";
   const { error } = await admin.db.rpc("ai_models_save", { p_job_models: jobModels, p_reason: reason });
   revalidatePath(adminHref("/ai-scheduler"));
   return await redirect(back(error ? "models-failed" : "models-saved"));
-}
-
-/** Re-reads OpenRouter's free-model catalogue now instead of waiting for the 6-hour refresh. */
-export async function refreshAiModels(): Promise<void> {
-  const admin = await primaryAdmin();
-  if (!admin) return await redirect(back("denied"));
-  const models = await freeModels(formAdminClient(), true).catch(() => []);
-  revalidatePath(adminHref("/ai-scheduler"));
-  return await redirect(back(models.length ? "models-refreshed" : "models-unreachable"));
 }
 
 const JOBS = Object.keys(AI_JOB_LABELS) as AiJob[];
@@ -106,8 +117,22 @@ export async function runAiJobNow(form: FormData): Promise<void> {
   if (!admin) return await redirect(back("denied"));
   const job = form.get("job");
   if (typeof job !== "string" || !JOBS.includes(job as AiJob)) return await redirect(back("failed"));
-  const result = await runAutopilotPass({ trigger: "manual", job: job as AiJob, triggeredBy: admin.userId });
-  const summary = result.skipped ?? result.ran.map((entry) => `${AI_JOB_LABELS[entry.job]}: ${entry.summary}`).join(" ") ?? "Done.";
+  // Start the job in the background and open its live page straight away, so
+  // the administrator can watch what it is doing instead of waiting minutes.
+  let announce: (runId: string | null) => void = () => {};
+  const started = new Promise<string | null>((resolve) => { announce = resolve; });
+  const pass = runAutopilotPass({ trigger: "manual", job: job as AiJob, triggeredBy: admin.userId, onRunStarted: (runId) => announce(runId) })
+    .then((result) => { announce(null); return result; })
+    .catch((error: unknown) => {
+      console.error("manual ai run failed", { message: error instanceof Error ? error.message : "unknown" });
+      announce(null);
+      return { ran: [], skipped: "The run stopped unexpectedly." } as Awaited<ReturnType<typeof runAutopilotPass>>;
+    });
+  after(() => pass.then(() => undefined));
+  const runId = await started;
+  if (runId) return await redirect(adminHref(`/ai-processes/runs/${runId}`));
+  const result = await pass;
+  const summary = result.skipped ?? (result.ran.map((entry) => `${AI_JOB_LABELS[entry.job]}: ${entry.summary}`).join(" ") || "Nothing to do.");
   return await redirect(`${adminHref("/ai-scheduler")}?result=ran&summary=${encodeURIComponent(summary.slice(0, 400))}`);
 }
 

@@ -5,7 +5,6 @@ import { useActionState, useState } from "react";
 import BrandedDialog from "./branded-dialog";
 import GuestContactFields from "./guest-contact-fields";
 import { reportCorrection, type CorrectionState } from "../app/news/[slug]/correction-actions";
-import { CONTACT_EMAIL } from "../lib/site-identity";
 import styles from "../app/news/news.module.css";
 
 const initialState: CorrectionState = { status: "idle", message: "" };
@@ -14,17 +13,17 @@ const initialState: CorrectionState = { status: "idle", message: "" };
  * "Suggest a correction" as a branded popup modal. Open to everyone: signed-out
  * readers add a private name and email. Reports reach the staff Corrections page.
  */
-export default function CorrectionForm({ articleId, articleTitle, signedIn = false, accountEmail = null }: { articleId: string; articleTitle: string; signedIn?: boolean; accountEmail?: string | null }) {
+export default function CorrectionForm({ articleId, signedIn = false, accountEmail = null }: { articleId: string; articleTitle: string; signedIn?: boolean; accountEmail?: string | null }) {
   const [state, action, pending] = useActionState(reportCorrection, initialState);
   const [open, setOpen] = useState(false);
 
   return (
     <div className={styles.correctionNote}>
       {state.status === "success" ? (
-        <p role="status">{state.message} <a className="ui-text-link" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> is always open too.</p>
+        <p role="status">{state.message}</p>
       ) : (
         <>
-          <p>Spotted an error in this story? <button className="btn-secondary btn-inline" type="button" aria-haspopup="dialog" onClick={() => setOpen(true)}>Suggest a correction</button>, or email <a className="ui-text-link" href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`Correction: ${articleTitle}`)}`}>{CONTACT_EMAIL}</a>.</p>
+          <p>Spotted an error in this story? <button className="btn-secondary btn-inline" type="button" aria-haspopup="dialog" onClick={() => setOpen(true)}>Suggest a correction</button></p>
           {state.status === "error" ? <p role="alert">{state.message}</p> : null}
         </>
       )}

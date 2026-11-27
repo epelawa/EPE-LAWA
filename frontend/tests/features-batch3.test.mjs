@@ -9,21 +9,20 @@ const mainApp = (relativePath) => fs.readFileSync(path.join(root, 'frontend/apps
 const adminApp = (relativePath) => fs.readFileSync(path.join(root, 'frontend/apps/admin', relativePath), 'utf8');
 const repo = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'utf8');
 
-test('site identity is centralised as Epe Lawa with the shared contact inbox', () => {
+test('site identity is centralised as Epe Lawa and the mailbox is never published', () => {
   const identity = mainApp('lib/site-identity.ts');
   assert.match(identity, /SITE_AUTHOR = "Epe Lawa"/);
-  assert.match(identity, /CONTACT_EMAIL = "info\.epelawa@gmail\.com"/);
+  assert.doesNotMatch(identity, /CONTACT_EMAIL|@gmail/);
 });
 
-test('RSS feed and calendar exports identify Epe Lawa as the responsible sender', () => {
-  const feed = mainApp('app/feed.xml/route.ts');
-  assert.match(feed, /site-identity/);
-  assert.match(feed, /managingEditor/);
-  assert.match(feed, /webMaster/);
-  const ics = mainApp('app/radio/programmes/ics.ts');
-  assert.match(ics, /site-identity/);
-  assert.match(ics, /ORGANIZER/);
-  assert.match(ics, /mailto/);
+test('pages, the RSS feed, calendars and structured data never show the Gmail address', () => {
+  for (const file of ['app/feed.xml/route.ts', 'app/radio/programmes/ics.ts', 'lib/structured-data.ts', 'components/correction-form.tsx', 'app/business-directory/[slug]/page.tsx', 'app/news/[slug]/page.tsx']) {
+    const source = mainApp(file);
+    assert.doesNotMatch(source, /CONTACT_EMAIL|gmail\.com/i, file);
+    // A business profile may link the listed business's own address; nothing else offers a mailbox.
+    if (!file.startsWith('app/business-directory/')) assert.doesNotMatch(source, /mailto:/i, file);
+  }
+  assert.doesNotMatch(mainApp('app/news/[slug]/page.tsx'), /How this story was produced/);
 });
 
 test('mail identities document the Epe Lawa sender envelope', () => {
@@ -54,7 +53,7 @@ test('members file corrections through a rate-gated server action', () => {
   assert.match(form, /aria-haspopup/);
   const articlePage = mainApp('app/news/[slug]/page.tsx');
   assert.match(articlePage, /CorrectionForm/);
-  assert.match(articlePage, /site-identity/);
+  assert.doesNotMatch(articlePage, /site-identity|CONTACT_EMAIL/);
 });
 
 test('staff review corrections behind the article.review capability', () => {

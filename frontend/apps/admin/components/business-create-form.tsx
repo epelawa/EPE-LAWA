@@ -14,7 +14,7 @@ function SubmitButton() {
   return <button data-pending-self-managed="true" className="btn-primary" type="submit" disabled={pending} aria-busy={pending}>{pending && <span className="ep-btn__spinner" aria-hidden="true" />}{pending ? "Publishing…" : "Publish listing"}</button>;
 }
 
-export default function BusinessCreateForm({ categories }: { categories: Option[] }) {
+export default function BusinessCreateForm({ categories, areas = [] }: { categories: Option[]; areas?: string[] }) {
   const initial: StaffCreateState = { status: "idle", message: "" };
   const [state, action] = useActionState(staffCreateBusiness, initial);
   const [verify, setVerify] = useState(false);
@@ -29,7 +29,7 @@ export default function BusinessCreateForm({ categories }: { categories: Option[
         <label className="ui-field"><span className="label">Business name</span><input name="name" required maxLength={160} className="input" /></label>
         <label className="ui-field"><span className="label">Category</span><select name="category_id" required className="input" defaultValue="">{categories.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}</select></label>
         <label className="ui-field"><span className="label">Description</span><textarea name="description" rows={3} maxLength={4000} className="input" /></label>
-        <label className="ui-field"><span className="label">Area or community</span><input name="area" maxLength={160} className="input" /></label>
+        <label className="ui-field"><span className="label">Area or community</span><input name="area" maxLength={160} className="input" list="business-create-areas" autoComplete="off" placeholder="Pick or type an area" /><datalist id="business-create-areas">{areas.map((area) => <option key={area} value={area} />)}</datalist></label>
         <label className="ui-field"><span className="label">Address</span><input name="address" maxLength={300} className="input" /></label>
         <label className="ui-field"><span className="label">Landmark</span><input name="landmark" maxLength={200} className="input" /></label>
         <label className="ui-field"><span className="label">Phone</span><input name="phone" maxLength={24} className="input" placeholder="+234…" /></label>

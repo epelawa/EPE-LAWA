@@ -39,15 +39,13 @@ test('web apps keep Coming Soon labels limited to explicit unavailable-state dis
   }
 });
 
-test('the shared contact inbox lives only in the central site-identity module', async () => {
-  const allowed = new Set(['main/lib/site-identity.ts']);
+test('the mailbox address is published nowhere in either app', async () => {
   const files = await textFiles(appsRoot);
   for (const file of files) {
     const relative = path.relative(appsRoot, file);
     const source = await readFile(file, 'utf8');
-    if (allowed.has(relative)) continue;
     assert.doesNotMatch(source, privateAddress, relative);
   }
   const identity = await readFile(path.join(appsRoot, 'main/lib/site-identity.ts'), 'utf8');
-  assert.match(identity, privateAddress);
+  assert.doesNotMatch(identity, /CONTACT_EMAIL/);
 });

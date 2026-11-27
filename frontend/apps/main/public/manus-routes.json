@@ -226,6 +226,9 @@
       "path": "/admin/ai-processes"
     },
     {
+      "path": "/admin/ai-processes/runs/:id"
+    },
+    {
       "path": "/admin/logs"
     }
   ]

@@ -94,11 +94,10 @@ test("member inactivity is one week and staff inactivity is ten hours, enforced 
   assert.match(adminLogin, /cookieStore\.set\(ACTIVITY_COOKIE\.staff/);
 });
 
-test("member story covers show views, read time and comments, with a floating branded comment button", async () => {
-  const [newsContent, coverStats, dock, article, deleteButton, actions, migration] = await Promise.all([
+test("member story covers show views, read time and comments; the floating comment button is gone", async () => {
+  const [newsContent, coverStats, article, deleteButton, actions, migration] = await Promise.all([
     read("frontend/apps/main/app/dashboard/news-content.tsx"),
     read("frontend/apps/main/components/article-cover-stats.tsx"),
-    read("frontend/apps/main/components/comment-dock.tsx"),
     read("frontend/apps/main/app/news/[slug]/page.tsx"),
     read("frontend/apps/main/components/comment-delete-button.tsx"),
     read("frontend/apps/main/app/news/comment-actions.ts"),
@@ -112,11 +111,7 @@ test("member story covers show views, read time and comments, with a floating br
   assert.match(coverStats, /estimateReadMinutes/);
   assert.match(coverStats, /min read/);
   assert.match(article, /<ArticleCoverStats body=\{body\} engagement=\{engagement\} commentCount=\{commentCount\} \/>/);
-  assert.match(article, /<CommentDock /);
-  assert.match(dock, /className="comment-fab"/);
-  assert.match(dock, /aria-haspopup="dialog"/);
-  assert.match(dock, /<BrandedDialog/);
-  assert.match(dock, /postArticleComment/);
+  assert.doesNotMatch(article, /CommentDock|comment-fab/);
   assert.match(deleteButton, /<BrandedDialog/);
   assert.match(deleteButton, /deleteArticleComment/);
   assert.match(deleteButton, /btn-danger/);

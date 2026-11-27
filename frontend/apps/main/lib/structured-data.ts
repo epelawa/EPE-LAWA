@@ -1,5 +1,4 @@
 import { absoluteUrl } from "./site";
-import { CONTACT_EMAIL } from "./site-identity";
 
 /**
  * JSON-LD builders for Google readiness. Everything here is derived from
@@ -38,7 +37,6 @@ export function organizationSchema(): object {
     name: "EPE LAWA",
     url: absoluteUrl("/"),
     logo: absoluteUrl("/brand-logo.png"),
-    email: CONTACT_EMAIL,
   };
 }
 

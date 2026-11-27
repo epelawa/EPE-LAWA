@@ -1,6 +1,5 @@
 import { createClient } from "../../lib/supabase";
 import { absoluteUrl, isIndexingAllowed } from "../../lib/site";
-import { SITE_AUTHOR, CONTACT_EMAIL } from "../../lib/site-identity";
 
 export const dynamic = "force-dynamic";
 
@@ -74,8 +73,6 @@ export async function GET(): Promise<Response> {
     <link>${absoluteUrl("/news")}</link>
     <description>Published news stories from EPE LAWA, the community platform for Epe Division, Lagos State.</description>
     <language>en-ng</language>
-    <managingEditor>${CONTACT_EMAIL} (${escapeXml(SITE_AUTHOR)})</managingEditor>
-    <webMaster>${CONTACT_EMAIL} (${escapeXml(SITE_AUTHOR)})</webMaster>
     <lastBuildDate>${builtAt}</lastBuildDate>
     <atom:link href="${absoluteUrl("/feed.xml")}" rel="self" type="application/rss+xml" xmlns:atom="http://www.w3.org/2005/Atom"/>
 ${itemXml}

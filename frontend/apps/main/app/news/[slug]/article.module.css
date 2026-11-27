@@ -14,7 +14,7 @@
   margin: 20px auto 48px;
   color: var(--ink);
 }
-.article { display: grid; gap: 22px; min-width: 0; }
+.article { display: grid; gap: 20px; min-width: 0; }
 .column { width: 100%; max-width: 68ch; margin-inline: auto; }
 
 /* Top bar: back, save (members) and the single share control. */
@@ -55,13 +55,6 @@
 .body > :first-child { margin-top: 0; }
 .body > :last-child { margin-bottom: 0; }
 
-/* AI disclosure */
-.sources { display: grid; gap: 10px; padding: 16px 18px; border: 1px solid var(--line); border-left: 4px solid var(--cobalt); border-radius: 14px; background: var(--wash); font-size: .875rem; line-height: 1.55; }
-.sources h2 { margin: 0; color: var(--navy); font-size: .9375rem; }
-.sources p { margin: 0; color: #293650; }
-.sources ul { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
-.sources a { color: var(--blue); font-weight: 700; overflow-wrap: anywhere; }
-
 /* Hashtags */
 .hashtags { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
 .hashtag { display: inline-flex; min-height: 36px; align-items: center; padding: 0 12px; border: 1px solid var(--line); border-radius: 999px; color: var(--blue); background: #fff; font-size: .8125rem; font-weight: 750; text-decoration: none; }
@@ -75,12 +68,6 @@
 .pill:disabled { opacity: .7; cursor: progress; }
 .pillActive { border-color: #F9C5C5; color: #B42318; background: #FFF5F5; }
 
-/* Author */
-.author { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 14px; color: var(--muted-ink); font-size: .875rem; }
-.authorMark { display: grid; width: 40px; height: 40px; flex: 0 0 auto; place-items: center; border-radius: 50%; color: #fff; background: var(--navy); font-weight: 800; }
-.author strong { color: var(--ink); }
-.author a { color: var(--blue); font-weight: 800; }
-
 /* Related */
 .related { display: grid; gap: 14px; padding-top: 8px; }
 .related h2 { margin: 0; color: var(--navy); font-size: 1.25rem; }
@@ -92,7 +79,11 @@
 .relatedTime { padding: 0 12px 12px; color: var(--muted-ink); font-size: .75rem; }
 .relatedLink:hover .relatedTitle { text-decoration: underline; text-underline-offset: 3px; }
 
-.extras { display: grid; gap: 12px; }
+/* Correction and offline save: one tidy strip under the actions. */
+.extras { display: grid; gap: 4px; padding: 6px 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--wash); font-size: .875rem; color: #293650; }
+.extras > * { margin: 0; }
+.extras > * + * { padding-top: 4px; border-top: 1px solid var(--line); }
+.extras p { margin: 0; padding: 8px 0; }
 .extras summary { display: flex; min-height: 44px; align-items: center; color: var(--blue); font-size: .875rem; font-weight: 750; cursor: pointer; }
 
 .page :where(a, button, summary, input, textarea):focus-visible { outline: 2px solid var(--cobalt); outline-offset: 3px; }

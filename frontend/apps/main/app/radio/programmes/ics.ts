@@ -1,6 +1,5 @@
 import { lagosNow } from "./on-air";
 import { foldIcsLine, icsEscape, icsStamp } from "../../../lib/event-calendar";
-import { SITE_AUTHOR, CONTACT_EMAIL } from "../../../lib/site-identity";
 
 export type IcsSlot = { id: string; day_of_week: number; starts_at: string; ends_at: string; note: string | null; programme: string | null };
 
@@ -48,7 +47,6 @@ export function buildIcs(slots: IcsSlot[], now: Date = new Date()): string {
       `DTSTART:${icsStamp(new Date(midnight + start * SECOND).toISOString())}`,
       `DTEND:${icsStamp(new Date(midnight + end * SECOND).toISOString())}`,
       "RRULE:FREQ=WEEKLY",
-      `ORGANIZER;CN=${icsEscape(SITE_AUTHOR)}:mailto:${CONTACT_EMAIL}`,
       `SUMMARY:${icsEscape(slot.programme ?? "EPE LAWA Radio")}`,
     );
     if (slot.note?.trim()) lines.push(`DESCRIPTION:${icsEscape(slot.note.trim())}`);

@@ -5,7 +5,10 @@
  * matched exactly (or as a subdomain of the listed domain) on every redirect.
  */
 
-export type Desk = "local" | "nigeria" | "business" | "sport" | "world";
+export type Desk = "local" | "nigeria" | "politics" | "business" | "sport" | "entertainment" | "tech" | "health" | "science" | "world";
+
+/** Plain-English names for the admin page. */
+export const DESK_LABELS: Record<Desk, string> = { local: "Lagos", nigeria: "Nigeria — general", politics: "Politics", business: "Business", sport: "Sport", entertainment: "Entertainment", tech: "Technology", health: "Health", science: "Science & environment", world: "World" };
 export type Outlet = { id: string; name: string; feed: string; domains: string[]; desk: Desk; country: "NG" | "INT" };
 
 export const NEWS_OUTLETS: readonly Outlet[] = [
@@ -18,11 +21,26 @@ export const NEWS_OUTLETS: readonly Outlet[] = [
   { id: "dailytrust", name: "Daily Trust", feed: "https://dailytrust.com/feed/", domains: ["dailytrust.com"], desk: "nigeria", country: "NG" },
   { id: "businessday", name: "BusinessDay", feed: "https://businessday.ng/feed/", domains: ["businessday.ng"], desk: "business", country: "NG" },
   { id: "nairametrics", name: "Nairametrics", feed: "https://nairametrics.com/feed/", domains: ["nairametrics.com"], desk: "business", country: "NG" },
+  { id: "guardianng-politics", name: "The Guardian Nigeria", feed: "https://guardian.ng/category/politics/feed/", domains: ["guardian.ng"], desk: "politics", country: "NG" },
+  { id: "premiumtimes-politics", name: "Premium Times", feed: "https://www.premiumtimesng.com/category/news/top-news/feed", domains: ["premiumtimesng.com"], desk: "politics", country: "NG" },
+  { id: "vanguard-sport", name: "Vanguard", feed: "https://www.vanguardngr.com/category/sports/feed/", domains: ["vanguardngr.com"], desk: "sport", country: "NG" },
+  { id: "channels-sport", name: "Channels Television", feed: "https://www.channelstv.com/category/sports/feed/", domains: ["channelstv.com"], desk: "sport", country: "NG" },
+  { id: "vanguard-entertainment", name: "Vanguard", feed: "https://www.vanguardngr.com/category/entertainment/feed/", domains: ["vanguardngr.com"], desk: "entertainment", country: "NG" },
+  { id: "premiumtimes-health", name: "Premium Times", feed: "https://www.premiumtimesng.com/category/health/feed", domains: ["premiumtimesng.com"], desk: "health", country: "NG" },
+  { id: "techcabal", name: "TechCabal", feed: "https://techcabal.com/feed/", domains: ["techcabal.com"], desk: "tech", country: "NG" },
   { id: "lagosgov", name: "Lagos State Government", feed: "https://lagosstate.gov.ng/feed/", domains: ["lagosstate.gov.ng"], desk: "local", country: "NG" },
   { id: "bbc-africa", name: "BBC News", feed: "https://feeds.bbci.co.uk/news/world/africa/rss.xml", domains: ["bbc.co.uk", "bbc.com", "bbci.co.uk"], desk: "world", country: "INT" },
   { id: "bbc-world", name: "BBC News", feed: "https://feeds.bbci.co.uk/news/world/rss.xml", domains: ["bbc.co.uk", "bbc.com", "bbci.co.uk"], desk: "world", country: "INT" },
   { id: "bbc-business", name: "BBC News", feed: "https://feeds.bbci.co.uk/news/business/rss.xml", domains: ["bbc.co.uk", "bbc.com", "bbci.co.uk"], desk: "business", country: "INT" },
   { id: "bbc-sport", name: "BBC Sport", feed: "https://feeds.bbci.co.uk/sport/football/rss.xml", domains: ["bbc.co.uk", "bbc.com", "bbci.co.uk"], desk: "sport", country: "INT" },
+  { id: "bbc-tech", name: "BBC News", feed: "https://feeds.bbci.co.uk/news/technology/rss.xml", domains: ["bbc.co.uk", "bbc.com", "bbci.co.uk"], desk: "tech", country: "INT" },
+  { id: "bbc-health", name: "BBC News", feed: "https://feeds.bbci.co.uk/news/health/rss.xml", domains: ["bbc.co.uk", "bbc.com", "bbci.co.uk"], desk: "health", country: "INT" },
+  { id: "bbc-science", name: "BBC News", feed: "https://feeds.bbci.co.uk/news/science_and_environment/rss.xml", domains: ["bbc.co.uk", "bbc.com", "bbci.co.uk"], desk: "science", country: "INT" },
+  { id: "bbc-entertainment", name: "BBC News", feed: "https://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml", domains: ["bbc.co.uk", "bbc.com", "bbci.co.uk"], desk: "entertainment", country: "INT" },
+  { id: "bbc-sport-all", name: "BBC Sport", feed: "https://feeds.bbci.co.uk/sport/rss.xml", domains: ["bbc.co.uk", "bbc.com", "bbci.co.uk"], desk: "sport", country: "INT" },
+  { id: "guardian-sport", name: "The Guardian", feed: "https://www.theguardian.com/sport/rss", domains: ["theguardian.com", "guim.co.uk"], desk: "sport", country: "INT" },
+  { id: "guardian-culture", name: "The Guardian", feed: "https://www.theguardian.com/culture/rss", domains: ["theguardian.com", "guim.co.uk"], desk: "entertainment", country: "INT" },
+  { id: "guardian-tech", name: "The Guardian", feed: "https://www.theguardian.com/technology/rss", domains: ["theguardian.com", "guim.co.uk"], desk: "tech", country: "INT" },
   { id: "aljazeera", name: "Al Jazeera", feed: "https://www.aljazeera.com/xml/rss/all.xml", domains: ["aljazeera.com"], desk: "world", country: "INT" },
   { id: "guardian-world", name: "The Guardian", feed: "https://www.theguardian.com/world/rss", domains: ["theguardian.com", "guim.co.uk"], desk: "world", country: "INT" },
   { id: "france24-africa", name: "France 24", feed: "https://www.france24.com/en/africa/rss", domains: ["france24.com"], desk: "world", country: "INT" },

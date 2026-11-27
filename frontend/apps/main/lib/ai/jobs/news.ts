@@ -178,7 +178,9 @@ export function rankCandidates(items: FeedItem[], recentTitles: string[], now = 
     const corroborating = fresh.filter((other) => other !== item && other.outlet.name !== item.outlet.name && similarity(own, tokens.get(other)!) >= 0.45);
     const locality = localityScore(`${item.title} ${item.summary}`);
     const ageHours = (now - Date.parse(item.publishedAt!)) / 3600_000;
-    const desk = item.outlet.desk === "sport" || item.outlet.desk === "business" ? 6 : 0;
+    // Every subject desk (sport, business, politics, entertainment, tech, health,
+    // science) gets a lift so the site carries all kinds of news, not only politics.
+    const desk = ["sport", "business", "politics", "entertainment", "tech", "health", "science"].includes(item.outlet.desk) ? 6 : 0;
     const score = locality.score + Math.max(0, 20 - ageHours) + Math.min(3, corroborating.length) * 6 + desk + (item.outlet.country === "NG" ? 4 : 0);
     candidates.push({ item, locality, score, corroborating });
   }
@@ -197,6 +199,8 @@ function fallbackCategory(categories: Category[], candidate: Candidate): Categor
   const by = (slug: string) => categories.find((category) => category.slug === slug);
   if (candidate.item.outlet.desk === "sport") return by("sports");
   if (candidate.item.outlet.desk === "business") return by("business");
+  if (candidate.item.outlet.desk === "politics") return by("politics");
+  if (candidate.item.outlet.desk === "entertainment") return by("entertainment");
   if (candidate.locality.label === "Epe" || candidate.locality.label === "Lagos") return by("lagos-news");
   if (candidate.locality.label === "World") return by("international-news");
   return by("other");
@@ -204,6 +208,7 @@ function fallbackCategory(categories: Category[], candidate: Candidate): Categor
 
 export async function runNewsJob(db: SupabaseClient, ctx: { settings: AiSettings; log: RunLog; budget: Budget; deadline: number; publish: boolean }): Promise<string> {
   const { settings, log, budget, deadline, publish } = ctx;
+  await log.step(`Reading the latest reports from ${NEWS_OUTLETS.length} trusted outlet feeds…`);
   const [items, recentResult, categoriesResult] = await Promise.all([
     fetchFeeds(),
     db.from("ai_news_seen").select("title").gte("first_seen_at", new Date(Date.now() - 72 * 3600_000).toISOString()).limit(500),
@@ -222,6 +227,7 @@ export async function runNewsJob(db: SupabaseClient, ctx: { settings: AiSettings
   }
   const ranked = rankCandidates(items.filter((item) => !seen.has(urlHash(item.link))), (recentResult.data ?? []).map((row) => String(row.title)));
   const outletsRead = new Set(items.map((item) => item.outlet.name)).size;
+  await log.step(`Read ${items.length} reports from ${outletsRead} outlets; ${ranked.length} new stor${ranked.length === 1 ? "y" : "ies"} worth considering.${ranked.length ? ` Top pick: “${ranked[0].item.title}” (${ranked[0].item.outlet.name}).` : ""}`);
   if (!ranked.length) {
     await log.record({ job: "news", action: "news.select", outcome: "skipped", title: "No new story worth publishing", reason: `Read ${items.length} reports from ${outletsRead} outlets; all were already covered, too old, opinion or sponsored.` });
     return `Nothing new from ${outletsRead} outlets.`;
@@ -233,6 +239,7 @@ export async function runNewsJob(db: SupabaseClient, ctx: { settings: AiSettings
     if (published >= settings.articles_per_run || Date.now() > deadline - 45_000 || budget.remaining <= 0) break;
     const { item } = candidate;
     const sources = [item, ...candidate.corroborating.slice(0, 1)];
+    await log.step(`Opening ${sources.map((source) => source.outlet.name).join(" and ")}'s report: “${item.title}”`);
     const pages = await Promise.all(sources.map((source) => fetchPublicText(source.link, { timeoutMs: 9000, maxBytes: 3_000_000, allowHosts: trustedNewsHost })));
     const extracted = pages.map((page) => (page && page.status < 400 ? extractArticle(page.text) : null));
     const reports = sources.map((source, index) => ({
@@ -252,6 +259,7 @@ export async function runNewsJob(db: SupabaseClient, ctx: { settings: AiSettings
       continue;
     }
 
+    await log.step(`Writing the story from ${reports.length} report${reports.length > 1 ? "s" : ""} (${reports.reduce((sum, report) => sum + report.text.length, 0).toLocaleString("en-NG")} characters of source text)…`);
     const result = await chatJson(db, {
       job: "news",
       runId: log.runId,
@@ -278,6 +286,7 @@ export async function runNewsJob(db: SupabaseClient, ctx: { settings: AiSettings
     }
     const problems = unsupportedClaims(draft, reports.map((report) => `${report.title}\n${report.text}`).join("\n"));
     const publishNow = publish && problems.length === 0;
+    await log.step(`Fact check: ${problems.length ? `${problems.length} figure${problems.length > 1 ? "s or quotes" : " or quote"} not found in the sources — saving as a draft for an editor` : "every figure and quote matches the sources"}${publishNow ? " — publishing" : ""}.`);
 
     let category = categories.find((entry) => entry.slug === draft.categorySlug);
     let categoryNote = "";
