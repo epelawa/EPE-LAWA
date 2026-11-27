@@ -81,9 +81,9 @@ test("editorial text scales with user settings and headlines wrap cleanly", () =
   assert.doesNotMatch(styles, /font-size:[^;}]*clamp\([^)]*vw[^)]*px/);
 });
 
-test("footer categories remain real and newsletter signup fails closed", () => {
-  assert.match(footer, /from\("categories"\)/);
-  assert.match(footer, /\.eq\("is_active", true\)/);
+test("footer links Epe Division places (no categories, turn 26) and newsletter signup fails closed", () => {
+  assert.doesNotMatch(footer, /from\("categories"\)/);
+  assert.match(footer, /EPE_LINKS/);
   assert.match(newsletter, /type="email"/);
   assert.match(newsletter, /disabled/);
   assert.match(newsletter, /temporarily unavailable/);

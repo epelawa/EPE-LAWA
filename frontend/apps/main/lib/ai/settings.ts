@@ -1,12 +1,15 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { isAllowedModelId } from "./providers";
 import { cleanNewsTimes } from "./news-schedule";
 import { normaliseJobSchedules, normaliseLastDue, type JobSchedule, type ScheduledJob } from "./job-schedule";
 
 export const AI_CAPABILITIES = [
-  { key: "news", label: "Write and publish news on the schedule below", hint: "Epe first, then Lagos, Nigeria and the world, from trusted outlets only." },
-  { key: "categories", label: "Create new news categories", hint: "Only when no existing category fits a story." },
-  { key: "push", label: "Send push notifications", hint: "Every story the AI publishes notifies news subscribers, with its cover photo, within the daily limit below." },
-  { key: "breaking", label: "Flag breaking news", hint: "Urgent, developing stories join the breaking-news ticker for the hours set below." },
+  { key: "news", label: "Write Epe Division news drafts on the schedule below", hint: "Epe Division only (Epe, Ibeju-Lekki and their LCDAs), in original words. The AI only saves drafts; an editor checks and publishes every story." },
+  // Retired (owner, turn 26): no categories, and the AI never publishes, so it
+  // never pushes or flags breaking news. Kept hidden so old settings still load.
+  { key: "categories", label: "Create new news categories", hint: "Retired.", hidden: true },
+  { key: "push", label: "Send push notifications", hint: "Retired: the AI never publishes.", hidden: true },
+  { key: "breaking", label: "Flag breaking news", hint: "Retired: the AI never publishes.", hidden: true },
   { key: "business_review", label: "Verify submitted businesses", hint: "Checks the website and OpenStreetMap; publishes only with evidence." },
   { key: "enquiry_reply", label: "Reply to contact enquiries by email", hint: "Every email says it was written by the AI assistant and greets the person by name. Corrections always go to a human." },
   { key: "support_reply", label: "Answer support tickets", hint: "Sorts each new ticket (topic and priority), answers what it safely can by email, and hands the rest to staff." },
@@ -25,6 +28,8 @@ export const MODEL_JOBS = [
   { key: "businesses", label: "Business verification", hint: "Weighs evidence about submitted businesses." },
   { key: "moderation", label: "Comment moderation", hint: "Quick spam/abuse checks; fast models work well." },
   { key: "admin_logs", label: "Admin log explanations", hint: "Plain-English hourly summaries." },
+  { key: "chat", label: "Admin AI chat", hint: "Understands your instructions about articles and support tickets — pick models that follow instructions well." },
+  { key: "directions", label: "Map assistant (Epe directions)", hint: "Answers visitors' questions on the map page; fast models work well." },
 ] as const;
 export type ModelJob = (typeof MODEL_JOBS)[number]["key"];
 export const MAX_MODELS_PER_JOB = 5;
@@ -33,7 +38,7 @@ export function normaliseJobModels(raw: unknown): Partial<Record<ModelJob, strin
   const source = raw && typeof raw === "object" && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {};
   const result: Partial<Record<ModelJob, string[]>> = {};
   for (const { key } of MODEL_JOBS) {
-    const list = Array.isArray(source[key]) ? (source[key] as unknown[]).filter((id): id is string => typeof id === "string" && id.endsWith(":free")) : [];
+    const list = Array.isArray(source[key]) ? (source[key] as unknown[]).filter((id): id is string => typeof id === "string" && isAllowedModelId(id)) : [];
     if (list.length) result[key] = [...new Set(list)].slice(0, MAX_MODELS_PER_JOB);
   }
   return result;

@@ -3,51 +3,54 @@
  * named editors and a corrections policy; nothing else (blogs, aggregators,
  * social media, press-release wires) is ever fetched or cited. Hosts are
  * matched exactly (or as a subdomain of the listed domain) on every redirect.
+ *
+ * Owner's rule (turn 26): EPE LAWA covers Epe Division only — Epe and
+ * Ibeju-Lekki local governments and their LCDAs (Epe, Eredo, Ikosi-Ejinrin,
+ * Ibeju-Lekki, Lekki). No Lagos-wide, national or international news. Each
+ * newsroom is read through its "Epe" and "Ibeju-Lekki" search feeds plus its
+ * main feed, and only stories that are actually about a place in Epe Division
+ * are ever considered.
  */
 
-export type Desk = "local" | "nigeria" | "politics" | "business" | "sport" | "entertainment" | "tech" | "health" | "science" | "world";
+export type Desk = "epe" | "local" | "nigeria";
 
 /** Plain-English names for the admin page. */
-export const DESK_LABELS: Record<Desk, string> = { local: "Lagos", nigeria: "Nigeria — general", politics: "Politics", business: "Business", sport: "Sport", entertainment: "Entertainment", tech: "Technology", health: "Health", science: "Science & environment", world: "World" };
-export type Outlet = { id: string; name: string; feed: string; domains: string[]; desk: Desk; country: "NG" | "INT" };
+export const DESK_LABELS: Record<Desk, string> = { epe: "Epe Division searches", local: "Lagos State Government", nigeria: "Newsroom main feeds (Epe stories only)" };
+export type Outlet = { id: string; name: string; feed: string; domains: string[]; desk: Desk; country: "NG" };
+
+type Newsroom = { id: string; name: string; base: string; domains: string[]; feed: string; search: boolean };
+
+const NEWSROOMS: Newsroom[] = [
+  { id: "punch", name: "Punch", base: "https://punchng.com/", domains: ["punchng.com"], feed: "https://punchng.com/feed/", search: true },
+  { id: "vanguard", name: "Vanguard", base: "https://www.vanguardngr.com/", domains: ["vanguardngr.com"], feed: "https://www.vanguardngr.com/feed/", search: true },
+  { id: "premiumtimes", name: "Premium Times", base: "https://www.premiumtimesng.com/", domains: ["premiumtimesng.com"], feed: "https://www.premiumtimesng.com/feed", search: true },
+  { id: "channels", name: "Channels Television", base: "https://www.channelstv.com/", domains: ["channelstv.com"], feed: "https://www.channelstv.com/feed/", search: true },
+  { id: "guardianng", name: "The Guardian Nigeria", base: "https://guardian.ng/", domains: ["guardian.ng"], feed: "https://guardian.ng/feed/", search: true },
+  { id: "thecable", name: "TheCable", base: "https://www.thecable.ng/", domains: ["thecable.ng"], feed: "https://www.thecable.ng/feed", search: true },
+  { id: "dailytrust", name: "Daily Trust", base: "https://dailytrust.com/", domains: ["dailytrust.com"], feed: "https://dailytrust.com/feed/", search: true },
+  { id: "nta", name: "NTA News", base: "https://www.nta.ng/", domains: ["nta.ng"], feed: "https://www.nta.ng/feed/", search: true },
+  { id: "businessday", name: "BusinessDay", base: "https://businessday.ng/", domains: ["businessday.ng"], feed: "https://businessday.ng/feed/", search: true },
+  { id: "nairametrics", name: "Nairametrics", base: "https://nairametrics.com/", domains: ["nairametrics.com"], feed: "https://nairametrics.com/feed/", search: true },
+  { id: "tribune", name: "Nigerian Tribune", base: "https://tribuneonlineng.com/", domains: ["tribuneonlineng.com"], feed: "https://tribuneonlineng.com/feed/", search: true },
+  { id: "leadership", name: "Leadership", base: "https://leadership.ng/", domains: ["leadership.ng"], feed: "https://leadership.ng/feed/", search: true },
+];
+
+/** WordPress search feeds (?s=…&feed=rss2) — the newsroom's own stories that mention the place. */
+export const EPE_SEARCH_TERMS = ["Epe", "Ibeju-Lekki"] as const;
+
+function searchFeed(base: string, term: string): string {
+  const url = new URL(base);
+  url.searchParams.set("s", term);
+  url.searchParams.set("feed", "rss2");
+  return url.toString();
+}
 
 export const NEWS_OUTLETS: readonly Outlet[] = [
-  { id: "punch", name: "Punch", feed: "https://punchng.com/feed/", domains: ["punchng.com"], desk: "nigeria", country: "NG" },
-  { id: "vanguard", name: "Vanguard", feed: "https://www.vanguardngr.com/feed/", domains: ["vanguardngr.com"], desk: "nigeria", country: "NG" },
-  { id: "premiumtimes", name: "Premium Times", feed: "https://www.premiumtimesng.com/feed", domains: ["premiumtimesng.com"], desk: "nigeria", country: "NG" },
-  { id: "channels", name: "Channels Television", feed: "https://www.channelstv.com/feed/", domains: ["channelstv.com"], desk: "nigeria", country: "NG" },
-  { id: "guardianng", name: "The Guardian Nigeria", feed: "https://guardian.ng/feed/", domains: ["guardian.ng"], desk: "nigeria", country: "NG" },
-  { id: "thecable", name: "TheCable", feed: "https://www.thecable.ng/feed", domains: ["thecable.ng"], desk: "nigeria", country: "NG" },
-  { id: "dailytrust", name: "Daily Trust", feed: "https://dailytrust.com/feed/", domains: ["dailytrust.com"], desk: "nigeria", country: "NG" },
-  { id: "nta", name: "NTA News", feed: "https://www.nta.ng/feed/", domains: ["nta.ng"], desk: "nigeria", country: "NG" },
-  { id: "nta-news", name: "NTA News", feed: "https://www.nta.ng/category/news/feed/", domains: ["nta.ng"], desk: "nigeria", country: "NG" },
-  { id: "businessday", name: "BusinessDay", feed: "https://businessday.ng/feed/", domains: ["businessday.ng"], desk: "business", country: "NG" },
-  { id: "nairametrics", name: "Nairametrics", feed: "https://nairametrics.com/feed/", domains: ["nairametrics.com"], desk: "business", country: "NG" },
-  { id: "guardianng-politics", name: "The Guardian Nigeria", feed: "https://guardian.ng/category/politics/feed/", domains: ["guardian.ng"], desk: "politics", country: "NG" },
-  { id: "premiumtimes-politics", name: "Premium Times", feed: "https://www.premiumtimesng.com/category/news/top-news/feed", domains: ["premiumtimesng.com"], desk: "politics", country: "NG" },
-  { id: "vanguard-sport", name: "Vanguard", feed: "https://www.vanguardngr.com/category/sports/feed/", domains: ["vanguardngr.com"], desk: "sport", country: "NG" },
-  { id: "channels-sport", name: "Channels Television", feed: "https://www.channelstv.com/category/sports/feed/", domains: ["channelstv.com"], desk: "sport", country: "NG" },
-  { id: "vanguard-entertainment", name: "Vanguard", feed: "https://www.vanguardngr.com/category/entertainment/feed/", domains: ["vanguardngr.com"], desk: "entertainment", country: "NG" },
-  { id: "premiumtimes-health", name: "Premium Times", feed: "https://www.premiumtimesng.com/category/health/feed", domains: ["premiumtimesng.com"], desk: "health", country: "NG" },
-  { id: "techcabal", name: "TechCabal", feed: "https://techcabal.com/feed/", domains: ["techcabal.com"], desk: "tech", country: "NG" },
+  ...NEWSROOMS.flatMap((room) => (room.search ? EPE_SEARCH_TERMS.map((term) => ({ id: `${room.id}-${term.toLowerCase()}`, name: room.name, feed: searchFeed(room.base, term), domains: room.domains, desk: "epe" as const, country: "NG" as const })) : [])),
+  ...NEWSROOMS.map((room) => ({ id: room.id, name: room.name, feed: room.feed, domains: room.domains, desk: "nigeria" as const, country: "NG" as const })),
   { id: "lagosgov", name: "Lagos State Government", feed: "https://lagosstate.gov.ng/feed/", domains: ["lagosstate.gov.ng"], desk: "local", country: "NG" },
-  { id: "bbc-africa", name: "BBC News", feed: "https://feeds.bbci.co.uk/news/world/africa/rss.xml", domains: ["bbc.co.uk", "bbc.com", "bbci.co.uk"], desk: "world", country: "INT" },
-  { id: "bbc-world", name: "BBC News", feed: "https://feeds.bbci.co.uk/news/world/rss.xml", domains: ["bbc.co.uk", "bbc.com", "bbci.co.uk"], desk: "world", country: "INT" },
-  { id: "bbc-business", name: "BBC News", feed: "https://feeds.bbci.co.uk/news/business/rss.xml", domains: ["bbc.co.uk", "bbc.com", "bbci.co.uk"], desk: "business", country: "INT" },
-  { id: "bbc-sport", name: "BBC Sport", feed: "https://feeds.bbci.co.uk/sport/football/rss.xml", domains: ["bbc.co.uk", "bbc.com", "bbci.co.uk"], desk: "sport", country: "INT" },
-  { id: "bbc-tech", name: "BBC News", feed: "https://feeds.bbci.co.uk/news/technology/rss.xml", domains: ["bbc.co.uk", "bbc.com", "bbci.co.uk"], desk: "tech", country: "INT" },
-  { id: "bbc-health", name: "BBC News", feed: "https://feeds.bbci.co.uk/news/health/rss.xml", domains: ["bbc.co.uk", "bbc.com", "bbci.co.uk"], desk: "health", country: "INT" },
-  { id: "bbc-science", name: "BBC News", feed: "https://feeds.bbci.co.uk/news/science_and_environment/rss.xml", domains: ["bbc.co.uk", "bbc.com", "bbci.co.uk"], desk: "science", country: "INT" },
-  { id: "bbc-entertainment", name: "BBC News", feed: "https://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml", domains: ["bbc.co.uk", "bbc.com", "bbci.co.uk"], desk: "entertainment", country: "INT" },
-  { id: "bbc-sport-all", name: "BBC Sport", feed: "https://feeds.bbci.co.uk/sport/rss.xml", domains: ["bbc.co.uk", "bbc.com", "bbci.co.uk"], desk: "sport", country: "INT" },
-  { id: "guardian-sport", name: "The Guardian", feed: "https://www.theguardian.com/sport/rss", domains: ["theguardian.com", "guim.co.uk"], desk: "sport", country: "INT" },
-  { id: "guardian-culture", name: "The Guardian", feed: "https://www.theguardian.com/culture/rss", domains: ["theguardian.com", "guim.co.uk"], desk: "entertainment", country: "INT" },
-  { id: "guardian-tech", name: "The Guardian", feed: "https://www.theguardian.com/technology/rss", domains: ["theguardian.com", "guim.co.uk"], desk: "tech", country: "INT" },
-  { id: "aljazeera", name: "Al Jazeera", feed: "https://www.aljazeera.com/xml/rss/all.xml", domains: ["aljazeera.com"], desk: "world", country: "INT" },
-  { id: "guardian-world", name: "The Guardian", feed: "https://www.theguardian.com/world/rss", domains: ["theguardian.com", "guim.co.uk"], desk: "world", country: "INT" },
-  { id: "france24-africa", name: "France 24", feed: "https://www.france24.com/en/africa/rss", domains: ["france24.com"], desk: "world", country: "INT" },
-  { id: "npr-world", name: "NPR", feed: "https://feeds.npr.org/1004/rss.xml", domains: ["npr.org"], desk: "world", country: "INT" },
-] as const;
+  { id: "lagosgov-epe", name: "Lagos State Government", feed: "https://lagosstate.gov.ng/?s=Epe&feed=rss2", domains: ["lagosstate.gov.ng"], desk: "local", country: "NG" },
+];
 
 export function outletForHost(host: string): Outlet | null {
   const value = host.toLowerCase().replace(/\.$/, "");
@@ -58,13 +61,29 @@ export function trustedNewsHost(host: string): boolean {
   return outletForHost(host) !== null;
 }
 
-/** Epe first, then Lagos, then Nigeria, then the world (owner's priority order). */
-export function localityScore(text: string): { score: number; label: "Epe" | "Lagos" | "Nigeria" | "World" } {
-  const value = ` ${text.toLowerCase()} `;
-  if (/\bepe\b|\bijebu[- ]?epe\b|\bnoforija\b|\bejinrin\b|\bposuka\b|\bagbowa\b|\bikosi[- ]ejinrin\b|\beredo\b|\bitoikin\b|\blekki free trade zone\b|\bdangote refinery\b/.test(value)) return { score: 100, label: "Epe" };
-  if (/\blagos\b|\bikorodu\b|\bibeju[- ]?lekki\b|\blekki\b|\bikeja\b|\bsanwo-?olu\b|\blasg\b|\bbadagry\b|\bsurulere\b|\bvictoria island\b/.test(value)) return { score: 60, label: "Lagos" };
-  if (/\bnigeria\b|\bnigerian\b|\babuja\b|\btinubu\b|\bnaira\b|\bcbn\b|\binec\b|\bsuper eagles\b|\bnpfl\b|\becowas\b/.test(value)) return { score: 35, label: "Nigeria" };
-  return { score: 10, label: "World" };
+/**
+ * Places in Epe Division. Plain "Lekki" (Lekki Phase 1, in Eti-Osa) and plain
+ * "Ikosi" (Ketu-Ikosi, in Kosofe) are deliberately not on the list.
+ */
+export const EPE_DIVISION_PLACES = [
+  "Epe", "Ijebu-Epe", "Epe Division", "Ibeju-Lekki", "Ibeju Lekki", "Ibeju", "Eredo", "Ikosi-Ejinrin", "Ejinrin", "Noforija", "Poka", "Agbowa", "Itoikin",
+  "Odomola", "Odoragunsin", "Orimedu", "Lakowe", "Awoyaya", "Bogije", "Abijo", "Eleko", "Akodo", "Magbon", "Siriwon", "Igbonla", "Lekki Free Trade Zone",
+  "Lekki Free Zone", "Lagos Free Zone", "Lekki Deep Sea Port", "Lekki Deep Seaport", "Lekki Port", "Dangote Refinery", "Dangote Petroleum Refinery", "Alaro City", "Lekki-Epe", "Epe-Ijebu",
+] as const;
+
+const PLACE_PATTERN = new RegExp(String.raw`(^|[^\p{L}])(${[...EPE_DIVISION_PLACES].sort((a, b) => b.length - a.length).map((place) => place.replace(/[-\s]/g, "[-\\s]?")).join("|")})(?=[^\p{L}]|$)`, "iu");
+
+/** The Epe Division place a text is about, or null when it is not about Epe Division. */
+export function epeDivisionPlace(text: string): string | null {
+  // "EPE LAWA" is this site's own name, not the town.
+  const match = text.replace(/epe\s*lawa/gi, " ").match(PLACE_PATTERN);
+  return match ? match[2] : null;
+}
+
+/** Epe Division only (owner's rule): anything else scores 0 and is never written. */
+export function localityScore(text: string): { score: number; label: "Epe" | "Outside"; place: string | null } {
+  const place = epeDivisionPlace(text);
+  return place ? { score: 100, label: "Epe", place } : { score: 0, label: "Outside", place: null };
 }
 
 export type FeedItem = { outlet: Outlet; title: string; link: string; summary: string; publishedAt: string | null; image: string | null; content?: string };

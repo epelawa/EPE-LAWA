@@ -43,12 +43,6 @@ function safePage(value: string | undefined): number {
   return Number.isSafeInteger(page) && page > 0 ? Math.min(page, MAX_PAGE) : 1;
 }
 
-function categoryHref(query: string, category: string): string {
-  const params = new URLSearchParams({ tab: "discover" });
-  if (query) params.set("q", query);
-  if (category) params.set("category", category);
-  return `/dashboard?${params.toString()}`;
-}
 
 function pageHref(page: number, query: string, category: string): string {
   const params = new URLSearchParams({ tab: "discover" });
@@ -106,8 +100,7 @@ async function loadDiscover(client: SupabaseClient, query: string, category: str
 
     const [articleResult, categoryResult] = await Promise.all([
       query ? client.rpc("search_published_news", { p_query: query, p_category: category, p_offset: start }).select(STORY_COLUMNS).limit(PAGE_SIZE + 1) : articleQuery.range(start, start + PAGE_SIZE),
-      client.from("categories").select("slug,label").eq("is_active", true)
-        .order("sort_order", { ascending: true }).order("label", { ascending: true }).limit(100),
+      Promise.resolve({ data: [] as NewsCategory[], error: null }),
     ]);
     if (articleResult.error) {
       console.error("member dashboard discover stories read failed", { code: articleResult.error.code });
@@ -180,7 +173,7 @@ function StoryCard({ story, stats }: { story: PublishedStory; stats?: StoryEngag
     <Link href={newsArticlePath(story.slug)} className={styles.storyCardLink} aria-label={`Read: ${story.title}`}>
       <span className={styles.storyImageWrap}>{storyImage(story)}<StoryStats stats={stats} /></span>
       <span className={styles.storyCardCopy}>
-        <span className={styles.storyCategory}>{story.category_label?.trim() || "News"}</span>
+        <span className={styles.storyCategory}>Epe Division</span>
         <span className={styles.storyTitle}>{story.title}</span>
         {story.summary ? <span className={styles.storySummary}>{story.summary}</span> : null}
         <StoryMeta story={story} />
@@ -193,7 +186,7 @@ function BreakingStory({ story, stats }: { story: PublishedStory; stats?: StoryE
   return <Link href={newsArticlePath(story.slug)} className={styles.breakingStory} aria-label={`Read breaking story: ${story.title}`}>
     <span className={styles.breakingImage}>{storyImage(story)}<StoryStats stats={stats} /></span>
     <span className={styles.breakingCopy}>
-      <span className={styles.storyCategory}>{story.category_label?.trim() || "News"}<StatusBadge tone="warning">Breaking</StatusBadge></span>
+      <span className={styles.storyCategory}><StatusBadge tone="warning">Breaking</StatusBadge></span>
       <strong>{story.title}</strong>
       {story.summary ? <span className={styles.storySummary}>{story.summary}</span> : null}
       <StoryMeta story={story} />
@@ -245,10 +238,11 @@ export async function DashboardDiscoverNews({ client, query, category, page }: {
   category: string;
   page: number;
 }) {
-  const result = await loadDiscover(client, query, category, page);
+  // One news section (owner, turn 26): Epe Division only, no category filter.
+  void category;
+  const result = await loadDiscover(client, query, "", page);
   const engagement = await loadEngagement(client, result.items);
-  const retryHref = pageHref(page, query, category);
-  const categories = result.categories.items;
+  const retryHref = pageHref(page, query, "");
   return <div className={styles.newsFeed}>
     <section className={styles.feedSection} aria-labelledby="discover-stories-heading">
       <HomeSectionHeading id="discover-stories-heading" title="Discover" helper="Search and browse only stories published by the EPE LAWA newsroom." level="h1" />
@@ -258,29 +252,21 @@ export async function DashboardDiscoverNews({ client, query, category, page }: {
           <span>Search stories, topics and authors</span>
           <input type="search" name="q" maxLength={100} defaultValue={query} placeholder="Search stories, topics and authors" />
         </label>
-        <label className={styles.searchField}>
-          <span>Category</span>
-          <select name="category" defaultValue={category}>
-            <option value="">All categories</option>
-            {categories.map((item) => <option key={item.slug} value={item.slug}>{item.label}</option>)}
-          </select>
-        </label>
         <button className="btn-primary" type="submit">Search stories</button>
       </form>
-      {result.categories.state === "error" ? <p className={styles.categoryWarning} role="status">Story filters are temporarily unavailable; the published story list may still be read.</p> : categories.length ? <nav className={styles.categoryNav} aria-label="Published story categories"><Link className={styles.categoryChip} href={categoryHref(query, "")} aria-current={!category ? "page" : undefined}>All</Link>{categories.map((item) => <Link key={item.slug} className={styles.categoryChip} href={categoryHref(query, item.slug)} aria-current={category === item.slug ? "page" : undefined}>{item.label}</Link>)}</nav> : null}
       {result.state === "error" ? <ErrorState title="Discover stories could not be loaded" href={retryHref} />
         : result.items.length ? <>
           <p className={styles.resultSummary} aria-live="polite">Showing {result.items.length} published {result.items.length === 1 ? "story" : "stories"}{query ? ` matching “${query}”` : ""} on this page.</p>
           <ul className={styles.storyGrid}>{result.items.map((story) => <StoryCard key={story.slug} story={story} stats={engagement.get(story.id)} />)}</ul>
           {page > 1 || result.hasOlder ? <nav className={styles.storyPagination} aria-label="Story pages">
-            {page > 1 ? <Link className="btn-secondary" href={pageHref(page - 1, query, category)}>Newer stories</Link> : <span />}
+            {page > 1 ? <Link className="btn-secondary" href={pageHref(page - 1, query, "")}>Newer stories</Link> : <span />}
             <span aria-live="polite">Page {page}</span>
-            {result.hasOlder ? <Link className="btn-secondary" href={pageHref(page + 1, query, category)}>Older stories</Link> : <span />}
+            {result.hasOlder ? <Link className="btn-secondary" href={pageHref(page + 1, query, "")}>Older stories</Link> : <span />}
           </nav> : null}
         </> : <div className={styles.feedEmpty}>
-          <h3>{query || category ? "No matching published stories" : "No stories published yet"}</h3>
-          <p>{query || category ? "Try another search or category. Unpublished newsroom content is never included here." : "When a story is published, it will appear here with its category and byline."}</p>
-          {query || category ? <Link className="btn-secondary" href="/dashboard?tab=discover">Clear search and filters</Link> : null}
+          <h3>{query ? "No matching published stories" : "No stories published yet"}</h3>
+          <p>{query ? "Try another search. Unpublished newsroom content is never included here." : "When a story from Epe Division is published, it will appear here with its byline."}</p>
+          {query ? <Link className="btn-secondary" href="/dashboard?tab=discover">Clear search and filters</Link> : null}
         </div>}
     </section>
   </div>;

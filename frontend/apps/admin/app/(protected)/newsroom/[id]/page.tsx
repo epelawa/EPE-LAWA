@@ -16,6 +16,7 @@ import { absoluteUrl } from "../../../../../main/lib/site";
 import NewsShareTools from "../../../../components/news-share-tools";
 import RevisionDiffView, { type RevisionVersion } from "./revision-diff-view";
 import { publicNewsArticleUrl } from "../../../../../main/lib/news-urls";
+import { shortArticleId } from "../../../../../main/lib/article-ref";
 
 export const metadata: Metadata = { title: "Article workflow", robots: { index: false, follow: false } };
 
@@ -166,7 +167,7 @@ export default async function EditArticlePage({
 
   return (
     <PageFrame className="ui-stack">
-      <PageIntro eyebrow={`Newsroom · Revision ${article.revision}`} title={version.title} description={<>Current version: <StatusBadge tone={displayTone}>{displayState}</StatusBadge>. {currentVersionIsPublic ? "This version is public." : olderVersionRemainsPublic ? "The previously published version remains live; this current version is private." : "No version of this article is public yet."}</>} actions={<Link href={adminHref("/newsroom")} className={buttonClassName("secondary")}>Back to newsroom</Link>} meta={<><span>Revision {article.revision}</span><span>Slug: {article.slug}</span></>} />
+      <PageIntro eyebrow={`Newsroom · Revision ${article.revision}`} title={version.title} description={<>Current version: <StatusBadge tone={displayTone}>{displayState}</StatusBadge>. {currentVersionIsPublic ? "This version is public." : olderVersionRemainsPublic ? "The previously published version remains live; this current version is private." : "No version of this article is public yet."}</>} actions={<Link href={adminHref("/newsroom")} className={buttonClassName("secondary")}>Back to newsroom</Link>} meta={<><span title={article.id}>ID {shortArticleId(article.id)}</span><span>Revision {article.revision}</span><span>Slug: {article.slug}</span></>} />
       {Object.keys(query).some((key) => ["created", "saved", "submitted", "reviewed", "published", "unpublished", "revised", "breaking", "error"].includes(key)) ? <NewsroomToast key={JSON.stringify(query)}><StatusMessage query={query} /></NewsroomToast> : null}
       {article.published_version_id ? <Notice tone="neutral"><a href={publicNewsArticleUrl(article.slug)} className="ui-text-link">Open public article</a>{article.published_at ? <span className="ui-meta">Published {new Date(article.published_at).toLocaleDateString("en-NG")}</span> : null}</Notice> : null}
 
@@ -182,9 +183,9 @@ export default async function EditArticlePage({
               <div className="ui-field"><label className="label" htmlFor="summary">Summary</label><textarea id="summary" name="summary" className="input" rows={3} maxLength={1000} defaultValue={version.summary ?? ""} /></div>
               <div className="ui-field"><label className="label" htmlFor="body">Article body</label><textarea id="body" name="body" className="input" rows={14} maxLength={100000} required defaultValue={bodyForEditor(version.body)} /><p className="ui-meta">Use plain text with a blank line between paragraphs, or the structured document already shown.</p></div>
               </> },
-              { title: "Category and author", content: <>
+              { title: "Author", content: <>
               <div className="ui-form-grid">
-                <div className="ui-field"><label className="label" htmlFor="categoryId">Category</label><select id="categoryId" name="categoryId" className="input" required defaultValue={version.category_id}>{categories.map((category) => <option key={category.id} value={category.id}>{category.label}</option>)}</select></div>
+                {/* One section only (owner, turn 26): every story files under Epe Division. */}<input type="hidden" name="categoryId" value={categories[0]?.id ?? version.category_id} />
                 <div className="ui-field"><AuthorPicker authors={authors} initialId={version.author_id} /></div>
               </div>
               </> },

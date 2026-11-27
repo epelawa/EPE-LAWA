@@ -59,26 +59,37 @@ export default function CookieBanner() {
     };
   }, [show]);
 
+  // Owner brief (turn 26): after "Got it" the notice slides down out of view
+  // before it is removed. Reduced-motion visitors see it disappear at once.
+  const [leaving, setLeaving] = useState(false);
+  const finish = () => {
+    document.documentElement.style.setProperty("--storage-notice-height", "0px");
+    setShow(false);
+  };
   const accept = () => {
     try {
       localStorage.setItem("epelawa_cookie_consent", "true");
     } catch {
       // Dismiss for this visit even if the preference cannot be stored.
     }
-    document.documentElement.style.setProperty("--storage-notice-height", "0px");
-    setShow(false);
+    if (leaving) return;
+    const reduceMotion = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion) { finish(); return; }
+    setLeaving(true);
+    // Safety net in case animationend never fires (hidden tab, CSS not loaded).
+    window.setTimeout(finish, 600);
   };
 
   if (show !== true) return null;
 
   return (
-    <div ref={bannerRef} className="storage-notice" role="region" aria-label="Storage notice">
+    <div ref={bannerRef} className={leaving ? "storage-notice storage-notice--leaving" : "storage-notice"} role="region" aria-label="Storage notice" onAnimationEnd={(event) => { if (leaving && event.target === event.currentTarget) finish(); }}>
       <p className="storage-notice__title">Your browser, your preferences.</p>
       <div className="storage-notice__copy">
         Sign-in uses essential cookies. See our privacy notice for details about information use.
       </div>
       <div className="ui-actions">
-        <button type="button" className="btn-primary" onClick={accept}>Got it</button>
+        <button type="button" className="btn-primary" onClick={accept} disabled={leaving}>Got it</button>
         <Link href="/privacy" className="btn-ghost">Privacy notice</Link>
       </div>
     </div>

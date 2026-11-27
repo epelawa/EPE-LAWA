@@ -277,7 +277,8 @@ test('main news route reports unavailable data honestly and retains the custom 4
     assert.equal(response.status, 200);
     const html = await response.text();
     assert.match(html, /The newsroom did not load|No stories published yet/i);
-    assert.match(html, /Source-backed reporting from Epe and its connected communities\./);
+    // Turn 26: Epe Division only, and no "sources" wording on the news pages.
+    assert.match(html, /News from Epe Division — Epe, Ibeju-Lekki and their LCDAs\./);
     assert.match(html, /<meta name="description"/);
     assert.match(html, /<link rel="icon"/);
     assert.equal(response.headers.get('x-content-type-options'), 'nosniff');

@@ -138,7 +138,7 @@ async function HomeNews({ storiesPromise, renderedAt, lang }: { storiesPromise: 
                       {null}
                     </figure>
                     <div className="home-story-copy">
-                      <span className="home-story-meta"><span>{story.category ?? "News"}</span>{story.breakingUntil ? <BreakingBadge until={story.breakingUntil} initialTime={renderedAt} /> : null}{story.publishedAt ? <><span aria-hidden="true">·</span><time dateTime={story.publishedAt}>{formatPublishedDate(story.publishedAt)}</time></> : null}</span>
+                      <span className="home-story-meta"><span>Epe Division</span>{story.breakingUntil ? <BreakingBadge until={story.breakingUntil} initialTime={renderedAt} /> : null}{story.publishedAt ? <><span aria-hidden="true">·</span><time dateTime={story.publishedAt}>{formatPublishedDate(story.publishedAt)}</time></> : null}</span>
                       <h3><Link href={storyHref}>{story.title}</Link></h3>
                       {story.summary ? <p className="home-story-summary">{story.summary}</p> : null}
                       {story.engagement ? <StoryStats className="home-story-engagement" stats={story.engagement} labels={{ read: t(lang, "home.engagement.read"), views: t(lang, "home.engagement.views"), comments: t(lang, "home.engagement.comments") }} /> : null}

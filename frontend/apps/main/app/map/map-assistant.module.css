@@ -1,0 +1,39 @@
+/* Floating Epe directions assistant (turn 26): an AI chat bubble in the bottom-right corner. */
+.root { position: fixed; right: max(16px, env(safe-area-inset-right)); bottom: calc(var(--storage-notice-height, 0px) + max(16px, env(safe-area-inset-bottom))); z-index: 60; display: grid; justify-items: end; gap: 12px; pointer-events: none; }
+.root > * { pointer-events: auto; }
+.toggle { display: inline-flex; align-items: center; gap: 8px; min-height: 52px; padding: 0 18px 0 8px; border: 0; border-radius: 999px; background: #16213e; color: #fff; font: inherit; font-weight: 700; font-size: .92rem; cursor: pointer; box-shadow: 0 16px 34px -16px rgb(10 16 35 / .7); }
+.toggle:hover { background: #1e2c52; }
+.toggle:focus-visible { outline: 3px solid #477fe0; outline-offset: 3px; }
+.toggleEmoji { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 999px; background: #ff4757; font-size: 20px; }
+.panel { display: grid; grid-template-rows: auto 1fr auto auto auto auto; width: min(380px, calc(100vw - 32px)); height: min(560px, calc(100dvh - var(--storage-notice-height, 0px) - 120px)); border-radius: 20px; background: hsl(var(--card, 0 0% 100%)); color: hsl(var(--foreground, 222 47% 11%)); border: 1px solid hsl(var(--border, 214 32% 91%)); box-shadow: 0 30px 60px -28px rgb(10 16 35 / .55); overflow: hidden; animation: up 220ms ease-out; }
+@keyframes up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.head { display: flex; align-items: center; gap: 10px; padding: 12px 8px 12px 14px; background: #16213e; color: #fff; }
+.avatar { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 999px; background: #ff4757; font-size: 19px; flex: 0 0 auto; }
+.head div { flex: 1; min-width: 0; }
+.name { margin: 0; font-weight: 700; font-size: .92rem; }
+.sub { margin: 0; color: #a5adc2; font-size: .75rem; }
+.close { width: 44px; height: 44px; border: 0; border-radius: 999px; background: transparent; color: #fff; font-size: 24px; cursor: pointer; }
+.close:hover { background: rgb(255 255 255 / .1); }
+.log { list-style: none; margin: 0; padding: 14px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
+.bubble { max-width: 86%; padding: 9px 12px; border-radius: 16px; font-size: .88rem; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
+.bot { align-self: flex-start; background: hsl(var(--muted, 210 40% 96%)); border-bottom-left-radius: 4px; }
+.me { align-self: flex-end; background: #ff4757; color: #fff; border-bottom-right-radius: 4px; }
+.places { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.place { display: inline-flex; align-items: center; min-height: 36px; padding: 0 10px; border-radius: 999px; background: #16213e; color: #fff; font-size: .78rem; font-weight: 650; text-decoration: none; }
+.place:focus-visible { outline: 3px solid #477fe0; outline-offset: 2px; }
+.typing { display: inline-flex; gap: 4px; align-items: center; min-height: 34px; }
+.typing i { width: 7px; height: 7px; border-radius: 999px; background: currentColor; opacity: .4; animation: blink 1s infinite; }
+.typing i:nth-child(3) { animation-delay: .15s; }
+.typing i:nth-child(4) { animation-delay: .3s; }
+@keyframes blink { 50% { opacity: 1; } }
+.suggestions { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 14px 10px; }
+.suggestion { min-height: 36px; padding: 6px 12px; border: 1px solid hsl(var(--border, 214 32% 91%)); border-radius: 999px; background: transparent; color: inherit; font: inherit; font-size: .78rem; text-align: left; cursor: pointer; }
+.suggestion:hover:not(:disabled) { border-color: #ff4757; }
+.error { margin: 0 14px 8px; color: #c81e2b; font-size: .82rem; font-weight: 600; }
+.form { display: flex; gap: 8px; align-items: flex-end; padding: 10px 12px; border-top: 1px solid hsl(var(--border, 214 32% 91%)); }
+.form textarea { flex: 1; min-height: 44px; max-height: 120px; padding: 11px 14px; border: 1px solid hsl(var(--border, 214 32% 91%)); border-radius: 22px; background: transparent; color: inherit; font: inherit; font-size: 16px; resize: none; }
+.send { display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 999px; background: #ff4757; color: #fff; cursor: pointer; flex: 0 0 auto; }
+.send:disabled { opacity: .5; cursor: default; }
+.fine { margin: 0; padding: 0 14px 10px; color: hsl(var(--muted-foreground, 215 16% 47%)); font-size: .7rem; }
+@media (max-width: 480px) { .toggleLabel { display: none; } .toggle { padding: 0 7px; } }
+@media (prefers-reduced-motion: reduce) { .panel, .typing i { animation: none; } }

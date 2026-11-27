@@ -62,7 +62,7 @@ export async function searchSite(query: string, category: SearchCategory = "all"
     const rows = (result: { data: unknown }) => (Array.isArray(result.data) ? result.data : []) as Row[];
     const slugHref = (base: string, row: Row) => `${base}/${encodeURIComponent(String(row.slug ?? ""))}`;
     const groups: SearchGroup[] = [
-      { key: "news" as const, label: "News", items: rows(articles).map((row) => ({ title: String(row.title ?? ""), href: slugHref("/news", row), subline: [text(row.category_label), shortDate(row.published_at)].filter(Boolean).join(" · ") || null })) },
+      { key: "news" as const, label: "News", items: rows(articles).map((row) => ({ title: String(row.title ?? ""), href: slugHref("/news", row), subline: ["Epe Division", shortDate(row.published_at)].filter(Boolean).join(" · ") || null })) },
       { key: "businesses" as const, label: "Businesses", items: rows(businesses).map((row) => ({ title: String(row.name ?? ""), href: slugHref("/business-directory", row), subline: [text(row.category_label), text(row.area)].filter(Boolean).join(" · ") || null })) },
       { key: "places" as const, label: "Places", items: rows(destinations).map((row) => ({ title: String(row.name ?? ""), href: slugHref("/tourism", row), subline: text(row.location_label) })) },
       { key: "people" as const, label: "People", items: rows(people).map((row) => ({ title: String(row.preferred_name || row.full_name || ""), href: slugHref("/who-is-who", row), subline: row.is_verified ? "Verified profile" : null })) },

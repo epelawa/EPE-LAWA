@@ -235,6 +235,9 @@
       "path": "/admin/storage"
     },
     {
+      "path": "/admin/ai-chat"
+    },
+    {
       "path": "/admin/ai-processes"
     },
     {

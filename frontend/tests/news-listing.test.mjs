@@ -20,19 +20,19 @@ const newsletterAction = await readFile(new URL("app/newsletter/actions.ts", roo
 const newsletterMailer = await readFile(new URL("lib/newsletter-mailer.ts", root), "utf8");
 const advertise = await readFile(new URL("app/advertise/page.tsx", root), "utf8");
 
-test("News queries only published stories and active real categories", () => {
+test("News queries only published stories, with no categories (turn 26: Epe Division only)", () => {
   assert.match(page, /from\("published_articles"\)/);
   assert.match(page, /rpc\("search_published_news"/);
-  assert.match(page, /from\("categories"\)/);
-  assert.match(page, /\.eq\("is_active", true\)/);
+  assert.match(page, /p_category: ""/);
+  assert.doesNotMatch(page, /from\("categories"\)/);
   assert.doesNotMatch(page, /from\("articles"\)|service_role/);
 });
 
-test("News retains search, category links and no invented filters", () => {
+test("News retains search, has no category tabs and no invented filters", () => {
   assert.match(page, /Search stories, topics and authors/);
   assert.match(page, /role="search"/);
-  assert.match(page, /aria-label="News categories"/);
-  assert.match(page, />All news<\/Link>/);
+  assert.doesNotMatch(page, /aria-label="News categories"|\?category=|news_category/);
+  assert.match(page, /News from Epe Division\./);
   assert.doesNotMatch(page, /FilterIcon|newsFilterButton/);
 });
 
@@ -57,7 +57,6 @@ test("News presents a focused newsroom without promotional blocks", () => {
   assert.match(page, /Read full story/);
   assert.match(page, /aria-labelledby="featured-heading"/);
   assert.match(page, /aria-labelledby="stories-heading"/);
-  assert.match(page, /href=\{categoryHref\(query,item\.slug\)\}/);
   assert.doesNotMatch(page, /topicImages|discoverBanner|newsletterCard|popularCard/);
 });
 
@@ -104,10 +103,12 @@ test("News uses the shared editorial footer once and protected routes do not sho
   assert.match(footer, /pathname\.startsWith\("\/admin\/"\)/);
   assert.match(footer, /pathname\.startsWith\("\/dashboard\/"\)/);
   assert.match(footer, /if \(isProtected\) return null/);
-  for (const heading of ['"footer.quickLinks"', '"footer.browseTopics"', '"footer.newsletter"', "Categories"]) assert.ok(newsFooter.includes(heading));
+  for (const heading of ['"footer.quickLinks"', '"footer.browseTopics"', '"footer.newsletter"', "Epe Division"]) assert.ok(newsFooter.includes(heading));
   assert.match(mobileNavigation, /"\/advertise"/);
   assert.match(mobileNavigation, /"\/contact", "Contact"/);
-  assert.match(newsFooter, /from\("categories"\)/);
+  // Turn 26: no news categories; the footer links Epe Division places instead.
+  assert.doesNotMatch(newsFooter, /from\("categories"\)|\?category=/);
+  assert.match(newsFooter, /const EPE_LINKS/);
 });
 
 test("public footers and correction links do not imply that unavailable contact intake works", async () => {
@@ -149,9 +150,7 @@ test("News lead and cards load covers with appropriate priority", () => {
 test("News content keeps a responsive editorial grid and accessible 48px controls", () => {
   assert.match(styles, /\.storyGrid \{[^}]*repeat\(3, minmax\(0, 1fr\)\)/);
   assert.match(styles, /@media \(max-width: 520px\)/);
-  assert.match(styles, /\.editorialTabs/);
   assert.match(styles, /\.editorialSearch/);
-  assert.match(page, /aria-label="News categories"/);
   assert.match(page, /Load more news/);
   assert.match(page, /View all available news/);
 });
@@ -165,9 +164,7 @@ test("News pagination remains bounded with deterministic published ordering", ()
 });
 
 
-test("News lists newest stories first and groups later stories by real category", () => {
-  assert.match(page, /remaining\.slice\(0, 6\)/);
-  assert.match(page, /remaining\.slice\(6\)/);
-  assert.match(page, /grouped\.get\(story\.category_slug\)/);
-  assert.match(page, /categoryHref\("", slug\)/);
+test("News lists newest stories first in one Epe Division list (turn 26: no category groups)", () => {
+  assert.match(page, /const latest = remaining/);
+  assert.doesNotMatch(page, /grouped\.get\(story\.category_slug\)|categoryHref/);
 });

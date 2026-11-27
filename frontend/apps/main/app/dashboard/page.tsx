@@ -176,7 +176,6 @@ async function DashboardSaved() {
         : <ul className={styles.savedGrid}>
           {items.map((story) => <li className={styles.savedItem} key={story.id}>
             <span className={styles.savedCopy}>
-              {story.category_label ? <span className={styles.savedCategory}>{story.category_label}</span> : null}
               <Link className={styles.savedTitle} href={`/news/${story.slug}`}>{story.title}</Link>
               {story.published_at ? <span className={styles.savedMeta}>{formatPublishedDate(story.published_at) ?? ""}</span> : null}
             </span>
@@ -252,7 +251,7 @@ export default async function MemberDashboardPage({ searchParams }: { searchPara
   const requestedTab = params.tab;
   const activeTab: DashboardTab = requestedTab === "discover" || requestedTab === "saved" || requestedTab === "profile" || requestedTab === "notifications" ? requestedTab : "home";
   const query = typeof params.q === "string" ? params.q.trim().slice(0, 100) : "";
-  const category = typeof params.category === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(params.category) ? params.category : "";
+  const category = ""; // No news categories (owner, turn 26).
   const page = safePage(typeof params.page === "string" ? params.page : undefined);
   let supabase: Awaited<ReturnType<typeof createClient>>;
   try {

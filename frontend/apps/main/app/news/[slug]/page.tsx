@@ -129,7 +129,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
     const supabase = await createClient();
     const [bodyResult, relatedResult, sessionResult, commentCountResult, savedResult, engagementResult, likeTotal] = await Promise.all([
       readPublishedArticleBody(supabase, article.id),
-      supabase.from("published_articles").select("slug,title,summary,published_at,cover_url,cover_alt,category_label").eq("category_slug", article.category_slug).neq("slug", article.slug).order("published_at", { ascending: false, nullsFirst: false }).order("slug", { ascending: true }).limit(3),
+      supabase.from("published_articles").select("slug,title,summary,published_at,cover_url,cover_alt,category_label").neq("slug", article.slug).order("published_at", { ascending: false, nullsFirst: false }).order("slug", { ascending: true }).limit(3),
       supabase.auth.getUser(),
       supabase.from("comments").select("id", { count: "exact", head: true }).eq("article_id", article.id).eq("state", "visible"),
       supabase.from("saved_articles").select("id", { count: "exact", head: true }).eq("article_id", article.id),
@@ -184,14 +184,12 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
           cover_alt: article.cover_alt,
           author_name: article.author_name,
           author_slug: article.author_slug,
-          section: { slug: article.category_slug, label: article.category_label },
+          // One news section (owner, turn 26): every story is Epe Division news.
+          section: { slug: "", label: "Epe Division" },
           tags: article.tags,
         }),
         breadcrumbSchema([
-          { name: "News", path: "/news" },
-          ...(article.category_slug
-            ? [{ name: article.category_label, path: `/news?category=${encodeURIComponent(article.category_slug)}` }]
-            : []),
+          { name: "Epe Division news", path: "/news" },
           { name: article.title, path: newsArticlePath(article.slug) },
         ]),
       ]}
@@ -213,7 +211,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
         <header className={`${a.header} ${a.column}`}>
           <p className={a.kicker}>
             {breaking ? <span className={a.breaking}>Breaking</span> : null}
-            {article.category_slug ? <Link className={a.category} href={`/news?category=${encodeURIComponent(article.category_slug)}`}>{article.category_label}</Link> : null}
+            <Link className={a.category} href="/news">Epe Division</Link>
           </p>
           <h1 className={a.title}>{article.title}</h1>
           {article.summary ? <p className={a.standfirst}>{article.summary}</p> : null}
@@ -249,7 +247,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
 
         <div className={a.column}><CommentThread articleId={article.id} slug={article.slug} notice={notice.comments} /></div>
 
-        {related.length ? <section className={a.related} aria-labelledby="related-heading"><h2 id="related-heading">Related stories</h2><ul className={a.relatedGrid}>{related.map((item) => { const relatedImage = publishedNewsCover(item)?.url; const when = formatPublishedDate(item.published_at); return <li key={item.slug}><Link href={newsArticlePath(item.slug)} className={a.relatedLink}><NewsImage className={a.relatedImage} src={relatedImage} alt="" /><span className={a.relatedCategory}>{item.category_label}</span><span className={a.relatedTitle}>{item.title}</span>{when ? <span className={a.relatedTime}>{when}</span> : null}</Link></li>; })}</ul></section> : null}
+        {related.length ? <section className={a.related} aria-labelledby="related-heading"><h2 id="related-heading">Related stories</h2><ul className={a.relatedGrid}>{related.map((item) => { const relatedImage = publishedNewsCover(item)?.url; const when = formatPublishedDate(item.published_at); return <li key={item.slug}><Link href={newsArticlePath(item.slug)} className={a.relatedLink}><NewsImage className={a.relatedImage} src={relatedImage} alt="" /><span className={a.relatedCategory}>Epe Division</span><span className={a.relatedTitle}>{item.title}</span>{when ? <span className={a.relatedTime}>{when}</span> : null}</Link></li>; })}</ul></section> : null}
 
       </article>
     </PageFrame>

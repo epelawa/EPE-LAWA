@@ -12,6 +12,8 @@ import { normaliseJobSchedules } from "../../main/lib/ai/job-schedule";
 import { cleanNewsTimes, NEWS_LIMITS } from "../../main/lib/ai/news-schedule";
 import { JOB_INTERVAL_LIMITS, SCHEDULED_JOBS, type JobSchedule } from "../../main/lib/ai/job-schedule";
 import { loadFreeModels } from "../../main/lib/ai/openrouter";
+import { isAllowedModelId, plausibleKey, providerById, type ProviderId } from "../../main/lib/ai/providers";
+import { removeKey, storeKey, vaultReady } from "../../main/lib/ai/key-vault";
 import { runAutopilotPass, AI_JOB_LABELS } from "../../main/lib/ai/runner";
 import { formAdminClient } from "../../main/lib/form-server";
 import { sendAiEnquiryReply, type Enquiry } from "../../main/lib/ai/jobs/enquiries";
@@ -69,7 +71,7 @@ export async function saveAiSettings(form: FormData): Promise<void> {
   const stop = time(form.get("daily_stop"));
   const scheduleEnabled = form.get("schedule_enabled") === "on";
   if (scheduleEnabled && (!start || !stop || start === stop)) return await redirect(back("window"));
-  const capabilities = Object.fromEntries(AI_CAPABILITIES.map(({ key }) => [key, form.get(`cap_${key}`) === "on"]));
+  const capabilities: Record<string, boolean> = Object.fromEntries(AI_CAPABILITIES.map((capability) => [capability.key, !("hidden" in capability) && form.get(`cap_${capability.key}`) === "on"]));
   const reason = typeof form.get("reason") === "string" ? String(form.get("reason")).trim().slice(0, 500) : "";
   const interval = chosen(form, "news_interval_minutes", NEWS_LIMITS.interval, 60);
   const perRun = chosen(form, "articles_per_run", NEWS_LIMITS.articles, 1);
@@ -156,7 +158,7 @@ export async function saveAiModels(form: FormData): Promise<void> {
       const value = form.get(`model_${key}_${index}`);
       if (typeof value !== "string" || !value || picks.includes(value)) continue;
       const known = allowed.has(value) || (previous[key] ?? []).includes(value);
-      if (!known || !/^[A-Za-z0-9._~-]+\/[A-Za-z0-9._~/-]+:free$/.test(value) || value.length > 120) {
+      if (!known || !isAllowedModelId(value)) {
         rejected = true;
         continue;
       }
@@ -235,4 +237,53 @@ export async function explainAdminLogsNow(): Promise<void> {
   const result = await runAutopilotPass({ trigger: "manual", job: "admin_logs", triggeredBy: admin.userId });
   const summary = result.skipped ?? result.ran.map((entry) => entry.summary).join(" ");
   return await redirect(`${adminHref("/logs")}?result=explained&summary=${encodeURIComponent(summary.slice(0, 300))}`);
+}
+
+/**
+ * AI provider keys typed on the AI Scheduler page. The key travels once, over
+ * HTTPS, inside this server action; it is checked against the provider, then
+ * sealed with AES-256-GCM (AI_KEYS_SECRET, a server-only Vercel secret) and
+ * stored where only the server can read it. It is never sent back to a
+ * browser, logged or put in the audit — only "saved" and the time.
+ */
+export async function saveProviderKey(form: FormData): Promise<void> {
+  const admin = await primaryAdmin();
+  if (!admin) return await redirect(back("denied"));
+  const provider = providerById(String(form.get("provider") ?? ""));
+  const key = String(form.get("api_key") ?? "").trim();
+  if (!provider) return await redirect(back("key-invalid"));
+  if (!vaultReady()) return await redirect(back("key-vault"));
+  if (!plausibleKey(provider.id, key)) return await redirect(back("key-invalid"));
+  // Prove the key works before saving it (a model list needs a valid key on every provider but OpenRouter).
+  const check = await testProviderKey(provider.id, key);
+  if (check === "rejected") return await redirect(back("key-rejected"));
+  const error = await storeKey(formAdminClient(), provider.id, key, admin.userId);
+  if (error) return await redirect(back("key-failed"));
+  await formAdminClient().from("ai_activity").insert({ job: "schedule", action: "settings.provider_key", outcome: "done", title: `${provider.label} key saved (encrypted)`, details: { provider: provider.id, verified: check === "ok" }, actor_id: admin.userId });
+  revalidatePath(adminHref("/ai-scheduler"));
+  return await redirect(back(check === "unverified" ? "key-saved-unverified" : "key-saved"));
+}
+
+export async function removeProviderKey(form: FormData): Promise<void> {
+  const admin = await primaryAdmin();
+  if (!admin) return await redirect(back("denied"));
+  const provider = providerById(String(form.get("provider") ?? ""));
+  if (!provider) return await redirect(back("key-invalid"));
+  const error = await removeKey(formAdminClient(), provider.id);
+  if (!error) await formAdminClient().from("ai_activity").insert({ job: "schedule", action: "settings.provider_key", outcome: "done", title: `${provider.label} key removed`, details: { provider: provider.id }, actor_id: admin.userId });
+  revalidatePath(adminHref("/ai-scheduler"));
+  return await redirect(back(error ? "key-failed" : "key-removed"));
+}
+
+/** "ok" when the provider accepted the key, "rejected" on 401/403, "unverified" when it could not be reached. */
+async function testProviderKey(provider: ProviderId, key: string): Promise<"ok" | "rejected" | "unverified"> {
+  const entry = providerById(provider)!;
+  const url = provider === "openrouter" ? `${entry.base}/key` : `${entry.base}/models`;
+  try {
+    const response = await fetch(url, { cache: "no-store", headers: { authorization: `Bearer ${key}` }, signal: AbortSignal.timeout(8000) });
+    if (response.status === 401 || response.status === 403) return "rejected";
+    return response.ok ? "ok" : "unverified";
+  } catch {
+    return "unverified";
+  }
 }

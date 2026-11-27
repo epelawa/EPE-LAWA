@@ -10,12 +10,13 @@ import { adminRequestEvent, adminSection, parseUserAgent } from "../apps/main/li
 import { lagosDay, lagosDayRange, lagosExact, lagosHour, lagosInputValue } from "../apps/admin/lib/lagos-time";
 
 const punch = NEWS_OUTLETS.find((outlet) => outlet.id === "punch")!;
-const bbc = NEWS_OUTLETS.find((outlet) => outlet.id === "bbc-world")!;
+const vanguard = NEWS_OUTLETS.find((outlet) => outlet.id === "vanguard")!;
 
 describe("trusted outlets", () => {
   it("accepts only listed newsrooms and their subdomains", () => {
     expect(trustedNewsHost("punchng.com")).toBe(true);
-    expect(trustedNewsHost("www.bbc.co.uk")).toBe(true);
+    // Turn 26 owner brief: Epe Division news only, so international outlets are gone.
+    expect(trustedNewsHost("www.bbc.co.uk")).toBe(false);
     expect(trustedNewsHost("punchng.com.evil.example")).toBe(false);
     expect(trustedNewsHost("notpunchng.com")).toBe(false);
     expect(trustedNewsHost("medium.com")).toBe(false);
@@ -29,16 +30,17 @@ describe("trusted outlets", () => {
   });
 });
 
-describe("locality priority: Epe, then Lagos, then Nigeria, then world", () => {
-  it("ranks in the owner's order", () => {
+describe("locality: Epe Division only (turn 26)", () => {
+  it("accepts Epe Division places and nothing else", () => {
     expect(localityScore("Flooding in Epe market").label).toBe("Epe");
-    expect(localityScore("Sanwo-Olu opens Ikorodu road").label).toBe("Lagos");
-    expect(localityScore("Tinubu signs budget in Abuja").label).toBe("Nigeria");
-    expect(localityScore("Elections in Brazil").label).toBe("World");
+    expect(localityScore("Ibeju-Lekki council opens new clinic").label).toBe("Epe");
+    expect(localityScore("Sanwo-Olu opens Ikorodu road").label).toBe("Outside");
+    expect(localityScore("Tinubu signs budget in Abuja").label).toBe("Outside");
+    expect(localityScore("Elections in Brazil").label).toBe("Outside");
     expect(localityScore("Epe").score).toBeGreaterThan(localityScore("Lagos").score);
   });
   it("does not match Epe inside other words", () => {
-    expect(localityScore("Pepe wins the derby").label).toBe("World");
+    expect(localityScore("Pepe wins the derby").label).toBe("Outside");
   });
 });
 
@@ -59,8 +61,8 @@ describe("parseFeed", () => {
     expect(items[0].summary).toContain("The state government said");
   });
   it("reads Atom entries with href links", () => {
-    const xml = `<feed><entry><title>World leaders meet for climate summit talks</title><link href="https://www.bbc.co.uk/news/1"/><updated>2026-11-25T09:00:00Z</updated></entry></feed>`;
-    expect(parseFeed(xml, bbc)[0]?.link).toBe("https://www.bbc.co.uk/news/1");
+    const xml = `<feed><entry><title>World leaders meet for climate summit talks</title><link href="https://www.vanguardngr.com/news/1"/><updated>2026-11-25T09:00:00Z</updated></entry></feed>`;
+    expect(parseFeed(xml, vanguard)[0]?.link).toBe("https://www.vanguardngr.com/news/1");
   });
 });
 
@@ -78,7 +80,7 @@ describe("newsworthiness and de-duplication", () => {
   it("ranks Epe first, drops recent repeats and stale items, keeps one story per topic", () => {
     const now = Date.parse("2026-11-26T12:00:00Z");
     const ranked = rankCandidates([
-      item("Brazil holds national election run-off", "https://www.bbc.co.uk/news/brazil", bbc),
+      item("Brazil holds national election run-off", "https://www.vanguardngr.com/news/brazil", vanguard),
       item("Epe fish market traders relocate after fire", "https://punchng.com/epe-fire/"),
       item("Fire: Epe fish market traders relocate", "https://www.vanguardngr.com/epe-fire/", NEWS_OUTLETS.find((o) => o.id === "vanguard")!),
       item("Old story about Lagos traffic from last week", "https://punchng.com/old/", punch, 200),

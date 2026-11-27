@@ -3,7 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { formAdminClient } from "../form-server";
 import { finishRun, RunLog, startRun, type AiJob } from "./activity";
 import { ensureAiActor } from "./actor";
-import { openRouterKey, unlimitedBudget, type Budget } from "./openrouter";
+import { anyAiKey, refreshKeys, unlimitedBudget, type Budget } from "./openrouter";
 import { loadAiSettings, type AiSettings } from "./settings";
 import { newsDue } from "./news-schedule";
 import { runNewsJob } from "./jobs/news";
@@ -69,7 +69,8 @@ export async function runAutopilotPass(options: { trigger: "schedule" | "manual"
   const settings = await loadAiSettings(db);
   if (!settings) return { ran: [], skipped: "AI settings are missing (database migration not applied)." };
   if (options.trigger === "schedule" && !settings.autopilot_enabled) return { ran: [], skipped: "Autopilot is off." };
-  if (!openRouterKey()) return { ran: [], skipped: "OPENROUTER_API_KEY is not set in Vercel." };
+  await refreshKeys(db);
+  if (!anyAiKey()) return { ran: [], skipped: "No AI provider key is saved (add one on the AI Scheduler page)." };
 
   // Never overlap passes: a pass still running (or crashed) in the last 6 minutes blocks scheduled starts.
   if (options.trigger === "schedule") {
@@ -190,7 +191,7 @@ export async function runAutopilotPass(options: { trigger: "schedule" | "manual"
       await log.record({ job, action: `${job}.run`, outcome: "failed", title: `${AI_JOB_LABELS[job]} stopped unexpectedly`, reason: error instanceof Error ? error.message.slice(0, 500) : "unknown error" });
       summary = "Stopped unexpectedly.";
     }
-    await finishRun(db, runId, log, summary, { openrouter_stopped: budget.stopped ?? null, mode: publish ? "autopilot" : "approval" });
+    await finishRun(db, runId, log, summary, { openrouter_stopped: budget.stopped ?? null, providers_exhausted: budget.exhausted ?? {}, mode: publish ? "autopilot" : "approval" });
     ran.push({ job, summary });
   }
   return { ran, skipped: null };
