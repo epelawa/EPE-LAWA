@@ -27,10 +27,39 @@ export async function formClientKey(): Promise<string> {
 /**
  * Default submissions per network per hour. Many Nigerian mobile users share a
  * carrier IP (CGNAT), and every attempt counts, so 5 was reached by ordinary
- * visitors correcting a form. 12 still stops scripted floods (the database also
- * caps each scope globally per hour).
+ * visitors correcting a form. 12 still stops scripted floods (each scope also has a
+ * shared hourly ceiling, see sharedHourlyLimit).
  */
 const DEFAULT_PER_NETWORK_LIMIT = 12;
+
+/**
+ * Shared (all networks together) ceiling per scope per hour. A refused network adds nothing to the shared row,
+ * so filling it takes `ceiling / perNetworkLimit` distinct networks. The database default of 100 let about
+ * eight networks lock every visitor out of sign-in, notification settings or a form (Strix review on PR #275).
+ *
+ * Fail-safe by design: any scope NOT listed here keeps the original 100/hour, because scopes that send email
+ * (auth_signup/reset/resend/otp, business_submit, event_submit, history_submit, history_correction: a staff
+ * notice and/or an acknowledgement over the shared auth-mail transport) need that ceiling as a guard on the
+ * mail quota (Strix review on PR #277). Only scopes verified to send no email are raised, and among those only
+ * member-only scopes, sign-in and push are listed. A scope that sends email or lets signed-out visitors store
+ * rows must not be added here without its own cost guard.
+ */
+const NON_MAIL_SHARED_HOURLY_LIMIT: Readonly<Record<string, number>> = {
+  // Sign-in and push-subscribe are also the only cross-network brake on password guessing and on anonymous
+  // device-row writes (Strix review on PR #277), so they are sized to that abuse, not just to lockout:
+  // 500/hour still takes ~33 networks (sign-in, 15 each) or 100 networks (push, 5 each) to fill.
+  auth_signin: 500, auth_password_change: 500,
+  push_subscribe: 500,
+  forum_post: 2000, image_upload: 2000,
+  // Signed-in, email-confirmed members only. Signed-out write scopes (tourism_submit, article_correction, gallery_submit)
+  // store a row per request, so they stay on the 100/hour default (Strix review on PR #277).
+  business_claim: 1000, moderation_appeal: 1000,
+};
+/** The database function's own default; kept for every email-sending or unlisted scope. */
+const MAIL_SAFE_SHARED_HOURLY_LIMIT = 100;
+export function sharedHourlyLimit(scope: string): number {
+  return Object.hasOwn(NON_MAIL_SHARED_HOURLY_LIMIT, scope) ? NON_MAIL_SHARED_HOURLY_LIMIT[scope] : MAIL_SAFE_SHARED_HOURLY_LIMIT;
+}
 
 /**
  * True when this network may use the named form this hour. In a Vercel deployment
@@ -46,6 +75,7 @@ export async function formRateAllowance(scope: string, perClientLimit = DEFAULT_
       p_scope: scope,
       p_fingerprint: fingerprint,
       p_limit: perClientLimit,
+      p_global_limit: sharedHourlyLimit(scope),
     });
     if (error) {
       console.error("form rate limiter error", { scope, code: error.code });

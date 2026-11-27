@@ -49,10 +49,14 @@ describe("newsletter server actions", () => {
     mocks.send.mockRejectedValueOnce(new Error("smtp error"));
     expect((await subscribeNewsletter(idle, signup())).status).toBe("error"); expect(mocks.send).toHaveBeenCalledTimes(1);
   });
-  it("confirms only valid tokens through the limiter and a hashed token RPC", async () => {
+  it("confirms only valid tokens through a hashed token RPC without spending the shared mail bucket", async () => {
     expect((await confirmNewsletter(idle, confirm("invalid"))).status).toBe("error"); expect(mocks.rpc).not.toHaveBeenCalled();
     const token = "f".repeat(64);
     expect((await confirmNewsletter(idle, confirm(token))).status).toBe("success");
-    expect(mocks.rpc.mock.calls[1]).toEqual(["newsletter_confirm_verified", { p_confirmation_hash: createHash("sha256").update(token).digest("hex") }]);
+    expect(mocks.rpc.mock.calls).toEqual([["newsletter_confirm_verified", { p_confirmation_hash: createHash("sha256").update(token).digest("hex") }]]);
+    // Strix review on PR #277: invented tokens must not drain the "newsletter" allowance that guards sign-up mail.
+    mocks.rpc.mockClear(); mocks.rpc.mockResolvedValueOnce({ data: "invalid", error: null });
+    expect((await confirmNewsletter(idle, confirm("e".repeat(64)))).status).toBe("error");
+    expect(mocks.rpc.mock.calls.map(([name]) => name)).not.toContain("form_rate_limit");
   });
 });

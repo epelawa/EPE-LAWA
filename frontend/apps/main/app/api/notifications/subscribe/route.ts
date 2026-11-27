@@ -154,10 +154,14 @@ export async function PATCH(request: Request): Promise<Response> {
   if (!topics || topics === "invalid") return error(400, "Invalid topics");
   const endpoint = validEndpoint(record?.endpoint);
   if (!endpoint) return error(400, "Invalid subscription");
-  const allowed = await formRateAllowance("push_subscribe", 20);
-  if (!allowed) return error(429, await formRateMessage());
   try {
     const db = formAdminClient();
+    // Look the device up before charging the rate allowance, so invented endpoints cost nothing.
+    const existing = await db.from("web_push_devices").select("endpoint_hash").eq("endpoint_hash", endpointHash(endpoint)).maybeSingle();
+    if (existing.error) return error(503, "Your choice could not be saved");
+    if (!existing.data) return error(404, "This device is not subscribed yet");
+    const allowed = await formRateAllowance("push_subscribe", 20);
+    if (!allowed) return error(429, await formRateMessage());
     const result = await db.from("web_push_devices")
       .update({ push_news: topics.news, push_radio: topics.radio, updated_at: new Date().toISOString() })
       .eq("endpoint_hash", endpointHash(endpoint))
@@ -178,10 +182,18 @@ export async function DELETE(request: Request): Promise<Response> {
   const record = await readJson(request);
   const endpoint = validEndpoint(record?.endpoint);
   if (!endpoint) return error(400, "Invalid subscription");
-  const allowed = await formRateAllowance("push_subscribe", 20);
-  if (!allowed) return error(429, await formRateMessage());
   try {
     const db = formAdminClient();
+    // Removing a device that is not stored is already done: answer without charging the rate allowance, so
+    // invented endpoints cannot drain it (Strix review on PR #275).
+    const [device, legacy] = await Promise.all([
+      pushCryptoReady() ? db.from("web_push_devices").select("endpoint_hash").eq("endpoint_hash", endpointHash(endpoint)).maybeSingle() : Promise.resolve({ data: null, error: null }),
+      db.from("push_subscriptions").select("id").eq("endpoint", endpoint).limit(1),
+    ]);
+    if (device.error || legacy.error) return error(503, "Could not remove the subscription");
+    if (!device.data && !legacy.data?.length) return Response.json({ removed: true }, { headers: NO_STORE });
+    const allowed = await formRateAllowance("push_subscribe", 20);
+    if (!allowed) return error(429, await formRateMessage());
     if (pushCryptoReady()) {
       const removed = await db.from("web_push_devices").delete().eq("endpoint_hash", endpointHash(endpoint));
       if (removed.error) {
