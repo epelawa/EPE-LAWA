@@ -33,7 +33,7 @@ This note covers the open-ended cleanup pass after the business, radio and respo
 
 **Fourth Strix pass on PR #277.** `tourism_submit` and `article_correction` had been raised to 1000. Signed-out visitors can store a row with each request, so both went back to 100.
 
-**Follow-ups (not done here; they need a migration or a product decision):** per-account sign-in throttling or a challenge after repeated failures; a cap on total `web_push_devices` rows plus a reaper for devices that never receive a delivery; fanout ordered by most recently active device; recording each solved human-check token as spent, so one solution cannot be replayed from many networks during its lifetime.
+**Follow-ups (not done here; they need a migration or a product decision):** ~~per-account sign-in throttling or a challenge after repeated failures~~ (done, see §5); a cap on total `web_push_devices` rows plus a reaper for devices that never receive a delivery; fanout ordered by most recently active device; recording each solved human-check token as spent, so one solution cannot be replayed from many networks during its lifetime.
 
 **Residual risk.** The mail-sending scopes keep the 100/hour ceiling on purpose. A coordinated flood from many networks can still pause signup, password reset and the business, event and history submission forms for up to an hour. That is the trade-off for not exhausting the email provider's quota.
 
@@ -80,3 +80,31 @@ The same 200 was measured on `/news/<missing>`, `/tourism/<missing>`, `/who-is-w
 - **Removed features:** no UI string for song requests or the programme archive remains. The leftover entries in `lib/yo/part-5.ts` are dictionary rows only. Nothing renders them, so they were left for the owner's Yorùbá review.
 - **Maintenance-gate exemptions:** `/api/human-check` and `/api/push/scheduled` are not exempt from the maintenance gate. This is consistent with the gate's purpose: forms and reminders pause while the site is down. The only scheduled job, `epe-radio-push-tick`, runs `public.push_radio_tick()` in the database and succeeded on every run in the last two days.
 - **Supabase advisory query:** every public table has RLS, and every `SECURITY DEFINER` function pins `search_path`. Five views are owner-rights views readable by `anon`: `published_article_engagement`, `active_business_sponsorships`, `forum_poll_results`, `radio_status` and `business_ad_carousel`. Each one exposes only aggregate or published columns; none exposes personal data or the encrypted stream URL. They were left unchanged, because switching them to `security_invoker` would hide rows that the public pages rely on.
+
+## 5. Per-account sign-in throttle (owner decision, November 2026)
+
+The network limiter (`auth_signin`: 15 per network, 500 shared per hour) cannot stop many networks guessing **one**
+account, and the staff login had no limit at all. Both sign-in forms now share a per-account lock:
+
+- **Rule:** 8 failed password checks for the same email within 15 minutes lock that email for 15 minutes. The lock is
+  fixed, not escalating, so someone who deliberately locks another person out only costs them 15 minutes.
+- **What counts:** only a provider-confirmed wrong password (`invalid_credentials`). Outages, provider rate limits and
+  invalid input are not counted. A successful sign-in, or a correct password on an unconfirmed address, clears the
+  count. A completed password reset also lifts the lock.
+- **Privacy:** the database stores only an HMAC of the lower-cased email, keyed with `FORM_RATE_SECRET` (domain
+  `signin-account:v1:`). Every email string is treated the same way, registered or not, so the lock never reveals
+  whether an account or staff account exists.
+- **Order:** the lock is checked before the network budget is spent and before the password is sent to the provider.
+- **Fail-safe:** on Vercel, if the lock cannot be checked (missing secret or service key, database error), sign-in is
+  refused with the existing "temporarily unavailable" message, matching `formRateAllowance`. Local development stays
+  usable.
+- **Code:** `frontend/apps/admin/lib/signin-throttle.ts` (shared helper), `frontend/apps/main/app/auth/actions.ts`
+  (`signIn`, `updatePassword`), `frontend/apps/admin/lib/login-actions.ts`, and
+  `signInAdminWithPassword` in `frontend/apps/admin/lib/supabase-access.ts`, which now reports `password:
+  "rejected" | "verified" | "unknown"`.
+- **Database:** `backend/supabase/migrations/20261129000000_signin_account_throttle.sql`, with table
+  `auth_signin_throttle` and functions `signin_throttle_status` / `signin_throttle_record`. All of it is service_role only.
+- **Tests:** `backend/tests/signin-account-throttle.test.mjs` and `frontend/tests/signin-account-throttle.test.mjs`.
+- **Unlocking someone by hand** (staff with database access):
+  `delete from public.auth_signin_throttle where locked_until > now();` clears every current lock. Individual keys
+  cannot be found by email without the secret, by design.
