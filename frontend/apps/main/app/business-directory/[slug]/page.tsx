@@ -185,4 +185,3 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
     <p className={`${styles.container} ${styles.back}`}><Link href="/business-directory">← Back to businesses</Link></p>
   </div>;
 }
-

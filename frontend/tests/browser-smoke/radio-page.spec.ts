@@ -5,7 +5,7 @@ import { expect, test, type Page } from "@playwright/test";
 // intercepted, so these tests prove player behaviour, not that a live broadcaster is reachable.
 
 const fixture = `http://localhost:${process.env.SMOKE_FIXTURE_PORT ?? "54321"}`;
-const STREAM = /azstream\.elektranbroadcast\.com/;
+const STREAM = /^https:\/\/azstream\.elektranbroadcast\.com\//;
 
 /** 20 s of 8 kHz 8-bit mono silence: a valid WAV that Chromium can decode without codecs. */
 function silentWav(seconds = 20) {
@@ -204,13 +204,14 @@ test("compact filter forms sit on one line on desktop and stay named for assisti
     await page.goto(route);
     const form = page.getByRole("search", { name: label });
     await expect(form).toBeVisible();
-    const tops = new Set<number>();
-    for (const name of fields) {
-      const field = form.getByLabel(name, { exact: true });
-      await expect(field).toBeVisible();
-      tops.add(Math.round((await field.boundingBox())!.y / 8));
-    }
-    expect(tops.size, `${route} fields share one row`).toBe(1);
+    for (const name of fields) await expect(form.getByLabel(name, { exact: true })).toBeVisible();
+    // Vertical centres within 8px of each other = one row. Polled, because the dev server can apply
+    // late-arriving CSS after the first paint.
+    await expect.poll(async () => {
+      const centres: number[] = [];
+      for (const name of fields) { const box = (await form.getByLabel(name, { exact: true }).boundingBox())!; centres.push(box.y + box.height / 2); }
+      return Math.max(...centres) - Math.min(...centres);
+    }, { message: `${route} fields share one row` }).toBeLessThanOrEqual(8);
     expect((await form.boundingBox())!.height, `${route} form is compact`).toBeLessThan(90);
   }
   await expect(page.getByText("Correction and removal requests")).toHaveCount(0);

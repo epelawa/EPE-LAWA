@@ -43,6 +43,8 @@ All data helpers live in one pure, typed module, `lib/business-directory.ts`: qu
 - A single-column layout is used when there is no description, hours or gallery (no empty column).
 - SEO: per-business title and description, canonical, OG image from the stored logo, and `LocalBusiness` JSON-LD built from stored fields only (no rating, no geo, no invented hours).
 
+- **Sort before hydration:** the sort select navigates on change once React has hydrated. Until then, an Apply button is shown so a change made during a slow load still works (found by CI under `next dev`). With JavaScript, the filter sheet builds clean URLs (no empty `area=`).
+
 ### Bugs fixed along the way
 - The featured join requested a non-existent `category_label`.
 - `?claim=sent` was ignored.
@@ -76,7 +78,7 @@ All data helpers live in one pure, typed module, `lib/business-directory.ts`: qu
 | `test:node` | 447 pass, 1 skipped, 3 failed on the first run. The 2 outdated contract tests were updated to the brief (radio sponsor variant, full-bleed page class) and now pass. The 3rd is an **environment** failure: `foundation.test.mjs` read the local smoke build's site URL. CI builds with the production URL. |
 | `business-directory.spec.ts` (4) and `radio-page.spec.ts` (8) | 12/12 |
 | `public-routes-audit.spec.ts` | pass |
-| Full browser smoke suite | see `docs/responsive/RESPONSIVE_TEST_REPORT.md` |
+| Full browser smoke suite, CI mode (`next dev`) | EXIT 0: 76 passed, 3 flaky on retry (details in `docs/responsive/RESPONSIVE_TEST_REPORT.md`) |
 | Responsive audit (28 routes × 22 viewports) | 616 combinations, 0 findings |
 | ESLint | **Not run:** the repository has no ESLint dependency, config, script or CI step. As a substitute, `tsc --noUnusedLocals --noUnusedParameters` found one unused parameter in the touched files (`sponsor-carousel.tsx`), which is now fixed. |
 | Live radio streams | **Not verified:** tests intercept the stream hosts. |

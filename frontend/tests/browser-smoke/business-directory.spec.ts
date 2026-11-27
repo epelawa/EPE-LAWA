@@ -64,8 +64,10 @@ test("search, category, verified filter, sorting and pagination keep each other'
   await dialog.getByLabel(/Verified businesses only/).check();
   await dialog.getByRole("button", { name: "Show results" }).click();
   await expect(page).toHaveURL(/verified=1/);
+  await expect(page).not.toHaveURL(/area=/);
   for (const badge of await results.all()) await expect(badge).toContainText("Verified");
-  // Sorting.
+  // Sorting (wait until the select navigates on its own; before hydration the Apply button covers it).
+  await expect(page.locator("form[data-ready]").filter({ has: page.getByLabel("Sort by") })).toBeAttached();
   await page.getByLabel("Sort by").selectOption("newest");
   await expect(page).toHaveURL(/sort=newest/);
   await expect(page).toHaveURL(/verified=1/);
@@ -92,7 +94,7 @@ test("profile shows real contact actions, information, claim and report, with no
   await expect(wa).toHaveAttribute("rel", /noopener/);
   await expect(page.getByRole("link", { name: /Call business/ })).toHaveAttribute("href", "tel:+2348000000000");
   await expect(page.getByRole("link", { name: /Visit website/ })).toHaveAttribute("href", "https://example.invalid/");
-  await expect(page.getByRole("link", { name: /Get directions/ })).toHaveAttribute("href", /google\.com\/maps\/search/);
+  await expect(page.getByRole("link", { name: /Get directions/ })).toHaveAttribute("href", /^https:\/\/www\.google\.com\/maps\/search\//);
   await expect(page.getByRole("heading", { name: "Contact and location" })).toBeVisible();
   await expect(page.getByRole("link", { name: /Sign in to claim it/ })).toHaveAttribute("href", /\/login\?next=/);
   await expect(page.getByRole("link", { name: "Report through support" })).toHaveAttribute("href", "/support");

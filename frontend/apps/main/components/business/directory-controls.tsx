@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState, useTransition } from "react";
+import { useEffect, useId, useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import BrandedDialog from "../branded-dialog";
 import { SlidersIcon } from "./business-icons";
@@ -15,13 +15,22 @@ import styles from "../../app/business-directory/directory.module.css";
 export function DirectoryFilterSheet({ query }: { query: DirectoryQuery }) {
   const [open, setOpen] = useState(false);
   const id = useId();
+  const router = useRouter();
+  // Once hydrated, build the URL with directoryHref so empty fields (area=) never reach the address bar.
+  // Before hydration the native GET submit still works; empty values are ignored by parseDirectoryQuery.
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    setOpen(false);
+    router.push(directoryHref({ ...query, area: String(data.get("area") ?? "").trim(), verified: data.get("verified") === "1", page: 1 }));
+  }
   const active = Number(Boolean(query.area)) + Number(query.verified);
   return <>
     <button type="button" className={styles.filterButton} aria-haspopup="dialog" onClick={() => setOpen(true)}>
       <SlidersIcon /> Filters{active ? <span className={styles.filterCount} aria-label={`${active} active`}>{active}</span> : null}
     </button>
     <BrandedDialog open={open} onClose={() => setOpen(false)} title="Filter businesses" description="Only filters backed by published listing data are offered." className={styles.filterDialog}>
-      <form action="/business-directory" method="get" className={styles.filterForm}>
+      <form action="/business-directory" method="get" className={styles.filterForm} onSubmit={submit}>
         {query.q ? <input type="hidden" name="q" value={query.q} /> : null}
         {query.category ? <input type="hidden" name="category" value={query.category} /> : null}
         {query.sort !== "verified" ? <input type="hidden" name="sort" value={query.sort} /> : null}
@@ -42,12 +51,16 @@ export function DirectoryFilterSheet({ query }: { query: DirectoryQuery }) {
   </>;
 }
 
-/** Sort control. With JavaScript it navigates on change; without, the Apply button submits the form. */
+/** Sort control. Once hydrated it navigates on change; before that (or without JavaScript) Apply submits the form. */
 export function DirectorySortSelect({ query }: { query: DirectoryQuery }) {
   const router = useRouter();
   const id = useId();
   const [pending, startTransition] = useTransition();
-  return <form action="/business-directory" method="get" className={styles.sortForm} aria-busy={pending || undefined}>
+  // Until React has hydrated, onChange is not attached yet: keep the Apply button visible so a change made
+  // during a slow load still works. data-ready marks the moment the select navigates on its own.
+  const [ready, setReady] = useState(false);
+  useEffect(() => setReady(true), []);
+  return <form action="/business-directory" method="get" className={styles.sortForm} aria-busy={pending || undefined} data-ready={ready || undefined}>
     {query.q ? <input type="hidden" name="q" value={query.q} /> : null}
     {query.category ? <input type="hidden" name="category" value={query.category} /> : null}
     {query.area ? <input type="hidden" name="area" value={query.area} /> : null}
@@ -59,6 +72,6 @@ export function DirectorySortSelect({ query }: { query: DirectoryQuery }) {
     }}>
       {SORT_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
     </select>
-    <noscript><button type="submit" className="btn-secondary">Apply</button></noscript>
+    {ready ? null : <button type="submit" className="btn-secondary">Apply</button>}
   </form>;
 }
