@@ -12,9 +12,10 @@ This note covers the open-ended cleanup pass after the business, radio and respo
 
 | Scope | Shared ceiling per hour | Why |
 |---|---|---|
-| `auth_signin` | 5000 | Sign-in must not be lockable by a few networks; it sends no email |
-| `push_subscribe` | 5000 | Covers subscribe, topic changes and unsubscribe; no email |
-| `auth_password_change`, `forum_post`, `image_upload` | 2000 | No email; signed-in members only |
+| `auth_signin` | 500 | No email. The ceiling is also the only cross-network brake on password guessing, so it stays bounded: about 33 networks at 15 each to fill it, against 8 before |
+| `push_subscribe` | 500 | No email. Every accepted subscribe writes a device row, so the ceiling bounds fake rows: about 100 networks at 5 each to fill it. Covers subscribe, topic changes and unsubscribe |
+| `auth_password_change` | 500 | No email; signed-in members only |
+| `forum_post`, `image_upload` | 2000 | No email; signed-in members only |
 | `business_claim`, `tourism_submit`, `gallery_submit`, `article_correction`, `moderation_appeal` | 1000 | No email sent by these actions |
 | `auth_signup`, `auth_reset`, `auth_resend`, `auth_otp`, `business_submit`, `event_submit`, `history_submit`, `history_correction`, and any scope not listed | 100 (unchanged) | These send a staff notice and/or an acknowledgement over the shared auth-mail transport, so the ceiling guards the mail quota |
 
@@ -24,6 +25,10 @@ This note covers the open-ended cleanup pass after the business, radio and respo
 - `PATCH /api/notifications/subscribe` looks the device up first. An unknown endpoint gets the same `404` as before but no longer costs any allowance.
 - `DELETE /api/notifications/subscribe` looks up both the device table and the legacy table first. If neither holds the endpoint, it answers `{removed: true}` without charging. A read failure answers `503`.
 - Regression test: `frontend/tests/web-push-wiring.test.mjs`, "shared rate ceilings cannot be drained by a few networks or by invented push endpoints".
+
+**Second Strix pass on PR #277.** Sign-in and push-subscribe were first raised to 5000. Strix pointed out that each ceiling is also the only aggregate cap on password guessing and on anonymous device-row writes, so both were lowered to 500.
+
+**Follow-ups (not done here; they need a migration or a product decision):** per-account sign-in throttling or a challenge after repeated failures; a cap on total `web_push_devices` rows plus a reaper for devices that never receive a delivery; fanout ordered by most recently active device.
 
 **Residual risk.** The mail-sending scopes keep the 100/hour ceiling on purpose. A coordinated flood from many networks can still pause signup, password reset and the business, event and history submission forms for up to an hour. That is the trade-off for not exhausting the email provider's quota.
 

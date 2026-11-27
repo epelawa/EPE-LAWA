@@ -44,8 +44,11 @@ const DEFAULT_PER_NETWORK_LIMIT = 12;
  * starts sending email must not be added here without its own cost guard.
  */
 const NON_MAIL_SHARED_HOURLY_LIMIT: Readonly<Record<string, number>> = {
-  auth_signin: 5000, auth_password_change: 2000,
-  push_subscribe: 5000,
+  // Sign-in and push-subscribe are also the only cross-network brake on password guessing and on anonymous
+  // device-row writes (Strix review on PR #277), so they are sized to that abuse, not just to lockout:
+  // 500/hour still takes ~33 networks (sign-in, 15 each) or 100 networks (push, 5 each) to fill.
+  auth_signin: 500, auth_password_change: 500,
+  push_subscribe: 500,
   forum_post: 2000, image_upload: 2000,
   business_claim: 1000, tourism_submit: 1000, gallery_submit: 1000, article_correction: 1000, moderation_appeal: 1000,
 };

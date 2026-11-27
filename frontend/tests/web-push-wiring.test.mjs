@@ -79,8 +79,9 @@ test('shared rate ceilings cannot be drained by a few networks or by invented pu
   ]);
   assert.match(server, /p_global_limit: sharedHourlyLimit\(scope\)/, 'the helper always sends a shared ceiling');
   assert.match(server, /MAIL_SAFE_SHARED_HOURLY_LIMIT = 100;/, 'unlisted scopes keep the database default');
-  assert.match(server, /auth_signin: 5000/);
-  assert.match(server, /push_subscribe: 5000/);
+  // Large enough that a handful of networks cannot lock everyone out, small enough to bound guessing and fake rows.
+  assert.match(server, /auth_signin: 500,/);
+  assert.match(server, /push_subscribe: 500,/);
   // Strix review on PR #277: a scope that sends email must never be in the raised table, or anyone could drain
   // the shared mail quota. Derive the mail-sending scopes from the code, not from a hand-kept list.
   const table = server.slice(server.indexOf('NON_MAIL_SHARED_HOURLY_LIMIT'), server.indexOf('};', server.indexOf('NON_MAIL_SHARED_HOURLY_LIMIT')));
