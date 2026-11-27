@@ -11,14 +11,15 @@ test('radio page uses direct streams for Radio Lagos and Guts FM', async()=>{
  const station=await read('frontend/apps/main/lib/radio-lagos.ts');
  const page=await read('frontend/apps/main/app/radio/page.tsx');
  const guts=await read('frontend/apps/main/lib/guts-radio.ts');
- assert.match(station,/https:\/\/azstream\.elektranbroadcast\.com\/listen\/radiolagos1075\/radio\.mp3/);
+ // Exact source strings, not unanchored URL regexes (CodeQL js/incomplete-url-regexp).
+ assert.ok(station.includes('"https://azstream.elektranbroadcast.com/listen/radiolagos1075/radio.mp3"'));
  assert.doesNotMatch(station,/puzzofme/);
  // Turn 5 redesign: playback moved into one shared store (lib/radio-store.ts) so the
  // site-wide mini-player keeps the same stream running across pages.
  const store=await read('frontend/apps/main/lib/radio-store.ts');
  assert.match(store,/element\.src = station\.streamUrl/);
  assert.match(store,/RADIO_LAGOS_1075/); assert.match(store,/GUTS_FM/);
- assert.match(guts,/https:\/\/stream\.voltsradio\.com\/listen\/cfm\/radio\.mp3/);
+ assert.ok(guts.includes('streamUrl: "https://stream.voltsradio.com/listen/cfm/radio.mp3"'));
  assert.doesNotMatch(guts + player + store,/NAIJA_RADIO_API_KEY|puzzofme/);
  assert.doesNotMatch(page,/listeningPerks|Better Listening Desk/);
  assert.match(page,/The sound of Epe\./);
