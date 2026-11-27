@@ -46,6 +46,8 @@ test('web push is fully wired: worker, guest-capable subscribe route, encrypted 
   assert.match(prompt, /Good things happen in Epe/);
   assert.match(prompt, /permissionGuide/, 'the browser step includes a dedicated visual guide');
   assert.match(promptStyles, /\.permissionGuide/);
+  assert.match(promptStyles, /height: min\(80dvh, 620px\)/, 'the guide arrow reaches toward the browser permission prompt');
+  assert.doesNotMatch(promptStyles, /\.card::before/, 'the card has no blue stripe along its top edge');
   assert.match(promptStyles, /prefers-reduced-motion/);
   assert.match(client, /pushManager\.getSubscription/, 'existing subscriptions are reused');
   assert.doesNotMatch(prompt, /requestPermission/, 'permission is only requested via enablePush from a click');
