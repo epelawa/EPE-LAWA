@@ -6,7 +6,7 @@ import { siteUrl } from "../../lib/site";
 import { ACTIVITY_COOKIE, ACTIVITY_COOKIE_MAX_AGE_SECONDS } from "../../lib/session-policy";
 import { mapAuthProviderError } from "./auth-error";
 import { formRateAllowance, formRateMessage, formRateUnavailableMessage } from "../../lib/form-server";
-import { recordSigninOutcome, signinAccountGate, signinLockedMessage } from "../../../admin/lib/signin-throttle";
+import { admitSigninAttempt, normaliseSigninEmail, recordSigninOutcome, signinLockedMessage, type SigninOutcome } from "../../../admin/lib/signin-throttle";
 import { availabilityFromRpc, isValidHandle, normalizeHandle } from "../../lib/member-handle";
 import { handleResendSignupVerification, handleVerifyEmailOtp, type AuthState } from "../../lib/auth-otp";
 export type { AuthState } from "../../lib/auth-otp";
@@ -102,37 +102,45 @@ export async function completeVerifiedMemberHandle(_state: AuthState, data: Form
 }
 
 export async function signIn(_state: AuthState, data: FormData): Promise<AuthState> {
-  const email = field(data, "email").toLowerCase();
+  // One normalised spelling for the lock key AND the provider (Strix review on PR #280).
+  const email = normaliseSigninEmail(field(data, "email"));
   const password = passwordField(data);
   if (!validEmail(email)) return { status: "error", message: "Enter a valid email address.", fieldErrors: { email: "Enter a valid email address." } };
   if (!password) return { status: "error", message: "Enter your password.", fieldErrors: { password: "Enter your password." } };
   if (password.length > 128) return { status: "error", message: "Your password must be no more than 128 characters.", fieldErrors: { password: "Your password must be no more than 128 characters." } };
-  // Per-account lock first: checking it never counts an attempt, and a locked
-  // email should not spend the network's sign-in budget.
-  const gate = await signinAccountGate(email);
+  // Reserve one of this email's password checks (atomic, so parallel requests
+  // cannot all slip past the lock). Every path below closes the attempt.
+  const gate = await admitSigninAttempt(email);
   if (!gate.allowed) {
     return gate.reason === "locked"
       ? { status: "error", message: signinLockedMessage(gate.retryAfterSeconds), values: { email } }
       : { status: "error", message: formRateUnavailableMessage, values: { email } };
   }
-  if (!(await formRateAllowance("auth_signin", 15))) return { status: "error", message: await formRateMessage() };
+  let closed = false;
+  const close = async (outcome: SigninOutcome) => { closed = true; return recordSigninOutcome(email, outcome); };
+  if (!(await formRateAllowance("auth_signin", 15))) {
+    await close("unknown");
+    return { status: "error", message: await formRateMessage() };
+  }
   try {
     const supabase = await createClient();
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       if (error.code === "invalid_credentials") {
-        const lockedFor = await recordSigninOutcome(email, false);
+        const lockedFor = await close("rejected");
         if (lockedFor > 0) return { status: "error", message: signinLockedMessage(lockedFor), values: { email } };
         return { status: "error", message: mapAuthProviderError(error, "signin") };
       }
       if (error.code === "email_not_confirmed") {
         // The password was right; only the address is unconfirmed.
-        await recordSigninOutcome(email, true);
+        await close("verified");
         return { status: "notice", message: "Enter the one-time code we sent to this address to confirm your email and finish signing in. If it has not arrived in a few minutes, resend it from the card below.", values: { email } };
       }
+      // Provider outage or rate limit: no password was judged.
+      await close("unknown");
       return { status: "error", message: mapAuthProviderError(error, "signin") };
     }
-    await recordSigninOutcome(email, true);
+    await close("verified");
     // Sign-in goes straight to the member dashboard for a finished profile;
     // only accounts that still need a handle or bootstrap see the completion step.
     const userId = data.user?.id;
@@ -161,6 +169,7 @@ export async function signIn(_state: AuthState, data: FormData): Promise<AuthSta
     redirect("/dashboard");
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
+    if (!closed) await close("unknown");
     return { status: "error", message: mapAuthProviderError(error, "signin") };
   }
 }
@@ -188,7 +197,7 @@ export async function updatePassword(_state: AuthState, data: FormData): Promise
     const { error } = await supabase.auth.updateUser({ password });
     if (error) return { status: "error", message: genericError };
     // A completed reset proves control of the inbox, so it lifts any sign-in lock.
-    if (user.email) await recordSigninOutcome(user.email, true);
+    if (user.email) await recordSigninOutcome(user.email, "verified");
     redirect("/dashboard");
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;

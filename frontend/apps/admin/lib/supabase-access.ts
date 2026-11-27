@@ -239,7 +239,12 @@ export async function signInAdminWithPassword(
     if (!tokenResp.ok) {
       let errorCode: unknown;
       try { errorCode = ((await tokenResp.json()) as { error_code?: unknown }).error_code; } catch { errorCode = undefined; }
-      return { allowed: false, password: errorCode === "invalid_credentials" ? "rejected" : "unknown" };
+      // email_not_confirmed is only returned for a correct password; it grants nothing here
+      // (no session, no cookies) but clears the account's failure count (CodeRabbit on PR #280).
+      return {
+        allowed: false,
+        password: errorCode === "invalid_credentials" ? "rejected" : errorCode === "email_not_confirmed" ? "verified" : "unknown",
+      };
     }
     session = (await tokenResp.json()) as AdminSessionValue;
     verified = true;

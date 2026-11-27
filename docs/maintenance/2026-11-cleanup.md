@@ -86,25 +86,49 @@ The same 200 was measured on `/news/<missing>`, `/tourism/<missing>`, `/who-is-w
 The network limiter (`auth_signin`: 15 per network, 500 shared per hour) cannot stop many networks guessing **one**
 account, and the staff login had no limit at all. Both sign-in forms now share a per-account lock:
 
-- **Rule:** 8 failed password checks for the same email within 15 minutes lock that email for 15 minutes. The lock is
-  fixed, not escalating, so someone who deliberately locks another person out only costs them 15 minutes.
-- **What counts:** only a provider-confirmed wrong password (`invalid_credentials`). Outages, provider rate limits and
-  invalid input are not counted. A successful sign-in, or a correct password on an unconfirmed address, clears the
-  count. A completed password reset also lifts the lock.
-- **Privacy:** the database stores only an HMAC of the lower-cased email, keyed with `FORM_RATE_SECRET` (domain
+- **Rule:** at most 8 password checks per email can be spent or in flight in a 15-minute window. The 8th wrong
+  password locks that email for 15 minutes.
+  - **Admission is atomic.** Each check first reserves a slot under a database row lock (`signin_throttle_admit`), so a
+    burst of parallel requests cannot all slip past the lock (Strix review on PR #280).
+  - **What 15 minutes means:** it is the length of **each** lock, not a cap on disruption. Someone who keeps sending
+    eight wrong passwords every time a lock expires can keep an account locked for longer. The lock is deliberately
+    fixed rather than escalating, so each cycle costs that person eight more attempts and the account holder at most
+    15 minutes. A completed password reset ends the lock at once.
+- **Closing each attempt** (`signin_throttle_record`):
+  - `"rejected"` (provider-confirmed `invalid_credentials`) keeps the slot as a failure.
+  - `"verified"` (successful sign-in, or `email_not_confirmed`, which proves the password) clears the email. A completed
+    password reset also records `"verified"`.
+  - `"unknown"` (outage, provider rate limit, network-limiter refusal, invalid input) gives the slot back.
+- **Privacy:** the database stores only an HMAC of the email, keyed with `FORM_RATE_SECRET` (domain
   `signin-account:v1:`). Every email string is treated the same way, registered or not, so the lock never reveals
   whether an account or staff account exists.
-- **Order:** the lock is checked before the network budget is spent and before the password is sent to the provider.
+- **One spelling:** both forms lower-case and trim the email once, and send that same string to the auth provider. The
+  lock is therefore keyed on exactly the identifier that is authenticated, and a respelling (for example a capital
+  dotted `İ`) cannot reach the same account under a fresh budget.
 - **Fail-safe:** on Vercel, if the lock cannot be checked (missing secret or service key, database error), sign-in is
   refused with the existing "temporarily unavailable" message, matching `formRateAllowance`. Local development stays
   usable.
 - **Code:** `frontend/apps/admin/lib/signin-throttle.ts` (shared helper), `frontend/apps/main/app/auth/actions.ts`
   (`signIn`, `updatePassword`), `frontend/apps/admin/lib/login-actions.ts`, and
-  `signInAdminWithPassword` in `frontend/apps/admin/lib/supabase-access.ts`, which now reports `password:
+  `signInAdminWithPassword` in `frontend/apps/admin/lib/supabase-access.ts`, which reports `password:
   "rejected" | "verified" | "unknown"`.
-- **Database:** `backend/supabase/migrations/20261129000000_signin_account_throttle.sql`, with table
-  `auth_signin_throttle` and functions `signin_throttle_status` / `signin_throttle_record`. All of it is service_role only.
+- **Database:** `backend/supabase/migrations/20261129000000_signin_account_throttle.sql` (table
+  `auth_signin_throttle`) and `20261129010000_signin_throttle_atomic_admission.sql` (`signin_throttle_admit`,
+  `signin_throttle_record`). All of it is service_role only.
 - **Tests:** `backend/tests/signin-account-throttle.test.mjs` and `frontend/tests/signin-account-throttle.test.mjs`.
-- **Unlocking someone by hand** (staff with database access):
-  `delete from public.auth_signin_throttle where locked_until > now();` clears every current lock. Individual keys
-  cannot be found by email without the secret, by design.
+
+### Unlocking an account
+
+1. **Self-service (preferred):** the account holder resets their password from `/forgot-password`. Completing the reset
+   lifts the lock.
+2. **One account, by staff:** the row key is an HMAC, so it can only be found with `FORM_RATE_SECRET`. That secret is
+   held in the Vercel project environment, which only the project owner can read. With the secret in the shell
+   environment, compute the key for the address:
+
+   ```sh
+   node -e 'const c=require("node:crypto");process.stdout.write(c.createHmac("sha256",process.env.FORM_RATE_SECRET).update("signin-account:v1:"+process.argv[1].trim().toLowerCase()).digest("hex")+"\n")' 'person@example.com'
+   ```
+
+   Then delete only that row: `delete from public.auth_signin_throttle where account_key = '<the 64-hex key>';`
+3. **Bulk reset (emergency only, clears every account's lock):**
+   `delete from public.auth_signin_throttle where locked_until > now();`

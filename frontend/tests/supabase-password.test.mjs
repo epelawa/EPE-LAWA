@@ -25,6 +25,7 @@ test('password sign-in stages cookies until identity and effective admin capabil
       assert.deepEqual(await req.json(), { email: 'staff@example.invalid', password: 'test-only password', gotrue_meta_security: {} });
       if (scenario === 'invalid') return Response.json({ error: 'invalid_grant' }, { status: 400 });
       if (scenario === 'wrong-password') return Response.json({ code: 400, error_code: 'invalid_credentials', msg: 'Invalid login credentials' }, { status: 400 });
+      if (scenario === 'unconfirmed-email') return Response.json({ code: 400, error_code: 'email_not_confirmed', msg: 'Email not confirmed' }, { status: 400 });
       if (scenario === 'provider-limit') return Response.json({ code: 429, error_code: 'over_request_rate_limit' }, { status: 429 });
       if (scenario === 'offline') throw new Error('provider offline');
       return Response.json({ access_token: largeSession ? 'x'.repeat(10000) : 'fake-access', refresh_token: 'fake-refresh', token_type: 'bearer', expires_in: 3600, user: { id: 'staff-a', aud: 'authenticated' } });
@@ -74,7 +75,7 @@ test('password sign-in stages cookies until identity and effective admin capabil
     // `password` feeds the per-account throttle: only a provider-confirmed wrong password counts,
     // a session that was issued proves the password even when a later staff check refuses.
     const passwordOutcome = { 'wrong-password': 'rejected', invalid: 'unknown', 'provider-limit': 'unknown', offline: 'unknown' };
-    for (const mode of ['wrong-password', 'provider-limit', 'invalid', 'offline', 'inactive', 'revoked', 'mismatch', 'unverified', 'user-error', 'profile-error', 'grant-error']) {
+    for (const mode of ['wrong-password', 'unconfirmed-email', 'provider-limit', 'invalid', 'offline', 'inactive', 'revoked', 'mismatch', 'unverified', 'user-error', 'profile-error', 'grant-error']) {
       scenario = mode; calls.length = 0;
       const denied = store();
       assert.deepEqual(await signInAdminWithPassword(input.email, input.password, denied), { allowed: false, password: passwordOutcome[mode] ?? 'verified' }, mode);

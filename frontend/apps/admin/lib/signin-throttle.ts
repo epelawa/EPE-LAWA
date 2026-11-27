@@ -10,15 +10,22 @@ import { createClient } from "@supabase/supabase-js";
  * staff sign-in (admin login action, also rendered by the main app).
  *
  * The network limiter (form_rate_limit 'auth_signin') stops one network
- * guessing; this stops many networks guessing ONE account. Only failed password
- * checks count: 8 within 15 minutes lock that email for 15 minutes. A successful
- * sign-in or a completed password reset clears it. See
- * backend/supabase/migrations/20261129000000_signin_account_throttle.sql.
+ * guessing; this stops many networks guessing ONE account. Every password check
+ * first reserves a slot atomically (admitSigninAttempt), so at most 8 checks per
+ * email can be spent or in flight in a 15-minute window, however many requests
+ * arrive at once; the 8th wrong password locks that email for 15 minutes. Every
+ * admitted attempt MUST then be closed with recordSigninOutcome: "verified"
+ * clears the email, "rejected" keeps the slot as a failure, "unknown" (outage,
+ * provider rate limit, network-limiter refusal) gives the slot back. See
+ * backend/supabase/migrations/20261129000000_signin_account_throttle.sql and
+ * 20261129010000_signin_throttle_atomic_admission.sql.
  *
  * The database only ever sees an HMAC of the normalised email (keyed with
  * FORM_RATE_SECRET), and every email string is throttled the same way whether
  * or not an account exists, so the lock reveals nothing about registration.
  */
+
+export type SigninOutcome = "verified" | "rejected" | "unknown";
 
 export type SigninGate =
   | { allowed: true }
@@ -27,7 +34,12 @@ export type SigninGate =
 
 const KEY_DOMAIN = "signin-account:v1:";
 
-/** Lower-cased, trimmed email: the same address always maps to the same key. */
+/**
+ * Lower-cased, trimmed email. Both sign-in actions send exactly this string to
+ * the auth provider too, so the lock is keyed on the identifier that is actually
+ * authenticated and a respelling (e.g. a capital dotted İ) cannot reach the same
+ * account under a fresh attempt budget (Strix review on PR #280).
+ */
 export function normaliseSigninEmail(email: string): string {
   return email.trim().toLowerCase();
 }
@@ -57,15 +69,18 @@ function unavailable(): SigninGate {
   return process.env.VERCEL === "1" ? { allowed: false, reason: "unavailable" } : { allowed: true };
 }
 
-/** Whether this email may attempt a password sign-in right now. Never counts an attempt. */
-export async function signinAccountGate(email: string): Promise<SigninGate> {
+/**
+ * Reserves one password check for this email, or reports the lock. When this
+ * returns allowed, the caller must close the attempt with recordSigninOutcome.
+ */
+export async function admitSigninAttempt(email: string): Promise<SigninGate> {
   const accountKey = signinAccountKey(email);
   const db = throttleClient();
   if (!accountKey || !db) return unavailable();
   try {
-    const { data, error } = await db.rpc("signin_throttle_status", { p_account_key: accountKey });
+    const { data, error } = await db.rpc("signin_throttle_admit", { p_account_key: accountKey });
     if (error || typeof data !== "number") {
-      console.error("sign-in throttle status failed", { code: error?.code });
+      console.error("sign-in throttle admission failed", { code: error?.code });
       return unavailable();
     }
     return data > 0 ? { allowed: false, reason: "locked", retryAfterSeconds: data } : { allowed: true };
@@ -75,16 +90,17 @@ export async function signinAccountGate(email: string): Promise<SigninGate> {
 }
 
 /**
- * Records the outcome of one password check. Returns the seconds the email is
- * now locked for (0 when not locked or when recording failed). Best effort: a
- * recording failure never blocks a successful sign-in.
+ * Closes one admitted attempt (or, with "verified", clears the email after a
+ * completed password reset). Returns the seconds the email is now locked for
+ * (0 when not locked or when recording failed). Best effort: a recording
+ * failure never blocks a successful sign-in.
  */
-export async function recordSigninOutcome(email: string, succeeded: boolean): Promise<number> {
+export async function recordSigninOutcome(email: string, outcome: SigninOutcome): Promise<number> {
   const accountKey = signinAccountKey(email);
   const db = throttleClient();
   if (!accountKey || !db) return 0;
   try {
-    const { data, error } = await db.rpc("signin_throttle_record", { p_account_key: accountKey, p_succeeded: succeeded });
+    const { data, error } = await db.rpc("signin_throttle_record", { p_account_key: accountKey, p_outcome: outcome });
     if (error || typeof data !== "number") {
       console.error("sign-in throttle record failed", { code: error?.code });
       return 0;
