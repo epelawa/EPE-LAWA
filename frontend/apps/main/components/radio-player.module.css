@@ -1,14 +1,13 @@
-/* Main /radio player: a dark listening surface (Midnight/Navy from the approved
-   palette), Cobalt actions with Midnight text, and one restrained amber accent
-   that appears only while audio is genuinely playing. No gradients, no glass. */
+/* Main /radio player: a light listening surface with blue actions and one
+   restrained live accent that appears only while audio is genuinely playing. */
 .player {
-  --player-bg: #0A1023;
-  --player-raised: #17264A;
-  --player-line: #293650;
-  --player-text: #F1F4FA;
-  --player-muted: #A6B2C5;
-  --player-accent: #477FE0;
-  --player-live: #F0B14A;
+  --player-bg: #FFFFFF;
+  --player-raised: #EAF0FB;
+  --player-line: #D9E3F1;
+  --player-text: #17264A;
+  --player-muted: #53627A;
+  --player-accent: #294B91;
+  --player-live: #8A4B08;
   display: grid;
   gap: 16px;
   min-width: 0;
@@ -31,15 +30,15 @@
   display: grid; flex: 0 0 auto; place-items: center;
   width: clamp(60px, 14vw, 72px); height: clamp(60px, 14vw, 72px);
   border: 0; border-radius: 50%;
-  background: var(--player-accent); color: #0A1023;
+  background: var(--player-accent); color: #FFFFFF;
   cursor: pointer;
   transition: transform 120ms ease-out, background-color 120ms ease-out;
 }
-.playButton:hover { background: #A7C5F5; }
+.playButton:hover { background: #17264A; }
 .playButton:active { transform: scale(.97); }
 .playButton:disabled { opacity: .6; cursor: progress; }
 .playButton:focus-visible, .iconButton:focus-visible, .retry:focus-visible, .stationList button:focus-visible, .volume:focus-visible, .note a:focus-visible {
-  outline: 3px solid #A7C5F5; outline-offset: 3px;
+  outline: 3px solid #477FE0; outline-offset: 3px;
 }
 .nowPlaying { display: grid; gap: 4px; min-width: 0; }
 .nowLabel { margin: 0; color: var(--player-muted); font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
@@ -66,13 +65,13 @@
 }
 .stationList button:hover { background: var(--player-raised); }
 .stationList button[aria-pressed="true"] { border-color: var(--player-accent); background: var(--player-raised); }
-.stationMark { display: grid; flex: none; place-items: center; width: 34px; height: 34px; border-radius: 8px; background: var(--player-raised); color: #A7C5F5; font-size: .72rem; font-weight: 800; }
-.stationList button[aria-pressed="true"] .stationMark { background: var(--player-accent); color: #0A1023; }
+.stationMark { display: grid; flex: none; place-items: center; width: 34px; height: 34px; border-radius: 8px; background: var(--player-raised); color: var(--player-accent); font-size: .72rem; font-weight: 800; }
+.stationList button[aria-pressed="true"] .stationMark { background: var(--player-accent); color: #FFFFFF; }
 .stationInfo { display: grid; min-width: 0; }
 .stationInfo strong { font-size: .92rem; overflow-wrap: anywhere; }
 .stationInfo small { color: var(--player-muted); font-size: .78rem; }
 .note { margin: 0; color: var(--player-muted); font-size: .85rem; line-height: 1.45; }
-.note a { color: #A7C5F5; }
+.note a { color: #294B91; }
 
 .sponsor { min-width: 0; padding-top: 4px; border-top: 1px solid var(--player-line); }
 

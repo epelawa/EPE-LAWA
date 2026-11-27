@@ -30,6 +30,17 @@ test('radio page uses direct streams for Radio Lagos and Guts FM', async()=>{
  assert.match(page,/href="\/radio\/programmes"/); assert.match(page,/href="\/radio\/reminders"/);
 });
 
+test('radio landing hero and player use the light color scheme',async()=>{
+ const pageStyles=await read('frontend/apps/main/app/radio/radio-page.module.css');
+ const playerStyles=await read('frontend/apps/main/components/radio-player.module.css');
+ assert.match(pageStyles,/\.hero\s*\{\s*background:\s*#F1F4FA;\s*color:\s*#17264A;/);
+ assert.match(pageStyles,/\.heroTitle\s*\{[^}]*color:\s*#17264A;/);
+ assert.match(playerStyles,/--player-bg:\s*#FFFFFF/);
+ assert.match(playerStyles,/--player-text:\s*#17264A/);
+ assert.match(playerStyles,/--player-muted:\s*#53627A/);
+ assert.doesNotMatch(pageStyles+playerStyles,/background:\s*#0A1023|color:\s*#F1F4FA/);
+});
+
 test('public programmes continue to use database records',async()=>{
  const page=await read('frontend/apps/main/app/radio/programmes/page.tsx');
  for(const table of ['programmes','radio_schedule']) assert.match(page,new RegExp(`from\\(["']${table}["']\\)`));
