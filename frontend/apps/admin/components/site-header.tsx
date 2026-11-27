@@ -7,6 +7,9 @@ import { CloseIcon, MenuIcon } from "@epelawa/ui";
 import { staffHref } from "../lib/admin-path";
 import type { NavItem } from "../lib/navigation";
 import { BrandLockup } from "./brand";
+import LiveDots from "./live-dots";
+import { anyLive, useLiveQueueCounts } from "./use-live-queue-counts";
+import { useDrawerMemory } from "./use-drawer-memory";
 
 const FOCUSABLE = 'a[href],button:not([disabled]),[tabindex]:not([tabindex="-1"])';
 const isCurrent = (path: string, href: string) =>
@@ -27,8 +30,12 @@ export default function SiteHeader({
   const previousPath = useRef(pathname);
   const [open, setOpen] = useState(false);
   const panel = useRef<HTMLDivElement>(null);
+  const list = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const login = path === "/login";
+  const { onScroll, remember } = useDrawerMemory(open, list, "epe-admin-menu");
+  const { counts, flick } = useLiveQueueCounts(30000, !login);
+  const somethingLive = anyLive(counts);
   const close = useCallback(() => {
     setOpen(false);
     trigger.current?.focus();
@@ -96,30 +103,33 @@ export default function SiteHeader({
             aria-expanded={open}
             aria-controls="admin-drawer"
             onClick={() => open ? close() : setOpen(true)}
-          ><MenuIcon size={20} /></button> : null}
+          ><MenuIcon size={20} />{somethingLive ? <span className="admin-menu-button__dot" aria-hidden="true" /> : null}</button> : null}
         </div>
       </div>
       {!login ? <nav className="admin-nav" aria-label="Staff sections">
         <ul>{items.map((item) => <li key={item.href}>
-          <Link href={staffHref(item.href, basePath)} pendingLabel={item.label} aria-current={isCurrent(path, item.href) ? "page" : undefined}>{item.label}</Link>
+          <Link href={staffHref(item.href, basePath)} pendingLabel={item.label} aria-current={isCurrent(path, item.href) ? "page" : undefined}>{item.label}<LiveDots counts={counts} href={item.href} flick={flick} /></Link>
         </li>)}</ul>
       </nav> : null}
     </header>
     {!login ? <div className="drawer-root" data-open={open ? "true" : "false"} aria-hidden={!open} inert={!open}>
       <button className="drawer-scrim" type="button" tabIndex={-1} aria-label="Close menu" onClick={close} />
-      <div className="drawer" id="admin-drawer" ref={panel} role="dialog" aria-modal="true" aria-labelledby="admin-drawer-title">
+      <div className="drawer drawer--pinned" id="admin-drawer" ref={panel} role="dialog" aria-modal="true" aria-labelledby="admin-drawer-title">
+        {/* The header with the close button stays fixed; only the list below it scrolls. */}
         <div className="drawer__head">
           <h2 id="admin-drawer-title">Your workspace</h2>
           <button className="btn-icon" type="button" aria-label="Close menu" onClick={close}><CloseIcon size={20} /></button>
         </div>
-        <nav aria-label="All staff sections"><ul className="admin-drawer-links">
-          {items.map((item) => <li key={item.href}>
-            <Link href={staffHref(item.href, basePath)} pendingLabel={item.label} aria-current={isCurrent(path, item.href) ? "page" : undefined}>
-              <span>{item.label}</span>{item.hint ? <small>{item.hint}</small> : null}
-            </Link>
-          </li>)}
-        </ul></nav>
-        <p className="drawer__foot">Authorised staff only. All publishing and moderation remains capability-gated.</p>
+        <div className="drawer__body" ref={list} onScroll={onScroll}>
+          <nav aria-label="All staff sections"><ul className="admin-drawer-links">
+            {items.map((item) => <li key={item.href}>
+              <Link href={staffHref(item.href, basePath)} data-nav-href={item.href} onClick={() => remember(item.href)} pendingLabel={item.label} aria-current={isCurrent(path, item.href) ? "page" : undefined}>
+                <span className="admin-drawer-links__title">{item.label}<LiveDots counts={counts} href={item.href} flick={flick} /></span>{item.hint ? <small>{item.hint}</small> : null}
+              </Link>
+            </li>)}
+          </ul></nav>
+          <p className="drawer__foot">Authorised staff only. All publishing and moderation remains capability-gated.</p>
+        </div>
       </div>
     </div> : null}
   </>;

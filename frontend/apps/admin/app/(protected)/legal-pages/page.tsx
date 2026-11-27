@@ -63,7 +63,7 @@ export default async function LegalPagesPage({ searchParams }: { searchParams: P
             <input type="hidden" name="page" value={legal.key} />
             <input type="hidden" name="revision" value={row?.revision ?? 0} />
             <RichTextEditor name="body" rows={14} defaultValue={row?.body ?? ""} maxLength={50000} ariaLabel={`${legal.label} text`} />
-            <p className="ui-meta">{row ? `Last saved ${new Date(row.updated_at).toLocaleString("en-NG")} · revision ${row.revision}. The editor opens with the text currently live on the page.` : "No note is saved yet, so the page currently shows only the full policy. The editor starts empty — write the note you want visitors to read above it."}</p>
+            <p className="ui-meta">{row ? `Last saved ${new Date(row.updated_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })} · revision ${row.revision}. The editor opens with the text currently live on the page.` : "No note is saved yet, so the page currently shows only the full policy. The editor starts empty — write the note you want visitors to read above it."}</p>
             <div className="ui-actions">
               <SubmitButton pendingLabel="Saving…" className="btn-primary" useLegacyClasses>Save {legal.label.toLowerCase()}</SubmitButton>
               <button className="btn-ghost" type="reset">Clear form</button>

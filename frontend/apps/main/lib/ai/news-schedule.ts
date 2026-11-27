@@ -16,6 +16,8 @@ export const NEWS_LIMITS = {
   articles: { min: 1, max: 20 },
   budget: { min: 5, max: 10_000 },
   push: { min: 0, max: 50 },
+  breakingHours: { min: 1, max: 72 },
+  breakingMax: { min: 1, max: 10 },
   times: 24,
 } as const;
 

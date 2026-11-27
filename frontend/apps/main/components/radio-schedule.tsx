@@ -4,12 +4,13 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { lagosNow, toMinutes } from "../app/radio/programmes/on-air";
 import styles from "./radio-schedule.module.css";
+import { to12h } from "../lib/clock12";
 
 export type RadioScheduleSlot = { id: string; day_of_week: number; starts_at: string; ends_at: string; note: string | null; programme: string | null };
 
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const hhmm = (value: string) => value.slice(0, 5);
+const hhmm = (value: string) => to12h(value);
 
 /**
  * Weekly programme listings in West Africa Time. Only published schedule rows are

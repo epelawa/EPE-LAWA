@@ -14,7 +14,7 @@ type QueueRow = {
   submitter_id: string | null; submitter_name: string | null; submitter_email: string | null;
 };
 
-const when = new Intl.DateTimeFormat("en-NG", { dateStyle: "medium", timeStyle: "short", timeZone: "Africa/Lagos" });
+const when = new Intl.DateTimeFormat("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" });
 const STATUSES = ["submitted", "published", "rejected"] as const;
 
 const RESULTS: Record<string, { tone: "success" | "warning" | "danger"; text: string }> = {

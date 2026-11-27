@@ -4,7 +4,8 @@ import { cleanNewsTimes } from "./news-schedule";
 export const AI_CAPABILITIES = [
   { key: "news", label: "Write and publish news on the schedule below", hint: "Epe first, then Lagos, Nigeria and the world, from trusted outlets only." },
   { key: "categories", label: "Create new news categories", hint: "Only when no existing category fits a story." },
-  { key: "push", label: "Send push notifications", hint: "Major breaking stories only, within the daily limit below." },
+  { key: "push", label: "Send push notifications", hint: "Every story the AI publishes notifies news subscribers, with its cover photo, within the daily limit below." },
+  { key: "breaking", label: "Flag breaking news", hint: "Urgent, developing stories join the breaking-news ticker for the hours set below." },
   { key: "business_review", label: "Verify submitted businesses", hint: "Checks the website and OpenStreetMap; publishes only with evidence." },
   { key: "enquiry_reply", label: "Reply to contact enquiries by email", hint: "Every email says it was written by the AI assistant. Corrections always go to a human." },
   { key: "ads", label: "Place approved ads", hint: "Only businesses with a verified paid sponsorship; rotates their order daily." },
@@ -46,6 +47,10 @@ export type AiSettings = {
   articles_per_run: number;
   daily_request_budget: number;
   push_daily_limit: number;
+  /** Hours an AI-flagged breaking story stays in the ticker (1–72). */
+  breaking_hours: number;
+  /** Most stories the AI keeps breaking at once (1–10). */
+  breaking_max: number;
   /** Exact Lagos times (HH:MM) for news runs; empty means every news_interval_minutes. */
   news_times: string[];
   /** Stories still owed from a run that hit its time limit. */
@@ -59,7 +64,7 @@ export type AiSettings = {
   updated_at: string | null;
 };
 
-export const AI_SETTINGS_COLUMNS = "autopilot_enabled,schedule_enabled,daily_start,daily_stop,auto_on_at,auto_off_at,news_interval_minutes,articles_per_run,daily_request_budget,push_daily_limit,news_times,news_owed,capabilities,job_models,actor_user_id,last_news_run_at,last_ads_run_at,last_explain_run_at,updated_at";
+export const AI_SETTINGS_COLUMNS = "autopilot_enabled,schedule_enabled,daily_start,daily_stop,auto_on_at,auto_off_at,news_interval_minutes,articles_per_run,daily_request_budget,push_daily_limit,breaking_hours,breaking_max,news_times,news_owed,capabilities,job_models,actor_user_id,last_news_run_at,last_ads_run_at,last_explain_run_at,updated_at";
 
 export function normaliseSettings(row: Record<string, unknown> | null): AiSettings | null {
   if (!row) return null;
@@ -67,7 +72,11 @@ export function normaliseSettings(row: Record<string, unknown> | null): AiSettin
   const capabilities = Object.fromEntries(AI_CAPABILITIES.map(({ key }) => [key, raw[key] === true])) as Record<AiCapability, boolean>;
   const newsTimes = Array.isArray(row.news_times) ? cleanNewsTimes(row.news_times) : [];
   const owed = Number(row.news_owed);
-  return { ...(row as unknown as AiSettings), capabilities, job_models: normaliseJobModels(row.job_models), news_times: newsTimes, news_owed: Number.isInteger(owed) && owed > 0 ? owed : 0 };
+  const hours = Number(row.breaking_hours);
+  const most = Number(row.breaking_max);
+  return { ...(row as unknown as AiSettings), capabilities,
+    breaking_hours: Number.isInteger(hours) && hours >= 1 && hours <= 72 ? hours : 6,
+    breaking_max: Number.isInteger(most) && most >= 1 && most <= 10 ? most : 5, job_models: normaliseJobModels(row.job_models), news_times: newsTimes, news_owed: Number.isInteger(owed) && owed > 0 ? owed : 0 };
 }
 
 export async function loadAiSettings(db: SupabaseClient): Promise<AiSettings | null> {

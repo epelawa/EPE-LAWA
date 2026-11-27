@@ -69,7 +69,7 @@ export default async function AppealsPage({ searchParams }: { searchParams: Prom
   const appealCard = (row: AppealRow) => <li key={row.id}><Panel className="ui-stack-sm">
     <div className="ui-row">
       <StatusBadge tone={openTone(row.status)}>{statusLabel(row.status)}</StatusBadge>
-      <span className="ui-meta">{resourceLabel(row.resource_type)} · opened {new Date(row.created_at).toLocaleString("en-NG")}</span>
+      <span className="ui-meta">{resourceLabel(row.resource_type)} · opened {new Date(row.created_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}</span>
     </div>
     <p className="ui-meta">{memberLabel(row)}</p>
     <p className="ui-prose">{row.statement}</p>
@@ -89,7 +89,7 @@ export default async function AppealsPage({ searchParams }: { searchParams: Prom
         <div className="ui-actions"><SubmitButton pendingLabel="Recording…" className="btn-primary" useLegacyClasses>Record appeal decision</SubmitButton></div>
       </form>
     ) : (
-      <p className="ui-meta">Decision: {row.decision_note ?? "—"} · {new Date(row.updated_at).toLocaleString("en-NG")}</p>
+      <p className="ui-meta">Decision: {row.decision_note ?? "—"} · {new Date(row.updated_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}</p>
     )}
   </Panel></li>;
 

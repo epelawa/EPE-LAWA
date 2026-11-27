@@ -71,7 +71,12 @@ export function webPushVapidJwt(audience: string, subject: string, publicKey: st
   return `${signingInput}.${b64url(signature)}`;
 }
 
-export type WebPushPayload = { title: string; body: string; kind: string; url?: string };
+/**
+ * `image` is a same-origin path (e.g. /news/{slug}/cover) shown as the large
+ * picture on Android/Chrome/Edge notifications. `tag` collapses repeats of the
+ * same story (for example when a device is reached both by VAPID and by FCM).
+ */
+export type WebPushPayload = { title: string; body: string; kind: string; url?: string; image?: string; tag?: string };
 
 /** RFC 8291 aes128gcm message body for one subscription. */
 export function webPushEncrypt(userPublicKey: string, userAuth: string, payload: WebPushPayload): Buffer {

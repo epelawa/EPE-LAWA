@@ -1,6 +1,7 @@
 "use client";
 
 import { VAPID_PUBLIC_KEY, WEB_PUSH_READY } from "./vapid";
+import { forgetFcmLink, linkFcmToken } from "./fcm-client";
 
 /**
  * Browser-side Web Push helpers shared by the Notification Centre and the
@@ -142,6 +143,8 @@ export async function enablePush(topics: PushTopics): Promise<PushResult> {
     if (data.saved !== true) return { ok: false, reason: "unavailable", message: "Your settings could not be saved. Please try again." };
     remember("subscribed");
     storeTopics(data.topics ?? topics);
+    // Optional Firebase Cloud Messaging link; dormant until Firebase is configured.
+    void navigator.serviceWorker.getRegistration("/").then((reg) => reg ? linkFcmToken(reg, subscription.endpoint, true) : false);
     return { ok: true, topics: data.topics ?? topics };
   } catch {
     return { ok: false, reason: "failed", message: "Your settings could not be saved. Check your connection and try again." };
@@ -182,6 +185,7 @@ export async function disablePush(): Promise<PushResult> {
   }
   try { await subscription.unsubscribe(); } catch { /* the server copy is already gone */ }
   remember(null);
+  forgetFcmLink();
   try { localStorage.removeItem(TOPICS_KEY); localStorage.removeItem(SYNC_KEY); } catch { /* storage blocked */ }
   return { ok: true, topics: { news: false, radio: false } };
 }
@@ -210,6 +214,11 @@ export async function readTopics(): Promise<{ subscribed: boolean; topics: PushT
  */
 export async function syncPush(): Promise<void> {
   if (pushSupport() !== "supported" || pushPermission() !== "granted" || !rememberedSubscribed()) return;
+  // Devices subscribed before Firebase was configured get their FCM token linked here (weekly at most).
+  void currentSubscription().then(async (current) => {
+    const reg = current ? await navigator.serviceWorker.getRegistration("/") : undefined;
+    return current && reg ? linkFcmToken(reg, current.endpoint) : false;
+  });
   try {
     const last = Number(localStorage.getItem(SYNC_KEY) ?? "0");
     if (Number.isFinite(last) && Date.now() - last < SYNC_EVERY_MS) return;

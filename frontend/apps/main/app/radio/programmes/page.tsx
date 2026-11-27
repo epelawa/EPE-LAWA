@@ -8,6 +8,7 @@ import styles from "../radio-page.module.css";
 import { PUBLIC_SCHEDULE_COLUMNS, publicScheduleSlot } from "../../../lib/radio-schedule";
 import { createClient } from "../../../lib/supabase";
 import { pageMetadata } from "../../../lib/metadata";
+import { to12h } from "../../../lib/clock12";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = pageMetadata({ title: "Radio programmes", description: "Approved EPE LAWA programmes and the weekly schedule, in West Africa Time.", path: "/radio/programmes" });
@@ -68,7 +69,7 @@ export default async function RadioProgrammesPage() {
                     <span className="ui-number">{["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][slot.day_of_week]}</span>
                     <div className="ui-stack-sm">
                       <h3 className="ui-item-title">{slot.programme ?? "EPE LAWA programme"}</h3>
-                      <p className="ui-meta"><span>{slot.starts_at.slice(0, 5)}–{slot.ends_at.slice(0, 5)}</span>{slot.note ? <span>{slot.note}</span> : null}{slot.id === onAirId ? <StatusBadge tone="success">On air now</StatusBadge> : null}</p>
+                      <p className="ui-meta"><span>{to12h(slot.starts_at)} – {to12h(slot.ends_at)}</span>{slot.note ? <span>{slot.note}</span> : null}{slot.id === onAirId ? <StatusBadge tone="success">On air now</StatusBadge> : null}</p>
                     </div>
                   </li>
                 ))}

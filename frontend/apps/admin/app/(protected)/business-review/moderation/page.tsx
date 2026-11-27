@@ -16,7 +16,7 @@ export default async function Page() {
     <PageIntro eyebrow="Business directory · Staff" title="Review moderation" description="Member reviews stay private until a reviewer approves them. Hide decisions require a reason and are audited." />
     {error ? <EmptyPanel title="Moderation queue unavailable" description="No review details are displayed. Try again later." /> : !data?.length ? <EmptyPanel title="No reviews awaiting moderation" description="New pending reviews will appear here for staff review." /> : <section className="ui-stack-sm"><SectionHeading eyebrow="Moderation queue" title="Pending member reviews" description="Choose whether to approve and publish or hide each review." />
       <ul className="ui-list ui-stack-sm">{data.map(r => <li key={r.id}><Panel className="ui-stack-sm">
-        <div className="ui-row"><StatusBadge tone="warning">Pending</StatusBadge><span className="ui-meta">Received {new Date(r.created_at).toLocaleString("en-NG")}</span></div>
+        <div className="ui-row"><StatusBadge tone="warning">Pending</StatusBadge><span className="ui-meta">Received {new Date(r.created_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}</span></div>
         <h2 className="ui-item-title">{names.get(r.business_id) ?? "Business"} · {r.rating}/5</h2>
         {r.body ? <p className="ui-prose">{r.body}</p> : null}
         <form action={moderateBusinessReview} className="ui-stack-sm ui-divider">

@@ -7,6 +7,7 @@ const page = await readFile(new URL("app/news/page.tsx", root), "utf8");
 const styles = await readFile(new URL("app/news/listing.module.css", root), "utf8");
 const breaking = await readFile(new URL("components/breaking-news.tsx", root), "utf8");
 const tickerStyles = await readFile(new URL("components/home-breaking-ticker.module.css", root), "utf8");
+const tickerComponent = await readFile(new URL("components/breaking-ticker.tsx", root), "utf8");
 const header = await readFile(new URL("components/site-header.tsx", root), "utf8");
 const siteSearch = await readFile(new URL("components/site-search.tsx", root), "utf8");
 const mobileNavigation = await readFile(new URL("lib/mobile-navigation.ts", root), "utf8");
@@ -65,9 +66,12 @@ test("Breaking news is visible only for a flagged, unexpired published lead", ()
   assert.match(page, /breaking_until.*Date\.now\(\)/);
   assert.match(page, /<BreakingNewsBanner stories=\{breakingStories\}/);
   assert.match(page, /\.eq\("is_breaking", true\)\.gt\("breaking_until"/);
-  assert.match(breaking, /tickerStyles\.track/);
-  assert.match(breaking, /tickerStyles\.duplicate/);
-  assert.match(tickerStyles, /\.narrow \{[^}]*width: min\(680px, 100%\)/);
+  // Turn 24: both pages share one redesigned strip (components/breaking-ticker.tsx).
+  assert.match(breaking, /<BreakingTicker stories=\{active\}/);
+  assert.match(tickerComponent, /styles\.track/);
+  assert.match(tickerComponent, /styles\.duplicate/);
+  assert.match(tickerComponent, /--ticker-duration/);
+  assert.match(tickerStyles, /animation: scroll var\(--ticker-duration, 18s\) linear infinite/);
   assert.doesNotMatch(styles, /breakingBanner/);
 });
 

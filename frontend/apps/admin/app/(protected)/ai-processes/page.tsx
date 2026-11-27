@@ -6,6 +6,7 @@ import { adminHref } from "../../../lib/admin-path";
 import { lagosClock, lagosDay, lagosDayRange, lagosExact, lagosHour } from "../../../lib/lagos-time";
 import { resolveAiEscalation, sendApprovedAiReply } from "../../../lib/ai-actions";
 import LiveRefresh from "../../../components/live-refresh";
+import { hourLabel12h } from "../../../../main/lib/clock12";
 
 export const metadata: Metadata = { title: "AI processes", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -196,7 +197,7 @@ export default async function AiProcessesPage({ searchParams }: { searchParams: 
       <Panel className="ui-stack">
         <SectionHeading title={`Hour by hour · ${day}`} description={`Did ${totals.done} · escalated ${totals.escalated} · did not do ${totals.skipped} · failed ${totals.failed} · ${calls.length} model requests (${calls.filter((call) => !call.ok).length} failed and retried on another model).`} />
         <div className="ui-table"><table><thead><tr><th>Hour (WAT)</th><th>Did</th><th>Escalated</th><th>Did not do</th><th>Failed</th><th>Model requests</th></tr></thead><tbody>
-          {hours.map((hour, index) => hour.done + hour.skipped + hour.escalated + hour.failed + hour.calls === 0 ? null : <tr key={index}><td className="ui-number">{String(index).padStart(2, "0")}:00–{String(index).padStart(2, "0")}:59</td><td className="ui-number">{hour.done}</td><td className="ui-number">{hour.escalated}</td><td className="ui-number">{hour.skipped}</td><td className="ui-number">{hour.failed}</td><td className="ui-number">{hour.calls}{hour.failedCalls ? ` (${hour.failedCalls} failed)` : ""}</td></tr>)}
+          {hours.map((hour, index) => hour.done + hour.skipped + hour.escalated + hour.failed + hour.calls === 0 ? null : <tr key={index}><td className="ui-number">{hourLabel12h(index)} – {hourLabel12h(index + 1)}</td><td className="ui-number">{hour.done}</td><td className="ui-number">{hour.escalated}</td><td className="ui-number">{hour.skipped}</td><td className="ui-number">{hour.failed}</td><td className="ui-number">{hour.calls}{hour.failedCalls ? ` (${hour.failedCalls} failed)` : ""}</td></tr>)}
         </tbody></table></div>
         {hours.every((hour) => hour.done + hour.skipped + hour.escalated + hour.failed + hour.calls === 0) ? <p className="ui-muted">No AI activity on this day.</p> : null}
       </Panel>

@@ -118,7 +118,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
     <section className="ui-stack-sm">
       <SectionHeading eyebrow="Ownership claims" title="Business claims" description="Members who say they run a listing. Approving the claim links their account as owner; reject with a reason otherwise." />
       {!claims.length ? <EmptyPanel title="No open claims" description="Claim requests appear here when members use the claim action on a listing." /> : <ul className="ui-list ui-stack-sm">{claims.map(claim => <li key={claim.id}><Panel className="ui-stack-sm">
-        <div className="ui-row"><StatusBadge tone="warning">open</StatusBadge><span className="ui-meta">Received {new Date(claim.created_at).toLocaleString("en-NG")}</span></div>
+        <div className="ui-row"><StatusBadge tone="warning">open</StatusBadge><span className="ui-meta">Received {new Date(claim.created_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}</span></div>
         <p className="ui-prose">{claim.message}</p>
         <form action={decideBusinessClaim} className="ui-stack-sm ui-divider">
           <input type="hidden" name="claim_id" value={claim.id} />
@@ -133,7 +133,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
 
     <Panel className="ui-subtle">
       <SectionHeading eyebrow="Featured slot" title="Featured business placement" description="One listing at a time is highlighted at the top of the public directory for the chosen days. Placement is paid offline; record the arrangement before switching the slot." />
-      {featuredNow.length ? <p className="ui-meta">Now featured: <strong>{featuredNow[0].businesses?.name ?? "Unknown"}</strong> until {new Date(featuredNow[0].ends_at).toLocaleString("en-NG")}</p> : <p className="ui-meta">The featured slot is empty.</p>}
+      {featuredNow.length ? <p className="ui-meta">Now featured: <strong>{featuredNow[0].businesses?.name ?? "Unknown"}</strong> until {new Date(featuredNow[0].ends_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}</p> : <p className="ui-meta">The featured slot is empty.</p>}
       <form action={featureBusiness} className="ui-stack-sm ui-divider">
         <div className="ui-form-grid">
           <label className="ui-field"><span className="label">Business</span><select name="business_id" required defaultValue="" className="input"><option value="" disabled>Choose a published business</option>{publishedBusinesses.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}</select></label>
@@ -144,7 +144,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
     </Panel>
     {error ? <EmptyPanel title="Queue unavailable" description="No listing details are shown. Try again later." /> : !data?.length ? <EmptyPanel title="No submissions awaiting review" description="New business submissions will appear here for staff review." /> : <section className="ui-stack-sm"><SectionHeading eyebrow="Review queue" title="Pending submissions" description="Review each listing and record a clear, auditable decision." action={<a className="btn-secondary" href="/admin/business-review/export">Download CSV</a>} />
       <ul className="ui-list ui-stack-sm">{data.map(b => <li key={b.id}><Panel className="ui-stack-sm">
-        <div className="ui-row"><StatusBadge tone={b.status === "submitted" ? "warning" : "neutral"}>{b.status}</StatusBadge><span className="ui-meta">{labels.get(b.category_id) ?? "Category"} · Received {new Date(b.created_at).toLocaleString("en-NG")}</span></div>
+        <div className="ui-row"><StatusBadge tone={b.status === "submitted" ? "warning" : "neutral"}>{b.status}</StatusBadge><span className="ui-meta">{labels.get(b.category_id) ?? "Category"} · Received {new Date(b.created_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}</span></div>
         <div><h2 className="ui-item-title">{b.name}</h2><p className="ui-prose">{b.description || "No description provided."}</p></div>
         {(() => { const who = submitters.get(b.id); return who && (who.submitter_name || who.submitter_email) ? <p className="ui-meta"><strong>Submitted by (private):</strong> {who.submitter_name ?? "Guest"}{who.submitter_email ? <> · <a className="ui-text-link" href={`mailto:${who.submitter_email}`}>{who.submitter_email}</a></> : null}</p> : null; })()}
         <dl className="ui-grid ui-grid--2 ui-meta">{(["area", "address", "landmark", "phone", "whatsapp", "email", "website"] as const).map(k => b[k] ? <div key={k}><dt className="ui-eyebrow">{k}</dt><dd>{b[k]}</dd></div> : null)}</dl>

@@ -73,7 +73,9 @@ export async function saveAiSettings(form: FormData): Promise<void> {
   const perRun = chosen(form, "articles_per_run", NEWS_LIMITS.articles, 1);
   const budget = chosen(form, "daily_request_budget", NEWS_LIMITS.budget, 50);
   const pushes = chosen(form, "push_daily_limit", NEWS_LIMITS.push, 3);
-  if (interval === null || perRun === null || budget === null || pushes === null) return await redirect(back("custom"));
+  const breakingHours = chosen(form, "breaking_hours", NEWS_LIMITS.breakingHours, 6);
+  const breakingMax = chosen(form, "breaking_max", NEWS_LIMITS.breakingMax, 5);
+  if (interval === null || perRun === null || budget === null || pushes === null || breakingHours === null || breakingMax === null) return await redirect(back("custom"));
   const newsTimes = form.get("news_mode") === "times" ? cleanNewsTimes(form.getAll("news_time")) : [];
   if (form.get("news_mode") === "times" && !newsTimes.length) return await redirect(back("times"));
   const { error } = await admin.db.rpc("ai_admin_save", {
@@ -92,8 +94,9 @@ export async function saveAiSettings(form: FormData): Promise<void> {
   });
   // Set times (or none) are saved with the rest; this also clears any stories owed under the old settings.
   const schedule = error ? null : await admin.db.rpc("ai_news_schedule_save", { p_news_times: newsTimes });
+  const breaking = error ? null : await admin.db.rpc("ai_breaking_save", { p_hours: breakingHours, p_max: breakingMax, p_enabled: form.get("cap_breaking") === "on" });
   revalidatePath(adminHref("/ai-scheduler"));
-  return await redirect(back(error || schedule?.error ? "failed" : "saved"));
+  return await redirect(back(error || schedule?.error || breaking?.error ? "failed" : "saved"));
 }
 
 /**

@@ -1,67 +1,129 @@
-/* Breaking news is a single-purpose attention cue. The only moving property is
-   transform; keyboard focus and reduced-motion stop it, nothing else. */
+/* Breaking news ticker (turn 24 redesign).
+   One strip for every live breaking story: a red "Breaking" block with a live
+   pulse and a story count, then the headlines scrolling right to left. The
+   only moving property is transform; hover, keyboard focus and reduced-motion
+   all stop it. Several stories scroll one after another in the same strip. */
 .banner {
+  --ticker-red: #c8102e;
+  --ticker-red-deep: #8f0b20;
+  --ticker-ink: #0b1226;
+  position: relative;
   display: flex;
   align-items: stretch;
   min-width: 0;
+  min-height: 52px;
   overflow: hidden;
   margin-top: var(--ep-space-6, 24px);
   margin-bottom: var(--ep-space-1, 4px);
-  border: var(--ep-space-hair, 1px) solid var(--palette-border);
-  border-radius: var(--ep-radius-md, 12px);
-  background: var(--palette-midnight);
-  color: var(--palette-cloud);
+  border: 1px solid rgb(200 16 46 / .35);
+  border-radius: 14px;
+  background:
+    linear-gradient(90deg, rgb(200 16 46 / .16), transparent 38%),
+    var(--ticker-ink);
+  color: #fff;
+  box-shadow: 0 10px 30px rgb(11 18 38 / .16);
 }
 .label {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex: none;
   align-items: center;
-  gap: var(--ep-space-2, 8px);
-  padding: var(--ep-space-3, 12px) var(--ep-space-4, 16px);
-  background: var(--palette-royal-steel);
-  color: var(--palette-cloud);
-  font-size: var(--ep-hint-min, 12px);
-  font-weight: var(--ep-weight-bold);
+  gap: 10px;
+  padding: 0 18px 0 16px;
+  background: linear-gradient(135deg, var(--ticker-red), var(--ticker-red-deep));
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .1em;
   text-transform: uppercase;
-  letter-spacing: .06em;
+  white-space: nowrap;
 }
-.label svg { width: 16px; height: 16px; flex: none; color: var(--palette-ice-blue); }
-.viewport { min-width: 0; flex: 1; overflow: hidden; display: flex; align-items: stretch; }
-.track { display: flex; align-items: stretch; width: max-content; animation:scroll 18s linear infinite; }
-.items { display: flex; flex:none; align-items:stretch; width:max-content; list-style:none; margin:0; padding:0; }
-/* One shared text baseline: the stamp and headline align on their baselines,
-   separated by a hairline divider rather than dot bullets. */
-.items li { display: flex; align-items: baseline; gap: 10px; padding: 0 var(--ep-space-6, 24px); border-right: 1px solid rgb(167 197 245 / .22); white-space: nowrap; font-size: var(--ep-type-sm, 14px); line-height: 20px; }
-/* Headlines are the ticker's only targets: full 44px height (was 23px on desktop). */
-.items a { display: inline-block; padding-block: 12px; margin: 0; color: var(--palette-cloud); font-size: inherit; font-weight: var(--ep-weight-semibold); line-height: 20px; vertical-align: baseline; text-decoration: none; }
-.items a:hover,.items a:focus-visible { text-decoration: underline; }
-/* News-page variant: one compact centred bar, so several breaking stories
-   slide in the same strip and the listing stays easy to read. */
-.narrow {
-  width: min(680px, 100%);
-  margin-inline: auto;
+/* Angled edge so the label reads as a tab leading into the headlines. */
+.label::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: -12px;
+  bottom: 0;
+  width: 12px;
+  background: var(--ticker-red-deep);
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
 }
-.items time { display: inline-block; flex: none; padding-block: 12px; color: var(--palette-ice-blue); font-size: 11px; font-weight: 600; letter-spacing: .04em; line-height: 20px; font-variant-numeric: tabular-nums; }
-/* WCAG 2.2.2: auto-scroll lasts >5s, so keyboard focus into a link pauses it.
-   No visible button: it read as "paused" to users when the ticker was playing. */
-.banner:focus-within .track { animation-play-state:paused; }
-.items a:focus-visible { outline: 2px solid var(--palette-ice-blue); outline-offset: 2px; }
+.pulse { position: relative; width: 10px; height: 10px; flex: none; border-radius: 50%; background: #fff; }
+.pulse::before { content: ""; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid rgb(255 255 255 / .75); animation: ticker-pulse 1.6s ease-out infinite; }
+.count {
+  display: inline-grid;
+  min-width: 22px;
+  height: 22px;
+  place-items: center;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / .2);
+  color: #fff;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+.viewport {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: stretch;
+  overflow: hidden;
+  padding-left: 14px;
+  /* Headlines fade in and out at the edges instead of being cut. */
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 28px, #000 calc(100% - 36px), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 28px, #000 calc(100% - 36px), transparent 100%);
+}
+.track { display: flex; align-items: stretch; width: max-content; animation: scroll var(--ticker-duration, 18s) linear infinite; }
+.items { display: flex; flex: none; align-items: stretch; width: max-content; margin: 0; padding: 0; list-style: none; }
+.items li { display: flex; align-items: center; gap: 12px; padding: 0 28px 0 0; white-space: nowrap; font-size: 15px; line-height: 20px; }
+/* A red diamond separates stories. */
+.items li::before { content: ""; width: 7px; height: 7px; flex: none; transform: rotate(45deg); background: var(--ticker-red); box-shadow: 0 0 0 3px rgb(200 16 46 / .25); }
+.items time {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  padding: 3px 8px;
+  border: 1px solid rgb(255 255 255 / .18);
+  border-radius: 6px;
+  color: #ffd5da;
+  font-size: 11.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 16px;
+}
+/* Headlines are the ticker's only targets: full 44px tap height. */
+.items a { display: inline-flex; min-height: 44px; align-items: center; margin: 0; color: #fff; font-size: inherit; font-weight: 650; text-decoration: none; text-underline-offset: 3px; }
+.items a:hover, .items a:focus-visible { color: #ffe3e7; text-decoration: underline; }
+.items a:focus-visible { outline: 2px solid #ffb3bf; outline-offset: 2px; border-radius: 4px; }
+/* WCAG 2.2.2: the scroll lasts more than 5s, so pointer hover and keyboard focus pause it. */
+.banner:hover .track, .banner:focus-within .track { animation-play-state: paused; }
+.banner:focus-within .viewport { overflow-x: auto; }
+/* Kept for older callers; the strip now fills its container on every page. */
+.narrow { width: 100%; }
+/* News page: the page grid already spaces its sections. */
+.banner.flush { margin: 0; }
 @keyframes scroll { to { transform: translateX(-50%); } }
+@keyframes ticker-pulse { 0% { transform: scale(.6); opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
 @media (max-width: 520px) {
-  .banner { min-height: var(--ep-touch-min, 44px); margin-top: var(--ep-space-3, 12px); }
-  .label { padding: var(--ep-space-2, 8px); font-size: 11px; gap: var(--ep-space-1, 4px); letter-spacing: .03em; }
-  .label svg { width: 14px; height: 14px; }
-  .items li { padding: 0 var(--ep-space-4, 16px); font-size: 13px; }
+  .banner { min-height: 48px; margin-top: var(--ep-space-3, 12px); border-radius: 12px; }
+  .label { gap: 7px; padding: 0 12px 0 11px; font-size: 11px; letter-spacing: .06em; }
+  .count { min-width: 20px; height: 20px; font-size: 10.5px; }
+  .items li { gap: 9px; padding-right: 22px; font-size: 14px; }
+  .items time { padding: 2px 6px; font-size: 11px; }
 }
-@media (prefers-reduced-motion:reduce) {
-  .track { animation:none; width:auto; }
-  .viewport { overflow-x:auto; }
-  .items { width:auto; }
-  .duplicate { display:none; }
+@media (max-width: 360px) { .labelText { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; } }
+@media (prefers-reduced-motion: reduce) {
+  .track { width: auto; animation: none; }
+  .viewport { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
+  .items { width: auto; }
+  .duplicate { display: none; }
+  .pulse::before { animation: none; }
 }
-.banner:focus-within .viewport { overflow-x:auto; }
 
 /* A fresh breaking story arrived while this page was open: brief glow pulse. */
-.arrived { animation: ticker-arrive 1.2s var(--ep-ease-out) 2; }
-@keyframes ticker-arrive { 0%,100% { box-shadow: 0 0 0 0 rgb(71 127 224 / 0); } 50% { box-shadow: 0 0 0 3px rgb(71 127 224 / .55); } }
+.arrived { animation: ticker-arrive 1.2s var(--ep-ease-out, ease-out) 2; }
+@keyframes ticker-arrive { 0%, 100% { box-shadow: 0 0 0 0 rgb(200 16 46 / 0); } 50% { box-shadow: 0 0 0 4px rgb(200 16 46 / .45); } }
 @media (prefers-reduced-motion: reduce) { .arrived { animation: none; } }

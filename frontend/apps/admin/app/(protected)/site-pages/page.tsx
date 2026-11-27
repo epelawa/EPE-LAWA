@@ -87,7 +87,7 @@ export default async function SitePagesPage({ searchParams }: { searchParams: Pr
             </fieldset>
           ) : null}
           <div className="ui-actions"><SubmitButton pendingLabel="Publishing…" className="btn-primary" useLegacyClasses>Publish to the live page</SubmitButton><button className="btn-ghost" type="reset">Clear form</button></div>
-          {row ? <p className="ui-meta">Last saved {new Date(row.updated_at).toLocaleString("en-NG")}. Version {row.revision}.</p> : <p className="ui-meta">This page has no saved edits yet; the text shows the current built-in content.</p>}
+          {row ? <p className="ui-meta">Last saved {new Date(row.updated_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}. Version {row.revision}.</p> : <p className="ui-meta">This page has no saved edits yet; the text shows the current built-in content.</p>}
         </form>
       </section>
       );

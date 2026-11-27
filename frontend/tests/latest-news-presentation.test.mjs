@@ -6,5 +6,5 @@ const ticker=await readFile(new URL('../apps/main/components/home-breaking-ticke
 const listing=await readFile(new URL('../apps/main/app/news/listing.module.css',import.meta.url),'utf8');
 const article=await readFile(new URL('../apps/main/app/news/news.module.css',import.meta.url),'utf8');
 test('dashboard uses publication order, not engagement ranking',()=>{assert.match(dashboard,/order\("published_at", \{ ascending: false/);assert.match(dashboard,/recommendations\.items\.slice\(0, 4\)/);assert.doesNotMatch(dashboard,/rankRecentStories/);});
-test('ticker moves faster while retaining motion and pause controls',()=>{assert.match(ticker,/animation:scroll 18s linear infinite/);assert.match(ticker,/prefers-reduced-motion:reduce/);assert.match(ticker,/animation-play-state:paused/);});
+test('ticker moves faster while retaining motion and pause controls',()=>{assert.match(ticker,/animation: scroll var\(--ticker-duration, 18s\) linear infinite/);assert.match(ticker,/prefers-reduced-motion: reduce/);assert.match(ticker,/animation-play-state: paused/);});
 test('news cards and article text have breathing room',()=>{assert.match(listing,/\.storyCopy \{ padding:18px/);assert.match(listing,/\.featureCard,\.storyCard \{ border:1px solid #d5dfeb; border-radius:12px/);assert.match(article,/\.publicArticlePage \.articleBody \{[^}]*padding-inline/);});

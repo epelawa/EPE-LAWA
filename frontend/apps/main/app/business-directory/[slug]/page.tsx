@@ -15,6 +15,7 @@ import { FlagIcon, GlobeIcon, LandmarkIcon, MailIcon, PhoneIcon } from "../../..
 import ClaimBusinessModal from "./claim-modal";
 import BusinessContactLinks from "./contact-links";
 import styles from "./profile.module.css";
+import { range12h } from "../../../lib/clock12";
 
 type Props = { params: Promise<{ slug: string }>; searchParams?: Promise<Record<string, string | string[] | undefined>> };
 type Business = { id: string; slug: string; name: string; category_slug: string; category_label: string; description: string | null; area: string | null; address: string | null; landmark: string | null; phone: string | null; whatsapp: string | null; email: string | null; website: string | null; hours: Record<string, unknown> | null; is_verified: boolean; logo_key: string | null };
@@ -136,7 +137,7 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
             <h2 id="business-hours">Opening hours</h2>
             <span className={styles.cardHeadMeta}>{openNow === null ? null : openNow ? <StatusBadge tone="success">Open now</StatusBadge> : <StatusBadge tone="warning">Closed now</StatusBadge>}<span>Epe time</span></span>
           </div>
-          <dl className={styles.hours}>{hourRows(hours).map((row) => <div key={row.day}><dt>{row.label}</dt><dd>{row.range ?? "Closed"}</dd></div>)}</dl>
+          <dl className={styles.hours}>{hourRows(hours).map((row) => <div key={row.day}><dt>{row.label}</dt><dd>{row.range ? range12h(row.range) : "Closed"}</dd></div>)}</dl>
         </section> : null}
 
         {gallery.length ? <section className={styles.card} aria-labelledby="business-gallery-heading">

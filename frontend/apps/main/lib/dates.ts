@@ -34,8 +34,12 @@ export function formatIsoDay(value: string | null | undefined): string | null {
 
 /** Timestamps shown to readers render in Lagos time, independent of server timezone. */
 const lagosStampFormatter = new Intl.DateTimeFormat("en-NG", {
-  dateStyle: "medium",
-  timeStyle: "short",
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+  hour12: true,
   timeZone: "Africa/Lagos",
 });
 

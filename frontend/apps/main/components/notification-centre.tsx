@@ -29,7 +29,7 @@ const TOPIC_COPY: Record<keyof PushTopics, { label: string; hint: string }> = {
 
 function when(iso: string) {
   try {
-    return new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Africa/Lagos" }).format(new Date(iso));
+    return new Intl.DateTimeFormat("en-NG", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" }).format(new Date(iso));
   } catch { return ""; }
 }
 const safePath = (url: string | null) => (url && /^\/[A-Za-z0-9/_?=&%.-]*$/.test(url) && !url.startsWith("//") ? url : null);

@@ -7,7 +7,7 @@ import { extractArticle, localityScore, NEWS_OUTLETS, newsworthy, parseFeed, sim
 import { normalizeExternalNewsCoverUrl } from "../../news-cover-url.mjs";
 import { suggestNewsHashtags } from "../../../../admin/lib/news-hashtags";
 import { fanoutPush } from "../../push-fanout";
-import { pushSenderReady } from "../../web-push-send";
+import { pushSenderReady, type WebPushPayload } from "../../web-push-send";
 import { pushCryptoReady } from "../../push-crypto";
 import { rpcProblem, type RunLog } from "../activity";
 import type { AiSettings } from "../settings";
@@ -34,7 +34,10 @@ export type Draft = {
   seoTitle: string;
   seoDescription: string;
   imageAlt: string;
+  /** Kept for older model replies; every published story now notifies subscribers. */
   push: boolean;
+  /** The model judged this urgent, developing news: it joins the breaking-news ticker. */
+  breaking: boolean;
 };
 
 function text(value: unknown, min: number, max: number): string | null {
@@ -46,7 +49,7 @@ export function validateDraft(value: unknown): Draft | null {
   if (!row || typeof row !== "object") return null;
   const publish = row.publish === true;
   const rejectReason = typeof row.reject_reason === "string" ? row.reject_reason.slice(0, 500) : "";
-  if (!publish) return { publish, rejectReason: rejectReason || "The model judged the sources unsuitable.", title: "", summary: "", blocks: [], categorySlug: null, newCategory: null, hashtags: [], seoTitle: "", seoDescription: "", imageAlt: "", push: false };
+  if (!publish) return { publish, rejectReason: rejectReason || "The model judged the sources unsuitable.", title: "", summary: "", blocks: [], categorySlug: null, newCategory: null, hashtags: [], seoTitle: "", seoDescription: "", imageAlt: "", push: false, breaking: false };
   const title = text(row.title, 15, 160);
   const summary = text(row.summary, 40, 400);
   const rawBlocks = Array.isArray(row.body) ? row.body : [];
@@ -71,6 +74,7 @@ export function validateDraft(value: unknown): Draft | null {
     seoDescription: (text(row.seo_description, 30, 160) ?? summary).slice(0, 160),
     imageAlt: (text(row.image_alt, 5, 200) ?? title).slice(0, 200),
     push: row.push === true,
+    breaking: row.breaking === true,
   };
 }
 
@@ -152,7 +156,7 @@ Hard rules:
 - If the sources are thin, contradictory, opinion, sponsored, graphic, defamatory, about a minor, or not real news, set publish to false and explain why in reject_reason.
 - Say why it matters to readers in Epe, Lagos or Nigeria when the sources support it; never invent local angles.
 Return ONLY a JSON object:
-{"publish":true|false,"reject_reason":"","title":"max 110 chars","summary":"1-2 sentences, max 280 chars","body":[{"type":"p"|"h2"|"quote","text":"..."}],"category_slug":"one existing slug or null","new_category":"short label only if no existing category fits, else null","hashtags":["4 to 8 CamelCase hashtags without #"],"seo_title":"max 65 chars","seo_description":"max 155 chars","image_alt":"describes the lead photo of the source report, max 150 chars","push":true only for major breaking news that matters to Epe or Lagos readers}
+{"publish":true|false,"reject_reason":"","title":"max 110 chars","summary":"1-2 sentences, max 280 chars","body":[{"type":"p"|"h2"|"quote","text":"..."}],"category_slug":"one existing slug or null","new_category":"short label only if no existing category fits, else null","hashtags":["4 to 8 CamelCase hashtags without #"],"seo_title":"max 65 chars","seo_description":"max 155 chars","image_alt":"describes the lead photo of the source report, max 150 chars","breaking":true only for urgent, developing news that readers need to know right now (a major incident, emergency, disaster, security alert, election result, death of a major public figure, or a decision that takes effect today); false for routine news, features, analysis and sport results}
 Body: 5 to 10 paragraphs, optional short h2 subheadings. Do not include a sources list; it is added automatically.`;
 
 async function fetchFeeds(): Promise<FeedItem[]> {
@@ -372,7 +376,10 @@ export async function runNewsJob(db: SupabaseClient, ctx: { settings: AiSettings
       details: { slug: article.slug, sources: sourceList, hashtags, cover, locality: candidate.locality.label },
     });
 
-    if (draft.push && settings.capabilities.push) await maybePush(db, ctx, draft, article);
+    let breaking = false;
+    if (draft.breaking && settings.capabilities.breaking) breaking = await markBreaking(db, ctx, draft, article);
+    // Every story the AI publishes notifies news subscribers (within the daily limit), cover photo attached.
+    if (settings.capabilities.push) await maybePush(db, ctx, draft, article, { breaking, cover: Boolean(cover) });
   }
   const owed = storiesOwed(target, written, stoppedForTime);
   await owe(owed);
@@ -382,7 +389,38 @@ export async function runNewsJob(db: SupabaseClient, ctx: { settings: AiSettings
   return `${parts.length ? `${parts.join(" and ")}.` : "No story published this run."}${owed ? ` ${owed} more to come at the next pass.` : ""}`;
 }
 
-async function maybePush(db: SupabaseClient, ctx: { settings: AiSettings; log: RunLog }, draft: Draft, article: { id: string; slug: string }) {
+/** Puts the story in the breaking-news ticker for the configured number of hours. */
+async function markBreaking(db: SupabaseClient, ctx: { settings: AiSettings; log: RunLog }, draft: Draft, article: { id: string; slug: string }): Promise<boolean> {
+  const hours = ctx.settings.breaking_hours;
+  const marked = await db.rpc("ai_mark_breaking", { p_article_id: article.id, p_hours: hours });
+  const ok = !marked.error && marked.data === true;
+  await ctx.log.record({
+    job: "news",
+    action: "news.breaking",
+    outcome: ok ? "done" : marked.error ? "failed" : "skipped",
+    title: draft.title,
+    reason: ok
+      ? `Flagged as breaking news for ${hours} hour${hours === 1 ? "" : "s"}; it scrolls in the breaking-news ticker until then.`
+      : marked.error ? `The breaking flag could not be set: ${rpcProblem(marked.error)}` : "Breaking flag skipped: the ticker already holds the most breaking stories allowed at once.",
+    resourceType: "article",
+    resourceId: article.id,
+  });
+  return ok;
+}
+
+export function newsPushPayload(draft: Pick<Draft, "title" | "summary">, slug: string, options: { breaking: boolean; cover: boolean }): WebPushPayload {
+  const title = `${options.breaking ? "Breaking: " : ""}${draft.title}`;
+  return {
+    title: title.length > 120 ? `${title.slice(0, 119)}…` : title,
+    body: draft.summary.length > 180 ? `${draft.summary.slice(0, 179)}…` : draft.summary,
+    kind: "news",
+    url: `/news/${slug}`,
+    tag: `epelawa:news:${slug}`.slice(0, 120),
+    ...(options.cover ? { image: `/news/${slug}/cover` } : {}),
+  };
+}
+
+async function maybePush(db: SupabaseClient, ctx: { settings: AiSettings; log: RunLog }, draft: Draft, article: { id: string; slug: string }, options: { breaking: boolean; cover: boolean }) {
   const start = new Date();
   start.setUTCHours(0, 0, 0, 0);
   const { count } = await db.from("ai_activity").select("id", { count: "exact", head: true }).eq("action", "push.send").eq("outcome", "done").gte("created_at", start.toISOString());
@@ -394,13 +432,13 @@ async function maybePush(db: SupabaseClient, ctx: { settings: AiSettings; log: R
     await ctx.log.record({ job: "news", action: "push.send", outcome: "skipped", title: draft.title, reason: "Push notifications are not configured on the server (VAPID or PUSH_DATA_KEY missing).", resourceType: "article", resourceId: article.id });
     return;
   }
-  const outcome = await fanoutPush(db, "news", { title: draft.title.slice(0, 120), body: draft.summary.slice(0, 180), kind: "news", url: `/news/${article.slug}` });
+  const outcome = await fanoutPush(db, "news", newsPushPayload(draft, article.slug, options));
   await ctx.log.record({
     job: "news",
     action: "push.send",
     outcome: outcome ? "done" : "failed",
     title: draft.title,
-    reason: outcome ? `Breaking story sent to ${outcome.sent} devices (${outcome.failed} failed, ${outcome.gone} expired removed).` : "The device list could not be read.",
+    reason: outcome ? `${options.breaking ? "Breaking story" : "New story"} sent to ${outcome.sent} device${outcome.sent === 1 ? "" : "s"}${options.cover ? " with its cover photo" : ""} (${outcome.failed} failed, ${outcome.gone} expired removed).` : "The device list could not be read.",
     resourceType: "article",
     resourceId: article.id,
     details: outcome ?? {},

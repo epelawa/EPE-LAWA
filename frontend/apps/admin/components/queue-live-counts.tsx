@@ -6,10 +6,14 @@ import type { QueueCounts, QueueKey } from "./use-live-queue-counts";
 
 const labels: { key: keyof QueueCounts; label: string; href: string }[] = [
   { key: "submissions", label: "Directory submissions", href: "/business-review" },
-  { key: "corrections", label: "Corrections", href: "/people" },
+  { key: "corrections", label: "Profile corrections", href: "/people" },
+  { key: "articleCorrections", label: "Story corrections", href: "/corrections" },
   { key: "enquiries", label: "Enquiries", href: "/enquiries" },
+  { key: "events", label: "Event submissions", href: "/events" },
   { key: "appeals", label: "Appeals", href: "/appeals" },
   { key: "forumReports", label: "Forum reports", href: "/moderation/forum" },
+  { key: "commentReports", label: "Comment reports", href: "/moderation/comments" },
+  { key: "aiEscalations", label: "AI decisions to check", href: "/ai-processes" },
 ];
 
 export default function QueueLiveCounts({ counts, flick }: { counts: QueueCounts | null; flick: QueueKey | null }) {

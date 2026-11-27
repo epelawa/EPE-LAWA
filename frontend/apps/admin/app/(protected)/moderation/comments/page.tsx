@@ -24,7 +24,7 @@ function CommentItem({ comment }: { comment: CommentRow }) {
   const deleted = comment.state === "deleted";
   return <li><Panel className="ui-stack-sm">
     <div className="ui-row">
-      <p className="ui-meta">Story: {comment.article?.slug ? `/${comment.article.slug}` : "Unknown"} · written {new Date(comment.created_at).toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" })}</p>
+      <p className="ui-meta">Story: {comment.article?.slug ? `/${comment.article.slug}` : "Unknown"} · written {new Date(comment.created_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}</p>
       <StatusBadge tone={comment.state === "visible" ? "success" : comment.state === "hidden" ? "warning" : "neutral"}>{comment.state}</StatusBadge>
     </div>
     {deleted ? <p className="ui-subtle">Removed — the words are gone and replies keep their place in the thread.</p> : <div className="ui-stack-sm">

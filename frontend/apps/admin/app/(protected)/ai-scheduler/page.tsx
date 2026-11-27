@@ -14,6 +14,7 @@ import styles from "./ai-scheduler.module.css";
 import { ChoiceWithCustom, NewsScheduleField } from "../../../components/ai-limit-fields";
 import { NEWS_LIMITS, nextNewsSlot } from "../../../../main/lib/ai/news-schedule";
 import { formAdminClient } from "../../../../main/lib/form-server";
+import { to12h } from "../../../../main/lib/clock12";
 
 export const metadata: Metadata = { title: "AI Scheduler", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -77,7 +78,7 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
   const choiceLabel = (index: number) => (index === 0 ? "1st choice" : `Backup ${index}`);
   const minutesLabel = (value: number) => (value % 1440 === 0 ? `Every ${value / 1440 === 1 ? "day" : `${value / 1440} days`}` : value % 60 === 0 ? `Every ${value / 60 === 1 ? "hour" : `${value / 60} hours`}` : `Every ${value} minutes`);
   const nextSlot = nextNewsSlot(settings.news_times, Date.now());
-  const newsPlan = `${settings.news_times.length ? `News runs at ${settings.news_times.join(", ")} (Lagos)${nextSlot ? `; next at ${lagosExact(new Date(nextSlot).toISOString())}` : ""}` : `News runs ${minutesLabel(settings.news_interval_minutes).toLowerCase()}`}, up to ${settings.articles_per_run} ${settings.articles_per_run === 1 ? "story" : "stories"} each time.${settings.news_owed ? ` ${settings.news_owed} ${settings.news_owed === 1 ? "story is" : "stories are"} still owed from the last run and will be written at the next pass.` : ""}`;
+  const newsPlan = `${settings.news_times.length ? `News runs at ${settings.news_times.map((value) => to12h(value)).join(", ")} (Lagos)${nextSlot ? `; next at ${lagosExact(new Date(nextSlot).toISOString())}` : ""}` : `News runs ${minutesLabel(settings.news_interval_minutes).toLowerCase()}`}, up to ${settings.articles_per_run} ${settings.articles_per_run === 1 ? "story" : "stories"} each time.${settings.news_owed ? ` ${settings.news_owed} ${settings.news_owed === 1 ? "story is" : "stories are"} still owed from the last run and will be written at the next pass.` : ""}`;
   const desks = new Map<Desk, Set<string>>();
   for (const outlet of NEWS_OUTLETS) {
     const names = desks.get(outlet.desk) ?? new Set<string>();
@@ -289,6 +290,27 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
                 min={NEWS_LIMITS.push.min}
                 max={NEWS_LIMITS.push.max}
                 suffix="per day"
+                hint="Each story the AI publishes is sent to news subscribers with its cover photo until this many have gone out today."
+              />
+              <ChoiceWithCustom
+                name="breaking_hours"
+                label="Breaking news stays up for"
+                options={[1, 2, 3, 4, 6, 8, 12, 24, 48].map((value) => ({ value, label: `${value} hour${value === 1 ? "" : "s"}` }))}
+                current={settings.breaking_hours}
+                min={NEWS_LIMITS.breakingHours.min}
+                max={NEWS_LIMITS.breakingHours.max}
+                suffix="hours"
+                hint="How long a story the AI flags as breaking scrolls in the breaking-news ticker."
+              />
+              <ChoiceWithCustom
+                name="breaking_max"
+                label="Breaking stories at once"
+                options={[1, 2, 3, 4, 5, 6, 8, 10].map((value) => ({ value, label: `Up to ${value}` }))}
+                current={settings.breaking_max}
+                min={NEWS_LIMITS.breakingMax.min}
+                max={NEWS_LIMITS.breakingMax.max}
+                suffix="stories"
+                hint="The AI will not flag more than this many live breaking stories (editors' flags count too)."
               />
             </div>
           </div>

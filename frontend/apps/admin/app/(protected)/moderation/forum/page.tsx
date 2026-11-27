@@ -56,7 +56,7 @@ export default async function ForumModerationPage({ searchParams }: { searchPara
           <div className="ui-row">
             <div className="ui-stack-sm">
               <h3 className="ui-item-title" id={`report-${report.id}`}>Reported post</h3>
-              <div className="ui-meta"><span>Thread: {report.post?.thread?.title ?? "Unavailable thread"}</span><span aria-hidden="true">·</span><span>Reported <time dateTime={report.created_at}>{new Date(report.created_at).toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" })}</time></span></div>
+              <div className="ui-meta"><span>Thread: {report.post?.thread?.title ?? "Unavailable thread"}</span><span aria-hidden="true">·</span><span>Reported <time dateTime={report.created_at}>{new Date(report.created_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}</time></span></div>
             </div>
             <StatusBadge tone="warning">{report.reason}</StatusBadge>
           </div>
@@ -81,7 +81,7 @@ export default async function ForumModerationPage({ searchParams }: { searchPara
         <div className="ui-row">
           <div className="ui-stack-sm">
             <h3 className="ui-item-title">{thread.title}{thread.is_pinned ? " · pinned" : ""}</h3>
-            <p className="ui-meta">{thread.category?.name ?? "Uncategorised"} · {thread.post_count} {thread.post_count === 1 ? "message" : "messages"} · started {new Date(thread.created_at).toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" })}</p>
+            <p className="ui-meta">{thread.category?.name ?? "Uncategorised"} · {thread.post_count} {thread.post_count === 1 ? "message" : "messages"} · started {new Date(thread.created_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}</p>
           </div>
           <StatusBadge tone={thread.state === "open" ? "success" : thread.state === "locked" ? "warning" : "neutral"}>{thread.state}</StatusBadge>
         </div>
@@ -99,7 +99,7 @@ export default async function ForumModerationPage({ searchParams }: { searchPara
       <SectionHeading eyebrow="Messages" title="Recent messages" description="The newest messages across every chat. Remove one message, or restore one the desk removed earlier." />
       {!posts.length ? <EmptyPanel title="No messages yet" description="Member messages appear here as soon as they are posted." /> : <ul className="ui-list ui-stack-sm">{posts.map((post) => <li key={post.id}><Panel className="ui-stack-sm">
         <div className="ui-row">
-          <p className="ui-meta">In: {post.thread?.title ?? "Unknown chat"} · posted {new Date(post.created_at).toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" })}</p>
+          <p className="ui-meta">In: {post.thread?.title ?? "Unknown chat"} · posted {new Date(post.created_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}</p>
           <StatusBadge tone={post.state === "visible" ? "success" : post.state === "hidden" ? "warning" : "neutral"}>{post.state}</StatusBadge>
         </div>
         {post.state === "deleted" ? <p className="ui-subtle">Message removed by staff — body no longer stored on the thread.</p> : <blockquote className="ui-subtle">{post.body || "(empty)"}</blockquote>}
