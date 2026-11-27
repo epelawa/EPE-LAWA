@@ -70,7 +70,7 @@ async function wikipedia(question: string) {
   if (!page || page.status >= 400) return [];
   try {
     const data = JSON.parse(page.text) as { query?: { search?: { title?: string; snippet?: string }[] } };
-    return (data.query?.search ?? []).map((row) => ({ title: clean(row.title, 120), snippet: clean((row.snippet ?? "").replace(/<[^>]+>/g, ""), 300) }));
+    return (data.query?.search ?? []).map((row) => ({ title: clean(row.title, 120), snippet: clean((row.snippet ?? "").replace(/<[^>]*>?/g, " ").replace(/[<>]/g, " "), 300) }));
   } catch {
     return [];
   }
