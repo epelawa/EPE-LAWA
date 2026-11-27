@@ -23,8 +23,7 @@ test('Itan Ilu Mi schema adds constrained community, category, lineage and right
 
 test('public browsing only queries published archive table and supports family/community/category search', () => {
   assert.match(page, /from\("history_records"\)/);
-  assert.match(page, /family_name\.ilike/);
-  assert.match(page, /community\.ilike/);
+  assert.match(page, /buildOrIlikeContains\(\["family_name", "community"\], safeQuery\)/);
   assert.match(page, /\.eq\("category", category\)/);
   assert.match(page, /Published accounts/);
   assert.match(page, /family_name/);

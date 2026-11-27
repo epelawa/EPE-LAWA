@@ -157,7 +157,8 @@ test("member sign-in: one normalised email, a slot reserved first, and every pat
   assert.match(signIn, /error\.code === "invalid_credentials"\) \{\s*const lockedFor = await close\("rejected"\)/);
   assert.equal((signIn.match(/close\("rejected"\)/g) ?? []).length, 1, "only a confirmed wrong password counts");
   assert.match(signIn, /email_not_confirmed[\s\S]*?close\("verified"\)/);
-  assert.ok(signIn.lastIndexOf('close("verified")') < signIn.indexOf('redirect("/dashboard")'), "success is recorded before the redirect throws");
+  assert.match(signIn, /safeAuthNext\(field\(data, "next"\) \|\| null\)/, "return targets are normalized before sign-in");
+  assert.ok(signIn.lastIndexOf('close("verified")') < signIn.indexOf("redirect(nextPath)"), "success is recorded before the redirect throws");
   assert.match(signIn, /if \(!closed\) await close\("unknown"\)/, "a thrown provider call releases the slot");
   assert.match(signIn, /recordSigninOutcome\(email, outcome, gate\.reservation\)/, "each outcome closes its own reservation");
   assert.match(signIn, /gate\.reason === "busy"\) return \{ status: "error", message: signinBusyMessage/);

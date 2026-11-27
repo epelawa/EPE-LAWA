@@ -9,6 +9,7 @@ import { BusinessCard } from "../../components/business/business-ui";
 import { CloseIcon } from "../../components/business/business-icons";
 import { DirectoryFilterSheet, DirectorySortSelect } from "../../components/business/directory-controls";
 import { DIRECTORY_PAGE_SIZE, SUMMARY_COLUMNS, directoryHref, parseDirectoryQuery, searchTerm, type BusinessSummary, type DirectoryQuery } from "../../lib/business-directory";
+import { buildOrIlikeContains } from "../../lib/postgrest-search";
 import styles from "./directory.module.css";
 
 type Search = Record<string, string | string[] | undefined>;
@@ -27,11 +28,10 @@ async function readDirectory(query: DirectoryQuery) {
   let list = db.from("published_businesses").select(SUMMARY_COLUMNS, { count: "exact" });
   const term = searchTerm(query.q);
   if (term) {
-    const p = `"*${term}*"`;
-    list = list.or(`name.ilike.${p},description.ilike.${p},category_label.ilike.${p},area.ilike.${p},address.ilike.${p}`);
+    list = list.or(buildOrIlikeContains(["name", "description", "category_label", "area", "address"], term));
   }
   const area = searchTerm(query.area);
-  if (area) list = list.or(`area.ilike."*${area}*",address.ilike."*${area}*"`);
+  if (area) list = list.or(buildOrIlikeContains(["area", "address"], area));
   if (query.category) list = list.eq("category_slug", query.category);
   if (query.verified) list = list.eq("is_verified", true);
   if (query.sort === "newest") list = list.order("published_at", { ascending: false, nullsFirst: false });

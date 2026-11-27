@@ -108,11 +108,11 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer nonce={nonce} />
         ) : null}
         <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeScript }} />
-        <AuthCallbackErrorRouter />
         <SiteMotion />
         <NotificationSoundListener />
         <ScrollToTop />
         <ToastRegion />
+        <AuthCallbackErrorRouter />
         <SlashFocus />
         <a className="skip-link" href="#main">
           Skip to content

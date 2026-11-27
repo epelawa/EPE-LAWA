@@ -56,3 +56,37 @@ test('explicit indexing override remains intentional and takes precedence over p
   assert.equal(evaluateIndexing({ ALLOW_INDEXING: 'true' }), 'true');
   assert.equal(evaluateIndexing({ ALLOW_INDEXING: 'false' }), 'false');
 });
+
+test('search-engine verification emits configured tokens, including Bing msvalidate.01, without inventing values', () => {
+  const result = spawnSync(process.execPath, [
+    '--import', tsxLoader,
+    '--input-type=module',
+    '-e',
+    `import { verificationTags } from ${JSON.stringify(siteModule)}; process.stdout.write(JSON.stringify(verificationTags()));`,
+  ], {
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      GOOGLE_SITE_VERIFICATION: 'google-example-token',
+      BING_SITE_VERIFICATION: 'bing-example-token',
+      YANDEX_SITE_VERIFICATION: 'yandex-example-token',
+    },
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(JSON.parse(result.stdout), {
+    tags: { google: 'google-example-token', yandex: 'yandex-example-token', other: { 'msvalidate.01': 'bing-example-token' } },
+    present: true,
+  });
+
+  const empty = spawnSync(process.execPath, [
+    '--import', tsxLoader,
+    '--input-type=module',
+    '-e',
+    `import { verificationTags } from ${JSON.stringify(siteModule)}; process.stdout.write(JSON.stringify(verificationTags()));`,
+  ], {
+    encoding: 'utf8',
+    env: { ...process.env, GOOGLE_SITE_VERIFICATION: '', BING_SITE_VERIFICATION: '', YANDEX_SITE_VERIFICATION: '' },
+  });
+  assert.equal(empty.status, 0, empty.stderr);
+  assert.deepEqual(JSON.parse(empty.stdout), { tags: {}, present: false });
+});
