@@ -1,10 +1,9 @@
 name: DB restore from R2
 
 # DESTRUCTIVE. Restores the live database from a verified R2 backup.
-# Two independent gates must already have passed before this runs:
-#   1. the admin server action checked has_capability('backup.restore');
-#   2. the operator typed the exact backup key (type-to-confirm);
-#   3. db-backup.yml was dispatched first as an automatic safety snapshot.
+# The admin desk checks backup.restore and requires the exact key as confirmation.
+# GitHub gates this job through production-restore. The same job must finish
+# uploading a safety snapshot before it can run the restore.
 # DATABASE_URL and R2 keys exist ONLY in GitHub Actions secrets.
 
 on:
@@ -92,6 +91,26 @@ jobs:
           cd restore
           sha256sum -c "${FILE}.sha256"
 
+      - name: Create and upload pre-restore safety snapshot
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          R2_BUCKET_PRIVATE: ${{ secrets.R2_BUCKET_PRIVATE }}
+        run: |
+          set -euo pipefail
+          stamp="$(date -u +%Y%m%dT%H%M%SZ)-run${GITHUB_RUN_ID}"
+          snapshot="epelawa-${stamp}.sql.gz"
+          object="db-backups/${stamp}/${snapshot}"
+          mkdir -p safety-backup
+          pg_dump "$DATABASE_URL" --no-owner --no-privileges --no-tablespaces \
+            --format=plain | gzip -9 > "safety-backup/${snapshot}"
+          test -s "safety-backup/${snapshot}"
+          (cd safety-backup && sha256sum "${snapshot}" > "${snapshot}.sha256")
+          aws s3 cp "safety-backup/${snapshot}" "s3://${R2_BUCKET_PRIVATE}/${object}" \
+            --endpoint-url "$R2_ENDPOINT" --profile r2 --only-show-errors
+          aws s3 cp "safety-backup/${snapshot}.sha256" "s3://${R2_BUCKET_PRIVATE}/${object}.sha256" \
+            --endpoint-url "$R2_ENDPOINT" --profile r2 --only-show-errors
+          echo "Safety backup uploaded to ${object}"
+
       - name: Restore database
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -103,4 +122,4 @@ jobs:
 
       - name: Clean up local dump
         if: always()
-        run: rm -rf restore
+        run: rm -rf restore safety-backup
