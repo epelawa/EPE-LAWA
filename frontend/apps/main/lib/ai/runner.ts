@@ -37,7 +37,9 @@ const CAPABILITY: Record<AiJob, keyof AiSettings["capabilities"]> = {
   ads: "ads",
 };
 
-const RUN_SECONDS = 52;
+// Vercel Fluid compute allows 300 s per invocation on this project. Scheduled
+// passes use 280 s; "Run now" from the admin page uses 240 s so the page answers in time.
+const RUN_SECONDS = { schedule: 280, manual: 240 } as const;
 
 function olderThan(value: string | null, minutes: number): boolean {
   return !value || Date.now() - Date.parse(value) >= minutes * 60_000;
@@ -52,16 +54,16 @@ export type PassResult = { ran: { job: AiJob; summary: string }[]; skipped: stri
 
 export async function runAutopilotPass(options: { trigger: "schedule" | "manual"; job?: AiJob; triggeredBy?: string | null }): Promise<PassResult> {
   const started = Date.now();
-  const deadline = started + RUN_SECONDS * 1000;
+  const deadline = started + RUN_SECONDS[options.trigger] * 1000;
   const db = formAdminClient();
   const settings = await loadAiSettings(db);
   if (!settings) return { ran: [], skipped: "AI settings are missing (database migration not applied)." };
   if (options.trigger === "schedule" && !settings.autopilot_enabled) return { ran: [], skipped: "Autopilot is off." };
   if (!openRouterKey()) return { ran: [], skipped: "OPENROUTER_API_KEY is not set in Vercel." };
 
-  // Never overlap passes: a pass still running (or crashed) in the last 4 minutes blocks scheduled starts.
+  // Never overlap passes: a pass still running (or crashed) in the last 6 minutes blocks scheduled starts.
   if (options.trigger === "schedule") {
-    const { count } = await db.from("ai_runs").select("id", { count: "exact", head: true }).eq("status", "running").gte("started_at", new Date(started - 4 * 60_000).toISOString());
+    const { count } = await db.from("ai_runs").select("id", { count: "exact", head: true }).eq("status", "running").gte("started_at", new Date(started - 6 * 60_000).toISOString());
     if ((count ?? 0) > 0) return { ran: [], skipped: "Another pass is still running." };
   }
   await db.from("ai_runs").update({ status: "failed", finished_at: new Date().toISOString(), summary: "Stopped before finishing (time limit)." }).eq("status", "running").lt("started_at", new Date(started - 10 * 60_000).toISOString());
@@ -93,7 +95,7 @@ export async function runAutopilotPass(options: { trigger: "schedule" | "manual"
 
   const ran: PassResult["ran"] = [];
   for (const job of due) {
-    if (Date.now() > deadline - 12_000) break;
+    if (Date.now() > deadline - 30_000) break;
     if (!settings.capabilities[CAPABILITY[job]] && options.trigger === "schedule") continue;
     const needsModel = job !== "ads";
     if (needsModel && budget.remaining <= 0) {

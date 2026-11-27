@@ -79,7 +79,7 @@ export async function runEnquiryJob(db: SupabaseClient, ctx: { log: RunLog; budg
       budget: ctx.budget,
       deadline: ctx.deadline,
       validate,
-      maxTokens: 900,
+      maxTokens: 2500,
       messages: [{ role: "system", content: SYSTEM }, { role: "user", content: JSON.stringify({ kind: enquiry.kind, sender_name: enquiry.sender_name, received: enquiry.created_at, enquiry: enquiry.message.slice(0, 4000) }) }],
     });
     if (!result.ok) {

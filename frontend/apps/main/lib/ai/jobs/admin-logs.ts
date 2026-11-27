@@ -49,7 +49,7 @@ export async function runAdminLogJob(db: SupabaseClient, ctx: { log: RunLog; bud
     runId: ctx.log.runId,
     budget: ctx.budget,
     deadline: ctx.deadline,
-    maxTokens: 2500,
+    maxTokens: 3000,
     validate: (value) => {
       const list = (value as { summaries?: unknown })?.summaries;
       if (!Array.isArray(list)) return null;

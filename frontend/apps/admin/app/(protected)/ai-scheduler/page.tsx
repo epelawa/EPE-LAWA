@@ -4,10 +4,10 @@ import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, Status
 import { createStaffClient } from "../../../lib/supabase";
 import { adminHref } from "../../../lib/admin-path";
 import { lagosExact, lagosInputValue } from "../../../lib/lagos-time";
-import { runAiJobNow, saveAiSettings } from "../../../lib/ai-actions";
-import { AI_CAPABILITIES, AI_SETTINGS_COLUMNS, normaliseSettings } from "../../../../main/lib/ai/settings";
+import { refreshAiModels, runAiJobNow, saveAiModels, saveAiSettings } from "../../../lib/ai-actions";
+import { AI_CAPABILITIES, AI_SETTINGS_COLUMNS, MAX_MODELS_PER_JOB, MODEL_JOBS, normaliseSettings } from "../../../../main/lib/ai/settings";
 import { AI_JOB_LABELS } from "../../../../main/lib/ai/runner";
-import { freeModels, keyStatus, requestsToday, type FreeModel } from "../../../../main/lib/ai/openrouter";
+import { freeModels, keyStatus, modelQueue, modelRank, requestsToday, sortModels, type FreeModel } from "../../../../main/lib/ai/openrouter";
 import { NEWS_OUTLETS } from "../../../../main/lib/ai/news-sources";
 import { formAdminClient } from "../../../../main/lib/form-server";
 
@@ -23,7 +23,13 @@ const messages: Record<string, { tone: "success" | "danger" | "warning"; text: s
   denied: { tone: "danger", text: "Only the primary administrators can change the AI." },
   "past-time": { tone: "warning", text: "Scheduled switch-on and shutdown times must be in the future." },
   window: { tone: "warning", text: "Daily working hours need a start and an end time that differ." },
+  "models-saved": { tone: "success", text: "Model choices saved. Each job now tries its models in the order you set." },
+  "models-failed": { tone: "danger", text: "The model choices could not be saved. Only free models (ending in :free) can be chosen." },
+  "models-refreshed": { tone: "success", text: "Free model list refreshed from OpenRouter." },
+  "models-unreachable": { tone: "warning", text: "OpenRouter's model list could not be reached. The last saved list is shown." },
 };
+
+const MAKER: Record<number, string> = { 0: "NVIDIA", 1: "DeepSeek" };
 
 function statusTone(status: string): "success" | "warning" | "danger" | "neutral" {
   return status === "success" ? "success" : status === "failed" ? "danger" : status === "partial" || status === "running" ? "warning" : "neutral";
@@ -52,7 +58,9 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
   let used = 0;
   try {
     const service = formAdminClient();
-    [models, used] = await Promise.all([freeModels(service), requestsToday(service)]);
+    const [catalogue, count] = await Promise.all([freeModels(service), requestsToday(service)]);
+    models = sortModels(catalogue);
+    used = count;
   } catch { /* service key missing: shown below */ }
   const key = await keyStatus();
   const runs = (runsResult.data ?? []) as Run[];
@@ -64,7 +72,7 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
       <PageIntro
         eyebrow="System · AI"
         title="AI Scheduler"
-        description="The EPE LAWA AI desk: hourly news from trusted outlets, business checks, enquiry replies, approved ads, comment moderation, push alerts and admin log explanations. It runs on free OpenRouter models, shuffled every run, and switches to another model when one fails."
+        description="The EPE LAWA AI desk: hourly news from trusted outlets, business checks, enquiry replies, approved ads, comment moderation, push alerts and admin log explanations. It runs on free OpenRouter models only. You choose which models each job uses and in what order; when one is busy or fails, the job moves to the next one on your list."
         meta={<><StatusBadge tone={settings.autopilot_enabled ? "success" : "neutral"}>{settings.autopilot_enabled ? "Autopilot ON — acting without approval" : "Autopilot OFF — drafts and recommendations only"}</StatusBadge>{" "}<Link href={adminHref("/ai-processes")}>Open AI processes →</Link></>}
       />
       {notice ? <Notice tone={notice.tone} role={notice.tone === "success" ? "status" : "alert"}>{notice.text}</Notice> : null}
@@ -85,8 +93,8 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
         </Panel>
         <Panel className="ui-stack-sm">
           <h2>Free models available</h2>
-          <p className="ui-number"><strong>{models.length}</strong> live free models (refreshed every 6 hours).</p>
-          {models.length ? <details><summary>Show models</summary><ul className="ui-list">{models.slice(0, 40).map((model) => <li key={model.id}><code>{model.id}</code></li>)}</ul></details> : <p className="ui-muted">The catalogue is fetched on the first run.</p>}
+          <p className="ui-number"><strong>{models.length}</strong> free models on OpenRouter right now.</p>
+          <p className="ui-muted">Choose which ones each job uses below. <a href="#ai-models">Go to model choices ↓</a></p>
         </Panel>
       </div>
 
@@ -127,11 +135,59 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
         </form>
       </Panel>
 
+      <Panel className="ui-stack" id="ai-models">
+        <SectionHeading title="AI models for each job" description="Pick the free models each job should use, in order. The job always tries your 1st choice first and moves down the list only when a model is busy, too slow or gives an unusable answer. Nothing is shuffled. Jobs with no choices use NVIDIA models first, then DeepSeek." action={<form action={refreshAiModels}><SubmitButton className="btn-secondary" useLegacyClasses pendingLabel="Refreshing…">Refresh model list</SubmitButton></form>} />
+        {!models.length ? <Notice tone="warning" role="status">{key.configured ? "OpenRouter's free model list has not loaded yet. Press “Refresh model list”." : "The free model list appears here once OpenRouter is reachable. Press “Refresh model list”."}</Notice> : null}
+        <form action={saveAiModels} className="ui-stack">
+          {MODEL_JOBS.map((job) => {
+            const chosen = settings.job_models[job.key] ?? [];
+            const plan = modelQueue(models, chosen, MAX_MODELS_PER_JOB);
+            const missing = new Set(plan.missing);
+            return (
+              <fieldset key={job.key} className="ui-stack-sm" style={{ border: "1px solid #d9e3f0", borderRadius: 14, padding: 16, margin: 0 }}>
+                <legend style={{ padding: "0 6px" }}><strong>{job.label}</strong></legend>
+                <p className="ui-muted" style={{ margin: 0 }}>{job.hint}</p>
+                <div className="ui-form-grid">
+                  {Array.from({ length: MAX_MODELS_PER_JOB }, (_, index) => {
+                    const current = chosen[index] ?? "";
+                    return (
+                      <label key={index} className="ui-field">
+                        <span className="label">{index === 0 ? "1st choice" : index === 1 ? "2nd choice (backup)" : index === 2 ? "3rd choice (backup)" : `${index + 1}th choice (backup)`}</span>
+                        <select className="input" name={`model_${job.key}_${index}`} defaultValue={current}>
+                          <option value="">{index === 0 ? "Default (NVIDIA → DeepSeek)" : "— none —"}</option>
+                          {current && missing.has(current) ? <option value={current}>{current} — no longer free, will be skipped</option> : null}
+                          {models.map((model) => <option key={model.id} value={model.id}>{model.name} · {model.id}</option>)}
+                        </select>
+                      </label>
+                    );
+                  })}
+                </div>
+                <p className="ui-meta" style={{ margin: 0 }}>
+                  {plan.usingDefault ? "Now uses the default order: " : "Now tries, in order: "}
+                  {plan.queue.length ? plan.queue.join(" → ") : "no free model available yet"}
+                  {plan.missing.length ? <> · <StatusBadge tone="warning">{plan.missing.length} chosen model{plan.missing.length > 1 ? "s" : ""} no longer free</StatusBadge></> : null}
+                </p>
+              </fieldset>
+            );
+          })}
+          <label className="ui-field"><span className="label">Reason for this change (optional, saved in the audit)</span><input className="input" name="reason" maxLength={500} /></label>
+          <SubmitButton className="btn-primary" useLegacyClasses pendingLabel="Saving…">Save model choices</SubmitButton>
+        </form>
+        {models.length ? (
+          <details>
+            <summary>All {models.length} free models (NVIDIA and DeepSeek first)</summary>
+            <div className="ui-table"><table><thead><tr><th>Model</th><th>ID</th><th>Maker</th><th>Context</th></tr></thead><tbody>
+              {models.map((model) => <tr key={model.id}><td>{model.name}</td><td><code>{model.id}</code></td><td>{MAKER[modelRank(model.id)] ?? model.id.split("/")[0]}</td><td className="ui-number">{model.context.toLocaleString("en-NG")} tokens</td></tr>)}
+            </tbody></table></div>
+          </details>
+        ) : null}
+      </Panel>
+
       <Panel className="ui-stack">
         <SectionHeading title="Run a job now" description={settings.autopilot_enabled ? "Runs immediately with autopilot rules (acts without approval)." : "Autopilot is off: the job drafts and recommends only; results wait in AI processes for approval."} />
         <div className="ui-actions" style={{ flexWrap: "wrap", gap: 10 }}>
           {Object.entries(AI_JOB_LABELS).map(([job, label]) => (
-            <form action={runAiJobNow} key={job}><input type="hidden" name="job" value={job} /><SubmitButton className="btn-secondary" useLegacyClasses pendingLabel="Running… (up to a minute)">{label}</SubmitButton></form>
+            <form action={runAiJobNow} key={job}><input type="hidden" name="job" value={job} /><SubmitButton className="btn-secondary" useLegacyClasses pendingLabel="Running… (up to 4 minutes)">{label}</SubmitButton></form>
           ))}
         </div>
       </Panel>

@@ -1,19 +1,20 @@
 import "server-only";
-import { randomInt } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { normaliseJobModels, type ModelJob } from "./settings";
 
 /**
- * OpenRouter free models only. The catalogue changes often, so the live list
- * (`/api/v1/models`, prompt and completion price both 0) is cached for six hours
- * and shuffled for every run. A call walks the shuffled list until one model
- * returns valid JSON; failed attempts count against the daily free quota too,
- * so every attempt is recorded and the run stops at the configured budget.
- * Paid models are never sent, so the key can never be billed by this code.
+ * OpenRouter free models only. The live catalogue (`/api/v1/models`, every
+ * price 0, id ending in ":free") is cached for six hours. Administrators pick,
+ * per job, which models to use and in what order on the AI Scheduler page; a
+ * call tries them in that order (no shuffling) and moves to the next one when a
+ * model is busy, empty or slow. With nothing chosen, NVIDIA models are tried
+ * first, then DeepSeek. Failed attempts count against the daily free quota, so
+ * every attempt is recorded and the run stops at the configured budget. Paid
+ * models are never sent, so the key can never be billed by this code.
  */
 
 const API = "https://openrouter.ai/api/v1";
 const CACHE_MS = 6 * 60 * 60 * 1000;
-const FINAL_FALLBACK = "openrouter/free";
 
 export type FreeModel = { id: string; name: string; context: number };
 export type ChatMessage = { role: "system" | "user"; content: string };
@@ -43,13 +44,35 @@ function headers(key: string): Record<string, string> {
   };
 }
 
-export function shuffle<T>(items: readonly T[]): T[] {
-  const copy = [...items];
-  for (let index = copy.length - 1; index > 0; index -= 1) {
-    const swap = randomInt(index + 1);
-    [copy[index], copy[swap]] = [copy[swap], copy[index]];
-  }
-  return copy;
+/** Display and default order: NVIDIA first, then DeepSeek, then everything else by name. */
+export function modelRank(id: string): number {
+  if (id.startsWith("nvidia/")) return 0;
+  if (id.startsWith("deepseek/")) return 1;
+  return 2;
+}
+
+export function sortModels<T extends { id: string }>(models: readonly T[]): T[] {
+  return [...models].sort((a, b) => modelRank(a.id) - modelRank(b.id) || a.id.localeCompare(b.id));
+}
+
+/** Default when an administrator has not chosen models for a job: NVIDIA, then DeepSeek (all free ones if neither exists). */
+export function defaultModelIds(catalogue: readonly FreeModel[]): string[] {
+  const preferred = sortModels(catalogue.filter((model) => modelRank(model.id) < 2)).map((model) => model.id);
+  return preferred.length ? preferred : sortModels(catalogue).map((model) => model.id);
+}
+
+/**
+ * The exact order a job tries models in: the administrator's choices that are
+ * still free in the catalogue, else the default order. No randomness.
+ */
+export function modelQueue(catalogue: readonly FreeModel[], chosen: readonly string[] | undefined, maxAttempts: number): { queue: string[]; missing: string[]; usingDefault: boolean } {
+  const available = new Set(catalogue.map((model) => model.id));
+  const picks = (chosen ?? []).filter((id) => id.endsWith(":free"));
+  const missing = picks.filter((id) => !available.has(id));
+  const usable = picks.filter((id) => available.has(id));
+  const usingDefault = usable.length === 0;
+  const queue = (usingDefault ? defaultModelIds(catalogue) : usable).slice(0, Math.max(1, maxAttempts));
+  return { queue, missing, usingDefault };
 }
 
 type CatalogueEntry = {
@@ -153,10 +176,18 @@ export function parseJsonReply(text: string): unknown {
 
 export type Budget = { remaining: number };
 
+/** Pulls the reply text; "thinking" models sometimes leave content empty and put the answer in `reasoning`. */
+export function replyText(message: { content?: unknown; reasoning?: unknown } | undefined): { text: string; fromReasoning: boolean } {
+  const content = typeof message?.content === "string" ? message.content.trim() : "";
+  if (content) return { text: content, fromReasoning: false };
+  const reasoning = typeof message?.reasoning === "string" ? message.reasoning : "";
+  return reasoning.includes("{") ? { text: reasoning, fromReasoning: true } : { text: "", fromReasoning: false };
+}
+
 export async function chatJson<T>(
   db: SupabaseClient,
   options: {
-    job: string;
+    job: ModelJob;
     runId: string | null;
     messages: ChatMessage[];
     validate: (value: unknown) => T | null;
@@ -165,13 +196,21 @@ export async function chatJson<T>(
     maxAttempts?: number;
     maxTokens?: number;
     temperature?: number;
+    /** Per-model time limit; long news rewrites need more than short replies. */
+    timeoutMs?: number;
   },
 ): Promise<ModelResult<T>> {
   const key = openRouterKey();
   if (!key) return { ok: false, error: "OPENROUTER_API_KEY is not set in Vercel.", attempts: 0 };
-  const models = shuffle((await freeModels(db)).map((model) => model.id));
-  const queue = [...models.slice(0, Math.max(0, (options.maxAttempts ?? 3) - 1)), FINAL_FALLBACK];
+  const [catalogue, settingsRow] = await Promise.all([
+    freeModels(db),
+    db.from("ai_settings").select("job_models").eq("id", 1).maybeSingle(),
+  ]);
+  const chosen = normaliseJobModels(settingsRow.data?.job_models)[options.job];
+  const { queue, missing } = modelQueue(catalogue, chosen, options.maxAttempts ?? 4);
   const errors: string[] = [];
+  if (missing.length) errors.push(`chosen model${missing.length > 1 ? "s" : ""} no longer free on OpenRouter, skipped: ${missing.join(", ")}`);
+  if (!queue.length) return { ok: false, error: [...errors, "no free model available"].join("; "), attempts: 0 };
   let attempts = 0;
   for (const model of queue) {
     if (options.budget.remaining <= 0) {
@@ -179,7 +218,7 @@ export async function chatJson<T>(
       break;
     }
     const left = options.deadline - Date.now();
-    if (left < 8000) {
+    if (left < 15_000) {
       errors.push("run time limit reached");
       break;
     }
@@ -193,24 +232,28 @@ export async function chatJson<T>(
         method: "POST",
         cache: "no-store",
         headers: headers(key),
-        signal: AbortSignal.timeout(Math.min(45_000, left - 3000)),
+        signal: AbortSignal.timeout(Math.min(options.timeoutMs ?? 45_000, left - 5000)),
         body: JSON.stringify({
           model,
           messages: options.messages,
           temperature: options.temperature ?? 0.3,
-          max_tokens: options.maxTokens ?? 2200,
+          max_tokens: options.maxTokens ?? 3000,
+          // Keep "thinking" short so the answer itself fits in the token allowance.
+          reasoning: { effort: "low" },
         }),
       });
       status = response.status;
-      const body = (await response.json().catch(() => null)) as { choices?: { message?: { content?: unknown } }[]; error?: { message?: unknown }; model?: unknown } | null;
+      const body = (await response.json().catch(() => null)) as { choices?: { finish_reason?: unknown; message?: { content?: unknown; reasoning?: unknown } }[]; error?: { message?: unknown }; model?: unknown } | null;
       if (!response.ok) {
-        failure = `HTTP ${response.status}${typeof body?.error?.message === "string" ? `: ${body.error.message}` : ""}`;
+        const detail = typeof body?.error?.message === "string" ? `: ${body.error.message}` : "";
+        failure = response.status === 429 ? `busy (HTTP 429${detail}) — moved to the next model` : `HTTP ${response.status}${detail}`;
       } else {
-        const content = body?.choices?.[0]?.message?.content;
-        if (typeof content !== "string" || !content.trim()) failure = "empty reply";
+        const choice = body?.choices?.[0];
+        const { text } = replyText(choice?.message);
+        if (!text) failure = choice?.finish_reason === "length" ? "ran out of tokens while thinking (empty reply)" : "empty reply";
         else {
           try {
-            const value = options.validate(parseJsonReply(content));
+            const value = options.validate(parseJsonReply(text));
             if (!value) failure = "reply did not match the required format";
             else {
               const used = typeof body?.model === "string" ? body.model : model;
@@ -223,7 +266,7 @@ export async function chatJson<T>(
         }
       }
     } catch (error) {
-      failure = error instanceof Error && error.name === "TimeoutError" ? "timed out" : "network error";
+      failure = error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError") ? "too slow (timed out)" : "network error";
     }
     await recordCall(db, options, model, false, status, Date.now() - started, failure);
     errors.push(`${model}: ${failure}`);

@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { localityScore, NEWS_OUTLETS, newsworthy, parseFeed, similarity, titleTokens, trustedNewsHost, type FeedItem } from "../apps/main/lib/ai/news-sources";
 import { cleanHashtags, rankCandidates, unsupportedClaims, validateDraft } from "../apps/main/lib/ai/jobs/news";
-import { freeModelsFromCatalogue, openRouterKey, openRouterKeyIsPlaceholder, parseJsonReply, shuffle } from "../apps/main/lib/ai/openrouter";
+import { defaultModelIds, freeModelsFromCatalogue, modelQueue, openRouterKey, openRouterKeyIsPlaceholder, parseJsonReply, replyText, sortModels } from "../apps/main/lib/ai/openrouter";
+import { extractArticle as extractPage, paragraphText } from "../apps/main/lib/ai/news-sources";
+import { bestReportText } from "../apps/main/lib/ai/jobs/news";
+import { normaliseJobModels } from "../apps/main/lib/ai/settings";
 import { AI_REPLY_DISCLOSURE, scrubReply } from "../apps/main/lib/ai/jobs/enquiries";
 import { adminRequestEvent, adminSection, parseUserAgent } from "../apps/main/lib/admin-activity";
 import { lagosDay, lagosDayRange, lagosExact, lagosHour, lagosInputValue } from "../apps/admin/lib/lagos-time";
@@ -142,10 +145,6 @@ describe("OpenRouter helpers", () => {
     expect(parseJsonReply("```json\n{\"a\":1}\n```")).toEqual({ a: 1 });
     expect(() => parseJsonReply("no json here")).toThrow();
   });
-  it("shuffles without losing models", () => {
-    const list = ["a", "b", "c", "d", "e"];
-    expect(shuffle(list).sort()).toEqual(list);
-  });
 });
 
 describe("AI email replies", () => {
@@ -220,5 +219,72 @@ describe("OpenRouter key and free-only rotation", () => {
       { id: "vendor/good:free", context_length: 32768, pricing: { prompt: "0", completion: "0" } },
     ] });
     expect(models.map((model) => model.id)).toEqual(["vendor/good:free"]);
+  });
+});
+
+describe("admin-chosen models, in order (no shuffling)", () => {
+  const catalogue = [
+    { id: "google/gemma-4-31b-it:free", name: "Gemma", context: 262144 },
+    { id: "deepseek/deepseek-chat-v3.1:free", name: "DeepSeek V3.1", context: 163840 },
+    { id: "nvidia/nemotron-3.5-lightning:free", name: "Nemotron Lightning", context: 1000000 },
+    { id: "nvidia/nemotron-3-ultra-550b-a55b:free", name: "Nemotron Ultra", context: 1000000 },
+  ];
+  it("lists NVIDIA first, then DeepSeek, then the rest", () => {
+    expect(sortModels(catalogue).map((model) => model.id)).toEqual([
+      "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "nvidia/nemotron-3.5-lightning:free",
+      "deepseek/deepseek-chat-v3.1:free",
+      "google/gemma-4-31b-it:free",
+    ]);
+  });
+  it("defaults to NVIDIA then DeepSeek only, and to everything when neither exists", () => {
+    expect(defaultModelIds(catalogue)).toEqual(["nvidia/nemotron-3-ultra-550b-a55b:free", "nvidia/nemotron-3.5-lightning:free", "deepseek/deepseek-chat-v3.1:free"]);
+    expect(defaultModelIds([catalogue[0]])).toEqual(["google/gemma-4-31b-it:free"]);
+  });
+  it("follows the administrator's order exactly and is the same every time", () => {
+    const chosen = ["google/gemma-4-31b-it:free", "nvidia/nemotron-3.5-lightning:free"];
+    const first = modelQueue(catalogue, chosen, 5);
+    expect(first).toEqual({ queue: chosen, missing: [], usingDefault: false });
+    for (let run = 0; run < 20; run += 1) expect(modelQueue(catalogue, chosen, 5).queue).toEqual(chosen);
+  });
+  it("skips chosen models that are no longer free and falls back to the default when none remain", () => {
+    const partly = modelQueue(catalogue, ["vendor/gone:free", "deepseek/deepseek-chat-v3.1:free"], 5);
+    expect(partly.queue).toEqual(["deepseek/deepseek-chat-v3.1:free"]);
+    expect(partly.missing).toEqual(["vendor/gone:free"]);
+    const none = modelQueue(catalogue, ["vendor/gone:free"], 2);
+    expect(none.usingDefault).toBe(true);
+    expect(none.queue).toEqual(["nvidia/nemotron-3-ultra-550b-a55b:free", "nvidia/nemotron-3.5-lightning:free"]);
+  });
+  it("never keeps a non-free id from saved settings", () => {
+    expect(normaliseJobModels({ news: ["nvidia/a:free", "openai/gpt-paid", "nvidia/a:free"], bogus: ["x/y:free"] })).toEqual({ news: ["nvidia/a:free"] });
+    expect(normaliseJobModels(null)).toEqual({});
+  });
+});
+
+describe("thinking models and readable reports", () => {
+  it("uses the reasoning text only when content is empty and it holds JSON", () => {
+    expect(replyText({ content: " {\"a\":1} " })).toEqual({ text: "{\"a\":1}", fromReasoning: false });
+    expect(replyText({ content: "", reasoning: "thinking... {\"a\":1}" })).toEqual({ text: "thinking... {\"a\":1}", fromReasoning: true });
+    expect(replyText({ content: "", reasoning: "no json" }).text).toBe("");
+  });
+  const para = (text: string) => `<p>${text} ${"with enough words to count as report text. ".repeat(2)}</p>`;
+  it("reads the richest <article>, not the first related-story card", () => {
+    const html = `<article class="card">${para("Related card")}</article><article class="story">${para("First real paragraph")}${para("Second real paragraph")}${para("Third real paragraph")}</article>`;
+    const text = extractPage(html).text;
+    expect(text).toContain("Second real paragraph");
+    expect(text).not.toContain("Related card");
+  });
+  it("falls back to JSON-LD articleBody when the layout hides the paragraphs", () => {
+    const body = "Lagos State announced a new ferry route on Thursday. ".repeat(20).trim();
+    const html = `<script type="application/ld+json">${JSON.stringify({ "@graph": [{ "@type": "NewsArticle", articleBody: body }] })}</script><div id="app"></div>`;
+    expect(extractPage(html).text).toBe(body);
+  });
+  it("reads full text from a feed's content:encoded (escaped or CDATA)", () => {
+    expect(paragraphText("<![CDATA[" + para("Feed paragraph") + "]]>")).toContain("Feed paragraph");
+    expect(paragraphText(para("Escaped paragraph").replace(/</g, "&lt;").replace(/>/g, "&gt;"))).toContain("Escaped paragraph");
+  });
+  it("picks the longest available report text", () => {
+    expect(bestReportText(["short", undefined, "a much longer feed text", null])).toBe("a much longer feed text");
+    expect(bestReportText([])).toBe("");
   });
 });
