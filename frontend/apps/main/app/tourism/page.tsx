@@ -8,6 +8,7 @@ import { PageFrame, PageIntro, Panel, SectionHeading, Notice, EmptyPanel } from 
 import { submitTourismContribution } from "./actions";
 import GuestContactFields from "../../components/guest-contact-fields";
 import Image from "next/image";
+import { buildOrIlikeContains } from "../../lib/postgrest-search";
 import styles from "./tourism.module.css";
 
 export const metadata: Metadata = { title: "Historical Sites & Tourism", description: "Browse approved, source-backed Epe tourism destinations and verified visitor details.", alternates: { canonical: "/tourism" } };
@@ -44,7 +45,7 @@ export default async function TourismPage({ searchParams }: { searchParams: Prom
   try {
     supabase = await createClient();
     let request = supabase.from("tourism_destinations").select("id,slug,name,description,visitor_context,location_label,published_at,source_citation,source_url");
-    if (query) request = request.or(`name.ilike.%${query}%,description.ilike.%${query}%`);
+    if (query) request = request.or(buildOrIlikeContains(["name", "description"], query));
     const result = await request.order("name", { ascending: true }).order("id", { ascending: true }).range(start, start + PAGE_SIZE);
     if (result.error) { failed = true; console.error("tourism public read failed", { code: result.error.code }); }
     else {

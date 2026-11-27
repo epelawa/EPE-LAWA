@@ -34,7 +34,7 @@ test("signup remains guided while member sign-in is one accessible screen", asyn
   const loginPage = await readFile(new URL("login/page.tsx", root), "utf8");
   const recoveryPage = await readFile(new URL("forgot-password/page.tsx", root), "utf8");
   const newPasswordPage = await readFile(new URL("auth/new-password/page.tsx", root), "utf8");
-  const signIn = forms.match(/export function SignInForm\(\) \{[\s\S]*?\n\}/)?.[0] ?? "";
+  const signIn = forms.match(/export function SignInForm[\s\S]*?(?=\nexport function ResetForm)/)?.[0] ?? "";
 
   assert.match(forms, /useAuthSteps\(4,/);
   assert.doesNotMatch(forms, /useAuthSteps\(2\)/);
@@ -43,6 +43,7 @@ test("signup remains guided while member sign-in is one accessible screen", asyn
   assert.match(signIn, /id="login-email"/);
   assert.match(signIn, /id="login-password"/);
   assert.match(signIn, /<GoogleSignInUnavailable \/>/);
+  assert.match(signIn, /name="next" value=\{nextPath\}/);
   assert.match(signIn, /draggable=\{false\}/);
   assert.match(signIn, /onDragStart=\{\(event\) => event\.preventDefault\(\)\}/);
   assert.match(signIn, /className="auth-submit" type="submit"/);
@@ -138,7 +139,7 @@ test("320px sign-in stays fixed without scroll/drag and keeps Google visibly dis
   assert.match(styles, /\.auth-page--fixed-viewport\s*\{[^}]*overflow:\s*hidden/s);
   assert.match(styles, /\.auth-page--fixed-viewport\s*\{[^}]*overscroll-behavior:\s*none/s);
   assert.match(styles, /body:has\(\.auth-page--fixed-viewport\) \.site-main\s*\{[^}]*overflow:\s*hidden/s);
-  assert.match(forms, /function SignInForm\(\)[\s\S]*<GoogleSignInUnavailable \/>/);
+  assert.match(forms, /export function SignInForm[\s\S]*?<GoogleSignInUnavailable \/>/);
   assert.match(forms, /className="auth-provider__button" type="button" disabled aria-disabled="true"/);
   assert.match(forms, /draggable=\{false\} onDragStart=\{\(event\) => event\.preventDefault\(\)\}/);
   assert.match(staffForm, /draggable=\{false\} onDragStart=\{\(event\) => event\.preventDefault\(\)\}/);

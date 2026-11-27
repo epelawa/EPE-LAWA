@@ -8,6 +8,7 @@ import { pageMetadata } from "../../lib/metadata";
 import { formRateLimitedMessage, formRateUnavailableMessage } from "../../lib/form-server";
 import { countActive } from "./active-count";
 import ForumLiveCount from "./live-count";
+import { escapePostgrestLikeTerm } from "../../lib/postgrest-search";
 import styles from "./forum.module.css";
 
 type Category = { id: string; slug: string; name: string; description: string | null; rules: string | null };
@@ -54,7 +55,7 @@ export default async function ForumPage({ searchParams }: { searchParams: Promis
     if (sort === "newest") threadRequest = threadRequest.order("created_at", { ascending: false });
     else if (sort === "posts") threadRequest = threadRequest.order("post_count", { ascending: false });
     else threadRequest = threadRequest.order("last_activity_at", { ascending: false, nullsFirst: false });
-    if (searchQuery) threadRequest = threadRequest.ilike("title", `%${searchQuery}%`);
+    if (searchQuery) threadRequest = threadRequest.ilike("title", `%${escapePostgrestLikeTerm(searchQuery)}%`);
     const { data: { user } } = await supabase.auth.getUser();
     const [categoryResult, threadResult, unreadResult, profileResult] = await Promise.all([
       supabase.from("forum_categories").select("id,slug,name,description,rules").eq("is_active", true).order("sort_order").limit(50),

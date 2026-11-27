@@ -5,6 +5,7 @@ import { PageFrame, PageIntro, Panel, SectionHeading, EmptyPanel, Notice, Status
 import ContributeForm from "./contribute-form";
 import { publicMediaUrl } from "../../lib/media";
 import { FilterIcon, SearchIcon } from "../../components/icons";
+import { buildOrIlikeContains } from "../../lib/postgrest-search";
 
 export const metadata: Metadata = {
   title: "Itan Ilu Mi",
@@ -43,7 +44,7 @@ export default async function ItanIluMiPage({ searchParams }: { searchParams: Pr
     const supabase = await createClient();
     let recordQuery = supabase.from("history_records").select("id,title,account,published_at,community,category,family_name,lineage_description,image_key,image_alt");
     const safeQuery = query.replace(/[^\p{L}\p{N} '-]/gu, " ").trim();
-    if (safeQuery) recordQuery = recordQuery.or(`family_name.ilike.%${safeQuery}%,community.ilike.%${safeQuery}%`);
+    if (safeQuery) recordQuery = recordQuery.or(buildOrIlikeContains(["family_name", "community"], safeQuery));
     if (category) recordQuery = recordQuery.eq("category", category);
     const [recordsResult, authResult] = await Promise.all([
       recordQuery.order("published_at", { ascending: false }).order("id", { ascending: false }).range(offset, offset + PAGE_SIZE),

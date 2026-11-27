@@ -10,6 +10,7 @@ import { admitSigninAttempt, normaliseSigninEmail, recordSigninOutcome, signinBu
 import { signinHumanCheckFailedMessage, verifySigninHumanCheck } from "../../lib/human-check";
 import { availabilityFromRpc, isValidHandle, normalizeHandle } from "../../lib/member-handle";
 import { handleResendSignupVerification, handleVerifyEmailOtp, type AuthState } from "../../lib/auth-otp";
+import { safeAuthNext } from "../../lib/safe-auth-next";
 export type { AuthState } from "../../lib/auth-otp";
 const genericError = "We couldn’t complete that request. Check your details and try again.";
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -106,6 +107,7 @@ export async function signIn(_state: AuthState, data: FormData): Promise<AuthSta
   // One normalised spelling for the lock key AND the provider (Strix review on PR #280).
   const email = normaliseSigninEmail(field(data, "email"));
   const password = passwordField(data);
+  const nextPath = safeAuthNext(field(data, "next") || null);
   if (!validEmail(email)) return { status: "error", message: "Enter a valid email address.", fieldErrors: { email: "Enter a valid email address." } };
   if (!password) return { status: "error", message: "Enter your password.", fieldErrors: { password: "Enter your password." } };
   if (password.length > 128) return { status: "error", message: "Your password must be no more than 128 characters.", fieldErrors: { password: "Your password must be no more than 128 characters." } };
@@ -166,10 +168,10 @@ export async function signIn(_state: AuthState, data: FormData): Promise<AuthSta
         } catch {
           // The client guard records activity on the dashboard even if this write is refused.
         }
-        redirect("/dashboard");
+        redirect(nextPath);
       }
     }
-    redirect("/dashboard");
+    redirect(nextPath);
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
     if (!closed) await close("unknown");
