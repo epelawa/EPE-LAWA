@@ -63,6 +63,19 @@ test("radio page is honest before Play and the removed features are gone", async
   await expect(page).toHaveURL(/\/radio$/);
 });
 
+test("programme listings and calendar use the published fixture schedule", async ({ page, request }) => {
+  test.setTimeout(120_000);
+  expect((await request.post(`${fixture}/__smoke__/mode`, { data: { mode: "radio" } })).ok()).toBeTruthy();
+  await page.goto("/radio/programmes");
+  await expect(page.getByRole("heading", { name: "Fixture morning slot" }).first()).toBeVisible();
+  const calendar = await request.get("/api/radio/schedule.ics");
+  expect(calendar.ok()).toBeTruthy();
+  expect(calendar.headers()["content-type"]).toContain("text/calendar");
+  const body = await calendar.text();
+  expect(body).toContain("SUMMARY:Fixture morning slot");
+  expect(body).toMatch(/DTSTART:\d{8}T060000Z\r\nDTEND:\d{8}T070000Z/);
+});
+
 test("one stream plays, keeps playing in the mini-player across pages, and hiding it does not stop it", async ({ page }) => {
   test.setTimeout(180_000);
   await quietStart(page);

@@ -3,18 +3,18 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { businessOpenNow, hourRows, parseBusinessHours } from '../apps/main/lib/business-hours.ts';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const mainApp = (relativePath) => fs.readFileSync(path.join(root, 'frontend/apps/main', relativePath), 'utf8');
 const adminApp = (relativePath) => fs.readFileSync(path.join(root, 'frontend/apps/admin', relativePath), 'utf8');
 
 test('business hours helper validates day ranges and answers open-now in Lagos', () => {
-  const lib = mainApp('lib/business-hours.ts');
-  assert.match(lib, /export function parseBusinessHours/);
-  assert.match(lib, /export function hourRows/);
-  assert.match(lib, /export function businessOpenNow/);
-  assert.match(lib, /Africa\/Lagos/);
-  assert.match(lib, /end > start/);
+  const hours = parseBusinessHours({ Thursday: '9:00-17:00', Friday: '25:00-26:00', someday: '09:00-17:00' });
+  assert.deepEqual(hours, { thursday: '09:00–17:00' });
+  assert.equal(hourRows(hours).find(row => row.day === 'friday').range, null);
+  assert.equal(businessOpenNow(hours, new Date('2026-11-26T08:00:00Z')), true);
+  assert.equal(businessOpenNow(hours, new Date('2026-11-26T16:00:00Z')), false);
 });
 
 test('business submit form collects opening hours and the action serialises them', () => {

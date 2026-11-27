@@ -8,6 +8,7 @@ import SponsorSlot from "../../components/sponsor-slot";
 import { ArrowRightIcon } from "../../components/icons";
 import styles from "./radio-page.module.css";
 import { pageMetadata } from "../../lib/metadata";
+import { PUBLIC_SCHEDULE_COLUMNS, publicScheduleSlot } from "../../lib/radio-schedule";
 import { createClient } from "../../lib/supabase";
 import { lagosNow, onAirSlotId } from "./programmes/on-air";
 
@@ -18,19 +19,14 @@ export const metadata: Metadata = pageMetadata({
   path: "/radio",
 });
 
-type ScheduleRow = { id: string; day_of_week: number; starts_at: string; ends_at: string; note: string | null; programmes: { name: string } | Array<{ name: string }> | null };
-
 export default async function RadioPage() {
   let slots: RadioScheduleSlot[] = [];
   let unavailable = false;
   try {
     const db = await createClient();
-    const { data, error } = await db.from("radio_schedule").select("id,day_of_week,starts_at,ends_at,note,programmes(name)").order("day_of_week").order("starts_at").limit(200);
+    const { data, error } = await db.from("radio_schedule").select(PUBLIC_SCHEDULE_COLUMNS).eq("publication_status", "published").eq("programmes.publication_status", "published").eq("programmes.is_active", true).order("day_of_week").order("starts_at").limit(200);
     if (error) unavailable = true;
-    else slots = ((data ?? []) as ScheduleRow[]).map((row) => {
-      const programme = Array.isArray(row.programmes) ? row.programmes[0] : row.programmes;
-      return { id: row.id, day_of_week: row.day_of_week, starts_at: row.starts_at, ends_at: row.ends_at, note: row.note, programme: programme?.name ?? null };
-    });
+    else slots = (data ?? []).map(publicScheduleSlot);
   } catch { unavailable = true; }
   const onAirId = unavailable ? null : onAirSlotId(slots);
   const onAirName = onAirId ? slots.find((slot) => slot.id === onAirId)?.programme ?? null : null;

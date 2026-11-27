@@ -72,6 +72,18 @@ describe("radio store", () => {
     expect(store.getRadioSnapshot().status).toBe("offline");
   });
 
+  it("does not start playback after the listener cancels a pending station lookup", async () => {
+    let resolve!: (response: Response) => void;
+    vi.stubGlobal("fetch", vi.fn(() => new Promise<Response>((done) => { resolve = done; })));
+    store.selectStation("guts");
+    const playing = store.play();
+    store.pause();
+    resolve(Response.json({ station: { streamUrl: "https://radio.example/fixture" } }));
+    await playing;
+    expect(store.getRadioSnapshot().status).toBe("idle");
+    expect(FakeAudio.instances).toHaveLength(0);
+  });
+
   it("hiding the mini-player never stops playback", async () => {
     await store.play();
     const audio = FakeAudio.instances[0];

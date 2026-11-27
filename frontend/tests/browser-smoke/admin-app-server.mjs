@@ -37,6 +37,7 @@ const env = {
   NEXT_PUBLIC_SUPABASE_ANON_KEY: publishableKey,
   NODE_EXTRA_CA_CERTS: caPath,
   NEXT_TELEMETRY_DISABLED: "1",
+  BROWSER_SMOKE_TEST: "true",
   NEXT_PUBLIC_SITE_URL: siteURL,
   PORT: port,
 };

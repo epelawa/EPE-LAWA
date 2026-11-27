@@ -44,7 +44,6 @@ export default function RadioPlayer({ programme, children }: { programme?: strin
         type="button"
         onClick={() => toggle()}
         aria-label={`${active ? "Pause" : "Play"} ${name} ${frequency}`}
-        disabled={radio.stationId === "guts" && radio.guts.state === "loading"}
       >{active ? <PauseIcon size={26} /> : <PlayIcon size={26} />}</button>
       <div className={styles.nowPlaying}>
         <p className={styles.nowLabel}>Now playing</p>

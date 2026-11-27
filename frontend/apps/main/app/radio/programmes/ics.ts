@@ -1,60 +1,30 @@
 import { lagosNow } from "./on-air";
+import { foldIcsLine, icsEscape, icsStamp } from "../../../lib/event-calendar";
 import { SITE_AUTHOR, CONTACT_EMAIL } from "../../../lib/site-identity";
 
 export type IcsSlot = { id: string; day_of_week: number; starts_at: string; ends_at: string; note: string | null; programme: string | null };
 
-const escapeIcsText = (value: string): string =>
-  value.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+const SECOND = 1000;
+const DAY = 86_400 * SECOND;
+const WAT_OFFSET = 3600 * SECOND;
 
-const pad = (value: number): string => String(value).padStart(2, "0");
-
-const lagosDayFormatter = new Intl.DateTimeFormat("en-CA", {
-  timeZone: "Africa/Lagos",
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-});
-
-function validClock(value: string): string | null {
-  const match = /^(\d{1,2}):(\d{2})$/.exec(value.trim());
+function clockSeconds(value: string): number | null {
+  const match = /^(\d{1,2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?$/.exec(value.trim());
   if (!match) return null;
-  const hours = Number(match[1]);
-  const minutes = Number(match[2]);
-  if (hours > 23 || minutes > 59) return null;
-  return `${pad(hours)}${pad(minutes)}00`;
+  const hours = Number(match[1]), minutes = Number(match[2]), seconds = Number(match[3] ?? 0);
+  if (hours === 24 && minutes === 0 && seconds === 0) return 86_400;
+  if (hours > 23 || minutes > 59 || seconds > 59) return null;
+  return hours * 3600 + minutes * 60 + seconds;
 }
 
-const elapsedDays = (from: Date, days: number): Date => new Date(from.getTime() + days * 86_400_000);
-
-/** Next calendar occurrence (floating local Lagos time, `YYYYMMDDTHHMMSS`) for a weekly slot. */
-export function nextOccurrence(dayOfWeek: number, clock: string, now: Date = new Date()): string | null {
-  const startClock = validClock(clock);
-  if (!startClock || dayOfWeek < 0 || dayOfWeek > 6) return null;
-  const today = lagosDayFormatter.format(now);
-  const [, month, day] = today.split("-").map(Number);
-  const year = Number(today.slice(0, 4));
-  const midnightUtc = Date.UTC(year, month - 1, day);
-  const { day: todayDay, minutes: nowMinutes } = lagosNow(now);
-  const startMinutes = Number(startClock.slice(0, 2)) * 60 + Number(startClock.slice(2, 4));
-  let ahead = (dayOfWeek - todayDay + 7) % 7;
-  if (ahead === 0 && nowMinutes >= startMinutes) ahead = 7;
-  const occurrence = elapsedDays(new Date(midnightUtc), ahead);
-  return `${occurrence.getUTCFullYear()}${pad(occurrence.getUTCMonth() + 1)}${pad(occurrence.getUTCDate())}T${startClock}`;
-}
-
-const endClock = (start: string, end: string): string | null => {
-  const startMatch = /^(\d{1,2}):(\d{2})$/.exec(start.trim());
-  const endMatch = /^(\d{1,2}):(\d{2})$/.exec(end.trim());
-  if (!startMatch || !endMatch) return null;
-  const startMinutes = Number(startMatch[1]) * 60 + Number(startMatch[2]);
-  const endMinutesRaw = Number(endMatch[1]) * 60 + Number(endMatch[2]);
-  const endMinutes = endMinutesRaw > startMinutes ? endMinutesRaw : Math.min(1440, startMinutes + 120);
-  return `${pad(Math.floor(endMinutes / 60) % 24)}${pad(endMinutes % 60)}00`;
-};
-
-/** RFC 5545 VCALENDAR with one weekly recurring event per published slot. */
+/** RFC 5545 VCALENDAR with one weekly recurring event per valid published slot. */
 export function buildIcs(slots: IcsSlot[], now: Date = new Date()): string {
-  const stamp = `${now.getUTCFullYear()}${pad(now.getUTCMonth() + 1)}${pad(now.getUTCDate())}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}${pad(now.getUTCSeconds())}Z`;
+  const stamp = icsStamp(now.toISOString());
+  // WAT is UTC+1 year round. Emit UTC timestamps so the time stays correct
+  // when imported into calendars configured for a different time zone.
+  const lagos = new Date(now.getTime() + WAT_OFFSET);
+  const localMidnight = Date.UTC(lagos.getUTCFullYear(), lagos.getUTCMonth(), lagos.getUTCDate()) - WAT_OFFSET;
+  const { day } = lagosNow(now);
   const lines: string[] = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
@@ -64,23 +34,26 @@ export function buildIcs(slots: IcsSlot[], now: Date = new Date()): string {
     "X-WR-TIMEZONE:Africa/Lagos",
   ];
   for (const slot of slots) {
-    const summary = slot.programme ?? "EPE LAWA Radio";
-    const start = nextOccurrence(slot.day_of_week, slot.starts_at, now);
-    const end = endClock(slot.starts_at, slot.ends_at);
-    if (!start || !end) continue;
+    const start = clockSeconds(slot.starts_at);
+    const end = clockSeconds(slot.ends_at);
+    if (!Number.isInteger(slot.day_of_week) || slot.day_of_week < 0 || slot.day_of_week > 6 ||
+        start === null || end === null || end <= start) continue;
+    const ahead = (slot.day_of_week - day + 7) % 7;
+    let midnight = localMidnight + ahead * DAY;
+    if (midnight + start * SECOND <= now.getTime()) midnight += 7 * DAY;
     lines.push(
       "BEGIN:VEVENT",
       `UID:radio-${slot.id}@epelawa`,
       `DTSTAMP:${stamp}`,
-      `DTSTART:${start}`,
-      `DTEND:${end}`,
+      `DTSTART:${icsStamp(new Date(midnight + start * SECOND).toISOString())}`,
+      `DTEND:${icsStamp(new Date(midnight + end * SECOND).toISOString())}`,
       "RRULE:FREQ=WEEKLY",
-      `ORGANIZER;CN=${escapeIcsText(SITE_AUTHOR)}:mailto:${CONTACT_EMAIL}`,
-      `SUMMARY:${escapeIcsText(summary)}`,
+      `ORGANIZER;CN=${icsEscape(SITE_AUTHOR)}:mailto:${CONTACT_EMAIL}`,
+      `SUMMARY:${icsEscape(slot.programme ?? "EPE LAWA Radio")}`,
     );
-    if (slot.note?.trim()) lines.push(`DESCRIPTION:${escapeIcsText(slot.note.trim())}`);
+    if (slot.note?.trim()) lines.push(`DESCRIPTION:${icsEscape(slot.note.trim())}`);
     lines.push("END:VEVENT");
   }
   lines.push("END:VCALENDAR");
-  return lines.map((line) => (line.length > 74 ? line.match(/.{1,74}/g)!.join("\r\n ") : line)).join("\r\n") + "\r\n";
+  return lines.map(foldIcsLine).join("\r\n") + "\r\n";
 }
