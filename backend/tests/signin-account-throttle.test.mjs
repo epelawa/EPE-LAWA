@@ -9,6 +9,7 @@ for (const migration of [
   "20261129000000_signin_account_throttle.sql",
   "20261129010000_signin_throttle_atomic_admission.sql",
   "20261129020000_signin_throttle_reservations.sql",
+  "20261129030000_signin_throttle_window_check.sql",
 ]) {
   await db.exec(await readFile(new URL(`../supabase/migrations/${migration}`, import.meta.url), "utf8"));
 }
@@ -87,6 +88,24 @@ test("a stale outcome cannot change a newer generation (CodeRabbit on PR #280)",
   assert.deepEqual([(await row(k)).failures, (await row(k)).pending], [0, 1], "C's reservation is intact");
   await record(k, "rejected", c);
   assert.equal((await row(k)).failures, 1, "C's failure counts");
+  await record(k, "verified");
+});
+
+test("a rejection confirmed after its window expired does not count toward it (CodeRabbit on PR #280)", async () => {
+  const k = key("2");
+  for (let i = 0; i < 7; i++) await reject(k);
+  const late = token(await admit(k));
+  // The 15-minute window closes while this check is still in flight.
+  await db.query("update public.auth_signin_throttle set window_started_at = now() - interval '15 minutes 1 second' where account_key=$1", [k]);
+  assert.equal(await record(k, "rejected", late), 0, "no lock from failures spanning two windows");
+  assert.equal((await row(k)).failures, 7);
+  token(await admit(k));
+  assert.deepEqual([(await row(k)).failures, (await row(k)).pending], [0, 1], "the next admission starts a fresh window");
+  await record(k, "verified");
+  // Eight confirmations inside one window still lock.
+  for (let i = 0; i < 7; i++) await reject(k);
+  await db.query("update public.auth_signin_throttle set window_started_at = now() - interval '14 minutes' where account_key=$1", [k]);
+  assert.ok(near15min(await reject(k)));
   await record(k, "verified");
 });
 
