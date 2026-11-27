@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { signInAdmin, type LoginState } from "../../admin/lib/login-actions";
+import HumanCheck from "./human-check";
 
 const initialState: LoginState = {};
 
@@ -57,6 +58,7 @@ export default function AdminLoginForm({ nextPath }: { nextPath: string }) {
         <label htmlFor="admin-login-password">Password</label>
         <StaffPasswordField />
       </div>
+      <HumanCheck compact purpose="signin" resetOn={state} />
       {state.error ? <p className="auth-feedback auth-error" role="alert">{state.error}</p> : null}
       <button className="auth-submit" type="submit" disabled={pending}>{pending ? "Signing in…" : "Sign in"}</button>
     </form>

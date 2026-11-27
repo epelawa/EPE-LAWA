@@ -4,6 +4,7 @@ import { useActionState, useEffect, useRef, useState, type ClipboardEvent, type 
 import { validateField, type FieldRules } from "@epelawa/ui";
 import Link from "next/link";
 import { requestPasswordReset, signIn, signUp, updatePassword, verifyEmailOtp, verifyHandleBeforeContinue, type AuthState } from "./actions";
+import HumanCheck from "../../components/human-check";
 
 const initial: AuthState = { status: "idle", message: "" };
 
@@ -384,6 +385,7 @@ export function SignInForm() {
         <PasswordField id="login-password" name="password" autoComplete="current-password" placeholder="Enter your password" maxLength={128} required invalid={Boolean(state.fieldErrors?.password)} describedBy="login-password-error" />
         <small id="login-password-error" className="auth-error" hidden={!state.fieldErrors?.password}>{state.fieldErrors?.password}</small>
       </div>
+      <HumanCheck compact purpose="signin" resetOn={state} />
       <Feedback state={state} />
       <button className="auth-submit" type="submit" disabled={pending}>{pending ? "Signing in…" : "Sign in"}</button>
     </form>

@@ -1,6 +1,9 @@
 import { createHash } from "node:crypto";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { checkHumanSolution, humanCheckMode, issueHumanChallenge, verifyHumanCheck } from "../apps/main/lib/human-check";
+import { SIGNIN_DIFFICULTY, checkHumanSolution, humanCheckMode, issueHumanChallenge, verifyHumanCheck, verifySigninHumanCheck } from "../apps/main/lib/human-check";
+
+const rpc = vi.hoisted(() => vi.fn());
+vi.mock("../apps/main/lib/form-server", () => ({ formAdminClient: () => ({ rpc }) }));
 
 const SECRET = "x".repeat(40);
 
@@ -13,7 +16,7 @@ function solve(token: string, difficulty: number): string {
   }
 }
 
-afterEach(() => { vi.unstubAllEnvs(); });
+afterEach(() => { vi.unstubAllEnvs(); rpc.mockReset(); });
 
 describe("EPE LAWA human check", () => {
   it("is off without a strong secret and prefers real Turnstile when both keys exist", () => {
@@ -60,5 +63,41 @@ describe("EPE LAWA human check", () => {
     expect(await verifyHumanCheck(new FormData())).toBe("fail");
     vi.stubEnv("FORM_RATE_SECRET", "");
     expect(await verifyHumanCheck(new FormData())).toBe("off");
+  });
+
+  it("sign-in needs the harder challenge, and each solved token is spent once (Strix on PR #280)", async () => {
+    vi.stubEnv("TURNSTILE_SECRET_KEY", "");
+    vi.stubEnv("NEXT_PUBLIC_TURNSTILE_SITE_KEY", "");
+    vi.stubEnv("FORM_RATE_SECRET", SECRET);
+    const issuedAt = 1_800_000_000_000;
+    const later = issuedAt + 5_000;
+    const form = (token: string, solution: string) => { const f = new FormData(); f.set("hc-token", token); f.set("hc-solution", solution); return f; };
+
+    // A public-form token (14 bits) is not enough for a password check.
+    const weak = issueHumanChallenge(issuedAt)!;
+    expect(await verifySigninHumanCheck(form(weak.token, solve(weak.token, weak.difficulty)), later)).toBe("fail");
+    expect(rpc).not.toHaveBeenCalled();
+
+    const strong = issueHumanChallenge(issuedAt, SIGNIN_DIFFICULTY)!;
+    expect(strong.difficulty).toBe(16);
+    const answer = solve(strong.token, strong.difficulty);
+    expect(checkHumanSolution(strong.token, answer, later)).toBe(true); // still fine for public forms
+    rpc.mockResolvedValueOnce({ data: true, error: null });
+    expect(await verifySigninHumanCheck(form(strong.token, answer), later)).toBe("pass");
+    expect(rpc).toHaveBeenCalledWith("human_check_spend", {
+      p_token_hash: createHash("sha256").update(strong.token).digest("hex"),
+      p_expires_at: new Date(issuedAt + 2 * 60 * 60 * 1000).toISOString(),
+    });
+    rpc.mockResolvedValueOnce({ data: false, error: null });
+    expect(await verifySigninHumanCheck(form(strong.token, answer), later)).toBe("fail"); // replay
+    rpc.mockResolvedValueOnce({ data: null, error: { code: "XX000" } });
+    expect(await verifySigninHumanCheck(form(strong.token, answer), later)).toBe("fail"); // fail closed
+    rpc.mockRejectedValueOnce(new Error("offline"));
+    expect(await verifySigninHumanCheck(form(strong.token, answer), later)).toBe("fail");
+    expect(await verifySigninHumanCheck(form(strong.token, "1"), later)).toBe("fail"); // wrong answer, no spend
+    expect(rpc).toHaveBeenCalledTimes(4);
+
+    vi.stubEnv("FORM_RATE_SECRET", "");
+    expect(await verifySigninHumanCheck(new FormData())).toBe("off");
   });
 });

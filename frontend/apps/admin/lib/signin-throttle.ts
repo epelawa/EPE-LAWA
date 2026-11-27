@@ -20,7 +20,8 @@ import { createClient } from "@supabase/supabase-js";
  * "rejected" counts one confirmed failure, "unknown" (outage, provider rate
  * limit) releases the slot. Outcomes with a stale token are ignored. See
  * backend/supabase/migrations/20261129000000_signin_account_throttle.sql and
- * 20261129020000_signin_throttle_reservations.sql.
+ * 20261129050000_signin_throttle_slots.sql (each reservation is its own slot,
+ * so a late outcome from a released slot can never free a live one).
  *
  * The database only ever sees an HMAC of the normalised email (keyed with
  * FORM_RATE_SECRET), and every email string is throttled the same way whether
@@ -127,6 +128,31 @@ export async function recordSigninOutcome(email: string, outcome: SigninOutcome,
     return data;
   } catch {
     return 0;
+  }
+}
+
+/**
+ * The reserved way out of a lock (Strix review on PR #280). Called only after
+ * the shared site-wide budget for password reset ("reset") or emailed-code
+ * checks ("code") has refused: while this address is actually locked, it may
+ * still use a small per-address allowance (3 resets / 10 code checks an hour)
+ * that the general queue cannot consume. False when the address is not locked,
+ * the allowance is spent, or the throttle cannot be reached. See
+ * backend/supabase/migrations/20261129060000_signin_lock_exit_lane.sql.
+ */
+export async function signinLockExitAllowed(email: string, kind: "reset" | "code"): Promise<boolean> {
+  const accountKey = signinAccountKey(email);
+  const db = throttleClient();
+  if (!accountKey || !db) return false;
+  try {
+    const { data, error } = await db.rpc("signin_throttle_exit_allowance", { p_account_key: accountKey, p_kind: kind });
+    if (error) {
+      console.error("sign-in lock exit allowance failed", { code: error.code });
+      return false;
+    }
+    return data === true;
+  } catch {
+    return false;
   }
 }
 

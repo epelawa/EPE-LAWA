@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { buttonClassName } from "@epelawa/ui";
 import { signInAdmin, type LoginState } from "../../lib/login-actions";
+import HumanCheck from "../../../main/components/human-check";
 
 const initialState: LoginState = {};
 
@@ -19,6 +20,7 @@ export default function LoginForm({ nextPath }: { nextPath: string }) {
       <label className="field__label" htmlFor="password">Password</label>
       <input className="field__control" type="password" id="password" name="password" autoComplete="current-password" required maxLength={1024} />
     </div>
+    <HumanCheck compact purpose="signin" resetOn={state} />
     {state.error ? <div className="ui-notice ui-notice--danger" role="alert">{state.error}</div> : null}
     <div className="ui-actions" style={{ marginTop: 0 }}>
       <button className={buttonClassName("primary")} type="submit" disabled={pending} aria-busy={pending}>{pending && <span className="ep-btn__spinner" aria-hidden="true" />}{pending ? "Signing in…" : "Sign in"}</button>
