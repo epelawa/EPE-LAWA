@@ -109,7 +109,6 @@ export default async function TourismPage({ searchParams }: { searchParams: Prom
       {submission === "invalid" ? <Notice tone="warning" role="alert">Please check the required fields, HTTPS links, media-rights description and consent.</Notice> : null}
       {submission === "limited" ? <Notice tone="warning" role="alert">Too many suggestions from this network this hour. Please wait a while and try again.</Notice> : null}
       {submission === "verify" ? <Notice tone="warning" role="alert">The human check did not finish. Wait for “Verified” under the form, then send again — nothing was saved.</Notice> : null}
-      {submission === "verify" ? <Notice tone="warning" role="alert">The human check did not finish. Wait for “Verified” under the form, then send again — nothing was saved.</Notice> : null}
       {submission === "contact" ? <Notice tone="warning" role="alert">Add your name and a valid email address so our team can reply, then send the suggestion again.</Notice> : null}
       {submission === "error" ? <Notice tone="danger" role="alert">The private suggestion could not be saved. Please try again in a moment.</Notice> : null}
       <Panel><details className="ui-disclosure"><summary className="btn-primary">Suggest a destination</summary><form action={submitTourismContribution} className="ui-stack">

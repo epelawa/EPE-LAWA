@@ -5,6 +5,7 @@ import { adminRedirect as redirect } from "./admin-redirect";
 import { safeAdminNextPath } from "./admin-path";
 import { ACTIVITY_COOKIE, ACTIVITY_COOKIE_MAX_AGE_SECONDS } from "./session-policy";
 import { formRateAllowance, formRateMessage } from "../../main/lib/form-server";
+import { signinHumanCheckFailedMessage, verifySigninHumanCheck } from "../../main/lib/human-check";
 import { admitSigninAttempt, normaliseSigninEmail, recordSigninOutcome, signinBusyMessage, signinLockedMessage } from "./signin-throttle";
 import { signInAdminWithPassword } from "./supabase-access";
 
@@ -26,6 +27,8 @@ export async function signInAdmin(_previous: LoginState, formData: FormData): Pr
   // checked before anything is written, so one network can neither flood the
   // per-account table nor cheaply re-arm a staff lock (Strix review on PR #280).
   if (!(await formRateAllowance("auth_signin", 15))) return { error: await formRateMessage() };
+  // A solved, single-use challenge per password check (Strix review on PR #280).
+  if ((await verifySigninHumanCheck(formData)) === "fail") return { error: signinHumanCheckFailedMessage };
   // Per-account lock (shared with member sign-in): a slot is reserved atomically
   // before the password is sent anywhere, and every email string is treated the
   // same way, so it reveals nothing about which addresses are staff accounts.

@@ -102,6 +102,36 @@ test("recording returns the lock length and never throws", async () => {
   });
 });
 
+test("the reserved lock exit sends only the HMAC key and the kind, and is closed on any doubt", async () => {
+  const calls = [];
+  const fetchImpl = async (input, init) => {
+    const req = new Request(input, init);
+    const body = await req.json();
+    calls.push({ path: new URL(req.url).pathname, body });
+    return Response.json(body.p_kind === "reset");
+  };
+  await withEnv(configured, fetchImpl, async () => {
+    assert.equal(await throttle.signinLockExitAllowed(" Locked@Example.com", "reset"), true);
+    assert.equal(await throttle.signinLockExitAllowed("locked@example.com", "code"), false);
+  });
+  assert.equal(calls[0].path, "/rest/v1/rpc/signin_throttle_exit_allowance");
+  assert.deepEqual(calls[0].body, { p_account_key: throttle.signinAccountKey("locked@example.com", SECRET), p_kind: "reset" });
+  for (const reply of [async () => Response.json({ message: "boom" }, { status: 500 }), async () => Response.json("true"), async () => { throw new Error("offline"); }]) {
+    await withEnv(configured, reply, async () => assert.equal(await throttle.signinLockExitAllowed("a@example.com", "reset"), false));
+  }
+  await withEnv({}, null, async () => assert.equal(await throttle.signinLockExitAllowed("a@example.com", "reset"), false, "no throttle configured: no lane"));
+});
+
+test("both sign-in forms render the single-use sign-in challenge and renew it after every result", async () => {
+  for (const path of ["frontend/apps/main/app/auth/auth-forms.tsx", "frontend/apps/main/components/admin-login-form.tsx", "frontend/apps/admin/app/login/login-form.tsx"]) {
+    assert.match(await read(path), /<HumanCheck compact purpose="signin" resetOn=\{state\} \/>/, path);
+  }
+  const component = await read("frontend/apps/main/components/human-check.tsx");
+  assert.match(component, /\?for=signin/);
+  assert.match(component, /\}, \[resetOn, start\]\);/);
+  assert.match(await read("frontend/apps/admin/app/api/human-check/route.ts"), /export \{ GET \} from/, "the standalone admin app serves the challenge too");
+});
+
 test("lock message gives minutes, not seconds, and the reset route", () => {
   assert.equal(throttle.signinLockedMessage(900), "Too many unsuccessful sign-in attempts for this email. Try again in about 15 minutes, or reset your password.");
   assert.match(throttle.signinLockedMessage(30), /about a minute/);
@@ -118,6 +148,11 @@ test("member sign-in: one normalised email, a slot reserved first, and every pat
   assert.match(signIn, /const email = normaliseSigninEmail\(field\(data, "email"\)\)/);
   assert.ok(signIn.indexOf('formRateAllowance("auth_signin"') > 0);
   assert.ok(signIn.indexOf('formRateAllowance("auth_signin"') < signIn.indexOf("admitSigninAttempt(email)"), "a network-refused caller writes nothing to the per-account table");
+  assert.ok(signIn.indexOf('formRateAllowance("auth_signin"') < signIn.indexOf("verifySigninHumanCheck(data)"), "the network budget runs before the challenge is spent");
+  assert.ok(signIn.indexOf("verifySigninHumanCheck(data)") < signIn.indexOf("admitSigninAttempt(email)"), "every counted check costs one solved, single-use challenge (Strix on PR #280)");
+  const reset = src.slice(src.indexOf("export async function requestPasswordReset("), src.indexOf("export async function resendSignupVerification("));
+  assert.match(reset, /const email = normaliseSigninEmail\(field\(data, "email"\)\)/, "the reset lane uses the same key as the lock");
+  assert.match(reset, /!\(await formRateAllowance\("auth_reset"\)\) && !\(await signinLockExitAllowed\(email, "reset"\)\)/, "a locked address keeps a reset lane the shared budget cannot close");
   assert.ok(signIn.indexOf("admitSigninAttempt(email)") < signIn.indexOf("signInWithPassword({ email, password })"), "the provider gets the same normalised email");
   assert.match(signIn, /error\.code === "invalid_credentials"\) \{\s*const lockedFor = await close\("rejected"\)/);
   assert.equal((signIn.match(/close\("rejected"\)/g) ?? []).length, 1, "only a confirmed wrong password counts");
@@ -129,6 +164,7 @@ test("member sign-in: one normalised email, a slot reserved first, and every pat
   const update = src.slice(src.indexOf("export async function updatePassword("), src.indexOf("export async function verifyEmailOtp("));
   assert.ok(update.indexOf("updateUser({ password })") < update.indexOf('recordSigninOutcome(user.email, "verified")'), "a completed reset lifts the lock");
   const otp = src.slice(src.indexOf("export async function verifyEmailOtp("), src.indexOf("export async function signOut("));
+  assert.match(otp, /!\(await formRateAllowance\("auth_otp", 10\)\) && !\(await signinLockExitAllowed\(normaliseSigninEmail\(field\(data, "email"\)\), "code"\)\)/, "and an emailed-code lane");
   assert.match(otp, /if \("redirectTo" in outcome\) \{\s*\/\/[^\n]*\n\s*await recordSigninOutcome\(normaliseSigninEmail\(field\(data, "email"\)\), "verified"\)/, "only a verified emailed code lifts the lock");
 });
 
@@ -138,6 +174,8 @@ test("staff sign-in normalises once, reserves before the password grant, and alw
   assert.ok(src.indexOf("await cookies()") < src.indexOf("admitSigninAttempt(email)"), "nothing that can throw sits between admission and recording");
   assert.ok(src.indexOf('formRateAllowance("auth_signin", 15)') > 0, "staff sign-in shares the member per-network budget");
   assert.ok(src.indexOf('formRateAllowance("auth_signin", 15)') < src.indexOf("admitSigninAttempt(email)"), "the network budget is spent before any row is written");
+  assert.ok(src.indexOf('formRateAllowance("auth_signin", 15)') < src.indexOf("verifySigninHumanCheck(formData)"));
+  assert.ok(src.indexOf("verifySigninHumanCheck(formData)") < src.indexOf("admitSigninAttempt(email)"), "staff checks need a solved challenge too");
   assert.ok(src.indexOf("admitSigninAttempt(email)") < src.indexOf("signInAdminWithPassword(email, password"));
   assert.match(src, /recordSigninOutcome\(email, result\.password, gate\.reservation\)/);
   assert.ok(src.indexOf("recordSigninOutcome") < src.indexOf("redirect(safeAdminNextPath"));

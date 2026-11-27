@@ -38,7 +38,15 @@ async function solve(token: string, difficulty: number, cancelled: () => boolean
   return null;
 }
 
-export default function HumanCheck({ compact }: { compact?: boolean }) {
+/** The standalone admin app is mounted under /admin; the main app serves both from the root. */
+const CHALLENGE_URL = `${process.env.NEXT_PUBLIC_STANDALONE_ADMIN === "true" ? "/admin" : ""}/api/human-check`;
+
+/**
+ * `purpose="signin"` asks for the harder sign-in challenge. Sign-in tokens are
+ * single-use, so pass the form's action state as `resetOn`: every new result
+ * (a wrong password, a busy reply) starts a fresh solve for the next attempt.
+ */
+export default function HumanCheck({ compact, purpose, resetOn }: { compact?: boolean; purpose?: "signin"; resetOn?: unknown }) {
   const [mode, setMode] = useState<Mode>("loading");
   const [status, setStatus] = useState<Status>("working");
   const [token, setToken] = useState("");
@@ -50,7 +58,7 @@ export default function HumanCheck({ compact }: { compact?: boolean }) {
     const cancelled = () => id !== run.current;
     setStatus("working"); setSolution("");
     try {
-      const response = await fetch("/api/human-check", { cache: "no-store" });
+      const response = await fetch(purpose === "signin" ? `${CHALLENGE_URL}?for=signin` : CHALLENGE_URL, { cache: "no-store" });
       const data: { mode?: string; token?: string; difficulty?: number } = await response.json();
       if (cancelled()) return;
       if (data.mode === "turnstile") { setMode("turnstile"); return; }
@@ -66,7 +74,7 @@ export default function HumanCheck({ compact }: { compact?: boolean }) {
     } catch {
       if (!cancelled()) { setMode((current) => (current === "loading" ? "own" : current)); setStatus("error"); }
     }
-  }, []);
+  }, [purpose]);
 
   useEffect(() => {
     void start();
@@ -74,7 +82,16 @@ export default function HumanCheck({ compact }: { compact?: boolean }) {
     return () => { run.current += 1; window.clearInterval(timer); };
   }, [start]);
 
-  if (mode === "turnstile") return <TurnstileField compact={compact} />;
+  // A new form result means the last token was sent (and, for sign-in, spent).
+  const [round, setRound] = useState(0);
+  const firstResult = useRef(true);
+  useEffect(() => {
+    if (firstResult.current) { firstResult.current = false; return; }
+    setRound((current) => current + 1);
+    void start();
+  }, [resetOn, start]);
+
+  if (mode === "turnstile") return <TurnstileField key={round} compact={compact} />;
   if (mode === "off" || mode === "loading") return null;
 
   return <div className={styles.box} data-status={status} aria-live="polite">

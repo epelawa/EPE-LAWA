@@ -117,13 +117,24 @@ export function pushSenderReady(env: NodeJS.ProcessEnv = process.env): boolean {
   );
 }
 
+/**
+ * Push services browsers actually hand out, matched exactly (no look-alike
+ * subdomains). Chrome uses fcm.googleapis.com and, on many installs (Beta, Dev,
+ * Canary, unbranded Chromium and some current Android builds), Google's
+ * jmt17.google.com FCM host. Leaving that host out made every such device fail
+ * with "Your settings could not be saved" (owner report, November 2026).
+ * Microsoft Edge uses Windows Push Notification Services (wns2-*.notify.windows.com).
+ */
+const PUSH_HOSTS = new Set(["fcm.googleapis.com", "jmt17.google.com", "updates.push.services.mozilla.com", "web.push.apple.com"]);
+const WNS_HOST = /^wns2-[a-z0-9-]{1,40}\.notify\.windows\.com$/;
+
 export function pushServiceUrl(endpoint: string): URL | null {
   try {
     const url = new URL(endpoint);
     // Browser subscriptions must target a known push service, never an arbitrary
     // URL supplied by a member. Do not follow redirects to untrusted hosts.
     const host = url.hostname.toLowerCase();
-    const allowed = host === "fcm.googleapis.com" || host === "updates.push.services.mozilla.com" || host === "web.push.apple.com" || host.endsWith(".push.apple.com");
+    const allowed = PUSH_HOSTS.has(host) || host.endsWith(".push.apple.com") || WNS_HOST.test(host);
     if (url.protocol !== "https:" || !allowed || url.username || url.password || url.port || url.hash) return null;
     return url;
   } catch { return null; }

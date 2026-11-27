@@ -6,7 +6,8 @@ import { siteUrl } from "../../lib/site";
 import { ACTIVITY_COOKIE, ACTIVITY_COOKIE_MAX_AGE_SECONDS } from "../../lib/session-policy";
 import { mapAuthProviderError } from "./auth-error";
 import { formRateAllowance, formRateMessage, formRateUnavailableMessage } from "../../lib/form-server";
-import { admitSigninAttempt, normaliseSigninEmail, recordSigninOutcome, signinBusyMessage, signinLockedMessage, type SigninOutcome } from "../../../admin/lib/signin-throttle";
+import { admitSigninAttempt, normaliseSigninEmail, recordSigninOutcome, signinBusyMessage, signinLockExitAllowed, signinLockedMessage, type SigninOutcome } from "../../../admin/lib/signin-throttle";
+import { signinHumanCheckFailedMessage, verifySigninHumanCheck } from "../../lib/human-check";
 import { availabilityFromRpc, isValidHandle, normalizeHandle } from "../../lib/member-handle";
 import { handleResendSignupVerification, handleVerifyEmailOtp, type AuthState } from "../../lib/auth-otp";
 export type { AuthState } from "../../lib/auth-otp";
@@ -111,6 +112,9 @@ export async function signIn(_state: AuthState, data: FormData): Promise<AuthSta
   // Network budget first, as every signed-out form does: a refused caller writes
   // nothing to the per-account table (Strix review on PR #280).
   if (!(await formRateAllowance("auth_signin", 15))) return { status: "error", message: await formRateMessage() };
+  // One solved, single-use challenge per password check, so arming a lock
+  // costs more than a plain request (Strix review on PR #280).
+  if ((await verifySigninHumanCheck(data)) === "fail") return { status: "error", message: signinHumanCheckFailedMessage, values: { email } };
   // Reserve one of this email's password checks (atomic, so parallel requests
   // cannot all slip past the lock). Every path below closes the attempt.
   const gate = await admitSigninAttempt(email);
@@ -173,9 +177,11 @@ export async function signIn(_state: AuthState, data: FormData): Promise<AuthSta
   }
 }
 export async function requestPasswordReset(_state: AuthState, data: FormData): Promise<AuthState> {
-  const email = field(data, "email").toLowerCase();
+  const email = normaliseSigninEmail(field(data, "email"));
   if (!validEmail(email)) return { status: "error", message: "Enter a valid email address." };
-  if (!(await formRateAllowance("auth_reset"))) return { status: "error", message: await formRateMessage() };
+  // A locked address keeps a small reserved lane, so filling the shared reset
+  // budget cannot close the way out of a lock (Strix review on PR #280).
+  if (!(await formRateAllowance("auth_reset")) && !(await signinLockExitAllowed(email, "reset"))) return { status: "error", message: await formRateMessage() };
   try {
     const supabase = await createClient();
     await supabase.auth.resetPasswordForEmail(email, { redirectTo: authCallbackUrl("/auth/new-password") });
@@ -204,7 +210,8 @@ export async function updatePassword(_state: AuthState, data: FormData): Promise
   }
 }
 export async function verifyEmailOtp(_state: AuthState, data: FormData): Promise<AuthState> {
-  if (!(await formRateAllowance("auth_otp", 10))) return { status: "error", message: await formRateMessage() };
+  // Same reserved lane as reset for a locked address (Strix review on PR #280).
+  if (!(await formRateAllowance("auth_otp", 10)) && !(await signinLockExitAllowed(normaliseSigninEmail(field(data, "email")), "code"))) return { status: "error", message: await formRateMessage() };
   const outcome = await handleVerifyEmailOtp(data, createClient, authCallbackUrl("/dashboard"));
   if ("redirectTo" in outcome) {
     // A valid emailed code proves control of the address: lift any sign-in lock on it.

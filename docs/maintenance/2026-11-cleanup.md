@@ -87,8 +87,20 @@ The network limiter (`auth_signin`: 15 per network, 500 shared per hour) cannot 
 account, and the staff login had no limit at all. Both sign-in forms now share a per-account lock:
 
 - **Order of checks (both forms):** first the shared `auth_signin` network budget (15 per network, 500 shared per hour;
-  the staff form now has it too), then the per-account admission, then the password. A network-refused caller writes
-  nothing to the per-account table.
+  the staff form now has it too), then the sign-in human check, then the per-account admission, then the password. A
+  network-refused caller writes nothing to the per-account table.
+- **Sign-in human check (Strix review on PR #280):** both sign-in forms (member `/login`, staff `/admin/login`, and the
+  standalone admin app) show the site's own human check. It uses the same proof-of-work as the public forms with two
+  differences. It is harder: 16 bits instead of 14, which the browser solves while the visitor types. Each solved
+  token is good for **one** password check: `verifySigninHumanCheck` spends it in `human_check_spent` and refuses a
+  replay. After every result, such as a wrong password, the form starts a fresh solve. If the spend cannot be recorded,
+  sign-in is refused (fail closed). If Cloudflare Turnstile keys are set (`TURNSTILE_SECRET_KEY` and
+  `NEXT_PUBLIC_TURNSTILE_SITE_KEY`), Turnstile is used instead and its tokens are single-use at Cloudflare. Turnstile
+  is the stronger option: the proof-of-work costs a scripted attacker running native code very little per solve. What
+  it does guarantee is that every counted check needs a fresh server-issued challenge, so a plain replayed request can
+  no longer arm a lock. On the standalone admin app, Turnstile would also need its script allowed in that app's CSP;
+  production serves `/admin` from the main app, which already allows it. The sign-in forms now need JavaScript, as the
+  public forms already did.
 - **Rule:** only provider-confirmed wrong passwords count. The 8th wrong password within a 15-minute window locks that
   email for 15 minutes.
   - **Admission is atomic.** Each check first reserves a slot under a database row lock (`signin_throttle_admit`) and
@@ -101,25 +113,38 @@ account, and the staff login had no limit at all. Both sign-in forms now share a
     eight wrong passwords every time a lock expires can keep an account locked for longer. The lock is deliberately
     fixed rather than escalating, so each cycle costs that person eight more attempts and the account holder at most
     15 minutes. A completed password reset, or a valid emailed sign-up code, normally ends the lock at once.
-  - **Known trade-off (Strix review on PR #280, LOW):** because anyone can type an address, someone who knows a member
-    or staff email can keep re-arming that lock. The network budget makes this cost 8 requests from a network per lock,
-    and the account holder can still get in through a password reset. A challenge on the sign-in forms (CAPTCHA or
-    proof-of-work) would raise the cost further; that changes the sign-in experience for everyone, so it is left as an
-    owner decision. Staff can lift a lock with the per-account unlock below.
+  - **Re-arming (Strix review on PR #280, LOW):** because anyone can type an address, someone who knows a member or
+    staff email can keep re-arming that lock. Each lock now costs them 8 network-budgeted requests **and** 8 solved,
+    single-use challenges (see the human check above). The account holder always keeps a way out: see the reserved lane
+    below. Staff can also lift a lock with the per-account unlock below.
+  - **The way out cannot be closed (Strix review on PR #280, LOW):** password reset (`auth_reset`) and emailed-code
+    checks (`auth_otp`) normally draw on a 100-per-hour budget shared by the whole site, which anyone could fill. While
+    an address is **locked**, those two forms fall back to a small per-address allowance when the shared budget
+    refuses: 3 reset emails and 10 code checks per address per hour (`signin_throttle_exit_allowance`). The general
+    queue cannot consume it, and it opens only for a locked address, so it cannot be used to mail arbitrary inboxes.
+    If someone else spends the reset allowance, every one of those emails still goes to the real owner, and the newest
+    link works.
+  - **Why there is no daily cap on locks:** Strix also suggested capping how many locks one address can take in a day.
+    Without a lock, the 8-checks-per-window budget would keep refusing that address as "busy" anyway. So a cap would not
+    let the owner in. It would only let a guesser continue past the cap with no lock. The reserved lane above is what
+    restores the owner's access, so the lock stays as it is.
 - **Closing each attempt** (`signin_throttle_record(key, outcome, reservation)`):
   - `"rejected"` (provider-confirmed `invalid_credentials`) counts one confirmed failure.
   - `"verified"` (successful sign-in, or `email_not_confirmed`, which proves the password) clears the email. A completed
     password reset and a valid emailed sign-up code also record `"verified"`, with no reservation needed.
   - `"unknown"` (outage, provider rate limit, or an error thrown after admission) releases the slot without counting it.
-  - **Stale outcomes are ignored.** Every row carries a random generation, renewed when the key is cleared or a lock
-    expires, and the reservation token is that generation. A late outcome from an earlier generation changes nothing,
-    so it cannot lower a newer count (CodeRabbit review on PR #280).
+  - **Each reservation is its own slot** (`20261129050000_signin_throttle_slots.sql`, CodeRabbit review on PR #280).
+    The reservation token is a random slot id. `held` maps each live slot to its admission time, and `pending` equals
+    the number of held slots. A slot idle for 2 minutes belongs to a request that died without recording. It is moved
+    to `released`, which is kept for 20 minutes, and its place is freed for a new check. If that late outcome arrives
+    after all, a rejection still counts as a failure, once, but it frees nothing, so it can never release a slot that a
+    current check holds. A cleared key or an expired lock empties both maps, so outcomes from before it change nothing.
   - **Window rollover.** A plain rollover keeps the generation, so checks still in flight stay matched. An outcome that
     lands after its window has closed rolls the window forward and counts in the window it lands in. It never adds to
     the expired window, so a lock only comes from 8 failures inside one window (CodeRabbit). It is never dropped
     either, so a batch timed across the boundary cannot win a second set of eight checks (Strix review on PR #280).
-    At a rollover, reservations idle for 2 minutes, which belong to requests that died without recording, stop
-    holding slots.
+    Idle slots are released on **every** admission and every recording, including the recording that rolls the window
+    forward. Seven dead requests therefore cannot keep an address "busy" into the next window (CodeRabbit).
 - **Table growth bound:** at most 1000 new account keys can be created per rolling hour, twice the shared sign-in
   ceiling, so the cap never trips in normal use. Beyond it, new addresses get "temporarily unavailable" while known
   addresses keep their counts. Rows idle for a day are pruned whenever a new key is created.
@@ -132,21 +157,27 @@ account, and the staff login had no limit at all. Both sign-in forms now share a
 - **Fail-safe:** on Vercel, if the lock cannot be checked (missing secret or service key, database error), sign-in is
   refused with the existing "temporarily unavailable" message, matching `formRateAllowance`. Local development stays
   usable.
-- **Code:** `frontend/apps/admin/lib/signin-throttle.ts` (shared helper), `frontend/apps/main/app/auth/actions.ts`
-  (`signIn`, `updatePassword`), `frontend/apps/admin/lib/login-actions.ts`, and
+- **Code:** `frontend/apps/admin/lib/signin-throttle.ts` (shared helper, including `signinLockExitAllowed`),
+  `frontend/apps/main/app/auth/actions.ts` (`signIn`, `requestPasswordReset`, `updatePassword`, `verifyEmailOtp`),
+  `frontend/apps/main/lib/human-check.ts` (`verifySigninHumanCheck`), `frontend/apps/main/components/human-check.tsx`,
+  `frontend/apps/admin/lib/login-actions.ts`, and
   `signInAdminWithPassword` in `frontend/apps/admin/lib/supabase-access.ts`, which reports `password:
   "rejected" | "verified" | "unknown"`.
 - **Database:** `backend/supabase/migrations/20261129000000_signin_account_throttle.sql` (table
   `auth_signin_throttle`), `20261129010000_signin_throttle_atomic_admission.sql` (atomic admission) and
   `20261129020000_signin_throttle_reservations.sql` (separate pending and confirmed counts, reservation tokens, new-key
   cap, prune), `20261129030000_signin_throttle_window_check.sql` and `20261129040000_signin_throttle_rollover.sql`
-  (window-rollover accounting). All of it is service_role only.
-- **Tests:** `backend/tests/signin-account-throttle.test.mjs` and `frontend/tests/signin-account-throttle.test.mjs`.
+  (window-rollover accounting), `20261129050000_signin_throttle_slots.sql` (one slot per reservation),
+  `20261129060000_signin_lock_exit_lane.sql` (reserved reset and code lane) and
+  `20261129070000_human_check_single_use.sql` (single-use sign-in challenges). All of it is service_role only.
+- **Tests:** `backend/tests/signin-account-throttle.test.mjs`, `frontend/tests/signin-account-throttle.test.mjs` and
+  `frontend/vitest/human-check.test.ts`.
 
 ### Unlocking an account
 
 1. **Self-service (preferred):** the account holder resets their password from `/forgot-password`. Completing the reset
-   lifts the lock. Clearing the lock is best effort: if the database call fails, the new password is still saved and the
+   lifts the lock. While the address is locked, the reset form keeps a reserved allowance even when the shared hourly
+   budget is full. Clearing the lock is best effort: if the database call fails, the new password is still saved and the
    reset still reports success, but the lock stays until it expires. If the person still sees the "too many
    unsuccessful attempts" message after a successful reset, use the per-account unlock in step 2.
 2. **One account, by staff:** the row key is an HMAC, so it can only be found with `FORM_RATE_SECRET`. That secret is
