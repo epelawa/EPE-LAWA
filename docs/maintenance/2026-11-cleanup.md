@@ -28,6 +28,8 @@ This note covers the open-ended cleanup pass after the business, radio and respo
 
 **Second Strix pass on PR #277.** Sign-in and push-subscribe were first raised to 5000. Strix pointed out that each ceiling is also the only aggregate cap on password guessing and on anonymous device-row writes, so both were lowered to 500.
 
+**Third Strix pass on PR #277.** `confirmNewsletter` charged the shared `newsletter` bucket, which guards sign-up mail, before checking the token. Confirmation sends no email and its 256-bit token cannot be guessed, so the charge was removed, matching `unsubscribeNewsletter`. The vitest case that asserted the old "through the limiter" order was outdated by this deliberate change, so it now asserts that invented tokens never call `form_rate_limit`. (Newsletter sign-up is off unless `NEWSLETTER_SIGNUP_ENABLED=true`.)
+
 **Follow-ups (not done here; they need a migration or a product decision):** per-account sign-in throttling or a challenge after repeated failures; a cap on total `web_push_devices` rows plus a reaper for devices that never receive a delivery; fanout ordered by most recently active device.
 
 **Residual risk.** The mail-sending scopes keep the 100/hour ceiling on purpose. A coordinated flood from many networks can still pause signup, password reset and the business, event and history submission forms for up to an hour. That is the trade-off for not exhausting the email provider's quota.

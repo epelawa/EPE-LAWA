@@ -44,9 +44,10 @@ export async function confirmNewsletter(_previous: NewsletterState = idleState, 
   const token = formValue(data, "token");
   if (!/^[a-f0-9]{64}$/.test(token)) return { status: "error", message: "This confirmation link is invalid or expired." };
   try {
-    const client = formAdminClient(), key = await formClientKey();
-    const limit = await client.rpc("form_rate_limit", { p_scope: "newsletter", p_fingerprint: key });
-    if (limit.error || limit.data !== true) return { status: "error", message: "We couldn’t process your request. Please try again later." };
+    // No rate charge here (Strix review on PR #277): confirming sends no email and the 256-bit token cannot be
+    // guessed, so charging the shared "newsletter" bucket only let invented tokens lock real sign-ups out. The
+    // mail-sending request step keeps its limiter; unsubscribe already works the same way as this.
+    const client = formAdminClient();
     const { data: result, error } = await client.rpc("newsletter_confirm_verified", { p_confirmation_hash: hash(token) });
     if (error || !["activated", "already_active"].includes(result)) return { status: "error", message: "This confirmation link is invalid or expired." };
     return { status: "success", message: result === "activated" ? "Your newsletter subscription is confirmed. Keep the unsubscribe link in your email." : "Your newsletter subscription is already active. Keep your existing unsubscribe link." };
