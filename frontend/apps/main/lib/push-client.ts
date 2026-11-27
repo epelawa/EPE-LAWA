@@ -79,13 +79,33 @@ function keyBytes(base64: string): Uint8Array {
   return Uint8Array.from(raw, (char) => char.charCodeAt(0));
 }
 
+const BRIEFLY_UNAVAILABLE = "EPE LAWA is briefly unavailable. Please try again in a moment.";
+
 async function serverMessage(response: Response, fallback: string): Promise<string> {
   // Validation details are for API clients; tell visitors how to recover.
   if (response.status === 400) return fallback;
   try {
-    const data: { error?: { message?: string } } = await response.json();
-    return typeof data?.error?.message === "string" ? data.error.message : fallback;
-  } catch { return fallback; }
+    const data: { error?: { message?: string } | string } = await response.json();
+    if (typeof data?.error === "object" && typeof data.error?.message === "string") return data.error.message;
+    // The site-wide gate answers {"error":"temporarily_unavailable"} with 503.
+    return response.status === 503 ? BRIEFLY_UNAVAILABLE : fallback;
+  } catch { return response.status === 503 ? BRIEFLY_UNAVAILABLE : fallback; }
+}
+
+/**
+ * One automatic retry for a dropped connection or a 503, which are usually
+ * momentary (a cold server, a brief gate check failure). Visitors used to see
+ * "Your settings could not be saved" on their first try and success on the
+ * second (owner report, November 2026). Saving is idempotent, so a retry is safe.
+ */
+const RETRY_DELAY_MS = 1500;
+async function sendWithRetry(input: string, init: RequestInit): Promise<Response> {
+  try {
+    const first = await fetch(input, init);
+    if (first.status !== 503) return first;
+  } catch { /* retry once below */ }
+  await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+  return fetch(input, init);
 }
 
 /** Ask for permission (click-only), subscribe this device and store the topics server-side. */
@@ -107,13 +127,17 @@ export async function enablePush(topics: PushTopics): Promise<PushResult> {
     return { ok: false, reason: "failed", message: "This device could not be subscribed. Please try again." };
   }
   try {
-    const response = await fetch("/api/notifications/subscribe", {
+    const response = await sendWithRetry("/api/notifications/subscribe", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ subscription: subscription.toJSON(), topics }),
       cache: "no-store",
     });
-    if (!response.ok) return { ok: false, reason: "unavailable", message: await serverMessage(response, "Your settings could not be saved. Please try again.") };
+    if (!response.ok) {
+      // A refused subscription would be offered again unchanged; drop it so the next try gets a fresh one.
+      if (response.status === 400) await subscription.unsubscribe().catch(() => false);
+      return { ok: false, reason: "unavailable", message: await serverMessage(response, "Your settings could not be saved. Please try again.") };
+    }
     const data: { saved?: boolean; topics?: PushTopics } = await response.json();
     if (data.saved !== true) return { ok: false, reason: "unavailable", message: "Your settings could not be saved. Please try again." };
     remember("subscribed");
@@ -129,7 +153,7 @@ export async function saveTopics(topics: PushTopics): Promise<PushResult> {
   const subscription = await currentSubscription();
   if (!subscription) return enablePush(topics);
   try {
-    const response = await fetch("/api/notifications/subscribe", {
+    const response = await sendWithRetry("/api/notifications/subscribe", {
       method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ endpoint: subscription.endpoint, topics }), cache: "no-store",
     });
     // The server lost this device (e.g. it was retired): register it again with the new choice.

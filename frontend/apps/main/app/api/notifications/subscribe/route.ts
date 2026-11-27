@@ -58,6 +58,10 @@ function validEndpoint(value: unknown): string | null {
   return ENDPOINT.test(endpoint) && pushServiceUrl(endpoint) ? endpoint : null;
 }
 
+function endpointHost(value: unknown): string {
+  try { return typeof value === "string" ? new URL(value).hostname.slice(0, 80) : typeof value; } catch { return "unparseable"; }
+}
+
 /** The signed-in member, if any. Guests are fully supported; this never fails the request. */
 async function optionalMember() {
   try {
@@ -107,7 +111,11 @@ export async function POST(request: Request): Promise<Response> {
     : {};
   const p256dh = typeof keys.p256dh === "string" ? keys.p256dh : "";
   const auth = typeof keys.auth === "string" ? keys.auth : "";
-  if (!endpoint || !P256DH.test(p256dh) || !AUTH.test(auth)) return error(400, "Invalid subscription");
+  if (!endpoint || !P256DH.test(p256dh) || !AUTH.test(auth)) {
+    // Host only: the path carries the device token. Makes a refused browser visible in the logs.
+    console.warn("push subscribe refused", { reason: endpoint ? "keys" : "endpoint", host: endpointHost(subscription.endpoint) });
+    return error(400, "Invalid subscription");
+  }
 
   // Counted only for well-formed requests, so a broken browser call never uses up the allowance.
   const allowed = await formRateAllowance("push_subscribe", 5);

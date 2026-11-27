@@ -146,6 +146,7 @@ test('the newsroom publish hooks fire the dispatch after the article goes live',
 
 
 test('push destinations are restricted to known providers and cannot use credentials or ports', () => {
-  for (const url of ['https://fcm.googleapis.com/fcm/send/test', 'https://updates.push.services.mozilla.com/wpush/v2/test', 'https://web.push.apple.com/test']) assert.ok(pushServiceUrl(url), url);
-  for (const url of ['https://localhost/', 'https://127.0.0.1/', 'https://evil.test/', 'https://fcm.googleapis.com.evil.test/', 'https://fcm.googleapis.com:8443/', 'https://user@fcm.googleapis.com/', 'http://fcm.googleapis.com/']) assert.equal(pushServiceUrl(url), null, url);
+  // jmt17.google.com is the endpoint Chrome handed the owner's phone (production push_subscriptions row, Nov 2026).
+  for (const url of ['https://fcm.googleapis.com/fcm/send/test', 'https://jmt17.google.com/fcm/send/test', 'https://updates.push.services.mozilla.com/wpush/v2/test', 'https://web.push.apple.com/test', 'https://wns2-par02p.notify.windows.com/w/?token=abc']) assert.ok(pushServiceUrl(url), url);
+  for (const url of ['https://localhost/', 'https://127.0.0.1/', 'https://evil.test/', 'https://fcm.googleapis.com.evil.test/', 'https://fcm.googleapis.com:8443/', 'https://user@fcm.googleapis.com/', 'http://fcm.googleapis.com/', 'https://evil.jmt17.google.com/fcm/send/x', 'https://jmt17.google.com.evil.test/', 'https://google.com/fcm/send/x', 'https://jmt18.google.com/fcm/send/x', 'https://notify.windows.com/w/', 'https://evil.notify.windows.com/w/', 'https://wns2-x.notify.windows.com.evil.test/']) assert.equal(pushServiceUrl(url), null, url);
 });
