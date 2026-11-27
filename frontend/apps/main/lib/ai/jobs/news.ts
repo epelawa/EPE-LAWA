@@ -178,7 +178,9 @@ export function rankCandidates(items: FeedItem[], recentTitles: string[], now = 
     const corroborating = fresh.filter((other) => other !== item && other.outlet.name !== item.outlet.name && similarity(own, tokens.get(other)!) >= 0.45);
     const locality = localityScore(`${item.title} ${item.summary}`);
     const ageHours = (now - Date.parse(item.publishedAt!)) / 3600_000;
-    const desk = item.outlet.desk === "sport" || item.outlet.desk === "business" ? 6 : 0;
+    // Every subject desk (sport, business, politics, entertainment, tech, health,
+    // science) gets a lift so the site carries all kinds of news, not only politics.
+    const desk = ["sport", "business", "politics", "entertainment", "tech", "health", "science"].includes(item.outlet.desk) ? 6 : 0;
     const score = locality.score + Math.max(0, 20 - ageHours) + Math.min(3, corroborating.length) * 6 + desk + (item.outlet.country === "NG" ? 4 : 0);
     candidates.push({ item, locality, score, corroborating });
   }
@@ -197,6 +199,8 @@ function fallbackCategory(categories: Category[], candidate: Candidate): Categor
   const by = (slug: string) => categories.find((category) => category.slug === slug);
   if (candidate.item.outlet.desk === "sport") return by("sports");
   if (candidate.item.outlet.desk === "business") return by("business");
+  if (candidate.item.outlet.desk === "politics") return by("politics");
+  if (candidate.item.outlet.desk === "entertainment") return by("entertainment");
   if (candidate.locality.label === "Epe" || candidate.locality.label === "Lagos") return by("lagos-news");
   if (candidate.locality.label === "World") return by("international-news");
   return by("other");

@@ -40,11 +40,13 @@ async function readDirectory(query: DirectoryQuery) {
   const from = (query.page - 1) * DIRECTORY_PAGE_SIZE;
   list = list.order("id", { ascending: true }).range(from, from + DIRECTORY_PAGE_SIZE - 1);
 
-  const [result, cats, live] = await Promise.all([
+  const [result, cats, live, areaRows] = await Promise.all([
     list,
     db.from("business_categories").select("slug,label").eq("is_active", true).order("sort_order").order("label").limit(100),
     // RLS exposes only live windows (starts_at <= now < ends_at) to the public.
     db.from("business_featured").select("business_id,ends_at").gt("ends_at", new Date().toISOString()).order("ends_at", { ascending: false }).limit(6),
+    // Areas that published listings actually use: the filter offers these as a dropdown.
+    db.from("published_businesses").select("area").not("area", "is", null).limit(1000),
   ]);
   if (result.error || cats.error) {
     console.error("public business directory read failed", { code: result.error?.code ?? cats.error?.code });
@@ -63,7 +65,17 @@ async function readDirectory(query: DirectoryQuery) {
     categories: (cats.data ?? []) as Category[],
     featured,
     featuredIds: new Set(featured.map((row) => row.id)),
+    areas: directoryAreas((areaRows.data ?? []) as { area: string | null }[]),
   };
+}
+
+function directoryAreas(rows: { area: string | null }[]) {
+  const byKey = new Map<string, string>();
+  for (const row of rows) {
+    const label = (row.area ?? "").replace(/\s+/g, " ").trim();
+    if (label && label.length <= 100 && !byKey.has(label.toLowerCase())) byKey.set(label.toLowerCase(), label);
+  }
+  return [...byKey.values()].sort((x, y) => x.localeCompare(y, "en-NG"));
 }
 
 export default function BusinessDirectoryPage({ searchParams }: { searchParams: Promise<Search> }) {
@@ -134,7 +146,7 @@ async function BusinessDirectory({ searchParams }: { searchParams: Promise<Searc
             <h2 id="directory-results">{filtered ? "Search results" : "All businesses"}</h2>
             {!data.failed && data.total !== null ? <p role="status">{data.total === 1 ? "1 business" : `${data.total} businesses`}{totalPages && totalPages > 1 ? ` · page ${query.page} of ${totalPages}` : ""}</p> : null}
           </div>
-          {!data.failed ? <div className={styles.toolbarControls}><DirectorySortSelect query={query} /><DirectoryFilterSheet query={query} /></div> : null}
+          {!data.failed ? <div className={styles.toolbarControls}><DirectorySortSelect query={query} /><DirectoryFilterSheet query={query} areas={data.areas} /></div> : null}
         </div>
         {chips.length ? <ul className={styles.chips} aria-label="Active filters">
           {chips.map((chip) => <li key={chip.label}><Link href={chip.href} aria-label={`Remove filter ${chip.label}`}>{chip.label}<CloseIcon size={14} /></Link></li>)}

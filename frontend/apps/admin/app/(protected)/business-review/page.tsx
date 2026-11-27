@@ -49,6 +49,10 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
     db.from("businesses").select("id,slug,name,category_id,description,area,address,landmark,phone,whatsapp,email,website,logo_key,hours,created_at,status").eq("status", "published").is("deleted_at", null).order("name").limit(200),
   ]);
   const claims = ((claimsResult.data ?? []) as unknown as ClaimRow[]);
+  // Areas already used by listings: offered as a pick list on the add/edit forms (new areas can still be typed).
+  const knownAreas = [...new Map([...(data ?? []), ...((publishedResult.data ?? []) as { area: string | null }[])]
+    .map((row) => (row.area ?? "").replace(/\s+/g, " ").trim()).filter(Boolean)
+    .map((area) => [area.toLowerCase(), area] as const)).values()].sort((x, y) => x.localeCompare(y, "en-NG"));
   const featuredNow = (featuredResult.data ?? []) as unknown as { businesses: { name: string; slug: string } | null; ends_at: string }[];
   const publishedBusinesses = (publishedResult.data ?? []) as unknown as PublishedRow[];
   const labels = new Map((cats ?? []).map(c => [c.id, c.label]));
@@ -83,6 +87,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
           <div className="ui-divider">
             <BusinessEditForm
               categories={cats ?? []}
+              areas={knownAreas}
               business={{
                 id: b.id,
                 name: b.name ?? "",
@@ -108,7 +113,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
         </form>
       </Panel></li>; })}</ul>}
     </section>
-    {cats?.length ? <Panel><SectionHeading eyebrow="Direct listing" title="Add a business" description="Publish a listing yourself, right now — no submission needed. Everything you save here appears in the public directory immediately." /><BusinessCreateForm categories={cats} /></Panel> : null}
+    {cats?.length ? <Panel><SectionHeading eyebrow="Direct listing" title="Add a business" description="Publish a listing yourself, right now — no submission needed. Everything you save here appears in the public directory immediately." /><BusinessCreateForm categories={cats} areas={knownAreas} /></Panel> : null}
 
     <section className="ui-stack-sm">
       <SectionHeading eyebrow="Ownership claims" title="Business claims" description="Members who say they run a listing. Approving the claim links their account as owner; reject with a reason otherwise." />
@@ -132,7 +137,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
       <form action={featureBusiness} className="ui-stack-sm ui-divider">
         <div className="ui-form-grid">
           <label className="ui-field"><span className="label">Business</span><select name="business_id" required defaultValue="" className="input"><option value="" disabled>Choose a published business</option>{publishedBusinesses.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}</select></label>
-          <label className="ui-field"><span className="label">Run for (days)</span><input className="input" name="days" type="number" min={1} max={90} defaultValue={7} required /></label>
+          <label className="ui-field"><span className="label">Run for</span><select className="input" name="days" defaultValue="7" required>{[1, 2, 3, 5, 7, 14, 21, 30, 45, 60, 90].map((days) => <option key={days} value={days}>{days === 1 ? "1 day" : `${days} days`}{days === 7 ? " (one week)" : days === 30 ? " (about a month)" : ""}</option>)}</select></label>
         </div>
         <div className="ui-actions"><SubmitButton className="btn-primary">Feature this business</SubmitButton></div>
       </form>

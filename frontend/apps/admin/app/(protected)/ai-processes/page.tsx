@@ -5,6 +5,7 @@ import { createStaffClient } from "../../../lib/supabase";
 import { adminHref } from "../../../lib/admin-path";
 import { lagosClock, lagosDay, lagosDayRange, lagosExact, lagosHour } from "../../../lib/lagos-time";
 import { resolveAiEscalation, sendApprovedAiReply } from "../../../lib/ai-actions";
+import LiveRefresh from "../../../components/live-refresh";
 
 export const metadata: Metadata = { title: "AI processes", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -85,12 +86,15 @@ export default async function AiProcessesPage({ searchParams }: { searchParams: 
   let timelineQuery = db.from("ai_activity").select("id,run_id,created_at,job,action,outcome,resource_type,resource_id,title,reason,model,details,resolved_at,resolution_note").gte("created_at", range.since).lt("created_at", range.until).order("created_at", { ascending: false }).limit(500);
   if (job) timelineQuery = timelineQuery.eq("job", job);
   if (outcome) timelineQuery = timelineQuery.eq("outcome", outcome);
-  const [timelineResult, weekResult, openResult, callsResult] = await Promise.all([
+  const [timelineResult, weekResult, openResult, callsResult, runsResult] = await Promise.all([
     timelineQuery,
     db.from("ai_activity").select("created_at,outcome").gte("created_at", weekStart).lt("created_at", range.until).limit(10000),
     db.from("ai_activity").select("id,run_id,created_at,job,action,outcome,resource_type,resource_id,title,reason,model,details,resolved_at,resolution_note").eq("outcome", "escalated").is("resolved_at", null).order("created_at", { ascending: false }).limit(50),
     db.from("ai_model_calls").select("created_at,ok,model").gte("created_at", range.since).lt("created_at", range.until).limit(5000),
+    db.from("ai_runs").select("id,job,trigger,started_at,finished_at,status,summary,progress,progress_at").gte("started_at", range.since).lt("started_at", range.until).order("started_at", { ascending: false }).limit(60),
   ]);
+  const runs = (runsResult.data ?? []) as { id: string; job: string; trigger: string; started_at: string; finished_at: string | null; status: string; summary: string | null; progress: string | null; progress_at: string | null }[];
+  const activeRuns = runs.filter((run) => run.status === "running" && Date.now() - Date.parse(run.progress_at ?? run.started_at) < 6 * 60_000);
   if (timelineResult.error) {
     return <PageFrame><PageIntro eyebrow="System · AI" title="AI processes" description="Audit of everything the AI did." />
       <EmptyPanel title="AI audit unavailable" description="Apply the AI database migration (20261129080000), then reload." />
@@ -121,6 +125,29 @@ export default async function AiProcessesPage({ searchParams }: { searchParams: 
     <PageFrame className="ui-stack">
       <PageIntro eyebrow="System · AI" title="AI processes" description="A complete audit of the AI desk: what it did, what it decided not to do, what it escalated to a human and why, with exact Lagos timestamps, by day and by hour." meta={<Link href={adminHref("/ai-scheduler")}>← AI Scheduler</Link>} />
       {notice ? <Notice tone={notice.tone} role={notice.tone === "success" ? "status" : "alert"}>{notice.text}</Notice> : null}
+
+      <Panel className="ui-stack-sm">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <h2 style={{ margin: 0 }}>Running now ({activeRuns.length})</h2>
+          <LiveRefresh active={activeRuns.length > 0} seconds={5} />
+        </div>
+        {activeRuns.length === 0 ? <p className="ui-muted" style={{ margin: 0 }}>Nothing is running. Click any run below to see exactly what it did.</p> : activeRuns.map((run) => (
+          <a key={run.id} href={adminHref(`/ai-processes/runs/${run.id}`)} className="ui-item" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
+            <p className="ui-meta" style={{ margin: 0 }}><StatusBadge tone="warning">running</StatusBadge> {JOBS[run.job] ?? run.job} · started {lagosClock(run.started_at)}</p>
+            <p style={{ margin: "4px 0 0", fontWeight: 600 }}>{run.progress ?? "Starting…"}</p>
+            <span className="ui-text-link">Watch live →</span>
+          </a>
+        ))}
+      </Panel>
+
+      <Panel className="ui-stack-sm">
+        <SectionHeading title={`Runs on ${day} (${runs.length})`} description="Click a run to open its step-by-step view." />
+        {runs.length === 0 ? <p className="ui-muted">No runs on this day.</p> : (
+          <div className="ui-table"><table><thead><tr><th>Started</th><th>Job</th><th>Status</th><th>Result</th><th><span className="sr-only">Open</span></th></tr></thead><tbody>
+            {runs.map((run) => <tr key={run.id}><td className="ui-number"><a href={adminHref(`/ai-processes/runs/${run.id}`)}>{lagosClock(run.started_at)}</a></td><td>{JOBS[run.job] ?? run.job}{run.trigger === "manual" ? " · Run now" : ""}</td><td><StatusBadge tone={run.status === "success" ? "success" : run.status === "failed" ? "danger" : run.status === "skipped" ? "neutral" : "warning"}>{run.status}</StatusBadge></td><td>{run.status === "running" ? run.progress ?? "Starting…" : run.summary ?? "—"}</td><td><a className="ui-text-link" href={adminHref(`/ai-processes/runs/${run.id}`)}>{run.status === "running" ? "Watch live" : "Details"}</a></td></tr>)}
+          </tbody></table></div>
+        )}
+      </Panel>
 
       <Panel className="ui-stack">
         <SectionHeading title={`Waiting for a human (${open.length})`} description="Escalations stay here until someone handles them. The AI will not act on these items again until they are resolved." />
@@ -185,7 +212,7 @@ export default async function AiProcessesPage({ searchParams }: { searchParams: 
               {row.reason ? <p><strong>{row.outcome === "done" ? "What and why:" : "Why:"}</strong> {row.reason}</p> : null}
               {row.resolved_at ? <p className="ui-muted">Handled {lagosExact(row.resolved_at)}: {row.resolution_note}</p> : null}
               <Details row={row} />
-              {link ? <a className="ui-text-link" href={link.href}>{link.label}</a> : null}
+              <p style={{ display: "flex", gap: 16, flexWrap: "wrap", margin: 0 }}>{link ? <a className="ui-text-link" href={link.href}>{link.label}</a> : null}{row.run_id ? <a className="ui-text-link" href={adminHref(`/ai-processes/runs/${row.run_id}`)}>See the whole run</a> : null}</p>
             </article>
           );
         })}

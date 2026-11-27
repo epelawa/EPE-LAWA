@@ -1,6 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { adminRedirect as redirect } from "./admin-redirect";
 import { adminHref } from "./admin-path";
@@ -116,8 +117,22 @@ export async function runAiJobNow(form: FormData): Promise<void> {
   if (!admin) return await redirect(back("denied"));
   const job = form.get("job");
   if (typeof job !== "string" || !JOBS.includes(job as AiJob)) return await redirect(back("failed"));
-  const result = await runAutopilotPass({ trigger: "manual", job: job as AiJob, triggeredBy: admin.userId });
-  const summary = result.skipped ?? result.ran.map((entry) => `${AI_JOB_LABELS[entry.job]}: ${entry.summary}`).join(" ") ?? "Done.";
+  // Start the job in the background and open its live page straight away, so
+  // the administrator can watch what it is doing instead of waiting minutes.
+  let announce: (runId: string | null) => void = () => {};
+  const started = new Promise<string | null>((resolve) => { announce = resolve; });
+  const pass = runAutopilotPass({ trigger: "manual", job: job as AiJob, triggeredBy: admin.userId, onRunStarted: (runId) => announce(runId) })
+    .then((result) => { announce(null); return result; })
+    .catch((error: unknown) => {
+      console.error("manual ai run failed", { message: error instanceof Error ? error.message : "unknown" });
+      announce(null);
+      return { ran: [], skipped: "The run stopped unexpectedly." } as Awaited<ReturnType<typeof runAutopilotPass>>;
+    });
+  after(() => pass.then(() => undefined));
+  const runId = await started;
+  if (runId) return await redirect(adminHref(`/ai-processes/runs/${runId}`));
+  const result = await pass;
+  const summary = result.skipped ?? (result.ran.map((entry) => `${AI_JOB_LABELS[entry.job]}: ${entry.summary}`).join(" ") || "Nothing to do.");
   return await redirect(`${adminHref("/ai-scheduler")}?result=ran&summary=${encodeURIComponent(summary.slice(0, 400))}`);
 }
 

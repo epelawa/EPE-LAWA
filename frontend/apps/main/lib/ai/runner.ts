@@ -52,7 +52,7 @@ async function lastRunStart(db: SupabaseClient, job: AiJob): Promise<string | nu
 
 export type PassResult = { ran: { job: AiJob; summary: string }[]; skipped: string | null };
 
-export async function runAutopilotPass(options: { trigger: "schedule" | "manual"; job?: AiJob; triggeredBy?: string | null }): Promise<PassResult> {
+export async function runAutopilotPass(options: { trigger: "schedule" | "manual"; job?: AiJob; triggeredBy?: string | null; onRunStarted?: (runId: string) => void }): Promise<PassResult> {
   const started = Date.now();
   const deadline = started + RUN_SECONDS[options.trigger] * 1000;
   const db = formAdminClient();
@@ -123,6 +123,7 @@ export async function runAutopilotPass(options: { trigger: "schedule" | "manual"
 
     const runId = await startRun(db, job, options.trigger, options.triggeredBy ?? null);
     const log = new RunLog(db, runId, actorId);
+    if (runId) options.onRunStarted?.(runId);
     await log.step(`Started ${AI_JOB_LABELS[job]} (${options.trigger === "manual" ? "Run now" : "scheduled"}${publish ? "" : ", approval mode — results go to a human"}). ${budget.remaining} free model requests left today.`);
     let summary = "";
     try {

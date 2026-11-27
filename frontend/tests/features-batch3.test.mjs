@@ -18,7 +18,9 @@ test('site identity is centralised as Epe Lawa and the mailbox is never publishe
 test('pages, the RSS feed, calendars and structured data never show the Gmail address', () => {
   for (const file of ['app/feed.xml/route.ts', 'app/radio/programmes/ics.ts', 'lib/structured-data.ts', 'components/correction-form.tsx', 'app/business-directory/[slug]/page.tsx', 'app/news/[slug]/page.tsx']) {
     const source = mainApp(file);
-    assert.doesNotMatch(source, /CONTACT_EMAIL|gmail\.com|mailto:/i, file);
+    assert.doesNotMatch(source, /CONTACT_EMAIL|gmail\.com/i, file);
+    // A business profile may link the listed business's own address; nothing else offers a mailbox.
+    if (!file.startsWith('app/business-directory/')) assert.doesNotMatch(source, /mailto:/i, file);
   }
   assert.doesNotMatch(mainApp('app/news/[slug]/page.tsx'), /How this story was produced/);
 });
@@ -51,7 +53,7 @@ test('members file corrections through a rate-gated server action', () => {
   assert.match(form, /aria-haspopup/);
   const articlePage = mainApp('app/news/[slug]/page.tsx');
   assert.match(articlePage, /CorrectionForm/);
-  assert.match(articlePage, /site-identity/);
+  assert.doesNotMatch(articlePage, /site-identity|CONTACT_EMAIL/);
 });
 
 test('staff review corrections behind the article.review capability', () => {

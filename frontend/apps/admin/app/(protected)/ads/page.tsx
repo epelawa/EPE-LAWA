@@ -63,7 +63,7 @@ export default async function AdsPage({ searchParams }: { searchParams: Promise<
             </div>
             <form action={updateAdSlot} className="ui-row">
               <input type="hidden" name="business_id" value={business.id} />
-              <label className="ui-field"><span className="label">Order position (0 first)</span><input className="input" type="number" name="position" min={0} max={999} defaultValue={slot.position} style={{ maxWidth: 120 }} /></label>
+              <label className="ui-field"><span className="label">Order</span><select className="input" name="position" defaultValue={String(slot.position)} style={{ maxWidth: 160 }}>{Array.from({ length: Math.max(10, slot.position + 1) }, (_, position) => <option key={position} value={position}>{position === 0 ? "0 — shown first" : `Position ${position}`}</option>)}</select></label>
               <label className="ui-row"><input type="checkbox" name="is_active" defaultChecked={slot.is_active} /> Showing</label>
               <SubmitButton className="btn-secondary">Save row</SubmitButton>
             </form>

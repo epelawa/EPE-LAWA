@@ -12,7 +12,7 @@ import styles from "../../app/business-directory/directory.module.css";
  * screens). The form is a plain GET to /business-directory, so applying it is one navigation and the
  * search text and category are carried as hidden fields — nothing the visitor typed is lost.
  */
-export function DirectoryFilterSheet({ query }: { query: DirectoryQuery }) {
+export function DirectoryFilterSheet({ query, areas = [] }: { query: DirectoryQuery; areas?: string[] }) {
   const [open, setOpen] = useState(false);
   const id = useId();
   const router = useRouter();
@@ -36,7 +36,15 @@ export function DirectoryFilterSheet({ query }: { query: DirectoryQuery }) {
         {query.sort !== "verified" ? <input type="hidden" name="sort" value={query.sort} /> : null}
         <div className="ui-field">
           <label htmlFor={`${id}-area`}>Area or community</label>
-          <input id={`${id}-area`} name="area" defaultValue={query.area} maxLength={100} placeholder="e.g. Iraye, Ejirin, Online" autoComplete="off" />
+          {areas.length ? (
+            <select id={`${id}-area`} name="area" defaultValue={query.area}>
+              <option value="">Any area</option>
+              {query.area && !areas.some((area) => area.toLowerCase() === query.area.toLowerCase()) ? <option value={query.area}>{query.area}</option> : null}
+              {areas.map((area) => <option key={area} value={area}>{area}</option>)}
+            </select>
+          ) : (
+            <input id={`${id}-area`} name="area" defaultValue={query.area} maxLength={100} placeholder="e.g. Iraye, Ejirin, Online" autoComplete="off" />
+          )}
         </div>
         <label className={styles.checkRow} htmlFor={`${id}-verified`}>
           <input id={`${id}-verified`} type="checkbox" name="verified" value="1" defaultChecked={query.verified} />

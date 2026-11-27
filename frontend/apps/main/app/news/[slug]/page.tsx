@@ -13,7 +13,6 @@ import { formatLagosDateTime, formatPublishedDate } from "../../../lib/dates";
 import { ArticleBody } from "../../../lib/editorial-body";
 import { loadArticleEngagement, type ArticleEngagement } from "../../../lib/article-engagement";
 import { CommentThread } from "../comment-thread";
-import CommentDock from "../../../components/comment-dock";
 import ArticleCoverStats from "../../../components/article-cover-stats";
 import ArticleViewPing from "../../../components/article-view-ping";
 import ReaderPresence from "../../../components/reader-presence";
@@ -168,9 +167,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
   const imageUrl = publishedCover?.url;
   const uploaded = formatLagosDateTime(article.published_at);
   const commentCount = engagement?.comments ?? visibleComments;
-  const signInHref = `/login?next=${encodeURIComponent(`/news/${article.slug}#comments`)}`;
   const breaking = article.is_breaking && (!article.breaking_until || Date.parse(article.breaking_until) > Date.now());
-  const authorInitials = article.author_name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("") || "E";
 
   return (
     <>
@@ -243,17 +240,15 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
           <ArticleShareActions title={article.title} imageUrl={imageUrl} url={articleUrl} coverPath={imageUrl ? `${newsArticlePath(article.slug)}/cover` : null} showCopyButton={false} className={a.shareGroup} shareButtonClassName={a.pill} feedbackClassName={a.shareFeedback} fallbackClassName={a.shareFallback} />
         </div>
 
-        <p className={`${a.author} ${a.column}`}><span className={a.authorMark} aria-hidden="true">{authorInitials}</span><span><strong>Brought to you by</strong> {article.author_slug ? <Link href={`/news/author/${encodeURIComponent(article.author_slug)}`}>{article.author_name}</Link> : article.author_name}{uploaded ? <> · {uploaded} WAT</> : null}</span></p>
-
-        <div className={a.column}><CommentThread articleId={article.id} slug={article.slug} notice={notice.comments} /></div>
-        <CommentDock articleId={article.id} slug={article.slug} count={commentCount} signedIn={signedIn} signInHref={signInHref} />
-
-        {related.length ? <section className={a.related} aria-labelledby="related-heading"><h2 id="related-heading">Related stories</h2><ul className={a.relatedGrid}>{related.map((item) => { const relatedImage = publishedNewsCover(item)?.url; const when = formatPublishedDate(item.published_at); return <li key={item.slug}><Link href={newsArticlePath(item.slug)} className={a.relatedLink}><NewsImage className={a.relatedImage} src={relatedImage} alt="" /><span className={a.relatedCategory}>{item.category_label}</span><span className={a.relatedTitle}>{item.title}</span>{when ? <span className={a.relatedTime}>{when}</span> : null}</Link></li>; })}</ul></section> : null}
-
         <div className={`${a.extras} ${a.column}`}>
           <CorrectionForm articleId={article.id} articleTitle={article.title} signedIn={signedIn} accountEmail={accountEmail} />
           <details><summary>Save this story for offline reading</summary><OfflineArticleDownload article={{ slug: article.slug, title: article.title, summary: article.summary, publishedAt: article.published_at, author: article.author_name, category: article.category_label, sourceUrl: articleUrl }} /></details>
         </div>
+
+        <div className={a.column}><CommentThread articleId={article.id} slug={article.slug} notice={notice.comments} /></div>
+
+        {related.length ? <section className={a.related} aria-labelledby="related-heading"><h2 id="related-heading">Related stories</h2><ul className={a.relatedGrid}>{related.map((item) => { const relatedImage = publishedNewsCover(item)?.url; const when = formatPublishedDate(item.published_at); return <li key={item.slug}><Link href={newsArticlePath(item.slug)} className={a.relatedLink}><NewsImage className={a.relatedImage} src={relatedImage} alt="" /><span className={a.relatedCategory}>{item.category_label}</span><span className={a.relatedTitle}>{item.title}</span>{when ? <span className={a.relatedTime}>{when}</span> : null}</Link></li>; })}</ul></section> : null}
+
       </article>
     </PageFrame>
     </>
