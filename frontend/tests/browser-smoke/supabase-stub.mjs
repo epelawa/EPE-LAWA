@@ -222,7 +222,10 @@ const server = createServer((request, response) => {
       const inIds = url.searchParams.get("id")?.match(/^in\.\((.*)\)$/)?.[1];
       if (inIds) rows = rows.filter((row) => inIds.split(",").map((v) => v.replace(/"/g, "")).includes(row.id));
       for (const or of url.searchParams.getAll("or")) {
-        const needle = or.match(/\*([^*]*)\*/)?.[1]?.toLowerCase() ?? "";
+        // Reads the first quoted ilike value the way PostgREST does: undo the quoting,
+        // drop the surrounding %…% (or legacy *…*) and the LIKE escapes (lib/postgrest-search.ts).
+        const quoted = or.match(/ilike\."((?:[^"\\]|\\.)*)"/)?.[1] ?? "";
+        const needle = quoted.replace(/\\(.)/g, "$1").replace(/^[%*]|[%*]$/g, "").replace(/\\([\\%_*])/g, "$1").toLowerCase();
         rows = rows.filter((row) => [row.name, row.description, row.category_label, row.area, row.address].some((v) => String(v ?? "").toLowerCase().includes(needle)));
       }
       if ((url.searchParams.get("order") ?? "").startsWith("published_at")) rows = [...rows].sort((a, b) => b.published_at.localeCompare(a.published_at));

@@ -55,7 +55,8 @@ test("radio page is honest before Play and the removed features are gone", async
   // The sponsored slot is still there, labelled, and never a broken image.
   const slot = page.getByRole("complementary", { name: "Sponsored placement" });
   await expect(slot).toBeVisible();
-  for (const img of await slot.locator("img").all()) expect(await img.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true);
+  // Polled: on a cold dev server the image may still be loading; a broken image never passes.
+  for (const img of await slot.locator("img").all()) await expect.poll(() => img.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true);
   // No stream request until the listener presses Play.
   await page.waitForTimeout(500);
   expect(streamRequests).toEqual([]);
