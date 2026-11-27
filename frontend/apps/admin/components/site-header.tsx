@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "./admin-link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CloseIcon, MenuIcon } from "@epelawa/ui";
@@ -101,7 +101,7 @@ export default function SiteHeader({
       </div>
       {!login ? <nav className="admin-nav" aria-label="Staff sections">
         <ul>{items.map((item) => <li key={item.href}>
-          <Link href={staffHref(item.href, basePath)} aria-current={isCurrent(path, item.href) ? "page" : undefined}>{item.label}</Link>
+          <Link href={staffHref(item.href, basePath)} pendingLabel={item.label} aria-current={isCurrent(path, item.href) ? "page" : undefined}>{item.label}</Link>
         </li>)}</ul>
       </nav> : null}
     </header>
@@ -114,7 +114,7 @@ export default function SiteHeader({
         </div>
         <nav aria-label="All staff sections"><ul className="admin-drawer-links">
           {items.map((item) => <li key={item.href}>
-            <Link href={staffHref(item.href, basePath)} aria-current={isCurrent(path, item.href) ? "page" : undefined}>
+            <Link href={staffHref(item.href, basePath)} pendingLabel={item.label} aria-current={isCurrent(path, item.href) ? "page" : undefined}>
               <span>{item.label}</span>{item.hint ? <small>{item.hint}</small> : null}
             </Link>
           </li>)}

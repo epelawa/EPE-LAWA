@@ -45,15 +45,20 @@ const lagosClockFormatter = new Intl.DateTimeFormat("en-GB", {
 
 /** Whether the business is open right now in Lagos; null when no usable hours are on record. */
 export function businessOpenNow(hours: BusinessHours, date: Date = new Date()): boolean | null {
-  const entry = Object.keys(hours).length ? true : null;
-  if (!entry) return null;
+  if (Object.keys(hours).length === 0) return null;
   const parts = lagosClockFormatter.formatToParts(date);
   const weekday = (parts.find((part) => part.type === "weekday")?.value ?? "Sunday").toLowerCase();
   const hourValue = parts.find((part) => part.type === "hour")?.value ?? "0";
   const now = (hourValue === "24" ? 0 : Number(hourValue)) * 60 + Number(parts.find((part) => part.type === "minute")?.value ?? "0");
   const range = hours[weekday];
-  if (!range) return false;
-  const [start, end] = range.split("\u2013").map(minutes);
-  if (end > start) return now >= start && now < end;
-  return now >= start || now < end;
+  if (range) {
+    const [start, end] = range.split("\u2013").map(minutes);
+    if (now >= start && (end <= start || now < end)) return true;
+  }
+
+  const previousDay = DAYS[(DAYS.indexOf(weekday as (typeof DAYS)[number]) + 6) % DAYS.length];
+  const previousRange = hours[previousDay];
+  if (!previousRange) return false;
+  const [previousStart, previousEnd] = previousRange.split("\u2013").map(minutes);
+  return previousEnd <= previousStart && now < previousEnd;
 }

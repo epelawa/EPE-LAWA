@@ -1,3 +1,4 @@
+import { SubmitButton } from "@epelawa/ui";
 import { createStaffClient } from "../../../lib/supabase";
 import { decideEvent } from "../../../lib/event-actions";
 import { publicMediaUrl } from "../../../../main/lib/media";
@@ -95,8 +96,8 @@ export default async function EventsReviewPage({ searchParams }: { searchParams:
                           <textarea className="input" id={`note-${row.id}`} name="note" rows={2} maxLength={1000} />
                         </div>
                         <div className="ui-actions">
-                          {row.status === "submitted" ? <button className="btn-primary" name="decision" value="published">Publish event</button> : null}
-                          <button className="btn-secondary" name="decision" value="rejected">{row.status === "published" ? "Unpublish (reject)" : "Reject"}</button>
+                          {row.status === "submitted" ? <SubmitButton className="btn-primary" name="decision" value="published">Publish event</SubmitButton> : null}
+                          <SubmitButton className="btn-secondary" name="decision" value="rejected">{row.status === "published" ? "Unpublish (reject)" : "Reject"}</SubmitButton>
                         </div>
                       </form>
                     ) : null}

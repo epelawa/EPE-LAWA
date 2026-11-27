@@ -1,12 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect as nextRedirect } from "next/navigation";
+import { adminRedirect as nextRedirect } from "./admin-redirect";
 import { createStaffClient } from "./supabase";
 import { adminHref } from "./admin-path";
 
-function staffRedirect(path: string): never {
-  nextRedirect(adminHref(path));
+async function staffRedirect(path: string): Promise<never> {
+  return await nextRedirect(adminHref(path));
 }
 
 export async function decideHistoryContribution(formData: FormData): Promise<void> {
@@ -19,13 +19,13 @@ export async function decideHistoryContribution(formData: FormData): Promise<voi
   const publicSourceUrl = formData.get("publicSourceUrl");
   if (typeof id !== "string" || !/^[0-9a-f-]{36}$/i.test(id) ||
       !["needs_revision", "rejected", "published"].includes(String(decision))) {
-    staffRedirect("/itan-ilu-mi/review?result=invalid");
+    return await staffRedirect("/itan-ilu-mi/review?result=invalid");
   }
   if (decision === "published" && (typeof publicAccount !== "string" || publicAccount.trim().length < 20 || publicAccount.trim().length > 20000)) {
-    staffRedirect("/itan-ilu-mi/review?result=missing_public_text");
+    return await staffRedirect("/itan-ilu-mi/review?result=missing_public_text");
   }
   if (decision === "published" && (typeof publicCitation !== "string" || publicCitation.trim().length < 3 || publicCitation.trim().length > 1000)) {
-    staffRedirect("/itan-ilu-mi/review?result=missing_public_text");
+    return await staffRedirect("/itan-ilu-mi/review?result=missing_public_text");
   }
   if ((publicFamilyName !== null && typeof publicFamilyName !== "string") ||
       (typeof publicFamilyName === "string" && publicFamilyName.trim().length > 180) ||
@@ -36,7 +36,7 @@ export async function decideHistoryContribution(formData: FormData): Promise<voi
       (publicSourceUrl !== null && typeof publicSourceUrl !== "string") ||
       (typeof publicSourceUrl === "string" && publicSourceUrl.trim().length > 1000) ||
       (typeof publicSourceUrl === "string" && publicSourceUrl.trim() !== "" && !/^https:\/\//i.test(publicSourceUrl.trim()))) {
-    staffRedirect("/itan-ilu-mi/review?result=invalid");
+    return await staffRedirect("/itan-ilu-mi/review?result=invalid");
   }
 
   let resultError = false;
@@ -44,7 +44,7 @@ export async function decideHistoryContribution(formData: FormData): Promise<voi
   try {
     const capability = await supabase.rpc("has_capability", { p_capability: "history.review" });
     if (capability.error || capability.data !== true) {
-      staffRedirect("/itan-ilu-mi/review?result=denied");
+      return await staffRedirect("/itan-ilu-mi/review?result=denied");
     }
     const { error } = await supabase.rpc("history_contribution_decide", {
       p_contribution_id: id,
@@ -66,7 +66,7 @@ export async function decideHistoryContribution(formData: FormData): Promise<voi
 
   revalidatePath(adminHref("/itan-ilu-mi/review"));
   revalidatePath("/itan-ilu-mi");
-  staffRedirect(`/itan-ilu-mi/review?result=${resultError ? "stale" : "saved"}`);
+  return await staffRedirect(`/itan-ilu-mi/review?result=${resultError ? "stale" : "saved"}`);
 }
 
 /** Close a public correction/removal request about a published Ìtàn record. */
@@ -75,7 +75,7 @@ export async function resolveHistoryCorrection(formData: FormData): Promise<void
   const status = String(formData.get("status") ?? "");
   const note = String(formData.get("staffNote") ?? "").trim().slice(0, 2000);
   if (!/^[0-9a-f-]{36}$/i.test(id) || !["resolved", "dismissed"].includes(status)) {
-    staffRedirect("/itan-ilu-mi/review?result=invalid#corrections");
+    return await staffRedirect("/itan-ilu-mi/review?result=invalid#corrections");
   }
   let failed = false;
   // Created outside the try so an expired staff session still bounces to login.
@@ -89,5 +89,5 @@ export async function resolveHistoryCorrection(formData: FormData): Promise<void
     failed = true;
   }
   revalidatePath(adminHref("/itan-ilu-mi/review"));
-  staffRedirect(`/itan-ilu-mi/review?result=${failed ? "correction_stale" : "correction_saved"}#corrections`);
+  return await staffRedirect(`/itan-ilu-mi/review?result=${failed ? "correction_stale" : "correction_saved"}#corrections`);
 }

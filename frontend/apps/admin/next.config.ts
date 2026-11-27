@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   env: {
     NEXT_PUBLIC_ADMIN_BASE_PATH: "/admin",
+    NEXT_PUBLIC_STANDALONE_ADMIN: "true",
   },
   allowedDevOrigins: ["*.e2b.app"],
   transpilePackages: ["@epelawa/ui", "@epelawa/image-optimizer"],

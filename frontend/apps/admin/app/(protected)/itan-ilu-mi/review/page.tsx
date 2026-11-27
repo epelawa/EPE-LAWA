@@ -1,3 +1,4 @@
+import { SubmitButton } from "@epelawa/ui";
 import { createStaffClient } from "../../../../lib/supabase";
 import { decideHistoryContribution, resolveHistoryCorrection } from "../../../../lib/history-actions";
 import { publicMediaUrl } from "../../../../../main/lib/media";
@@ -143,9 +144,9 @@ export default async function HistoryReviewPage({ searchParams }: { searchParams
                 </div>
                 {row.image_key ? <label className="ui-row"><input type="checkbox" name="publishImage" value="yes" /> Publish the submitted photo with this record (rights confirmed)</label> : null}
                 <div className="ui-actions">
-                  <button className="btn-primary" name="decision" value="published">Publish verified record</button>
-                  <button className="btn-secondary" name="decision" value="needs_revision">Request revision</button>
-                  <button className="btn-secondary" name="decision" value="rejected">Reject</button>
+                  <SubmitButton className="btn-primary" name="decision" value="published">Publish verified record</SubmitButton>
+                  <SubmitButton className="btn-secondary" name="decision" value="needs_revision">Request revision</SubmitButton>
+                  <SubmitButton className="btn-secondary" name="decision" value="rejected">Reject</SubmitButton>
                 </div>
               </form>
             </Panel>
@@ -170,8 +171,8 @@ export default async function HistoryReviewPage({ searchParams }: { searchParams
                     <textarea className="input" id={`staff-note-${req.id}`} name="staffNote" rows={2} maxLength={2000} />
                   </div>
                   <div className="ui-actions">
-                    <button className="btn-primary" name="status" value="resolved">Mark resolved</button>
-                    <button className="btn-secondary" name="status" value="dismissed">Dismiss</button>
+                    <SubmitButton className="btn-primary" name="status" value="resolved">Mark resolved</SubmitButton>
+                    <SubmitButton className="btn-secondary" name="status" value="dismissed">Dismiss</SubmitButton>
                   </div>
                 </form>
               </Panel>

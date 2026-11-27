@@ -114,8 +114,8 @@ function ensureAudio(): HTMLAudioElement {
   window.addEventListener("offline", () => {
     if (!isActive(snapshot.status)) return;
     attempt++;
-    release();
     set({ status: "offline" });
+    release();
   });
   window.addEventListener("online", () => { if (snapshot.status === "offline") set({ status: "paused" }); });
   audio = element;
@@ -162,12 +162,17 @@ export function lookupGuts(): Promise<void> {
 }
 
 export async function play(): Promise<void> {
-  if (snapshot.stationId === "guts" && snapshot.guts.state !== "ready") await lookupGuts();
+  const id = ++attempt;
+  if (!navigator.onLine) { set({ status: "offline" }); return; }
+  if (snapshot.stationId === "guts" && snapshot.guts.state !== "ready") {
+    set({ status: "connecting" });
+    await lookupGuts();
+    if (attempt !== id) return;
+  }
   const station = currentStation();
   if (!station) { set({ status: "error" }); return; }
   if (!navigator.onLine) { set({ status: "offline" }); return; }
   const element = ensureAudio();
-  const id = ++attempt;
   // Always (re)attach the source: a live stream resumes at the live edge, not where it was paused.
   element.src = station.streamUrl;
   element.load();
@@ -181,13 +186,14 @@ export async function play(): Promise<void> {
     clearSlowTimer();
     const denied = error instanceof DOMException && error.name === "NotAllowedError";
     set({ status: denied ? "blocked" : navigator.onLine ? "error" : "offline" });
+    release();
   }
 }
 
 export function pause() {
   attempt++;
-  release();
   set({ status: snapshot.started ? "paused" : "idle" });
+  release();
 }
 
 export function toggle() {
@@ -199,8 +205,8 @@ export function selectStation(id: StationId) {
   if (id === snapshot.stationId) return;
   const wasActive = isActive(snapshot.status);
   attempt++;
-  release();
   set({ stationId: id, status: snapshot.started ? "paused" : "idle" });
+  release();
   if (id === "guts") void lookupGuts();
   // Switching while listening carries straight on with the new station.
   if (wasActive) void play();

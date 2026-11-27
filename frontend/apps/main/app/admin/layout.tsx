@@ -3,6 +3,7 @@ import StaffSiteHeader from "../../../admin/components/site-header";
 import { staffNavigation } from "../../../admin/lib/navigation";
 import { createClient } from "../../../admin/lib/supabase";
 import "./admin-shell.css";
+import "../../../admin/app/staff-feedback.css";
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";

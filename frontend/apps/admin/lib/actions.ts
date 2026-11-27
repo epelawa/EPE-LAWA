@@ -1,6 +1,7 @@
 "use server";
+import { articleTags, articleTagsError } from "./news-hashtags";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { adminRedirect as redirect } from "./admin-redirect";
 import { after } from "next/server";
 import { createClient, createStaffClient } from "./supabase";
 import { adminHref } from "./admin-path";
@@ -238,8 +239,8 @@ function queryErrorCode(error: unknown): string {
   if (error && typeof error === "object" && "code" in error && typeof error.code === "string") return error.code;
   return "unavailable";
 }
-function fail(path: string): never {
-  redirect(adminHref(path));
+async function fail(path: string): Promise<never> {
+  return await redirect(adminHref(path));
 }
 
 async function createArticleCore(formData: FormData): Promise<{ status: "error" | "uncertain"; message: string } | { status: "success"; articleId: string }> {
@@ -250,6 +251,10 @@ async function createArticleCore(formData: FormData): Promise<{ status: "error" 
   const categoryId = text(formData, "categoryId", 64);
   const seoTitle = text(formData, "seoTitle", 70) || null;
   const seoDescription = text(formData, "seoDescription", 200) || null;
+  const tagsRaw = rawText(formData, "tags");
+  const tagError = articleTagsError(tagsRaw);
+  if (tagError) return { status: "error", message: tagError };
+  const tags = articleTags(tagsRaw);
   const coverUpload = coverUploadFile(formData);
   if (coverUpload && rawText(formData, "coverUrl")) return { status: "error", message: "Choose only one cover source: a link or an upload, not both." };
   let cover: CoverFields | null = null;
@@ -266,9 +271,10 @@ async function createArticleCore(formData: FormData): Promise<{ status: "error" 
   let articleId: string | null = null;
   let errorCode: string | null = null;
   let uncertain = false;
+  let tagPayloadRejected = false;
   const supabase = await createStaffClient();
   try {
-    const result = await supabase.rpc("article_create_with_cover", {
+    const args = {
       p_title: title,
       p_summary: summary,
       p_body: body,
@@ -277,8 +283,14 @@ async function createArticleCore(formData: FormData): Promise<{ status: "error" 
       p_seo_title: seoTitle,
       p_seo_description: seoDescription,
       ...coverRpcFields(cover),
-    });
-    if (result.error) errorCode = result.error.code;
+    };
+    const result = tags.length
+      ? await supabase.rpc("article_create_with_hashtags", { ...args, p_tags: tags })
+      : await supabase.rpc("article_create_with_cover", args);
+    if (result.error) {
+      errorCode = result.error.code;
+      tagPayloadRejected = result.error.message === "tags_payload_invalid";
+    }
     else if (typeof result.data === "string" && UUID.test(result.data)) articleId = result.data;
     else uncertain = true;
   } catch (error) {
@@ -286,6 +298,7 @@ async function createArticleCore(formData: FormData): Promise<{ status: "error" 
     uncertain = true;
   }
   if (!articleId) {
+    if (tagPayloadRejected) return { status: "error", message: "Check the hashtags and try again." };
     if (errorCode && !/^(22[0-9A-Z]{3}|23[0-9A-Z]{3}|42501)$/.test(errorCode)) uncertain = true;
     if (uncertain) return { status: "uncertain", message: "We could not confirm whether the article was saved. Check the newsroom list before trying again to avoid a duplicate." };
     return { status: "error", message: errorCode === "22023" ? "Check the cover details and try again." : "The article was not saved. Check your access and try again." };
@@ -303,11 +316,11 @@ export async function createArticle(formData: FormData): Promise<void> {
     if (published) {
       revalidatePath("/news");
       revalidatePath("/");
-      redirect(adminHref(`/newsroom/${result.articleId}?published=1`));
+      return await redirect(adminHref(`/newsroom/${result.articleId}?published=1`));
     }
-    redirect(adminHref(`/newsroom/${result.articleId}?created=1`));
+    return await redirect(adminHref(`/newsroom/${result.articleId}?created=1`));
   }
-  fail(result.status === "uncertain" ? "/newsroom/new?error=uncertain" : "/newsroom/new?error=1");
+  return await fail(result.status === "uncertain" ? "/newsroom/new?error=uncertain" : "/newsroom/new?error=1");
 }
 export async function createArticleWithFeedback(formData: FormData): Promise<{ status: "error" | "uncertain"; message: string } | { status: "success"; articleId: string; published: boolean }> {
   const result = await createArticleCore(formData);
@@ -446,15 +459,15 @@ export async function saveDraftWithFeedback(formData: FormData): Promise<EditRes
 export async function reviseArticleWithFeedback(formData: FormData): Promise<EditResult> { return publishAfterSave(await reviseArticleCore(formData), "revised"); }
 export async function saveDraft(formData: FormData): Promise<void> {
   const result = await publishAfterSave(await saveDraftCore(formData), "saved");
-  if (result.status === "success") redirect(adminHref(`/newsroom/${result.articleId}?${result.outcome}=1`));
+  if (result.status === "success") return await redirect(adminHref(`/newsroom/${result.articleId}?${result.outcome}=1`));
   const id = text(formData, "articleId", 64);
-  fail(UUID.test(id) ? `/newsroom/${id}?error=${result.status === "uncertain" ? "uncertain" : "save"}` : "/newsroom?error=invalid");
+  return await fail(UUID.test(id) ? `/newsroom/${id}?error=${result.status === "uncertain" ? "uncertain" : "save"}` : "/newsroom?error=invalid");
 }
 export async function reviseArticle(formData: FormData): Promise<void> {
   const result = await publishAfterSave(await reviseArticleCore(formData), "revised");
-  if (result.status === "success") redirect(adminHref(`/newsroom/${result.articleId}?${result.outcome}=1`));
+  if (result.status === "success") return await redirect(adminHref(`/newsroom/${result.articleId}?${result.outcome}=1`));
   const id = text(formData, "articleId", 64);
-  fail(UUID.test(id) ? `/newsroom/${id}?error=${result.status === "uncertain" ? "uncertain" : "revise"}` : "/newsroom?error=invalid");
+  return await fail(UUID.test(id) ? `/newsroom/${id}?error=${result.status === "uncertain" ? "uncertain" : "revise"}` : "/newsroom?error=invalid");
 }
 
 export async function publishArticle(formData: FormData): Promise<void> {
@@ -462,15 +475,15 @@ export async function publishArticle(formData: FormData): Promise<void> {
 }
 export async function unpublishArticle(formData: FormData): Promise<void> {
   const articleId = text(formData, "articleId", 64);
-  if (!UUID.test(articleId)) fail("/newsroom?error=invalid");
+  if (!UUID.test(articleId)) return await fail("/newsroom?error=invalid");
   if (!hasConfirmedArticleUnpublish(rawText(formData, "confirmUnpublish"))) {
-    fail(`/newsroom/${articleId}?error=unpublish_confirmation`);
+    return await fail(`/newsroom/${articleId}?error=unpublish_confirmation`);
   }
   await articleTransition(formData, "article_unpublish", "unpublished");
 }
 async function deleteArticleCore(formData: FormData): Promise<void> {
   const articleId = text(formData, "articleId", 64);
-  if (!UUID.test(articleId)) fail("/newsroom?error=invalid");
+  if (!UUID.test(articleId)) return await fail("/newsroom?error=invalid");
   let errorCode: string | null = null;
   const supabase = await createStaffClient();
   try {
@@ -481,19 +494,19 @@ async function deleteArticleCore(formData: FormData): Promise<void> {
   }
   if (errorCode) {
     console.error("article delete failed", { code: errorCode });
-    fail(`/newsroom/${articleId}?error=delete`);
+    return await fail(`/newsroom/${articleId}?error=delete`);
   }
   revalidatePath(adminHref("/newsroom"));
   revalidatePath("/news");
   revalidatePath("/");
-  redirect(adminHref("/newsroom?deleted=1"));
+  return await redirect(adminHref("/newsroom?deleted=1"));
 }
 export async function deleteArticle(formData: FormData): Promise<void> {
   const articleId = text(formData, "articleId", 64);
   const confirmed = rawText(formData, "confirmDelete");
-  if (!UUID.test(articleId)) fail("/newsroom?error=invalid");
+  if (!UUID.test(articleId)) return await fail("/newsroom?error=invalid");
   if (!hasConfirmedArticleUnpublish(confirmed)) {
-    fail(`/newsroom/${articleId}?error=delete_confirmation`);
+    return await fail(`/newsroom/${articleId}?error=delete_confirmation`);
   }
   await deleteArticleCore(formData);
 }
@@ -504,7 +517,7 @@ async function articleTransition(
 ): Promise<void> {
   const articleId = text(formData, "articleId", 64);
   const revision = Number(text(formData, "revision", 24));
-  if (!UUID.test(articleId) || !Number.isSafeInteger(revision) || revision < 1) fail("/newsroom?error=invalid");
+  if (!UUID.test(articleId) || !Number.isSafeInteger(revision) || revision < 1) return await fail("/newsroom?error=invalid");
 
   let errorCode: string | null = null;
   const supabase = await createStaffClient();
@@ -517,13 +530,13 @@ async function articleTransition(
   }
   if (errorCode) {
     console.error(`article ${outcome} transition failed`, { code: errorCode });
-    fail(`/newsroom/${articleId}?error=${outcome}`);
+    return await fail(`/newsroom/${articleId}?error=${outcome}`);
   }
   revalidatePath(adminHref(`/newsroom/${articleId}`));
   revalidatePath(adminHref("/newsroom"));
   revalidatePath("/news");
   revalidatePath("/");
-  redirect(adminHref(`/newsroom/${articleId}?${outcome}=1`));
+  return await redirect(adminHref(`/newsroom/${articleId}?${outcome}=1`));
 }
 
 /** Mark only an already-public story. Expiry is computed server-side from an allowed duration. */
@@ -532,9 +545,9 @@ export async function setArticleBreaking(formData: FormData): Promise<void> {
   const revision = Number(text(formData, "revision", 24));
   const operation = text(formData, "operation", 16);
   const duration = text(formData, "duration", 8);
-  if (!UUID.test(articleId) || !Number.isSafeInteger(revision) || revision < 1) fail("/newsroom?error=invalid");
-  if (operation !== "enable" && operation !== "disable") fail(`/newsroom/${articleId}?error=breaking`);
-  if (operation === "enable" && !["1", "6", "24", "48"].includes(duration)) fail(`/newsroom/${articleId}?error=breaking`);
+  if (!UUID.test(articleId) || !Number.isSafeInteger(revision) || revision < 1) return await fail("/newsroom?error=invalid");
+  if (operation !== "enable" && operation !== "disable") return await fail(`/newsroom/${articleId}?error=breaking`);
+  if (operation === "enable" && !["1", "6", "24", "48"].includes(duration)) return await fail(`/newsroom/${articleId}?error=breaking`);
   const until = operation === "enable" ? new Date(Date.now() + Number(duration) * 60 * 60 * 1000).toISOString() : null;
   let errorCode: string | null = null;
   const supabase = await createStaffClient();
@@ -546,20 +559,20 @@ export async function setArticleBreaking(formData: FormData): Promise<void> {
   } catch (error) { errorCode = queryErrorCode(error); }
   if (errorCode) {
     console.error("article breaking update failed", { code: errorCode });
-    fail(`/newsroom/${articleId}?error=breaking`);
+    return await fail(`/newsroom/${articleId}?error=breaking`);
   }
   revalidatePath(adminHref(`/newsroom/${articleId}`));
   revalidatePath(adminHref("/newsroom"));
   revalidatePath("/news");
   revalidatePath("/dashboard");
-  redirect(adminHref(`/newsroom/${articleId}?breaking=1`));
+  return await redirect(adminHref(`/newsroom/${articleId}?breaking=1`));
 }
 
 /** Replace the topic tags on the article's current version (database caps this at article.review). */
 export async function saveArticleTags(formData: FormData): Promise<void> {
   const articleId = text(formData, "articleId", 64);
   const tagsRaw = text(formData, "tags", 600);
-  if (!UUID.test(articleId)) fail("/newsroom?error=invalid");
+  if (!UUID.test(articleId)) return await fail("/newsroom?error=invalid");
   const tags = tagsRaw
     .split(",")
     .map((tag) => tag.trim())
@@ -568,7 +581,7 @@ export async function saveArticleTags(formData: FormData): Promise<void> {
   for (const tag of tags) {
     if (tag.length < 2 || tag.length > 40) {
       console.error("article tags rejected", { reason: "tag_length" });
-      fail(`/newsroom/${articleId}?error=tags`);
+      return await fail(`/newsroom/${articleId}?error=tags`);
     }
   }
   let errorCode: string | null = null;
@@ -579,9 +592,9 @@ export async function saveArticleTags(formData: FormData): Promise<void> {
   } catch (error) { errorCode = queryErrorCode(error); }
   if (errorCode) {
     console.error("article tags save failed", { code: errorCode });
-    fail(`/newsroom/${articleId}?error=tags`);
+    return await fail(`/newsroom/${articleId}?error=tags`);
   }
   revalidatePath(adminHref(`/newsroom/${articleId}`));
   revalidatePath("/news");
-  redirect(adminHref(`/newsroom/${articleId}?tags=1`));
+  return await redirect(adminHref(`/newsroom/${articleId}?tags=1`));
 }

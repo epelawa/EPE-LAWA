@@ -1,6 +1,6 @@
 "use server";
 
-import { redirect } from "next/navigation";
+import { adminRedirect as redirect } from "../../../lib/admin-redirect";
 import { revalidatePath } from "next/cache";
 import { createStaffClient } from "../../../lib/supabase";
 import { publicMediaUrl } from "../../../../main/lib/media";
@@ -45,11 +45,11 @@ async function uploadPhoto(file: File): Promise<{ url: string } | { error: strin
 
 export async function saveSitePage(form: FormData) {
   const page = field(form, "page", 20);
-  if (!PAGES.has(page)) redirect(`/site-pages?status=error&reason=unknown_page`);
+  if (!PAGES.has(page)) return await redirect(`/site-pages?status=error&reason=unknown_page`);
   const body = field(form, "body", 50000);
   const revisionRaw = field(form, "revision", 12);
   const revision = Number.parseInt(revisionRaw || "0", 10);
-  if (revisionRaw !== "" && !Number.isFinite(revision)) redirect(`/site-pages?status=error&reason=failed`);
+  if (revisionRaw !== "" && !Number.isFinite(revision)) return await redirect(`/site-pages?status=error&reason=failed`);
 
   const supabase = await createStaffClient();
   const keep: PhotoTarget[] = [];
@@ -59,7 +59,7 @@ export async function saveSitePage(form: FormData) {
     const alt = field(form, `photoAlt${slot}`, 500);
     const credit = field(form, `photoCredit${slot}`, 300);
     if (value instanceof File && value.size > 0 && value.name.trim() !== "") {
-      if (alt.length < 3) redirect(`/site-pages?status=error&reason=photos_invalid`);
+      if (alt.length < 3) return await redirect(`/site-pages?status=error&reason=photos_invalid`);
       uploads.push({ file: value, alt, credit });
     }
   }
@@ -74,10 +74,10 @@ export async function saveSitePage(form: FormData) {
   const photos: PhotoTarget[] = [...keep];
   for (const upload of uploads) {
     const stored = await uploadPhoto(upload.file);
-    if ("error" in stored) redirect(`/site-pages?status=error&reason=${stored.error}`);
+    if ("error" in stored) return await redirect(`/site-pages?status=error&reason=${stored.error}`);
     photos.push({ url: stored.url, alt: upload.alt, credit: upload.credit });
   }
-  if (photos.length > 12) redirect(`/site-pages?status=error&reason=photos_invalid`);
+  if (photos.length > 12) return await redirect(`/site-pages?status=error&reason=photos_invalid`);
 
   const { data, error } = await supabase.rpc("site_page_save", {
     p_page: page,
@@ -90,12 +90,12 @@ export async function saveSitePage(form: FormData) {
     const code = typeof error === "object" && error && "message" in error ? String((error as { message?: unknown }).message) : "";
     const reason = code in ERRORS ? code : "failed";
     console.error("site_page_save failed", { page, code: code.slice(0, 80) });
-    redirect(`/site-pages?status=error&reason=${reason}`);
+    return await redirect(`/site-pages?status=error&reason=${reason}`);
   }
 
   revalidatePath("/about");
   revalidatePath("/privacy");
   revalidatePath("/terms");
   revalidatePath("/guidelines");
-  redirect(`/site-pages?status=saved&rev=${data ?? ""}#page-${page}`);
+  return await redirect(`/site-pages?status=saved&rev=${data ?? ""}#page-${page}`);
 }

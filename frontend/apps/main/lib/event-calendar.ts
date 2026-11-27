@@ -17,11 +17,11 @@ export function icsStamp(iso: string): string {
 }
 
 export function icsEscape(value: string): string {
-  return value.replace(/\\/g, "\\\\").replace(/\r?\n/g, "\\n").replace(/,/g, "\\,").replace(/;/g, "\\;");
+  return value.replace(/\\/g, "\\\\").replace(/\r\n|[\r\n]/g, "\\n").replace(/,/g, "\\,").replace(/;/g, "\\;");
 }
 
 /** Fold content lines at 75 octets as RFC 5545 §3.1 requires. */
-function fold(line: string): string {
+export function foldIcsLine(line: string): string {
   const bytes = new TextEncoder().encode(line);
   if (bytes.length <= 75) return line;
   const out: string[] = [];
@@ -70,7 +70,7 @@ export function calendarFile(events: CalendarEvent[], siteUrl: string, name = "E
   const now = new Date();
   for (const event of events) lines.push(...veventLines(event, siteUrl, now));
   lines.push("END:VCALENDAR");
-  return lines.map(fold).join("\r\n") + "\r\n";
+  return lines.map(foldIcsLine).join("\r\n") + "\r\n";
 }
 
 /** Google Calendar "add event" template link. Without an end time Google needs one, so the link uses a one-hour slot and says so in the details. */

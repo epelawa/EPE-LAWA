@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "../../components/admin-link";
 import { PageFrame, PageIntro, StatusBadge } from "@epelawa/ui";
 import { adminHref } from "../../lib/admin-path";
 import { createClient, createStaffClient } from "../../lib/supabase";

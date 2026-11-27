@@ -74,8 +74,8 @@ export function mainNavigation(): NavItem[] {
 }
 
 export function staffNavigation(canManageStaff: boolean): NavItem[] {
-  // All pages are available to staff, filtering is done by capabilities
-  return allPages;
+  // These two desks enforce the same server authorization check.
+  return canManageStaff ? allPages : allPages.filter(({ href }) => href !== "/users" && href !== "/roles");
 }
 
 /**

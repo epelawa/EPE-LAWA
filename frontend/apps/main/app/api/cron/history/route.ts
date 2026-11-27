@@ -4,7 +4,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { createClient } from "../../../../lib/supabase";
+import { cronDatabase } from "../../../../lib/cron-database";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +33,7 @@ export async function GET(request: Request): Promise<NextResponse> {
     const limit = url.searchParams.get("limit") || "100";
     const limitNum = Math.min(Number(limit), 500);
     
-    const supabase = await createClient();
+    const supabase = cronDatabase();
     const { data, error } = await supabase
       .rpc("get_cron_job_history", { p_limit: limitNum });
     
@@ -82,7 +82,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       );
     }
 
-    const supabase = await createClient();
+    const supabase = cronDatabase();
     
     if (action === "start") {
       const { data, error } = await supabase

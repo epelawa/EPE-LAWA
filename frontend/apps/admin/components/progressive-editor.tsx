@@ -3,15 +3,15 @@
 import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
 import { controlError } from "@epelawa/ui";
 import styles from "./progressive-editor.module.css";
-import Link from "next/link";
+import Link from "./admin-link";
 import SessionRecovery, { clearSessionRecovery } from "./session-recovery";
 import { useRouter } from "next/navigation";
-import { adminHref } from "../lib/admin-path";
+import { adminRouterHref, adminHref } from "../lib/admin-path";
 import { useFormStatus } from "react-dom";
 
 function SubmitButton({ label, intent, hidden, busy }: { label: string; intent?: string; hidden: boolean; busy?: boolean }) {
   const { pending } = useFormStatus();
-  return <button data-pending-self-managed="true" className="btn-primary" type="submit" name={intent ? "intent" : undefined} value={intent} hidden={hidden} disabled={pending || busy}>{pending || busy ? "Saving…" : label}</button>;
+  return <button data-pending-self-managed="true" className="btn-primary" type="submit" name={intent ? "intent" : undefined} value={intent} hidden={hidden} disabled={pending || busy} aria-busy={pending || busy}>{(pending || busy) && <span className="ep-btn__spinner" aria-hidden="true" />}{pending || busy ? "Saving…" : label}</button>;
 }
 
 type Step = { title: string; content: ReactNode };
@@ -63,7 +63,7 @@ export default function ProgressiveEditor({ action, feedbackAction, recoveryActo
     if (intent) data.set("intent", intent);
     setSaveError(null);
     startSaving(async () => {
-      try { const result = await feedbackAction(data); if (result.status === "success") { setSaved(true); clearSessionRecovery(recoveryActor, articleId); router.push(adminHref(`/newsroom/${result.articleId}?${result.outcome}=1`)); } else setSaveError(result); }
+      try { const result = await feedbackAction(data); if (result.status === "success") { setSaved(true); clearSessionRecovery(recoveryActor, articleId); router.push(adminRouterHref(adminHref(`/newsroom/${result.articleId}?${result.outcome}=1`))); } else setSaveError(result); }
       catch { setSaveError({ status: "uncertain", message: "We could not confirm whether your changes were saved. Open this article in a new tab and check its revision before retrying." }); }
     });
   }} onKeyDown={event => { if (enhanced && step < steps.length - 1 && event.key === "Enter" && event.target instanceof HTMLInputElement) { event.preventDefault(); next(); } }} onInvalid={event => { const target = event.target as HTMLElement; const index = target.closest<HTMLElement>("[data-editor-step]")?.dataset.editorStep; if (enhanced && index !== undefined && Number(index) !== step) { move(Number(index)); requestAnimationFrame(() => target.focus()); } }}>

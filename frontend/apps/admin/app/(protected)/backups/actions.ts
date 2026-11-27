@@ -82,13 +82,7 @@ export async function restoreBackup(_previous: ActionState, form: FormData): Pro
       return { status: "error", message: "Confirmation did not match the backup key. Nothing was restored." };
     }
 
-    // Automatic pre-restore backup first. If it fails, abort — never restore without a fresh snapshot.
-    const preflight = await dispatchBackupWorkflow("db-backup.yml", { reason: "pre-restore", target: key });
-    if (!preflight.ok) {
-      await audit(db, "backup.restore", key, "rejected");
-      return { status: "error", message: "A fresh safety backup could not be started. Restore was aborted." };
-    }
-
+    // The restore workflow uploads the safety snapshot before it can restore.
     const result = await dispatchBackupWorkflow("db-restore.yml", { key });
     if (result.ok) await audit(db, "backup.restore", key, "requested");
     else await audit(db, "backup.restore", key, "rejected");

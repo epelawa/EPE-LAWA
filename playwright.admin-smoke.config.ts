@@ -77,7 +77,8 @@ export default defineConfig({
     },
     {
       command: proxyCommand,
-      url: baseURL,
+      // The public root may be in maintenance while the staff app is healthy.
+      url: new URL("/admin/login", baseURL).href,
       ignoreHTTPSErrors: true,
       reuseExistingServer: false,
       timeout: 120_000,

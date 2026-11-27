@@ -1,9 +1,11 @@
+import type { IcsSlot } from "./ics";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { RadioIcon } from "../../../components/icons";
 import { EmptyPanel, PageFrame, PageIntro, Panel, SectionHeading, StatusBadge } from "../../../components/design-system";
 import { onAirSlotId } from "./on-air";
 import styles from "../radio-page.module.css";
+import { PUBLIC_SCHEDULE_COLUMNS, publicScheduleSlot } from "../../../lib/radio-schedule";
 import { createClient } from "../../../lib/supabase";
 import { pageMetadata } from "../../../lib/metadata";
 
@@ -13,16 +15,16 @@ export const metadata: Metadata = pageMetadata({ title: "Radio programmes", desc
 export default async function RadioProgrammesPage() {
   let onAirId: string | null = null;
   let programmes: Array<{ id: string; name: string; description: string | null }> = [];
-  let slots: Array<{ id: string; day_of_week: number; starts_at: string; ends_at: string; note: string | null; programmes: Array<{ name: string }> }> = [];
+  let slots: IcsSlot[] = [];
   let unavailable = false;
   try {
     const db = await createClient();
     const [p, s] = await Promise.all([
-      db.from("programmes").select("id,name,description").eq("is_active", true).order("name").limit(100),
-      db.from("radio_schedule").select("id,day_of_week,starts_at,ends_at,note,programmes(name)").order("day_of_week").order("starts_at").limit(200),
+      db.from("programmes").select("id,name,description").eq("is_active", true).eq("publication_status", "published").order("name").limit(100),
+      db.from("radio_schedule").select(PUBLIC_SCHEDULE_COLUMNS).eq("publication_status", "published").eq("programmes.publication_status", "published").eq("programmes.is_active", true).order("day_of_week").order("starts_at").limit(200),
     ]);
     if (p.error || s.error) unavailable = true;
-    else { programmes = p.data ?? []; slots = s.data ?? []; onAirId = onAirSlotId(slots); }
+    else { programmes = p.data ?? []; slots = (s.data ?? []).map(publicScheduleSlot); onAirId = onAirSlotId(slots); }
   } catch { unavailable = true; }
 
   return (
@@ -65,7 +67,7 @@ export default async function RadioProgrammesPage() {
                   <li className="ui-item ui-row" key={slot.id}>
                     <span className="ui-number">{["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][slot.day_of_week]}</span>
                     <div className="ui-stack-sm">
-                      <h3 className="ui-item-title">{slot.programmes[0]?.name}</h3>
+                      <h3 className="ui-item-title">{slot.programme ?? "EPE LAWA programme"}</h3>
                       <p className="ui-meta"><span>{slot.starts_at.slice(0, 5)}–{slot.ends_at.slice(0, 5)}</span>{slot.note ? <span>{slot.note}</span> : null}{slot.id === onAirId ? <StatusBadge tone="success">On air now</StatusBadge> : null}</p>
                     </div>
                   </li>

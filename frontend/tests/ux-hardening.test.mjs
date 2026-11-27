@@ -84,13 +84,12 @@ test("admin sidebar renders superscript badges on queue links", () => {
 
 test("admin route links keep normal navigation and expose immediate pending feedback", () => {
   const sidebar = repo("frontend/apps/admin/components/admin-sidebar.tsx");
-  // Since 43835ed sidebar links are real anchors that show a spinner immediately and then do a
-  // full document navigation (the owner's fix for links that appeared unresponsive).
-  assert.match(sidebar, /function NavLink\(/);
-  assert.match(sidebar, /<a\s+href=\{href\}/);
-  assert.match(sidebar, /aria-busy=\{isPending\}/);
-  assert.match(sidebar, /window\.location\.href = href/);
-  assert.match(sidebar, /role="status" aria-live="polite"/);
+  const link = repo("frontend/apps/admin/components/admin-link.tsx");
+  assert.match(sidebar, /pendingLabel=\{item.label\}/);
+  assert.doesNotMatch(sidebar, /window\.location\.href|preventDefault\(\)[\s\S]*window\.location/);
+  assert.match(link, /<Link href=\{adminRouterHref\(href\)\}/);
+  assert.match(link, /useLinkStatus\(\)/);
+  assert.match(link, /role="status"/);
   assert.match(repo("frontend/apps/admin/app/globals.css"), /\.drawer-root\[data-open=true\] \.drawer/);
   assert.match(repo("frontend/apps/admin/app/globals.css"), /admin-sidebar__nav-spinner\[data-active=true\]/);
 });

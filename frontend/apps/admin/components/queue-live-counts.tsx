@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { staffHref } from "../lib/admin-path";
-import { useLiveQueueCounts, type QueueCounts } from "./use-live-queue-counts";
+import Link from "./admin-link";
+import { adminHref } from "../lib/admin-path";
+import type { QueueCounts, QueueKey } from "./use-live-queue-counts";
 
 const labels: { key: keyof QueueCounts; label: string; href: string }[] = [
   { key: "submissions", label: "Directory submissions", href: "/business-review" },
@@ -12,8 +12,7 @@ const labels: { key: keyof QueueCounts; label: string; href: string }[] = [
   { key: "forumReports", label: "Forum reports", href: "/moderation/forum" },
 ];
 
-export default function QueueLiveCounts() {
-  const { counts, flick } = useLiveQueueCounts();
+export default function QueueLiveCounts({ counts, flick }: { counts: QueueCounts | null; flick: QueueKey | null }) {
   if (!counts) return null;
   const visible = labels.filter(({ key }) => typeof counts[key] === "number" && (counts[key] as number) > 0);
   if (visible.length === 0) return null;
@@ -22,7 +21,7 @@ export default function QueueLiveCounts() {
     <ul>
       {visible.map(({ key, label, href }) => (
         <li key={key} className={flick === key ? "queue-chip queue-chip--hot" : "queue-chip"}>
-          <Link href={staffHref(href)}>
+          <Link href={adminHref(href)}>
             <span>{label}</span>
             <span className="queue-chip__count">{counts[key]}</span>
           </Link>

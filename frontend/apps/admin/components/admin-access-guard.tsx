@@ -1,5 +1,5 @@
 import { cookies, headers } from "next/headers";
-import { redirect } from "next/navigation";
+import { adminRedirect as redirect } from "../lib/admin-redirect";
 import { adminLoginHref } from "../lib/admin-path";
 import { clearAdminSessionCookies, getAdminAccessForSession } from "../lib/supabase-access";
 import { ACTIVITY_COOKIE, STAFF_INACTIVITY_MS, isInactiveSince } from "../lib/session-policy";
@@ -44,15 +44,15 @@ export async function AdminAccessGuard({
         },
       });
       const href = adminLoginHref(loginPath, requestHeaders.get("x-epe-lawa-admin-route"));
-      redirect(`${href}${href.includes("?") ? "&" : "?"}reason=session_expired`);
+      return await redirect(`${href}${href.includes("?") ? "&" : "?"}reason=session_expired`);
     }
-    redirect(adminLoginHref(loginPath, requestHeaders.get("x-epe-lawa-admin-route")));
+    return await redirect(adminLoginHref(loginPath, requestHeaders.get("x-epe-lawa-admin-route")));
   }
   // Staff sessions end after ten hours without recorded activity. The client
   // guard refreshes this first-party stamp; a stale value blocks the page even
   // when the tab was suspended before the guard could run.
   if (isInactiveSince(cookieStore.get(ACTIVITY_COOKIE.staff)?.value, STAFF_INACTIVITY_MS)) {
-    redirect(`${loginPath}?reason=inactivity`);
+    return await redirect(`${loginPath}?reason=inactivity`);
   }
   return children;
 }

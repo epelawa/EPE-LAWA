@@ -31,6 +31,15 @@ export function adminHref(path: string): string {
   return staffHref(path, ADMIN_BASE_PATH);
 }
 
+/** The standalone Next router adds its own base path to Link and router destinations. */
+export function adminRouterHref(href: string, standalone = process.env.NEXT_PUBLIC_STANDALONE_ADMIN === "true"): string {
+  if (!standalone) return href;
+  if (href === "/admin") return "/";
+  if (href.startsWith("/admin/")) return href.slice("/admin".length);
+  if (href.startsWith("/admin?") || href.startsWith("/admin#")) return `/${href.slice("/admin".length)}`;
+  return href;
+}
+
 export function adminLoginHref(loginPath: string, routeHint: unknown, basePath = ADMIN_BASE_PATH): string {
   if (basePath !== "/admin" || typeof routeHint !== "string") return loginPath;
 
@@ -73,4 +82,12 @@ export function safeAdminNextPath(value: unknown): string {
   if (parsed.pathname === loginPath || parsed.pathname.startsWith(`${loginPath}/`)) return fallback;
 
   return `${parsed.pathname}${parsed.search}`;
+}
+
+/** The native form response copies its Location, while Next prefixes enhanced redirects. */
+export function standaloneAdminRedirectHref(href: string, requestHeaders: Pick<Headers, "get" | "has">): string {
+  const contentType = requestHeaders.get("content-type") ?? "";
+  const nativeForm = !requestHeaders.has("next-action") &&
+    /^(?:multipart\/form-data|application\/x-www-form-urlencoded)(?:;|$)/i.test(contentType);
+  return nativeForm && href.startsWith("/") ? staffHref(href, "/admin") : adminRouterHref(href, true);
 }

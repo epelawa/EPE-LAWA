@@ -69,3 +69,19 @@
 .stepActions { display:flex; flex-wrap:wrap; gap:10px; justify-content:flex-end; }
 .layout:has([data-composer-step][hidden]) { grid-template-columns:1fr; }
 .previewPlaceholder img { width:min(120px, 100%); max-height:120px; margin:0 auto 12px; object-fit:contain; }
+
+.presetTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+.presetTags button {
+  min-height: 44px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.presetTags button[aria-pressed="true"] {
+  color: var(--ep-on-primary, #0a1023);
+  background: var(--ep-primary, #477fe0);
+}
+.presetTags button[aria-disabled="true"] { opacity: .6; cursor: not-allowed; }

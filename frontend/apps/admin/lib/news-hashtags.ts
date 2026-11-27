@@ -32,3 +32,28 @@ export function suggestNewsHashtags(text: string): string[] {
   const padded = ` ${normalized} `;
   return NEWS_HASHTAGS.filter(({ words }) => words.some((word) => padded.includes(` ${word} `))).map(({ tag }) => tag);
 }
+
+export const ARTICLE_TAG_LIMIT = 12;
+export const ARTICLE_TAG_INPUT_LIMIT = 500;
+
+export function articleTags(value: string): string[] {
+  const seen = new Set<string>();
+  return value.split(",").map((tag) => tag.trim().replace(/^#/, "").trim()).filter((tag) => {
+    const key = tag.toLowerCase();
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+// Mirrors the character coverage of public.slugify in the editorial core migration.
+const TAG_SLUG_CHARACTER = /[a-z0-9àáâãäåāăąçćčèéêëēĕėęěìíîïĩīĭįñńņǹòóôõöøōŏőùúûüũūŭůűųšśşžźżẹọṣ]/;
+
+export function articleTagsError(value: string): string | null {
+  const tags = articleTags(value);
+  if (tags.length > ARTICLE_TAG_LIMIT) return `Choose up to ${ARTICLE_TAG_LIMIT} hashtags.`;
+  if (value.length > ARTICLE_TAG_INPUT_LIMIT || tags.some((tag) => Array.from(tag).length < 2 || Array.from(tag).length > 40 || !TAG_SLUG_CHARACTER.test(tag.toLowerCase()))) {
+    return "Use 2 to 40 characters per hashtag, including at least one letter or digit supported by the newsroom.";
+  }
+  return null;
+}

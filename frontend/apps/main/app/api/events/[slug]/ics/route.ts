@@ -11,15 +11,16 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
   let event: CalendarEvent | null = null;
   try {
     const supabase = await createClient();
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("events")
       .select("id,slug,title,description,venue,starts_at,ends_at")
       .eq("slug", slug)
       .eq("status", "published")
       .maybeSingle();
+    if (error) throw error;
     event = (data as CalendarEvent | null) ?? null;
   } catch {
-    event = null;
+    return new Response("Event temporarily unavailable", { status: 503, headers: { "Cache-Control": "no-store" } });
   }
   if (!event) return new Response("Not found", { status: 404, headers: { "Cache-Control": "no-store" } });
   return new Response(calendarFile([event], siteUrl, event.title), {

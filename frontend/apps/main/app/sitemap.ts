@@ -41,13 +41,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       (row): row is { slug: string; published_at: string } =>
         typeof row?.slug === "string" && typeof row?.published_at === "string",
     );
+    const lastmod = articles[0]?.published_at;
     for (const article of articles.reverse()) {
       entries.push({
         url: absoluteUrl(`/news/${encodeURIComponent(article.slug)}`),
         lastModified: new Date(article.published_at),
       });
     }
-    const lastmod = articles[0]?.published_at;
     if (typeof lastmod === "string") {
       const index = entries.findIndex((entry) => entry.url.endsWith("/news"));
       if (index >= 0) entries[index] = { ...entries[index], lastModified: new Date(lastmod) };

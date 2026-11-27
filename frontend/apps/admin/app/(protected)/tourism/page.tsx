@@ -1,3 +1,4 @@
+import { SubmitButton } from "@epelawa/ui";
 import { createStaffClient } from "../../../lib/supabase";
 import { decideTourismSubmission } from "../../../lib/tourism-actions";
 import {
@@ -226,15 +227,15 @@ export default async function TourismReviewPage({
                     Coordinates are not required. If supplied, verify them against a reliable source. Leave unknown visitor fields blank.
                   </p>
                   <div className="ui-actions">
-                    <button className="btn-primary" name="decision" value="published">
+                    <SubmitButton className="btn-primary" name="decision" value="published">
                       Verify &amp; publish
-                    </button>
-                    <button className="btn-secondary" name="decision" value="needs_revision">
+                    </SubmitButton>
+                    <SubmitButton className="btn-secondary" name="decision" value="needs_revision">
                       Request revision
-                    </button>
-                    <button className="btn-secondary" name="decision" value="rejected">
+                    </SubmitButton>
+                    <SubmitButton className="btn-secondary" name="decision" value="rejected">
                       Reject
-                    </button>
+                    </SubmitButton>
                   </div>
                 </form>
               </Panel>

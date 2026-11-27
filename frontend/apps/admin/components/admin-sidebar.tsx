@@ -1,8 +1,9 @@
 "use client";
 
-import Link, { useLinkStatus } from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState, startTransition } from "react";
+import AdminLink from "./admin-link";
+import { SubmitButton } from "@epelawa/ui";
+import { usePathname } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { CloseIcon, MenuIcon } from "@epelawa/ui";
 import { staffHref } from "../lib/admin-path";
 import { groupedNavigation } from "../lib/navigation";
@@ -24,40 +25,6 @@ const BADGE_KEYS: Partial<Record<string, keyof QueueCounts>> = {
   "/moderation/forum": "forumReports",
 };
 
-// NavLink component with immediate spinner and full page reload
-function NavLink({ href, children, className, isActive }: { href: string; children: React.ReactNode; className?: string; isActive?: boolean }) {
-  const [isPending, setIsPending] = useState(false);
-  
-  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    setIsPending(true);
-    // Use startTransition for better UX
-    startTransition(() => {
-      // Full page reload
-      window.location.href = href;
-    });
-  };
-  
-  return (
-    <a
-      href={href}
-      onClick={handleClick}
-      className={`${className || ""} ${isPending ? "admin-sidebar__link--busy" : ""}`.trim()}
-      aria-busy={isPending}
-      aria-current={isActive ? "page" : undefined}
-    >
-      {children}
-      {isPending && <span className="admin-sidebar__nav-spinner" data-active="true" aria-hidden="true" />}
-    </a>
-  );
-}
-
-function NavigationFeedback({ active, label }: { active: boolean; label: string }) {
-  const { pending } = useLinkStatus();
-  const busy = active || pending;
-  return <><span className="admin-sidebar__nav-spinner" data-active={busy ? "true" : "false"} aria-hidden="true" /><span className="sr-only" role="status" aria-live="polite">{busy ? `Loading ${label}` : ""}</span></>;
-}
-
 export default function AdminSidebar({
   items,
   basePath = "",
@@ -70,13 +37,11 @@ export default function AdminSidebar({
   userRole?: string;
 }) {
   const pathname = usePathname() ?? "/";
-  const router = useRouter();
   const base = basePath === "/" ? "" : basePath.replace(/\/+$/, "");
   const path = base && (pathname === base || pathname.startsWith(`${base}/`))
     ? pathname.slice(base.length) || "/"
     : pathname;
   const [open, setOpen] = useState(false);
-  const [pendingHref, setPendingHref] = useState<string | null>(null);
   const panel = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const previousPath = useRef(pathname);
@@ -93,10 +58,9 @@ export default function AdminSidebar({
   useEffect(() => {
     if (previousPath.current === pathname) return;
     previousPath.current = pathname;
-    setPendingHref(null);
     setOpen(false);
-    requestAnimationFrame(() => trigger.current?.focus());
-  }, [pathname]);
+    if (open) requestAnimationFrame(() => trigger.current?.focus());
+  }, [pathname, open]);
   const { counts, flick } = useLiveQueueCounts();
   const badgeFor = (href: string) => {
     const key = BADGE_KEYS[href];
@@ -105,21 +69,34 @@ export default function AdminSidebar({
   };
   const flickFor = (href: string) => flick !== null && BADGE_KEYS[href] === flick;
   const displayName = userEmail && userEmail.trim() ? userEmail : "Staff";
-  const close = () => {
+  const close = useCallback(() => {
     setOpen(false);
     trigger.current?.focus();
-  };
+  }, []);
   useEffect(() => {
     if (!open) return;
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    panel.current?.querySelector("button")?.focus();
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
         close();
       }
+      if (event.key !== "Tab") return;
+      const nodes = [...(panel.current?.querySelectorAll<HTMLElement>("a[href], button:not([disabled])") ?? [])];
+      const boundary = event.shiftKey ? nodes[0] : nodes.at(-1);
+      if (document.activeElement === boundary) {
+        event.preventDefault();
+        (event.shiftKey ? nodes.at(-1) : nodes[0])?.focus();
+      }
     };
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  });
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = overflow;
+    };
+  }, [open, close]);
 
   const nav = () => (
     <nav className="admin-sidebar__nav" aria-label="Staff sections">
@@ -129,15 +106,16 @@ export default function AdminSidebar({
           <ul>
             {section.items.map((item) => (
               <li key={item.href}>
-                <NavLink
+                <AdminLink
                   href={staffHref(item.href, basePath)}
                   className={isCurrent(path, item.href) ? "admin-sidebar__link admin-sidebar__link--active" : "admin-sidebar__link"}
-                  isActive={isCurrent(path, item.href)}
+                  aria-current={isCurrent(path, item.href) ? "page" : undefined}
+                  pendingLabel={item.label}
                 >
                   <span className="admin-sidebar__label">{item.label}</span>
                   {badgeFor(item.href) !== null ? <sup className={flickFor(item.href) ? "admin-sidebar__badge admin-sidebar__badge--hot" : "admin-sidebar__badge"} aria-label={`${badgeFor(item.href)} waiting`} title={`${badgeFor(item.href)} waiting on you`}>{badgeFor(item.href)}</sup> : null}
                   {item.comingSoon ? <span className="admin-sidebar__soon">Coming soon</span> : null}
-                </NavLink>
+                </AdminLink>
               </li>
             ))}
           </ul>
@@ -158,7 +136,7 @@ export default function AdminSidebar({
           View public site <span aria-hidden="true">↗</span>
         </a>
         <form action={signOutStaffSameOrigin}>
-          <button className="admin-sidebar__signout" type="submit">Sign out</button>
+          <SubmitButton className="admin-sidebar__signout" pendingLabel="Signing out…">Sign out</SubmitButton>
         </form>
       </div>
     </div>
@@ -167,11 +145,11 @@ export default function AdminSidebar({
   return (
     <>
       <header className="admin-topbar">
-        <NavLink className="nav-brand" href={staffHref("/", basePath)}><BrandLockup size={28} /></NavLink>
+        <AdminLink className="nav-brand" href={staffHref("/", basePath)}><BrandLockup size={28} /></AdminLink>
         <div className="admin-topbar__actions">
           <ThemeToggle />
           <form action={signOutStaffSameOrigin}>
-            <button className="admin-topbar__signout" type="submit">Sign out</button>
+            <SubmitButton className="admin-topbar__signout" pendingLabel="Signing out…">Sign out</SubmitButton>
           </form>
           <button
             ref={trigger}
@@ -185,9 +163,9 @@ export default function AdminSidebar({
         </div>
       </header>
       <aside className="admin-sidebar" aria-label="Staff workspace">
-        <div className="admin-sidebar__brand"><NavLink href={staffHref("/", basePath)}><BrandLockup size={30} /></NavLink></div>
+        <div className="admin-sidebar__brand"><AdminLink href={staffHref("/", basePath)}><BrandLockup size={30} /></AdminLink></div>
         {nav()}
-        <QueueLiveCounts />
+        <QueueLiveCounts counts={counts} flick={flick} />
         {identity}
       </aside>
       <div className="drawer-root" data-open={open ? "true" : "false"} aria-hidden={!open} inert={!open}>

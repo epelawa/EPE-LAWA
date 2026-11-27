@@ -1,6 +1,6 @@
 "use server";
 
-import { redirect } from "next/navigation";
+import { adminRedirect as redirect } from "../../../lib/admin-redirect";
 import { revalidatePath } from "next/cache";
 import { createStaffClient } from "../../../lib/supabase";
 
@@ -19,11 +19,11 @@ function field(form: FormData, name: string, max: number): string {
 
 export async function saveLegalPage(form: FormData): Promise<void> {
   const page = field(form, "page", 20);
-  if (!PAGES.has(page)) redirect(`/legal-pages?status=error&reason=unknown_page`);
+  if (!PAGES.has(page)) return await redirect(`/legal-pages?status=error&reason=unknown_page`);
   const body = field(form, "body", 50000);
   const revisionRaw = field(form, "revision", 12);
   const revision = Number.parseInt(revisionRaw || "0", 10);
-  if (revisionRaw !== "" && !Number.isFinite(revision)) redirect(`/legal-pages?status=error&reason=failed`);
+  if (revisionRaw !== "" && !Number.isFinite(revision)) return await redirect(`/legal-pages?status=error&reason=failed`);
 
   let code = "";
   let savedRevision: number | null = null;
@@ -36,12 +36,12 @@ export async function saveLegalPage(form: FormData): Promise<void> {
 
   if (savedRevision === null) {
     const reason = code in ERRORS ? code : "failed";
-    redirect(`/legal-pages?status=error&reason=${reason}#page-${page}`);
+    return await redirect(`/legal-pages?status=error&reason=${reason}#page-${page}`);
   }
 
   revalidatePath("/privacy");
   revalidatePath("/terms");
   revalidatePath("/guidelines");
   revalidatePath("/legal-pages");
-  redirect(`/legal-pages?status=saved${savedRevision ? `&rev=${savedRevision}` : ""}#page-${page}`);
+  return await redirect(`/legal-pages?status=saved${savedRevision ? `&rev=${savedRevision}` : ""}#page-${page}`);
 }
