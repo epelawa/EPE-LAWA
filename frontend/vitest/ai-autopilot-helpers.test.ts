@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { localityScore, NEWS_OUTLETS, newsworthy, parseFeed, similarity, titleTokens, trustedNewsHost, type FeedItem } from "../apps/main/lib/ai/news-sources";
 import { cleanHashtags, rankCandidates, unsupportedClaims, validateDraft } from "../apps/main/lib/ai/jobs/news";
-import { freeModelsFromCatalogue, parseJsonReply, shuffle } from "../apps/main/lib/ai/openrouter";
+import { freeModelsFromCatalogue, openRouterKey, openRouterKeyIsPlaceholder, parseJsonReply, shuffle } from "../apps/main/lib/ai/openrouter";
 import { AI_REPLY_DISCLOSURE, scrubReply } from "../apps/main/lib/ai/jobs/enquiries";
 import { adminRequestEvent, adminSection, parseUserAgent } from "../apps/main/lib/admin-activity";
 import { lagosDay, lagosDayRange, lagosExact, lagosHour, lagosInputValue } from "../apps/admin/lib/lagos-time";
@@ -196,5 +196,29 @@ describe("Lagos time helpers", () => {
     expect(lagosDayRange("2026-11-26")).toEqual({ since: "2026-11-25T23:00:00.000Z", until: "2026-11-26T23:00:00.000Z" });
     expect(lagosDayRange("2026-02-30")).toBeNull();
     expect(lagosDayRange("26-11-2026")).toBeNull();
+  });
+});
+
+describe("OpenRouter key and free-only rotation", () => {
+  const env = (value?: string) => ({ OPENROUTER_API_KEY: value }) as unknown as NodeJS.ProcessEnv;
+  it("treats a test value in Vercel as no key, so nothing is sent", () => {
+    expect(openRouterKey(env("test-key-replace-with-your-openrouter-key"))).toBeNull();
+    expect(openRouterKeyIsPlaceholder(env("test-key-replace-with-your-openrouter-key"))).toBe(true);
+    expect(openRouterKeyIsPlaceholder(env(undefined))).toBe(false);
+    expect(openRouterKeyIsPlaceholder(env("   "))).toBe(false);
+  });
+  it("accepts a real-looking OpenRouter key", () => {
+    const real = `sk-or-v1-${"a1".repeat(32)}`;
+    expect(openRouterKey(env(` ${real} `))).toBe(real);
+    expect(openRouterKeyIsPlaceholder(env(real))).toBe(false);
+  });
+  it("never lets a priced model into the rotation", () => {
+    const models = freeModelsFromCatalogue({ data: [
+      { id: "vendor/paid-model", context_length: 32768, pricing: { prompt: "0.000001", completion: "0.000002" } },
+      { id: "vendor/sneaky:free", context_length: 32768, pricing: { prompt: "0", completion: "0.0000001" } },
+      { id: "vendor/zero-but-not-free", context_length: 32768, pricing: { prompt: "0", completion: "0" } },
+      { id: "vendor/good:free", context_length: 32768, pricing: { prompt: "0", completion: "0" } },
+    ] });
+    expect(models.map((model) => model.id)).toEqual(["vendor/good:free"]);
   });
 });

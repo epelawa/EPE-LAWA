@@ -72,9 +72,10 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
       <div className="ui-grid--3">
         <Panel className="ui-stack-sm">
           <h2>OpenRouter</h2>
-          {!key.configured ? <p><StatusBadge tone="danger">No API key</StatusBadge> Add <code>OPENROUTER_API_KEY</code> in Vercel → Settings → Environment Variables (Production), then redeploy. Nothing runs until then.</p>
+          {key.placeholder ? <p><StatusBadge tone="warning">Test key in place</StatusBadge> <code>OPENROUTER_API_KEY</code> holds a test value. Replace it in Vercel → Settings → Environment Variables with your OpenRouter key (it starts with <code>sk-or-</code>), then redeploy. Nothing runs until then.</p>
+            : !key.configured ? <p><StatusBadge tone="danger">No API key</StatusBadge> Add <code>OPENROUTER_API_KEY</code> in Vercel → Settings → Environment Variables (Production), then redeploy. Nothing runs until then.</p>
             : !key.reachable ? <p><StatusBadge tone="warning">Key set, not reachable</StatusBadge> OpenRouter did not answer; check the key.</p>
-              : <p><StatusBadge tone="success">Connected</StatusBadge>{key.isFreeTier ? " Free tier: 50 free-model requests a day. A one-off $10 credit purchase raises this to 1,000 a day." : " Credits purchased: up to 1,000 free-model requests a day."}</p>}
+              : <p><StatusBadge tone="success">Connected</StatusBadge>{key.isFreeTier ? " Free models only — OpenRouter allows 50 free-model requests a day on this key, and nothing is ever billed." : " Free models only — nothing is ever billed."}</p>}
           {typeof key.freeDailyRemaining === "number" ? <p className="ui-number">OpenRouter reports {key.freeDailyRemaining} of {key.freeDailyLimit ?? "?"} free requests left today.</p> : null}
         </Panel>
         <Panel className="ui-stack-sm">
@@ -110,7 +111,7 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
           <div className="ui-form-grid">
             <label className="ui-field"><span className="label">News run every (minutes)</span><input className="input" type="number" name="news_interval_minutes" min={30} max={1440} defaultValue={settings.news_interval_minutes} /></label>
             <label className="ui-field"><span className="label">Stories per news run</span><input className="input" type="number" name="articles_per_run" min={1} max={6} defaultValue={settings.articles_per_run} /><small>Each story costs about one request. On the free tier keep this at 1.</small></label>
-            <label className="ui-field"><span className="label">Daily model request budget</span><input className="input" type="number" name="daily_request_budget" min={5} max={5000} defaultValue={settings.daily_request_budget} /><small>50 on the free tier; up to 1,000 after a $10 credit purchase.</small></label>
+            <label className="ui-field"><span className="label">Daily model request budget</span><input className="input" type="number" name="daily_request_budget" min={5} max={5000} defaultValue={settings.daily_request_budget} /><small>Keep this at 50 or below: OpenRouter allows 50 free-model requests a day per free key.</small></label>
             <label className="ui-field"><span className="label">Push notifications per day (max)</span><input className="input" type="number" name="push_daily_limit" min={0} max={20} defaultValue={settings.push_daily_limit} /></label>
           </div>
 

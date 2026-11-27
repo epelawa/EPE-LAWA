@@ -19,9 +19,19 @@ export type FreeModel = { id: string; name: string; context: number };
 export type ChatMessage = { role: "system" | "user"; content: string };
 export type ModelResult<T> = { ok: true; data: T; model: string; attempts: number } | { ok: false; error: string; attempts: number };
 
+// Real OpenRouter keys look like "sk-or-v1-<hex>". Anything else (for example a
+// test value left in Vercel until the owner pastes the real key) is treated as
+// "no key", so the desk never sends doomed requests that eat the free allowance.
+const OPENROUTER_KEY_PATTERN = /^sk-or-[A-Za-z0-9_-]{20,}$/;
+
 export function openRouterKey(env: NodeJS.ProcessEnv = process.env): string | null {
   const key = env.OPENROUTER_API_KEY?.trim();
-  return key && key.length >= 20 ? key : null;
+  return key && OPENROUTER_KEY_PATTERN.test(key) ? key : null;
+}
+
+/** True when OPENROUTER_API_KEY is set but is not a real OpenRouter key (a placeholder). */
+export function openRouterKeyIsPlaceholder(env: NodeJS.ProcessEnv = process.env): boolean {
+  return Boolean(env.OPENROUTER_API_KEY?.trim()) && openRouterKey(env) === null;
 }
 
 function headers(key: string): Record<string, string> {
@@ -85,6 +95,7 @@ export async function freeModels(db: SupabaseClient, force = false): Promise<Fre
 }
 
 export type KeyStatus = {
+  placeholder?: boolean;
   configured: boolean;
   reachable: boolean;
   label?: string;
@@ -99,7 +110,7 @@ export type KeyStatus = {
 /** Account status for the admin page, including the free-model daily allowance when OpenRouter reports it. */
 export async function keyStatus(env: NodeJS.ProcessEnv = process.env): Promise<KeyStatus> {
   const key = openRouterKey(env);
-  if (!key) return { configured: false, reachable: false };
+  if (!key) return { configured: false, reachable: false, placeholder: openRouterKeyIsPlaceholder(env) };
   try {
     const response = await fetch(`${API}/key`, { cache: "no-store", headers: headers(key), signal: AbortSignal.timeout(6000) });
     if (!response.ok) return { configured: true, reachable: false };
