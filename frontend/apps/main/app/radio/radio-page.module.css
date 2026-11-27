@@ -10,6 +10,7 @@
   margin-inline: auto;
   padding-block: clamp(28px, 6vw, 72px);
 }
+.playerPosition { transform: translateY(-12px); }
 .heroCopy { display: grid; gap: 14px; min-width: 0; }
 .heroEyebrow { margin: 0; color: #294B91; font-size: .75rem; font-weight: 800; letter-spacing: .2em; }
 .heroTitle { margin: 0; color: #17264A; font-size: clamp(2.1rem, 1.2rem + 4.2vw, 4.25rem); line-height: 1.02; letter-spacing: -.035em; }
@@ -43,6 +44,7 @@
 
 @media (max-width: 900px) {
   .heroInner { grid-template-columns: minmax(0, 1fr); }
+  .playerPosition { transform: none; }
   .reminder, .explore { grid-template-columns: minmax(0, 1fr); }
 }
 /* Short landscape phones: keep Play reachable without scrolling past a tall hero. */
