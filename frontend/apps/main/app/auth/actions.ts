@@ -210,6 +210,10 @@ export async function updatePassword(_state: AuthState, data: FormData): Promise
   }
 }
 export async function verifyEmailOtp(_state: AuthState, data: FormData): Promise<AuthState> {
+  // The code form's "send a new code" button posts here; it sends email, so it is
+  // charged to the resend budget like the standalone resend, never to the code
+  // budget or the locked-address code lane (CodeRabbit review on PR #282).
+  if (field(data, "intent") === "resend") return resendSignupVerification(_state, data);
   // Same reserved lane as reset for a locked address (Strix review on PR #280).
   if (!(await formRateAllowance("auth_otp", 10)) && !(await signinLockExitAllowed(normaliseSigninEmail(field(data, "email")), "code"))) return { status: "error", message: await formRateMessage() };
   const outcome = await handleVerifyEmailOtp(data, createClient, authCallbackUrl("/dashboard"));

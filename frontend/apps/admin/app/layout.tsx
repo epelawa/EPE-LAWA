@@ -18,6 +18,7 @@ import { ADMIN_BASE_PATH } from "../lib/admin-path";
 import { themeScript } from "../lib/theme";
 import ToastRegion from "../../main/components/toast";
 import FeedbackToasts from "../components/feedback-toasts";
+import { turnstileSiteKey } from "../../main/lib/turnstile";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -91,6 +92,10 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           <link rel="preconnect" href={publicOrigin(process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL) as string} crossOrigin="anonymous" />
         ) : null}
         <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeScript }} />
+        {/* The admin sign-in renders a Turnstile field when a site key is set; this standalone document must load the widget itself (CodeRabbit review on PR #282). */}
+        {turnstileSiteKey() ? (
+          <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer nonce={nonce} />
+        ) : null}
         <ToastRegion />
         <Suspense fallback={null}>
           <FeedbackToasts />

@@ -31,5 +31,8 @@ export function newCspNonce(): string {
 export function contentSecurityPolicy(nonce: string | null): string {
   const devEval = process.env.NODE_ENV !== "production" ? " 'unsafe-eval'" : "";
   const scriptSrc = nonce ? `'self' 'nonce-${nonce}' 'strict-dynamic'${devEval}` : `'self'${devEval}`;
-  return [...DIRECTIVES, `script-src ${scriptSrc}`, `connect-src ${connectOrigins().join(" ")}`, `frame-src https://www.openstreetmap.org`].join("; ") + ";";
+  // The admin sign-in uses Turnstile when a site key is set; it needs its origin for script, connect, frame and worker.
+  const turnstile = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() ? " https://challenges.cloudflare.com" : "";
+  const directives = DIRECTIVES.map((d) => (turnstile && d === `worker-src 'self'` ? `${d}${turnstile}` : d));
+  return [...directives, `script-src ${scriptSrc}${turnstile}`, `connect-src ${connectOrigins().join(" ")}${turnstile}`, `frame-src${turnstile} https://www.openstreetmap.org`].join("; ") + ";";
 }
