@@ -143,13 +143,8 @@ button:not([class]) { display:inline-flex; align-items:center; justify-content:c
 @media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } *,*::before,*::after { transition-duration:.01ms!important; animation-duration:.01ms!important; animation-iteration-count:1!important; scroll-behavior:auto!important; } }
 
 
-/* EPE-LAWA Tidegate loader and route-aware staff-page reveals. */
+/* EPE-LAWA Tidegate route loader. */
 .admin-loading__message { display:flex; align-items:center; gap:16px; }
-.site-preloader { display:none; position:fixed; inset:0; z-index:999; place-items:center; background:hsl(var(--background)); color:hsl(var(--foreground)); opacity:1; transition:opacity 180ms ease,visibility 180ms ease; }
-html.js-enabled .site-preloader { display:grid; animation:epe-preloader-guard 180ms 2.2s forwards; }
-.site-preloader[data-phase="exiting"] { opacity:0; visibility:hidden; pointer-events:none; }
-.site-preloader__content { display:flex; flex-direction:column; align-items:center; gap:14px; }
-.site-preloader__label { color:hsl(var(--muted-foreground)); font-size:12px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; }
 .tidegate-spinner { position:relative; display:inline-grid; width:42px; height:42px; flex:0 0 42px; place-items:center; }
 .tidegate-spinner__outer,.tidegate-spinner__inner { position:absolute; border:2px solid transparent; border-radius:50%; }
 .tidegate-spinner__outer { inset:0; border-top-color:var(--palette-cobalt); border-right-color:var(--palette-cobalt); animation:epe-tidegate-orbit 1.12s cubic-bezier(.55,.1,.45,.9) infinite; }
@@ -158,15 +153,7 @@ html.js-enabled .site-preloader { display:grid; animation:epe-preloader-guard 18
 @keyframes epe-tidegate-orbit { to { transform:rotate(1turn); } }
 @keyframes epe-tidegate-current { 50% { transform:rotate(-1turn); } }
 @keyframes epe-tidegate-pulse { 0%,100% { transform:rotate(45deg) scale(.82); opacity:.78; } 50% { transform:rotate(135deg) scale(1.08); opacity:1; } }
-@keyframes epe-preloader-guard { to { opacity:0; visibility:hidden; pointer-events:none; } }
 .admin-nav a,.admin-drawer-links a,.site-footer__link,.ui-link-card { transition:color 200ms ease,background-color 200ms ease,border-color 200ms ease,box-shadow 200ms ease,transform 200ms ease; }
-html.has-scroll-reveal .site-main [data-scroll-reveal] { transition:opacity 680ms cubic-bezier(.2,.7,.2,1),filter 680ms cubic-bezier(.2,.7,.2,1),transform 680ms cubic-bezier(.2,.7,.2,1); }
-html.has-scroll-reveal .site-main [data-scroll-reveal="pending"] { opacity:0; filter:blur(10px); transform:translate3d(0,22px,0) scale(.99); will-change:opacity,filter,transform; }
-html.has-scroll-reveal .site-main [data-scroll-reveal="visible"] { opacity:1; filter:blur(0); transform:translate3d(0,0,0) scale(1); will-change:auto; }
-@media(prefers-reduced-motion:reduce) {
-  .tidegate-spinner__outer,.tidegate-spinner__inner,.tidegate-spinner__keel,.site-preloader { animation:none!important; transition:none!important; }
-  html.has-scroll-reveal .site-main [data-scroll-reveal="pending"],html.has-scroll-reveal .site-main [data-scroll-reveal="visible"] { opacity:1; filter:none; transform:none; transition:none; will-change:auto; }
-}
 
 /* Prevent browser pull-to-refresh at the page boundary without disabling normal document scrolling. */
 html { overscroll-behavior-y: none; }
@@ -286,7 +273,7 @@ body[data-admin-shell="sidebar"] { --admin-sidebar-width: 256px; }
 
 /* Button busy spinner for staff forms. */
 .btn-busy, button[aria-busy="true"] { position: relative; opacity: .8; }
-.btn-busy::before, button[aria-busy="true"]:not(.ep-btn)::before { content: ""; display: inline-block; width: 1em; height: 1em; margin-right: .5em; vertical-align: -.125em; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: ep-spin .6s linear infinite; }
+button[aria-busy="true"]:not(.ep-btn):not(.btn-busy):not(:has(.ep-btn__spinner))::before { content: ""; display: inline-block; width: 1em; height: 1em; margin-right: .5em; vertical-align: -.125em; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: ep-spin .6s linear infinite; }
 @keyframes ep-spin { to { transform: rotate(360deg); } }
 
 /* Toasts: small stack that slides in and self-dismisses. */

@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { adminRedirect as redirect } from "./admin-redirect";
 import { adminHref } from "./admin-path";
 import { createStaffClient } from "./supabase";
 
@@ -18,14 +18,14 @@ export async function decideTourismSubmission(data: FormData) {
   const id = value(data, "submission_id", 36);
   const decision = value(data, "decision", 30);
   if (!/^[0-9a-f-]{36}$/i.test(id) || !["published", "rejected", "needs_revision"].includes(decision)) {
-    redirect(adminHref("/tourism?result=invalid"));
+    return await redirect(adminHref("/tourism?result=invalid"));
   }
 
   let failed = false;
   const supabase = await createStaffClient();
   try {
     const capability = await supabase.rpc("has_capability", { p_capability: "tourism.review" });
-    if (capability.error || capability.data !== true) redirect(adminHref("/tourism?result=denied"));
+    if (capability.error || capability.data !== true) return await redirect(adminHref("/tourism?result=denied"));
 
     const result = await supabase.rpc("tourism_submission_decide", {
       p_submission_id: id,
@@ -53,5 +53,5 @@ export async function decideTourismSubmission(data: FormData) {
   revalidatePath(adminHref("/tourism"));
   revalidatePath("/tourism");
   revalidatePath(`/tourism/${slug}`);
-  redirect(adminHref(`/tourism?result=${failed ? "stale" : "saved"}`));
+  return await redirect(adminHref(`/tourism?result=${failed ? "stale" : "saved"}`));
 }

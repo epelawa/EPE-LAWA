@@ -1,20 +1,20 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { adminRedirect as redirect } from "../../../lib/admin-redirect";
 import { adminHref } from "../../../lib/admin-path";
 import { createStaffClient } from "../../../lib/supabase";
 
 const text = (f: FormData, key: string, max: number) => String(f.get(key) ?? "").trim().slice(0, max);
-function outcome(code: string): never { redirect(adminHref(`/media?media=${encodeURIComponent(code)}`)); }
+async function outcome(code: string): Promise<never> { return await redirect(adminHref(`/media?media=${encodeURIComponent(code)}`)); }
 async function run(work: () => Promise<void>, success: string, fallback: string) {
   try { await work(); }
   catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
     const message = error instanceof Error ? error.message : fallback;
-    outcome(["denied", "invalid", "missing"].includes(message) ? message : fallback);
+    return await outcome(["denied", "invalid", "missing"].includes(message) ? message : fallback);
   }
-  outcome(success);
+  return await outcome(success);
 }
 async function authorized() {
   const db = await createStaffClient();

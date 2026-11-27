@@ -1,5 +1,4 @@
 import { expect, test, type APIRequestContext, type Locator, type Page } from "@playwright/test";
-import { existsSync, readFileSync, rmSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { readAdminSessionFromCookies } from "../../apps/admin/lib/supabase-access.ts";
@@ -8,7 +7,7 @@ const controlURL = `http://127.0.0.1:${process.env.ADMIN_SMOKE_CONTROL_PORT ?? "
 const baseURL = process.env.ADMIN_SMOKE_BASE_URL ?? "https://localhost:3102";
 const syntheticUserId = "11111111-1111-4111-8111-111111111111";
 
-async function setMode(request: APIRequestContext, mode: "authorized-error" | "denied" | "capability-error") {
+async function setMode(request: APIRequestContext, mode: "authorized-error" | "denied" | "capability-error" | "workspace") {
   const response = await request.post(`${controlURL}/__admin-smoke__/mode`, { data: { mode } });
   expect(response.ok(), `local fixture should accept mode ${mode}`).toBeTruthy();
 }
@@ -62,16 +61,6 @@ async function capture(page: Page, name: string) {
 async function waitForSitePreloader(page: Page) {
   await expect(page.locator(".site-preloader")).toBeHidden();
 }
-
-test.afterAll(() => {
-  const appEnvPath = resolve(process.cwd(), "frontend/apps/main/.env.local");
-  if (!existsSync(appEnvPath)) return;
-  const contents = readFileSync(appEnvPath, "utf8");
-  if (!contents.includes("SUPABASE_PUBLISHABLE_KEY=sb_publishable_local-admin-dashboard-only")) {
-    throw new Error("Admin smoke will not remove a non-synthetic app env file.");
-  }
-  rmSync(appEnvPath);
-});
 
 test("authorized Admin dashboard shows unavailable counts and permitted workflows", async ({ page, request }) => {
   await setMode(request, "authorized-error");
@@ -135,7 +124,7 @@ test("denied capabilities hide dashboard shortcuts and never expose queue counts
   await expect(page.getByText("Live count", { exact: true })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Write a new story" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: /Forum moderation/ })).toHaveCount(0);
-  await expect(page.getByRole("link", { name: /Staff roles and accounts/ })).toHaveCount(0);
+  await expect(page.getByRole("navigation", { name: "Staff sections" }).getByRole("link", { name: /^(Roles|Staff users)$/ })).toHaveCount(0);
   await expect(page.getByRole("region", { name: "Workspace shortcuts" }).getByRole("link")).toHaveCount(0);
   await expectNoHorizontalOverflow(page, 1440);
 });
@@ -151,4 +140,75 @@ test("failed permission checks produce unavailable state, not guessed access or 
   await expect(page.getByRole("region", { name: "Workspace shortcuts" }).getByRole("link")).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Write a new story" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: /Staff roles and accounts/ })).toHaveCount(0);
+});
+
+test("staff routes render at each supported width and preset hashtags remain editable", async ({ page, request }) => {
+  test.setTimeout(240_000);
+  await setMode(request, "workspace");
+  await addSyntheticStaffSession(page);
+  const widths = [320, 375, 768, 1024, 1440];
+  const routes = [
+    "", "/dashboard", "/analytics", "/media", "/radio", "/newsroom/new", "/newsroom", "/newsroom/settings",
+    "/itan-ilu-mi/review", "/corrections", "/people", "/business-review", "/business-review/moderation",
+    "/tourism", "/events", "/ads", "/moderation/forum", "/moderation/comments", "/appeals",
+    "/enquiries", "/members", "/users", "/roles", "/broadcast", "/site-pages", "/legal-pages",
+    "/backups", "/settings", "/settings/cron",
+  ];
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  for (const [index, route] of routes.entries()) {
+    const width = widths[index % widths.length];
+    await page.setViewportSize({ width, height: 900 });
+    const response = await page.goto(`/admin${route}`);
+    expect(response?.status(), route).toBe(200);
+    expect(new URL(page.url()).pathname).toBe(`/admin${route}`);
+    await expect(page.locator(".admin-shell__content").getByRole("heading", { level: 1 }).first(), route).toBeVisible();
+    await expect(page.getByRole("heading", { name: "This page could not be loaded" }), route).toHaveCount(0);
+    await expectNoHorizontalOverflow(page, width);
+  }
+  await page.setViewportSize({ width: 320, height: 900 });
+  await page.goto("/admin/newsroom/new");
+  const presets = page.locator("details").filter({ has: page.getByText("Browse 50 preset hashtags") });
+  await presets.locator("summary").click();
+  await expect(presets.getByRole("button")).toHaveCount(50);
+  const tag = presets.getByRole("button", { name: "#EpeNews", exact: true });
+  await tag.click();
+  await expect(tag).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("#tags")).toHaveValue("EpeNews");
+  await tag.click();
+  await expect(page.locator("#tags")).toHaveValue("");
+  await expectNoHorizontalOverflow(page, 320);
+  await tag.click();
+  await page.locator("#title").fill("Synthetic story");
+  await page.locator("#body").fill("Synthetic story body.");
+  await page.getByRole("button", { name: /Continue/ }).click();
+  await page.getByRole("button", { name: /Continue/ }).click();
+  await page.locator("#authorId").selectOption({ label: "Fixture author" });
+  await page.locator("#categoryId").selectOption({ label: "Fixture category" });
+  await page.getByRole("button", { name: "Publish article" }).click();
+  await expect(page.getByRole("button", { name: "Publishing article…" })).toBeDisabled();
+  await expect(page.getByRole("heading", { level: 1, name: "Synthetic story" })).toBeVisible();
+  await expect(page).toHaveURL(/\/admin\/newsroom\/33333333-3333-4333-8333-333333333333\?created=1$/);
+  await expectNoHorizontalOverflow(page, 320);
+});
+
+test("confirmation can be dismissed or submitted, with one pending action", async ({ page, request }) => {
+  await setMode(request, "workspace");
+  await addSyntheticStaffSession(page);
+  await page.goto("/admin/moderation/comments");
+  const trigger = page.getByRole("button", { name: "Save edit" });
+  await page.getByLabel(/Edit the comment/).fill("Updated synthetic comment");
+  await trigger.click();
+  const dialog = page.getByRole("dialog", { name: "Confirm this action" });
+  await expect(dialog).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await trigger.click();
+  await dialog.getByRole("button", { name: "Cancel" }).click();
+  await expect(dialog).toBeHidden();
+  await trigger.click();
+  await dialog.getByRole("button", { name: "Save edit" }).click();
+  await expect(page.getByRole("button", { name: "Working…" })).toBeDisabled();
+  await expect(page.getByText("The comment was updated on the story.")).toBeVisible();
+  const log = await (await request.get(`${controlURL}/__admin-smoke__/requests`)).json() as string[];
+  expect(log.filter((entry) => entry === "POST /rest/v1/rpc/comment_staff_update")).toHaveLength(1);
 });

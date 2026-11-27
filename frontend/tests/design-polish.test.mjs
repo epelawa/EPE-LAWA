@@ -103,18 +103,15 @@ test("Tidegate loaders remain wired and public motion is hydration-safe", () => 
 
   assert.match(publicMotion, /TidegateSpinner/);
   assert.doesNotMatch(publicMotion, /IntersectionObserver|scrollReveal|has-scroll-reveal/);
-  assert.match(staffMotion, /IntersectionObserver/);
-  assert.match(staffMotion, /prefers-reduced-motion/);
-  assert.match(staffMotion, /dataset\.scrollReveal = "pending"/);
-  assert.match(staffMotion, /element\.dataset\.scrollReveal === "visible" \|\| element\.closest/);
-  assert.match(staffMotion, /observer\.observe\(element\)/);
+  assert.doesNotMatch(staffMotion, /IntersectionObserver|scrollReveal|has-scroll-reveal/);
   assert.match(staffMotion, /TidegateSpinner/);
-  for (const layout of [publicLayout, staffLayout]) assert.match(layout, /<SiteMotion\s*\/>/);
+  assert.match(publicLayout, /<SiteMotion\s*\/>/);
+  assert.doesNotMatch(staffLayout, /<SiteMotion\s*\/>/);
   for (const loading of [publicLoading, staffProtectedLoading]) assert.match(loading, /TidegateSpinner/);
   assert.match(publicCss, /epe-tidegate-orbit/);
   assert.match(publicCss, /prefers-reduced-motion:\s*reduce/);
   assert.doesNotMatch(publicCss, /has-scroll-reveal|data-scroll-reveal/);
   assert.match(staffCss, /epe-tidegate-orbit/);
-  assert.match(staffCss, /filter:blur\(10px\)/);
+  assert.doesNotMatch(staffCss, /has-scroll-reveal|data-scroll-reveal/);
   assert.match(staffCss, /prefers-reduced-motion:\s*reduce/);
 });

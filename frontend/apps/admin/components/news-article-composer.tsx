@@ -2,13 +2,13 @@
 
 import { useEffect, useRef, useState, useTransition, type ChangeEvent } from "react";
 import { useFormStatus } from "react-dom";
-import Link from "next/link";
+import Link from "./admin-link";
 import { useRouter } from "next/navigation";
 import { LiveField, validateField, type FieldRules } from "@epelawa/ui";
 import { createArticle, createArticleWithFeedback } from "../lib/actions";
-import { adminHref } from "../lib/admin-path";
+import { adminRouterHref, adminHref } from "../lib/admin-path";
 import { normalizeExternalNewsCoverUrl } from "../../main/lib/news-cover-url.mjs";
-import { suggestNewsHashtags } from "../lib/news-hashtags";
+import { ARTICLE_TAG_INPUT_LIMIT, ARTICLE_TAG_LIMIT, NEWS_HASHTAGS, articleTags, articleTagsError, suggestNewsHashtags } from "../lib/news-hashtags";
 import NewsCoverUrlFields from "./news-cover-url-fields";
 import AuthorPicker from "./author-picker";
 import styles from "./news-article-composer.module.css";
@@ -46,7 +46,7 @@ function currentValues(form: HTMLFormElement | null): Record<string, string> {
 
 function SaveButton({saving, blocked}: {saving: boolean; blocked: boolean}) {
   const { pending } = useFormStatus();
-  return <button data-pending-self-managed="true" className={styles.submit} type="submit" aria-busy={pending || saving} disabled={pending || saving || blocked}>{pending || saving ? "Publishing article…" : "Publish article"}<span aria-hidden="true"> →</span></button>;
+  return <button data-pending-self-managed="true" className={styles.submit} type="submit" aria-busy={pending || saving} disabled={pending || saving || blocked}>{(pending || saving) && <span className="ep-btn__spinner" aria-hidden="true" />}{pending || saving ? "Publishing article…" : "Publish article"}</button>;
 }
 
 export default function NewsArticleComposer({ categories, authors, coverUploadAvailable = false }: { categories: Option[]; authors: Option[]; coverUploadAvailable?: boolean }) {
@@ -69,7 +69,7 @@ export default function NewsArticleComposer({ categories, authors, coverUploadAv
     requestAnimationFrame(() => document.getElementById(`composer-step-${target}`)?.focus());
   }
   function next() {
-    const error = firstInvalid(String(step), currentValues(form.current));
+    const error = (step === 1 && articleTagsError(tags)) || firstInvalid(String(step), currentValues(form.current));
     if (error) {
       setStepError(error);
       return;
@@ -80,9 +80,9 @@ export default function NewsArticleComposer({ categories, authors, coverUploadAv
   function validateAll(): boolean {
     const values = currentValues(form.current);
     for (let target = 1; target <= 3; target += 1) {
-      const error = firstInvalid(String(target), values);
+      const error = (target === 1 && articleTagsError(tags)) || firstInvalid(String(target), values);
       if (error) {
-        setStep(target);
+        move(target);
         setStepError(error);
         return false;
       }
@@ -125,6 +125,17 @@ export default function NewsArticleComposer({ categories, authors, coverUploadAv
     setPreview({ title: get("title"), summary: get("summary"), body: get("body"), category: categories.find((item) => item.id === get("categoryId"))?.label ?? "", author: authorName, image: previewBlob.current ?? (linked ?? ""), imageAlt: get("coverAlt") });
     previewDialog.current?.showModal();
   }
+  const selectedTags = articleTags(tags);
+  const selectedTagKeys = new Set(selectedTags.map((tag) => tag.toLowerCase()));
+  function toggleTag(tag: string) {
+    const key = tag.toLowerCase();
+    const next = selectedTagKeys.has(key) ? selectedTags.filter((value) => value.toLowerCase() !== key) : [...selectedTags, tag];
+    const text = next.join(", ");
+    if (next.length < selectedTags.length || !articleTagsError(text)) {
+      setTags(text);
+      setStepError("");
+    }
+  }
   const wordCount = body.trim() ? body.trim().split(/\s+/u).length : 0;
   const readingMinutes = Math.max(1, Math.ceil(wordCount / 200));
 
@@ -136,7 +147,7 @@ export default function NewsArticleComposer({ categories, authors, coverUploadAv
     const data = new FormData(event.currentTarget);
     setSaveError(null);
     startSaving(async () => {
-      try { const result = await createArticleWithFeedback(data); if (result.status === "success") { setSaved(true); router.push(adminHref(`/newsroom/${result.articleId}?${result.published ? "published=1" : "created=1"}`)); } else setSaveError(result); }
+      try { const result = await createArticleWithFeedback(data); if (result.status === "success") { setSaved(true); router.push(adminRouterHref(adminHref(`/newsroom/${result.articleId}?${result.published ? "published=1" : "created=1"}`))); } else setSaveError(result); }
       catch { setSaveError({ status: "uncertain", message: "We could not confirm whether the article was saved. Check the newsroom list before trying again to avoid a duplicate." }); }
     });
   }} onKeyDown={(event) => { if (enhanced && step < 3 && event.key === "Enter" && event.target instanceof HTMLInputElement) { event.preventDefault(); next(); } }} onInvalid={(event) => { const target = event.target as HTMLElement; const section = target.closest<HTMLElement>("[data-composer-step]"); const invalidStep = Number(section?.dataset.composerStep); if (enhanced && invalidStep && invalidStep !== step) { move(invalidStep); requestAnimationFrame(() => target.focus()); } }}>
@@ -150,7 +161,19 @@ export default function NewsArticleComposer({ categories, authors, coverUploadAv
           <LiveField label="Headline" value={title} rules={COMPOSER_RULES.title} onChange={onComposerChange}><input id="title" name="title" maxLength={200} value={title} onChange={onComposerChange} placeholder="Give your story a headline" /></LiveField>
           <LiveField label="Summary" optional hint="Shown alongside your story in the news listing." value={summary} rules={COMPOSER_RULES.summary} onChange={onComposerChange}><textarea id="summary" name="summary" rows={2} maxLength={1000} value={summary} onChange={onComposerChange} placeholder="Introduce the story in a sentence or two" /></LiveField>
           <LiveField label="Article content" hint="Plain text only · Separate paragraphs with a blank line." value={body} rules={COMPOSER_RULES.body} onChange={onComposerChange}><textarea id="body" name="body" rows={10} maxLength={100000} placeholder="Write your story here. Leave a blank line between paragraphs." value={body} onChange={onComposerChange} /></LiveField><div className={styles.writingMeta}><span>Plain text only · Separate paragraphs with a blank line</span><span aria-live="polite">{wordCount.toLocaleString()} words{wordCount ? ` · about ${readingMinutes} min read` : ""}</span></div>
-          <LiveField label="Hashtags" optional hint="Comma-separated tags for categorization" value={tags} rules={{ maxLength: 500 }} onChange={onComposerChange}><input id="tags" name="tags" maxLength={500} value={tags} onChange={onComposerChange} placeholder="e.g., EpeNews, Community, LocalNews" /></LiveField>
+          <LiveField label="Hashtags" optional hint="Choose presets or enter your own, separated by commas. Up to 12 per article." value={tags} rules={{ maxLength: ARTICLE_TAG_INPUT_LIMIT }} onChange={onComposerChange}><input id="tags" name="tags" maxLength={ARTICLE_TAG_INPUT_LIMIT} value={tags} onChange={onComposerChange} placeholder="e.g., EpeNews, CommunityNews, LocalNews" /></LiveField>
+          <details className={styles.suggestedTags}>
+            <summary>Browse {NEWS_HASHTAGS.length} preset hashtags</summary>
+            <p role="status">{selectedTags.length} of {ARTICLE_TAG_LIMIT} selected</p>
+            <div className={styles.presetTags}>
+              {NEWS_HASHTAGS.map(({ tag }) => {
+                const selected = selectedTagKeys.has(tag.toLowerCase());
+                const unavailable = !selected && articleTagsError([...selectedTags, tag].join(", ")) !== null;
+                return <button key={tag} type="button" className="btn-secondary" aria-pressed={selected}
+                  aria-disabled={unavailable || undefined} onClick={() => toggleTag(tag)}>#{tag}</button>;
+              })}
+            </div>
+          </details>
           {enhanced && stepError && step === 1 ? <p role="alert" aria-live="polite" className={styles.stepError}>{stepError}</p> : null}
         </section>
         <section id="composer-step-2" tabIndex={-1} data-composer-step="2" hidden={enhanced && step !== 2} className={styles.card} aria-labelledby="cover-heading">

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "../components/admin-link";
 import { EmptyPanel, PageFrame, PageIntro } from "@epelawa/ui";
 import { adminHref } from "../lib/admin-path";
 

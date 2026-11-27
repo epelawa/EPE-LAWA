@@ -1,7 +1,7 @@
 "use server";
 import "server-only";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { adminRedirect as redirect } from "../../../lib/admin-redirect";
 import { adminHref } from "../../../lib/admin-path";
 import { createStaffClient } from "../../../lib/supabase";
 export async function broadcast(form: FormData) {
@@ -11,5 +11,5 @@ export async function broadcast(form: FormData) {
  const {error}=await db.rpc("admin_member_message",{p_user_id:null,p_title:title,p_body:body});
  if(error) throw new Error("Broadcast failed; no messages were sent. Check database availability and the 10,000 recipient limit.");
  revalidatePath("/admin/broadcast"); revalidatePath("/broadcast");
- redirect(adminHref("/broadcast?status=sent"));
+ return await redirect(adminHref("/broadcast?status=sent"));
 }

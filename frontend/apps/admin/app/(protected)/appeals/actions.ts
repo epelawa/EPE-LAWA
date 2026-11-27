@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { adminRedirect as redirect } from "../../../lib/admin-redirect";
 import { adminHref } from "../../../lib/admin-path";
 import { createStaffClient } from "../../../lib/supabase";
 
@@ -13,10 +13,10 @@ export async function decideAppeal(formData: FormData): Promise<void> {
   const status = String(formData.get("status") ?? "").trim();
   const note = String(formData.get("note") ?? "").trim();
   if (!UUID.test(appealId) || !["granted", "denied"].includes(status) || note.length < 2 || note.length > 1000) {
-    redirect(adminHref("/appeals?error=invalid"));
+    return await redirect(adminHref("/appeals?error=invalid"));
   }
   const { error } = await db.rpc("staff_decide_appeal", { p_appeal_id: appealId, p_status: status, p_note: note });
-  if (error) redirect(adminHref("/appeals?error=action"));
+  if (error) return await redirect(adminHref("/appeals?error=action"));
   revalidatePath(adminHref("/appeals"));
-  redirect(adminHref("/appeals?decided=1"));
+  return await redirect(adminHref("/appeals?decided=1"));
 }

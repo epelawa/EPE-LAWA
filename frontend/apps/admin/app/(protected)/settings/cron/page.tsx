@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "../../../../components/admin-link";
 import { PageFrame, PageIntro, Panel, SectionHeading, EmptyPanel } from "@epelawa/ui";
 import { createStaffClient } from "../../../../lib/supabase";
 import { adminHref } from "../../../../lib/admin-path";
@@ -45,12 +45,26 @@ function StatusBadge({ status }: { status: string }) {
 
 export default async function CronJobHistoryPage() {
   const db = await createStaffClient();
+  const access = await db.rpc("has_capability", { p_capability: "audit.read" });
+  if (access.error || access.data !== true) {
+    return <PageFrame><PageIntro eyebrow="Settings · Cron" title="Cron Job History" description="Scheduled job history." />
+      <EmptyPanel title={access.error ? "Access could not be verified" : "Access denied"}
+        description="Cron history requires the audit.read capability."
+        actions={<Link href={adminHref("/settings")}>Back to settings</Link>} />
+    </PageFrame>;
+  }
   const { data, error } = await db
     .from("cron_job_history")
     .select("*")
     .order("started_at", { ascending: false })
     .limit(200);
 
+  if (error) {
+    return <PageFrame><PageIntro eyebrow="Settings · Cron" title="Cron Job History" description="Scheduled job history." />
+      <EmptyPanel title="Cron history unavailable" description="Job records could not be loaded. Try again later."
+        actions={<Link href={adminHref("/settings")}>Back to settings</Link>} />
+    </PageFrame>;
+  }
   const records = (data ?? []) as CronJobRecord[];
   
   // Get stats
@@ -89,7 +103,7 @@ export default async function CronJobHistoryPage() {
             <label className="ui-field">
               <span className="label">Database Ping (Run 1-2 times/day)</span>
               <div className="ui-row gap-2">
-                <code className="input font-mono text-sm p-2 bg-gray-100 rounded">POST https://epelawa.vercel.app/api/cron/database-ping</code>
+                <code className="input font-mono text-sm p-2 bg-gray-100 rounded" style={{ overflowWrap: "anywhere" }}>POST https://epelawa.vercel.app/api/cron/database-ping</code>
                 <CopyButton text="https://epelawa.vercel.app/api/cron/database-ping" />
               </div>
               <span className="ui-meta">Requires: <code>x-cron-secret</code> header</span>
@@ -97,7 +111,7 @@ export default async function CronJobHistoryPage() {
             <label className="ui-field">
               <span className="label">Health Check (Public)</span>
               <div className="ui-row gap-2">
-                <code className="input font-mono text-sm p-2 bg-gray-100 rounded">GET https://epelawa.vercel.app/api/health</code>
+                <code className="input font-mono text-sm p-2 bg-gray-100 rounded" style={{ overflowWrap: "anywhere" }}>GET https://epelawa.vercel.app/api/health</code>
                 <CopyButton text="https://epelawa.vercel.app/api/health" />
               </div>
               <span className="ui-meta">Public endpoint - no authentication needed</span>
@@ -140,7 +154,7 @@ export default async function CronJobHistoryPage() {
       {records.length === 0 ? (
         <EmptyPanel
           title="No cron job history"
-          description="Cron jobs have not been executed yet. Jobs will appear here once they run."
+          description="No job runs are recorded here yet."
         />
       ) : (
         <div className="ui-stack-sm">

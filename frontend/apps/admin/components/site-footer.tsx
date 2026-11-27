@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "./admin-link";
 import { footerNavigation } from "../lib/navigation";
 import { BrandLockup } from "./brand";
 export default function SiteFooter() {

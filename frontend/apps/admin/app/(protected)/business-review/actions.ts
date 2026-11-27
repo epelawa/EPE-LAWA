@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { adminRedirect as redirect } from "../../../lib/admin-redirect";
 import { adminHref } from "../../../lib/admin-path";
 import { createStaffClient } from "../../../lib/supabase";
 import { mediaExtensionFor, putMediaObject } from "../../../lib/media-r2";
@@ -19,13 +19,13 @@ export async function reviewBusiness(formData: FormData): Promise<void> {
   const note = value(formData, "note");
   const evidence = value(formData, "evidence");
   if (!/^[0-9a-f-]{36}$/i.test(id) || !["reviewing", "published", "rejected"].includes(status) || note.length < 5 || note.length > 1000 || (status === "published" && (evidence.length < 10 || evidence.length > 2000))) {
-    redirect(adminHref("/business-review?error=invalid"));
+    return await redirect(adminHref("/business-review?error=invalid"));
   }
   const { error } = await db.rpc("business_review_decide", { p_business_id:id, p_status:status, p_note:note, p_evidence:evidence || null });
-  if (error) redirect(adminHref("/business-review?error=action-failed"));
+  if (error) return await redirect(adminHref("/business-review?error=action-failed"));
   revalidatePath(adminHref("/business-review"));
   revalidatePath("/business-directory");
-  redirect(adminHref("/business-review?updated=1"));
+  return await redirect(adminHref("/business-review?updated=1"));
 }
 
 const UUID_RE = /^[0-9a-f-]{36}$/i;
@@ -96,7 +96,7 @@ export async function staffCreateBusiness(_prev: StaffCreateState, formData: For
   revalidatePath(adminHref("/business-review"));
   revalidatePath("/business-directory");
   revalidatePath("/");
-  redirect(adminHref("/business-review?added=1"));
+  return await redirect(adminHref("/business-review?added=1"));
 }
 
 /** Approve or reject an "own this business" claim; approval links the member account as owner. */
@@ -106,13 +106,13 @@ export async function decideBusinessClaim(formData: FormData): Promise<void> {
   const status = value(formData, "status");
   const note = value(formData, "note");
   if (!UUID_RE.test(claimId) || !["approved", "rejected"].includes(status) || (status === "rejected" && note.length < 2) || note.length > 1000) {
-    redirect(adminHref("/business-review?error=claim"));
+    return await redirect(adminHref("/business-review?error=claim"));
   }
   const { error } = await db.rpc("staff_decide_business_claim", { p_claim_id: claimId, p_status: status, p_note: note });
-  if (error) redirect(adminHref("/business-review?error=claim"));
+  if (error) return await redirect(adminHref("/business-review?error=claim"));
   revalidatePath(adminHref("/business-review"));
   revalidatePath("/business-directory");
-  redirect(adminHref("/business-review?claims=1"));
+  return await redirect(adminHref("/business-review?claims=1"));
 }
 
 export type StaffUpdateState = { status: "idle" | "success" | "error"; message: string };
@@ -191,14 +191,14 @@ export async function deleteBusiness(formData: FormData): Promise<void> {
   const businessId = value(formData, "business_id");
   const reason = value(formData, "reason");
   if (!UUID_RE.test(businessId) || reason.length < 5 || reason.length > 1000) {
-    redirect(adminHref("/business-review?error=delete"));
+    return await redirect(adminHref("/business-review?error=delete"));
   }
   const { error } = await db.rpc("business_staff_delete", { p_business_id: businessId, p_reason: reason });
-  if (error) redirect(adminHref("/business-review?error=delete-failed"));
+  if (error) return await redirect(adminHref("/business-review?error=delete-failed"));
   revalidatePath(adminHref("/business-review"));
   revalidatePath("/business-directory");
   revalidatePath("/");
-  redirect(adminHref("/business-review?deleted=1"));
+  return await redirect(adminHref("/business-review?deleted=1"));
 }
 
 /** Replace the featured directory slot with this published business for the chosen number of days. */
@@ -207,11 +207,11 @@ export async function featureBusiness(formData: FormData): Promise<void> {
   const businessId = value(formData, "business_id");
   const days = Number(value(formData, "days"));
   if (!UUID_RE.test(businessId) || !Number.isSafeInteger(days) || days < 1 || days > 90) {
-    redirect(adminHref("/business-review?error=featured"));
+    return await redirect(adminHref("/business-review?error=featured"));
   }
   const { error } = await db.rpc("staff_set_business_featured", { p_business_id: businessId, p_days: days });
-  if (error) redirect(adminHref("/business-review?error=featured"));
+  if (error) return await redirect(adminHref("/business-review?error=featured"));
   revalidatePath(adminHref("/business-review"));
   revalidatePath("/business-directory");
-  redirect(adminHref("/business-review?featured=1"));
+  return await redirect(adminHref("/business-review?featured=1"));
 }

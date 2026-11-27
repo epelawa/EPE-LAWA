@@ -13,10 +13,12 @@ const accessToken = "local-admin-dashboard-smoke-token";
 const capabilities = new Set([
   "article.create", "article.review", "article.publish", "moderation.review",
   "history.review", "tourism.review", "business.review", "order.manage",
-  "radio.manage", "people.manage",
+  "radio.manage", "people.manage", "audit.read",
 ]);
 let mode = "authorized-error";
 let requestLog = [];
+const commentId = "22222222-2222-4222-8222-222222222222";
+const articleId = "33333333-3333-4333-8333-333333333333";
 
 function respond(response, status, payload, headers = {}, head = false) {
   response.writeHead(status, {
@@ -59,7 +61,7 @@ const controlServer = createServer((request, response) => {
   if (request.method === "POST" && url.pathname === "/__admin-smoke__/mode") {
     readJson(request).then((body) => {
       const nextMode = body.mode;
-      if (!["authorized-error", "denied", "capability-error"].includes(nextMode)) {
+      if (!["authorized-error", "denied", "capability-error", "workspace"].includes(nextMode)) {
         respond(response, 400, { error: "Unsupported local test mode." });
         return;
       }
@@ -88,7 +90,7 @@ const dataServer = createHttpsServer({ key: readFileSync(keyPath), cert: readFil
   }
 
   if (request.method === "GET" && url.pathname === "/auth/v1/user") {
-    respond(response, 200, { id: userId, email_confirmed_at: "2026-01-01T00:00:00.000Z" });
+    respond(response, 200, { id: userId, email: "staff@example.test", email_confirmed_at: "2026-01-01T00:00:00.000Z" });
     return;
   }
   if (request.method === "GET" && url.pathname === "/rest/v1/staff_profiles") {
@@ -112,10 +114,19 @@ const dataServer = createHttpsServer({ key: readFileSync(keyPath), cert: readFil
     respond(response, 200, mode !== "denied");
     return;
   }
+  if (mode === "workspace" && request.method === "GET" && url.pathname === "/rest/v1/articles" && url.searchParams.get("id") === `eq.${articleId}`) {
+    const versionId = "44444444-4444-4444-8444-444444444444";
+    respond(response, 200, [{
+      id: articleId, revision: 1, slug: "synthetic-story", current_version_id: versionId, published_version_id: null,
+      current_version: { id: versionId, title: "Synthetic story", state: "draft", version_number: 1,
+        author_id: userId, category_id: articleId, created_by: userId, body: { type: "doc", content: [] } },
+    }]);
+    return;
+  }
   if ((request.method === "GET" || request.method === "HEAD") && [
     "/rest/v1/articles", "/rest/v1/article_versions", "/rest/v1/forum_reports",
   ].includes(url.pathname)) {
-    if (mode !== "denied") {
+    if (mode === "authorized-error" || mode === "capability-error") {
       respond(response, 503, { code: "LOCAL_DASHBOARD_READ_UNAVAILABLE", message: "No local dataset is configured; the dashboard must not infer zero." }, { "content-range": "*/*" }, request.method === "HEAD");
       return;
     }
@@ -123,6 +134,42 @@ const dataServer = createHttpsServer({ key: readFileSync(keyPath), cert: readFil
     return;
   }
 
+  if (mode === "workspace" && request.method === "HEAD" && url.pathname.startsWith("/rest/v1/")) {
+    respond(response, 200, null, { "content-range": "*/0" }, true);
+    return;
+  }
+  if (mode === "workspace" && request.method === "GET") {
+    const fixtures = {
+      categories: [{ id: articleId, label: "Fixture category" }],
+      authors: [{ id: userId, display_name: "Fixture author" }],
+      comments: [{ id: commentId, state: "visible", body: "Synthetic comment", created_at: "2026-01-01T00:00:00.000Z", article: { slug: "sample" } }],
+    };
+    if (url.pathname.startsWith("/rest/v1/")) {
+      const table = url.pathname.slice("/rest/v1/".length);
+      respond(response, 200, fixtures[table] ?? []);
+      return;
+    }
+  }
+  if (mode === "workspace" && request.method === "POST" && url.pathname === "/rest/v1/rpc/comment_staff_update") {
+    const body = await readJson(request);
+    if (body.p_comment_id === commentId && body.p_body === "Updated synthetic comment") {
+      await new Promise((resolve) => setTimeout(resolve, 850));
+      respond(response, 200, null);
+    } else {
+      respond(response, 400, { error: "Unexpected synthetic comment payload" });
+    }
+    return;
+  }
+  if (mode === "workspace" && request.method === "POST" && url.pathname === "/rest/v1/rpc/article_create_with_hashtags") {
+    const body = await readJson(request);
+    if (body.p_title === "Synthetic story" && body.p_tags?.length === 1 && body.p_tags[0] === "EpeNews") {
+      await new Promise((resolve) => setTimeout(resolve, 850));
+      respond(response, 200, articleId);
+    } else {
+      respond(response, 400, { code: "22023", message: "Unexpected synthetic article payload" });
+    }
+    return;
+  }
   if (isRpc && request.method === "POST") {
     respond(response, 405, { code: "LOCAL_FIXTURE_READ_ONLY", message: "This RPC is not in the fixture's read allowlist." });
     return;

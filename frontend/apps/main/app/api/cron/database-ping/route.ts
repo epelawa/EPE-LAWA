@@ -5,7 +5,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { createClient } from "../../../../lib/supabase";
+import { cronDatabase } from "../../../../lib/cron-database";
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +35,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   
   try {
     // Record job start
-    const supabase = await createClient();
+    const supabase = cronDatabase();
     const { data: startData, error: startError } = await supabase
       .rpc("cron_job_start", { p_job_name: jobName });
     
@@ -100,7 +100,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     // Record failure if we have a jobId
     if (jobId) {
       try {
-        const supabase = await createClient();
+        const supabase = cronDatabase();
         await supabase
           .rpc("cron_job_complete", {
             p_job_id: jobId,
@@ -139,7 +139,7 @@ export async function GET(request: Request): Promise<NextResponse> {
   }
 
   try {
-    const supabase = await createClient();
+    const supabase = cronDatabase();
     const { data, error } = await supabase
       .from("cron_job_history")
       .select("*")

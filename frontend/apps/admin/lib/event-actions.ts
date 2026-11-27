@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { adminRedirect as redirect } from "./admin-redirect";
 import { adminHref } from "./admin-path";
 import { createStaffClient } from "./supabase";
 
@@ -15,9 +15,9 @@ export async function decideEvent(data: FormData) {
   const decision = String(data.get("decision") ?? "").trim();
   const note = String(data.get("note") ?? "").trim().slice(0, 1000);
   if (!/^[0-9a-f-]{36}$/i.test(id) || !["published", "rejected"].includes(decision)) {
-    redirect(adminHref("/events?result=invalid"));
+    return await redirect(adminHref("/events?result=invalid"));
   }
-  if (decision === "rejected" && note.length < 2) redirect(adminHref("/events?result=note"));
+  if (decision === "rejected" && note.length < 2) return await redirect(adminHref("/events?result=note"));
 
   let failed = false;
   try {
@@ -32,5 +32,5 @@ export async function decideEvent(data: FormData) {
   }
   revalidatePath(adminHref("/events"));
   revalidatePath("/events");
-  redirect(adminHref(`/events?result=${failed ? "stale" : "saved"}`));
+  return await redirect(adminHref(`/events?result=${failed ? "stale" : "saved"}`));
 }

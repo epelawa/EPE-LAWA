@@ -21,7 +21,7 @@ export default function LoginForm({ nextPath }: { nextPath: string }) {
     </div>
     {state.error ? <div className="ui-notice ui-notice--danger" role="alert">{state.error}</div> : null}
     <div className="ui-actions" style={{ marginTop: 0 }}>
-      <button className={buttonClassName("primary")} type="submit" disabled={pending}>{pending ? "Signing in…" : "Sign in"}</button>
+      <button className={buttonClassName("primary")} type="submit" disabled={pending} aria-busy={pending}>{pending && <span className="ep-btn__spinner" aria-hidden="true" />}{pending ? "Signing in…" : "Sign in"}</button>
     </div>
   </form>;
 }

@@ -1,7 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { adminRedirect as redirect } from "./admin-redirect";
 import { ACTIVITY_COOKIE } from "./session-policy";
 import { signOutAdminSession } from "./supabase-access";
 
@@ -40,7 +40,7 @@ export async function signOutStaffSession(loginPath: string): Promise<void> {
   } catch {
     // Ignore cookie-write failures; the redirect below still ends the screen.
   }
-  redirect(`${target}?reason=inactivity`);
+  return await redirect(`${target}?reason=inactivity`);
 }
 
 /** Server-action wrappers so a client guard can be passed a serialisable action. */

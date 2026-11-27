@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "../../../components/admin-link";
 import styles from "./newsroom-list.module.css";
 import NewsroomFilter from "../../../components/newsroom-filter";
 import { createStaffClient } from "../../../lib/supabase";

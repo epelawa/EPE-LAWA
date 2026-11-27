@@ -1,20 +1,13 @@
 "use client";
 
-import { useRef, useState, useTransition, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
+import { SubmitButton } from "@epelawa/ui";
 import BrandedDialog from "./branded-dialog";
-import { pushToast } from "../../main/components/toast";
 
 export default function ConfirmSubmit({
-  message,
-  children,
-  className,
-  confirmFirst = true,
-  confirmLabel = "Confirm",
-  cancelLabel = "Cancel",
-  successMessage,
-  errorMessage,
-  ...rest
+  message, children, className, confirmFirst = true, confirmLabel = "Confirm",
+  cancelLabel = "Cancel", name, value,
 }: {
   message: string;
   children: ReactNode;
@@ -22,128 +15,62 @@ export default function ConfirmSubmit({
   confirmFirst?: boolean;
   confirmLabel?: string;
   cancelLabel?: string;
-  successMessage?: string;
-  errorMessage?: string;
   name?: string;
   value?: string;
 }) {
-  const { pending } = useFormStatus();
-  const buttonRef = useRef<HTMLButtonElement>(null);
+  const { pending, data } = useFormStatus();
   const [open, setOpen] = useState(false);
-  const [isConfirming, startConfirming] = useTransition();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isClicking, setIsClicking] = useState(false);
-  const busy = pending || isConfirming || isDialogOpen || isClicking;
+  const trigger = useRef<HTMLButtonElement>(null);
+  const submitted = useRef(false);
+  const ownPending = pending && submitted.current && (!name || data?.get(name) === value);
 
-  // Extract button variant from className
-  const getVariant = (cls?: string): "primary" | "secondary" | "danger" | "ghost" => {
-    if (cls?.includes("btn-danger")) return "danger";
-    if (cls?.includes("btn-secondary")) return "secondary";
-    if (cls?.includes("btn-ghost")) return "ghost";
-    return "primary";
-  };
+  useEffect(() => {
+    if (pending || !submitted.current) return;
+    submitted.current = false;
+    if (open) setOpen(false);
+  }, [pending, open]);
 
-  const variant = getVariant(className);
-  const btnClass = {
-    primary: "btn-primary",
-    secondary: "btn-secondary",
-    danger: "btn-danger",
-    ghost: "btn-ghost",
-  }[variant];
+  if (!confirmFirst) return <SubmitButton className={className} name={name} value={value}>{children}</SubmitButton>;
 
-  if (!confirmFirst) {
-    return (
-      <button 
-        ref={buttonRef} 
-        type="submit" 
-        className={`${btnClass} ${busy ? "btn-busy" : ""} ${className || ""}`.trim()}
-        aria-busy={busy} 
-        disabled={busy} 
-        data-pending-self-managed="true" 
-        {...rest}
-      >
-        {children}
-      </button>
-    );
+  function close() {
+    if (!pending) setOpen(false);
   }
 
-  const handleConfirm = async () => {
-    setIsDialogOpen(true);
-    setOpen(false);
-    const button = buttonRef.current;
-    if (button?.form && button.isConnected) {
-      startConfirming(async () => {
-        try {
-          await button.form?.requestSubmit(button);
-          if (successMessage) {
-            pushToast("success", successMessage);
-          }
-        } catch (error) {
-          const message = error instanceof Error ? error.message : "An error occurred";
-          if (errorMessage) {
-            pushToast("error", errorMessage);
-          } else {
-            pushToast("error", message);
-          }
-        } finally {
-          setIsDialogOpen(false);
-          setIsClicking(false);
-        }
-      });
-    } else {
-      setIsDialogOpen(false);
-      setIsClicking(false);
+  function submitConfirmed() {
+    const form = trigger.current?.form;
+    if (!form || submitted.current || pending) return;
+    // Create a real submitter only after confirmation. A permanent hidden
+    // submit button could let Enter in a text field bypass the dialog.
+    const submitter = document.createElement("button");
+    submitter.type = "submit";
+    submitter.hidden = true;
+    if (name) submitter.name = name;
+    if (value !== undefined) submitter.value = value;
+    form.append(submitter);
+    try {
+      form.requestSubmit(submitter);
+    } finally {
+      submitter.remove();
     }
-  };
+    // Close even if browser validation prevented submission. React owns the
+    // real pending state; requestSubmit does not report action success.
+    submitted.current = true;
+    setOpen(false);
+  }
 
-  return (
-    <>
-      <button
-        ref={buttonRef}
-        type="button"
-        className={`${btnClass} ${busy ? "btn-busy" : ""} ${className || ""}`.trim()}
-        aria-haspopup="dialog"
-        disabled={busy}
-        onClick={() => {
-          setIsClicking(true);
-          setOpen(true);
-          setIsDialogOpen(true);
-        }}
-        {...rest}
-      >
-        {children}
-      </button>
-      <BrandedDialog
-        open={open}
-        onClose={() => setOpen(false)}
-        title="Confirm this action"
-        description="This action runs after you confirm. It cannot be taken back from this screen."
-      >
-        <p>{message}</p>
-        <div className="ui-actions">
-          <button
-            type="button"
-            className="btn-secondary"
-            onClick={() => {
-              setOpen(false);
-              setIsDialogOpen(false);
-              setIsClicking(false);
-            }}
-            disabled={busy}
-          >
-            {cancelLabel}
-          </button>
-          <button
-            type="button"
-            className={`btn-primary ${busy ? "btn-busy" : ""}`}
-            onClick={handleConfirm}
-            disabled={busy}
-            aria-busy={busy}
-          >
-            {confirmLabel}
-          </button>
-        </div>
-      </BrandedDialog>
-    </>
-  );
+  return <>
+    {/* Block implicit Enter submission on forms that require confirmation. */}
+    <button type="submit" disabled hidden aria-hidden="true" />
+    <button ref={trigger} type="button" className={className} aria-haspopup="dialog"
+      aria-busy={ownPending} disabled={pending} onClick={() => setOpen(true)}>
+      {ownPending && <span className="ep-btn__spinner" aria-hidden="true" />}
+      {ownPending ? "Working…" : children}
+    </button>
+    <BrandedDialog open={open} onClose={close} title="Confirm this action" description={message}>
+      <div className="ui-actions">
+        <button type="button" className="btn-secondary" onClick={close}>{cancelLabel}</button>
+        <button type="button" className="btn-primary" onClick={submitConfirmed}>{confirmLabel}</button>
+      </div>
+    </BrandedDialog>
+  </>;
 }

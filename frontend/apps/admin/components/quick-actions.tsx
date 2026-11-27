@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "./admin-link";
 import { useState } from "react";
 import { staffHref } from "../lib/admin-path";
 

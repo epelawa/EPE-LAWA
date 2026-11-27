@@ -1,6 +1,6 @@
 "use server";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { adminRedirect as redirect } from "../../../lib/admin-redirect";
 import { adminHref } from "../../../lib/admin-path";
 import { createClient, createStaffClient } from "../../../lib/supabase";
 
@@ -35,16 +35,16 @@ async function save(db: Awaited<ReturnType<typeof createClient>>, resource: stri
   }
   revalidatePath(adminHref("/radio"));
 }
-function outcome(code: string): never { redirect(adminHref(`/radio?radio=${encodeURIComponent(code)}`)); }
+async function outcome(code: string): Promise<never> { return await redirect(adminHref(`/radio?radio=${encodeURIComponent(code)}`)); }
 async function run(work: () => Promise<void>, success = "saved", fallback = "save") {
   try { await work(); }
   catch (error) {
     // Redirect exceptions are Next control flow; never turn them into a second outcome.
     if (error && typeof error === "object" && "digest" in error) throw error;
     const message = error instanceof Error ? error.message : fallback;
-    outcome(["conflict", "denied", "invalid", "linked", "remove"].includes(message) ? message : fallback);
+    return await outcome(["conflict", "denied", "invalid", "linked", "remove"].includes(message) ? message : fallback);
   }
-  outcome(success);
+  return await outcome(success);
 }
 async function remove(db: Awaited<ReturnType<typeof createClient>>, table: string, id: string) {
   const { error, count } = await db.from(table).delete({ count: "exact" }).eq("id", id);

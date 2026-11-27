@@ -7,6 +7,7 @@ import "@epelawa/ui/ui.css";
 import "@epelawa/ui/forms.css";
 import "./globals.css";
 import "./native-controls.css";
+import "./staff-feedback.css";
 import AdminSidebar from "../components/admin-sidebar";
 import SiteHeader from "../components/site-header";
 import SiteFooter from "../components/site-footer";
@@ -15,10 +16,8 @@ import { createClient } from "../lib/supabase";
 import { siteUrl } from "../lib/site";
 import { ADMIN_BASE_PATH } from "../lib/admin-path";
 import { themeScript } from "../lib/theme";
-import SiteMotion from "../components/site-motion";
 import ToastRegion from "../../main/components/toast";
 import FeedbackToasts from "../components/feedback-toasts";
-import GlobalSubmitBusy from "../components/global-submit-busy";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -92,12 +91,10 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           <link rel="preconnect" href={publicOrigin(process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL) as string} crossOrigin="anonymous" />
         ) : null}
         <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeScript }} />
-        <SiteMotion />
         <ToastRegion />
         <Suspense fallback={null}>
           <FeedbackToasts />
         </Suspense>
-        <GlobalSubmitBusy />
         <a className="skip-link" href="#skip-target">Skip to content</a>
         {staffWorkspace ? (
           <AdminSidebar items={navigation} userEmail={identity?.email ?? null} userRole={identity?.role} basePath={ADMIN_BASE_PATH} />

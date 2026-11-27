@@ -62,7 +62,7 @@ test('staff review corrections behind the article.review capability', () => {
   assert.match(page, /article\.review/);
   assert.match(page, /article_correction_reports/);
   assert.match(page, /resolveCorrection/);
-  assert.match(page, /\/news\/\$\{/);
+  assert.match(page, /href=\{publicNewsArticleUrl\(r\.articles\.slug\)\}/);
   assert.match(page, /Recently handled/);
   const actions = adminApp('app/(protected)/corrections/actions.ts');
   assert.match(actions, /"use server"/);

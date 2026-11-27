@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { adminRedirect as redirect } from "../../../../lib/admin-redirect";
 import { adminHref } from "../../../../lib/admin-path";
 import { createStaffClient } from "../../../../lib/supabase";
 
@@ -31,7 +31,7 @@ export async function resolveForumReport(formData: FormData) {
 
   if (saved) revalidatePath(adminHref("/moderation/forum"));
   const result = saved ? "saved" : "failed";
-  redirect(adminHref(`/moderation/forum?result=${result}`));
+  return await redirect(adminHref(`/moderation/forum?result=${result}`));
 }
 
 const UUID_RE = /^[0-9a-f-]{36}$/i;
@@ -52,13 +52,13 @@ async function callForumRpc(name: string, idField: string, formData: FormData, r
 }
 
 export async function deleteForumThread(formData: FormData) {
-  redirect(adminHref(`/moderation/forum?result=${await callForumRpc("forum_staff_thread_delete", "threadId", formData, "removed")}`));
+  return await redirect(adminHref(`/moderation/forum?result=${await callForumRpc("forum_staff_thread_delete", "threadId", formData, "removed")}`));
 }
 
 export async function deleteForumPost(formData: FormData) {
-  redirect(adminHref(`/moderation/forum?result=${await callForumRpc("forum_staff_post_delete", "postId", formData, "removed")}`));
+  return await redirect(adminHref(`/moderation/forum?result=${await callForumRpc("forum_staff_post_delete", "postId", formData, "removed")}`));
 }
 
 export async function restoreForumPost(formData: FormData) {
-  redirect(adminHref(`/moderation/forum?result=${await callForumRpc("forum_staff_post_restore", "postId", formData, "restored")}`));
+  return await redirect(adminHref(`/moderation/forum?result=${await callForumRpc("forum_staff_post_restore", "postId", formData, "restored")}`));
 }

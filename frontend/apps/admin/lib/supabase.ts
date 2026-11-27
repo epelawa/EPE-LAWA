@@ -4,7 +4,7 @@
  */
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { adminRedirect as redirect } from "./admin-redirect";
 import { getAdminAccessForSession, readAdminSessionFromCookies } from "./supabase-access";
 
 export async function createClient() {
@@ -49,6 +49,6 @@ export async function createStaffClient() {
     return await createClient();
   } catch (error) {
     if (!(error instanceof Error) || error.message !== "Unauthorized") throw error;
-    redirect("/login?reason=session_expired");
+    return await redirect("/login?reason=session_expired");
   }
 }

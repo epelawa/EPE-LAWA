@@ -1,7 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { adminRedirect as redirect } from "./admin-redirect";
 import { safeAdminNextPath } from "./admin-path";
 import { ACTIVITY_COOKIE, ACTIVITY_COOKIE_MAX_AGE_SECONDS } from "./session-policy";
 import { signInAdminWithPassword } from "./supabase-access";
@@ -40,5 +40,5 @@ export async function signInAdmin(_previous: LoginState, formData: FormData): Pr
     httpOnly: false,
   });
 
-  redirect(safeAdminNextPath(formData.get("next")));
+  return await redirect(safeAdminNextPath(formData.get("next")));
 }

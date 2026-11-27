@@ -1,3 +1,4 @@
+import { SubmitButton } from "@epelawa/ui";
 import { createStaffClient } from "../../../lib/supabase";
 import { EmptyPanel, Notice, PageFrame, PageIntro, Panel } from "@epelawa/ui";
 import { assignAds, removeAd, updateAdSlot } from "./actions";
@@ -64,7 +65,7 @@ export default async function AdsPage({ searchParams }: { searchParams: Promise<
               <input type="hidden" name="business_id" value={business.id} />
               <label className="ui-field"><span className="label">Order position (0 first)</span><input className="input" type="number" name="position" min={0} max={999} defaultValue={slot.position} style={{ maxWidth: 120 }} /></label>
               <label className="ui-row"><input type="checkbox" name="is_active" defaultChecked={slot.is_active} /> Showing</label>
-              <button className="btn-secondary">Save row</button>
+              <SubmitButton className="btn-secondary">Save row</SubmitButton>
             </form>
             <form action={removeAd}>
               <input type="hidden" name="slot_id" value={slot.id} />
@@ -83,7 +84,7 @@ export default async function AdsPage({ searchParams }: { searchParams: Promise<
             <ul className="ui-list">{available.map((business) => (
               <li key={business.id}><label className="ui-row"><input type="checkbox" name="featured" value={business.id} /> <span>{business.name}<span className="ui-meta"> · {business.category_label}{business.area ? ` · ${business.area}` : ""}</span></span></label></li>
             ))}</ul>
-            <div className="ui-actions"><button className="btn-primary">Save selected to the carousel</button></div>
+            <div className="ui-actions"><SubmitButton className="btn-primary">Save selected to the carousel</SubmitButton></div>
             <p className="ui-meta">Up to 12 businesses. They rotate automatically, a few seconds each, with buttons and dots for visitors.</p>
           </form>}
     </section>

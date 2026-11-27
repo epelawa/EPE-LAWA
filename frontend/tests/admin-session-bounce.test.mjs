@@ -8,7 +8,9 @@ const read = (path) => readFile(new URL(path, root), 'utf8');
 
 test('the staff client helper bounces dead sessions through login instead of error panels', async () => {
   const supabase = await read('frontend/apps/admin/lib/supabase.ts');
-  assert.match(supabase, /import \{ redirect \} from "next\/navigation"/);
+  assert.match(supabase, /import \{ adminRedirect as redirect \} from "\.\/admin-redirect"/);
+  const redirectHelper = await read('frontend/apps/admin/lib/admin-redirect.ts');
+  assert.match(redirectHelper, /redirect\(standaloneAdminRedirectHref\(href, await headers\(\)\)\)/);
   assert.match(supabase, /export type StaffClient = Awaited<ReturnType<typeof createClient>>/);
   assert.match(supabase, /export async function createStaffClient\(\)/);
   assert.match(supabase, /error\.message !== "Unauthorized"\) throw error/);

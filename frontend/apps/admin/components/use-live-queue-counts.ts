@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 
+const QUEUE_URL = process.env.NEXT_PUBLIC_STANDALONE_ADMIN === "true" ? "/admin/api/live/queues" : "/api/live/queues";
+
 export type QueueCounts = {
   submissions: number | null;
   corrections: number | null;
@@ -12,14 +14,6 @@ export type QueueCounts = {
 
 export type QueueKey = keyof QueueCounts;
 
-const EMPTY: QueueCounts = {
-  submissions: null,
-  corrections: null,
-  enquiries: null,
-  appeals: null,
-  forumReports: null,
-};
-
 /** Polls the live moderation queues. Fetches immediately, then every 45s. */
 export function useLiveQueueCounts(pollMs = 45000) {
   const [counts, setCounts] = useState<QueueCounts | null>(null);
@@ -29,10 +23,12 @@ export function useLiveQueueCounts(pollMs = 45000) {
   useEffect(() => {
     let alive = true;
     let timer: ReturnType<typeof setTimeout>;
+    let flickTimer: ReturnType<typeof setTimeout>;
+    const controller = new AbortController();
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const poll = async () => {
       try {
-        const response = await fetch("/api/live/queues", { cache: "no-store" });
+        const response = await fetch(QUEUE_URL, { cache: "no-store", signal: controller.signal });
         if (!response.ok) throw new Error("unavailable");
         const data: { queues?: QueueCounts } = await response.json();
         if (!alive || !data?.queues) return;
@@ -46,14 +42,15 @@ export function useLiveQueueCounts(pollMs = 45000) {
           );
           if (changed) {
             setFlick(changed);
-            setTimeout(() => setFlick(null), 1600);
+            clearTimeout(flickTimer);
+            flickTimer = setTimeout(() => setFlick(null), 1600);
           }
         }
       } catch { /* keep the last known counts */ }
       if (alive) timer = setTimeout(poll, pollMs);
     };
     void poll();
-    return () => { alive = false; clearTimeout(timer); };
+    return () => { alive = false; controller.abort(); clearTimeout(timer); clearTimeout(flickTimer); };
   }, [pollMs]);
 
   return { counts, flick };
