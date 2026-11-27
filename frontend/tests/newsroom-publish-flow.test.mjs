@@ -54,7 +54,7 @@ test("saving publishes straight away; the public list and article resolve only p
   assert.match(article, /\.eq\("slug", slug\)/);
   assert.match(article, /if \(!data\) return \{ status: "missing" \}/);
   assert.doesNotMatch(article, /service_role|SUPABASE_SERVICE/);
-  assert.match(article, />By \{article\.author_slug/);
+  assert.match(article, />By&nbsp;\{article\.author_slug/);
   assert.match(article, /article\.author_name/);
 });
 

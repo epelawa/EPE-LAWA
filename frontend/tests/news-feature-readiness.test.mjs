@@ -65,10 +65,14 @@ test('News metadata, compact share actions and related cards use the canonical s
   assert.match(article, /Related stories/);
   assert.match(urls, /encodeURIComponent\(slug\)/);
   assert.match(urls, /absoluteUrl\(newsArticlePath\(slug\)\)/);
-  assert.match(share, /navigator\.share\(\{ title, url \}\)/);
+  // Every share carries the headline, a little of the story, the author and the hashtags with the link.
+  assert.match(share, /navigator\.share\(\{ title, text: storyText, url \}\)/);
+  assert.match(share, /navigator\.share\(\{ title, text: fullText, files: \[cover\] \}\)/);
   assert.match(share, /navigator\.clipboard\?\.writeText/);
-  assert.match(share, /navigator\.clipboard\.writeText\(url\)/);
-  assert.match(share, /Public article URL/);
+  assert.match(share, /navigator\.clipboard\.writeText\(fullText\)/);
+  assert.match(share, /Story and link/);
+  assert.match(article, /shareText=\{shareText\}/);
+  assert.match(article, /buildShareText\(/);
   assert.doesNotMatch(article, /view_count|views_total|article\.id\}\s*\}\s*<\/a>/i);
 });
 

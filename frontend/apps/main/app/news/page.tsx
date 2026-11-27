@@ -11,12 +11,15 @@ import { newsArticlePath } from "../../lib/news-urls";
 import NewsImage from "../../components/news-image";
 import HomeLivePill from "../../components/home-live-pill";
 import ArticleByline from "../../components/article-byline";
+import StoryStats from "../../components/story-stats";
+import { loadEngagementMap } from "../../lib/article-engagement";
 import { BreakingBadge, BreakingNewsBanner } from "../../components/breaking-news";
 import { EmptyPanel, PageFrame } from "../../components/design-system";
 import FollowButton from "../../components/follow-button";
 import styles from "./listing.module.css";
 
 type ArticleListItem = {
+  id: string;
   slug: string;
   title: string;
   summary: string | null;
@@ -114,7 +117,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
   }
 
   let articleQuery = supabase.from("published_articles")
-    .select("slug,title,summary,published_at,is_breaking,breaking_until,author_name,category_slug,category_label,cover_url,cover_alt,tags")
+    .select("id,slug,title,summary,published_at,is_breaking,breaking_until,author_name,category_slug,category_label,cover_url,cover_alt,tags")
     .order("published_at", { ascending: false, nullsFirst: false })
     .order("slug", { ascending: true });
   if (category) articleQuery = articleQuery.eq("category_slug", category);
@@ -126,7 +129,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
     ? supabase.from("published_articles").select("slug,title,published_at,breaking_until").eq("is_breaking", true).gt("breaking_until", new Date(now).toISOString()).order("published_at", { ascending: false, nullsFirst: false }).order("slug", { ascending: true }).limit(10)
     : Promise.resolve({ data: [], error: null });
   const [articleResult, categoryResult, breakingResult] = await Promise.all([
-    query ? supabase.rpc("search_published_news", { p_query: query, p_category: category, p_offset: start }).select("slug,title,summary,published_at,is_breaking,breaking_until,author_name,category_slug,category_label,cover_url,cover_alt,tags") : articleQuery.range(start, start + PAGE_SIZE),
+    query ? supabase.rpc("search_published_news", { p_query: query, p_category: category, p_offset: start }).select("id,slug,title,summary,published_at,is_breaking,breaking_until,author_name,category_slug,category_label,cover_url,cover_alt,tags") : articleQuery.range(start, start + PAGE_SIZE),
     supabase.from("categories").select("id,slug,label").eq("is_active", true).order("sort_order", { ascending: true }).order("label", { ascending: true }).limit(MAX_CATEGORIES),
     breakingQuery,
   ]);
@@ -137,6 +140,8 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
   if (categoryResult.error) console.error("news categories read failed", { code: categoryResult.error.code });
 
   const rows = (articleResult.data ?? []) as ArticleListItem[];
+  const engagement = await loadEngagementMap(supabase, rows.map((row) => row.id));
+  const statsFor = (item: ArticleListItem) => { const numbers = engagement.get(item.id); return numbers ? <StoryStats tone="muted" stats={numbers} /> : null; };
   const tagMatch = (item: ArticleListItem) => !tag || (item.tags ?? []).some((item2) => item2.slug === tag);
   const rowsForTag = query && tag ? rows.filter(tagMatch) : rows;
   const articles = rowsForTag.slice(0, PAGE_SIZE);
@@ -208,7 +213,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
               <div className={styles.categoryLabel}>{lead.category_label}{lead.is_breaking ? <BreakingBadge until={lead.breaking_until} initialTime={now} /> : null}</div>
               <h3 className={styles.featureTitle}><Link href={newsArticlePath(lead.slug)}>{lead.title}</Link></h3>
               {lead.summary ? <p className={styles.featureSummary}>{lead.summary}</p> : null}
-              <p className={styles.storyMeta}><ArticleByline name={lead.author_name} />{lead.published_at ? <> <span aria-hidden="true">·</span> <time dateTime={lead.published_at}>{formatPublishedDate(lead.published_at)}</time></> : null}</p>
+              <div className={styles.storyFoot}>{statsFor(lead)}<p className={styles.storyMeta}><ArticleByline name={lead.author_name} />{lead.published_at ? <><span className={styles.metaDot} aria-hidden="true">·</span><time dateTime={lead.published_at}>{formatPublishedDate(lead.published_at)}</time></> : null}</p></div>
               <Link href={newsArticlePath(lead.slug)} className={styles.readLink} aria-label={`Read: ${lead.title}`}>Read full story <span aria-hidden="true">→</span></Link>
             </div>
           </article>
@@ -225,7 +230,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
                 <div className={styles.categoryLabel}>{article.category_label}{article.is_breaking ? <BreakingBadge until={article.breaking_until} initialTime={now} /> : null}</div>
                 <h3 className={styles.storyTitle}><Link href={newsArticlePath(article.slug)}>{article.title}</Link></h3>
                 {article.summary ? <p className={styles.storySummary}>{article.summary}</p> : null}
-                <p className={styles.storyMeta}><ArticleByline name={article.author_name} />{article.published_at ? <> <span aria-hidden="true">·</span> <time dateTime={article.published_at}>{formatPublishedDate(article.published_at)}</time></> : null}</p>
+                <div className={styles.storyFoot}>{statsFor(article)}<p className={styles.storyMeta}><ArticleByline name={article.author_name} />{article.published_at ? <><span className={styles.metaDot} aria-hidden="true">·</span><time dateTime={article.published_at}>{formatPublishedDate(article.published_at)}</time></> : null}</p></div>
               </div>
             </article></li>;
           })}</ul>
@@ -236,7 +241,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
             const image = coverUrl(article);
             return <li key={article.slug}><article className={styles.storyCard}>
               <Link href={newsArticlePath(article.slug)} className={styles.storyMedia} tabIndex={-1} aria-hidden="true"><NewsImage className={styles.storyImage} src={image} alt="" /></Link>
-              <div className={styles.storyCopy}><div className={styles.categoryLabel}>{article.category_label}{article.is_breaking ? <BreakingBadge until={article.breaking_until} initialTime={now} /> : null}</div><h3 className={styles.storyTitle}><Link href={newsArticlePath(article.slug)}>{article.title}</Link></h3>{article.summary ? <p className={styles.storySummary}>{article.summary}</p> : null}<p className={styles.storyMeta}><ArticleByline name={article.author_name} />{article.published_at ? <> <span aria-hidden="true">·</span> <time dateTime={article.published_at}>{formatPublishedDate(article.published_at)}</time></> : null}</p></div>
+              <div className={styles.storyCopy}><div className={styles.categoryLabel}>{article.category_label}{article.is_breaking ? <BreakingBadge until={article.breaking_until} initialTime={now} /> : null}</div><h3 className={styles.storyTitle}><Link href={newsArticlePath(article.slug)}>{article.title}</Link></h3>{article.summary ? <p className={styles.storySummary}>{article.summary}</p> : null}<div className={styles.storyFoot}>{statsFor(article)}<p className={styles.storyMeta}><ArticleByline name={article.author_name} />{article.published_at ? <><span className={styles.metaDot} aria-hidden="true">·</span><time dateTime={article.published_at}>{formatPublishedDate(article.published_at)}</time></> : null}</p></div></div>
             </article></li>;
           })}</ul>
         </section>)}
