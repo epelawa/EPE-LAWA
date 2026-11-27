@@ -2,13 +2,30 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "../../../lib/supabase";
+import { pageMetadata } from "../../../lib/metadata";
 import { PageFrame, PageIntro, Panel, SectionHeading, Notice } from "../../../components/design-system";
 
 const mapsUrl = (query: string) => { const url = new URL("https://www.google.com/maps/search/"); url.searchParams.set("api", "1"); url.searchParams.set("query", query); return url.toString(); };
 type Destination = { id: string; slug: string; name: string; description: string; visitor_context: string | null; visit_details: string | null; location_label: string | null; directions_query: string | null; opening_hours: string | null; price_details: string | null; access_details: string | null; source_citation: string; source_url: string | null; media_url: string | null; published_at: string };
 type RelatedDestination = { slug: string; name: string; location_label: string | null };
 async function destination(slug: string): Promise<Destination | null> { const supabase = await createClient(); const result = await supabase.from("tourism_destinations").select("id,slug,name,description,visitor_context,visit_details,location_label,directions_query,opening_hours,price_details,access_details,source_citation,source_url,media_url,published_at").eq("slug", slug).maybeSingle(); if (result.error) { console.error("tourism detail read failed", { code: result.error.code }); throw new Error("tourism unavailable"); } return result.data as Destination | null; }
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> { try { const item = await destination((await params).slug); return item ? { title: item.name, description: item.description.slice(0, 155), alternates: { canonical: `/tourism/${encodeURIComponent(item.slug)}` } } : { title: "Destination not found" }; } catch { return { title: "Destination unavailable" }; } }
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  try {
+    const item = await destination((await params).slug);
+    if (!item) return { title: "Destination not found", robots: { index: false, follow: false } };
+    const description = item.description.replace(/\s+/g, " ").trim().slice(0, 155).trimEnd();
+    const path = `/tourism/${encodeURIComponent(item.slug)}` as `/${string}`;
+    const base = pageMetadata({ title: item.name, description, path });
+    if (!item.media_url) return base;
+    return {
+      ...base,
+      openGraph: { ...base.openGraph, images: [{ url: item.media_url, alt: `Approved image of ${item.name}` }] },
+      twitter: { ...base.twitter, images: [item.media_url] },
+    };
+  } catch {
+    return { title: "Destination unavailable", robots: { index: false, follow: false } };
+  }
+}
 
 export default async function TourismDetail({ params }: { params: Promise<{ slug: string }> }) {
   let item: Destination | null;
