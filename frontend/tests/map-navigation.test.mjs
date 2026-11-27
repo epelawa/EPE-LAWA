@@ -23,8 +23,9 @@ test('device location is click-only, clears stale coordinates, and reports outco
 test('outbound Maps links use a fixed HTTPS Google Maps origin and URLSearchParams encoding', () => {
   assert.match(ui, /const MAPS_ORIGIN = "https:\/\/www\.google\.com\/maps\/"/);
   assert.match(ui, /new URL\("search\/", MAPS_ORIGIN\)/);
-  assert.match(ui, /url\.searchParams\.set\("query", query\)/);
-  assert.match(ui, /url\.searchParams\.set\("destination", destination\)/);
+  // Turn 26: every search and destination is scoped to Epe Division.
+  assert.match(ui, /url\.searchParams\.set\("query", epeScopedQuery\(query\)\)/);
+  assert.match(ui, /url\.searchParams\.set\("destination", epeScopedQuery\(destination\)\)/);
   assert.match(ui, /target="_blank" rel="noopener noreferrer"/);
   assert.doesNotMatch(ui, /href=\{\s*(query|destination|location)/);
 });
@@ -63,7 +64,10 @@ test('the map panel embeds OpenStreetMap without any API key and keeps coordinat
   assert.match(ui, /const OSM_ORIGIN = "https:\/\/www\.openstreetmap\.org\/"/);
   assert.match(ui, /new URL\("export\/embed\.html", OSM_ORIGIN\)/);
   assert.match(ui, /url\.searchParams\.set\("layer", "mapnik"\)/);
-  assert.match(ui, /<iframe\s+title="Epe community map"\s+src=\{embedUrl\}\s+loading="lazy"/);
+  assert.match(ui, /<iframe\s+title="Epe Division map"\s+src=\{embedUrl\}\s+loading="lazy"/);
+  // Turn 26: the map always frames Epe Division and never re-centres on a visitor elsewhere.
+  assert.match(ui, /osmEmbedUrl\(EPE_DIVISION_BBOX,/);
+  assert.match(ui, /insideEpeDivision\(/);
   assert.doesNotMatch(ui, /yandex|mapbox|thunderforest|api_key|apiKey|API_KEY/);
   assert.match(ui, /OpenStreetMap contributors/);
   assert.match(ui, /your coordinates stay in this browser tab/);

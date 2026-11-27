@@ -2,180 +2,159 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { normaliseJobModels, type ModelJob } from "./settings";
 import { runStep } from "./activity";
+import { loadStoredKeys } from "./key-vault";
+import {
+  allowanceExhausted, chatBody, configuredProviders, defaultModelIds, freeModelsFromCatalogue, freeModelsFromProviderList, modelQueue,
+  parseModelRef, providerById, providerKey, providerKeyIsPlaceholder, PROVIDERS, type FreeModel, type Provider, type ProviderId, type StoredKeys,
+} from "./providers";
+
+export { allowanceExhausted, defaultModelIds, freeModelsFromCatalogue, modelQueue, type FreeModel } from "./providers";
 
 /**
- * OpenRouter free models only. The list of models is loaded live from
- * OpenRouter (`GET /api/v1/models`) every time it is needed. Nothing is
- * hardcoded: a model is offered when OpenRouter lists it as a ":free" variant
- * with every price 0 that can write text through chat completions.
+ * Free models only, from OpenRouter and the other free providers in
+ * ./providers (Kilo Code, Gemini, Groq, Cerebras, Mistral). Each provider's
+ * model list is loaded live every time it is needed; nothing is hardcoded.
  * Administrators pick, per job, which models to use and in what order on the
  * AI Scheduler page; a call tries them in that order (no shuffling) and moves to
- * the next one when a model is busy, empty or slow. A copy of the last good list
- * is kept only so the page still works if OpenRouter is briefly unreachable.
- * Failed attempts count against the daily free quota, so every attempt is
- * recorded; there is no local budget — the run stops only when OpenRouter refuses. Paid models are never
- * sent, so the key can never be billed by this code.
+ * the next one when a model is busy, empty or slow. A copy of the last good
+ * list is kept only so the page still works if a provider is briefly
+ * unreachable. Failed attempts count against each provider's free allowance,
+ * so every attempt is recorded; there is no local budget — a provider is left
+ * alone for the rest of the pass only when it says its allowance is used up.
+ * Paid models are never sent.
  */
 
-const API = "https://openrouter.ai/api/v1";
 // Within one server instance the live list is reused for one minute, so a pass
-// that calls several jobs does not download the 600-model catalogue each time.
+// that calls several jobs does not download the catalogues each time.
 const LIVE_REUSE_MS = 60_000;
 
-export type FreeModel = {
-  id: string;
-  name: string;
-  context: number;
-  /** The part of the id before "/", as OpenRouter publishes it (e.g. "baidu"). */
-  provider?: string;
-  description?: string;
-  /** OpenRouter's "going away" date, when it announces one. */
-  expires?: string | null;
-  /** Unix seconds when OpenRouter added the model. */
-  created?: number;
-  /** OpenRouter says the model supports response_format / structured outputs (reliable JSON). */
-  json?: boolean;
-  /** OpenRouter says the model thinks before it answers. */
-  reasoning?: boolean;
-  maxOutput?: number | null;
+/** Keys saved on the admin page, decrypted on the server; refreshed by refreshKeys(). */
+let storedKeys: StoredKeys = {};
+
+/** Loads the keys saved on the admin page (encrypted at rest) for this server instance. */
+export async function refreshKeys(db: SupabaseClient): Promise<StoredKeys> {
+  try { storedKeys = await loadStoredKeys(db); } catch { /* keep the last good copy */ }
+  return storedKeys;
+}
+
+export type ModelList = {
+  models: FreeModel[];
+  source: "live" | "saved" | "none";
+  loadedAt: string | null;
+  error?: string;
+  /** Per provider: how many free models were loaded, and any problem. */
+  providers?: Partial<Record<ProviderId, { count: number; source: "live" | "saved" | "none"; error?: string }>>;
 };
-export type ModelList = { models: FreeModel[]; source: "live" | "saved" | "none"; loadedAt: string | null; error?: string };
-export type ChatMessage = { role: "system" | "user"; content: string };
+export type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
 export type ModelResult<T> = { ok: true; data: T; model: string; attempts: number } | { ok: false; error: string; attempts: number };
 
-// Real OpenRouter keys look like "sk-or-v1-<hex>". Anything else (for example a
-// test value left in Vercel until the owner pastes the real key) is treated as
-// "no key", so the desk never sends doomed requests that eat the free allowance.
-const OPENROUTER_KEY_PATTERN = /^sk-or-[A-Za-z0-9_-]{20,}$/;
+const openRouter = providerById("openrouter")!;
 
 export function openRouterKey(env: NodeJS.ProcessEnv = process.env): string | null {
-  const key = env.OPENROUTER_API_KEY?.trim();
-  return key && OPENROUTER_KEY_PATTERN.test(key) ? key : null;
+  return providerKey(openRouter, env, env === process.env ? storedKeys : undefined);
 }
 
 /** True when OPENROUTER_API_KEY is set but is not a real OpenRouter key (a placeholder). */
 export function openRouterKeyIsPlaceholder(env: NodeJS.ProcessEnv = process.env): boolean {
-  return Boolean(env.OPENROUTER_API_KEY?.trim()) && openRouterKey(env) === null;
+  return providerKeyIsPlaceholder(openRouter, env, env === process.env ? storedKeys : undefined);
 }
 
-function headers(key: string): Record<string, string> {
-  return {
-    authorization: `Bearer ${key}`,
-    "content-type": "application/json",
-    "http-referer": "https://epelawa.vercel.app",
-    "x-title": "EPE LAWA AI Desk",
-  };
+/** True when at least one free provider has a usable key (call refreshKeys first). */
+export function anyAiKey(env: NodeJS.ProcessEnv = process.env): boolean {
+  return configuredProviders(env, storedKeys).length > 0;
 }
 
-/**
- * Used only for a job that has no models chosen yet: OpenRouter's own data, no
- * vendor preference. Models OpenRouter marks as supporting structured (JSON)
- * output come first, then larger context windows; ties keep OpenRouter's order.
- */
-export function defaultModelIds(catalogue: readonly FreeModel[]): string[] {
-  return catalogue
-    .map((model, index) => ({ model, index }))
-    .sort((a, b) => Number(Boolean(b.model.json)) - Number(Boolean(a.model.json)) || b.model.context - a.model.context || a.index - b.index)
-    .map(({ model }) => model.id);
+/** Per provider: is a usable key available, and where from. Never the key itself. */
+export function providerStatuses(env: NodeJS.ProcessEnv = process.env) {
+  return PROVIDERS.map((provider) => ({
+    provider,
+    configured: providerKey(provider, env, storedKeys) !== null,
+    placeholder: providerKeyIsPlaceholder(provider, env, storedKeys),
+    from: storedKeys[provider.id] ? ("saved" as const) : providerKey(provider, env) ? ("env" as const) : null,
+  }));
 }
 
-/**
- * The exact order a job tries models in: the administrator's choices that are
- * still free in OpenRouter's live list, else defaultModelIds. No randomness.
- */
-export function modelQueue(catalogue: readonly FreeModel[], chosen: readonly string[] | undefined, maxAttempts: number): { queue: string[]; missing: string[]; usingDefault: boolean } {
-  const available = new Set(catalogue.map((model) => model.id));
-  const picks = (chosen ?? []).filter((id) => id.endsWith(":free"));
-  const missing = picks.filter((id) => !available.has(id));
-  const usable = picks.filter((id) => available.has(id));
-  const usingDefault = usable.length === 0;
-  const queue = (usingDefault ? defaultModelIds(catalogue) : usable).slice(0, Math.max(1, maxAttempts));
-  return { queue, missing, usingDefault };
+function baseFor(provider: Provider): string {
+  if (provider.id === "kilo" && process.env.KILO_AI_GATEWAY_URL?.startsWith("https://")) return process.env.KILO_AI_GATEWAY_URL.replace(/\/+$/, "");
+  return provider.base;
 }
 
-type CatalogueEntry = {
-  id?: unknown;
-  name?: unknown;
-  description?: unknown;
-  created?: unknown;
-  context_length?: unknown;
-  expiration_date?: unknown;
-  pricing?: Record<string, unknown>;
-  architecture?: { output_modalities?: unknown; input_modalities?: unknown };
-  supported_parameters?: unknown;
-  endpoints?: unknown;
-  top_provider?: { max_completion_tokens?: unknown };
-  reasoning?: unknown;
-};
-
-/** OpenRouter's catalogue → the free chat models in it, in OpenRouter's order. */
-export function freeModelsFromCatalogue(payload: unknown): FreeModel[] {
-  const rows = (payload as { data?: unknown })?.data;
-  if (!Array.isArray(rows)) return [];
-  const free: FreeModel[] = [];
-  const seen = new Set<string>();
-  for (const row of rows as CatalogueEntry[]) {
-    if (typeof row.id !== "string" || !row.id.endsWith(":free") || seen.has(row.id)) continue;
-    // Every listed price must be zero (prompt, completion, per-request, cache, images…).
-    // Web search is the one exception: it is only billed when a request asks for
-    // it, and this code never does.
-    const pricing = row.pricing ?? {};
-    if (!("prompt" in pricing) || !("completion" in pricing)) continue;
-    if (!Object.entries(pricing).every(([kind, price]) => kind === "web_search" || Number(price) === 0)) continue;
-    const output = row.architecture?.output_modalities;
-    if (Array.isArray(output) && !output.includes("text")) continue;
-    // Decision/rerank/image models are not served on chat completions.
-    if (Array.isArray(row.endpoints) && !row.endpoints.includes("/api/v1/chat/completions")) continue;
-    const context = Number(row.context_length) || 0;
-    if (context < 8000) continue;
-    const params = Array.isArray(row.supported_parameters) ? row.supported_parameters : [];
-    const maxOutput = Number(row.top_provider?.max_completion_tokens);
-    seen.add(row.id);
-    free.push({
-      id: row.id,
-      name: typeof row.name === "string" ? row.name : row.id,
-      context,
-      provider: row.id.split("/")[0],
-      description: typeof row.description === "string" ? row.description.slice(0, 300) : undefined,
-      expires: typeof row.expiration_date === "string" ? row.expiration_date : null,
-      created: Number(row.created) || undefined,
-      json: params.includes("response_format") || params.includes("structured_outputs"),
-      reasoning: params.includes("reasoning") || params.includes("include_reasoning"),
-      maxOutput: Number.isFinite(maxOutput) && maxOutput > 0 ? maxOutput : null,
-    });
+function headers(provider: Provider, key: string): Record<string, string> {
+  const base: Record<string, string> = { authorization: `Bearer ${key}`, "content-type": "application/json" };
+  if (provider.id === "openrouter" || provider.id === "kilo") {
+    base["http-referer"] = "https://epelawa.vercel.app";
+    base["x-title"] = "EPE LAWA AI Desk";
   }
-  return free;
+  return base;
+}
+
+async function loadProvider(provider: Provider): Promise<{ models: FreeModel[]; error?: string }> {
+  const key = providerKey(provider, process.env, storedKeys);
+  try {
+    const response = await fetch(`${baseFor(provider)}/models`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(10_000),
+      // OpenRouter's catalogue is public; the others need the key.
+      headers: key ? headers(provider, key) : undefined,
+    });
+    if (!response.ok) return { models: [], error: `${provider.label} answered HTTP ${response.status}` };
+    const payload = await response.json();
+    const models = provider.id === "openrouter" || provider.id === "kilo" ? freeModelsFromCatalogue(payload, provider.id) : freeModelsFromProviderList(payload, provider.id);
+    return { models };
+  } catch (cause) {
+    return { models: [], error: cause instanceof Error && cause.name === "TimeoutError" ? `${provider.label} did not answer within 10 seconds` : `${provider.label} could not be reached` };
+  }
 }
 
 let liveMemo: { at: number; list: ModelList } | null = null;
 
 /**
- * Loads the free model list live from OpenRouter. Saves a copy of each good
- * result; if OpenRouter cannot be reached the last saved copy is returned and
- * marked as such so the page can say so.
+ * Loads the free model lists live from every provider that has a key
+ * (OpenRouter's public list is shown even without one, so the page is never
+ * empty). Saves a copy of each good result; a provider that cannot be reached
+ * falls back to its part of the last saved copy, and the page says so.
  */
 export async function loadFreeModels(db: SupabaseClient, options: { reuse?: boolean } = {}): Promise<ModelList> {
   if (options.reuse && liveMemo && Date.now() - liveMemo.at < LIVE_REUSE_MS) return liveMemo.list;
-  let error = "";
-  try {
-    const response = await fetch(`${API}/models`, { cache: "no-store", signal: AbortSignal.timeout(10_000) });
-    if (response.ok) {
-      const models = freeModelsFromCatalogue(await response.json());
-      const loadedAt = new Date().toISOString();
-      const list: ModelList = { models, source: "live", loadedAt };
-      liveMemo = { at: Date.now(), list };
-      if (models.length) await db.from("ai_settings").update({ model_cache: models, model_cache_at: loadedAt }).eq("id", 1);
-      return list;
+  await refreshKeys(db);
+  const configured = configuredProviders(process.env, storedKeys);
+  const wanted = configured.length ? configured : [openRouter];
+  const [results, savedRow] = await Promise.all([
+    Promise.all(wanted.map((provider) => loadProvider(provider))),
+    db.from("ai_settings").select("model_cache,model_cache_at").eq("id", 1).maybeSingle(),
+  ]);
+  const saved = Array.isArray(savedRow.data?.model_cache) ? (savedRow.data.model_cache as FreeModel[]) : [];
+  const models: FreeModel[] = [];
+  const providers: ModelList["providers"] = {};
+  const errors: string[] = [];
+  let usedSaved = false;
+  wanted.forEach((provider, index) => {
+    const result = results[index];
+    if (result.models.length) {
+      models.push(...result.models);
+      providers[provider.id] = { count: result.models.length, source: "live" };
+      return;
     }
-    error = `OpenRouter answered HTTP ${response.status}`;
-  } catch (cause) {
-    error = cause instanceof Error && cause.name === "TimeoutError" ? "OpenRouter did not answer within 10 seconds" : "OpenRouter could not be reached";
-  }
-  const { data } = await db.from("ai_settings").select("model_cache,model_cache_at").eq("id", 1).maybeSingle();
-  const saved = Array.isArray(data?.model_cache) ? (data.model_cache as FreeModel[]) : [];
-  return saved.length
-    ? { models: saved, source: "saved", loadedAt: data?.model_cache_at ? String(data.model_cache_at) : null, error }
-    : { models: [], source: "none", loadedAt: null, error };
+    const fallback = saved.filter((model) => (model.via ?? "openrouter") === provider.id);
+    if (result.error) errors.push(result.error);
+    if (fallback.length) {
+      usedSaved = true;
+      models.push(...fallback);
+      providers[provider.id] = { count: fallback.length, source: "saved", error: result.error };
+    } else providers[provider.id] = { count: 0, source: "none", error: result.error ?? `${provider.label} lists no free models right now` };
+  });
+  const loadedAt = new Date().toISOString();
+  const liveCount = Object.values(providers).filter((entry) => entry?.source === "live").length;
+  const list: ModelList = {
+    models,
+    source: !models.length ? "none" : usedSaved || liveCount < wanted.length ? "saved" : "live",
+    loadedAt: usedSaved && savedRow.data?.model_cache_at ? String(savedRow.data.model_cache_at) : models.length ? loadedAt : null,
+    error: errors.join("; ") || undefined,
+    providers,
+  };
+  if (liveCount && !usedSaved) await db.from("ai_settings").update({ model_cache: models, model_cache_at: loadedAt }).eq("id", 1);
+  liveMemo = { at: Date.now(), list };
+  return list;
 }
 
 /** Just the models (live, reused for up to a minute within one pass). */
@@ -197,11 +176,12 @@ export type KeyStatus = {
 };
 
 /** Account status for the admin page, including the free-model daily allowance when OpenRouter reports it. */
-export async function keyStatus(env: NodeJS.ProcessEnv = process.env): Promise<KeyStatus> {
+export async function keyStatus(env: NodeJS.ProcessEnv = process.env, db?: SupabaseClient): Promise<KeyStatus> {
+  if (db) await refreshKeys(db);
   const key = openRouterKey(env);
   if (!key) return { configured: false, reachable: false, placeholder: openRouterKeyIsPlaceholder(env) };
   try {
-    const response = await fetch(`${API}/key`, { cache: "no-store", headers: headers(key), signal: AbortSignal.timeout(6000) });
+    const response = await fetch(`${openRouter.base}/key`, { cache: "no-store", headers: headers(openRouter, key), signal: AbortSignal.timeout(6000) });
     if (!response.ok) return { configured: true, reachable: false };
     const body = (await response.json()) as { data?: Record<string, unknown> };
     const data = body.data ?? {};
@@ -246,16 +226,16 @@ export function parseJsonReply(text: string): unknown {
  * allowance is used up (HTTP 402, or a 429 that names the daily free limit);
  * per-minute "busy" answers just move on to the next model.
  */
-export type Budget = { remaining: number; stopped?: string | null };
+export type Budget = {
+  remaining: number;
+  /** Set only when every provider with a key has said its allowance is used up. */
+  stopped?: string | null;
+  /** Providers that said their allowance is used up during this pass, with their message. */
+  exhausted?: Partial<Record<ProviderId, string>>;
+};
 
 export function unlimitedBudget(): Budget {
-  return { remaining: Number.POSITIVE_INFINITY, stopped: null };
-}
-
-/** OpenRouter's own "allowance used up" answers (not a per-minute busy signal). */
-export function allowanceExhausted(status: number, message: string): boolean {
-  if (status === 402) return true;
-  return status === 429 && /per[- ]?day|daily|free-models-per-day|quota|credits?/i.test(message);
+  return { remaining: Number.POSITIVE_INFINITY, stopped: null, exhausted: {} };
 }
 
 /** Pulls the reply text; "thinking" models sometimes leave content empty and put the answer in `reasoning`. */
@@ -282,8 +262,9 @@ export async function chatJson<T>(
     timeoutMs?: number;
   },
 ): Promise<ModelResult<T>> {
-  const key = openRouterKey();
-  if (!key) return { ok: false, error: "OPENROUTER_API_KEY is not set in Vercel.", attempts: 0 };
+  await refreshKeys(db);
+  if (!anyAiKey()) return { ok: false, error: "No AI provider key is saved. Add a free key on the AI Scheduler page.", attempts: 0 };
+  const exhausted = (options.budget.exhausted ??= {});
   const [catalogue, settingsRow] = await Promise.all([
     freeModels(db),
     db.from("ai_settings").select("job_models").eq("id", 1).maybeSingle(),
@@ -291,17 +272,18 @@ export async function chatJson<T>(
   const chosen = normaliseJobModels(settingsRow.data?.job_models)[options.job];
   const { queue, missing } = modelQueue(catalogue, chosen, options.maxAttempts ?? 4);
   const errors: string[] = [];
-  if (missing.length) errors.push(`chosen model${missing.length > 1 ? "s" : ""} no longer free on OpenRouter, skipped: ${missing.join(", ")}`);
+  if (missing.length) errors.push(`chosen model${missing.length > 1 ? "s" : ""} no longer free, skipped: ${missing.join(", ")}`);
   if (!queue.length) return { ok: false, error: [...errors, "no free model available"].join("; "), attempts: 0 };
-  if (missing.length) await runStep(db, options.runId, `Skipped chosen model${missing.length > 1 ? "s" : ""} no longer free on OpenRouter: ${missing.join(", ")}`);
+  if (missing.length) await runStep(db, options.runId, `Skipped chosen model${missing.length > 1 ? "s" : ""} that are no longer free: ${missing.join(", ")}`);
   let attempts = 0;
-  // After the chosen models, keep going down OpenRouter's live free list (fixed
-  // order, never shuffled) for as long as there is time and OpenRouter answers.
+  // After the chosen models, keep going down the live free lists (fixed order,
+  // spread across providers, never shuffled) while there is time.
   const backups = defaultModelIds(catalogue).filter((id) => !queue.includes(id)).slice(0, 6);
   const plan = [...queue, ...backups];
+  const configured = configuredProviders(process.env, storedKeys);
   for (const [position, model] of plan.entries()) {
     if (options.budget.remaining <= 0 || options.budget.stopped) {
-      errors.push(options.budget.stopped ?? "OpenRouter refused further requests");
+      errors.push(options.budget.stopped ?? "every provider refused further requests");
       break;
     }
     const left = options.deadline - Date.now();
@@ -309,46 +291,50 @@ export async function chatJson<T>(
       errors.push("run time limit reached");
       break;
     }
+    const route = parseModelRef(model);
+    const provider = providerById(route.provider)!;
+    const key = providerKey(provider, process.env, storedKeys);
+    if (!key || exhausted[provider.id]) continue;
     attempts += 1;
     options.budget.remaining -= 1;
-    await runStep(db, options.runId, `Asking ${model} (${position === 0 ? "1st choice" : position < queue.length ? `backup ${position} of ${queue.length - 1}` : "extra backup from the free list"})…`);
+    await runStep(db, options.runId, `Asking ${model} on ${provider.label} (${position === 0 ? "1st choice" : position < queue.length ? `backup ${position} of ${queue.length - 1}` : "extra backup from the free lists"})…`);
     const started = Date.now();
     let status: number | null = null;
     let failure: string | null = null;
     try {
-      const response = await fetch(`${API}/chat/completions`, {
+      const response = await fetch(`${baseFor(provider)}/chat/completions`, {
         method: "POST",
         cache: "no-store",
-        headers: headers(key),
+        headers: headers(provider, key),
         signal: AbortSignal.timeout(Math.min(options.timeoutMs ?? 45_000, left - 5000)),
-        body: JSON.stringify({
-          model,
-          messages: options.messages,
-          temperature: options.temperature ?? 0.3,
-          max_tokens: options.maxTokens ?? 3000,
-          // Keep "thinking" short so the answer itself fits in the token allowance.
-          reasoning: { effort: "low" },
-        }),
+        body: JSON.stringify(chatBody(model, options.messages, { temperature: options.temperature ?? 0.3, maxTokens: options.maxTokens ?? 3000 })),
       });
       status = response.status;
-      const body = (await response.json().catch(() => null)) as { choices?: { finish_reason?: unknown; message?: { content?: unknown; reasoning?: unknown } }[]; error?: { message?: unknown }; model?: unknown } | null;
+      const raw = (await response.json().catch(() => null)) as unknown;
+      // Gemini sometimes wraps errors in a one-item array.
+      const body = (Array.isArray(raw) ? raw[0] : raw) as { choices?: { finish_reason?: unknown; message?: { content?: unknown; reasoning?: unknown; reasoning_content?: unknown } }[]; error?: { message?: unknown } | string; message?: unknown; detail?: unknown; model?: unknown } | null;
       if (!response.ok) {
-        const detail = typeof body?.error?.message === "string" ? `: ${body.error.message}` : "";
+        const message = typeof body?.error === "string" ? body.error : typeof body?.error?.message === "string" ? body.error.message : typeof body?.message === "string" ? body.message : typeof body?.detail === "string" ? body.detail : "";
+        const detail = message ? `: ${message.slice(0, 300)}` : "";
         if (allowanceExhausted(response.status, detail)) {
-          failure = `OpenRouter says the allowance is used up (HTTP ${response.status}${detail})`;
-          options.budget.stopped = failure;
-          options.budget.remaining = 0;
+          failure = `${provider.label} says its free allowance is used up (HTTP ${response.status}${detail}) — leaving ${provider.label} alone for this pass`;
+          exhausted[provider.id] = failure;
+          if (configured.every((entry) => exhausted[entry.id])) {
+            options.budget.stopped = `every provider's free allowance is used up (${configured.map((entry) => entry.label).join(", ")})`;
+            options.budget.remaining = 0;
+          }
         } else failure = response.status === 429 ? `busy (HTTP 429${detail}) — moved to the next model` : `HTTP ${response.status}${detail}`;
       } else {
         const choice = body?.choices?.[0];
-        const { text } = replyText(choice?.message);
+        const message = choice?.message;
+        const { text } = replyText({ content: message?.content, reasoning: message?.reasoning ?? message?.reasoning_content });
         if (!text) failure = choice?.finish_reason === "length" ? "ran out of tokens while thinking (empty reply)" : "empty reply";
         else {
           try {
             const value = options.validate(parseJsonReply(text));
             if (!value) failure = "reply did not match the required format";
             else {
-              const used = typeof body?.model === "string" ? body.model : model;
+              const used = typeof body?.model === "string" && route.provider === "openrouter" ? body.model : model;
               await recordCall(db, options, used, true, status, Date.now() - started, null);
               await runStep(db, options.runId, `${used} answered in ${((Date.now() - started) / 1000).toFixed(1)} s.`);
               return { ok: true, data: value, model: used, attempts };
@@ -365,6 +351,7 @@ export async function chatJson<T>(
     await runStep(db, options.runId, `${model} failed after ${((Date.now() - started) / 1000).toFixed(1)} s: ${failure}${position < plan.length - 1 && !options.budget.stopped ? " — trying the next model" : ""}`);
     errors.push(`${model}: ${failure}`);
   }
+  if (!attempts && !errors.length) errors.push("every chosen model's provider is out of allowance or has no key");
   return { ok: false, error: errors.join("; ").slice(0, 900) || "no free model available", attempts };
 }
 

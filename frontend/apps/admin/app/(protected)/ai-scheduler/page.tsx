@@ -4,10 +4,12 @@ import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, Status
 import { createStaffClient } from "../../../lib/supabase";
 import { adminHref } from "../../../lib/admin-path";
 import { lagosExact, lagosInputValue } from "../../../lib/lagos-time";
-import { runAiJobNow, saveAiJobSchedules, saveAiModels, saveAiSettings } from "../../../lib/ai-actions";
+import { removeProviderKey, runAiJobNow, saveAiJobSchedules, saveAiModels, saveAiSettings, saveProviderKey } from "../../../lib/ai-actions";
 import { AI_CAPABILITIES, AI_SETTINGS_COLUMNS, MAX_MODELS_PER_JOB, MODEL_JOBS, normaliseSettings } from "../../../../main/lib/ai/settings";
 import { AI_JOB_LABELS } from "../../../../main/lib/ai/runner";
-import { keyStatus, loadFreeModels, modelQueue, requestsToday, type ModelList } from "../../../../main/lib/ai/openrouter";
+import { keyStatus, loadFreeModels, modelQueue, providerStatuses, requestsToday, type ModelList } from "../../../../main/lib/ai/openrouter";
+import { parseModelRef, providerById, PROVIDERS } from "../../../../main/lib/ai/providers";
+import { savedKeyInfo, vaultReady, type SavedKeyInfo } from "../../../../main/lib/ai/key-vault";
 import { DESK_LABELS, NEWS_OUTLETS, type Desk } from "../../../../main/lib/ai/news-sources";
 import LiveRefresh from "../../../components/live-refresh";
 import styles from "./ai-scheduler.module.css";
@@ -35,8 +37,15 @@ const messages: Record<string, { tone: "success" | "danger" | "warning"; text: s
   "schedules-invalid": { tone: "warning", text: "A job schedule is incomplete (a custom interval outside 5 minutes to 7 days, or “At set times” with no time), so nothing was saved." },
   "schedules-failed": { tone: "danger", text: "The job schedules could not be saved. Try again." },
   "models-saved": { tone: "success", text: "Model choices saved. Each job now tries its models in the order you set." },
-  "models-failed": { tone: "danger", text: "The model choices could not be saved. Only free models (ending in :free) can be chosen." },
-  "models-unknown": { tone: "warning", text: "One of the chosen models is not in OpenRouter's free list any more, so nothing was saved. The list below is live from OpenRouter — choose again." },
+  "models-failed": { tone: "danger", text: "The model choices could not be saved. Only free models can be chosen." },
+  "models-unknown": { tone: "warning", text: "One of the chosen models is not in the providers' free lists any more, so nothing was saved. The list below is live — choose again." },
+  "key-saved": { tone: "success", text: "Key checked with the provider, encrypted and saved. It is never shown again; its free models now appear below." },
+  "key-saved-unverified": { tone: "warning", text: "Key encrypted and saved, but the provider could not be reached to check it. If its models do not appear below, save the key again." },
+  "key-rejected": { tone: "danger", text: "The provider rejected that key, so it was not saved. Copy the key again from the provider's console." },
+  "key-invalid": { tone: "warning", text: "That does not look like an API key for this provider (OpenRouter keys start with sk-or-). Nothing was saved." },
+  "key-vault": { tone: "danger", text: "Keys cannot be saved yet: the server's encryption secret (AI_KEYS_SECRET) is missing in Vercel." },
+  "key-failed": { tone: "danger", text: "The key could not be saved. Try again." },
+  "key-removed": { tone: "success", text: "Key removed. The provider is no longer used unless its Vercel env var is set." },
 };
 
 function statusTone(status: string): "success" | "warning" | "danger" | "neutral" {
@@ -73,7 +82,12 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
   const models = list.models;
   let unrevised = 0;
   try { const { count } = await formAdminClient().from("ai_article_meta").select("article_id", { count: "exact", head: true }).is("revised_at", null); unrevised = count ?? 0; } catch { unrevised = 0; }
-  const key = await keyStatus();
+  const key = await keyStatus(process.env, formAdminClient());
+  const statuses = providerStatuses();
+  let saved: SavedKeyInfo[] = [];
+  try { saved = await savedKeyInfo(formAdminClient()); } catch { saved = []; }
+  const vault = vaultReady();
+  const providerLabel = (id: string) => providerById(parseModelRef(id).provider)?.label ?? "OpenRouter";
   const runs = (runsResult.data ?? []) as Run[];
   const notice = result === "ran" ? { tone: "success" as const, text: summary || "Run finished." } : result ? messages[result] : null;
 
@@ -95,7 +109,7 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
       <PageIntro
         eyebrow="System · AI"
         title="AI Scheduler"
-        description="The EPE LAWA AI desk writes news from trusted outlets, checks businesses, replies to enquiries, places approved ads, moderates comments and explains admin activity — on free OpenRouter models only."
+        description="The EPE LAWA AI desk drafts Epe Division news for editors, checks businesses, replies to enquiries and support tickets, places approved ads, moderates comments and explains admin activity — on free models only (OpenRouter, Kilo Code, Google AI Studio, Groq, Cerebras, Mistral AI and NVIDIA NIM)."
         meta={<Link href={adminHref("/ai-processes")}>Open AI processes →</Link>}
       />
       {notice ? <Notice tone={notice.tone} role={notice.tone === "success" ? "status" : "alert"}>{notice.text}</Notice> : null}
@@ -107,7 +121,7 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
           <p className={styles.statNote}>{settings.autopilot_enabled ? "Acting without approval." : "Drafts and recommendations only."}</p>
         </div>
         <div className={styles.stat}>
-          <p className={styles.statLabel}>OpenRouter</p>
+          <p className={styles.statLabel}>OpenRouter · {statuses.filter((entry) => entry.configured).length} of {statuses.length} providers ready</p>
           <p className={styles.statValue}>{key.placeholder ? <StatusBadge tone="warning">Test key</StatusBadge> : !key.configured ? <StatusBadge tone="danger">No key</StatusBadge> : !key.reachable ? <StatusBadge tone="warning">Not reachable</StatusBadge> : <StatusBadge tone="success">Connected</StatusBadge>}</p>
           <p className={styles.statNote}>{key.placeholder ? <>Replace <code>OPENROUTER_API_KEY</code> in Vercel with your <code>sk-or-</code> key, then redeploy.</> : !key.configured ? <>Add <code>OPENROUTER_API_KEY</code> in Vercel, then redeploy.</> : typeof key.freeDailyRemaining === "number" ? `${key.freeDailyRemaining} of ${key.freeDailyLimit ?? "?"} free requests left today. Never billed.` : "Free models only. Never billed."}</p>
         </div>
@@ -119,7 +133,7 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
         <div className={styles.stat}>
           <p className={styles.statLabel}>Free models</p>
           <p className={styles.statValue}>{models.length}</p>
-          <p className={styles.statNote}>{list.source === "live" ? "Live from OpenRouter." : list.error ?? "OpenRouter could not be reached."} <a href="#ai-models">Choose ↓</a></p>
+          <p className={styles.statNote}>{list.source === "live" ? "Live from every provider with a key." : list.error ?? "A provider could not be reached."} <a href="#ai-models">Choose ↓</a></p>
         </div>
       </div>
 
@@ -164,11 +178,45 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
         )}
       </Panel>
 
+      <Panel className="ui-stack" id="ai-providers">
+        <SectionHeading title="AI providers and keys" description="Paste a free API key for each provider you want the AI to use. Keys are checked with the provider, encrypted on the server (AES-256-GCM) and never shown again or sent to any browser — not even to you. Only free models are ever loaded or called." />
+        {!vault ? <Notice tone="danger" role="alert">The encryption secret <code>AI_KEYS_SECRET</code> is missing in Vercel, so keys cannot be saved here yet. Keys set as Vercel env vars still work.</Notice> : null}
+        <div className={styles.jobs}>
+          {statuses.map(({ provider, configured, placeholder, from }) => {
+            const info = saved.find((entry) => entry.provider === provider.id);
+            const loaded = list.providers?.[provider.id];
+            return (
+              <div key={provider.id} className={styles.job}>
+                <div className={styles.jobHead}>
+                  <h3>{provider.label} {configured ? <StatusBadge tone="success">Ready</StatusBadge> : placeholder ? <StatusBadge tone="warning">Test key</StatusBadge> : <StatusBadge>No key</StatusBadge>}</h3>
+                  <p>{provider.freeNote}</p>
+                </div>
+                <p className="ui-meta" style={{ margin: 0 }}>
+                  {info ? <>Key saved {lagosExact(info.savedAt)} (encrypted{info.readable ? "" : " — cannot be opened with the current secret; save it again"}).</> : from === "env" ? <>Using the <code>{provider.env[0]}</code> env var from Vercel.</> : "No key yet."}
+                  {loaded ? <> · {loaded.count} free model{loaded.count === 1 ? "" : "s"}{loaded.source === "saved" ? " (last saved list)" : ""}{loaded.error ? ` · ${loaded.error}` : ""}</> : null}
+                </p>
+                <form action={saveProviderKey} className={styles.keyForm}>
+                  <input type="hidden" name="provider" value={provider.id} />
+                  <label className={styles.field}><span>{info || from === "env" ? "Replace key" : "API key"}</span>
+                    <input className="input" name="api_key" type="password" autoComplete="off" spellCheck={false} required minLength={20} maxLength={400} placeholder={info ? "Saved — paste a new key to replace it" : "Paste the key"} disabled={!vault} aria-label={`${provider.label} API key`} />
+                  </label>
+                  <div className={styles.keyActions}>
+                    <SubmitButton className="btn-primary" useLegacyClasses pendingLabel="Checking…" disabled={!vault}>Save key</SubmitButton>
+                    <a className="ui-text-link" href={provider.keyUrl} target="_blank" rel="noreferrer">Get a free key ↗</a>
+                  </div>
+                </form>
+                {info ? <form action={removeProviderKey}><input type="hidden" name="provider" value={provider.id} /><SubmitButton className="btn-secondary" useLegacyClasses pendingLabel="Removing…">Remove saved key</SubmitButton></form> : null}
+              </div>
+            );
+          })}
+        </div>
+      </Panel>
+
       <Panel className="ui-stack" id="ai-models">
-        <SectionHeading title="AI models for each job" description="Loaded live from OpenRouter each time this page opens. Pick the models each job uses, in order: it always tries the 1st choice first and moves to a backup only when a model is busy, too slow or gives an unusable answer. Nothing is shuffled." action={<a className="btn-secondary" href={adminHref("/ai-scheduler#ai-models")}>Reload list</a>} />
-        {list.source === "live" && list.loadedAt ? <p className="ui-meta" style={{ margin: 0 }}>{models.length} free models loaded from openrouter.ai at {lagosExact(list.loadedAt)}.</p> : null}
-        {list.source === "saved" ? <Notice tone="warning" role="status">{list.error ?? "OpenRouter could not be reached"}. Showing the list last loaded from OpenRouter{list.loadedAt ? ` at ${lagosExact(list.loadedAt)}` : ""}.</Notice> : null}
-        {list.source === "none" ? <Notice tone="warning" role="status">{list.error ?? "OpenRouter's free model list could not be loaded"}. Reload to try again.</Notice> : null}
+        <SectionHeading title="AI models for each job" description="Loaded live from every provider with a key each time this page opens. Pick the models each job uses, in order: it always tries the 1st choice first and moves to a backup only when a model is busy, too slow or gives an unusable answer. Nothing is shuffled." action={<a className="btn-secondary" href={adminHref("/ai-scheduler#ai-models")}>Reload list</a>} />
+        {list.source === "live" && list.loadedAt ? <p className="ui-meta" style={{ margin: 0 }}>{models.length} free models loaded live at {lagosExact(list.loadedAt)} ({PROVIDERS.filter((provider) => list.providers?.[provider.id]?.count).map((provider) => `${provider.label} ${list.providers?.[provider.id]?.count}`).join(", ")}).</p> : null}
+        {list.source === "saved" ? <Notice tone="warning" role="status">{list.error ?? "A provider could not be reached"}. Showing the last saved list for it{list.loadedAt ? ` at ${lagosExact(list.loadedAt)}` : ""}.</Notice> : null}
+        {list.source === "none" ? <Notice tone="warning" role="status">{list.error ?? "No free model list could be loaded"}. Add a provider key above, or reload to try again.</Notice> : null}
         <form action={saveAiModels} className="ui-stack">
           <div className={styles.jobs}>
             {MODEL_JOBS.map((job) => {
@@ -187,7 +235,7 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
                           <select className="input" name={`model_${job.key}_${index}`} defaultValue={current} aria-label={`${job.label}: ${choiceLabel(index)}`}>
                             <option value="">{index === 0 ? "Automatic" : "None"}</option>
                             {current && missing.has(current) ? <option value={current}>{current} (no longer free)</option> : null}
-                            {models.map((model) => <option key={model.id} value={model.id} title={model.id}>{model.name.replace(/\s*\(free\)\s*$/i, "")}{model.expires ? " · ending soon" : ""}</option>)}
+                            {models.map((model) => <option key={model.id} value={model.id} title={model.id}>{providerLabel(model.id)} · {model.name.replace(/\s*\(free\)\s*$/i, "")}{model.expires ? " · ending soon" : ""}</option>)}
                           </select>
                         </label>
                       );
@@ -213,8 +261,8 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
             <div className="ui-table"><table><thead><tr><th>Model</th><th>Provider</th><th>Context</th><th>JSON output</th><th>Notes</th></tr></thead><tbody>
               {models.map((model) => (
                 <tr key={model.id}>
-                  <td><a href={`https://openrouter.ai/${model.id}`} target="_blank" rel="noreferrer">{model.name}</a><br /><code>{model.id}</code>{model.description ? <><br /><span className="ui-meta">{model.description}</span></> : null}</td>
-                  <td>{model.provider ?? model.id.split("/")[0]}</td>
+                  <td>{(model.via ?? "openrouter") === "openrouter" ? <a href={`https://openrouter.ai/${model.id}`} target="_blank" rel="noreferrer">{model.name}</a> : model.name}<br /><code>{model.id}</code>{model.description ? <><br /><span className="ui-meta">{model.description}</span></> : null}</td>
+                  <td>{providerLabel(model.id)}{(model.via ?? "openrouter") === "openrouter" ? <span className="ui-meta"> · {model.provider ?? model.id.split("/")[0]}</span> : null}</td>
                   <td className="ui-number">{model.context.toLocaleString("en-NG")} tokens</td>
                   <td>{model.json ? <StatusBadge tone="success">Yes</StatusBadge> : <StatusBadge>Not stated</StatusBadge>}</td>
                   <td>{[model.reasoning ? "Thinks before answering" : "", model.expires ? `Going away ${model.expires}` : "", model.created ? `Added ${new Date(model.created * 1000).toISOString().slice(0, 10)}` : ""].filter(Boolean).join(" · ") || "—"}</td>
@@ -343,7 +391,7 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
           <div className={styles.section}>
             <h3>What the AI may do</h3>
             <div className={styles.toggles}>
-              {AI_CAPABILITIES.map((capability) => (
+              {AI_CAPABILITIES.filter((capability) => !("hidden" in capability)).map((capability) => (
                 <label key={capability.key} className={styles.toggle}>
                   <input type="checkbox" name={`cap_${capability.key}`} defaultChecked={settings.capabilities[capability.key]} />
                   <span><strong>{capability.label}</strong><span>{capability.hint}</span></span>

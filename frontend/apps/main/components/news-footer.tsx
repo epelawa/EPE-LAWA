@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { createClient } from "../lib/supabase";
 import { BrandLockup } from "./brand";
 import NewsletterForm from "./newsletter-form";
 import styles from "./news-footer.module.css";
@@ -10,27 +9,10 @@ import LanguageSwitch from "./language-switch";
 const quickLinks: ReadonlyArray<readonly [string, string]> = [["/", "Home"], ...MOBILE_GROUPS.flatMap(group => [...group.routes] as ReadonlyArray<readonly [string, string]>), ...MOBILE_EXTRA_LINKS];
 function QuickLinks() { return <nav aria-label="Quick links"><ul className={styles.quickLinks}>{quickLinks.map(([href, label]) => <li key={href}><Link href={href}>{label}</Link></li>)}</ul></nav>; }
 
-type NewsCategory = { slug: string; label: string };
+/** One news section (owner, turn 26): Epe Division only, so the footer links places, not categories. */
+const EPE_LINKS: ReadonlyArray<readonly [string, string]> = [["/news", "Epe Division news"], ["/map", "Map of Epe"], ["/business-directory", "Businesses in Epe"], ["/events", "Events"]];
 
-async function readActiveCategories(): Promise<NewsCategory[]> {
-  try {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("categories")
-      .select("slug,label")
-      .eq("is_active", true)
-      .order("sort_order", { ascending: true })
-      .order("label", { ascending: true })
-      .limit(8);
-    if (error) return [];
-    return (data ?? []) as NewsCategory[];
-  } catch {
-    return [];
-  }
-}
-
-export default async function NewsFooter({ categories, listing = false }: { categories?: NewsCategory[]; listing?: boolean }) {
-  const links = categories ?? await readActiveCategories();
+export default async function NewsFooter({ listing = false }: { listing?: boolean }) {
   const lang = await readSiteLanguage();
   if (listing) return <footer className={`${styles.listingFooter} site-footer`} aria-label="EPE LAWA news footer">
     <div className={styles.listingInner}>
@@ -43,7 +25,7 @@ export default async function NewsFooter({ categories, listing = false }: { cate
         </div>
       </section>
       <section className={`${styles.listingColumn} ${styles.listingQuick}`}><h2>{t(lang, "footer.quickLinks")}</h2><QuickLinks /></section>
-      <section className={styles.listingColumn}><h2>{t(lang, "footer.browseTopics")}</h2><nav aria-label="News footer categories">{links.length ? links.slice(0, 8).map((category) => <Link key={category.slug} href={`/news?category=${encodeURIComponent(category.slug)}`}>{category.label}</Link>) : <Link href="/news">All news</Link>}</nav></section>
+      <section className={styles.listingColumn}><h2>{t(lang, "footer.browseTopics")}</h2><nav aria-label="Epe Division">{EPE_LINKS.map(([href, label]) => <Link key={href} href={href}>{label}</Link>)}</nav></section>
       <section className={styles.listingNewsletter} aria-labelledby="footer-newsletter-heading"><h2 id="footer-newsletter-heading">{t(lang, "footer.newsletter")}</h2><p>{t(lang, "footer.newsletterNote")}</p><NewsletterForm id="news-listing-signup" variant="footer" /></section>
     </div>
     <div className={styles.listingBottom}><span>© {new Date().getFullYear()} EPE LAWA</span><span>{t(lang, "footer.tagline")}</span><Link href="/photo-credits">{t(lang, "footer.photoCredits")}</Link><Link href="/privacy">{t(lang, "footer.privacy")}</Link><Link href="/terms">{t(lang, "footer.terms")}</Link><LanguageSwitch lang={lang} /></div>
@@ -60,9 +42,9 @@ export default async function NewsFooter({ categories, listing = false }: { cate
           <QuickLinks />
         </section>
         <section className={styles.column}>
-          <h2>Categories</h2>
-          <nav aria-label="News categories"><ul>
-            {links.length ? links.map((category) => <li key={category.slug}><Link href={`/news?category=${encodeURIComponent(category.slug)}`}>{category.label}</Link></li>) : <li><Link href="/news">All News</Link></li>}
+          <h2>Epe Division</h2>
+          <nav aria-label="Epe Division"><ul>
+            {EPE_LINKS.map(([href, label]) => <li key={href}><Link href={href}>{label}</Link></li>)}
           </ul></nav>
         </section>
         <section className={`${styles.column} ${styles.newsletter}`}>

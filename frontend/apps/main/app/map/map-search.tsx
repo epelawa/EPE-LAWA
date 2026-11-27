@@ -4,29 +4,29 @@ import { useMemo, useState } from "react";
 import { FilterIcon, MapPinIcon, SearchIcon } from "../../components/icons";
 import { Notice, Panel, SectionHeading } from "../../components/design-system";
 import styles from "./map.module.css";
+import { EPE_DIVISION_BBOX, EPE_TOWN_VIEW, epeScopedQuery, insideEpeDivision } from "../../lib/epe-area";
 
 type Business = { slug: string; name: string; category_label: string; area: string | null; address: string | null; landmark: string | null };
 const MAPS_ORIGIN = "https://www.google.com/maps/";
 const OSM_ORIGIN = "https://www.openstreetmap.org/";
-/* Epe, Lagos State: a live no-key OpenStreetMap view of the community. */
-const EPE_BBOX = "3.902,6.551,4.076,6.630";
-const EPE_VIEW = "12/6.5905/3.9843";
+/* Owner brief (turn 26): the map shows Epe Division only (Epe, Eredo, Ikosi-Ejinrin, Ibeju-Lekki, Lekki)
+   and never re-centres on a visitor who is elsewhere. Searches are always scoped to Epe Division. */
 export function mapsSearchUrl(query: string) {
   const url = new URL("search/", MAPS_ORIGIN);
   url.searchParams.set("api", "1");
-  url.searchParams.set("query", query);
+  url.searchParams.set("query", epeScopedQuery(query));
   return url.toString();
 }
 export function mapsDirectionsUrl(destination: string, origin?: string) {
   const url = new URL("dir/", MAPS_ORIGIN);
   url.searchParams.set("api", "1");
-  url.searchParams.set("destination", destination);
+  url.searchParams.set("destination", epeScopedQuery(destination));
   if (origin) url.searchParams.set("origin", origin);
   return url.toString();
 }
 export function osmSearchUrl(query: string) {
   const url = new URL("search", OSM_ORIGIN);
-  url.searchParams.set("query", query);
+  url.searchParams.set("query", epeScopedQuery(query));
   return url.toString();
 }
 export function osmEmbedUrl(bbox: string, marker?: string) {
@@ -51,10 +51,9 @@ export default function MapSearch({ businesses, businessError = false }: { busin
   const coords = location ? location.split(",").map(Number) : null;
   const lat = coords && Number.isFinite(coords[0]) ? coords[0] : null;
   const lon = coords && Number.isFinite(coords[1]) ? coords[1] : null;
-  const embedUrl = osmEmbedUrl(
-    lat !== null && lon !== null ? `${(lon - 0.02).toFixed(4)},${(lat - 0.015).toFixed(4)},${(lon + 0.02).toFixed(4)},${(lat + 0.015).toFixed(4)}` : EPE_BBOX,
-    lat !== null && lon !== null ? `${lat.toFixed(5)},${lon.toFixed(5)}` : undefined,
-  );
+  // The map always frames Epe Division; a visitor's own position is only marked when it is inside it.
+  const inside = lat !== null && lon !== null && insideEpeDivision(lat, lon);
+  const embedUrl = osmEmbedUrl(EPE_DIVISION_BBOX, inside ? `${lat.toFixed(5)},${lon.toFixed(5)}` : undefined);
   const requestLocation = () => {
     setLocation(null);
     if (!window.isSecureContext) { setLocationMessage("Location requires a secure (HTTPS) connection. You can still search manually."); return; }
@@ -62,7 +61,9 @@ export default function MapSearch({ businesses, businessError = false }: { busin
     setLocationMessage("Requesting location permission…");
     navigator.geolocation.getCurrentPosition((position) => {
       setLocation(`${position.coords.latitude},${position.coords.longitude}`);
-      setLocationMessage("Your position is marked on the map below. Coordinates stay in this browser tab and are never sent to EPE LAWA; Google receives them only if you continue into Google Maps.");
+      setLocationMessage(insideEpeDivision(position.coords.latitude, position.coords.longitude)
+        ? "Your position is marked on the Epe Division map below and used as the start of directions. Coordinates stay in this browser tab and are never sent to EPE LAWA; Google receives them only if you continue into Google Maps."
+        : "You are outside Epe Division, so the map stays on Epe Division. Your position is used only as the start of directions in Google Maps, and is never sent to EPE LAWA.");
     }, (error) => {
       const message = error.code === error.PERMISSION_DENIED
         ? "Location permission was denied. You can still search manually."
@@ -86,9 +87,9 @@ export default function MapSearch({ businesses, businessError = false }: { busin
       <p>Search and directions on Google Maps are provided by an external service operated by Google. Your device location is shared with Google only if you open directions while location sharing is enabled; EPE LAWA does not store your coordinates.</p>
     </details>
     <Panel className={`ui-card ${styles.mapPanel}`}>
-      <SectionHeading eyebrow="Free map, no sign-in" title="Epe on the map" id="epe-embed-map" description="The map below shows Epe and around. Tap Use my location to move it to your area; your coordinates stay in this browser tab." />
+      <SectionHeading eyebrow="Free map, no sign-in" title="Epe Division on the map" id="epe-embed-map" description="The map shows Epe Division: Epe, Eredo, Ikosi-Ejinrin, Ibeju-Lekki and Lekki. Use my location marks you on it when you are inside Epe Division and sets the start of your directions; your coordinates stay in this browser tab." />
       <iframe 
-        title="Epe community map" 
+        title="Epe Division map" 
         src={embedUrl} 
         loading="lazy" 
         className={styles.mapFrame}
@@ -96,8 +97,8 @@ export default function MapSearch({ businesses, businessError = false }: { busin
         sandbox="allow-same-origin allow-scripts allow-popups"
       />
       <div className="ui-actions">
-        <a className="btn-secondary" target="_blank" rel="noopener noreferrer" href={osmSearchUrl(selectedDestination || "Epe, Lagos")}>Search this in OpenStreetMap <span className="sr-only">(opens in a new tab)</span></a>
-        {lat !== null && lon !== null ? <a className="btn-secondary" target="_blank" rel="noopener noreferrer" href={`https://www.openstreetmap.org/#map=14/${lat.toFixed(4)}/${lon.toFixed(4)}`}>Open my area on OpenStreetMap <span className="sr-only">(opens in a new tab)</span></a> : <a className="btn-secondary" target="_blank" rel="noopener noreferrer" href={`https://www.openstreetmap.org/#map=${EPE_VIEW}`}>Open wider Epe view <span className="sr-only">(opens in a new tab)</span></a>}
+        <a className="btn-secondary" target="_blank" rel="noopener noreferrer" href={osmSearchUrl(selectedDestination || "Epe")}>Search this in OpenStreetMap <span className="sr-only">(opens in a new tab)</span></a>
+        <a className="btn-secondary" target="_blank" rel="noopener noreferrer" href={`https://www.openstreetmap.org/#map=${EPE_TOWN_VIEW}`}>Open Epe town on OpenStreetMap <span className="sr-only">(opens in a new tab)</span></a>
       </div>
       <p className="ui-meta">Map data and search are provided by OpenStreetMap contributors. It is free to use and needs no account. Google Maps is opened only when you choose to get directions there.</p>
     </Panel>

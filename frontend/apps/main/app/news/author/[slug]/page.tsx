@@ -80,7 +80,6 @@ export default async function AuthorPage({ params, searchParams }: Props & { sea
             <NewsImage className={styles.storyImage} src={image} alt="" />
           </Link>
           <div className={styles.storyCopy}>
-            <div className={styles.categoryLabel}>{article.category_label}</div>
             <h3 className={styles.storyTitle}><Link href={newsArticlePath(article.slug)}>{article.title}</Link></h3>
             {article.summary ? <p className={styles.storySummary}>{article.summary}</p> : null}
             <p className={styles.storyMeta}>{article.published_at ? <time dateTime={article.published_at}>{formatPublishedDate(article.published_at)}</time> : null}</p>

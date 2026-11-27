@@ -67,7 +67,8 @@ test("member Home and Discover use published story data and distinguish loading,
   assert.match(newsContent, /\.eq\("is_breaking", true\)\.gt\("breaking_until", now\)/);
   assert.match(newsContent, /rpc\("search_published_news"/);
   assert.match(newsContent, /p_offset: start/);
-  assert.match(newsContent, /\.from\("categories"\)\.select\("slug,label"\)\.eq\("is_active", true\)/);
+  // Turn 26: one Epe Division news section, so Discover has no category picker.
+  assert.doesNotMatch(newsContent, /\.from\("categories"\)/);
   assert.match(newsContent, /title="Breaking News"/);
   assert.match(newsContent, /title="Recommendations"/);
   assert.match(newsContent, /title="Breaking News"[^\n]*level="h1"/);

@@ -45,3 +45,5 @@
 .desk h3 { margin: 0; font-size: 14px; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
 .chips li { padding: 4px 10px; border-radius: 999px; background: hsl(var(--secondary)); font-size: 13px; }
+.keyForm { display: grid; gap: 10px; }
+.keyActions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }

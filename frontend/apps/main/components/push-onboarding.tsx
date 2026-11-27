@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { BellIcon } from "./icons";
 import { OPEN_NOTIFICATIONS_EVENT } from "./notification-centre";
 import { anotherDialogIsOpen } from "../lib/site-search-events";
@@ -26,7 +26,7 @@ function busyWithForm() {
 /**
  * First-visit push onboarding. Shown once to every visitor (no account needed:
  * the browser subscription itself is the subscriber), as soon as they arrive,
- * sliding up from the bottom centre. Only when web push is enabled and the
+ * as a centred modal over the dimmed page (owner's NEWZIA reference, turn 26). Only when web push is enabled and the
  * browser supports it, never on task routes, over another dialog or while the
  * visitor is typing. The native permission prompt is requested only from
  * the "Enable notifications" click, and success is shown only after the server
@@ -38,10 +38,11 @@ export default function PushOnboarding() {
   const [phase, setPhase] = useState<Phase>("intro");
   const [topics, setTopics] = useState<PushTopics>({ news: true, radio: true });
   const [message, setMessage] = useState("");
-  const [headline, setHeadline] = useState<string | null>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const returnFocus = useRef<HTMLElement | null>(null);
   const titleId = useId();
+  const copyId = useId();
+  const cardRef = useRef<HTMLElement>(null);
   const quiet = QUIET_ROUTES.test(pathname);
 
   // Keeps an existing, already-permitted subscription registered (never prompts).
@@ -73,26 +74,23 @@ export default function PushOnboarding() {
     if (visible) headingRef.current?.focus({ preventScroll: true });
   }, [visible, phase]);
 
-  // The preview shows a real, current headline so visitors see exactly what an alert looks like.
-  useEffect(() => {
-    if (!visible || headline) return;
-    let alive = true;
-    fetch("/api/live/home", { cache: "no-store" })
-      .then((response) => (response.ok ? response.json() : null))
-      .then((data: { latest?: { items?: { title?: string }[] } } | null) => {
-        const title = data?.latest?.items?.find((item) => typeof item.title === "string" && item.title.trim())?.title;
-        if (alive && title) setHeadline(title.trim());
-      })
-      .catch(() => undefined);
-    return () => { alive = false; };
-  }, [visible, headline]);
-
   useEffect(() => {
     if (!visible) return;
     const onKey = (event: KeyboardEvent) => { if (event.key === "Escape" && phase !== "working") dismiss(); };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   });
+
+  // A real modal (dimmed page behind it), so Tab stays inside the card until it closes.
+  function trapFocus(event: ReactKeyboardEvent<HTMLElement>) {
+    if (event.key !== "Tab" || !cardRef.current) return;
+    const items = [...cardRef.current.querySelectorAll<HTMLElement>("button:not(:disabled), a[href], input:not(:disabled)")];
+    if (!items.length) return;
+    const first = items[0];
+    const last = items[items.length - 1];
+    if (event.shiftKey && (document.activeElement === first || document.activeElement === headingRef.current)) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  }
 
   function close() {
     setVisible(false);
@@ -124,49 +122,48 @@ export default function PushOnboarding() {
   const topicCount = Number(topics.news) + Number(topics.radio);
   const toggle = (key: keyof PushTopics) => setTopics((value) => ({ ...value, [key]: !value[key] }));
 
-  return <section className={styles.card} role="dialog" aria-modal="false" aria-labelledby={titleId} data-push-onboarding data-phase={phase}>
-    <button type="button" className={styles.close} onClick={dismiss} disabled={working} aria-label="Not now">×</button>
-    <div className={styles.preview} aria-hidden="true" data-on={phase === "success" ? "true" : "false"}>
-      <span className={styles.previewIcon}><img src="/brand-logo.png" alt="" width={22} height={20} /></span>
-      <span className={styles.previewText}>
-        <span className={styles.previewMeta}><strong>EPE LAWA</strong> · now</span>
-        <span className={styles.previewTitle}>{phase === "success" ? "Alerts are on for this device ✓" : headline ?? "Breaking: news from Epe Division as it happens"}</span>
-      </span>
-      <span className={styles.bell}><BellIcon size={18} /></span>
-    </div>
-    {phase === "success" ? <>
-      <h2 id={titleId} ref={headingRef} tabIndex={-1} className={styles.title}>You're in.</h2>
-      <p className={styles.copy}>We'll send {topics.news && topics.radio ? "news and radio" : topics.news ? "news" : "radio"} alerts to this device. Change this any time from the bell at the top of the page.</p>
-      <div className={styles.actions}><button type="button" className="btn-primary" onClick={close}>Done</button></div>
-    </> : phase === "denied" ? <>
-      <h2 id={titleId} ref={headingRef} tabIndex={-1} className={styles.title}>Alerts are blocked</h2>
-      <p className={styles.copy}>Your browser blocked notifications for EPE LAWA. To turn them on later, allow notifications for this site in your browser's site settings, then use the bell at the top of the page.</p>
-      <div className={styles.actions}><button type="button" className="btn-secondary" onClick={close}>Close</button></div>
-    </> : <>
-      <p className={styles.eyebrow}>Free alerts · no account needed</p>
-      <h2 id={titleId} ref={headingRef} tabIndex={-1} className={styles.title}>Stay connected to Epe.</h2>
-      <p className={styles.copy}>The stories that matter, the moment they break — and a nudge when EPE LAWA radio goes on air.</p>
-      <fieldset className={styles.chips} disabled={working}>
-        <legend className={styles.chipsLegend}>Send me</legend>
-        <label className={styles.chip} data-checked={topics.news ? "true" : "false"}>
-          <input type="checkbox" checked={topics.news} onChange={() => toggle("news")} />
-          <span>News</span>
-        </label>
-        <label className={styles.chip} data-checked={topics.radio ? "true" : "false"}>
-          <input type="checkbox" checked={topics.radio} onChange={() => toggle("radio")} />
-          <span>Radio</span>
-        </label>
-      </fieldset>
-      {working ? <p className={styles.hint} role="status"><span className={styles.pulse} aria-hidden="true" />Your browser is asking now — choose <strong>Allow</strong> in its pop-up.</p> : null}
-      {message ? <p className={styles.error} role="alert">{message}</p> : null}
-      <div className={styles.actions}>
-        <button type="button" className="btn-primary" onClick={() => void enable()} disabled={working || topicCount === 0} aria-busy={working}>
+  // Owner brief (turn 26): the NEWZIA-style centred modal from the owner's reference —
+  // dimmed page, dark navy card, × top right, centred bold title, grey copy, red pill button.
+  // Tweaks: topic pills (News / Radio), a quiet "Not now" and the privacy line.
+  return <div className={styles.overlay} data-push-onboarding data-phase={phase}>
+    <div className={styles.scrim} aria-hidden="true" onClick={() => { if (!working) dismiss(); }} />
+    <section ref={cardRef} className={styles.card} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={copyId} onKeyDown={trapFocus}>
+      <button type="button" className={styles.close} onClick={phase === "success" || phase === "denied" ? close : dismiss} disabled={working} aria-label="Close">
+        <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round"><path d="M6 6l12 12M18 6 6 18" /></svg>
+      </button>
+      {phase === "success" ? <>
+        <span className={`${styles.badge} ${styles.badgeOn}`} aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg></span>
+        <h2 id={titleId} ref={headingRef} tabIndex={-1} className={styles.title}>Alerts are on</h2>
+        <p id={copyId} className={styles.copy}>We&apos;ll send {topics.news && topics.radio ? "news and radio" : topics.news ? "news" : "radio"} alerts to this device. Change this any time from the bell at the top of the page.</p>
+        <button type="button" className={styles.cta} onClick={close}>Done</button>
+      </> : phase === "denied" ? <>
+        <h2 id={titleId} ref={headingRef} tabIndex={-1} className={styles.title}>Alerts are blocked</h2>
+        <p id={copyId} className={styles.copy}>Your browser blocked notifications for EPE LAWA. To turn them on later, allow notifications for this site in your browser&apos;s settings, then use the bell at the top of the page.</p>
+        <button type="button" className={`${styles.cta} ${styles.ctaQuiet}`} onClick={close}>Close</button>
+      </> : <>
+        <span className={styles.badge} aria-hidden="true"><BellIcon size={20} /></span>
+        <h2 id={titleId} ref={headingRef} tabIndex={-1} className={styles.title}>Stay connected to Epe.</h2>
+        <p id={copyId} className={styles.copy}>Get Epe Division news the moment it breaks, and a nudge when EPE LAWA radio goes on air. Free, and no account needed.</p>
+        <fieldset className={styles.pills} disabled={working}>
+          <legend className="sr-only">Send me alerts about</legend>
+          <label className={styles.pill} data-checked={topics.news ? "true" : "false"}>
+            <input type="checkbox" checked={topics.news} onChange={() => toggle("news")} />
+            <span>News</span>
+          </label>
+          <label className={styles.pill} data-checked={topics.radio ? "true" : "false"}>
+            <input type="checkbox" checked={topics.radio} onChange={() => toggle("radio")} />
+            <span>Radio</span>
+          </label>
+        </fieldset>
+        {working ? <p className={styles.hint} role="status"><span className={styles.pulse} aria-hidden="true" />Your browser is asking now. Choose <strong>Allow</strong> in its pop-up.</p> : null}
+        {message ? <p className={styles.error} role="alert">{message}</p> : null}
+        <button type="button" className={styles.cta} onClick={() => void enable()} disabled={working || topicCount === 0} aria-busy={working}>
           {working ? "Waiting for your browser…" : phase === "error" ? "Try again" : "Turn on alerts"}
         </button>
-        <button type="button" className={styles.later} onClick={dismiss} disabled={working}>Maybe later</button>
-      </div>
-      {phase === "error" ? <button type="button" className={styles.link} onClick={manageLater}>Manage in notification settings</button> : null}
-      <p className={styles.fine}>At most a few alerts a day. Turn them off any time from the bell. <Link href="/privacy" className={styles.fineLink}>Privacy</Link></p>
-    </>}
-  </section>;
+        <button type="button" className={styles.later} onClick={dismiss} disabled={working}>Not now</button>
+        {phase === "error" ? <button type="button" className={styles.link} onClick={manageLater}>Manage in notification settings</button> : null}
+        <p className={styles.fine}>A few alerts a day at most. <Link href="/privacy" className={styles.fineLink}>Privacy</Link></p>
+      </>}
+    </section>
+  </div>;
 }

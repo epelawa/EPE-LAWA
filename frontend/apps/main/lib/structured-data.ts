@@ -85,8 +85,8 @@ export function newsArticleSchema(article: NewsArticleSchemaInput): object {
       name: "EPE LAWA",
       logo: { "@type": "ImageObject", url: absoluteUrl("/brand-logo.png") },
     },
-    ...(article.section.slug ? { articleSection: article.section.label } : {}),
+    ...(article.section.label ? { articleSection: article.section.label } : {}),
     ...(article.tags?.length ? { keywords: article.tags.map(tag => tag.label).join(", ") } : {}),
-    ...(article.section.slug ? { isPartOf: { "@type": "CollectionPage", name: article.section.label, url: absoluteUrl(`/news?category=${encodeURIComponent(article.section.slug)}`) } } : {}),
+    ...(article.section.label ? { isPartOf: { "@type": "CollectionPage", name: article.section.label, url: absoluteUrl("/news") } } : {}),
   };
 }

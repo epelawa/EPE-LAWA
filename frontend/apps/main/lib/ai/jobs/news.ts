@@ -13,7 +13,11 @@ import { rpcProblem, type RunLog } from "../activity";
 import type { AiSettings } from "../settings";
 import { NEWS_LIMITS, storiesOwed } from "../news-schedule";
 
-const MAX_AGE_HOURS = 30;
+// Epe Division news is rarer than national news, so a report stays eligible for a week.
+const MAX_AGE_HOURS = 168;
+
+/** The single news section (owner's rule, turn 26): everything is Epe Division news. */
+export const EPE_CATEGORY_SLUG = "epe-division";
 
 export function urlHash(url: string): string {
   return createHash("sha256").update(url.trim().toLowerCase()).digest("hex");
@@ -145,10 +149,8 @@ export function articleBody(draft: Draft) {
         ? { type: "blockquote", content: [{ type: "paragraph", content: [textNode(block.text)] }] }
         : { type: "paragraph", content: [textNode(block.text)] },
   );
-  content.push({
-    type: "paragraph",
-    content: [{ type: "text", text: "Written by the EPE LAWA AI desk from several public reports, checked against them before publishing, and published by the Epe Lawa Editorial Desk. Spotted an error? Use the correction form below.", marks: [{ type: "italic" }] }],
-  });
+  // No sources list, outlet credit or "written from reports" line (owner's rule,
+  // turn 26): the story reads as EPE LAWA's own. Editors see the sources privately.
   return { type: "doc", content };
 }
 
@@ -208,25 +210,30 @@ export function scrubDraft(draft: Draft): string[] {
   return [...left];
 }
 
-export const NEWS_SYSTEM_PROMPT = `You are the news writer for EPE LAWA, a community newsroom for Epe Division, Lagos State, Nigeria.
-You turn verified reports into a completely new, original EPE LAWA news story.
+export const NEWS_SYSTEM_PROMPT = `You are the news writer for EPE LAWA, the community newsroom for Epe Division, Lagos State, Nigeria.
+EPE LAWA covers ONLY Epe Division: Epe Local Government and Ibeju-Lekki Local Government and their LCDAs (Epe, Eredo, Ikosi-Ejinrin, Ibeju-Lekki and Lekki LCDA), including towns such as Epe, Ijebu-Epe, Noforija, Poka, Agbowa, Itoikin, Ejinrin, Odomola, Orimedu, Lakowe, Awoyaya, Bogije, Abijo, Eleko, Akodo, Magbon and Ibeju, and sites such as the Lekki Free Trade Zone, Lekki Deep Sea Port and Dangote Refinery. Lekki Phase 1, Ajah, Victoria Island, Ikorodu, the rest of Lagos, the rest of Nigeria and the world are NOT covered.
+You turn verified reports into a completely new, original EPE LAWA news story. An editor reviews every story before it is published.
 Hard rules:
+- Set publish to false (with reject_reason "not about Epe Division") unless the event itself happens in, or directly affects people in, Epe Division. A passing mention of Epe is not enough.
 - Use ONLY facts stated in the SOURCE REPORTS. Never add names, numbers, dates, places, quotes or background that are not in them.
 - NEVER name, credit, link or mention the newspapers, TV or radio stations, websites, agencies or journalists that published the SOURCE REPORTS (for example never write "according to Punch", "NTA reported", "Channels Television said", "BBC News", "a report by Vanguard"). Readers must not be able to tell which outlet the facts came from. Attribute statements to the people and institutions in the story itself (the police, the minister, the court, the club, residents).
 - Rewrite COMPLETELY: a new headline, a new opening paragraph, your own structure and order, your own words. Never copy or lightly edit a sentence from a report. The only words you may copy are short direct quotes from people in the story, exactly as written, in quotation marks.
 - Plain British English, clear for Nigerian readers. No speculation, opinion, sensationalism or clickbait.
 - If the sources are thin, contradictory, opinion, sponsored, graphic, defamatory, about a minor, or not real news, set publish to false and explain why in reject_reason.
-- Say why it matters to readers in Epe, Lagos or Nigeria when the sources support it; never invent local angles.
+- Say why it matters to people in Epe Division when the sources support it; never invent local angles.
 Return ONLY a JSON object:
-{"publish":true|false,"reject_reason":"","title":"max 110 chars","summary":"1-2 sentences, max 280 chars","body":[{"type":"p"|"h2"|"quote","text":"..."}],"category_slug":"one existing slug or null","new_category":"short label only if no existing category fits, else null","hashtags":["4 to 8 CamelCase hashtags without #, never an outlet name"],"seo_title":"max 65 chars","seo_description":"max 155 chars","image_alt":"describes a fitting lead photo for the story, max 150 chars","image_query":"2 to 5 plain words to search for a similar real photo of the subject (places, objects, events; no outlet names), e.g. Lagos ferry terminal","image_prompt":"one sentence describing a neutral scene that illustrates the story without real identifiable people, text or logos, e.g. a busy ferry jetty on a lagoon at sunrise","breaking":true only for urgent, developing news that readers need to know right now (a major incident, emergency, disaster, security alert, election result, death of a major public figure, or a decision that takes effect today); false for routine news, features, analysis and sport results}
-Body: 5 to 10 paragraphs, optional short h2 subheadings. Do not include a sources list or any outlet credit.`;
+{"publish":true|false,"reject_reason":"","title":"max 110 chars","summary":"1-2 sentences, max 280 chars","body":[{"type":"p"|"h2"|"quote","text":"..."}],"hashtags":["4 to 8 CamelCase hashtags without #, never an outlet name"],"seo_title":"max 65 chars","seo_description":"max 155 chars","image_alt":"describes a fitting lead photo for the story, max 150 chars","image_query":"2 to 5 plain words to search for a similar real photo of the subject (places, objects, events; no outlet names), e.g. Epe fish market","image_prompt":"one sentence describing a neutral scene that illustrates the story without real identifiable people, text or logos, e.g. a busy ferry jetty on the Lekki lagoon at sunrise","breaking":true only for urgent, developing news that readers need to know right now (a major incident, emergency, disaster, security alert, election result, death of a major public figure, or a decision that takes effect today); false for routine news, features, analysis and sport results}
+Body: 5 to 10 paragraphs, optional short h2 subheadings. Do not include a sources list, any outlet credit, or any line saying the story was written from reports.`;
 
 async function fetchFeeds(): Promise<FeedItem[]> {
   const results = await Promise.all(NEWS_OUTLETS.map(async (outlet) => {
     const page = await fetchPublicText(outlet.feed, { timeoutMs: 7000, maxBytes: 900_000, accept: "application/rss+xml,application/xml,text/xml;q=0.9,*/*;q=0.5", allowHosts: trustedNewsHost });
     return page && page.status < 400 ? parseFeed(page.text, outlet) : [];
   }));
-  return results.flat();
+  // The same report often appears in a newsroom's search feed and its main feed.
+  const byLink = new Map<string, FeedItem>();
+  for (const item of results.flat()) if (!byLink.has(item.link)) byLink.set(item.link, item);
+  return [...byLink.values()];
 }
 
 /** The longest usable text among the page, the feed's full text, the page description and the feed summary. */
@@ -243,12 +250,13 @@ export function rankCandidates(items: FeedItem[], recentTitles: string[], now = 
     const own = tokens.get(item)!;
     if (recent.some((seen) => similarity(own, seen) >= 0.6)) continue;
     const corroborating = fresh.filter((other) => other !== item && other.outlet.name !== item.outlet.name && similarity(own, tokens.get(other)!) >= 0.45);
-    const locality = localityScore(`${item.title} ${item.summary}`);
+    // Epe Division only (owner's rule): a story must name a place in Epe Division.
+    const locality = localityScore(`${item.title} ${item.summary} ${(item.content ?? "").slice(0, 1500)}`);
+    if (locality.label !== "Epe") continue;
+    // A place in the headline is a stronger sign the story is really about Epe Division.
+    const inTitle = localityScore(item.title).label === "Epe" ? 15 : 0;
     const ageHours = (now - Date.parse(item.publishedAt!)) / 3600_000;
-    // Every subject desk (sport, business, politics, entertainment, tech, health,
-    // science) gets a lift so the site carries all kinds of news, not only politics.
-    const desk = ["sport", "business", "politics", "entertainment", "tech", "health", "science"].includes(item.outlet.desk) ? 6 : 0;
-    const score = locality.score + Math.max(0, 20 - ageHours) + Math.min(3, corroborating.length) * 6 + desk + (item.outlet.country === "NG" ? 4 : 0);
+    const score = locality.score + inTitle + Math.max(0, 48 - ageHours) / 2 + Math.min(3, corroborating.length) * 6;
     candidates.push({ item, locality, score, corroborating });
   }
   candidates.sort((a, b) => b.score - a.score);
@@ -283,31 +291,24 @@ export function withoutOutletTags(tags: string[]): string[] {
   return tags.filter((tag) => !banned.has(tag.toLowerCase().replace(/[^a-z0-9]+/g, "")));
 }
 
-function fallbackCategory(categories: Category[], candidate: Candidate): Category | undefined {
-  const by = (slug: string) => categories.find((category) => category.slug === slug);
-  if (candidate.item.outlet.desk === "sport") return by("sports");
-  if (candidate.item.outlet.desk === "business") return by("business");
-  if (candidate.item.outlet.desk === "politics") return by("politics");
-  if (candidate.item.outlet.desk === "entertainment") return by("entertainment");
-  if (candidate.locality.label === "Epe" || candidate.locality.label === "Lagos") return by("lagos-news");
-  if (candidate.locality.label === "World") return by("international-news");
-  return by("other");
-}
 
 export async function runNewsJob(db: SupabaseClient, ctx: { settings: AiSettings; log: RunLog; budget: Budget; deadline: number; publish: boolean; target?: number }): Promise<string> {
-  const { settings, log, budget, deadline, publish } = ctx;
+  const { settings, log, budget, deadline } = ctx;
+  // Owner's rule (turn 26): the AI never publishes news. Every story is saved as
+  // a draft for an editor to check and publish in the Newsroom.
+  const publish = false;
   // The administrators' "stories per run" (or what is still owed from the last run).
   const target = Math.max(1, Math.min(NEWS_LIMITS.articles.max, ctx.target ?? settings.articles_per_run));
   const owe = async (count: number) => {
     await db.from("ai_settings").update({ news_owed: count }).eq("id", 1);
   };
-  await log.step(`Reading the latest reports from ${NEWS_OUTLETS.length} trusted outlet feeds…`);
+  await log.step(`Reading ${NEWS_OUTLETS.length} newsroom feeds (Epe and Ibeju-Lekki searches plus main feeds); only Epe Division stories are kept…`);
   const [items, recentResult, categoriesResult] = await Promise.all([
     fetchFeeds(),
     db.from("ai_news_seen").select("title").gte("first_seen_at", new Date(Date.now() - 72 * 3600_000).toISOString()).limit(500),
-    db.from("categories").select("id,slug,label").eq("is_active", true),
+    db.from("categories").select("id,slug,label").eq("slug", EPE_CATEGORY_SLUG).limit(1),
   ]);
-  const categories = (categoriesResult.data ?? []) as Category[];
+  const epeCategory = ((categoriesResult.data ?? []) as Category[])[0];
   if (!items.length) {
     await log.record({ job: "news", action: "news.fetch", outcome: "failed", title: "No outlet feed could be read", reason: "Every trusted outlet feed failed or timed out this hour. Nothing was published." });
     await owe(0);
@@ -321,11 +322,11 @@ export async function runNewsJob(db: SupabaseClient, ctx: { settings: AiSettings
   }
   const ranked = rankCandidates(items.filter((item) => !seen.has(urlHash(item.link))), (recentResult.data ?? []).map((row) => String(row.title)));
   const outletsRead = new Set(items.map((item) => item.outlet.name)).size;
-  await log.step(`Read ${items.length} reports from ${outletsRead} outlets; ${ranked.length} new stor${ranked.length === 1 ? "y" : "ies"} worth considering.${ranked.length ? ` Top pick: “${ranked[0].item.title}” (${ranked[0].item.outlet.name}).` : ""}`);
+  await log.step(`Read ${items.length} reports from ${outletsRead} outlets; ${ranked.length} new stor${ranked.length === 1 ? "y" : "ies"} about Epe Division worth considering.${ranked.length ? ` Top pick: “${ranked[0].item.title}” (${ranked[0].item.outlet.name}).` : ""}`);
   if (!ranked.length) {
-    await log.record({ job: "news", action: "news.select", outcome: "skipped", title: "No new story worth publishing", reason: `Read ${items.length} reports from ${outletsRead} outlets; all were already covered, too old, opinion or sponsored.` });
+    await log.record({ job: "news", action: "news.select", outcome: "skipped", title: "No new Epe Division story", reason: `Read ${items.length} reports from ${outletsRead} outlets; none was a new story about a place in Epe Division (the rest were about elsewhere, already covered, too old, opinion or sponsored).` });
     await owe(0);
-    return `Nothing new from ${outletsRead} outlets.`;
+    return `No new Epe Division story in ${items.length} reports from ${outletsRead} outlets.`;
   }
 
   let published = 0;
@@ -377,7 +378,7 @@ export async function runNewsJob(db: SupabaseClient, ctx: { settings: AiSettings
       validate: validateDraft,
       messages: [
         { role: "system", content: NEWS_SYSTEM_PROMPT },
-        { role: "user", content: `EXISTING CATEGORIES: ${JSON.stringify(categories.map(({ slug, label }) => ({ slug, label })))}\nLOCAL PRIORITY: ${candidate.locality.label}\nSOURCE REPORTS:\n${JSON.stringify(anonymousReports(reports))}` },
+        { role: "user", content: `EPE DIVISION PLACE NAMED IN THE REPORT: ${candidate.locality.place ?? "none"}\nSOURCE REPORTS:\n${JSON.stringify(anonymousReports(reports))}` },
       ],
     });
     if (!result.ok) {
@@ -399,19 +400,10 @@ export async function runNewsJob(db: SupabaseClient, ctx: { settings: AiSettings
     const publishNow = publish && problems.length === 0;
     await log.step(`Fact check: ${problems.length ? `${problems.length} figure${problems.length > 1 ? "s or quotes" : " or quote"} not found in the sources — saving as a draft for an editor` : "every figure and quote matches the sources"}${publishNow ? " — publishing" : ""}.`);
 
-    let category = categories.find((entry) => entry.slug === draft.categorySlug);
-    let categoryNote = "";
-    if (!category && draft.newCategory && settings.capabilities.categories) {
-      const created = await db.rpc("ai_category_create", { p_label: draft.newCategory, p_description: `Created by the EPE LAWA AI desk for ${draft.newCategory.toLowerCase()} stories.` });
-      if (!created.error && created.data) {
-        category = { id: String(created.data), slug: "", label: draft.newCategory };
-        categoryNote = ` New category “${draft.newCategory}” created.`;
-        await log.record({ job: "news", action: "category.create", outcome: "done", title: `Created category “${draft.newCategory}”`, reason: `No existing category fitted “${draft.title}”.`, resourceType: "category", resourceId: String(created.data), model: result.model });
-      }
-    }
-    category ??= fallbackCategory(categories, candidate) ?? categories[0];
+    const category = epeCategory;
+    const categoryNote = "";
     if (!category) {
-      await log.record({ job: "news", action: "news.publish", outcome: "failed", title: draft.title, reason: "No active news category exists." });
+      await log.record({ job: "news", action: "news.draft", outcome: "failed", title: draft.title, reason: "The Epe Division news section is missing from the database." });
       break;
     }
 
@@ -456,7 +448,7 @@ export async function runNewsJob(db: SupabaseClient, ctx: { settings: AiSettings
     if (!publishNow) {
       const why = problems.length
         ? `Saved as a draft instead of publishing because the fact check found: ${problems.join("; ")}.`
-        : "Autopilot is off, so the story waits for an editor's approval in the Newsroom.";
+        : "Saved as a draft for an editor: the AI never publishes news itself. Check it and publish it from the Newsroom.";
       written += 1;
       await log.record({ job: "news", action: "news.draft", outcome: "escalated", title: draft.title, reason: why, resourceType: "article", resourceId: article.id, model: result.model, details: { slug: article.slug, sources: sourceList, category: category.label, hashtags, locality: candidate.locality.label, problems } });
       continue;

@@ -59,7 +59,7 @@ export async function GET(): Promise<Response> {
       `      <link>${url}</link>`,
       `      <guid isPermaLink="true">${url}</guid>`,
       article.summary?.trim() ? `      <description>${articleDescription(article)}</description>` : null,
-      `      <category>${escapeXml(article.category_label)}</category>`,
+      "      <category>Epe Division</category>",
       article.author_name ? `      <dc:creator>${escapeXml(article.author_name)}</dc:creator>` : null,
       pubDate ? `      <pubDate>${pubDate}</pubDate>` : null,
       "    </item>",

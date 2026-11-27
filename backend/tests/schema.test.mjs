@@ -204,7 +204,7 @@ await db.exec(`
  * having left the database in a particular state.
  */
 async function newPublishedArticle(title) {
-  const categoryId = (await rows("select id from public.categories where slug = 'politics'"))[0].id;
+  const categoryId = (await rows("select id from public.categories where slug = 'epe-division'"))[0].id;
   const authorId = (await rows("select id from public.authors where slug = 'test-byline'"))[0].id;
 
   const id = await as(U.editor, async () => (await rows(
@@ -423,7 +423,7 @@ test('the money tables grant no write privilege to a client role', async () => {
 // --------------------------------------------------------------------------- editorial
 
 test('a draft article is invisible to anon and to other journalists, but visible to the owner and a reviewer', async () => {
-  const categoryId = (await rows("select id from public.categories where slug = 'politics'"))[0].id;
+  const categoryId = (await rows("select id from public.categories where slug = 'epe-division'"))[0].id;
   const authorId = (await rows("select id from public.authors where slug = 'test-byline'"))[0].id;
 
   const articleId = await as(U.editor, async () => {
@@ -473,7 +473,7 @@ test('a draft article is invisible to anon and to other journalists, but visible
 });
 
 test('a verified publisher can publish a private draft directly and corrections stay versioned', async () => {
-  const categoryId = (await rows("select id from public.categories where slug = 'politics'"))[0].id;
+  const categoryId = (await rows("select id from public.categories where slug = 'epe-division'"))[0].id;
   const authorId = (await rows("select id from public.authors where slug = 'test-byline'"))[0].id;
   const firstBody = { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Private test-only article body.' }] }] };
   const articleId = await as(U.editor, async () => (await rows(
@@ -532,7 +532,7 @@ test('a verified publisher can publish a private draft directly and corrections 
 });
 
 test('a private draft update saves submitted values, uses revision CAS, and reopens review as a private draft', async () => {
-  const categoryId = (await rows("select id from public.categories where slug = 'politics'"))[0].id;
+  const categoryId = (await rows("select id from public.categories where slug = 'epe-division'"))[0].id;
   const authorId = (await rows("select id from public.authors where slug = 'test-byline'"))[0].id;
   const articleId = await as(U.editor, async () => (await rows(
     `select public.article_create($1, null, '{"type":"doc","content":[]}'::jsonb, $2, $3, null, null) as id`,
@@ -594,7 +594,7 @@ test('a private draft update saves submitted values, uses revision CAS, and reop
 });
 
 test('external News covers are safe, attributed, published by version, and can be cleared and replaced atomically', async () => {
-  const categoryId = (await rows("select id from public.categories where slug = 'politics'"))[0].id;
+  const categoryId = (await rows("select id from public.categories where slug = 'epe-division'"))[0].id;
   const authorId = (await rows("select id from public.authors where slug = 'test-byline'"))[0].id;
   const body = JSON.stringify({ type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Cover workflow body remains unchanged.' }] }] });
   const sourceUrl = 'https://commons.wikimedia.org/wiki/File:Test_cover.jpg';
@@ -835,7 +835,7 @@ test('comment threading is one level deep and cannot cross articles', async () =
 });
 
 test('a comment cannot be posted on an unpublished article', async () => {
-  const categoryId = (await rows("select id from public.categories where slug = 'politics'"))[0].id;
+  const categoryId = (await rows("select id from public.categories where slug = 'epe-division'"))[0].id;
   const authorId = (await rows("select id from public.authors where slug = 'test-byline'"))[0].id;
 
   const draftId = await as(U.editor, async () => (await rows(
@@ -1037,7 +1037,7 @@ test('record which shims were applied', () => {
 });
 
 test('newsroom RPCs use the live schema, publish directly from a private draft, and unpublish safely', async () => {
-  const categoryId = (await rows("select id from public.categories where slug = 'politics'"))[0].id;
+  const categoryId = (await rows("select id from public.categories where slug = 'epe-division'"))[0].id;
   const authorId = (await rows("select id from public.authors where slug = 'test-byline'"))[0].id;
   const id = (await as(U.editor, () => rows(
     `select public.article_create($1, null, '{"type":"doc","content":[]}'::jsonb, $2, $3, null, null) as id`,
@@ -1119,7 +1119,7 @@ test('newsroom RPCs use the live schema, publish directly from a private draft, 
 });
 
 test('Newsroom RLS grants eligible staff private reads but exposes only the current published snapshot', async () => {
-  const categoryId = (await rows("select id from public.categories where slug = 'politics'"))[0].id;
+  const categoryId = (await rows("select id from public.categories where slug = 'epe-division'"))[0].id;
   const authorId = (await rows("select id from public.authors where slug = 'test-byline'"))[0].id;
   const id = (await as(U.editor, () => rows(
     `select public.article_create($1, null, '{"type":"doc","content":[]}'::jsonb, $2, $3, null, null) as id`,
@@ -1178,7 +1178,7 @@ test('Newsroom RLS grants eligible staff private reads but exposes only the curr
 });
 
 test('draft-save rejects an article without a current version and does not record success', async () => {
-  const categoryId = (await rows("select id from public.categories where slug = 'politics'"))[0].id;
+  const categoryId = (await rows("select id from public.categories where slug = 'epe-division'"))[0].id;
   const authorId = (await rows("select id from public.authors where slug = 'test-byline'"))[0].id;
   const id = (await as(U.editor, () => rows(
     `select public.article_create($1, null, '{"type":"doc","content":[]}'::jsonb, $2, $3, null, null) as id`,

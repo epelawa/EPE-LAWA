@@ -82,7 +82,7 @@ export async function runNewsReeditJob(db: SupabaseClient, ctx: { log: RunLog; b
       validate: validateDraft,
       messages: [
         { role: "system", content: `${NEWS_SYSTEM_PROMPT}\n${REEDIT_NOTE}` },
-        { role: "user", content: `EXISTING CATEGORIES: []\nSOURCE REPORTS:\n${JSON.stringify(reports.map((report, index) => ({ report: `Report ${index + 1}`, ...report })))}` },
+        { role: "user", content: `SOURCE REPORTS:\n${JSON.stringify(reports.map((report, index) => ({ report: `Report ${index + 1}`, ...report })))}` },
       ],
     });
     if (!result.ok) {
@@ -99,7 +99,8 @@ export async function runNewsReeditJob(db: SupabaseClient, ctx: { log: RunLog; b
     const outletLeft = scrubDraft(draft);
     const allSource = reports.map((report) => `${report.title}\n${report.text}`).join("\n");
     const problems = [...unsupportedClaims(draft, allSource), ...outletLeft.map((name) => `the story still names the outlet “${name}”`)];
-    const publishNow = publish && problems.length === 0;
+    // Drafts only (owner, turn 26): the database also refuses to publish AI re-edits.
+    const publishNow = false && publish && problems.length === 0;
     const coverChoice = await chooseCover({
       candidates: [extracted[0]?.image, extracted[1]?.image, version.cover_url],
       outlet: outletsFor(sources.map((source) => source.url!)),
@@ -140,7 +141,7 @@ export async function runNewsReeditJob(db: SupabaseClient, ctx: { log: RunLog; b
       await log.record({ job: "news", action: "news.reedit", outcome: "done", title: draft.title, reason: `Re-edited “${version.title}” under the current rules and republished it at its original time. Cover: ${coverWord}.`, resourceType: "article", resourceId: meta.article_id, model: result.model, details: { previous_title: version.title, cover_kind: coverChoice?.kind ?? null } });
     } else {
       drafts += 1;
-      await log.record({ job: "news", action: "news.reedit", outcome: "escalated", title: draft.title, reason: problems.length ? `Re-edit saved as a draft (the published story is unchanged) because: ${problems.join("; ")}.` : "Autopilot is off, so the re-edit waits for an editor; the published story is unchanged.", resourceType: "article", resourceId: meta.article_id, model: result.model, details: { previous_title: version.title, problems } });
+      await log.record({ job: "news", action: "news.reedit", outcome: "escalated", title: draft.title, reason: problems.length ? `Re-edit saved as a draft (the published story is unchanged) because: ${problems.join("; ")}.` : "The re-edit waits for an editor to publish it; the published story is unchanged until then.", resourceType: "article", resourceId: meta.article_id, model: result.model, details: { previous_title: version.title, problems } });
     }
   }
   const left = await unrevisedCount(db);

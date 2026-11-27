@@ -1,0 +1,13 @@
+.chat { display: grid; gap: 12px; }
+.log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; max-height: min(65vh, 720px); overflow-y: auto; }
+.bubble { display: grid; gap: 6px; max-width: min(720px, 92%); padding: 10px 14px; border-radius: 16px; line-height: 1.5; }
+.ai { align-self: flex-start; background: hsl(var(--muted)); border-bottom-left-radius: 4px; }
+.me { align-self: flex-end; background: #16213e; color: #fff; border-bottom-right-radius: 4px; }
+.who { font-size: 12px; opacity: .75; }
+.model { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.confirm { display: flex; flex-wrap: wrap; gap: 8px; }
+.form { display: grid; gap: 8px; }
+.form textarea { width: 100%; resize: vertical; }
+.examples { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.examples code { padding: 2px 8px; border-radius: 999px; background: hsl(var(--muted)); font-size: 12px; }

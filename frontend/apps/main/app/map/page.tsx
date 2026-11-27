@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import MapSearch from "./map-search";
+import MapAssistant from "./map-assistant";
 import { createClient } from "../../lib/supabase";
 import { PageFrame, PageIntro, TextLink } from "../../components/design-system";
 
 export const metadata: Metadata = {
   title: "Map & Navigation",
-  description: "Search streets, landmarks and published Epe businesses, then open directions.",
+  description: "Search streets, landmarks and published businesses in Epe Division, ask the directions assistant, then open directions.",
   alternates: { canonical: "/map" },
 };
 type Business = { slug: string; name: string; category_label: string; area: string | null; address: string | null; landmark: string | null };
@@ -25,8 +26,9 @@ export default async function MapPage() {
     businessError = true;
   }
   return <PageFrame className="ui-stack">
-    <PageIntro eyebrow="Map & navigation" title="Find your way around Epe." description="Find a published business from the EPE LAWA directory or search a street, landmark or address on Google Maps. Choose whether to share your device location; it is never requested automatically." />
+    <PageIntro eyebrow="Map & navigation" title="Find your way around Epe Division." description="Find a published business from the EPE LAWA directory, search a street or landmark in Epe, Eredo, Ikosi-Ejinrin, Ibeju-Lekki or Lekki, or ask the directions assistant (bottom-right). Your device location is never requested automatically." />
     <MapSearch businesses={businesses} businessError={businessError} />
+    <MapAssistant />
     {businesses.length === 100 ? <p className="ui-muted">Business matches are drawn from the first 100 published listings. Browse the <TextLink href="/business-directory">full business directory</TextLink>.</p> : null}
   </PageFrame>;
 }

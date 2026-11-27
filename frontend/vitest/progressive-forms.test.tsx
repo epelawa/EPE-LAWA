@@ -79,7 +79,7 @@ it("composer preserves story content when the server cannot save", async () => {
  await act(async()=>root.render(<NewsArticleComposer categories={[{id:"news",label:"News"}]} authors={[{id:"author",display_name:"Author"}]} />));
  await act(async()=>{setValue(el.querySelector('#title')!,"A headline");setValue(el.querySelector('#body')!,"A story");button(el,"Continue").click();});
  await act(async()=>button(el,"Continue").click());
- await act(async()=>{setValue(el.querySelector('#categoryId')!,"news");setValue(el.querySelector('#authorId')!,"author");});
+ await act(async()=>{setValue(el.querySelector('#authorId')!,"author");});
  await act(async()=>{el.querySelector('form')!.requestSubmit();});
  expect(el.querySelector('[role="alert"]')?.textContent).toContain('Check your access');
  expect((el.querySelector('#title') as HTMLInputElement).value).toBe('A headline');expect((el.querySelector('#body') as HTMLTextAreaElement).value).toBe('A story');
@@ -91,7 +91,7 @@ it("uncertain saves require a deliberate check before retry", async () => {
  const el=document.createElement("div");document.body.append(el);const root=createRoot(el);
  await act(async()=>root.render(<NewsArticleComposer categories={[{id:"news",label:"News"}]} authors={[{id:"author",display_name:"Author"}]} />));
  await act(async()=>{setValue(el.querySelector('#title')!,"A headline");setValue(el.querySelector('#body')!,"A story");button(el,"Continue").click();});await act(async()=>button(el,"Continue").click());
- await act(async()=>{setValue(el.querySelector('#categoryId')!,"news");setValue(el.querySelector('#authorId')!,"author");el.querySelector('form')!.requestSubmit();});
+ await act(async()=>{setValue(el.querySelector('#authorId')!,"author");el.querySelector('form')!.requestSubmit();});
  expect(button(el,"Publish article").disabled).toBe(true);expect(el.querySelector('[role="alert"]')?.textContent).toContain('Check the newsroom list');
  await act(async()=>button(el,"I checked").click());expect(button(el,"Publish article").disabled).toBe(false);
  await act(async()=>root.unmount());el.remove();
