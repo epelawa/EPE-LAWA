@@ -6,6 +6,7 @@
 
 import { NextResponse } from "next/server";
 import { cronDatabase } from "../../../../lib/cron-database";
+import { cronRequestAuthorized } from "../../../../lib/cron-token";
 
 export const dynamic = "force-dynamic";
 
@@ -16,13 +17,10 @@ const NO_STORE = {
 
 /**
  * POST - Ping the database and record the result
- * Requires CRON_SECRET header for authentication
+ * Requires the cron token (admin Cron page) or CRON_SECRET in x-cron-secret or Authorization: Bearer
  */
 export async function POST(request: Request): Promise<NextResponse> {
-  const cronSecret = process.env.CRON_SECRET;
-  const authHeader = request.headers.get("x-cron-secret");
-  
-  if (!cronSecret || authHeader !== cronSecret) {
+  if (!cronRequestAuthorized(request.headers)) {
     return NextResponse.json(
       { error: "Unauthorized" },
       { status: 401, headers: NO_STORE }
@@ -128,10 +126,7 @@ export async function POST(request: Request): Promise<NextResponse> {
  * Returns the last ping result
  */
 export async function GET(request: Request): Promise<NextResponse> {
-  const cronSecret = process.env.CRON_SECRET;
-  const authHeader = request.headers.get("x-cron-secret");
-  
-  if (!cronSecret || authHeader !== cronSecret) {
+  if (!cronRequestAuthorized(request.headers)) {
     return NextResponse.json(
       { error: "Unauthorized" },
       { status: 401, headers: NO_STORE }

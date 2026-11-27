@@ -4,6 +4,9 @@ import { PageFrame, PageIntro, Panel, SectionHeading, EmptyPanel } from "@epelaw
 import { createStaffClient } from "../../../../lib/supabase";
 import { adminHref } from "../../../../lib/admin-path";
 import CopyButton from "../../../../components/copy-button";
+import SecretField from "../../../../components/secret-field";
+import { cronAccessToken } from "../../../../../main/lib/cron-token";
+import { absoluteUrl } from "../../../../lib/site";
 
 export const metadata: Metadata = {
   title: "Cron Job History",
@@ -66,6 +69,12 @@ export default async function CronJobHistoryPage() {
     </PageFrame>;
   }
   const records = (data ?? []) as CronJobRecord[];
+  // The token is a credential: only the primary administrators (same check as Settings) see it.
+  const owner = await db.rpc("staff_roles_authorized");
+  const canSeeToken = !owner.error && owner.data === true;
+  const token = canSeeToken ? cronAccessToken() : null;
+  const pingUrl = absoluteUrl("/api/cron/database-ping");
+  const healthUrl = absoluteUrl("/api/health");
   
   // Get stats
   const stats = {
@@ -91,32 +100,57 @@ export default async function CronJobHistoryPage() {
 
       <Panel className="ui-subtle">
         <SectionHeading
-          eyebrow="Endpoints"
-          title="Cron Job URLs for cronjob.org"
+          eyebrow="Connect"
+          title="Set up cron-job.org"
+          description="Paste these values into a new cron job. The token is filled in for you; nothing needs to be typed."
         />
         <div className="ui-stack-sm">
+          <ol className="ui-list ui-stack-sm" style={{ paddingInlineStart: "1.25rem", listStyle: "decimal" }}>
+            <li>
+              <span className="label">URL</span>
+              <div className="ui-row gap-2" style={{ flexWrap: "wrap", alignItems: "center" }}>
+                <code className="input font-mono text-sm p-2 bg-gray-100 rounded" style={{ overflowWrap: "anywhere", flex: "1 1 260px", minWidth: 0 }}>{pingUrl}</code>
+                <CopyButton text={pingUrl} />
+              </div>
+            </li>
+            <li>
+              <span className="label">Schedule</span>
+              <p className="ui-meta">Once or twice a day (for example every day at 06:00 and 18:00).</p>
+            </li>
+            <li>
+              <span className="label">Advanced → Request method</span>
+              <p className="ui-meta"><code>POST</code></p>
+            </li>
+            <li>
+              <span className="label">Advanced → Headers → Key</span>
+              <div className="ui-row gap-2" style={{ flexWrap: "wrap", alignItems: "center" }}>
+                <code className="input font-mono text-sm p-2 bg-gray-100 rounded">x-cron-secret</code>
+                <CopyButton text="x-cron-secret" />
+              </div>
+            </li>
+            <li>
+              <span className="label">Advanced → Headers → Value</span>
+              {!canSeeToken ? (
+                <p className="ui-meta">Only the primary administrators can see the access token.</p>
+              ) : token ? (
+                <SecretField value={token} label="Cron access token" />
+              ) : (
+                <p className="ui-meta">No server secret is configured yet. Add <code>CRON_SECRET</code> (at least 16 characters) in Vercel → Settings → Environment Variables and redeploy; the token then appears here.</p>
+              )}
+            </li>
+          </ol>
           <p className="ui-meta">
-            Copy these endpoints to use with <strong>cronjob.org</strong> or any other cron service.
-            For authenticated endpoints, make sure to include the <code>x-cron-secret</code> header with your <code>CRON_SECRET</code> value.
+            Save, then use <strong>Test run</strong> on cron-job.org: a <code>200</code> response means it is authorised, and the run appears in the history below.
+            A <code>401</code> means the header is missing or the value was changed.
+            The token only works for the cron endpoints. Keep it private; if it leaks, change <code>CRON_SECRET</code> in Vercel and paste the new token.
           </p>
-          <div className="ui-form-grid">
-            <label className="ui-field">
-              <span className="label">Database Ping (Run 1-2 times/day)</span>
-              <div className="ui-row gap-2">
-                <code className="input font-mono text-sm p-2 bg-gray-100 rounded" style={{ overflowWrap: "anywhere" }}>POST https://epelawa.vercel.app/api/cron/database-ping</code>
-                <CopyButton text="https://epelawa.vercel.app/api/cron/database-ping" />
-              </div>
-              <span className="ui-meta">Requires: <code>x-cron-secret</code> header</span>
-            </label>
-            <label className="ui-field">
-              <span className="label">Health Check (Public)</span>
-              <div className="ui-row gap-2">
-                <code className="input font-mono text-sm p-2 bg-gray-100 rounded" style={{ overflowWrap: "anywhere" }}>GET https://epelawa.vercel.app/api/health</code>
-                <CopyButton text="https://epelawa.vercel.app/api/health" />
-              </div>
-              <span className="ui-meta">Public endpoint - no authentication needed</span>
-            </label>
-          </div>
+          <label className="ui-field">
+            <span className="label">Health check (public, no token needed)</span>
+            <div className="ui-row gap-2" style={{ flexWrap: "wrap", alignItems: "center" }}>
+              <code className="input font-mono text-sm p-2 bg-gray-100 rounded" style={{ overflowWrap: "anywhere" }}>GET {healthUrl}</code>
+              <CopyButton text={healthUrl} />
+            </div>
+          </label>
         </div>
       </Panel>
 
