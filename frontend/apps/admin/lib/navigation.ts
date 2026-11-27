@@ -37,6 +37,7 @@ const peopleAndWorkPages: NavItem[] = [
   { label: "Businesses", href: "/business-review", hint: "Submissions and verification", group: "PEOPLE & WORK" },
   { label: "Reviews", href: "/business-review/moderation", hint: "Business review moderation", group: "PEOPLE & WORK" },
   { label: "Tourism", href: "/tourism", hint: "Tourism submissions", group: "PEOPLE & WORK" },
+  { label: "Map corrections", href: "/map-corrections", hint: "Privately review and verify map suggestions", group: "PEOPLE & WORK" },
   { label: "Events", href: "/events", hint: "Community event submissions", group: "PEOPLE & WORK" },
   { label: "Ads", href: "/ads", hint: "Businesses shown in the public ad carousel", group: "PEOPLE & WORK" },
 ];
@@ -100,6 +101,7 @@ const itemCapabilities: Record<string, string[]> = {
   "/business-review": ["business.review"],
   "/business-review/moderation": ["business.review"],
   "/tourism": ["article.publish"],
+  "/map-corrections": ["map.review"],
   "/events": ["events.review", "article.publish"],
   "/people": ["people.manage"],
   "/ads": ["article.publish"],
