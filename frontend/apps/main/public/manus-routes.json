@@ -223,6 +223,9 @@
       "path": "/admin/ai-scheduler"
     },
     {
+      "path": "/admin/storage"
+    },
+    {
       "path": "/admin/ai-processes"
     },
     {

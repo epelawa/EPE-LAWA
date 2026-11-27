@@ -11,6 +11,7 @@ import { pushSenderReady } from "../../web-push-send";
 import { pushCryptoReady } from "../../push-crypto";
 import { rpcProblem, type RunLog } from "../activity";
 import type { AiSettings } from "../settings";
+import { NEWS_LIMITS, storiesOwed } from "../news-schedule";
 
 const MAX_AGE_HOURS = 30;
 
@@ -206,8 +207,13 @@ function fallbackCategory(categories: Category[], candidate: Candidate): Categor
   return by("other");
 }
 
-export async function runNewsJob(db: SupabaseClient, ctx: { settings: AiSettings; log: RunLog; budget: Budget; deadline: number; publish: boolean }): Promise<string> {
+export async function runNewsJob(db: SupabaseClient, ctx: { settings: AiSettings; log: RunLog; budget: Budget; deadline: number; publish: boolean; target?: number }): Promise<string> {
   const { settings, log, budget, deadline, publish } = ctx;
+  // The administrators' "stories per run" (or what is still owed from the last run).
+  const target = Math.max(1, Math.min(NEWS_LIMITS.articles.max, ctx.target ?? settings.articles_per_run));
+  const owe = async (count: number) => {
+    await db.from("ai_settings").update({ news_owed: count }).eq("id", 1);
+  };
   await log.step(`Reading the latest reports from ${NEWS_OUTLETS.length} trusted outlet feeds…`);
   const [items, recentResult, categoriesResult] = await Promise.all([
     fetchFeeds(),
@@ -217,6 +223,7 @@ export async function runNewsJob(db: SupabaseClient, ctx: { settings: AiSettings
   const categories = (categoriesResult.data ?? []) as Category[];
   if (!items.length) {
     await log.record({ job: "news", action: "news.fetch", outcome: "failed", title: "No outlet feed could be read", reason: "Every trusted outlet feed failed or timed out this hour. Nothing was published." });
+    await owe(0);
     return "No feeds could be read.";
   }
   const hashes = items.map((item) => urlHash(item.link));
@@ -230,13 +237,24 @@ export async function runNewsJob(db: SupabaseClient, ctx: { settings: AiSettings
   await log.step(`Read ${items.length} reports from ${outletsRead} outlets; ${ranked.length} new stor${ranked.length === 1 ? "y" : "ies"} worth considering.${ranked.length ? ` Top pick: “${ranked[0].item.title}” (${ranked[0].item.outlet.name}).` : ""}`);
   if (!ranked.length) {
     await log.record({ job: "news", action: "news.select", outcome: "skipped", title: "No new story worth publishing", reason: `Read ${items.length} reports from ${outletsRead} outlets; all were already covered, too old, opinion or sponsored.` });
+    await owe(0);
     return `Nothing new from ${outletsRead} outlets.`;
   }
 
   let published = 0;
-  // Look further down the list so a few unreadable pages never leave the hour empty.
-  for (const candidate of ranked.slice(0, settings.articles_per_run + 6)) {
-    if (published >= settings.articles_per_run || Date.now() > deadline - 45_000 || budget.remaining <= 0) break;
+  // Stories written this run, published or saved as drafts: both count towards "stories per run".
+  let written = 0;
+  let stoppedForTime = false;
+  await log.step(`Aiming for ${target} ${target === 1 ? "story" : "stories"} this run.`);
+  // Look further down the list so a few unreadable pages never leave the run empty.
+  const pool = ranked.slice(0, target * 2 + 6);
+  for (const candidate of pool) {
+    if (written >= target || budget.remaining <= 0) break;
+    // One story takes up to about two minutes; stop in time and owe the rest to the next pass.
+    if (Date.now() > deadline - 45_000) {
+      stoppedForTime = true;
+      break;
+    }
     const { item } = candidate;
     const sources = [item, ...candidate.corroborating.slice(0, 1)];
     await log.step(`Opening ${sources.map((source) => source.outlet.name).join(" and ")}'s report: “${item.title}”`);
@@ -336,10 +354,12 @@ export async function runNewsJob(db: SupabaseClient, ctx: { settings: AiSettings
       const why = problems.length
         ? `Saved as a draft instead of publishing because the fact check found: ${problems.join("; ")}.`
         : "Autopilot is off, so the story waits for an editor's approval in the Newsroom.";
+      written += 1;
       await log.record({ job: "news", action: "news.draft", outcome: "escalated", title: draft.title, reason: why, resourceType: "article", resourceId: article.id, model: result.model, details: { slug: article.slug, sources: sourceList, category: category.label, hashtags, locality: candidate.locality.label, problems } });
       continue;
     }
     published += 1;
+    written += 1;
     await log.record({
       job: "news",
       action: "news.publish",
@@ -354,7 +374,12 @@ export async function runNewsJob(db: SupabaseClient, ctx: { settings: AiSettings
 
     if (draft.push && settings.capabilities.push) await maybePush(db, ctx, draft, article);
   }
-  return published ? `Published ${published} ${published === 1 ? "story" : "stories"}.` : "No story published this run.";
+  const owed = storiesOwed(target, written, stoppedForTime);
+  await owe(owed);
+  if (owed) await log.step(`Reached the time limit after ${written} of ${target}; the remaining ${owed} will be written at the next pass in about 5 minutes.`);
+  const drafts = written - published;
+  const parts = [published ? `Published ${published} ${published === 1 ? "story" : "stories"}` : "", drafts ? `saved ${drafts} draft${drafts === 1 ? "" : "s"} for an editor` : ""].filter(Boolean);
+  return `${parts.length ? `${parts.join(" and ")}.` : "No story published this run."}${owed ? ` ${owed} more to come at the next pass.` : ""}`;
 }
 
 async function maybePush(db: SupabaseClient, ctx: { settings: AiSettings; log: RunLog }, draft: Draft, article: { id: string; slug: string }) {

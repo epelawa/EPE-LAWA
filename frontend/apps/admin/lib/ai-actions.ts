@@ -8,6 +8,7 @@ import { adminHref } from "./admin-path";
 import { createStaffClient } from "./supabase";
 import { readAdminSessionFromCookies } from "./supabase-access";
 import { AI_CAPABILITIES, MAX_MODELS_PER_JOB, MODEL_JOBS, normaliseJobModels } from "../../main/lib/ai/settings";
+import { cleanNewsTimes, NEWS_LIMITS } from "../../main/lib/ai/news-schedule";
 import { loadFreeModels } from "../../main/lib/ai/openrouter";
 import { runAutopilotPass, AI_JOB_LABELS } from "../../main/lib/ai/runner";
 import { formAdminClient } from "../../main/lib/form-server";
@@ -40,6 +41,20 @@ function bounded(value: FormDataEntryValue | null, min: number, max: number, fal
   return Number.isInteger(number) && number >= min && number <= max ? number : fallback;
 }
 
+/**
+ * A dropdown with a "Custom…" choice. A custom number (times its unit, for
+ * the interval) must be a whole number inside the limits, otherwise the save
+ * is refused instead of quietly using something else.
+ */
+function chosen(form: FormData, name: string, limits: { min: number; max: number }, fallback: number): number | null {
+  const picked = form.get(name);
+  if (picked !== "custom") return bounded(picked, limits.min, limits.max, fallback);
+  const raw = Number(form.get(`${name}_custom`));
+  const unit = ({ minutes: 1, hours: 60, days: 1440 } as Record<string, number>)[String(form.get(`${name}_unit`) ?? "minutes")] ?? 1;
+  const value = raw * unit;
+  return Number.isInteger(value) && value >= limits.min && value <= limits.max ? value : null;
+}
+
 const back = (result: string) => `${adminHref("/ai-scheduler")}?result=${encodeURIComponent(result)}`;
 
 export async function saveAiSettings(form: FormData): Promise<void> {
@@ -54,6 +69,13 @@ export async function saveAiSettings(form: FormData): Promise<void> {
   if (scheduleEnabled && (!start || !stop || start === stop)) return await redirect(back("window"));
   const capabilities = Object.fromEntries(AI_CAPABILITIES.map(({ key }) => [key, form.get(`cap_${key}`) === "on"]));
   const reason = typeof form.get("reason") === "string" ? String(form.get("reason")).trim().slice(0, 500) : "";
+  const interval = chosen(form, "news_interval_minutes", NEWS_LIMITS.interval, 60);
+  const perRun = chosen(form, "articles_per_run", NEWS_LIMITS.articles, 1);
+  const budget = chosen(form, "daily_request_budget", NEWS_LIMITS.budget, 50);
+  const pushes = chosen(form, "push_daily_limit", NEWS_LIMITS.push, 3);
+  if (interval === null || perRun === null || budget === null || pushes === null) return await redirect(back("custom"));
+  const newsTimes = form.get("news_mode") === "times" ? cleanNewsTimes(form.getAll("news_time")) : [];
+  if (form.get("news_mode") === "times" && !newsTimes.length) return await redirect(back("times"));
   const { error } = await admin.db.rpc("ai_admin_save", {
     p_autopilot: form.get("autopilot") === "on",
     p_schedule_enabled: scheduleEnabled,
@@ -61,15 +83,17 @@ export async function saveAiSettings(form: FormData): Promise<void> {
     p_daily_stop: stop,
     p_auto_on_at: autoOn,
     p_auto_off_at: autoOff,
-    p_news_interval: bounded(form.get("news_interval_minutes"), 30, 1440, 60),
-    p_articles_per_run: bounded(form.get("articles_per_run"), 1, 6, 1),
-    p_daily_budget: bounded(form.get("daily_request_budget"), 5, 5000, 50),
-    p_push_daily_limit: bounded(form.get("push_daily_limit"), 0, 20, 3),
+    p_news_interval: interval,
+    p_articles_per_run: perRun,
+    p_daily_budget: budget,
+    p_push_daily_limit: pushes,
     p_capabilities: capabilities,
     p_reason: reason,
   });
+  // Set times (or none) are saved with the rest; this also clears any stories owed under the old settings.
+  const schedule = error ? null : await admin.db.rpc("ai_news_schedule_save", { p_news_times: newsTimes });
   revalidatePath(adminHref("/ai-scheduler"));
-  return await redirect(back(error ? "failed" : "saved"));
+  return await redirect(back(error || schedule?.error ? "failed" : "saved"));
 }
 
 /**

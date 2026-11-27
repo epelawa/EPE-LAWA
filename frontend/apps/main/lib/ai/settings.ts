@@ -1,7 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { cleanNewsTimes } from "./news-schedule";
 
 export const AI_CAPABILITIES = [
-  { key: "news", label: "Write and publish news every hour", hint: "Epe first, then Lagos, Nigeria and the world, from trusted outlets only." },
+  { key: "news", label: "Write and publish news on the schedule below", hint: "Epe first, then Lagos, Nigeria and the world, from trusted outlets only." },
   { key: "categories", label: "Create new news categories", hint: "Only when no existing category fits a story." },
   { key: "push", label: "Send push notifications", hint: "Major breaking stories only, within the daily limit below." },
   { key: "business_review", label: "Verify submitted businesses", hint: "Checks the website and OpenStreetMap; publishes only with evidence." },
@@ -45,6 +46,10 @@ export type AiSettings = {
   articles_per_run: number;
   daily_request_budget: number;
   push_daily_limit: number;
+  /** Exact Lagos times (HH:MM) for news runs; empty means every news_interval_minutes. */
+  news_times: string[];
+  /** Stories still owed from a run that hit its time limit. */
+  news_owed: number;
   capabilities: Record<AiCapability, boolean>;
   job_models: Partial<Record<ModelJob, string[]>>;
   actor_user_id: string | null;
@@ -54,13 +59,15 @@ export type AiSettings = {
   updated_at: string | null;
 };
 
-export const AI_SETTINGS_COLUMNS = "autopilot_enabled,schedule_enabled,daily_start,daily_stop,auto_on_at,auto_off_at,news_interval_minutes,articles_per_run,daily_request_budget,push_daily_limit,capabilities,job_models,actor_user_id,last_news_run_at,last_ads_run_at,last_explain_run_at,updated_at";
+export const AI_SETTINGS_COLUMNS = "autopilot_enabled,schedule_enabled,daily_start,daily_stop,auto_on_at,auto_off_at,news_interval_minutes,articles_per_run,daily_request_budget,push_daily_limit,news_times,news_owed,capabilities,job_models,actor_user_id,last_news_run_at,last_ads_run_at,last_explain_run_at,updated_at";
 
 export function normaliseSettings(row: Record<string, unknown> | null): AiSettings | null {
   if (!row) return null;
   const raw = (row.capabilities && typeof row.capabilities === "object" ? row.capabilities : {}) as Record<string, unknown>;
   const capabilities = Object.fromEntries(AI_CAPABILITIES.map(({ key }) => [key, raw[key] === true])) as Record<AiCapability, boolean>;
-  return { ...(row as unknown as AiSettings), capabilities, job_models: normaliseJobModels(row.job_models) };
+  const newsTimes = Array.isArray(row.news_times) ? cleanNewsTimes(row.news_times) : [];
+  const owed = Number(row.news_owed);
+  return { ...(row as unknown as AiSettings), capabilities, job_models: normaliseJobModels(row.job_models), news_times: newsTimes, news_owed: Number.isInteger(owed) && owed > 0 ? owed : 0 };
 }
 
 export async function loadAiSettings(db: SupabaseClient): Promise<AiSettings | null> {
