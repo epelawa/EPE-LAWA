@@ -4,7 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { chatJson, type Budget } from "../openrouter";
 import { fetchPublicText } from "../safe-fetch";
 import { extractArticle, localityScore, NEWS_OUTLETS, newsworthy, parseFeed, similarity, titleTokens, trustedNewsHost, type FeedItem } from "../news-sources";
-import { normalizeExternalNewsCoverUrl } from "../../news-cover-url.mjs";
+import { chooseCover } from "../news-images";
 import { suggestNewsHashtags } from "../../../../admin/lib/news-hashtags";
 import { fanoutPush } from "../../push-fanout";
 import { pushSenderReady, type WebPushPayload } from "../../web-push-send";
@@ -34,6 +34,10 @@ export type Draft = {
   seoTitle: string;
   seoDescription: string;
   imageAlt: string;
+  /** 2–6 words to search for a similar, freely licensed photo when the report has none. */
+  imageQuery: string;
+  /** A short scene description for a generated illustration (no names, logos or text). */
+  imagePrompt: string;
   /** Kept for older model replies; every published story now notifies subscribers. */
   push: boolean;
   /** The model judged this urgent, developing news: it joins the breaking-news ticker. */
@@ -49,7 +53,7 @@ export function validateDraft(value: unknown): Draft | null {
   if (!row || typeof row !== "object") return null;
   const publish = row.publish === true;
   const rejectReason = typeof row.reject_reason === "string" ? row.reject_reason.slice(0, 500) : "";
-  if (!publish) return { publish, rejectReason: rejectReason || "The model judged the sources unsuitable.", title: "", summary: "", blocks: [], categorySlug: null, newCategory: null, hashtags: [], seoTitle: "", seoDescription: "", imageAlt: "", push: false, breaking: false };
+  if (!publish) return { publish, rejectReason: rejectReason || "The model judged the sources unsuitable.", title: "", summary: "", blocks: [], categorySlug: null, newCategory: null, hashtags: [], seoTitle: "", seoDescription: "", imageAlt: "", imageQuery: "", imagePrompt: "", push: false, breaking: false };
   const title = text(row.title, 15, 160);
   const summary = text(row.summary, 40, 400);
   const rawBlocks = Array.isArray(row.body) ? row.body : [];
@@ -73,6 +77,8 @@ export function validateDraft(value: unknown): Draft | null {
     seoTitle: (text(row.seo_title, 10, 70) ?? title).slice(0, 70),
     seoDescription: (text(row.seo_description, 30, 160) ?? summary).slice(0, 160),
     imageAlt: (text(row.image_alt, 5, 200) ?? title).slice(0, 200),
+    imageQuery: (text(row.image_query, 3, 120) ?? "").slice(0, 120),
+    imagePrompt: (text(row.image_prompt, 6, 300) ?? "").slice(0, 300),
     push: row.push === true,
     breaking: row.breaking === true,
   };
@@ -126,7 +132,12 @@ function textNode(value: string, href?: string) {
   return href ? { type: "text", text: value, marks: [{ type: "link", attrs: { href } }] } : { type: "text", text: value };
 }
 
-export function articleBody(draft: Draft, sources: { outlet: string; title: string; url: string }[]) {
+/**
+ * The published story. Sources stay in the article's private record for
+ * editors and corrections; the public story never names or links the outlets
+ * the AI read (owner's rule), and never shows their logos.
+ */
+export function articleBody(draft: Draft) {
   const content: unknown[] = draft.blocks.map((block) =>
     block.type === "h2"
       ? { type: "heading", attrs: { level: 2 }, content: [textNode(block.text)] }
@@ -134,30 +145,81 @@ export function articleBody(draft: Draft, sources: { outlet: string; title: stri
         ? { type: "blockquote", content: [{ type: "paragraph", content: [textNode(block.text)] }] }
         : { type: "paragraph", content: [textNode(block.text)] },
   );
-  content.push({ type: "heading", attrs: { level: 3 }, content: [textNode("Sources")] });
-  content.push({
-    type: "bulletList",
-    content: sources.map((source) => ({ type: "listItem", content: [{ type: "paragraph", content: [textNode(`${source.outlet}: `), textNode(source.title, source.url)] }] })),
-  });
   content.push({
     type: "paragraph",
-    content: [{ type: "text", text: "This report was compiled by the EPE LAWA AI desk from the reporting credited above and published by the Epe Lawa Editorial Desk. Spotted an error? Use the correction form below.", marks: [{ type: "italic" }] }],
+    content: [{ type: "text", text: "Written by the EPE LAWA AI desk from several public reports, checked against them before publishing, and published by the Epe Lawa Editorial Desk. Spotted an error? Use the correction form below.", marks: [{ type: "italic" }] }],
   });
   return { type: "doc", content };
 }
 
-const SYSTEM = `You are the news writer for EPE LAWA, a community newsroom for Epe Division, Lagos State, Nigeria.
-You rewrite verified reports from established newsrooms into an original, neutral EPE LAWA news story.
+/** Outlet names the public story must never carry (case-sensitive brand forms). */
+export function outletNames(): string[] {
+  const names = new Set<string>();
+  for (const outlet of NEWS_OUTLETS) {
+    // A government's own newsroom is a newsmaker, not a platform: it may be named as the speaker.
+    if (outlet.desk === "local" && /government/i.test(outlet.name)) continue;
+    names.add(outlet.name);
+    names.add(outlet.name.replace(/^The /, ""));
+    for (const domain of outlet.domains) names.add(domain);
+  }
+  for (const extra of ["Punch Newspapers", "PUNCH", "Channels TV", "Channels Television", "Vanguard News", "Premium Times", "NTA", "Nigerian Television Authority", "BBC", "CNN", "Reuters", "AFP", "AP News", "Associated Press", "Daily Trust", "TheCable", "ThisDay", "Sahara Reporters", "Legit.ng", "Pulse Nigeria"]) names.add(extra);
+  return [...names].filter((name) => name.length >= 3).sort((a, b) => b.length - a.length);
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Removes outlet credits the model slipped in ("according to Punch",
+ * "Channels Television reported that …") and reports any outlet name left.
+ */
+export function scrubOutletMentions(value: string, names = outletNames()): { text: string; left: string[] } {
+  const alternatives = names.map(escapeRegExp).join("|");
+  const medium = String.raw`(?:\s+(?:newspaper|news|television|tv|online|reports?|correspondent|reporter))?`;
+  let text = value
+    .replace(new RegExp(String.raw`,?\s*(?:according to|as reported by|reports by|a report by|citing|in a report by)\s+(?:the\s+)?(?:${alternatives})${medium}`, "g"), "")
+    .replace(new RegExp(String.raw`(^|[.!?]\s+)(?:The\s+)?(?:${alternatives})${medium}\s+(?:reported|reports|said|says|learnt|learned|gathered|understands|quoted|noted)\s+(?:that\s+)?(\p{Ll})`, "gu"), (_m, lead: string, first: string) => `${lead}${first.toUpperCase()}`)
+    .replace(new RegExp(String.raw`\s*\((?:${alternatives})\)`, "g"), "")
+    .replace(/\s+,/g, ",")
+    .replace(/,\s*\./g, ".")
+    .replace(/[ \t]{2,}/g, " ")
+    .trim();
+  if (text && /^\p{Ll}/u.test(text)) text = text[0].toUpperCase() + text.slice(1);
+  const left = names.filter((name) => new RegExp(String.raw`(^|[^\p{L}])${escapeRegExp(name)}([^\p{L}]|$)`, "u").test(text));
+  return { text, left };
+}
+
+/** Applies the scrub to every part of a draft; returns any names still present. */
+export function scrubDraft(draft: Draft): string[] {
+  const names = outletNames();
+  const left = new Set<string>();
+  const clean = (value: string) => {
+    const result = scrubOutletMentions(value, names);
+    result.left.forEach((name) => left.add(name));
+    return result.text;
+  };
+  draft.title = clean(draft.title);
+  draft.summary = clean(draft.summary);
+  draft.seoTitle = clean(draft.seoTitle);
+  draft.seoDescription = clean(draft.seoDescription);
+  draft.imageAlt = clean(draft.imageAlt);
+  draft.blocks = draft.blocks.map((block) => ({ ...block, text: clean(block.text) })).filter((block) => block.text.length > 1);
+  return [...left];
+}
+
+export const NEWS_SYSTEM_PROMPT = `You are the news writer for EPE LAWA, a community newsroom for Epe Division, Lagos State, Nigeria.
+You turn verified reports into a completely new, original EPE LAWA news story.
 Hard rules:
 - Use ONLY facts stated in the SOURCE REPORTS. Never add names, numbers, dates, places, quotes or background that are not in them.
-- Attribute claims to the outlet ("according to Punch", "Channels Television reported").
-- Write in your own words; do not copy sentences, except short direct quotes copied exactly from a source and marked with quotation marks.
+- NEVER name, credit, link or mention the newspapers, TV or radio stations, websites, agencies or journalists that published the SOURCE REPORTS (for example never write "according to Punch", "NTA reported", "Channels Television said", "BBC News", "a report by Vanguard"). Readers must not be able to tell which outlet the facts came from. Attribute statements to the people and institutions in the story itself (the police, the minister, the court, the club, residents).
+- Rewrite COMPLETELY: a new headline, a new opening paragraph, your own structure and order, your own words. Never copy or lightly edit a sentence from a report. The only words you may copy are short direct quotes from people in the story, exactly as written, in quotation marks.
 - Plain British English, clear for Nigerian readers. No speculation, opinion, sensationalism or clickbait.
 - If the sources are thin, contradictory, opinion, sponsored, graphic, defamatory, about a minor, or not real news, set publish to false and explain why in reject_reason.
 - Say why it matters to readers in Epe, Lagos or Nigeria when the sources support it; never invent local angles.
 Return ONLY a JSON object:
-{"publish":true|false,"reject_reason":"","title":"max 110 chars","summary":"1-2 sentences, max 280 chars","body":[{"type":"p"|"h2"|"quote","text":"..."}],"category_slug":"one existing slug or null","new_category":"short label only if no existing category fits, else null","hashtags":["4 to 8 CamelCase hashtags without #"],"seo_title":"max 65 chars","seo_description":"max 155 chars","image_alt":"describes the lead photo of the source report, max 150 chars","breaking":true only for urgent, developing news that readers need to know right now (a major incident, emergency, disaster, security alert, election result, death of a major public figure, or a decision that takes effect today); false for routine news, features, analysis and sport results}
-Body: 5 to 10 paragraphs, optional short h2 subheadings. Do not include a sources list; it is added automatically.`;
+{"publish":true|false,"reject_reason":"","title":"max 110 chars","summary":"1-2 sentences, max 280 chars","body":[{"type":"p"|"h2"|"quote","text":"..."}],"category_slug":"one existing slug or null","new_category":"short label only if no existing category fits, else null","hashtags":["4 to 8 CamelCase hashtags without #, never an outlet name"],"seo_title":"max 65 chars","seo_description":"max 155 chars","image_alt":"describes a fitting lead photo for the story, max 150 chars","image_query":"2 to 5 plain words to search for a similar real photo of the subject (places, objects, events; no outlet names), e.g. Lagos ferry terminal","image_prompt":"one sentence describing a neutral scene that illustrates the story without real identifiable people, text or logos, e.g. a busy ferry jetty on a lagoon at sunrise","breaking":true only for urgent, developing news that readers need to know right now (a major incident, emergency, disaster, security alert, election result, death of a major public figure, or a decision that takes effect today); false for routine news, features, analysis and sport results}
+Body: 5 to 10 paragraphs, optional short h2 subheadings. Do not include a sources list or any outlet credit.`;
 
 async function fetchFeeds(): Promise<FeedItem[]> {
   const results = await Promise.all(NEWS_OUTLETS.map(async (outlet) => {
@@ -198,6 +260,27 @@ export function rankCandidates(items: FeedItem[], recentTitles: string[], now = 
     picked.push(candidate);
   }
   return picked;
+}
+
+/**
+ * The stories a run will write, oldest report first, so the newest news is
+ * published last and sits at the top of the site. Backups (used only when a
+ * story cannot be read) keep their ranking after them.
+ */
+export function publishingOrder<T extends { item: FeedItem }>(pool: T[], target: number): T[] {
+  const time = (candidate: T) => (candidate.item.publishedAt ? Date.parse(candidate.item.publishedAt) : 0);
+  const chosen = pool.slice(0, target).sort((a, b) => time(a) - time(b));
+  return [...chosen, ...pool.slice(target)];
+}
+
+/** The model sees "Report 1", "Report 2" — never which outlet wrote what. */
+export function anonymousReports(reports: { outlet: string; outlet_id?: string; url: string; title: string; published_at: string | null; text: string }[]) {
+  return reports.map((report, index) => ({ report: `Report ${index + 1}`, title: report.title, published_at: report.published_at, text: report.text }));
+}
+
+export function withoutOutletTags(tags: string[]): string[] {
+  const banned = new Set(outletNames().map((name) => name.toLowerCase().replace(/[^a-z0-9]+/g, "")));
+  return tags.filter((tag) => !banned.has(tag.toLowerCase().replace(/[^a-z0-9]+/g, "")));
 }
 
 function fallbackCategory(categories: Category[], candidate: Candidate): Category | undefined {
@@ -251,7 +334,7 @@ export async function runNewsJob(db: SupabaseClient, ctx: { settings: AiSettings
   let stoppedForTime = false;
   await log.step(`Aiming for ${target} ${target === 1 ? "story" : "stories"} this run.`);
   // Look further down the list so a few unreadable pages never leave the run empty.
-  const pool = ranked.slice(0, target * 2 + 6);
+  const pool = publishingOrder(ranked.slice(0, target * 2 + 6), target);
   for (const candidate of pool) {
     if (written >= target || budget.remaining <= 0) break;
     // One story takes up to about two minutes; stop in time and owe the rest to the next pass.
@@ -266,6 +349,7 @@ export async function runNewsJob(db: SupabaseClient, ctx: { settings: AiSettings
     const extracted = pages.map((page) => (page && page.status < 400 ? extractArticle(page.text) : null));
     const reports = sources.map((source, index) => ({
       outlet: source.outlet.name,
+      outlet_id: source.outlet.id,
       url: source.link,
       title: source.title,
       published_at: source.publishedAt,
@@ -292,8 +376,8 @@ export async function runNewsJob(db: SupabaseClient, ctx: { settings: AiSettings
       timeoutMs: 110_000,
       validate: validateDraft,
       messages: [
-        { role: "system", content: SYSTEM },
-        { role: "user", content: `EXISTING CATEGORIES: ${JSON.stringify(categories.map(({ slug, label }) => ({ slug, label })))}\nLOCAL PRIORITY: ${candidate.locality.label}\nSOURCE REPORTS:\n${JSON.stringify(reports)}` },
+        { role: "system", content: NEWS_SYSTEM_PROMPT },
+        { role: "user", content: `EXISTING CATEGORIES: ${JSON.stringify(categories.map(({ slug, label }) => ({ slug, label })))}\nLOCAL PRIORITY: ${candidate.locality.label}\nSOURCE REPORTS:\n${JSON.stringify(anonymousReports(reports))}` },
       ],
     });
     if (!result.ok) {
@@ -306,7 +390,12 @@ export async function runNewsJob(db: SupabaseClient, ctx: { settings: AiSettings
       await log.record({ job: "news", action: "news.reject", outcome: "skipped", title: item.title, reason: draft.rejectReason, model: result.model, details: { url: item.link } });
       continue;
     }
-    const problems = unsupportedClaims(draft, reports.map((report) => `${report.title}\n${report.text}`).join("\n"));
+    // Owner's rule: the public story never names the outlets it was written from.
+    const outletLeft = scrubDraft(draft);
+    const problems = [
+      ...unsupportedClaims(draft, reports.map((report) => `${report.title}\n${report.text}`).join("\n")),
+      ...outletLeft.map((name) => `the story still names the outlet “${name}”`),
+    ];
     const publishNow = publish && problems.length === 0;
     await log.step(`Fact check: ${problems.length ? `${problems.length} figure${problems.length > 1 ? "s or quotes" : " or quote"} not found in the sources — saving as a draft for an editor` : "every figure and quote matches the sources"}${publishNow ? " — publishing" : ""}.`);
 
@@ -326,22 +415,32 @@ export async function runNewsJob(db: SupabaseClient, ctx: { settings: AiSettings
       break;
     }
 
-    const cover = normalizeExternalNewsCoverUrl(extracted[0]?.image ?? item.image ?? "");
+    await log.step("Choosing a cover picture (never an outlet's logo)…");
+    const coverChoice = await chooseCover({
+      candidates: [extracted[0]?.image, item.image, ...(extracted.slice(1).map((page) => page?.image))],
+      outlet: item.outlet,
+      alt: draft.imageAlt,
+      imageQuery: draft.imageQuery || draft.title,
+      imagePrompt: draft.imagePrompt,
+      seed: item.link,
+      step: (message) => log.step(message),
+    });
+    const cover = coverChoice?.url ?? null;
     const sourceList = reports.map((report) => ({ outlet: report.outlet, title: report.title, url: report.url }));
-    const hashtags = cleanHashtags(draft.hashtags, `${draft.title} ${draft.summary}`);
+    const hashtags = withoutOutletTags(cleanHashtags(draft.hashtags, `${draft.title} ${draft.summary}`));
     const saved = await db.rpc("ai_publish_article", {
       p_title: draft.title,
       p_summary: draft.summary,
-      p_body: articleBody(draft, sourceList),
+      p_body: articleBody(draft),
       p_category_id: category.id,
       p_seo_title: draft.seoTitle,
       p_seo_description: draft.seoDescription,
       p_cover_url: cover,
-      p_cover_alt: cover ? draft.imageAlt : null,
-      p_cover_credit: cover ? item.outlet.name : null,
-      p_cover_source_url: cover ? item.link : null,
-      p_cover_license_url: cover ? item.link : null,
-      p_cover_caption: null,
+      p_cover_alt: coverChoice ? (coverChoice.alt || draft.imageAlt) : null,
+      p_cover_credit: coverChoice?.credit ?? null,
+      p_cover_source_url: coverChoice?.sourceUrl ?? null,
+      p_cover_license_url: coverChoice?.licenseUrl ?? null,
+      p_cover_caption: coverChoice?.caption ?? null,
       p_tags: hashtags,
       p_sources: sourceList,
       p_model: result.model,
@@ -369,11 +468,11 @@ export async function runNewsJob(db: SupabaseClient, ctx: { settings: AiSettings
       action: "news.publish",
       outcome: "done",
       title: draft.title,
-      reason: `Published from ${sourceNames} (${candidate.locality.label} priority, score ${Math.round(candidate.score)}). Category ${category.label}.${categoryNote}${cover ? ` Cover photo from ${item.outlet.name}.` : " No source photo was available."}`,
+      reason: `Published from ${sourceNames} (${candidate.locality.label} priority, score ${Math.round(candidate.score)}). Category ${category.label}.${categoryNote}${coverChoice ? ({ source: " Cover: the report's own photo (logo checked).", commons: " Cover: a similar freely licensed photo from Wikimedia Commons.", generated: " Cover: an AI-generated illustration." } as const)[coverChoice.kind] : " No picture found or generated; the site's fallback image is shown."}`,
       resourceType: "article",
       resourceId: article.id,
       model: result.model,
-      details: { slug: article.slug, sources: sourceList, hashtags, cover, locality: candidate.locality.label },
+      details: { slug: article.slug, sources: sourceList, hashtags, cover, cover_kind: coverChoice?.kind ?? null, locality: candidate.locality.label },
     });
 
     let breaking = false;

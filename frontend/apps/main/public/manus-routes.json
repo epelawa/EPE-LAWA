@@ -64,6 +64,9 @@
       "path": "/support"
     },
     {
+      "path": "/support/ticket/:reference"
+    },
+    {
       "path": "/radio/programmes"
     },
     {
@@ -92,6 +95,12 @@
     },
     {
       "path": "/admin/enquiries"
+    },
+    {
+      "path": "/admin/support"
+    },
+    {
+      "path": "/admin/support/:id"
     },
     {
       "path": "/admin/legal-pages"

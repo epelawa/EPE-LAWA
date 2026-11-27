@@ -6,3 +6,7 @@ packages:
 # postinstall binary download approved. Everything else stays blocked.
 onlyBuiltDependencies:
   - esbuild
+# firebase (browser messaging only; Firestore is unused) still pins
+# @grpc/grpc-js ~1.9, which has GHSA-m9gg-hp2v-232j. 1.13.6+ is the fix.
+overrides:
+  '@grpc/grpc-js': '^1.13.6'

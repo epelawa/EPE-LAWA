@@ -1,0 +1,19 @@
+.support-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); counter-reset: support-step; }
+.support-steps li { counter-increment: support-step; position: relative; display: grid; gap: 0.25rem; padding: 1rem 1rem 1rem 3.25rem; border: 1px solid var(--line, #dfe5f0); border-radius: 1rem; background: var(--surface, #fff); }
+.support-steps li::before { content: counter(support-step); position: absolute; left: 1rem; top: 1rem; width: 1.75rem; height: 1.75rem; border-radius: 999px; display: grid; place-items: center; font-weight: 700; color: #fff; background: var(--brand, #1d4ed8); }
+.support-steps span { color: var(--muted, #5b6478); font-size: 0.92rem; }
+.support-ticket-form__grid { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+.support-ticket-form select { min-height: 44px; }
+.support-ticket-form__note { font-size: 0.9rem; color: var(--muted, #5b6478); }
+.support-subhead { margin: 0; font-size: 1.15rem; }
+.support-ticket-done { text-align: left; }
+.support-ticket-done__eyebrow { margin: 0; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted, #5b6478); }
+.support-ticket-done__ref { margin: 0; font-size: clamp(1.8rem, 6vw, 2.4rem); letter-spacing: 0.06em; font-variant-numeric: tabular-nums; }
+.support-thread { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.85rem; }
+.support-thread__msg { max-width: 46rem; padding: 0.9rem 1rem; border-radius: 1rem; border: 1px solid var(--line, #dfe5f0); background: var(--surface, #fff); }
+.support-thread__msg[data-author="customer"] { margin-left: auto; background: color-mix(in srgb, var(--brand, #1d4ed8) 8%, var(--surface, #fff)); }
+.support-thread__msg[data-author="system"] { max-width: none; background: transparent; border-style: dashed; font-size: 0.9rem; }
+.support-thread__meta { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-bottom: 0.4rem; font-size: 0.82rem; color: var(--muted, #5b6478); }
+.support-thread__who { font-weight: 700; color: inherit; }
+.support-thread__body { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.6; }
+.support-ticket-head { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; }

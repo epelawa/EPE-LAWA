@@ -23,6 +23,11 @@ const SCOPE = "https://www.googleapis.com/auth/firebase.messaging";
 const PROJECT_ID = /^[a-z][a-z0-9-]{4,61}[a-z0-9]$/;
 const CLIENT_EMAIL = /^[^\s@]+@[a-z0-9-]+\.iam\.gserviceaccount\.com$/;
 
+/** Test values put in Vercel until the real Firebase project exists ("REPLACE_ME_…"). */
+export function isPlaceholderValue(value: string | undefined | null): boolean {
+  return /replace[_-]?me|placeholder|changeme|your[_-]?(firebase|project)/i.test(value ?? "");
+}
+
 export type FcmConfig = { projectId: string; clientEmail: string; privateKey: string };
 
 /** Vercel stores multi-line secrets either with real newlines or with literal "\n". */
@@ -35,6 +40,7 @@ export function fcmConfig(env: NodeJS.ProcessEnv = process.env): FcmConfig | nul
   const projectId = env.FIREBASE_PROJECT_ID?.trim() ?? "";
   const clientEmail = env.FIREBASE_CLIENT_EMAIL?.trim() ?? "";
   const privateKey = normalisePrivateKey(env.FIREBASE_PRIVATE_KEY ?? "");
+  if ([projectId, clientEmail, privateKey].some(isPlaceholderValue)) return null;
   if (!PROJECT_ID.test(projectId) || !CLIENT_EMAIL.test(clientEmail)) return null;
   if (!privateKey.includes("-----BEGIN PRIVATE KEY-----")) return null;
   return { projectId, clientEmail, privateKey };
@@ -46,7 +52,7 @@ export function fcmSenderReady(env: NodeJS.ProcessEnv = process.env): boolean {
 
 /** Which Firebase variables are present (never their values), for the admin status card. */
 export function fcmSetupStatus(env: NodeJS.ProcessEnv = process.env) {
-  const has = (name: string) => Boolean(env[name]?.trim());
+  const has = (name: string) => Boolean(env[name]?.trim()) && !isPlaceholderValue(env[name]);
   return {
     server: { FIREBASE_PROJECT_ID: has("FIREBASE_PROJECT_ID"), FIREBASE_CLIENT_EMAIL: has("FIREBASE_CLIENT_EMAIL"), FIREBASE_PRIVATE_KEY: has("FIREBASE_PRIVATE_KEY") },
     browser: {

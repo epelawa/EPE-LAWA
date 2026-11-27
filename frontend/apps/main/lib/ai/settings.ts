@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { cleanNewsTimes } from "./news-schedule";
+import { normaliseJobSchedules, normaliseLastDue, type JobSchedule, type ScheduledJob } from "./job-schedule";
 
 export const AI_CAPABILITIES = [
   { key: "news", label: "Write and publish news on the schedule below", hint: "Epe first, then Lagos, Nigeria and the world, from trusted outlets only." },
@@ -7,7 +8,8 @@ export const AI_CAPABILITIES = [
   { key: "push", label: "Send push notifications", hint: "Every story the AI publishes notifies news subscribers, with its cover photo, within the daily limit below." },
   { key: "breaking", label: "Flag breaking news", hint: "Urgent, developing stories join the breaking-news ticker for the hours set below." },
   { key: "business_review", label: "Verify submitted businesses", hint: "Checks the website and OpenStreetMap; publishes only with evidence." },
-  { key: "enquiry_reply", label: "Reply to contact enquiries by email", hint: "Every email says it was written by the AI assistant. Corrections always go to a human." },
+  { key: "enquiry_reply", label: "Reply to contact enquiries by email", hint: "Every email says it was written by the AI assistant and greets the person by name. Corrections always go to a human." },
+  { key: "support_reply", label: "Answer support tickets", hint: "Sorts each new ticket (topic and priority), answers what it safely can by email, and hands the rest to staff." },
   { key: "ads", label: "Place approved ads", hint: "Only businesses with a verified paid sponsorship; rotates their order daily." },
   { key: "comment_moderation", label: "Hide abusive or spam comments", hint: "Hides with a stated reason; staff can restore." },
   { key: "admin_log_explain", label: "Explain admin activity in the Logs", hint: "Writes an hourly plain-English summary of what each admin did." },
@@ -19,6 +21,7 @@ export type AiCapability = (typeof AI_CAPABILITIES)[number]["key"];
 export const MODEL_JOBS = [
   { key: "news", label: "News writing", hint: "Long, careful rewrites of source reports — pick strong models." },
   { key: "enquiries", label: "Enquiry replies", hint: "Short emails; fast models work well." },
+  { key: "support", label: "Support tickets", hint: "Sorts and answers support tickets; fast models work well." },
   { key: "businesses", label: "Business verification", hint: "Weighs evidence about submitted businesses." },
   { key: "moderation", label: "Comment moderation", hint: "Quick spam/abuse checks; fast models work well." },
   { key: "admin_logs", label: "Admin log explanations", hint: "Plain-English hourly summaries." },
@@ -56,6 +59,10 @@ export type AiSettings = {
   /** Stories still owed from a run that hit its time limit. */
   news_owed: number;
   capabilities: Record<AiCapability, boolean>;
+  /** When each non-news job runs on autopilot. */
+  job_schedules: Record<ScheduledJob, JobSchedule>;
+  /** When each scheduled job was last checked. */
+  job_last_due: Partial<Record<ScheduledJob, string>>;
   job_models: Partial<Record<ModelJob, string[]>>;
   actor_user_id: string | null;
   last_news_run_at: string | null;
@@ -64,7 +71,7 @@ export type AiSettings = {
   updated_at: string | null;
 };
 
-export const AI_SETTINGS_COLUMNS = "autopilot_enabled,schedule_enabled,daily_start,daily_stop,auto_on_at,auto_off_at,news_interval_minutes,articles_per_run,daily_request_budget,push_daily_limit,breaking_hours,breaking_max,news_times,news_owed,capabilities,job_models,actor_user_id,last_news_run_at,last_ads_run_at,last_explain_run_at,updated_at";
+export const AI_SETTINGS_COLUMNS = "autopilot_enabled,schedule_enabled,daily_start,daily_stop,auto_on_at,auto_off_at,news_interval_minutes,articles_per_run,daily_request_budget,push_daily_limit,breaking_hours,breaking_max,news_times,news_owed,capabilities,job_schedules,job_last_due,job_models,actor_user_id,last_news_run_at,last_ads_run_at,last_explain_run_at,updated_at";
 
 export function normaliseSettings(row: Record<string, unknown> | null): AiSettings | null {
   if (!row) return null;
@@ -76,7 +83,7 @@ export function normaliseSettings(row: Record<string, unknown> | null): AiSettin
   const most = Number(row.breaking_max);
   return { ...(row as unknown as AiSettings), capabilities,
     breaking_hours: Number.isInteger(hours) && hours >= 1 && hours <= 72 ? hours : 6,
-    breaking_max: Number.isInteger(most) && most >= 1 && most <= 10 ? most : 5, job_models: normaliseJobModels(row.job_models), news_times: newsTimes, news_owed: Number.isInteger(owed) && owed > 0 ? owed : 0 };
+    breaking_max: Number.isInteger(most) && most >= 1 && most <= 10 ? most : 5, job_models: normaliseJobModels(row.job_models), job_schedules: normaliseJobSchedules(row.job_schedules), job_last_due: normaliseLastDue(row.job_last_due), news_times: newsTimes, news_owed: Number.isInteger(owed) && owed > 0 ? owed : 0 };
 }
 
 export async function loadAiSettings(db: SupabaseClient): Promise<AiSettings | null> {

@@ -4,14 +4,15 @@ import { EmptyPanel, Notice, PageFrame, PageIntro, Panel, SectionHeading, Status
 import { createStaffClient } from "../../../lib/supabase";
 import { adminHref } from "../../../lib/admin-path";
 import { lagosExact, lagosInputValue } from "../../../lib/lagos-time";
-import { runAiJobNow, saveAiModels, saveAiSettings } from "../../../lib/ai-actions";
+import { runAiJobNow, saveAiJobSchedules, saveAiModels, saveAiSettings } from "../../../lib/ai-actions";
 import { AI_CAPABILITIES, AI_SETTINGS_COLUMNS, MAX_MODELS_PER_JOB, MODEL_JOBS, normaliseSettings } from "../../../../main/lib/ai/settings";
 import { AI_JOB_LABELS } from "../../../../main/lib/ai/runner";
 import { keyStatus, loadFreeModels, modelQueue, requestsToday, type ModelList } from "../../../../main/lib/ai/openrouter";
 import { DESK_LABELS, NEWS_OUTLETS, type Desk } from "../../../../main/lib/ai/news-sources";
 import LiveRefresh from "../../../components/live-refresh";
 import styles from "./ai-scheduler.module.css";
-import { ChoiceWithCustom, NewsScheduleField } from "../../../components/ai-limit-fields";
+import { ChoiceWithCustom, JobScheduleField, NewsScheduleField } from "../../../components/ai-limit-fields";
+import { describeJobSchedule, JOB_INTERVAL_LIMITS, SCHEDULED_JOBS } from "../../../../main/lib/ai/job-schedule";
 import { NEWS_LIMITS, nextNewsSlot } from "../../../../main/lib/ai/news-schedule";
 import { formAdminClient } from "../../../../main/lib/form-server";
 import { to12h } from "../../../../main/lib/clock12";
@@ -30,6 +31,9 @@ const messages: Record<string, { tone: "success" | "danger" | "warning"; text: s
   window: { tone: "warning", text: "Daily working hours need a start and an end time that differ." },
   custom: { tone: "warning", text: "A custom value is outside its limits, so nothing was saved. The allowed range is shown under each field." },
   times: { tone: "warning", text: "Add at least one news time, or switch the news schedule back to “Every …”." },
+  "schedules-saved": { tone: "success", text: "Job schedules saved. Each job now runs on its own schedule while autopilot is on." },
+  "schedules-invalid": { tone: "warning", text: "A job schedule is incomplete (a custom interval outside 5 minutes to 7 days, or “At set times” with no time), so nothing was saved." },
+  "schedules-failed": { tone: "danger", text: "The job schedules could not be saved. Try again." },
   "models-saved": { tone: "success", text: "Model choices saved. Each job now tries its models in the order you set." },
   "models-failed": { tone: "danger", text: "The model choices could not be saved. Only free models (ending in :free) can be chosen." },
   "models-unknown": { tone: "warning", text: "One of the chosen models is not in OpenRouter's free list any more, so nothing was saved. The list below is live from OpenRouter — choose again." },
@@ -67,14 +71,14 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
     used = count;
   } catch { /* service key missing: shown below */ }
   const models = list.models;
+  let unrevised = 0;
+  try { const { count } = await formAdminClient().from("ai_article_meta").select("article_id", { count: "exact", head: true }).is("revised_at", null); unrevised = count ?? 0; } catch { unrevised = 0; }
   const key = await keyStatus();
   const runs = (runsResult.data ?? []) as Run[];
   const notice = result === "ran" ? { tone: "success" as const, text: summary || "Run finished." } : result ? messages[result] : null;
-  const budgetLeft = Math.max(0, settings.daily_request_budget - used);
 
   const running = runs.filter((run) => run.status === "running" && Date.now() - Date.parse(run.progress_at ?? run.started_at) < 6 * 60_000);
   const runningByJob = new Map(running.map((run) => [run.job, run]));
-  const budgetShare = settings.daily_request_budget ? Math.min(100, Math.round((used / settings.daily_request_budget) * 100)) : 0;
   const choiceLabel = (index: number) => (index === 0 ? "1st choice" : `Backup ${index}`);
   const minutesLabel = (value: number) => (value % 1440 === 0 ? `Every ${value / 1440 === 1 ? "day" : `${value / 1440} days`}` : value % 60 === 0 ? `Every ${value / 60 === 1 ? "hour" : `${value / 60} hours`}` : `Every ${value} minutes`);
   const nextSlot = nextNewsSlot(settings.news_times, Date.now());
@@ -109,9 +113,8 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
         </div>
         <div className={styles.stat}>
           <p className={styles.statLabel}>Today’s requests</p>
-          <p className={styles.statValue}>{used} <span className={styles.statNote}>of {settings.daily_request_budget}</span></p>
-          <div className={styles.meter} aria-hidden="true"><span style={{ width: `${budgetShare}%`, background: budgetShare > 85 ? "#dc2626" : budgetShare > 60 ? "#d97706" : "#16a34a" }} /></div>
-          <p className={styles.statNote}>{budgetLeft} left · resets 01:00 WAT. Failed attempts count too.</p>
+          <p className={styles.statValue}>{used}</p>
+          <p className={styles.statNote}>No local cap: the AI keeps working while OpenRouter accepts requests, and stops only if OpenRouter itself says the allowance is used up.</p>
         </div>
         <div className={styles.stat}>
           <p className={styles.statLabel}>Free models</p>
@@ -133,7 +136,10 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
                   <p>{active ? <><StatusBadge tone="warning">running</StatusBadge> {active.progress ?? "Starting…"}</> : last ? <>Last: <StatusBadge tone={statusTone(last.status)}>{last.status}</StatusBadge> {lagosExact(last.started_at)}</> : "Not run yet."}</p>
                 </div>
                 {active ? <a className="btn-primary" href={adminHref(`/ai-processes/runs/${active.id}`)}>Watch live</a> : (
-                  <form action={runAiJobNow}><input type="hidden" name="job" value={job} /><SubmitButton className="btn-secondary" useLegacyClasses pendingLabel="Starting…">Run now</SubmitButton></form>
+                  <div className="ui-stack-sm">
+                    <form action={runAiJobNow}><input type="hidden" name="job" value={job} /><SubmitButton className="btn-secondary" useLegacyClasses pendingLabel="Starting…">Run now</SubmitButton></form>
+                    {job === "news" && unrevised > 0 ? <form action={runAiJobNow}><input type="hidden" name="job" value="news" /><input type="hidden" name="mode" value="reedit" /><SubmitButton className="btn-secondary" useLegacyClasses pendingLabel="Starting…">{`Re-edit ${unrevised} earlier AI ${unrevised === 1 ? "story" : "stories"}`}</SubmitButton></form> : null}
+                  </div>
                 )}
               </div>
             );
@@ -219,6 +225,35 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
         ) : null}
       </Panel>
 
+      <Panel className="ui-stack" id="ai-job-schedules">
+        <SectionHeading title="Job schedules" description="Choose when each AI job runs by itself while autopilot is on. The news desk keeps its own schedule below. Times are Lagos time (WAT)." />
+        <form action={saveAiJobSchedules} className="ui-stack">
+          <div className={styles.jobs}>
+            {SCHEDULED_JOBS.map((job) => {
+              const schedule = settings.job_schedules[job.key];
+              return (
+                <div key={job.key} className="ui-stack-sm">
+                  <JobScheduleField
+                    job={job.key}
+                    label={job.label}
+                    hint={`Now: ${describeJobSchedule(schedule, (value) => to12h(value))}.`}
+                    mode={schedule.mode}
+                    minutes={schedule.minutes}
+                    times={schedule.times}
+                    intervalOptions={[5, 10, 15, 30, 60, 120, 180, 360, 720, 1440, 10080].map((value) => ({ value, label: minutesLabel(value) }))}
+                    min={JOB_INTERVAL_LIMITS.min}
+                    max={JOB_INTERVAL_LIMITS.max}
+                  />
+                </div>
+              );
+            })}
+          </div>
+          <div className={styles.formFooter}>
+            <SubmitButton className="btn-primary" useLegacyClasses pendingLabel="Saving…">Save job schedules</SubmitButton>
+          </div>
+        </form>
+      </Panel>
+
       <Panel>
         <form action={saveAiSettings} className="ui-stack">
           <SectionHeading title="Autopilot, schedule and limits" description="Times are Lagos time (WAT). The schedule is checked every 5 minutes." />
@@ -271,16 +306,6 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
                 max={NEWS_LIMITS.articles.max}
                 suffix="stories"
                 hint="Each story takes up to 2 minutes and about one request. Stories that do not fit in one run are written at the next pass, 5 minutes later."
-              />
-              <ChoiceWithCustom
-                name="daily_request_budget"
-                label="Daily model request budget"
-                options={[10, 20, 30, 40, 50, 100, 200, 500, 1000].map((value) => ({ value, label: `${value} requests${value === 50 ? " (free-key limit)" : value > 50 ? " (needs OpenRouter credit history)" : ""}` }))}
-                current={settings.daily_request_budget}
-                min={NEWS_LIMITS.budget.min}
-                max={NEWS_LIMITS.budget.max}
-                suffix="requests"
-                hint="The AI stops for the day when this is used up."
               />
               <ChoiceWithCustom
                 name="push_daily_limit"

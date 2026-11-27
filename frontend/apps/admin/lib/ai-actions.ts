@@ -8,7 +8,9 @@ import { adminHref } from "./admin-path";
 import { createStaffClient } from "./supabase";
 import { readAdminSessionFromCookies } from "./supabase-access";
 import { AI_CAPABILITIES, MAX_MODELS_PER_JOB, MODEL_JOBS, normaliseJobModels } from "../../main/lib/ai/settings";
+import { normaliseJobSchedules } from "../../main/lib/ai/job-schedule";
 import { cleanNewsTimes, NEWS_LIMITS } from "../../main/lib/ai/news-schedule";
+import { JOB_INTERVAL_LIMITS, SCHEDULED_JOBS, type JobSchedule } from "../../main/lib/ai/job-schedule";
 import { loadFreeModels } from "../../main/lib/ai/openrouter";
 import { runAutopilotPass, AI_JOB_LABELS } from "../../main/lib/ai/runner";
 import { formAdminClient } from "../../main/lib/form-server";
@@ -71,11 +73,12 @@ export async function saveAiSettings(form: FormData): Promise<void> {
   const reason = typeof form.get("reason") === "string" ? String(form.get("reason")).trim().slice(0, 500) : "";
   const interval = chosen(form, "news_interval_minutes", NEWS_LIMITS.interval, 60);
   const perRun = chosen(form, "articles_per_run", NEWS_LIMITS.articles, 1);
-  const budget = chosen(form, "daily_request_budget", NEWS_LIMITS.budget, 50);
+  // No local request cap any more: the AI runs while OpenRouter accepts requests.
+  const budget = NEWS_LIMITS.budget.max;
   const pushes = chosen(form, "push_daily_limit", NEWS_LIMITS.push, 3);
   const breakingHours = chosen(form, "breaking_hours", NEWS_LIMITS.breakingHours, 6);
   const breakingMax = chosen(form, "breaking_max", NEWS_LIMITS.breakingMax, 5);
-  if (interval === null || perRun === null || budget === null || pushes === null || breakingHours === null || breakingMax === null) return await redirect(back("custom"));
+  if (interval === null || perRun === null || pushes === null || breakingHours === null || breakingMax === null) return await redirect(back("custom"));
   const newsTimes = form.get("news_mode") === "times" ? cleanNewsTimes(form.getAll("news_time")) : [];
   if (form.get("news_mode") === "times" && !newsTimes.length) return await redirect(back("times"));
   const { error } = await admin.db.rpc("ai_admin_save", {
@@ -97,6 +100,37 @@ export async function saveAiSettings(form: FormData): Promise<void> {
   const breaking = error ? null : await admin.db.rpc("ai_breaking_save", { p_hours: breakingHours, p_max: breakingMax, p_enabled: form.get("cap_breaking") === "on" });
   revalidatePath(adminHref("/ai-scheduler"));
   return await redirect(back(error || schedule?.error || breaking?.error ? "failed" : "saved"));
+}
+
+/** Reads one job's schedule from the form; null when a custom interval is out of range or set times are missing. */
+function readJobSchedule(form: FormData, job: string, fallbackMinutes: number): JobSchedule | null {
+  const raw = String(form.get(`sched_${job}_mode`) ?? "pass");
+  const mode: JobSchedule["mode"] = raw === "interval" || raw === "times" || raw === "off" ? raw : "pass";
+  const minutes = mode === "interval" ? chosen(form, `sched_${job}_minutes`, JOB_INTERVAL_LIMITS, fallbackMinutes) : bounded(form.get(`sched_${job}_minutes`), JOB_INTERVAL_LIMITS.min, JOB_INTERVAL_LIMITS.max, fallbackMinutes);
+  if (minutes === null) return null;
+  const times = mode === "times" ? cleanNewsTimes(form.getAll(`sched_${job}_time`)) : [];
+  if (mode === "times" && !times.length) return null;
+  // The database always wants minutes (5 to 10080), whatever the mode.
+  return { mode, minutes, times };
+}
+
+/** When each non-news AI job runs on autopilot (Comment moderation, Enquiry replies, Support, Businesses, Admin logs, Ads). */
+export async function saveAiJobSchedules(form: FormData): Promise<void> {
+  const admin = await primaryAdmin();
+  if (!admin) return await redirect(back("denied"));
+  const current = await admin.db.from("ai_settings").select("capabilities,job_schedules").eq("id", 1).maybeSingle();
+  if (current.error) return await redirect(back("schedules-failed"));
+  const previous = normaliseJobSchedules(current.data?.job_schedules);
+  const schedules: Record<string, JobSchedule> = {};
+  for (const { key } of SCHEDULED_JOBS) {
+    const schedule = readJobSchedule(form, key, previous[key].minutes);
+    if (!schedule) return await redirect(back("schedules-invalid"));
+    schedules[key] = schedule;
+  }
+  const capabilities = (current.data?.capabilities ?? {}) as Record<string, unknown>;
+  const { error } = await admin.db.rpc("ai_job_schedules_save", { p_schedules: schedules, p_support_enabled: capabilities.support_reply === true });
+  revalidatePath(adminHref("/ai-scheduler"));
+  return await redirect(back(error ? "schedules-failed" : "schedules-saved"));
 }
 
 /**
@@ -148,7 +182,8 @@ export async function runAiJobNow(form: FormData): Promise<void> {
   // the administrator can watch what it is doing instead of waiting minutes.
   let announce: (runId: string | null) => void = () => {};
   const started = new Promise<string | null>((resolve) => { announce = resolve; });
-  const pass = runAutopilotPass({ trigger: "manual", job: job as AiJob, triggeredBy: admin.userId, onRunStarted: (runId) => announce(runId) })
+  const newsMode = job === "news" && form.get("mode") === "reedit" ? "reedit" : "write";
+  const pass = runAutopilotPass({ trigger: "manual", job: job as AiJob, newsMode, triggeredBy: admin.userId, onRunStarted: (runId) => announce(runId) })
     .then((result) => { announce(null); return result; })
     .catch((error: unknown) => {
       console.error("manual ai run failed", { message: error instanceof Error ? error.message : "unknown" });

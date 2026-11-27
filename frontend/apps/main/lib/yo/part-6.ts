@@ -168,6 +168,7 @@ export const PART_6: Record<string, string> = {
   "You are signed in. We will use your account email if our team needs to reply.": "O ti wọlé. A ó lo ímeèlì àkáǹtì rẹ bí ẹgbẹ́ wa bá nílò láti fèsì.",
   "Your contact details": "Àlàyé ìkànsí rẹ",
   "— tap to refresh": "— tẹ̀ ẹ́ láti tún gbé",
+  "Just in": "Ṣẹ̀ṣẹ̀ dé",
   "Contact availability": "Wíwà ìkànsí",
   "Information pages": "Ojú-ìwé àlàyé",
   "The essentials": "Àwọn ohun pàtàkì",

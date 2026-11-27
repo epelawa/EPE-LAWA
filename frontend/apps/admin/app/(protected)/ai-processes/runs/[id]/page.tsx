@@ -37,6 +37,7 @@ function link(row: Activity): { href: string; label: string } | null {
     return row.action === "news.publish" && slug ? { href: `/news/${slug}`, label: "Read the story" } : { href: adminHref(`/newsroom/${row.resource_id}`), label: "Open in Newsroom" };
   }
   if (row.resource_type === "private_enquiry") return { href: adminHref("/enquiries"), label: "Open Enquiries" };
+  if (row.resource_type === "support_ticket" && row.resource_id) return { href: adminHref(`/support/${row.resource_id}`), label: "Open ticket" };
   if (row.resource_type === "business") return { href: adminHref("/business-review"), label: "Open Businesses" };
   if (row.resource_type === "comment") return { href: adminHref("/moderation/comments"), label: "Open Comments" };
   return null;

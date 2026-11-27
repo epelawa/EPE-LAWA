@@ -27,6 +27,15 @@ export default function GuidelinesPage() {
         <li>Any paid placement, if introduced, is clearly labelled and is not presented as reporting.</li>
       </ul>
 
+      <h2 id="ai">How we use AI</h2>
+      <ul>
+        <li>Stories written by our AI assistant are marked as written by the EPE LAWA AI desk and are rewritten in our own words from several public reports — never copied.</li>
+        <li>An AI story may only state figures and quotes that appear in its source reports. Anything it cannot support is saved as a draft for an editor instead of being published.</li>
+        <li>AI stories never carry another outlet&apos;s logo or branding. Their cover is a picture from a report, a freely licensed photo, or a clearly AI-generated illustration; when none is suitable we show our own fallback image.</li>
+        <li>The assistant answers simple enquiries and support tickets, labelled as AI replies. Corrections, complaints, legal, privacy, payment and safety matters always go to a person.</li>
+        <li>The assistant may hide spam or abusive comments with a stated reason. Staff review its actions and can restore anything it got wrong.</li>
+      </ul>
+
       <h2 id="verification">Business verification</h2>
       <p>
         A verification mark on a business listing means an EPE LAWA reviewer recorded what business
