@@ -29,3 +29,16 @@ test('mobile footer presents quick links and topics in three columns with wrappi
   assert.match(css, /\.listingColumn:not\(\.listingQuick\) nav \{ grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
   assert.match(css, /min-height:44px; padding:5px 0; font-size:\.8rem; line-height:1\.3; overflow-wrap:anywhere/);
 });
+
+test('footer Google preferred-sources CTA uses the EPE LAWA query and safe new-tab behavior', async () => {
+  const footer = await read('components/news-footer.tsx');
+  const styles = await read('components/news-footer.module.css');
+  assert.match(footer, /Make Search your own with preferred sources/);
+  assert.match(footer, /Tailor your Search experience by highlighting the sources that you rely on the most/);
+  assert.match(footer, /href="https:\/\/www\.google\.com\/preferences\/source\?q=epelawa\.ng"/);
+  assert.match(footer, /Choose EPE LAWA in Google Source preferences/);
+  assert.match(footer, /target="_blank" rel="noopener noreferrer"/);
+  assert.match(footer, /aria-label="Choose EPE LAWA in Google Source preferences \(opens in a new tab\)"/);
+  assert.match(styles, /\.preferredSourcesButton:focus-visible/);
+  assert.match(styles, /@media\(prefers-reduced-motion:reduce\)/);
+});

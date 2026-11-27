@@ -26,6 +26,17 @@ export default async function NewsFooter({ listing = false }: { listing?: boolea
       </section>
       <section className={`${styles.listingColumn} ${styles.listingQuick}`}><h2>{t(lang, "footer.quickLinks")}</h2><QuickLinks /></section>
       <section className={styles.listingColumn}><h2>{t(lang, "footer.browseTopics")}</h2><nav aria-label="Epe Division">{EPE_LINKS.map(([href, label]) => <Link key={href} href={href}>{label}</Link>)}</nav></section>
+      <section className={styles.preferredSources} aria-labelledby="preferred-sources-heading">
+        <div className={styles.preferredSourcesCopy}>
+          <h2 id="preferred-sources-heading">Make Search your own with preferred sources</h2>
+          <p>Tailor your Search experience by highlighting the sources that you rely on the most. Manage your selections below or discover new ones to add to your list.</p>
+          <small>Google decides which sources are available in its preferences tool.</small>
+        </div>
+        <a className={styles.preferredSourcesButton} href="https://www.google.com/preferences/source?q=epelawa.ng" target="_blank" rel="noopener noreferrer" aria-label="Choose EPE LAWA in Google Source preferences (opens in a new tab)">
+          <span>Choose EPE LAWA in Google Source preferences</span>
+          <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17 17 7M7 7h10v10" /></svg>
+        </a>
+      </section>
       <section className={styles.listingNewsletter} aria-labelledby="footer-newsletter-heading"><h2 id="footer-newsletter-heading">{t(lang, "footer.newsletter")}</h2><p>{t(lang, "footer.newsletterNote")}</p><NewsletterForm id="news-listing-signup" variant="footer" /></section>
     </div>
     <div className={styles.listingBottom}><span>© {new Date().getFullYear()} EPE LAWA</span><span>{t(lang, "footer.tagline")}</span><Link href="/photo-credits">{t(lang, "footer.photoCredits")}</Link><Link href="/privacy">{t(lang, "footer.privacy")}</Link><Link href="/terms">{t(lang, "footer.terms")}</Link><LanguageSwitch lang={lang} /></div>
