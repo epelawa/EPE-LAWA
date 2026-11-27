@@ -162,6 +162,11 @@ async function fetchFeeds(): Promise<FeedItem[]> {
   return results.flat();
 }
 
+/** The longest usable text among the page, the feed's full text, the page description and the feed summary. */
+export function bestReportText(options: readonly (string | null | undefined)[]): string {
+  return options.filter((value): value is string => typeof value === "string").map((value) => value.trim()).sort((a, b) => b.length - a.length)[0] ?? "";
+}
+
 export function rankCandidates(items: FeedItem[], recentTitles: string[], now = Date.now()): Candidate[] {
   const recent = recentTitles.map(titleTokens);
   const fresh = items.filter((item) => newsworthy(item) && item.publishedAt && now - Date.parse(item.publishedAt) < MAX_AGE_HOURS * 3600_000);
@@ -223,23 +228,27 @@ export async function runNewsJob(db: SupabaseClient, ctx: { settings: AiSettings
   }
 
   let published = 0;
-  for (const candidate of ranked.slice(0, settings.articles_per_run + 2)) {
-    if (published >= settings.articles_per_run || Date.now() > deadline - 20_000 || budget.remaining <= 0) break;
+  // Look further down the list so a few unreadable pages never leave the hour empty.
+  for (const candidate of ranked.slice(0, settings.articles_per_run + 6)) {
+    if (published >= settings.articles_per_run || Date.now() > deadline - 45_000 || budget.remaining <= 0) break;
     const { item } = candidate;
     const sources = [item, ...candidate.corroborating.slice(0, 1)];
-    const pages = await Promise.all(sources.map((source) => fetchPublicText(source.link, { timeoutMs: 7000, allowHosts: trustedNewsHost })));
+    const pages = await Promise.all(sources.map((source) => fetchPublicText(source.link, { timeoutMs: 9000, maxBytes: 3_000_000, allowHosts: trustedNewsHost })));
     const extracted = pages.map((page) => (page && page.status < 400 ? extractArticle(page.text) : null));
     const reports = sources.map((source, index) => ({
       outlet: source.outlet.name,
       url: source.link,
       title: source.title,
       published_at: source.publishedAt,
-      text: (extracted[index]?.text || extracted[index]?.description || source.summary).slice(0, index === 0 ? 6000 : 3000),
+      text: bestReportText([extracted[index]?.text, source.content, extracted[index]?.description, source.summary]).slice(0, index === 0 ? 6000 : 3000),
     })).filter((report) => report.text.length >= 200);
     await db.from("ai_news_seen").upsert({ url_hash: urlHash(item.link), url: item.link, title: item.title, outlet: item.outlet.name, published_at: item.publishedAt, status: "seen" });
     if (!reports.length || reports[0].url !== item.link || reports[0].text.length < 400) {
+      const page = pages[0];
+      const why = !page ? "its page could not be reached" : page.status >= 400 ? `its page answered HTTP ${page.status} (blocked or removed)` : "its page had no readable report text";
+      const feedLength = (item.content ?? item.summary).length;
       await db.from("ai_news_seen").update({ status: "skipped" }).eq("url_hash", urlHash(item.link));
-      await log.record({ job: "news", action: "news.skip", outcome: "skipped", title: item.title, reason: `${item.outlet.name} did not provide enough readable report text to verify the facts.`, details: { url: item.link } });
+      await log.record({ job: "news", action: "news.skip", outcome: "skipped", title: item.title, reason: `Not enough of ${item.outlet.name}'s report to verify the facts: ${why}, and its feed carried only ${feedLength} characters. Moved on to the next story.`, details: { url: item.link, http_status: page?.status ?? null } });
       continue;
     }
 
@@ -248,6 +257,9 @@ export async function runNewsJob(db: SupabaseClient, ctx: { settings: AiSettings
       runId: log.runId,
       budget,
       deadline,
+      maxAttempts: 4,
+      maxTokens: 8000,
+      timeoutMs: 110_000,
       validate: validateDraft,
       messages: [
         { role: "system", content: SYSTEM },
@@ -255,7 +267,7 @@ export async function runNewsJob(db: SupabaseClient, ctx: { settings: AiSettings
       ],
     });
     if (!result.ok) {
-      await log.record({ job: "news", action: "news.write", outcome: "failed", title: item.title, reason: `No free model produced a usable story: ${result.error}`, details: { url: item.link } });
+      await log.record({ job: "news", action: "news.write", outcome: "failed", title: item.title, reason: `None of the chosen free models produced a usable story: ${result.error}`, details: { url: item.link } });
       continue;
     }
     const draft = result.data;

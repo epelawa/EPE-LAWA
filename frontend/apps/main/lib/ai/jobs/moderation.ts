@@ -21,7 +21,7 @@ export async function runModerationJob(db: SupabaseClient, ctx: { log: RunLog; b
     runId: ctx.log.runId,
     budget: ctx.budget,
     deadline: ctx.deadline,
-    maxTokens: 1500,
+    maxTokens: 2500,
     validate: (value) => {
       const verdicts = (value as { verdicts?: unknown })?.verdicts;
       if (!Array.isArray(verdicts)) return null;

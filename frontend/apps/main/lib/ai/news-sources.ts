@@ -47,7 +47,7 @@ export function localityScore(text: string): { score: number; label: "Epe" | "La
   return { score: 10, label: "World" };
 }
 
-export type FeedItem = { outlet: Outlet; title: string; link: string; summary: string; publishedAt: string | null; image: string | null };
+export type FeedItem = { outlet: Outlet; title: string; link: string; summary: string; publishedAt: string | null; image: string | null; content?: string };
 
 const ENTITIES: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: "\"", apos: "'", nbsp: " ", rsquo: "’", lsquo: "‘", rdquo: "”", ldquo: "“", ndash: "–", mdash: "—", hellip: "…" };
 
@@ -85,6 +85,8 @@ export function parseFeed(xml: string, outlet: Outlet): FeedItem[] {
     let link = stripTags(tag(block, "link") ?? "");
     if (!link) link = attribute(block, "link", "href") ?? "";
     const summary = stripTags(tag(block, "description") ?? tag(block, "summary") ?? tag(block, "content:encoded") ?? "").slice(0, 600);
+    // Many newsroom feeds carry the full report in content:encoded — a reliable fallback when the page itself is blocked.
+    const fullText = paragraphText(tag(block, "content:encoded") ?? tag(block, "content") ?? "");
     const dateText = stripTags(tag(block, "pubDate") ?? tag(block, "published") ?? tag(block, "updated") ?? tag(block, "dc:date") ?? "");
     const date = dateText ? new Date(dateText) : null;
     const image = attribute(block, "media:content", "url") ?? attribute(block, "media:thumbnail", "url") ?? attribute(block, "enclosure", "url");
@@ -92,7 +94,7 @@ export function parseFeed(xml: string, outlet: Outlet): FeedItem[] {
     let host = "";
     try { host = new URL(link).hostname; } catch { continue; }
     if (!trustedNewsHost(host)) continue;
-    items.push({ outlet, title: title.slice(0, 300), link, summary, publishedAt: date && !Number.isNaN(date.getTime()) ? date.toISOString() : null, image });
+    items.push({ outlet, title: title.slice(0, 300), link, summary, publishedAt: date && !Number.isNaN(date.getTime()) ? date.toISOString() : null, image, content: fullText.length > summary.length ? fullText : undefined });
   }
   return items;
 }
@@ -130,16 +132,55 @@ function meta(html: string, key: string): string | null {
   return null;
 }
 
-/** Reads the report's own text (paragraphs) and its large share image. */
-export function extractArticle(html: string): ExtractedPage {
-  const scope = html.match(/<article\b[\s\S]*?<\/article>/i)?.[0] ?? html;
-  const paragraphs = (scope.match(/<p\b[^>]*>[\s\S]*?<\/p>/gi) ?? [])
+const BOILERPLATE = /^(advertisement|read also|also read|read more|related|subscribe|follow us|click here|sign up|copyright|©|join our|download our|share this|you may also like|recommended)/i;
+
+/** Paragraph text from an HTML fragment (CDATA-safe), without navigation or promo lines. */
+export function paragraphText(fragment: string): string {
+  const html = fragment.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1");
+  const decoded = /&lt;p\b/i.test(html) && !/<p\b/i.test(html) ? decodeEntities(html) : html;
+  const paragraphs = (decoded.match(/<p\b[^>]*>[\s\S]*?<\/p>/gi) ?? [])
     .map(stripTags)
-    .filter((text) => text.length > 40 && !/^(advertisement|read also|also read|related|subscribe|follow us|click here|sign up|copyright|©)/i.test(text));
-  const text = paragraphs.join("\n\n").slice(0, 7000);
+    .filter((text) => text.length > 40 && !BOILERPLATE.test(text));
+  return paragraphs.join("\n\n").slice(0, 8000);
+}
+
+/** `articleBody` from schema.org JSON-LD, which most newsroom CMSs publish even when the layout is hard to read. */
+function jsonLdArticleBody(html: string): string {
+  let best = "";
+  for (const match of html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
+    let data: unknown;
+    try { data = JSON.parse(match[1].trim()); } catch { continue; }
+    const queue: unknown[] = [data];
+    while (queue.length) {
+      const node = queue.shift();
+      if (Array.isArray(node)) { queue.push(...node); continue; }
+      if (!node || typeof node !== "object") continue;
+      const record = node as Record<string, unknown>;
+      if (typeof record.articleBody === "string") {
+        const text = stripTags(record.articleBody).slice(0, 8000);
+        if (text.length > best.length) best = text;
+      }
+      if (record["@graph"]) queue.push(record["@graph"]);
+    }
+  }
+  return best;
+}
+
+/**
+ * Reads the report's own text and its large share image. Tries, in order of
+ * size: JSON-LD articleBody, the richest <article> element (pages often have
+ * several small "related story" cards before the real one), then every
+ * paragraph on the page.
+ */
+export function extractArticle(html: string): ExtractedPage {
+  const articleBlocks = html.match(/<article\b[\s\S]*?<\/article>/gi) ?? [];
+  const fromArticles = articleBlocks.map(paragraphText).sort((a, b) => b.length - a.length)[0] ?? "";
+  const candidates = [jsonLdArticleBody(html), fromArticles];
+  if (fromArticles.length < 600) candidates.push(paragraphText(html));
+  const text = candidates.sort((a, b) => b.length - a.length)[0] ?? "";
   const image = meta(html, "og:image:secure_url") ?? meta(html, "og:image") ?? meta(html, "twitter:image");
   return {
-    text,
+    text: text.slice(0, 7000),
     image: image && /^https:\/\//.test(image) ? image : null,
     description: meta(html, "og:description") ?? meta(html, "description"),
     publishedAt: meta(html, "article:published_time"),

@@ -4,7 +4,8 @@ import { cronRequestAuthorized } from "../../../../lib/cron-token";
 import { runAutopilotPass } from "../../../../lib/ai/runner";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+// Fluid compute: up to 300 s; the pass itself stops at 280 s.
+export const maxDuration = 300;
 
 /**
  * Autopilot heartbeat. The database's pg_cron job posts a single-use nonce here

@@ -13,6 +13,27 @@ export const AI_CAPABILITIES = [
 
 export type AiCapability = (typeof AI_CAPABILITIES)[number]["key"];
 
+/** Jobs that call a model (ads are rule-based). Each can have its own ordered model list. */
+export const MODEL_JOBS = [
+  { key: "news", label: "News writing", hint: "Long, careful rewrites of source reports — pick strong models." },
+  { key: "enquiries", label: "Enquiry replies", hint: "Short emails; fast models work well." },
+  { key: "businesses", label: "Business verification", hint: "Weighs evidence about submitted businesses." },
+  { key: "moderation", label: "Comment moderation", hint: "Quick spam/abuse checks; fast models work well." },
+  { key: "admin_logs", label: "Admin log explanations", hint: "Plain-English hourly summaries." },
+] as const;
+export type ModelJob = (typeof MODEL_JOBS)[number]["key"];
+export const MAX_MODELS_PER_JOB = 5;
+
+export function normaliseJobModels(raw: unknown): Partial<Record<ModelJob, string[]>> {
+  const source = raw && typeof raw === "object" && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {};
+  const result: Partial<Record<ModelJob, string[]>> = {};
+  for (const { key } of MODEL_JOBS) {
+    const list = Array.isArray(source[key]) ? (source[key] as unknown[]).filter((id): id is string => typeof id === "string" && id.endsWith(":free")) : [];
+    if (list.length) result[key] = [...new Set(list)].slice(0, MAX_MODELS_PER_JOB);
+  }
+  return result;
+}
+
 export type AiSettings = {
   autopilot_enabled: boolean;
   schedule_enabled: boolean;
@@ -25,6 +46,7 @@ export type AiSettings = {
   daily_request_budget: number;
   push_daily_limit: number;
   capabilities: Record<AiCapability, boolean>;
+  job_models: Partial<Record<ModelJob, string[]>>;
   actor_user_id: string | null;
   last_news_run_at: string | null;
   last_ads_run_at: string | null;
@@ -32,13 +54,13 @@ export type AiSettings = {
   updated_at: string | null;
 };
 
-export const AI_SETTINGS_COLUMNS = "autopilot_enabled,schedule_enabled,daily_start,daily_stop,auto_on_at,auto_off_at,news_interval_minutes,articles_per_run,daily_request_budget,push_daily_limit,capabilities,actor_user_id,last_news_run_at,last_ads_run_at,last_explain_run_at,updated_at";
+export const AI_SETTINGS_COLUMNS = "autopilot_enabled,schedule_enabled,daily_start,daily_stop,auto_on_at,auto_off_at,news_interval_minutes,articles_per_run,daily_request_budget,push_daily_limit,capabilities,job_models,actor_user_id,last_news_run_at,last_ads_run_at,last_explain_run_at,updated_at";
 
 export function normaliseSettings(row: Record<string, unknown> | null): AiSettings | null {
   if (!row) return null;
   const raw = (row.capabilities && typeof row.capabilities === "object" ? row.capabilities : {}) as Record<string, unknown>;
   const capabilities = Object.fromEntries(AI_CAPABILITIES.map(({ key }) => [key, raw[key] === true])) as Record<AiCapability, boolean>;
-  return { ...(row as unknown as AiSettings), capabilities };
+  return { ...(row as unknown as AiSettings), capabilities, job_models: normaliseJobModels(row.job_models) };
 }
 
 export async function loadAiSettings(db: SupabaseClient): Promise<AiSettings | null> {

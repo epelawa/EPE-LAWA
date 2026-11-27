@@ -89,7 +89,7 @@ export async function runBusinessJob(db: SupabaseClient, ctx: { log: RunLog; bud
       budget: ctx.budget,
       deadline: ctx.deadline,
       validate,
-      maxTokens: 900,
+      maxTokens: 2500,
       messages: [{ role: "system", content: SYSTEM }, { role: "user", content: JSON.stringify({ submission: { ...business, description: business.description?.slice(0, 1500) }, evidence }) }],
     });
     if (!result.ok) {
