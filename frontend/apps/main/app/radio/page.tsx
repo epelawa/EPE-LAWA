@@ -47,7 +47,9 @@ export default async function RadioPage() {
           <p className={styles.heroNote}>Streams start only when you press Play, and keep playing while you browse the rest of EPE LAWA.</p>
         </div>
         {/* The sponsor card is the business picked on the admin Ads desk; slimmer than before (turn 5). */}
-        <RadioPlayer programme={onAirName}><SponsorSlot compact radio /></RadioPlayer>
+        <div className={styles.playerPosition}>
+          <RadioPlayer programme={onAirName}><SponsorSlot compact radio /></RadioPlayer>
+        </div>
       </div>
     </section>
 
