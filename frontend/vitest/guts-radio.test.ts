@@ -1,16 +1,19 @@
-import { describe, expect, it, vi } from "vitest";
-vi.mock("server-only", () => ({}));
-vi.mock("next/cache", () => ({ unstable_cache: (fn: unknown) => fn }));
-import { parseGutsStation } from "../apps/main/lib/guts-radio";
-const record = { name: "Guts FM", frequency: "104.9 FM", streamUrl: "https://radio.example.com:8443/live" };
-describe("Guts catalogue selection", () => {
-  it("accepts one matching HTTPS station including its broadcaster port", () => {
-    expect(parseGutsStation({ data: [record] })).toEqual({ name: "Guts FM", frequency: "104.9 FM", streamUrl: record.streamUrl });
-    expect(parseGutsStation({ data: [{ ...record, name: "Guts 104.9 FM" }] })).not.toBeNull();
+import { expect, it } from "vitest";
+import { GET } from "../apps/main/app/api/radio/guts/route";
+import { GUTS_FM } from "../apps/main/lib/guts-radio";
+
+it("serves the broadcaster's public feed through the existing station discovery endpoint", async () => {
+  const response = GET();
+
+  expect(response.status).toBe(200);
+  expect(response.headers.get("cache-control")).toContain("s-maxage=60");
+  expect(await response.json()).toEqual({
+    reason: "ready",
+    station: {
+      name: "Guts FM",
+      frequency: "104.9 FM",
+      streamUrl: GUTS_FM.streamUrl,
+    },
   });
-  it("rejects unrelated, ambiguous, insecure and local streams", () => {
-    expect(parseGutsStation({ data: [{ ...record, name: "Not Guts FM" }] })).toBeNull();
-    expect(parseGutsStation({ data: [record, record] })).toBeNull();
-    for (const streamUrl of ["http://radio.example.com/live", "https://127.0.0.1/live", "https://example.local/live", "https://user:pass@example.com/live"]) expect(parseGutsStation({ data: [{ ...record, streamUrl }] })).toBeNull();
-  });
+  expect(new URL(GUTS_FM.streamUrl).protocol).toBe("https:");
 });

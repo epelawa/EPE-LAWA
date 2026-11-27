@@ -3,14 +3,15 @@
 import type { ReactNode } from "react";
 import { PauseIcon, PlayIcon, VolumeOffIcon, VolumeOnIcon } from "./icons";
 import {
-  GUTS_LABEL, LAGOS_STATION, currentStation, isActive, play, selectStation, setVolume, statusMessage, toggle, toggleMute, useRadio,
+  GUTS_STATION, LAGOS_STATION, currentStation, isActive, play, selectStation, setVolume, statusMessage, toggle, toggleMute, useRadio,
   type StationId,
 } from "../lib/radio-store";
+import { GUTS_FM } from "../lib/guts-radio";
 import styles from "./radio-player.module.css";
 
 const STATIONS: Array<{ id: StationId; name: string; frequency: string; mark: string }> = [
   { id: "lagos", name: LAGOS_STATION.name, frequency: LAGOS_STATION.frequency, mark: "RL" },
-  { id: "guts", name: GUTS_LABEL.name, frequency: GUTS_LABEL.frequency, mark: "GF" },
+  { id: "guts", name: GUTS_STATION.name, frequency: GUTS_STATION.frequency, mark: "GF" },
 ];
 
 /**
@@ -26,10 +27,9 @@ export default function RadioPlayer({ programme, children }: { programme?: strin
   const active = isActive(radio.status);
   const playing = radio.status === "playing";
   const failed = radio.status === "error" || radio.status === "blocked";
-  const name = station?.name ?? (radio.stationId === "guts" ? GUTS_LABEL.name : LAGOS_STATION.name);
-  const frequency = station?.frequency ?? (radio.stationId === "guts" ? GUTS_LABEL.frequency : LAGOS_STATION.frequency);
+  const { name, frequency } = station;
   const indicator = playing ? "Live" : radio.status === "connecting" || radio.status === "slow" ? "Connecting" : radio.status === "offline" ? "Offline" : failed ? "Unavailable" : "Not playing";
-  const gutsMissing = radio.stationId === "guts" && (radio.guts.state === "not_found" || radio.guts.state === "unavailable");
+  const gutsUnavailable = radio.stationId === "guts" && radio.status === "error";
   const muted = radio.muted || radio.volume === 0;
 
   return <section id="live-player" className={styles.player} data-state={radio.status} aria-labelledby="radio-player-title">
@@ -79,8 +79,8 @@ export default function RadioPlayer({ programme, children }: { programme?: strin
         <span className={styles.stationInfo}><strong>{item.name}</strong><small>{item.frequency}</small></span>
       </button>)}
     </div>
-    {gutsMissing ? <p className={styles.note}>
-      The Guts FM stream could not be found just now. <a href="https://gutsfm1049.com/online-radio/" target="_blank" rel="noreferrer">Listen on the Guts FM website<span className="sr-only"> (opens in a new tab)</span></a>.
+    {gutsUnavailable ? <p className={styles.note}>
+      The Guts FM stream could not be found just now. <a href={GUTS_FM.websiteUrl} target="_blank" rel="noreferrer">Listen on the Guts FM website<span className="sr-only"> (opens in a new tab)</span></a>.
     </p> : null}
 
     {children ? <div className={styles.sponsor}>{children}</div> : null}

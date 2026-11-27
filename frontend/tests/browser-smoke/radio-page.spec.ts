@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { GUTS_FM } from "../../apps/main/lib/guts-radio";
 
 // Turn 5: /radio redesign, the persistent mini-player, the removals and the compact forms.
 // Synthetic fixture only. The real station stream is never contacted: every request to it is
@@ -250,4 +251,39 @@ test("changed routes have no horizontal overflow across the owner's viewport mat
       expect(size.document, `${route} at ${width}x${height}`).toBeLessThanOrEqual(size.viewport);
     }
   }
+});
+
+
+test("Guts FM plays on demand and keeps playing in the mini-player", async ({ page }) => {
+  await quietStart(page);
+  let requests = 0;
+  await page.route(GUTS_FM.streamUrl, async (route) => {
+    requests++;
+    await route.fulfill({ status: 200, contentType: "audio/wav", body: silentWav() });
+  });
+  await page.goto("/radio");
+  await page.getByRole("button", { name: "Guts FM 104.9 FM", exact: true }).click();
+  expect(requests).toBe(0);
+  await page.getByRole("button", { name: "Play Guts FM 104.9 FM", exact: true }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Playing Guts FM 104.9 FM" })).toBeVisible();
+  expect(requests).toBeGreaterThan(0);
+  const started = requests;
+  await page.getByRole("link", { name: /^Latest news/ }).click();
+  const mini = page.getByRole("region", { name: "Radio mini-player" });
+  await expect(mini).toContainText("Guts FM");
+  await expect(mini).toContainText("Live");
+  expect(requests).toBe(started);
+  await mini.getByRole("button", { name: "Pause Guts FM", exact: true }).click();
+  await expect(mini).toContainText("Paused");
+});
+
+test("an unreachable Guts FM stream offers a retry and the station website", async ({ page }) => {
+  await quietStart(page);
+  await page.route(GUTS_FM.streamUrl, (route) => route.abort());
+  await page.goto("/radio");
+  await page.getByRole("button", { name: "Guts FM 104.9 FM", exact: true }).click();
+  await page.getByRole("button", { name: "Play Guts FM 104.9 FM", exact: true }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Guts FM 104.9 FM is not responding" })).toBeVisible();
+  await expect(page.locator("#live-player").getByRole("button", { name: "Try again" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Listen on the Guts FM website/ })).toHaveAttribute("href", GUTS_FM.websiteUrl);
 });

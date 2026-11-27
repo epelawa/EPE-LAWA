@@ -1,6 +1,10 @@
-import { getGutsStation } from "../../../../lib/guts-radio";
+import { GUTS_FM } from "../../../../lib/guts-radio";
 
-export async function GET() {
-  const result = await getGutsStation();
-  return Response.json(result, { headers: { "Cache-Control": "public, max-age=0, s-maxage=60" } });
+// Keep the existing endpoint for clients running a cached version of the player.
+export function GET() {
+  const { name, frequency, streamUrl } = GUTS_FM;
+  return Response.json(
+    { station: { name, frequency, streamUrl }, reason: "ready" },
+    { headers: { "Cache-Control": "public, max-age=0, s-maxage=60" } },
+  );
 }

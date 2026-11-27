@@ -1,8 +1,8 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { GUTS_FM } from "./guts-radio";
 import { RADIO_LAGOS_1075 } from "./radio-lagos";
-import { GUTS_FM_1049 } from "./radio-stations";
 
 /**
  * One listening session for the whole public site.
@@ -16,14 +16,12 @@ import { GUTS_FM_1049 } from "./radio-stations";
 export type StationId = "lagos" | "guts";
 export type RadioStation = { id: StationId; name: string; frequency: string; streamUrl: string };
 export type PlaybackStatus = "idle" | "connecting" | "playing" | "paused" | "slow" | "blocked" | "error" | "offline";
-export type GutsLookupState = "unknown" | "loading" | "ready" | "not_found" | "unavailable";
 
 export type RadioSnapshot = {
   stationId: StationId;
   status: PlaybackStatus;
   volume: number;
   muted: boolean;
-  guts: { state: GutsLookupState; station: RadioStation | null };
   /** True once the listener has pressed Play in this tab; gates the mini-player. */
   started: boolean;
   /** The listener hid the mini-player; playback is unaffected. Reset by the next Play. */
@@ -36,7 +34,12 @@ export const LAGOS_STATION: RadioStation = {
   frequency: RADIO_LAGOS_1075.frequency,
   streamUrl: RADIO_LAGOS_1075.streamUrl,
 };
-export const GUTS_LABEL = GUTS_FM_1049;
+export const GUTS_STATION: RadioStation = {
+  id: "guts",
+  name: GUTS_FM.name,
+  frequency: GUTS_FM.frequency,
+  streamUrl: GUTS_FM.streamUrl,
+};
 
 const SLOW_AFTER_MS = 8000;
 
@@ -45,7 +48,6 @@ let snapshot: RadioSnapshot = {
   status: "idle",
   volume: 0.8,
   muted: false,
-  guts: { state: "unknown", station: null },
   started: false,
   miniHidden: false,
 };
@@ -53,7 +55,6 @@ const listeners = new Set<() => void>();
 let audio: HTMLAudioElement | null = null;
 let attempt = 0;
 let slowTimer: number | undefined;
-let gutsRequest: Promise<void> | null = null;
 
 function set(patch: Partial<RadioSnapshot>) {
   snapshot = { ...snapshot, ...patch };
@@ -73,8 +74,8 @@ export function useRadio(): RadioSnapshot {
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
 
-export function currentStation(state: RadioSnapshot = snapshot): RadioStation | null {
-  return state.stationId === "lagos" ? LAGOS_STATION : state.guts.station;
+export function currentStation(state: RadioSnapshot = snapshot): RadioStation {
+  return state.stationId === "lagos" ? LAGOS_STATION : GUTS_STATION;
 }
 
 export function isActive(status: PlaybackStatus) {
@@ -145,34 +146,10 @@ function updateMediaSession(station: RadioStation) {
   } catch { /* Media Session is optional */ }
 }
 
-/** Resolve the Guts FM stream through our server (the catalogue key never reaches the browser). */
-export function lookupGuts(): Promise<void> {
-  if (snapshot.guts.state === "ready" || snapshot.guts.state === "not_found") return Promise.resolve();
-  if (gutsRequest) return gutsRequest;
-  set({ guts: { state: "loading", station: null } });
-  gutsRequest = fetch("/api/radio/guts")
-    .then((response) => (response.ok ? response.json() : null))
-    .then((data: { station?: { name: string; frequency: string; streamUrl: string } | null; reason?: string } | null) => {
-      const station = data?.station;
-      if (station?.streamUrl) set({ guts: { state: "ready", station: { id: "guts", name: GUTS_LABEL.name, frequency: station.frequency || GUTS_LABEL.frequency, streamUrl: station.streamUrl } } });
-      else set({ guts: { state: data?.reason === "not_found" ? "not_found" : "unavailable", station: null } });
-    })
-    .catch(() => set({ guts: { state: "unavailable", station: null } }))
-    .finally(() => { gutsRequest = null; });
-  return gutsRequest;
-}
-
 export async function play(): Promise<void> {
   const id = ++attempt;
   if (!navigator.onLine) { set({ status: "offline" }); return; }
-  if (snapshot.stationId === "guts" && snapshot.guts.state !== "ready") {
-    set({ status: "connecting" });
-    await lookupGuts();
-    if (attempt !== id) return;
-  }
   const station = currentStation();
-  if (!station) { set({ status: "error" }); return; }
-  if (!navigator.onLine) { set({ status: "offline" }); return; }
   const element = ensureAudio();
   // Always (re)attach the source: a live stream resumes at the live edge, not where it was paused.
   element.src = station.streamUrl;
@@ -208,7 +185,6 @@ export function selectStation(id: StationId) {
   attempt++;
   set({ stationId: id, status: snapshot.started ? "paused" : "idle" });
   release();
-  if (id === "guts") void lookupGuts();
   // Switching while listening carries straight on with the new station.
   if (wasActive) void play();
 }
@@ -231,11 +207,7 @@ export function hideMiniPlayer() { set({ miniHidden: true }); }
 /** Human status line; also announced to screen readers through a polite live region. */
 export function statusMessage(state: RadioSnapshot): string {
   const station = currentStation(state);
-  const label = station ? `${station.name} ${station.frequency}` : `${GUTS_LABEL.name} ${GUTS_LABEL.frequency}`;
-  if (state.stationId === "guts" && state.guts.state === "loading") return "Looking up the Guts FM stream…";
-  if (state.stationId === "guts" && (state.guts.state === "not_found" || state.guts.state === "unavailable") && !isActive(state.status)) {
-    return "Guts FM is not available in this player right now. Try Radio Lagos, or try again later.";
-  }
+  const label = `${station.name} ${station.frequency}`;
   switch (state.status) {
     case "connecting": return `Connecting to ${label}…`;
     case "slow": return "Still connecting. The station is slow to respond…";
@@ -252,8 +224,7 @@ export function statusMessage(state: RadioSnapshot): string {
 export function __resetRadioForTests() {
   attempt = 0;
   audio = null;
-  gutsRequest = null;
   clearSlowTimer();
-  snapshot = { stationId: "lagos", status: "idle", volume: 0.8, muted: false, guts: { state: "unknown", station: null }, started: false, miniHidden: false };
+  snapshot = { stationId: "lagos", status: "idle", volume: 0.8, muted: false, started: false, miniHidden: false };
   for (const listener of listeners) listener();
 }
