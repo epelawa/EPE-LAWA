@@ -285,7 +285,9 @@
 .fab {
   position: fixed;
   right: 18px;
-  bottom: 84px;
+  /* Turn 5 audit: at 84px it sat on top of the floating Support button (right 12px, bottom 84px, 48px tall)
+     on every desktop viewport. It now stacks 16px above it. */
+  bottom: 148px;
   z-index: 20;
   display: grid;
   place-items: center;

@@ -63,6 +63,7 @@ test('thread and channel pages read like chat: bubbles, channel rules, composer'
 test('the browser smoke audit covers the newer public routes', async () => {
   const spec = await read('frontend/tests/browser-smoke/public-routes-audit.spec.ts');
   assert.match(spec, /"\/events"/);
-  assert.match(spec, /"\/radio\/archive"/);
+  // Turn 5: /radio/archive was removed at the owner's request and now redirects to /radio.
+  assert.doesNotMatch(spec, /"\/radio\/archive"/);
   assert.match(spec, /"\/radio\/programmes"/);
 });

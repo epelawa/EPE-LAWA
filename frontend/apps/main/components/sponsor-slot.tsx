@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "../lib/supabase";
 import { logoDisplayUrl } from "../lib/media-r2";
 import styles from "./sponsor-slot.module.css";
+import SponsorLogo from "./sponsor-logo";
 import SponsorCarousel, { type SponsorCard } from "./sponsor-carousel";
 import SponsorPopup from "./sponsor-popup";
 
@@ -45,18 +46,13 @@ export async function readSponsor(): Promise<Sponsor | null> {
   return sponsor ?? null;
 }
 
-function SponsorLink({ sponsor }: { sponsor: Sponsor }) {
+function SponsorLink({ sponsor, radio = false }: { sponsor: Sponsor; radio?: boolean }) {
   return (
     <Link
       className={styles.link}
       href={`/business-directory/${encodeURIComponent(sponsor.slug)}`}
     >
-      {sponsor.logoUrl ? (
-        /* eslint-disable-next-line @next/next/no-img-element */
-        <img className={styles.logo} src={sponsor.logoUrl} alt="" width={56} height={56} loading="lazy" decoding="async" />
-      ) : (
-        <span className={styles.logoFallback} aria-hidden="true">{sponsor.name.slice(0, 1)}</span>
-      )}
+      <SponsorLogo src={sponsor.logoUrl} className={styles.logo} fallbackClassName={styles.logoFallback} />
       <span className={styles.copy}>
         <span className={styles.label}>Sponsored</span>
         <span className={styles.name}>{sponsor.name}</span>
@@ -64,8 +60,9 @@ function SponsorLink({ sponsor }: { sponsor: Sponsor }) {
           {[sponsor.category, sponsor.area].filter(Boolean).join(" · ") ||
             "Local business"}
         </span>
+        {radio && sponsor.description ? <span className={styles.description}>{sponsor.description}</span> : null}
         <span className={styles.action}>
-          Patronise this local business <ArrowIcon direction="up-right" />
+          {radio ? "Explore business" : "Patronise this local business"} <ArrowIcon direction={radio ? "right" : "up-right"} />
         </span>
       </span>
     </Link>
@@ -75,22 +72,27 @@ function SponsorLink({ sponsor }: { sponsor: Sponsor }) {
 export default async function SponsorSlot({
   compact = false,
   footer = false,
+  radio = false,
 }: {
   compact?: boolean;
   footer?: boolean;
+  /** Slimmer single-row card for the dark /radio player (turn 5: "a little smaller"). */
+  radio?: boolean;
 }) {
   const sponsors = await readSponsors();
   return (
     <aside
-      className={`${styles.slot} ${compact ? styles.compact : ""} ${footer ? styles.footerSlot : ""}`}
+      className={`${styles.slot} ${compact ? styles.compact : ""} ${radio ? styles.radio : ""} ${footer ? styles.footerSlot : ""}`}
       aria-label="Sponsored placement"
     >
       {sponsors.length > 1 ? (
-        <SponsorCarousel sponsors={sponsors} compact={compact} />
+        <SponsorCarousel sponsors={sponsors} compact={compact} radio={radio} />
       ) : sponsors.length === 1 ? (
-        <SponsorLink sponsor={sponsors[0]} />
+        <SponsorLink sponsor={sponsors[0]} radio={radio} />
       ) : (
         <Link className={styles.link} href="/advertise">
+          <SponsorLogo src={null} className={styles.logo} fallbackClassName={styles.logoFallback} />
+          <span className={styles.copy}>
           <span className={styles.label}>Advertise here</span>
           <span className={styles.name}>
             Put your business in the spotlight.
@@ -100,6 +102,7 @@ export default async function SponsorSlot({
           </span>
           <span className={styles.action}>
             Advertise with EPE LAWA <ArrowIcon direction="right" />
+          </span>
           </span>
         </Link>
       )}

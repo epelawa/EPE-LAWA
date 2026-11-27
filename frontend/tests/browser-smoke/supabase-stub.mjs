@@ -92,7 +92,7 @@ const server = createServer((request, response) => {
     request.on("end", () => {
       try {
         const value = JSON.parse(body).mode;
-        if (value !== "empty" && value !== "error" && value !== "stories" && value !== "ranking" && value !== "news-many" && value !== "news-many-breaking" && value !== "history" && value !== "slow-stories") {
+        if (value !== "empty" && value !== "error" && value !== "stories" && value !== "ranking" && value !== "news-many" && value !== "news-many-breaking" && value !== "history" && value !== "slow-stories" && value !== "radio" && value !== "directory") {
           respond(response, 400, { error: "Unsupported fixture mode" });
           return;
         }
@@ -186,6 +186,65 @@ const server = createServer((request, response) => {
       return;
     }
 
+    // Turn 5 directory redesign. Empty (honest empty state) by default; "directory" mode serves synthetic,
+    // obviously fictional listings so cards, badges, filters, pagination and the profile can be exercised.
+    if (["/rest/v1/published_businesses", "/rest/v1/business_categories", "/rest/v1/business_featured", "/rest/v1/business_photos", "/rest/v1/businesses"].includes(url.pathname)) {
+      const categories = [{ slug: "services", label: "Services" }, { slug: "food-drink", label: "Food & Drink" }, { slug: "trades", label: "Trades" }, { slug: "health", label: "Health" }];
+      const listings = mode !== "directory" ? [] : Array.from({ length: 15 }, (_, i) => ({
+        id: `00000000-0000-4000-9000-${String(i + 1).padStart(12, "0")}`, slug: `fixture-business-${i + 1}`,
+        name: i === 2 ? "Fixture Business With An Exceptionally Long Name For Wrapping Checks Limited" : `Fixture Business ${i + 1}`,
+        category_slug: categories[i % 4].slug, category_label: categories[i % 4].label,
+        description: i % 3 === 0 ? null : "Synthetic browser-test listing. Not a real business; used only to check layout and behaviour.",
+        area: i % 2 ? "Fixture Area" : null, address: i % 2 ? null : "1 Fixture Road", landmark: null,
+        phone: i === 0 ? "+2348000000000" : null, whatsapp: i === 0 ? "08000000000" : null, email: i === 0 ? "fixture@example.invalid" : null,
+        website: i === 0 ? "https://example.invalid" : null, hours: null, is_verified: i % 4 === 0, logo_key: null,
+        published_at: new Date(Date.UTC(2026, 10, 1 + i)).toISOString(),
+      }));
+      if (url.pathname === "/rest/v1/business_categories") { respond(response, 200, mode === "directory" ? categories : [], { "content-range": "*/0" }); return; }
+      if (url.pathname === "/rest/v1/business_featured") { const only = url.searchParams.get("business_id")?.replace(/^eq\./, ""); const live = mode === "directory" ? [{ business_id: listings[0].id, ends_at: "2099-01-01T00:00:00Z" }].filter((row) => !only || row.business_id === only) : []; respond(response, 200, live, { "content-range": "*/0" }); return; }
+      if (url.pathname !== "/rest/v1/published_businesses") { respond(response, 200, [], { "content-range": "*/0" }); return; }
+      let rows = listings;
+      const eq = (key) => url.searchParams.get(key)?.replace(/^eq\./, "");
+      if (eq("slug")) rows = rows.filter((row) => row.slug === eq("slug"));
+      if (eq("category_slug")) rows = rows.filter((row) => row.category_slug === eq("category_slug"));
+      if (url.searchParams.get("is_verified") === "eq.true") rows = rows.filter((row) => row.is_verified);
+      const neq = url.searchParams.get("id")?.match(/^neq\.(.+)$/)?.[1];
+      if (neq) rows = rows.filter((row) => row.id !== neq);
+      const inIds = url.searchParams.get("id")?.match(/^in\.\((.*)\)$/)?.[1];
+      if (inIds) rows = rows.filter((row) => inIds.split(",").map((v) => v.replace(/"/g, "")).includes(row.id));
+      for (const or of url.searchParams.getAll("or")) {
+        const needle = or.match(/\*([^*]*)\*/)?.[1]?.toLowerCase() ?? "";
+        rows = rows.filter((row) => [row.name, row.description, row.category_label, row.area, row.address].some((v) => String(v ?? "").toLowerCase().includes(needle)));
+      }
+      if ((url.searchParams.get("order") ?? "").startsWith("published_at")) rows = [...rows].sort((a, b) => b.published_at.localeCompare(a.published_at));
+      else if ((url.searchParams.get("order") ?? "").startsWith("is_verified")) rows = [...rows].sort((a, b) => Number(b.is_verified) - Number(a.is_verified) || a.name.localeCompare(b.name));
+      else rows = [...rows].sort((a, b) => a.name.localeCompare(b.name));
+      const total = rows.length;
+      const offset = Number(url.searchParams.get("offset") ?? 0);
+      const limit = Number(url.searchParams.get("limit") ?? 1000);
+      const page = rows.slice(offset, offset + limit);
+      respond(response, 200, page, { "content-range": total ? `${offset}-${offset + page.length - 1}/${total}` : "*/0" });
+      return;
+    }
+
+    // Turn 5 radio page: empty by default (the honest "schedule is being updated" state). The
+    // "radio" mode serves synthetic, clearly labelled fixture slots so the day selector and the
+    // on-air marker can be exercised; it never reflects production programming.
+    if (url.pathname === "/rest/v1/radio_schedule" || url.pathname === "/rest/v1/programmes") {
+      if (mode === "radio" && url.pathname === "/rest/v1/radio_schedule") {
+        const lagosDay = new Date(Date.now() + 3600000).getUTCDay();
+        const rows = [];
+        for (let day = 0; day < 7; day++) {
+          rows.push({ id: `fixture-am-${day}`, day_of_week: day, starts_at: "07:00:00", ends_at: "08:00:00", note: "Synthetic browser-test slot", programmes: { name: "Fixture morning slot" } });
+          if (day === lagosDay) rows.push({ id: `fixture-now-${day}`, day_of_week: day, starts_at: "00:00:00", ends_at: "23:59:00", note: null, programmes: { name: "Fixture all-day slot" } });
+        }
+        respond(response, 200, rows, { "content-range": `0-${rows.length - 1}/${rows.length}` });
+        return;
+      }
+      respond(response, 200, [], { "content-range": "*/0" });
+      return;
+    }
+
     if (
       url.pathname === "/rest/v1/published_articles" ||
       url.pathname === "/rest/v1/categories"
@@ -199,6 +258,13 @@ const server = createServer((request, response) => {
         respond(response, 200, [{ slug: "local-news", label: "Local News" }, { slug: "sports", label: "Sports" }], { "content-range": "0-1/2" });
         return;
       }
+      respond(response, 200, [], { "content-range": "*/0" });
+      return;
+    }
+
+    // Turn 5: other public, read-only collections answer with an honest empty list (instead of 405) so
+    // their empty states and filter forms can be checked.
+    if (["/rest/v1/published_people", "/rest/v1/people_offices", "/rest/v1/history_records", "/rest/v1/history_record_sources"].includes(url.pathname)) {
       respond(response, 200, [], { "content-range": "*/0" });
       return;
     }

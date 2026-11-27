@@ -57,9 +57,12 @@ test("confirm-submit uses the branded dialog, not window.confirm", () => {
 
 test("live queue counts cover every pending-work queue", () => {
   const route = repo("frontend/apps/main/app/api/live/queues/route.ts");
-  for (const table of ["events", "radio_song_requests", "moderation_appeals", "forum_reports"]) {
+  for (const table of ["events", "moderation_appeals", "forum_reports"]) {
     assert.match(route, new RegExp(`from\\("${table}"\\)`), `route should count ${table}`);
   }
+  // Turn 5 owner brief: song requests were removed from the public site and admin, so the queue
+  // endpoint no longer counts radio_song_requests (the table is kept, unchanged, for its history).
+  assert.doesNotMatch(route, /radio_song_requests|songRequests/);
   // The events and song-request admin queues were withdrawn in 43835ed ("Remove digest, poll, events,
   // and radio/requests pages from admin"), so the sidebar hook exposes only queues with a staff page.
   const hook = repo("frontend/apps/admin/components/use-live-queue-counts.ts");

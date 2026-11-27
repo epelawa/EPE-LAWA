@@ -1,0 +1,54 @@
+/* Shared business UI: cards, logos, badges, breadcrumbs. Tokens from @epelawa/ui (AGENTS.md palette). */
+
+.logo { display: block; flex: none; border: 1px solid var(--ep-border-subtle); border-radius: 10px; background: #fff; object-fit: contain; }
+.logo_sm { width: 44px; height: 44px; padding: 3px; }
+.logo_md { width: 56px; height: 56px; padding: 4px; }
+.logo_lg { width: clamp(72px, 12vw, 96px); height: clamp(72px, 12vw, 96px); padding: 6px; border-radius: 14px; }
+.logoInitials { display: grid; place-items: center; padding: 0; border-color: transparent; background: var(--ep-color-navy); color: #fff; font-weight: 700; letter-spacing: .02em; }
+.logo_sm.logoInitials { font-size: 15px; }
+.logo_md.logoInitials { font-size: 19px; }
+.logo_lg.logoInitials { font-size: clamp(24px, 4vw, 32px); }
+
+.badge { display: inline-flex; align-items: center; gap: 5px; min-height: 26px; padding: 3px 9px; border-radius: 6px; font-size: 12px; font-weight: 700; line-height: 1.2; white-space: nowrap; text-decoration: none; }
+.badge svg { flex: none; }
+.badgeVerified { background: #E5F2EA; color: #1C5A36; }
+.badgeFeatured { background: var(--ep-surface-soft); color: var(--ep-link); }
+.badgeCategory { background: var(--ep-color-cloud); color: var(--ep-text-muted); border: 1px solid var(--ep-border-subtle); }
+a.badgeCategory:hover { border-color: var(--ep-primary); color: var(--ep-link); }
+
+.breadcrumbs ol { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 0; margin: 0; padding: 0; list-style: none; font-size: 14px; color: var(--ep-text-muted); }
+.breadcrumbs li { display: inline-flex; align-items: center; min-width: 0; }
+.breadcrumbs li + li::before { content: "/"; margin-inline: 8px; color: var(--ep-color-silver); }
+.breadcrumbs a { display: inline-flex; align-items: center; min-height: 44px; color: var(--ep-link); font-weight: 600; text-decoration: none; }
+.breadcrumbs a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.breadcrumbs [aria-current] { overflow: hidden; max-width: 28ch; color: var(--ep-text); text-overflow: ellipsis; white-space: nowrap; }
+
+.card { position: relative; display: flex; flex-direction: column; gap: 14px; min-width: 0; height: 100%; padding: 18px; border: 1px solid var(--ep-border-subtle); border-radius: 12px; background: var(--ep-surface); box-shadow: var(--ep-shadow-1); transition: border-color var(--ep-dur-fast) var(--ep-ease-out), box-shadow var(--ep-dur-fast) var(--ep-ease-out); }
+.card:hover { border-color: #B9C8DE; box-shadow: var(--ep-shadow-2); }
+.card:focus-within { border-color: var(--ep-primary); }
+.cardFeatured { border-top: 3px solid var(--ep-link); }
+.cardTop { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.cardBadges { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+.cardBody { display: grid; gap: 6px; min-width: 0; }
+.cardCategory { margin: 0; color: var(--ep-link); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.cardName { margin: 0; font-size: clamp(1.0625rem, 1.2vw + .7rem, 1.1875rem); line-height: 1.3; letter-spacing: -.015em; overflow-wrap: anywhere; }
+.cardName a { color: var(--ep-text); text-decoration: none; }
+.cardName a:focus-visible { outline: none; }
+.stretched::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+.card:has(.stretched:focus-visible) { outline: var(--ep-focus-width) solid var(--ep-focus-ring); outline-offset: var(--ep-focus-offset); }
+.cardDescription { display: -webkit-box; margin: 0; overflow: hidden; color: var(--ep-text-muted); font-size: 14px; line-height: 1.55; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
+.cardFoot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: auto; padding-top: 12px; border-top: 1px solid #E8EDF5; font-size: 14px; }
+.cardPlace { display: inline-flex; align-items: center; gap: 6px; min-width: 0; color: var(--ep-text-muted); }
+.cardPlace svg { flex: none; }
+.cardPlace span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cardCta { flex: none; color: var(--ep-link); font-weight: 700; }
+.card:hover .cardCta span { margin-left: 2px; }
+
+.skeleton { pointer-events: none; }
+.skeletonBlock, .skeletonLine { background: #E9EEF6; }
+.skeletonLine { display: block; width: 100%; height: 12px; border-radius: 4px; }
+@media (prefers-reduced-motion: no-preference) {
+  .skeletonBlock, .skeletonLine { animation: pulse 1.4s ease-in-out infinite; }
+}
+@keyframes pulse { 50% { opacity: .55; } }
+@media (prefers-reduced-motion: reduce) { .card { transition: none; } }

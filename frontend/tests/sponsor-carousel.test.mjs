@@ -22,8 +22,9 @@ test("sponsor slots are driven by the staff ads line-up, not the dead payment vi
 });
 
 test("one selected business renders inline; several render the carousel", () => {
-  assert.match(slot, /sponsors\.length > 1 \? \(\s*<SponsorCarousel sponsors=\{sponsors\} compact=\{compact\} \/>/);
-  assert.match(slot, /sponsors\.length === 1 \? \(\s*<SponsorLink sponsor=\{sponsors\[0\]\} \/>/);
+  assert.match(slot, /sponsors\.length > 1 \? \(\s*<SponsorCarousel sponsors=\{sponsors\} compact=\{compact\} radio=\{radio\} \/>/);
+  // Turn 5 redesign brief: the /radio variant passes `radio` (description + "Explore business" CTA).
+  assert.match(slot, /sponsors\.length === 1 \? \(\s*<SponsorLink sponsor=\{sponsors\[0\]\} radio=\{radio\} \/>/);
   assert.match(slot, /Patronise this local business/);
 });
 

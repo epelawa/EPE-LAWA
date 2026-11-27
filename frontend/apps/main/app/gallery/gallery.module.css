@@ -1,23 +1,5 @@
 .page { --gallery-ink: #122033; }
 
-.intro {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 0.82fr);
-  gap: clamp(2rem, 8vw, 8rem);
-  padding: clamp(2.25rem, 6vw, 5rem) 0;
-  border-top: 1px solid color-mix(in srgb, var(--gallery-ink) 14%, transparent);
-  border-bottom: 1px solid color-mix(in srgb, var(--gallery-ink) 14%, transparent);
-}
-
-.introHeading h2 {
-  max-width: 15ch;
-  margin: 0.55rem 0 0;
-  color: var(--gallery-ink);
-  font-size: clamp(1.65rem, 3.5vw, 3rem);
-  line-height: 1;
-  letter-spacing: -0.05em;
-}
-
 .emptyPanel {
   margin-top: clamp(2rem, 5vw, 4rem);
   background: linear-gradient(135deg, color-mix(in srgb, var(--gallery-ink) 5%, transparent), transparent 60%);
@@ -69,10 +51,6 @@
 .emptyPanel a:focus-visible {
   outline: 3px solid color-mix(in srgb, var(--color-primary, #2364d2) 36%, transparent);
   outline-offset: 3px;
-}
-
-@media (max-width: 700px) {
-  .intro { grid-template-columns: 1fr; gap: 1.25rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

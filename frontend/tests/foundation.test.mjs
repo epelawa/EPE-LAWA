@@ -71,7 +71,7 @@ test('main has honest indexable metadata, working public links and security head
       assert.equal(response.headers.get('x-content-type-options'), 'nosniff', path);
       assert.equal(response.headers.get('x-frame-options'), 'DENY', path);
       assert.equal(response.headers.get('referrer-policy'), 'strict-origin-when-cross-origin', path);
-      assert.equal(response.headers.get('permissions-policy'), 'camera=(), microphone=(), geolocation=()', path);
+      assert.equal(response.headers.get('permissions-policy'), 'camera=(), microphone=(), geolocation=(self)', path); // Turn 5: map location must work after in-app navigation
       const csp = response.headers.get('content-security-policy') || '';
       assert.match(csp, /frame-ancestors 'none'/, path);
       assert.match(csp, /script-src 'self' 'nonce-[A-Za-z0-9+/=]+' 'strict-dynamic'/, path);

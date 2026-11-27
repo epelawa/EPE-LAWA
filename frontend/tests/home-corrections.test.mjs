@@ -11,7 +11,8 @@ test('public placements and the incomplete language switch are not mounted', asy
   }
   // Turn 4 owner brief: the radio player shows the business ad selected in admin (compact slot only).
   const radio = await read('frontend/apps/main/app/radio/page.tsx');
-  assert.match(radio, /<SponsorSlot compact \/>/);
+  // Turn 5: the same compact slot, in its slimmer `radio` variant for the dark player.
+  assert.match(radio, /<SponsorSlot compact radio \/>/);
   assert.doesNotMatch(radio, /<SponsorPopupPlacement/);
   assert.doesNotMatch(await read('frontend/apps/main/components/news-footer.tsx'), /<LangToggle/);
   assert.doesNotMatch(await read('frontend/apps/main/app/page.tsx'), /home-hero__brand/);

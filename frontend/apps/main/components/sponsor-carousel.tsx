@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import styles from "./sponsor-slot.module.css";
+import SponsorLogo from "./sponsor-logo";
 
 export type SponsorCard = {
   name: string;
@@ -18,9 +19,12 @@ const INTERVAL_MS = 5000;
 export default function SponsorCarousel({
   sponsors,
   compact = false,
+  radio = false,
 }: {
   sponsors: SponsorCard[];
   compact?: boolean;
+  /** /radio variant: shows the description and the "Explore business" action, same as the single card. */
+  radio?: boolean;
 }) {
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -29,7 +33,7 @@ export default function SponsorCarousel({
 
   const go = useCallback(
     (next: number) => {
-      if (count > 0) setActive((previous) => ((next % count) + count) % count);
+      if (count > 0) setActive(((next % count) + count) % count);
     },
     [count],
   );
@@ -68,20 +72,16 @@ export default function SponsorCarousel({
                 href={`/business-directory/${encodeURIComponent(sponsor.slug)}`}
                 tabIndex={index === active ? 0 : -1}
               >
-                {sponsor.logoUrl ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img className={styles.logo} src={sponsor.logoUrl} alt="" width={56} height={56} loading="lazy" decoding="async" />
-                ) : (
-                  <span className={styles.logoFallback} aria-hidden="true">{sponsor.name.slice(0, 1)}</span>
-                )}
+                <SponsorLogo src={sponsor.logoUrl} className={styles.logo} fallbackClassName={styles.logoFallback} />
                 <span className={styles.copy}>
                   <span className={styles.label}>Sponsored</span>
                   <span className={styles.name}>{sponsor.name}</span>
                   <span className={styles.meta}>
                     {[sponsor.category, sponsor.area].filter(Boolean).join(" · ") || "Local business"}
                   </span>
+                  {radio && sponsor.description ? <span className={styles.description}>{sponsor.description}</span> : null}
                   <span className={styles.action}>
-                    Patronise this local business <span aria-hidden="true">↗</span>
+                    {radio ? "Explore business" : "Patronise this local business"} <span aria-hidden="true">{radio ? "→" : "↗"}</span>
                   </span>
                 </span>
               </Link>

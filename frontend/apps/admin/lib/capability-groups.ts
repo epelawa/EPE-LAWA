@@ -39,7 +39,7 @@ export const CAPABILITY_GROUPS: CapabilityGroup[] = [
   },
   {
     label: "Radio",
-    capabilities: [{ key: "radio.manage", label: "Manage programmes, episodes and schedule" }],
+    capabilities: [{ key: "radio.manage", label: "Manage programmes and schedule" }],
   },
   {
     label: "Backups",

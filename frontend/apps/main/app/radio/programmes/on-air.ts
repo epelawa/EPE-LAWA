@@ -23,8 +23,9 @@ export function lagosNow(date: Date = new Date()): { day: number; minutes: numbe
   };
 }
 
-function toMinutes(value: string): number | null {
-  const match = /^(\d{1,2}):(\d{2})$/.exec(value.trim());
+export function toMinutes(value: string): number | null {
+  // Postgres `time` columns arrive as HH:MM:SS; admin forms submit HH:MM. Accept both.
+  const match = /^(\d{1,2}):(\d{2})(?::\d{2}(?:\.\d+)?)?$/.exec(value.trim());
   if (!match) return null;
   const hours = Number(match[1]);
   const minutes = Number(match[2]);

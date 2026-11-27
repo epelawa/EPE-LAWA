@@ -401,3 +401,8 @@ select:disabled { background-color: hsl(var(--secondary)); color: hsl(var(--mute
 .member-menu-dialog .ui-dialog__body { gap: 8px; padding: 10px 16px 16px; }
 .member-menu-dialog[open] { animation-duration: 100ms; }
 @media (prefers-reduced-motion: reduce) { .member-menu-dialog[open] { animation: none; } }
+
+/* Turn 5 responsive audit: consent checkboxes on Ìtàn Ilú Mi and Tourism measured 20×20 px. The label is
+   clickable too, but the control itself now meets the WCAG 2.2 SC 2.5.8 24×24 px floor. Switches keep
+   their own size. */
+label input:where([type="checkbox"], [type="radio"]):not([role="switch"]) { min-width: 24px; min-height: 24px; }

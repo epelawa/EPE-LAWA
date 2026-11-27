@@ -25,7 +25,7 @@ const overviewPages: NavItem[] = [
 
 const mediaPages: NavItem[] = [
   { label: "Media library", href: "/media", hint: "Public photo archive and media records", group: "MEDIA" },
-  { label: "Radio", href: "/radio", hint: "Programmes, rights, episodes and schedule", primary: true, group: "MEDIA" },
+  { label: "Radio", href: "/radio", hint: "Programmes, rights and schedule", primary: true, group: "MEDIA" },
 ];
 
 const peopleAndWorkPages: NavItem[] = [

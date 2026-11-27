@@ -61,3 +61,7 @@
 
 /* Forum threads dock a reply composer at the bottom; keep Send uncovered on phones (unless the member dragged the button). */
 @media (max-width:767px) { :global(body:has([data-forum-composer])) .widget:not([style]) { bottom:calc(var(--forum-composer-h, 140px) + 12px); } }
+/* Turn 5: on phones the radio mini-player is a full-width bar; the (undragged) Support button
+   rides just above it instead of overlapping. !important outranks the storage-notice placement
+   above, which has a higher specificity; a dragged button (inline style) keeps its own spot. */
+@media (max-width:767px) { :global(html[data-radio-mini="open"]) .widget:not([style]) { bottom:calc(var(--radio-mini-offset, 76px) + 10px) !important; } }

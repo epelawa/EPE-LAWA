@@ -1,7 +1,17 @@
 "use client";
 
-export default function BusinessContactLinks({ slug, phone, whatsappHref, website, address }: { slug: string; phone: string | null; whatsappHref: string | null; website: string | null; address: string | null }) {
-  const track = (kind: string) => {
+import { ChatIcon, GlobeIcon, PhoneIcon, RouteIcon } from "../../../components/business/business-icons";
+import styles from "./profile.module.css";
+
+type Kind = "call" | "whatsapp" | "website" | "directions";
+
+/**
+ * Contact actions for one listing. Every href is computed on the server from stored data
+ * (lib/business-directory.ts); a missing or invalid value means no button, never a dead one.
+ * WhatsApp leads when the listing has a valid WhatsApp number, otherwise Call leads.
+ */
+export default function BusinessContactLinks({ slug, name, phone, phoneHref, whatsappHref, website, directionsHref }: { slug: string; name: string; phone: string | null; phoneHref: string | null; whatsappHref: string | null; website: string | null; directionsHref: string | null }) {
+  const track = (kind: Kind) => {
     try {
       const payload = JSON.stringify({ slug, kind });
       if (typeof navigator.sendBeacon === "function") {
@@ -14,11 +24,11 @@ export default function BusinessContactLinks({ slug, phone, whatsappHref, websit
     }
     return true;
   };
-  const mapsHref = address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}` : null;
-  return <>
-    {phone ? <a className="btn-primary" href={`tel:${phone}`} onClick={() => track("call")}>Call {phone}</a> : null}
-    {whatsappHref ? <a className="btn-secondary" href={whatsappHref} target="_blank" rel="noopener noreferrer" onClick={() => track("whatsapp")}>Chat on WhatsApp</a> : null}
-    {website ? <a className="btn-ghost" href={website} target="_blank" rel="noopener noreferrer" onClick={() => track("website")}>Visit website <span aria-hidden="true">↗</span></a> : null}
-    {mapsHref ? <a className="btn-ghost" href={mapsHref} target="_blank" rel="noopener noreferrer" onClick={() => track("directions")}>Get directions <span aria-hidden="true">↗</span></a> : null}
-  </>;
+  const callLeads = !whatsappHref;
+  return <div className={styles.actions}>
+    {whatsappHref ? <a className={`${styles.action} ${styles.actionPrimary}`} href={whatsappHref} target="_blank" rel="noopener noreferrer" onClick={() => track("whatsapp")}><ChatIcon />Chat on WhatsApp<span className="sr-only"> with {name} (opens WhatsApp)</span></a> : null}
+    {phoneHref ? <a className={`${styles.action} ${callLeads ? styles.actionPrimary : ""}`} href={phoneHref} onClick={() => track("call")}><PhoneIcon />Call business<span className="sr-only"> {phone}</span></a> : null}
+    {website ? <a className={styles.action} href={website} target="_blank" rel="noopener noreferrer" onClick={() => track("website")}><GlobeIcon />Visit website<span className="sr-only"> (opens in a new tab)</span></a> : null}
+    {directionsHref ? <a className={styles.action} href={directionsHref} target="_blank" rel="noopener noreferrer" onClick={() => track("directions")}><RouteIcon />Get directions<span className="sr-only"> (opens Google Maps)</span></a> : null}
+  </div>;
 }

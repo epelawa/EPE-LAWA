@@ -6,10 +6,11 @@ import { fileURLToPath } from 'node:url';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 function files(dir){return fs.readdirSync(path.join(root,dir),{withFileTypes:true}).flatMap(e=>e.isDirectory()?files(`${dir}/${e.name}`):[`${dir}/${e.name}`]);}
+// Turn 5: full-bleed pages (directory, business profile) add the page-full-bleed opt-out to their page class.
 test('every public page has rebuilt editorial or account markup, not the old narrow wrapper',()=>{
   const pages=files('frontend/apps/main/app').filter(f=>f.endsWith('/page.tsx'));
   assert.ok(pages.length>=25);
-  for(const file of pages){const source=read(file);if(file.includes('/app/admin/'))continue;assert.match(source,/PageFrame|AccountShell|InformationPage|public-home|LinkIssueView|member-dashboard-shell|className=\{styles\.page\}/,file);assert.doesNotMatch(source,/max-w-md mx-auto px-4 py-12|landing-hero/,file);}
+  for(const file of pages){const source=read(file);if(file.includes('/app/admin/'))continue;assert.match(source,/PageFrame|AccountShell|InformationPage|public-home|LinkIssueView|member-dashboard-shell|className=\{styles\.page\}|className=\{`\$\{styles\.page\} page-full-bleed`\}/,file);assert.doesNotMatch(source,/max-w-md mx-auto px-4 py-12|landing-hero/,file);}
 });
 test('new design scales display roles to 90 percent and retains readable body/control floors',()=>{
   const css=read('frontend/apps/main/app/globals.css');const layout=read('frontend/apps/main/app/layout.tsx');const header=read('frontend/apps/main/components/site-header.tsx');assert.match(css,/--text-display: clamp\(2\.025rem, 4\.8vw, 3\.6rem\)/);assert.match(css,/--text-title: clamp\(1\.25rem, 2\.4vw, 1\.575rem\)/);assert.match(css,/font-size: 16px/);assert.match(css,/min-height: 44px/);assert.match(css,/prefers-reduced-motion/);assert.doesNotMatch(css,/#(?:da251c|ff4a3d|17253a)\b/i);assert.match(css,/:root\s*\{[\s\S]*color-scheme:\s*light/);assert.doesNotMatch(css,/data-theme="dark"|color-scheme:\s*dark/);assert.match(layout,/<html\b/);assert.match(layout,/data-theme="light"/);assert.match(layout,/colorScheme: "light"/);assert.doesNotMatch(header,/ThemeToggle|Appearance|appearance/);
@@ -56,7 +57,11 @@ test('storage notice is homepage-only and contact/policy pages disclose unavaila
   for(const file of ['frontend/apps/main/app/about/page.tsx','frontend/apps/main/app/contact/page.tsx','frontend/apps/main/app/guidelines/page.tsx','frontend/apps/main/app/privacy/page.tsx','frontend/apps/main/app/terms/page.tsx','frontend/apps/main/public/.well-known/security.txt'])assert.doesNotMatch(read(file),/info\.epelawa@gmail\.com|mailto:/i,file);
 });
 test('map location remains explicit and its security policy allows only self on the map route',()=>{
-  const map=read('frontend/apps/main/app/map/map-search.tsx');assert.match(map,/onClick=\{requestLocation\}/);assert.match(map,/getCurrentPosition/);assert.match(map,/EPE LAWA does not store/);const config=read('frontend/apps/main/next.config.ts');assert.match(config,/source: "\/map"/);assert.match(config,/geolocation=\(self\)/);assert.match(config,/geolocation=\(\)/);
+  const map=read('frontend/apps/main/app/map/map-search.tsx');assert.match(map,/onClick=\{requestLocation\}/);assert.match(map,/getCurrentPosition/);assert.match(map,/EPE LAWA does not store/);const config=read('frontend/apps/main/next.config.ts');
+  // Turn 5: Permissions-Policy is fixed per document, so a /map-only allowance never applied after
+  // in-app navigation and the button failed without a prompt. Geolocation is now allowed for our own
+  // origin site-wide (still click-only and still prompting); camera and microphone stay denied.
+  assert.match(config,/key: "Permissions-Policy", value: "camera=\(\), microphone=\(\), geolocation=\(self\)"/);assert.doesNotMatch(config,/geolocation=\(\)"/);assert.doesNotMatch(config,/geolocation=\*/);
 });
 test('every admin page has actual rebuilt markup and complete workflow navigation',()=>{
   for(const file of files('frontend/apps/admin/app').filter(f=>f.endsWith('/page.tsx')))assert.match(read(file),/PageIntro|export \{ default \} from/,file);

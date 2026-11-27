@@ -8,31 +8,29 @@ import { createClient } from "../../../lib/supabase";
 import { pageMetadata } from "../../../lib/metadata";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = pageMetadata({ title: "Radio programmes", description: "Approved EPE LAWA programmes, schedules and archive episodes.", path: "/radio/programmes" });
+export const metadata: Metadata = pageMetadata({ title: "Radio programmes", description: "Approved EPE LAWA programmes and the weekly schedule, in West Africa Time.", path: "/radio/programmes" });
 
 export default async function RadioProgrammesPage() {
   let onAirId: string | null = null;
   let programmes: Array<{ id: string; name: string; description: string | null }> = [];
   let slots: Array<{ id: string; day_of_week: number; starts_at: string; ends_at: string; note: string | null; programmes: Array<{ name: string }> }> = [];
-  let episodes: Array<{ id: string; title: string; description: string | null; aired_on: string | null; external_url: string | null; programmes: Array<{ name: string }> }> = [];
   let unavailable = false;
   try {
     const db = await createClient();
-    const [p, s, e] = await Promise.all([
+    const [p, s] = await Promise.all([
       db.from("programmes").select("id,name,description").eq("is_active", true).order("name").limit(100),
       db.from("radio_schedule").select("id,day_of_week,starts_at,ends_at,note,programmes(name)").order("day_of_week").order("starts_at").limit(200),
-      db.from("episodes").select("id,title,description,aired_on,external_url,programmes(name)").not("published_at", "is", null).order("published_at", { ascending: false }).limit(50),
     ]);
-    if (p.error || s.error || e.error) unavailable = true;
-    else { programmes = p.data ?? []; slots = s.data ?? []; episodes = e.data ?? []; onAirId = onAirSlotId(slots); }
+    if (p.error || s.error) unavailable = true;
+    else { programmes = p.data ?? []; slots = s.data ?? []; onAirId = onAirSlotId(slots); }
   } catch { unavailable = true; }
 
   return (
     <PageFrame className={`ui-stack ${styles.page}`}>
       <PageIntro
         eyebrow="EPE LAWA RADIO"
-        title="Programmes and archive"
-        description="Explore published programmes, listings and episodes."
+        title="Programmes and schedule"
+        description="Published EPE LAWA programmes and weekly listings. All times are West Africa Time (WAT)."
       />
       <Link href="/radio" className="ui-text-link">← Back to live radio</Link>
       {unavailable ? (
@@ -74,27 +72,10 @@ export default async function RadioProgrammesPage() {
                 ))}
               </ul>
             ) : (
-              <EmptyPanel title="No schedule published yet" description="There are no programme times to show at the moment." />
+              <EmptyPanel title="No schedule published yet" description="The programme schedule is being updated. Published programme times will appear here." />
             )}
           </Panel>
 
-          <Panel>
-            <SectionHeading eyebrow="Listen again" title="Archive" description="Published episodes from the EPE LAWA Radio community." />
-            {episodes.length ? (
-              <ul className="ui-list">
-                {episodes.map((episode) => (
-                  <li className="ui-item ui-stack-sm" key={episode.id}>
-                    <h3 className="ui-item-title">{episode.title}</h3>
-                    <p className="ui-meta"><span>{episode.programmes[0]?.name}</span>{episode.aired_on ? <span>{episode.aired_on}</span> : null}</p>
-                    {episode.description ? <p className="ui-muted">{episode.description}</p> : null}
-                    {episode.external_url ? <audio className="mt-2 w-full" controls preload="none" src={episode.external_url}>Audio playback is not supported by this browser.</audio> : null}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <EmptyPanel title="No published episodes available" description="When archive episodes are published, you will be able to find them here." />
-            )}
-          </Panel>
         </div>
       )}
     </PageFrame>

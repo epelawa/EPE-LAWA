@@ -62,7 +62,7 @@ async function deleteTarget(f: FormData, kind: string) {
   const id = recordId(f);
   if (!id) throw new Error("invalid");
   const db = await authorized();
-  await remove(db, kind === "programme" ? "programmes" : kind === "episode" ? "episodes" : "radio_schedule", id);
+  await remove(db, kind === "programme" ? "programmes" : "radio_schedule", id);
 }
 
 export async function saveProgramme(f: FormData) { await run(async () => {
@@ -79,16 +79,3 @@ export async function saveSchedule(f: FormData) { await run(async () => {
 }); }
 export async function deleteProgramme(f: FormData) { await run(async () => { await deleteTarget(f, "programme"); }, "deleted", "remove"); }
 export async function deleteSchedule(f: FormData) { await run(async () => { await deleteTarget(f, "schedule"); }, "deleted", "remove"); }
-export async function deleteEpisode(f: FormData) { await run(async () => { await deleteTarget(f, "episode"); }, "deleted", "remove"); }
-export async function saveEpisode(f: FormData) { await run(async () => {
-  const id = recordId(f), rev = id ? revision(f) : null, programme_id = text(f, "programme_id", 36), title = text(f, "title", 200), description = text(f, "description", 4000), rights = text(f, "rights_note", 2000), external_url = text(f, "external_url", 2048), aired_on = text(f, "aired_on", 10), status = text(f, "publication_status", 12);
-  if (!/^[0-9a-f-]{36}$/i.test(programme_id) || !title || !["draft", "published", "withdrawn"].includes(status) || (status === "published" && rights.length < 3) || (external_url && !/^https:\/\//.test(external_url)) || (aired_on && !/^\d{4}-\d{2}-\d{2}$/.test(aired_on))) throw new Error("invalid");
-  const db = await authorized();
-  let slug: string;
-  if (id) {
-    const { data, error } = await db.from("episodes").select("slug").eq("id", id).maybeSingle();
-    if (error || !data?.slug) throw new Error("save");
-    slug = data.slug;
-  } else slug = `${slugify(title)}-${Date.now().toString(36)}`;
-  await save(db, "episode", id, rev, { programme_id, title, slug, description: description || null, external_url: external_url || null, aired_on: aired_on || null, publication_status: status }, rights);
-}); }

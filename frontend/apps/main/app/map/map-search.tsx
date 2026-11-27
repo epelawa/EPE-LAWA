@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { FilterIcon, SearchIcon } from "../../components/icons";
+import { FilterIcon, MapPinIcon, SearchIcon } from "../../components/icons";
 import { Notice, Panel, SectionHeading } from "../../components/design-system";
 import styles from "./map.module.css";
 
@@ -73,14 +73,18 @@ export default function MapSearch({ businesses, businessError = false }: { busin
     }, { maximumAge: 60000, timeout: 10000 });
   };
   return <div className="ui-stack">
-    <Panel className="ui-card filter-panel filter-panel--map">
-      <div className="filter-panel__heading"><span className="filter-panel__icon"><FilterIcon/></span><div><p className="ui-eyebrow">Map & navigation</p><h2 className="filter-panel__title">Find a place</h2></div></div>
-      <form onSubmit={(event) => event.preventDefault()} className="ui-grid ui-grid--2" role="search" aria-label="Search map places">
-        <div className="ui-field"><label htmlFor="map-query" className="label">Street, landmark, business or address</label><div className="filter-panel__control"><SearchIcon className="filter-panel__input-icon"/><input id="map-query" value={query} onChange={(event) => { setQuery(event.target.value.slice(0, 200)); setSelectedBusinessSlug(null); }} maxLength={200} autoComplete="off" placeholder="Search streets, landmarks or businesses" className="input w-full"/></div><p className="ui-muted">Published businesses are matched locally; other places are handed to Google Maps only when you choose.</p></div>
-        <div className="ui-field ui-actions"><button type="button" className="btn-secondary" onClick={requestLocation}>Use my location</button></div>
-      </form>
-      <p className="ui-muted" aria-live="polite">{locationMessage}</p>
-    </Panel>
+    <form onSubmit={(event) => event.preventDefault()} className="ui-toolbar filter-panel filter-panel--compact" role="search" aria-label="Search map places">
+      <div className="filter-panel__heading"><span className="filter-panel__icon" aria-hidden="true"><FilterIcon/></span><div><p className="ui-eyebrow">Map & navigation</p><h2 className="filter-panel__title">Find a place</h2></div></div>
+      <div className="ui-field ui-field--wide"><label htmlFor="map-query" className="label sr-only">Street, landmark, business or address</label><div className="filter-panel__control"><SearchIcon className="filter-panel__input-icon"/><input id="map-query" type="text" value={query} onChange={(event) => { setQuery(event.target.value.slice(0, 200)); setSelectedBusinessSlug(null); }} maxLength={200} autoComplete="off" placeholder="Street, landmark, business or address" className="input w-full" aria-describedby="map-query-hint"/></div></div>
+      {/* A real button click is the user gesture browsers require before showing the location permission prompt. */}
+      <div className="ui-actions"><button type="button" className="btn-secondary" onClick={requestLocation} aria-describedby="map-location-status"><MapPinIcon size={16}/>Use my location</button></div>
+      <p id="map-query-hint" className="filter-panel__hint">Published businesses are matched locally; other places are handed to Google Maps only when you choose.</p>
+    </form>
+    <p id="map-location-status" className="ui-muted" aria-live="polite">{locationMessage}</p>
+    <details className="fine-print">
+      <summary>About Google Maps and your location</summary>
+      <p>Search and directions on Google Maps are provided by an external service operated by Google. Your device location is shared with Google only if you open directions while location sharing is enabled; EPE LAWA does not store your coordinates.</p>
+    </details>
     <Panel className={`ui-card ${styles.mapPanel}`}>
       <SectionHeading eyebrow="Free map, no sign-in" title="Epe on the map" id="epe-embed-map" description="The map below shows Epe and around. Tap Use my location to move it to your area; your coordinates stay in this browser tab." />
       <iframe 
@@ -120,6 +124,5 @@ export default function MapSearch({ businesses, businessError = false }: { busin
         <a className="btn-secondary" target="_blank" rel="noopener noreferrer" href={mapsDirectionsUrl(selectedDestination, location ?? undefined)}>{selectedBusiness ? `Get directions to ${selectedBusiness.name}` : "Get directions"} <span className="sr-only">(opens in a new tab)</span></a>
       </div>
     </Panel>}
-    <Notice tone="neutral">Search and directions on Google Maps are provided by an external service operated by Google. Your device location is shared with Google only if you open directions while location sharing is enabled; EPE LAWA does not store your coordinates.</Notice>
   </div>;
 }

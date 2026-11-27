@@ -43,7 +43,9 @@
 .listingQuick { min-width:0; }
 .listingQuick .quickLinks { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 16px; list-style:none; padding:0; margin:0; }
 .listingColumn a { overflow-wrap:anywhere; }
-.listingInner { grid-template-columns:minmax(200px,1fr) minmax(300px,1.8fr) minmax(140px,.7fr); }
+/* Turn 5: fixed track minimums (200+300+140px + gaps) overflowed 701–770px viewports; the tracks now
+   shrink and the gap is fluid, so three columns fit from the 700px breakpoint up. */
+.listingInner { grid-template-columns:minmax(0,1fr) minmax(0,1.8fr) minmax(0,.7fr); gap:clamp(20px,3vw,40px); }
 @media(max-width:700px) { .listingInner { grid-template-columns:1fr; } .listingIdentity { grid-column:auto; } }
 @media(max-width:700px) {
   .listingQuick .quickLinks, .column nav ul { grid-template-columns:repeat(3,minmax(0,1fr)); gap:2px 10px; }

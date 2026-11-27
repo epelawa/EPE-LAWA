@@ -52,12 +52,14 @@ test('history contribution action authenticates, validates consent, and persists
 });
 
 
-// Turn 3 brief: corrections move to their own page; the archive page links to it.
+// Turn 3 brief: corrections move to their own page; the archive page links to it (per record since turn 5).
 // Turn 4 brief: requests go to their own private staff queue (history_correction_requests), not enquiries.
 test('published-history correction and removal requests use their own private staff queue', async () => {
   const archive = await readFile(pagePath, 'utf8');
-  assert.match(archive, /Correction and removal requests/);
-  assert.match(archive, /href="\/itan-ilu-mi\/correction"/);
+  // Turn 5 brief: the standalone "Fix the record" section was removed from the archive page;
+  // every published record still links to the correction page with its title prefilled.
+  assert.doesNotMatch(archive, /Fix the record|history-corrections/);
+  assert.match(archive, /href=\{`\/itan-ilu-mi\/correction\?record=\$\{encodeURIComponent\(record\.title\)\}`\}/);
   const page = await readFile(new URL('../apps/main/app/itan-ilu-mi/correction/page.tsx', import.meta.url), 'utf8');
   assert.match(page, /Correction and removal requests/);
   assert.match(page, /<CorrectionForm /);

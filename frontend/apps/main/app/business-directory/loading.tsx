@@ -1,2 +1,20 @@
+import { BusinessCardSkeleton } from "../../components/business/business-ui";
 import styles from "./directory.module.css";
-export default function Loading() {return <div className={styles.page} role="status" aria-live="polite"><header className={styles.hero}><div className={styles.heroInner}><div><span className={styles.heroBadge}>EpeLawa · Business directory</span><h1>Discover businesses in Epe.</h1><p>Loading local businesses…</p></div></div></header><div className={styles.grid} aria-hidden="true">{[1,2,3].map(i=><div className={styles.card} key={i}><div className={styles.cardArtwork}/><div className={styles.cardBody}><span className={styles.cardCat}>Loading…</span></div></div>)}</div></div>}
+
+export default function Loading() {
+  return <div className={`${styles.page} page-full-bleed`}>
+    <section className={styles.hero} aria-labelledby="directory-loading-title">
+      <div className={styles.container}>
+        <p className={styles.eyebrow}>EPE LAWA · Business directory</p>
+        <h1 id="directory-loading-title">Discover Local Businesses</h1>
+        <p className={styles.lede}>Find trusted services, businesses and organisations around Epe.</p>
+      </div>
+    </section>
+    <div className={styles.container}>
+      <section className={styles.section}>
+        <p role="status" aria-live="polite" className={styles.sectionHead}>Loading businesses…</p>
+        <div className={styles.grid}>{[1, 2, 3].map((i) => <BusinessCardSkeleton key={i} />)}</div>
+      </section>
+    </div>
+  </div>;
+}
