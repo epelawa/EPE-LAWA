@@ -129,6 +129,8 @@ test("both sign-in forms render the single-use sign-in challenge and renew it af
   const component = await read("frontend/apps/main/components/human-check.tsx");
   assert.match(component, /\?for=signin/);
   assert.match(component, /\}, \[resetOn, start\]\);/);
+  assert.match(component, /Spam protection by EPE LAWA/);
+  assert.doesNotMatch(component, /no tracking/i);
   assert.match(await read("frontend/apps/admin/app/api/human-check/route.ts"), /export \{ GET \} from/, "the standalone admin app serves the challenge too");
 });
 

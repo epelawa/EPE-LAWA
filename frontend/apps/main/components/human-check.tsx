@@ -106,7 +106,7 @@ export default function HumanCheck({ compact, purpose, resetOn }: { compact?: bo
     </span>
     <span className={styles.copy}>
       <span className={styles.title}>{status === "done" ? "Verified" : status === "error" ? "Check did not finish" : "Checking you are human…"}</span>
-      <span className={styles.hint}>{status === "error" ? "This browser could not complete the check." : "Spam protection by EPE LAWA · no tracking"}</span>
+      <span className={styles.hint}>{status === "error" ? "This browser could not complete the check." : "Spam protection by EPE LAWA"}</span>
     </span>
     {status === "error" ? <button type="button" className="btn-secondary" onClick={() => void start()}>Try again</button> : null}
   </div>;
