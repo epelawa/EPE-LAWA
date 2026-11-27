@@ -1,4 +1,4 @@
-function collectText(value: unknown): string {
+export function collectText(value: unknown): string {
   if (typeof value === "string") return value;
   if (Array.isArray(value)) return value.map(collectText).filter(Boolean).join(" ");
   if (!value || typeof value !== "object") return "";

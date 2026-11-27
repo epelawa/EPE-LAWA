@@ -1,5 +1,6 @@
 import { createClient } from "./supabase";
 import { publishedNewsCover } from "./published-news-cover";
+import { loadEngagementMap } from "./article-engagement";
 
 export type StoryCover = {
   src: string;
@@ -55,18 +56,7 @@ export async function getLatestStories(limit = 3): Promise<PublicListResult<Late
       return { state: "error", items: [] };
     }
     const rows = (latest.data ?? []) as PublishedStoryRow[];
-    const engagement = new Map<string, { views: number; comments: number; readMinutes: number }>();
-    const ids = rows.map((row) => row.id).filter(Boolean);
-    if (ids.length) {
-      try {
-        const metrics = await supabase.from("published_article_engagement").select("article_id,view_count,comment_count,read_minutes").in("article_id", ids);
-        if (!metrics.error) for (const metric of metrics.data ?? []) {
-          if (metric.view_count == null || metric.comment_count == null || metric.read_minutes == null) continue;
-          const views = Number(metric.view_count), comments = Number(metric.comment_count), readMinutes = Number(metric.read_minutes);
-          if ([views, comments, readMinutes].every(Number.isFinite)) engagement.set(metric.article_id, { views, comments, readMinutes });
-        }
-      } catch { /* Story content remains available if engagement cannot be loaded. */ }
-    }
+    const engagement = await loadEngagementMap(supabase, rows.map((row) => row.id));
     return {
       state: "ok",
       items: rows.map((row) => ({

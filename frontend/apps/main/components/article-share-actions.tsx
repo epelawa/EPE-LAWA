@@ -5,6 +5,8 @@ import { buildShareCover } from "../lib/share-cover";
 
 type Props = {
   title: string;
+  /** Headline, a little of the story, the author and the hashtags — sent with every share. */
+  shareText?: string | null;
   imageUrl?: string | null;
   url: string;
   /** Same-origin copy of the cover (/news/<slug>/cover), so outlet photos can be attached. */
@@ -53,12 +55,14 @@ async function loadCoverFile(sources: (string | null | undefined)[]): Promise<Fi
   return null;
 }
 
-export default function ArticleShareActions({ title, imageUrl, url, coverPath, className = "", shareButtonClassName = "", copyButtonClassName = "", feedbackClassName = "", fallbackClassName = "", compact = false, showCopyButton = true }: Props) {
+export default function ArticleShareActions({ title, shareText, imageUrl, url, coverPath, className = "", shareButtonClassName = "", copyButtonClassName = "", feedbackClassName = "", fallbackClassName = "", compact = false, showCopyButton = true }: Props) {
   const [message, setMessage] = useState("");
   const [showManualCopy, setShowManualCopy] = useState(false);
   const groupRef = useRef<HTMLDivElement>(null);
   const coverRef = useRef<Promise<File | null> | null>(null);
   const sources = [coverPath, imageUrl, "/brand-logo.png"];
+  const storyText = (shareText?.trim() || title).trim();
+  const fullText = `${storyText}\n\n${url}`;
 
   function prepareCover(): Promise<File | null> {
     coverRef.current ??= loadCoverFile(sources).then((file) => {
@@ -92,9 +96,9 @@ export default function ArticleShareActions({ title, imageUrl, url, coverPath, c
   async function copyPublicUrl() {
     try {
       if (!navigator.clipboard?.writeText) throw new Error("clipboard_unavailable");
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(fullText);
       setShowManualCopy(false);
-      setMessage("Public article link copied.");
+      setMessage("Story, hashtags and link copied.");
     } catch {
       setShowManualCopy(true);
       setMessage("Clipboard access is unavailable. Select the public link below to copy it.");
@@ -106,12 +110,12 @@ export default function ArticleShareActions({ title, imageUrl, url, coverPath, c
       try {
         const cover = await prepareCover();
         if (cover && navigator.canShare?.({ files: [cover] })) {
-          await navigator.share({ title, text: `${title}\n${url}`, files: [cover] });
-          setMessage("Cover image and article link sent to the share sheet.");
+          await navigator.share({ title, text: fullText, files: [cover] });
+          setMessage("Cover image, story, hashtags and link sent to the share sheet.");
           return;
         }
-        await navigator.share({ title, url });
-        setMessage("Link shared. This device does not allow attaching image files.");
+        await navigator.share({ title, text: storyText, url });
+        setMessage("Story, hashtags and link shared. This device does not allow attaching image files.");
         return;
       } catch (error) {
         if (isShareCancelled(error)) return;
@@ -123,7 +127,7 @@ export default function ArticleShareActions({ title, imageUrl, url, coverPath, c
       }
     }
     await copyPublicUrl();
-    setMessage("This browser cannot share files. The article link was copied instead.");
+    setMessage("This browser cannot open a share sheet. The story, hashtags and link were copied instead.");
   }
 
   return (
@@ -137,7 +141,7 @@ export default function ArticleShareActions({ title, imageUrl, url, coverPath, c
         <span className={compact ? "sr-only" : undefined}>Copy link</span>
       </button> : null}
       {message ? <span className={feedbackClassName} role="status" aria-live="polite">{message}</span> : null}
-      {showManualCopy ? <label className={fallbackClassName}>Public article URL<input type="text" readOnly value={url} onFocus={(event) => event.currentTarget.select()} /></label> : null}
+      {showManualCopy ? <label className={fallbackClassName}>Story and link<textarea readOnly rows={5} value={fullText} onFocus={(event) => event.currentTarget.select()} /></label> : null}
     </div>
   );
 }

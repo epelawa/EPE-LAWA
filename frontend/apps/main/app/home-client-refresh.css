@@ -112,8 +112,9 @@
   .home-story-summary { -webkit-line-clamp: 2; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
 }
 @media (prefers-reduced-motion: reduce) { .home-hero__photo { animation: none; } }
-.home-story-engagement { display: flex; flex-wrap: wrap; gap: 8px 14px; color: #52627b; font-size: 12px; }
-.home-story-engagement span { display: inline-flex; align-items: center; gap: 4px; }
+.home-story-engagement { margin: 0; }
+.home-story-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; line-height: 1.3; }
+.home-story-byline { display: flex; align-items: center; line-height: 1.3; }
 .home-radio { position: relative; overflow: hidden; box-shadow: 0 16px 32px rgb(10 16 35 / .14); }
 .home-radio__icon { background: rgb(167 197 245 / .18); color: #dbe9ff; }
 .home-shortcuts a { transition: transform 180ms ease, box-shadow 180ms ease; }

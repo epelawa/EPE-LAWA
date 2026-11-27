@@ -15,9 +15,9 @@ import { loadArticleEngagement, type ArticleEngagement } from "../../../lib/arti
 import { CommentThread } from "../comment-thread";
 import ArticleCoverStats from "../../../components/article-cover-stats";
 import ArticleViewPing from "../../../components/article-view-ping";
-import ReaderPresence from "../../../components/reader-presence";
 import OfflineArticleDownload from "../../../components/offline-article-download";
 import ArticleShareActions from "../../../components/article-share-actions";
+import { buildShareText } from "../../../lib/share-text";
 import CorrectionForm from "../../../components/correction-form";
 import SaveArticleButton from "../../../components/save-article-button";
 import NewsImage from "../../../components/news-image";
@@ -167,6 +167,8 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
   const imageUrl = publishedCover?.url;
   const uploaded = formatLagosDateTime(article.published_at);
   const commentCount = engagement?.comments ?? visibleComments;
+  const authorInitials = article.author_name.split(/[\s-]+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("") || "E";
+  const shareText = buildShareText({ title: article.title, summary: article.summary, body, author: article.author_name, tags: article.tags });
   const breaking = article.is_breaking && (!article.breaking_until || Date.parse(article.breaking_until) > Date.now());
 
   return (
@@ -204,7 +206,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
           </Link>
           <div className={a.topBarEnd}>
             {signedIn ? <SaveArticleButton articleId={article.id} slug={article.slug} saved={saved} className={a.iconControl} /> : null}
-            <ArticleShareActions title={article.title} imageUrl={imageUrl} url={articleUrl} coverPath={imageUrl ? `${newsArticlePath(article.slug)}/cover` : null} compact showCopyButton={false} className={a.shareGroup} shareButtonClassName={a.shareButton} feedbackClassName={a.shareFeedback} fallbackClassName={a.shareFallback} />
+            <ArticleShareActions title={article.title} imageUrl={imageUrl} url={articleUrl} shareText={shareText} coverPath={imageUrl ? `${newsArticlePath(article.slug)}/cover` : null} compact showCopyButton={false} className={a.shareGroup} shareButtonClassName={a.shareButton} feedbackClassName={a.shareFeedback} fallbackClassName={a.shareFallback} />
           </div>
         </nav>
 
@@ -215,11 +217,11 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
           </p>
           <h1 className={a.title}>{article.title}</h1>
           {article.summary ? <p className={a.standfirst}>{article.summary}</p> : null}
-          <div className={a.meta} aria-label="Story details">
-            <span className={a.metaItem}>By {article.author_slug ? <Link href={`/news/author/${encodeURIComponent(article.author_slug)}`}>{article.author_name}</Link> : <strong>{article.author_name}</strong>}</span>
-            {uploaded ? <span className={a.metaItem}>Published <time dateTime={article.published_at ?? undefined} title={article.published_at ?? undefined}><strong>{uploaded}</strong></time> <span aria-label="West Africa Time">WAT</span></span> : null}
-          </div>
-          <ReaderPresence slug={article.slug} />
+          <p className={a.meta} aria-label="Story details">
+            <span className={a.authorMark} aria-hidden="true">{authorInitials}</span>
+            <span className={a.metaItem}>By&nbsp;{article.author_slug ? <Link className={a.metaLink} href={`/news/author/${encodeURIComponent(article.author_slug)}`}>{article.author_name}</Link> : <strong>{article.author_name}</strong>}</span>
+            {uploaded ? <><span className={a.metaDot} aria-hidden="true">·</span><time className={a.metaItem} dateTime={article.published_at ?? undefined}>{uploaded}&nbsp;<abbr title="West Africa Time">WAT</abbr></time></> : null}
+          </p>
         </header>
 
         <figure className={a.cover}>
@@ -237,7 +239,7 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
             <ArticleLikeButton articleId={article.id} initialLiked={liked} initialCount={likes} className={a.pill} activeClassName={a.pillActive} />
             <a className={a.pill} href="#comments"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 0 1-11.8 7L3 21l2-6.2A8 8 0 1 1 21 12Z"/></svg><span>{commentCount ? `${commentCount.toLocaleString("en-NG")} comments` : "Comment"}</span></a>
           </div>
-          <ArticleShareActions title={article.title} imageUrl={imageUrl} url={articleUrl} coverPath={imageUrl ? `${newsArticlePath(article.slug)}/cover` : null} showCopyButton={false} className={a.shareGroup} shareButtonClassName={a.pill} feedbackClassName={a.shareFeedback} fallbackClassName={a.shareFallback} />
+          <ArticleShareActions title={article.title} imageUrl={imageUrl} url={articleUrl} shareText={shareText} coverPath={imageUrl ? `${newsArticlePath(article.slug)}/cover` : null} showCopyButton={false} className={a.shareGroup} shareButtonClassName={a.pill} feedbackClassName={a.shareFeedback} fallbackClassName={a.shareFallback} />
         </div>
 
         <div className={`${a.extras} ${a.column}`}>

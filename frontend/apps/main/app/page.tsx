@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { ArrowRightIcon, ArrowUpRightIcon, UsersIcon, ListenShortcutIcon, CompassIcon, BuildingIcon, MessageCircleIcon, CalendarShortcutIcon, RoadIcon, MapPinIcon, ClockIcon, EyeIcon } from "../components/icons";
+import { ArrowRightIcon, ArrowUpRightIcon, UsersIcon, ListenShortcutIcon, CompassIcon, BuildingIcon, MessageCircleIcon, CalendarShortcutIcon, RoadIcon, MapPinIcon } from "../components/icons";
 import { formatPublishedDate } from "../lib/dates";
 import { getLatestStories, getHomeBreakingStories, type LatestStory, type HomeBreakingStory, type PublicListResult } from "../lib/home-data";
 import "./hero-logo.css";
@@ -10,6 +10,7 @@ import CookieBanner from "../components/cookie-banner";
 import HeroCarousel from "../components/hero-carousel";
 import NewsImage from "../components/news-image";
 import ArticleByline from "../components/article-byline";
+import StoryStats from "../components/story-stats";
 import { HomeBreakingTicker } from "../components/home-breaking-ticker";
 import { BreakingBadge } from "../components/breaking-news";
 import { HomeSectionReveal } from "../components/home-sections";
@@ -137,10 +138,10 @@ async function HomeNews({ storiesPromise, renderedAt, lang }: { storiesPromise: 
                       {null}
                     </figure>
                     <div className="home-story-copy">
-                      <span className="home-story-meta">{story.category ?? "News"} {story.breakingUntil ? <BreakingBadge until={story.breakingUntil} initialTime={renderedAt} /> : null}{story.publishedAt ? <> <span aria-hidden="true">·</span> <time dateTime={story.publishedAt}>{formatPublishedDate(story.publishedAt)}</time></> : null}</span>
+                      <span className="home-story-meta"><span>{story.category ?? "News"}</span>{story.breakingUntil ? <BreakingBadge until={story.breakingUntil} initialTime={renderedAt} /> : null}{story.publishedAt ? <><span aria-hidden="true">·</span><time dateTime={story.publishedAt}>{formatPublishedDate(story.publishedAt)}</time></> : null}</span>
                       <h3><Link href={storyHref}>{story.title}</Link></h3>
                       {story.summary ? <p className="home-story-summary">{story.summary}</p> : null}
-                      {story.engagement ? <div className="home-story-engagement" aria-label="Story engagement"><span><ClockIcon size={14} /> {story.engagement.readMinutes} {t(lang, "home.engagement.read")}</span><span><EyeIcon size={14} /> {story.engagement.views.toLocaleString("en-NG")} {t(lang, "home.engagement.views")}</span><span><MessageCircleIcon size={14} /> {story.engagement.comments.toLocaleString("en-NG")} {t(lang, "home.engagement.comments")}</span></div> : null}
+                      {story.engagement ? <StoryStats className="home-story-engagement" stats={story.engagement} labels={{ read: t(lang, "home.engagement.read"), views: t(lang, "home.engagement.views"), comments: t(lang, "home.engagement.comments") }} /> : null}
                       <p className="home-story-byline">{story.authorName ? <ArticleByline name={story.authorName} /> : t(lang, "home.byline.unavailable")}</p>
                       <Link className="home-story-read" href={storyHref}>{t(lang, "home.story.read")} <ArrowUpRightIcon size={16} aria-hidden="true" /></Link>
                     </div>
