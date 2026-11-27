@@ -78,3 +78,17 @@ test("radio keeps listening separate from listings and reminder settings", async
   // Turn 4: radio reminders are real scheduled push notifications, no open page or account needed.
   await expect(page.getByText(/sent automatically the moment a scheduled EPE LAWA programme goes on air/)).toBeVisible();
 });
+
+test("Yorùbá preference survives a reload and translates radio guidance", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("epelawa_cookie_consent", "true"));
+  await page.goto("/radio");
+  await expect(page.getByRole("heading", { name: "Listen without mobile data" })).toBeVisible();
+  const language = page.getByRole("group", { name: "Language / Èdè" }).filter({ visible: true });
+  await language.getByRole("button", { name: "YO Yorùbá" }).click();
+  await expect(page.locator("html")).toHaveAttribute("lang", "yo");
+  await expect(page.getByRole("heading", { name: "Gbọ́ rédíò láìlo dátà fóònù" })).toBeVisible();
+  await expect(page.getByText("Radio Lagos · 107.5 FM", { exact: true })).toBeVisible();
+  await language.getByRole("button", { name: "EN English" }).click();
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(page.getByRole("heading", { name: "Listen without mobile data" })).toBeVisible();
+});

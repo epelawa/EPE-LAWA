@@ -3,9 +3,9 @@
 import { useEffect } from "react";
 
 /**
- * Full-interface Yoruba. When the visitor picks Yorùbá, this loads the UI
+ * Yorùbá interface dictionary. When the visitor picks Yorùbá, this loads the UI
  * dictionary (code-split; English visitors never download it) and translates
- * every interface text node and accessible attribute on the page, including
+ * matching interface text and accessible attributes on the page, including
  * content rendered later (dialogs, toasts, form errors, client navigation).
  *
  * Only exact interface strings are replaced, so user content (articles, forum
@@ -32,16 +32,18 @@ export default function YorubaTranslator({ lang }: { lang: "en" | "yo" }) {
 
     void import("../lib/yo").then(({ YO }) => {
       if (cancelled) return;
+      const ownTranslation = (text: string) => Object.hasOwn(YO, text) ? YO[text] : undefined;
       const lookup = (raw: string): string | null => {
         const text = norm(raw);
         if (!text || !/[A-Za-z]/.test(text)) return null;
-        const hit = YO[text];
+        const hit = ownTranslation(text);
         if (hit) return hit;
         // Retry without leading/trailing punctuation or arrows, then restore them.
         const lead = text.match(LEAD)?.[1] ?? "";
         const trail = text.match(TRAIL)?.[1] ?? "";
         const core = text.slice(lead.length, text.length - trail.length);
-        if (core && core !== text && YO[core]) return lead + YO[core] + trail;
+        const coreHit = core && core !== text ? ownTranslation(core) : undefined;
+        if (coreHit) return lead + coreHit + trail;
         return null;
       };
       const blocked = (el: Element | null) => !!el?.closest('[translate="no"],[data-no-translate],[contenteditable="true"]');

@@ -80,6 +80,8 @@ function keyBytes(base64: string): Uint8Array {
 }
 
 async function serverMessage(response: Response, fallback: string): Promise<string> {
+  // Validation details are for API clients; tell visitors how to recover.
+  if (response.status === 400) return fallback;
   try {
     const data: { error?: { message?: string } } = await response.json();
     return typeof data?.error?.message === "string" ? data.error.message : fallback;

@@ -145,6 +145,10 @@ const yo: Strings = {
 
 const dictionaries: Record<SiteLanguage, Strings> = { en, yo };
 
+export function yorubaInterfaceLabels(): Strings {
+  return Object.fromEntries(Object.entries(en).flatMap(([key, value]) => yo[key] ? [[value, yo[key]]] : []));
+}
+
 export function isSiteLanguage(value: unknown): value is SiteLanguage {
   return value === "en" || value === "yo";
 }

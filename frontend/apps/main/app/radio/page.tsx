@@ -10,6 +10,8 @@ import styles from "./radio-page.module.css";
 import { pageMetadata } from "../../lib/metadata";
 import { PUBLIC_SCHEDULE_COLUMNS, publicScheduleSlot } from "../../lib/radio-schedule";
 import { createClient } from "../../lib/supabase";
+import { RADIO_LAGOS_1075 } from "../../lib/radio-lagos";
+import { GUTS_FM_1049 } from "../../lib/radio-stations";
 import { lagosNow, onAirSlotId } from "./programmes/on-air";
 
 export const dynamic = "force-dynamic";
@@ -50,6 +52,14 @@ export default async function RadioPage() {
     </section>
 
     <div className={styles.content}>
+      <section className="ui-panel ui-stack-sm" aria-labelledby="fm-listening-title">
+        <h2 id="fm-listening-title">Listen without mobile data</h2>
+        <p>Live streaming on this site needs internet access. If your phone has an FM tuner and an FM Radio app, open that app and tune to a station below. Some phones use wired headphones as the antenna.</p>
+        <ul className="ui-list">
+          {[RADIO_LAGOS_1075, GUTS_FM_1049].map((station) => <li key={station.name}>{station.name} · {station.frequency}</li>)}
+        </ul>
+        <p className="ui-muted">Reception depends on your location and device.</p>
+      </section>
       <RadioSchedule slots={slots} initialDay={lagosNow().day} unavailable={unavailable} />
 
       <section className={styles.reminder} aria-labelledby="radio-reminder-title">

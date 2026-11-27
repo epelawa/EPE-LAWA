@@ -69,6 +69,28 @@ function SponsorLink({ sponsor, radio = false }: { sponsor: Sponsor; radio?: boo
   );
 }
 
+function AdvertiseLink() {
+  return (
+    <Link className={styles.link} href="/advertise">
+      <SponsorLogo src={null} className={styles.logo} fallbackClassName={styles.logoFallback} />
+      <span className={styles.copy}>
+        <span className={styles.label}>Advertise here</span>
+        <span className={styles.name}>Put your business in the spotlight.</span>
+        <span className={styles.meta}>Connect with people discovering Epe LAWA.</span>
+        <span className={styles.action}>Advertise with EPE LAWA <ArrowIcon direction="right" /></span>
+      </span>
+    </Link>
+  );
+}
+
+export function AdvertiseCallout() {
+  return (
+    <aside className={styles.slot} aria-label="Advertising opportunities">
+      <AdvertiseLink />
+    </aside>
+  );
+}
+
 export default async function SponsorSlot({
   compact = false,
   footer = false,
@@ -90,21 +112,7 @@ export default async function SponsorSlot({
       ) : sponsors.length === 1 ? (
         <SponsorLink sponsor={sponsors[0]} radio={radio} />
       ) : (
-        <Link className={styles.link} href="/advertise">
-          <SponsorLogo src={null} className={styles.logo} fallbackClassName={styles.logoFallback} />
-          <span className={styles.copy}>
-          <span className={styles.label}>Advertise here</span>
-          <span className={styles.name}>
-            Put your business in the spotlight.
-          </span>
-          <span className={styles.meta}>
-            Connect with people discovering Epe LAWA.
-          </span>
-          <span className={styles.action}>
-            Advertise with EPE LAWA <ArrowIcon direction="right" />
-          </span>
-          </span>
-        </Link>
+        <AdvertiseLink />
       )}
     </aside>
   );

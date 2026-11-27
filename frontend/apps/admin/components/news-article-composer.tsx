@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition, type ChangeEvent } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition, type ChangeEvent } from "react";
 import { useFormStatus } from "react-dom";
 import Link from "./admin-link";
 import { useRouter } from "next/navigation";
@@ -56,6 +56,7 @@ export default function NewsArticleComposer({ categories, authors, coverUploadAv
   const [summary, setSummary] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [tags, setTags] = useState("");
+  const [tagFilter, setTagFilter] = useState("");
   const [step, setStep] = useState(1);
   const [stepError, setStepError] = useState("");
 
@@ -136,6 +137,17 @@ export default function NewsArticleComposer({ categories, authors, coverUploadAv
       setStepError("");
     }
   }
+  const tagQuery = tagFilter.trim().replace(/^#/, "").toLowerCase();
+  const filteredPresets = NEWS_HASHTAGS.filter(({ tag, words }) =>
+    !tagQuery || tag.toLowerCase().includes(tagQuery) || words.some((word) => word.includes(tagQuery))
+  );
+  const previewSuggestions = useMemo(() => suggestNewsHashtags(`${preview.title} ${preview.summary} ${preview.body} ${preview.category}`), [preview]);
+  const tagButton = (tag: string) => {
+    const selected = selectedTagKeys.has(tag.toLowerCase());
+    const unavailable = !selected && articleTagsError([...selectedTags, tag].join(", ")) !== null;
+    return <button key={tag} type="button" className="btn-secondary" aria-pressed={selected}
+      aria-disabled={unavailable || undefined} onClick={() => toggleTag(tag)}>#{tag}</button>;
+  };
   const wordCount = body.trim() ? body.trim().split(/\s+/u).length : 0;
   const readingMinutes = Math.max(1, Math.ceil(wordCount / 200));
 
@@ -165,14 +177,14 @@ export default function NewsArticleComposer({ categories, authors, coverUploadAv
           <details className={styles.suggestedTags}>
             <summary>Browse {NEWS_HASHTAGS.length} preset hashtags</summary>
             <p role="status">{selectedTags.length} of {ARTICLE_TAG_LIMIT} selected</p>
-            <div className={styles.presetTags}>
-              {NEWS_HASHTAGS.map(({ tag }) => {
-                const selected = selectedTagKeys.has(tag.toLowerCase());
-                const unavailable = !selected && articleTagsError([...selectedTags, tag].join(", ")) !== null;
-                return <button key={tag} type="button" className="btn-secondary" aria-pressed={selected}
-                  aria-disabled={unavailable || undefined} onClick={() => toggleTag(tag)}>#{tag}</button>;
-              })}
-            </div>
+            <label className={styles.field}>Search preset hashtags
+              <input type="search" value={tagFilter} onChange={(event) => setTagFilter(event.currentTarget.value)}
+                onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); event.stopPropagation(); } }}
+                placeholder="e.g., climate change, presidency, or tech" />
+            </label>
+            {filteredPresets.length
+              ? <div className={styles.presetTags}>{filteredPresets.map(({ tag }) => tagButton(tag))}</div>
+              : <p role="status">No presets match that search. You can enter your own in Hashtags.</p>}
           </details>
           {enhanced && stepError && step === 1 ? <p role="alert" aria-live="polite" className={styles.stepError}>{stepError}</p> : null}
         </section>
@@ -193,7 +205,14 @@ export default function NewsArticleComposer({ categories, authors, coverUploadAv
     <dialog ref={previewDialog} className={`${styles.dialog} ${styles.previewDialog}`} aria-labelledby="preview-title" onClose={() => previewButton.current?.focus()}>
       <div className={styles.dialogHeader}><div><span className={styles.eyebrow}>PRIVATE PREVIEW</span><h2 id="preview-title">Review your article</h2><p>This preview stays in your browser and has not been published.</p></div><button type="button" className={styles.close} aria-label="Close preview" onClick={() => previewDialog.current?.close()}>×</button></div>
       <article className={styles.previewStory}><p className={styles.eyebrow}>{preview.category || "No category selected"}</p><h3>{preview.title || "Untitled article"}</h3>{preview.summary ? <p className={styles.previewSummary}>{preview.summary}</p> : null}<p className={styles.previewByline}>By {preview.author || "No author selected"}</p>{preview.image && !previewImageFailed ? <><img src={preview.image} alt={preview.imageAlt} referrerPolicy="no-referrer" onError={() => setPreviewImageFailed(true)} /></> : <div className={styles.previewPlaceholder}><img src="/brand-logo.webp" alt="EPE LAWA logo" /><p>{previewImageFailed ? "The cover preview could not load. The EPE LAWA logo is shown as a fallback." : "No cover selected. The EPE LAWA logo is used as a fallback."}</p></div>}<div className={styles.previewBody}>{preview.body ? preview.body.split(/\n\s*\n/).map((paragraph, index) => <p key={index}>{paragraph}</p>) : <p>No story content yet.</p>}</div></article>
-      <section className={styles.suggestedTags}><h3>Suggested hashtags</h3><p>Keyword suggestions for review; they are not saved or added to the article.</p><div>{suggestNewsHashtags(`${preview.title} ${preview.summary} ${preview.body} ${preview.category}`).length ? suggestNewsHashtags(`${preview.title} ${preview.summary} ${preview.body} ${preview.category}`).map((tag) => <span key={tag}>#{tag}</span>) : <span>No matching suggestions yet</span>}</div></section>
+      <section className={styles.suggestedTags} aria-labelledby="preview-hashtags">
+        <h3 id="preview-hashtags">Suggested hashtags</h3>
+        <p>Choose a suggestion to attach it when you save the article. Choose it again to remove it.</p>
+        <p role="status">{selectedTags.length} of {ARTICLE_TAG_LIMIT} selected</p>
+        {previewSuggestions.length
+          ? <div className={styles.presetTags}>{previewSuggestions.map(tagButton)}</div>
+          : <p>No suggestions match this story yet. You can browse presets or enter a custom hashtag in Story details.</p>}
+      </section>
     </dialog>
 
   </form>;

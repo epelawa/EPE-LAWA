@@ -596,10 +596,6 @@ html { transition: background-color var(--ep-dur-base, 200ms) var(--ep-ease-out)
 .lang-switch button[aria-pressed="true"] { background: var(--palette-cobalt, #477FE0); color: var(--palette-midnight, #0A1023); }
 .lang-switch button:focus-visible { outline: 3px solid var(--palette-cobalt, #477FE0); outline-offset: 2px; }
 .drawer-heading__tools { display: flex; align-items: center; gap: 6px; }
-/* While Yoruba loads, hide the English text briefly instead of flashing it.
-   A CSS-only fallback reveals the page after 1.2s if scripts fail. */
-html[lang="yo"]:not([data-yo-ready]) body { animation: yo-reveal 0s linear 1.2s forwards; opacity: 0; }
-@keyframes yo-reveal { to { opacity: 1; } }
 
 /* Turn 5: keep the end of the page reachable above the open radio mini-player. */
 html[data-radio-mini="open"] .site-footer { padding-bottom: calc(var(--radio-mini-offset, 76px) + 12px); }

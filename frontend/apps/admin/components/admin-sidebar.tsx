@@ -98,10 +98,7 @@ export default function AdminSidebar({
     };
   }, [open, close]);
 
-  // A drawer link to the page already shown does not change the pathname, so
-  // the route-change effect never fires; close explicitly in that case only.
-  // Other links keep the drawer open until navigation so pending feedback shows.
-  const nav = (inDrawer = false) => (
+  const nav = (onNavigate?: () => void) => (
     <nav className="admin-sidebar__nav" aria-label="Staff sections">
       {sections.map((section) => (
         <div className="admin-sidebar__group" key={section.label}>
@@ -114,7 +111,7 @@ export default function AdminSidebar({
                   className={isCurrent(path, item.href) ? "admin-sidebar__link admin-sidebar__link--active" : "admin-sidebar__link"}
                   aria-current={isCurrent(path, item.href) ? "page" : undefined}
                   pendingLabel={item.label}
-                  onClick={inDrawer && path === item.href ? close : undefined}
+                  onClick={onNavigate}
                 >
                   <span className="admin-sidebar__label">{item.label}</span>
                   {badgeFor(item.href) !== null ? <sup className={flickFor(item.href) ? "admin-sidebar__badge admin-sidebar__badge--hot" : "admin-sidebar__badge"} aria-label={`${badgeFor(item.href)} waiting`} title={`${badgeFor(item.href)} waiting on you`}>{badgeFor(item.href)}</sup> : null}
@@ -190,7 +187,7 @@ export default function AdminSidebar({
             <h2 id="admin-drawer-title">Staff workspace</h2>
             <button className="btn-icon" type="button" aria-label="Close menu" onClick={close}><CloseIcon size={20} /></button>
           </div>
-          {nav(true)}
+          {nav(close)}
           {identity}
         </div>
       </div>

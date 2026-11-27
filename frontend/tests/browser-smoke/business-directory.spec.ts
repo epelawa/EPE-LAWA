@@ -110,11 +110,10 @@ test("profile shows real contact actions, information, claim and report, with no
   // Claim confirmation after the claim action redirects back.
   await page.goto("/business-directory/fixture-business-2?claim=sent");
   await expect(page.getByRole("status").filter({ hasText: "Your claim was sent to the team" })).toBeVisible();
-  // Unknown slug renders the not-found page with noindex. (The root app/loading.tsx streams every route, so
-  // Next.js commits HTTP 200 before notFound() runs; this is pre-existing and documented, see the report.)
-  await page.goto("/business-directory/no-such-business");
+  const missing = await page.goto("/business-directory/no-such-business");
+  expect(missing?.status()).toBe(404);
   await expect(page.locator('meta[name="robots"][content*="noindex"]').first()).toBeAttached();
-  await expect(page.getByRole("heading", { level: 1 })).not.toHaveText(/Fixture Business/);
+  await expect(page.getByRole("heading", { level: 1, name: "Page not found." })).toBeVisible();
 });
 
 test("directory and profile fit every owner viewport without horizontal overflow", async ({ page, request }) => {

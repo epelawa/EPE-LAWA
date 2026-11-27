@@ -1,11 +1,12 @@
 /*
- * EPE LAWA web-push service worker.
+ * EPE LAWA service worker for notifications and explicitly saved public stories.
  *
- * Registered by the notification opt-in only after the member explicitly allows
- * notifications and while the public web-push flag is live. It handles exactly
- * two things: showing a server-pushed notification and opening the notification's
- * same-site path. Links are literal relative paths; absolute URLs are dropped.
+ * Notification permission is requested separately by the browser UI. Offline reading
+ * never caches a network response or a signed-in page.
  */
+
+self.addEventListener("install", (event) => event.waitUntil(self.skipWaiting()));
+self.addEventListener("activate", (event) => event.waitUntil(self.clients.claim()));
 
 self.addEventListener("push", (event) => {
   let title = "EPE LAWA";
@@ -56,4 +57,18 @@ self.addEventListener("notificationclick", (event) => {
     }
     await self.clients.openWindow(target);
   })());
+});
+
+// Use the original URL for a saved article. Always give the network the first
+// chance so corrections and removals are visible when the reader is online.
+self.addEventListener("fetch", (event) => {
+  const request = event.request;
+  if (request.method !== "GET" || request.mode !== "navigate") return;
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin || !/^\/news\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(url.pathname)) return;
+  event.respondWith(fetch(request).catch(async (error) => {
+    const saved = await caches.match(url.pathname, { cacheName: "epelawa-offline-stories-v1" });
+    if (saved) return saved;
+    throw error;
+  }));
 });
