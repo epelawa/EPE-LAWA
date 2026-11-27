@@ -9,6 +9,7 @@ export type QueueCounts = {
   corrections: number | null;
   articleCorrections: number | null;
   enquiries: number | null;
+  supportTickets?: number | null;
   events: number | null;
   appeals: number | null;
   forumReports: number | null;
@@ -31,6 +32,7 @@ export const QUEUE_BADGES: Record<string, QueueBadge[]> = {
   "/people": [{ key: "corrections", kind: "count", label: waiting("profile correction") }],
   "/corrections": [{ key: "articleCorrections", kind: "count", label: waiting("correction report") }],
   "/enquiries": [{ key: "enquiries", kind: "count", label: waiting("new message") }],
+  "/support": [{ key: "supportTickets", kind: "count", label: (n) => `${n} support ${n === 1 ? "ticket needs" : "tickets need"} a reply` }],
   "/events": [{ key: "events", kind: "count", label: waiting("event submission") }],
   "/appeals": [{ key: "appeals", kind: "count", label: waiting("appeal") }],
   "/moderation/forum": [{ key: "forumReports", kind: "count", label: waiting("forum report") }],

@@ -3,7 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { formAdminClient } from "../form-server";
 import { finishRun, RunLog, startRun, type AiJob } from "./activity";
 import { ensureAiActor } from "./actor";
-import { keyStatus, openRouterKey, requestsToday, type Budget } from "./openrouter";
+import { openRouterKey, unlimitedBudget, type Budget } from "./openrouter";
 import { loadAiSettings, type AiSettings } from "./settings";
 import { newsDue } from "./news-schedule";
 import { runNewsJob } from "./jobs/news";
@@ -12,6 +12,9 @@ import { runBusinessJob } from "./jobs/businesses";
 import { runAdsJob } from "./jobs/ads";
 import { runModerationJob } from "./jobs/moderation";
 import { runAdminLogJob } from "./jobs/admin-logs";
+import { runSupportJob } from "./jobs/support";
+import { runNewsReeditJob, unrevisedCount } from "./jobs/news-reedit";
+import { jobDue, type ScheduledJob } from "./job-schedule";
 
 /**
  * One autopilot pass. Scheduled passes (every 5 minutes from pg_cron, only
@@ -27,6 +30,7 @@ export const AI_JOB_LABELS: Record<AiJob, string> = {
   businesses: "Business verification",
   admin_logs: "Admin log explanations",
   ads: "Ad placement",
+  support: "Support tickets",
 };
 
 const CAPABILITY: Record<AiJob, keyof AiSettings["capabilities"]> = {
@@ -36,14 +40,19 @@ const CAPABILITY: Record<AiJob, keyof AiSettings["capabilities"]> = {
   businesses: "business_review",
   admin_logs: "admin_log_explain",
   ads: "ads",
+  support: "support_reply",
 };
 
 // Vercel Fluid compute allows 300 s per invocation on this project. Scheduled
 // passes use 280 s; "Run now" from the admin page uses 240 s so the page answers in time.
 const RUN_SECONDS = { schedule: 280, manual: 240 } as const;
 
-function olderThan(value: string | null, minutes: number): boolean {
-  return !value || Date.now() - Date.parse(value) >= minutes * 60_000;
+/** Last time a scheduled job was due; older rows fall back to the job's own "last run" column. */
+function lastDue(settings: AiSettings, job: ScheduledJob): string | null {
+  if (settings.job_last_due[job]) return settings.job_last_due[job] ?? null;
+  if (job === "admin_logs") return settings.last_explain_run_at;
+  if (job === "ads") return settings.last_ads_run_at;
+  return null;
 }
 
 async function lastRunStart(db: SupabaseClient, job: AiJob): Promise<string | null> {
@@ -53,7 +62,7 @@ async function lastRunStart(db: SupabaseClient, job: AiJob): Promise<string | nu
 
 export type PassResult = { ran: { job: AiJob; summary: string }[]; skipped: string | null };
 
-export async function runAutopilotPass(options: { trigger: "schedule" | "manual"; job?: AiJob; triggeredBy?: string | null; onRunStarted?: (runId: string) => void }): Promise<PassResult> {
+export async function runAutopilotPass(options: { trigger: "schedule" | "manual"; job?: AiJob; triggeredBy?: string | null; onRunStarted?: (runId: string) => void; newsMode?: "write" | "reedit" }): Promise<PassResult> {
   const started = Date.now();
   const deadline = started + RUN_SECONDS[options.trigger] * 1000;
   const db = formAdminClient();
@@ -76,11 +85,8 @@ export async function runAutopilotPass(options: { trigger: "schedule" | "manual"
     return { ran: [], skipped: `The AI staff identity could not be prepared: ${error instanceof Error ? error.message : "unknown"}` };
   }
 
-  const used = await requestsToday(db);
-  const key = await keyStatus();
-  let remaining = settings.daily_request_budget - used;
-  if (typeof key.freeDailyRemaining === "number") remaining = Math.min(remaining, key.freeDailyRemaining);
-  const budget: Budget = { remaining: Math.max(0, remaining) };
+  // No local request cap: jobs keep going for as long as OpenRouter accepts requests.
+  const budget: Budget = unlimitedBudget();
   const publish = settings.autopilot_enabled;
 
   // Set times or the interval decide when news is due; stories owed from a run
@@ -88,14 +94,27 @@ export async function runAutopilotPass(options: { trigger: "schedule" | "manual"
   const newsSchedule = newsDue(settings, started);
   const newsTarget = !options.job && newsSchedule.due && newsSchedule.target === "owed" ? settings.news_owed : settings.articles_per_run;
   const due: AiJob[] = [];
+  // Re-editing earlier AI stories under the current rules: on request, or in passes when no news is due.
+  let newsReedit = options.job === "news" && options.newsMode === "reedit";
   if (options.job) due.push(options.job);
   else {
     if (settings.capabilities.news && newsSchedule.due) due.push("news");
-    if (settings.capabilities.comment_moderation) due.push("moderation");
-    if (settings.capabilities.enquiry_reply) due.push("enquiries");
-    if (settings.capabilities.business_review) due.push("businesses");
-    if (settings.capabilities.admin_log_explain && olderThan(settings.last_explain_run_at, 58)) due.push("admin_logs");
-    if (settings.capabilities.ads && olderThan(settings.last_ads_run_at, 23 * 60)) due.push("ads");
+    else if (settings.capabilities.news && (await unrevisedCount(db)) > 0) {
+      due.push("news");
+      newsReedit = true;
+    }
+    // Each job follows its own schedule (Admin → AI scheduler → Job schedules).
+    const marked: Partial<Record<ScheduledJob, string>> = {};
+    for (const job of ["moderation", "enquiries", "support", "businesses", "admin_logs", "ads"] as const) {
+      if (!settings.capabilities[CAPABILITY[job]]) continue;
+      const schedule = settings.job_schedules[job];
+      if (!jobDue(schedule, lastDue(settings, job), started)) continue;
+      due.push(job);
+      if (schedule.mode === "interval" || schedule.mode === "times") marked[job] = new Date(started).toISOString();
+    }
+    if (Object.keys(marked).length) {
+      await db.from("ai_settings").update({ job_last_due: { ...settings.job_last_due, ...marked } }).eq("id", 1);
+    }
   }
 
   const ran: PassResult["ran"] = [];
@@ -103,8 +122,8 @@ export async function runAutopilotPass(options: { trigger: "schedule" | "manual"
     if (Date.now() > deadline - 30_000) break;
     if (!settings.capabilities[CAPABILITY[job]] && options.trigger === "schedule") continue;
     const needsModel = job !== "ads";
-    if (needsModel && budget.remaining <= 0) {
-      if (options.job) ran.push({ job, summary: "Daily free-model request budget used up; try again after 01:00 WAT." });
+    if (needsModel && budget.stopped) {
+      if (options.job) ran.push({ job, summary: `Not started: ${budget.stopped}.` });
       continue;
     }
     // Cheap pre-checks so idle jobs never create empty runs or spend requests.
@@ -119,6 +138,10 @@ export async function runAutopilotPass(options: { trigger: "schedule" | "manual"
       const { count: open } = await db.from("ai_activity").select("id", { count: "exact", head: true }).eq("action", "enquiry.escalate").eq("outcome", "escalated").is("resolved_at", null);
       if ((open ?? 0) >= count) continue;
     }
+    if (!options.job && job === "support") {
+      const { count } = await db.from("support_tickets").select("id", { count: "exact", head: true }).eq("status", "open").eq("needs_human", false);
+      if (!count) continue;
+    }
     if (!options.job && job === "businesses") {
       const { count } = await db.from("businesses").select("id", { count: "exact", head: true }).in("status", ["submitted", "reviewing"]).is("deleted_at", null);
       if (!count) continue;
@@ -129,10 +152,12 @@ export async function runAutopilotPass(options: { trigger: "schedule" | "manual"
     const runId = await startRun(db, job, options.trigger, options.triggeredBy ?? null);
     const log = new RunLog(db, runId, actorId);
     if (runId) options.onRunStarted?.(runId);
-    await log.step(`Started ${AI_JOB_LABELS[job]} (${options.trigger === "manual" ? "Run now" : "scheduled"}${publish ? "" : ", approval mode — results go to a human"}). ${budget.remaining} free model requests left today.`);
+    await log.step(`Started ${AI_JOB_LABELS[job]} (${options.trigger === "manual" ? "Run now" : "scheduled"}${publish ? "" : ", approval mode — results go to a human"}). Free models only; it keeps going while OpenRouter accepts requests.`);
     let summary = "";
     try {
-      if (job === "news") {
+      if (job === "news" && newsReedit) {
+        summary = await runNewsReeditJob(db, { log, budget, deadline, publish, limit: options.trigger === "manual" ? 20 : 4 });
+      } else if (job === "news") {
         const continuing = !options.job && newsSchedule.due && newsSchedule.reason === "owed";
         if (continuing) await log.step(`Continuing the last news run: ${newsTarget} more ${newsTarget === 1 ? "story is" : "stories are"} owed to reach ${settings.articles_per_run} per run.`);
         // A continuation keeps the schedule's clock; a scheduled or manual run restarts it.
@@ -143,13 +168,17 @@ export async function runAutopilotPass(options: { trigger: "schedule" | "manual"
         summary = await runModerationJob(db, { log, budget, deadline, publish, since });
       } else if (job === "enquiries") {
         summary = await runEnquiryJob(db, { log, budget, deadline, publish });
+      } else if (job === "support") {
+        summary = await runSupportJob(db, { log, budget, deadline, publish });
       } else if (job === "businesses") {
         summary = await runBusinessJob(db, { log, budget, deadline, publish });
       } else if (job === "admin_logs") {
-        // Scheduled: the last full hour. Manual "Explain now": the last six hours up to now.
+        // Scheduled: the full hours since the last explanation (1 to 24 hours). Manual "Explain now": the last six hours up to now.
         const end = new Date(started);
         if (options.trigger === "schedule") end.setUTCMinutes(0, 0, 0);
-        const start = new Date(end.getTime() - (options.trigger === "schedule" ? 1 : 6) * 3600_000);
+        const since = settings.last_explain_run_at ? Date.parse(settings.last_explain_run_at) : Number.NaN;
+        const hours = options.trigger === "schedule" ? Math.min(24, Math.max(1, Number.isFinite(since) ? Math.ceil((end.getTime() - since) / 3600_000) : 1)) : 6;
+        const start = new Date(end.getTime() - hours * 3600_000);
         summary = await runAdminLogJob(db, { log, budget, deadline, periodStart: start, periodEnd: end });
         await db.from("ai_settings").update({ last_explain_run_at: new Date(started).toISOString() }).eq("id", 1);
       } else if (job === "ads") {
@@ -161,7 +190,7 @@ export async function runAutopilotPass(options: { trigger: "schedule" | "manual"
       await log.record({ job, action: `${job}.run`, outcome: "failed", title: `${AI_JOB_LABELS[job]} stopped unexpectedly`, reason: error instanceof Error ? error.message.slice(0, 500) : "unknown error" });
       summary = "Stopped unexpectedly.";
     }
-    await finishRun(db, runId, log, summary, { requests_left: budget.remaining, mode: publish ? "autopilot" : "approval" });
+    await finishRun(db, runId, log, summary, { openrouter_stopped: budget.stopped ?? null, mode: publish ? "autopilot" : "approval" });
     ran.push({ job, summary });
   }
   return { ran, skipped: null };

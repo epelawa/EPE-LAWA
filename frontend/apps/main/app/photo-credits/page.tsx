@@ -19,6 +19,9 @@ export default function PhotoCreditsPage() {
             </li>
           ))}
         </ol>
+        <h2>News story pictures</h2>
+        <p>Each story credits its own cover under the picture. On stories written by the EPE LAWA AI desk the cover is one of: a <strong>file photo</strong> taken from a public report the story is based on (checked so that no outlet logo or branding is used); a <strong>freely licensed photo</strong> from Wikimedia Commons, credited to its author with a link to its license; or an <strong>AI-generated illustration</strong>, labelled as such, which shows the subject of the story rather than the actual event. When none is suitable, the site&apos;s own fallback image is shown.</p>
+        <p>If you own a picture used here and want it credited differently or removed, open a <a href="/support">support ticket</a> with the story link.</p>
       </article>
     </PageFrame>
   );

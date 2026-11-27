@@ -1,22 +1,17 @@
-.pill {
+.note {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin: 0 auto var(--ep-space-4, 16px);
-  padding: 8px 16px;
-  border: 1px solid var(--palette-border);
-  border-radius: var(--ep-radius-pill);
-  background: var(--palette-navy);
-  color: var(--palette-cloud);
-  font: inherit;
+  min-height: 0;
+  margin: 0;
   font-size: var(--ep-type-sm, 14px);
-  font-weight: var(--ep-weight-semibold);
-  cursor: pointer;
-  box-shadow: var(--ep-shadow-2);
-  animation: pill-in var(--ep-dur-base, 200ms) var(--ep-ease-out);
+  color: var(--palette-ink-muted, inherit);
 }
-.pill:hover { border-color: var(--palette-cobalt); }
-.dot { width: 8px; height: 8px; border-radius: var(--ep-radius-pill); background: #35d07f; animation: pill-breathe 1.6s var(--ep-ease-inout) infinite; }
-@keyframes pill-in { from { opacity: 0; transform: translateY(-6px) scale(.96); } to { opacity: 1; transform: none; } }
-@keyframes pill-breathe { 0%,100% { box-shadow: 0 0 0 0 rgb(53 208 127 / .5); } 50% { box-shadow: 0 0 0 5px rgb(53 208 127 / 0); } }
-@media (prefers-reduced-motion: reduce) { .pill, .dot { animation: none; } }
+.note[data-visible="true"] { animation: note-in var(--ep-dur-base, 200ms) var(--ep-ease-out); }
+.note[data-visible="false"] { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.dot { width: 8px; height: 8px; border-radius: var(--ep-radius-pill, 999px); background: #35d07f; animation: note-breathe 1.6s var(--ep-ease-inout) infinite; }
+@keyframes note-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@keyframes note-breathe { 0%,100% { box-shadow: 0 0 0 0 rgb(53 208 127 / .5); } 50% { box-shadow: 0 0 0 5px rgb(53 208 127 / 0); } }
+.liveNew { animation: live-new-glow 6s var(--ep-ease-out, ease-out) both; border-radius: 12px; }
+@keyframes live-new-glow { 0% { box-shadow: 0 0 0 3px rgb(53 208 127 / .65); background-color: rgb(53 208 127 / .10); } 70% { box-shadow: 0 0 0 3px rgb(53 208 127 / .35); } 100% { box-shadow: 0 0 0 0 rgb(53 208 127 / 0); background-color: transparent; } }
+@media (prefers-reduced-motion: reduce) { .note, .dot, .liveNew { animation: none; } .liveNew { outline: 2px solid #35d07f; outline-offset: 2px; } }

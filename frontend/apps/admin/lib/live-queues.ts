@@ -16,6 +16,7 @@ export type LiveQueues = {
   corrections: number | null;
   articleCorrections: number | null;
   enquiries: number | null;
+  supportTickets: number | null;
   events: number | null;
   appeals: number | null;
   forumReports: number | null;
@@ -26,7 +27,7 @@ export type LiveQueues = {
 };
 
 export const EMPTY_QUEUES: LiveQueues = {
-  submissions: null, corrections: null, articleCorrections: null, enquiries: null, events: null, appeals: null,
+  submissions: null, corrections: null, articleCorrections: null, enquiries: null, supportTickets: null, events: null, appeals: null,
   forumReports: null, commentReports: null, aiEscalations: null, aiRunning: null, storageRunning: null,
 };
 
@@ -39,11 +40,12 @@ const RUNNING_WINDOW_MS = 15 * 60 * 1000;
 export async function readLiveQueues(db: SupabaseClient, now = Date.now()): Promise<LiveQueues> {
   const since = new Date(now - RUNNING_WINDOW_MS).toISOString();
   const head = { count: "exact" as const, head: true };
-  const [business, corrections, articleCorrections, enquiries, events, appeals, forumReports, commentReports, escalations, running, primary] = await Promise.all([
+  const [business, corrections, articleCorrections, enquiries, support, events, appeals, forumReports, commentReports, escalations, running, primary] = await Promise.all([
     db.from("businesses").select("id", head).in("status", ["submitted", "reviewing"]).is("deleted_at", null),
     db.from("people_corrections").select("id", head).eq("state", "open"),
     db.from("article_correction_reports").select("id", head).eq("status", "open"),
     db.rpc("staff_enquiry_list"),
+    db.rpc("staff_support_list", { p_status: "attention" }),
     db.from("events").select("id", head).eq("status", "submitted"),
     db.from("moderation_appeals").select("id", head).eq("status", "open"),
     db.from("forum_reports").select("id", head).eq("state", "open"),
@@ -68,6 +70,7 @@ export async function readLiveQueues(db: SupabaseClient, now = Date.now()): Prom
     corrections: counted(corrections),
     articleCorrections: counted(articleCorrections),
     enquiries: enquiries.error ? null : openEnquiries,
+    supportTickets: support.error ? null : Array.isArray(support.data) ? support.data.length : 0,
     events: counted(events),
     appeals: counted(appeals),
     forumReports: counted(forumReports),

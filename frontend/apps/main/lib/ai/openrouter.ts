@@ -13,7 +13,7 @@ import { runStep } from "./activity";
  * the next one when a model is busy, empty or slow. A copy of the last good list
  * is kept only so the page still works if OpenRouter is briefly unreachable.
  * Failed attempts count against the daily free quota, so every attempt is
- * recorded and the run stops at the configured budget. Paid models are never
+ * recorded; there is no local budget — the run stops only when OpenRouter refuses. Paid models are never
  * sent, so the key can never be billed by this code.
  */
 
@@ -240,7 +240,23 @@ export function parseJsonReply(text: string): unknown {
   return JSON.parse(fenced.slice(start, end + 1));
 }
 
-export type Budget = { remaining: number };
+/**
+ * No local cap: the AI keeps working for as long as OpenRouter accepts its
+ * requests. `stopped` is set only when OpenRouter itself says the account's
+ * allowance is used up (HTTP 402, or a 429 that names the daily free limit);
+ * per-minute "busy" answers just move on to the next model.
+ */
+export type Budget = { remaining: number; stopped?: string | null };
+
+export function unlimitedBudget(): Budget {
+  return { remaining: Number.POSITIVE_INFINITY, stopped: null };
+}
+
+/** OpenRouter's own "allowance used up" answers (not a per-minute busy signal). */
+export function allowanceExhausted(status: number, message: string): boolean {
+  if (status === 402) return true;
+  return status === 429 && /per[- ]?day|daily|free-models-per-day|quota|credits?/i.test(message);
+}
 
 /** Pulls the reply text; "thinking" models sometimes leave content empty and put the answer in `reasoning`. */
 export function replyText(message: { content?: unknown; reasoning?: unknown } | undefined): { text: string; fromReasoning: boolean } {
@@ -279,9 +295,13 @@ export async function chatJson<T>(
   if (!queue.length) return { ok: false, error: [...errors, "no free model available"].join("; "), attempts: 0 };
   if (missing.length) await runStep(db, options.runId, `Skipped chosen model${missing.length > 1 ? "s" : ""} no longer free on OpenRouter: ${missing.join(", ")}`);
   let attempts = 0;
-  for (const [position, model] of queue.entries()) {
-    if (options.budget.remaining <= 0) {
-      errors.push("daily request budget reached");
+  // After the chosen models, keep going down OpenRouter's live free list (fixed
+  // order, never shuffled) for as long as there is time and OpenRouter answers.
+  const backups = defaultModelIds(catalogue).filter((id) => !queue.includes(id)).slice(0, 6);
+  const plan = [...queue, ...backups];
+  for (const [position, model] of plan.entries()) {
+    if (options.budget.remaining <= 0 || options.budget.stopped) {
+      errors.push(options.budget.stopped ?? "OpenRouter refused further requests");
       break;
     }
     const left = options.deadline - Date.now();
@@ -291,7 +311,7 @@ export async function chatJson<T>(
     }
     attempts += 1;
     options.budget.remaining -= 1;
-    await runStep(db, options.runId, `Asking ${model} (${position === 0 ? "1st choice" : `backup ${position} of ${queue.length - 1}`})…`);
+    await runStep(db, options.runId, `Asking ${model} (${position === 0 ? "1st choice" : position < queue.length ? `backup ${position} of ${queue.length - 1}` : "extra backup from the free list"})…`);
     const started = Date.now();
     let status: number | null = null;
     let failure: string | null = null;
@@ -314,7 +334,11 @@ export async function chatJson<T>(
       const body = (await response.json().catch(() => null)) as { choices?: { finish_reason?: unknown; message?: { content?: unknown; reasoning?: unknown } }[]; error?: { message?: unknown }; model?: unknown } | null;
       if (!response.ok) {
         const detail = typeof body?.error?.message === "string" ? `: ${body.error.message}` : "";
-        failure = response.status === 429 ? `busy (HTTP 429${detail}) — moved to the next model` : `HTTP ${response.status}${detail}`;
+        if (allowanceExhausted(response.status, detail)) {
+          failure = `OpenRouter says the allowance is used up (HTTP ${response.status}${detail})`;
+          options.budget.stopped = failure;
+          options.budget.remaining = 0;
+        } else failure = response.status === 429 ? `busy (HTTP 429${detail}) — moved to the next model` : `HTTP ${response.status}${detail}`;
       } else {
         const choice = body?.choices?.[0];
         const { text } = replyText(choice?.message);
@@ -338,7 +362,7 @@ export async function chatJson<T>(
       failure = error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError") ? "too slow (timed out)" : "network error";
     }
     await recordCall(db, options, model, false, status, Date.now() - started, failure);
-    await runStep(db, options.runId, `${model} failed after ${((Date.now() - started) / 1000).toFixed(1)} s: ${failure}${position < queue.length - 1 ? " — trying the next model" : ""}`);
+    await runStep(db, options.runId, `${model} failed after ${((Date.now() - started) / 1000).toFixed(1)} s: ${failure}${position < plan.length - 1 && !options.budget.stopped ? " — trying the next model" : ""}`);
     errors.push(`${model}: ${failure}`);
   }
   return { ok: false, error: errors.join("; ").slice(0, 900) || "no free model available", attempts };

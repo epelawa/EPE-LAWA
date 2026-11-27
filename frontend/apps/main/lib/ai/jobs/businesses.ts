@@ -78,7 +78,7 @@ export async function runBusinessJob(db: SupabaseClient, ctx: { log: RunLog; bud
   if (error) return "Businesses could not be read.";
   let handled = 0;
   for (const business of (data ?? []) as Business[]) {
-    if (handled >= 1 || Date.now() > ctx.deadline - 20_000 || ctx.budget.remaining <= 0) break;
+    if (Date.now() > ctx.deadline - 60_000 || ctx.budget.remaining <= 0) break;
     if (await openEscalation(db, business.id, "business.escalate")) continue;
     handled += 1;
     await ctx.log.step(`Checking “${business.name}”: its website and the map for independent evidence…`);

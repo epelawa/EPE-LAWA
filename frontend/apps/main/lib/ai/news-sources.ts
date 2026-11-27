@@ -19,6 +19,8 @@ export const NEWS_OUTLETS: readonly Outlet[] = [
   { id: "guardianng", name: "The Guardian Nigeria", feed: "https://guardian.ng/feed/", domains: ["guardian.ng"], desk: "nigeria", country: "NG" },
   { id: "thecable", name: "TheCable", feed: "https://www.thecable.ng/feed", domains: ["thecable.ng"], desk: "nigeria", country: "NG" },
   { id: "dailytrust", name: "Daily Trust", feed: "https://dailytrust.com/feed/", domains: ["dailytrust.com"], desk: "nigeria", country: "NG" },
+  { id: "nta", name: "NTA News", feed: "https://www.nta.ng/feed/", domains: ["nta.ng"], desk: "nigeria", country: "NG" },
+  { id: "nta-news", name: "NTA News", feed: "https://www.nta.ng/category/news/feed/", domains: ["nta.ng"], desk: "nigeria", country: "NG" },
   { id: "businessday", name: "BusinessDay", feed: "https://businessday.ng/feed/", domains: ["businessday.ng"], desk: "business", country: "NG" },
   { id: "nairametrics", name: "Nairametrics", feed: "https://nairametrics.com/feed/", domains: ["nairametrics.com"], desk: "business", country: "NG" },
   { id: "guardianng-politics", name: "The Guardian Nigeria", feed: "https://guardian.ng/category/politics/feed/", domains: ["guardian.ng"], desk: "politics", country: "NG" },

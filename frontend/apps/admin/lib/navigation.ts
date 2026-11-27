@@ -45,6 +45,7 @@ const communityPages: NavItem[] = [
   { label: "Forum", href: "/moderation/forum", hint: "Reports, chats and message removal", primary: true, group: "PEOPLE & WORK" },
   { label: "Comments", href: "/moderation/comments", hint: "Edit and remove article comments", group: "PEOPLE & WORK" },
   { label: "Appeals", href: "/appeals", hint: "Member appeals against moderation", group: "PEOPLE & WORK" },
+  { label: "Support tickets", href: "/support", hint: "Help requests: reply, assign and close; the AI answers simple ones", group: "PEOPLE & WORK" },
   { label: "Enquiries", href: "/enquiries", hint: "Restricted private messages and corrections", group: "SYSTEM" },
 ];
 
@@ -103,6 +104,7 @@ const itemCapabilities: Record<string, string[]> = {
   "/ads": ["article.publish"],
   "/appeals": ["moderation.review"],
   "/enquiries": ["moderation.review"],
+  "/support": ["moderation.review"],
   "/members": ["staff.manage"],
   "/users": ["staff.manage"],
   "/roles": ["staff.roles.manage"],

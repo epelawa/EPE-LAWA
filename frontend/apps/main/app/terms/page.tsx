@@ -11,7 +11,7 @@ export const metadata: Metadata = pageMetadata({ title: "Terms", description, pa
 export default function TermsPage() {
   return (
     <InformationPage title="Terms of use" description="The agreement between you and EPE LAWA for using this platform.">
-      <p className="legal-date"><strong>Last updated:</strong> 12 November 2026</p>
+      <p className="legal-date"><strong>Last updated:</strong> 27 November 2026</p>
 
       <SitePageNote page="terms" label="A note from EPE LAWA" />
 
@@ -52,6 +52,14 @@ export default function TermsPage() {
       <h2>7. Information and accuracy — no professional advice</h2>
       <p>We aim to report accurately, attribute sources and correct mistakes openly, but we do not promise that content is complete, current or fit for any particular purpose. Business listings, tourism records, map features and community content are provided for information only; verify current arrangements directly before relying on them. Nothing on this site is legal, medical, financial or other professional advice, and you should not act on it as if it were.</p>
       <p>External links, embedded maps and third-party services (including Google Maps and OpenStreetMap) are provided for convenience. We do not endorse and are not responsible for third-party content, availability or practices, which are governed by that third party's own terms.</p>
+
+      <h2>7A. AI-written stories, images and replies</h2>
+      <p>Some news on EPE LAWA is written by our AI assistant from other outlets' public reports and is marked as written by the EPE LAWA AI desk. The assistant is instructed to rewrite, not copy, to keep only facts the reports support, and to hold back for an editor anything it cannot check; it can still make mistakes. Cover pictures on AI stories may be a picture from a source report, a freely licensed photo, or an AI-generated illustration; an AI-generated illustration shows what a story is about, not the actual event. Report an error with the correction form under any story and an editor will review it.</p>
+      <p>Replies to enquiries and support tickets may be written by the AI assistant and say so. An AI reply is information, not a binding promise, offer or decision by EPE LAWA; only a member of staff can agree prices, refunds, takedowns, corrections or other commitments. You can ask for a person at any time by replying.</p>
+
+      <h2>7B. Support tickets and alerts</h2>
+      <p>Support tickets are for help with the service. Each ticket has a private link; keep it to yourself, because anyone with it can read and reply. Do not include passwords, PINs or card details. We may close tickets that are abusive, spam or inactive for a long time.</p>
+      <p>Push alerts are optional and free. We decide which stories and programmes are alert-worthy and how many alerts go out each day, delivery depends on your browser and its push service, and we do not promise that every alert arrives or arrives on time. Turn alerts off any time from the bell or your browser settings.</p>
 
       <h2>8. Business listings</h2>
       <p>Business listings describe third-party businesses, and any contact request built into a listing simply relays your message to them. We do not own, operate, endorse or guarantee any listed business, product or service, are not a party to any transaction or arrangement between you and them, and accept no responsibility for the quality, safety, legality, price or delivery of anything they offer. The platform does not process buying or selling; arrange any payment or purchase directly with the business at your own risk.</p>

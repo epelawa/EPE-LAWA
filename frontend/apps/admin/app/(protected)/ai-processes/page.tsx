@@ -51,6 +51,7 @@ function resourceLink(row: Activity): { href: string; label: string } | null {
   }
   if (row.resource_type === "business") return { href: adminHref("/business-review"), label: "Open Businesses" };
   if (row.resource_type === "private_enquiry") return { href: adminHref("/enquiries"), label: "Open Enquiries" };
+  if (row.resource_type === "support_ticket" && row.resource_id) return { href: adminHref(`/support/${row.resource_id}`), label: "Open ticket" };
   if (row.resource_type === "comment") return { href: adminHref("/moderation/comments"), label: "Open Comments" };
   return null;
 }

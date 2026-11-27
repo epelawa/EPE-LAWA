@@ -1,7 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-export type AiJob = "news" | "enquiries" | "businesses" | "ads" | "moderation" | "admin_logs";
+export type AiJob = "news" | "enquiries" | "businesses" | "ads" | "moderation" | "admin_logs" | "support";
 export type Outcome = "done" | "skipped" | "escalated" | "failed";
 
 export type ActivityEntry = {
