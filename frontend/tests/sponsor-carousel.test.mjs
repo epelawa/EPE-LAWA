@@ -63,8 +63,9 @@ test("reduced-motion swaps the animated track for native swipe", () => {
   assert.match(reduced, /scroll-snap-type: x mandatory/);
 });
 
-test("the homepage no longer mounts advertising placements", () => {
+test("the homepage shows a static invitation without restoring sponsored placements", () => {
   const homepage = repoFile("frontend/apps/main/app/page.tsx");
   assert.doesNotMatch(homepage, /AdsSection/);
-  assert.doesNotMatch(homepage, /<SponsorSlot/);
+  assert.doesNotMatch(homepage, /<SponsorSlot|<SponsorPopupPlacement|<SponsorCarousel/);
+  assert.match(homepage, /<AdvertiseCallout\s*\/>[\s\S]*?<HomeNews\b/);
 });

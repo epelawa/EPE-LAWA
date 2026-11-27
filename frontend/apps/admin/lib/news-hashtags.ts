@@ -1,3 +1,5 @@
+import { NEWS_HASHTAG_TOPICS } from "./news-hashtag-topics";
+
 /** Editorial suggestions are keyword matches, not AI or factual classification. */
 export const NEWS_HASHTAGS = [
   { tag: "EpeNews", words: ["epe"] }, { tag: "EpeLawa", words: ["epe lawa"] },
@@ -25,6 +27,7 @@ export const NEWS_HASHTAGS = [
   { tag: "Music", words: ["music", "musician"] }, { tag: "Tourism", words: ["tourism", "tourist"] },
   { tag: "Sports", words: ["sport", "sports"] }, { tag: "Football", words: ["football"] },
   { tag: "Events", words: ["event", "events"] }, { tag: "Radio", words: ["radio", "broadcast"] },
+  ...NEWS_HASHTAG_TOPICS,
 ] as const;
 
 export function suggestNewsHashtags(text: string): string[] {

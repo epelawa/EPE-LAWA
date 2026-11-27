@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { RADIO_LAGOS_1075 } from "./radio-lagos";
+import { GUTS_FM_1049 } from "./radio-stations";
 
 /**
  * One listening session for the whole public site.
@@ -35,7 +36,7 @@ export const LAGOS_STATION: RadioStation = {
   frequency: RADIO_LAGOS_1075.frequency,
   streamUrl: RADIO_LAGOS_1075.streamUrl,
 };
-export const GUTS_LABEL = { name: "Guts FM", frequency: "104.9 FM" } as const;
+export const GUTS_LABEL = GUTS_FM_1049;
 
 const SLOW_AFTER_MS = 8000;
 

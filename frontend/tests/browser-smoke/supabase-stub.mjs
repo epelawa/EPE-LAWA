@@ -132,6 +132,15 @@ const server = createServer((request, response) => {
     return;
   }
   if (request.method === "GET" && url.pathname.startsWith("/rest/v1/")) {
+    const missingPublicDetail = [
+      ["/rest/v1/tourism_destinations", "eq.no-such-destination"],
+      ["/rest/v1/forum_categories", "eq.no-such-category"],
+      ["/rest/v1/forum_threads", "eq.no-such-thread"],
+    ].some(([path, slug]) => url.pathname === path && url.searchParams.get("slug") === slug);
+    if (missingPublicDetail) {
+      respond(response, 200, [], { "content-range": "*/0" });
+      return;
+    }
     if (mode === "slow-stories" && url.pathname === "/rest/v1/published_articles") {
       const items = filteredStories(url);
       setTimeout(() => respond(response, 200, items, { "content-range": `0-${Math.max(0, items.length - 1)}/${items.length}` }), 5000);

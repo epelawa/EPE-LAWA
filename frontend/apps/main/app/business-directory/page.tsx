@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import DirectoryLoading from "./directory-loading";
 import Link from "next/link";
 import { createClient } from "../../lib/supabase";
 import { pageMetadata } from "../../lib/metadata";
@@ -64,7 +66,13 @@ async function readDirectory(query: DirectoryQuery) {
   };
 }
 
-export default async function BusinessDirectoryPage({ searchParams }: { searchParams: Promise<Search> }) {
+export default function BusinessDirectoryPage({ searchParams }: { searchParams: Promise<Search> }) {
+  // Keep the skeleton on this listing only; a detail route must decide its 404
+  // before any loading boundary can start streaming the response.
+  return <Suspense fallback={<DirectoryLoading />}><BusinessDirectory searchParams={searchParams} /></Suspense>;
+}
+
+async function BusinessDirectory({ searchParams }: { searchParams: Promise<Search> }) {
   const query = parseDirectoryQuery(await searchParams);
   let data: Awaited<ReturnType<typeof readDirectory>>;
   try { data = await readDirectory(query); } catch { data = { failed: true }; }
