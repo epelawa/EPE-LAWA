@@ -21,6 +21,8 @@
   padding: clamp(24px, 5vw, 48px) 16px 18px;
   list-style: none;
 }
+/* Keep the last reply clear of the sticky composer when the log is scrolled to it. */
+.log > li { scroll-margin-bottom: 132px; }
 /* First-visit screen: greeting centred in the remaining space, composer at the bottom. */
 .root[data-empty="true"] .log { justify-content: center; }
 .greeting {

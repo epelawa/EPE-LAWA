@@ -300,6 +300,8 @@ test('History publishing requires approved copy, preserves private evidence, and
 test('map_correction_decide keeps one callable nine-argument definition; the grant-compatibility stub is gone', async () => {
   assert.equal((await rows("select count(*)::int as n from pg_proc where proname='map_correction_decide' and pg_get_function_identity_arguments(oid)='p_submission_id uuid, p_decision text, p_place_name text, p_details text, p_directions_query text, p_latitude numeric, p_longitude numeric, p_source_note text, p_source_url text'"))[0].n, 1);
   assert.equal((await rows("select count(*)::int as n from pg_proc where proname='map_correction_decide'"))[0].n, 1);
+  const decideAcl = (await rows("select has_function_privilege('anon','public.map_correction_decide(uuid,text,text,text,text,numeric,numeric,text,text)','execute') anon_exec, has_function_privilege('authenticated','public.map_correction_decide(uuid,text,text,text,text,numeric,numeric,text,text)','execute') auth_exec, has_function_privilege('service_role','public.map_correction_decide(uuid,text,text,text,text,numeric,numeric,text,text)','execute') service_exec"))[0];
+  assert.deepEqual(decideAcl, { anon_exec: false, auth_exec: true, service_exec: false });
 });
 
 test('the security definer form_rate_limit stays callable by service_role only across the full chain', async () => {

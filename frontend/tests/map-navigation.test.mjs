@@ -32,7 +32,9 @@ test('no suggestions and no correction form interrupt the chat; they live on /ma
 test('no map iframe is requested on arrival; frames render only under assistant place replies', () => {
   const frameCount = (assistant.match(/<iframe/g) ?? []).length;
   assert.equal(frameCount, 1);
-  assert.ok(assistant.indexOf('turn.role === "assistant" && !turn.offTopic && turn.places?.length') < assistant.indexOf('<iframe'));
+  const guardIndex = assistant.indexOf('turn.role === "assistant" && !turn.offTopic && turn.places?.length');
+  assert.ok(guardIndex >= 0, 'the iframe stays behind the assistant-turn guard');
+  assert.ok(guardIndex < assistant.indexOf('<iframe'));
   assert.doesNotMatch(page, /<iframe/);
 });
 
