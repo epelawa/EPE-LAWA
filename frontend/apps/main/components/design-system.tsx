@@ -6,20 +6,20 @@ export function PageFrame({ children, className = "", ...props }: HTMLAttributes
   return <div className={`ui-page ${className}`} {...props}>{children}</div>;
 }
 
-export function PageIntro({ eyebrow, title, description, actions, meta }: {
-  eyebrow: string; title: ReactNode; description?: ReactNode; actions?: ReactNode; meta?: ReactNode;
+export function PageIntro({ title, description, actions, meta }: {
+  title: ReactNode; description?: ReactNode; actions?: ReactNode; meta?: ReactNode;
 }) {
-  return <header className="ui-page-intro"><div className="ui-page-intro__copy"><p className="ui-eyebrow">{eyebrow}</p><h1>{title}</h1>{description ? <div className="ui-page-intro__description">{description}</div> : null}{meta ? <div className="ui-meta">{meta}</div> : null}</div>{actions ? <div className="ui-page-intro__actions">{actions}</div> : null}</header>;
+  return <header className="ui-page-intro"><div className="ui-page-intro__copy"><h1>{title}</h1>{description ? <div className="ui-page-intro__description">{description}</div> : null}{meta ? <div className="ui-meta">{meta}</div> : null}</div>{actions ? <div className="ui-page-intro__actions">{actions}</div> : null}</header>;
 }
 
 export function Panel({ children, className = "", ...props }: HTMLAttributes<HTMLDivElement>) {
   return <div className={`ui-panel ${className}`} {...props}>{children}</div>;
 }
 
-export function SectionHeading({ eyebrow, title, description, action, id }: {
-  eyebrow?: string; title: ReactNode; description?: ReactNode; action?: ReactNode; id?: string;
+export function SectionHeading({ title, description, action, id }: {
+  title: ReactNode; description?: ReactNode; action?: ReactNode; id?: string;
 }) {
-  return <div className="ui-section-heading"><div>{eyebrow ? <p className="ui-eyebrow">{eyebrow}</p> : null}<h2 id={id}>{title}</h2>{description ? <div className="ui-muted">{description}</div> : null}</div>{action ? <div>{action}</div> : null}</div>;
+  return <div className="ui-section-heading"><div><h2 id={id}>{title}</h2>{description ? <div className="ui-muted">{description}</div> : null}</div>{action ? <div>{action}</div> : null}</div>;
 }
 
 /** `as="h1"` when the panel is the whole page (error/unavailable states), so the page still has one h1. */

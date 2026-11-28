@@ -227,7 +227,7 @@ export default async function PersonProfilePage({
         </div>
 
         <div className="min-w-0">
-          <PageIntro eyebrow="Who is Who · Epe Division" title={name} />
+          <PageIntro title={name} />
 
           {person.preferred_name && person.preferred_name !== person.full_name ? (
             <p className="ui-meta mt-2">Full name: {person.full_name}</p>

@@ -38,7 +38,7 @@ export default async function MapCorrectionsPage({ searchParams }: { searchParam
   }
 
   return <PageFrame className="ui-stack">
-    <PageIntro eyebrow="Map · Staff review" title="Map corrections" description="Check every visitor suggestion against reliable evidence. Approval publishes only the verified, staff-edited record to the assistant's approved knowledge source." />
+    <PageIntro title="Map corrections" description="Check every visitor suggestion against reliable evidence. Approval publishes only the verified, staff-edited record to the assistant's approved knowledge source." />
     {params.result === "saved" ? <Notice tone="success" role="status">Decision recorded.</Notice> : null}
     {params.result === "stale" ? <Notice tone="warning" role="alert">Decision failed; the submission may already have been reviewed. Reload the queue.</Notice> : null}
     {params.result === "denied" || denied ? <EmptyPanel title="Map review access required" description="This staff account does not have the map.review capability. No submission details are shown." /> : failed ? <EmptyPanel title="Review queue unavailable" description="The queue could not be verified. No submission details are shown." /> : rows.length === 0 ? <EmptyPanel title="No pending corrections" description="Visitor submissions remain private unless approved here." /> :
@@ -52,7 +52,7 @@ export default async function MapCorrectionsPage({ searchParams }: { searchParam
           {row.source_url ? <p><a className="ui-text-link" href={row.source_url} target="_blank" rel="noopener noreferrer">Open submitted HTTPS source</a></p> : <p className="ui-meta">No source URL supplied. Verify independently before approval.</p>}
           <form action={decideMapCorrection} className="ui-stack-sm ui-divider">
             <input type="hidden" name="submission_id" value={row.id} />
-            <SectionHeading eyebrow="Human verification" title="Confirm or correct each field before approval" />
+            <SectionHeading title="Confirm or correct each field before approval" />
             <div className="ui-form-grid">
               <label className="ui-field"><span className="label">Verified place name</span><input name="place_name" defaultValue={row.place_name} required maxLength={180} className="input" /></label>
               <label className="ui-field"><span className="label">Canonical directions/search phrase</span><input name="directions_query" defaultValue={row.directions_query ?? ""} required maxLength={500} className="input" /></label>

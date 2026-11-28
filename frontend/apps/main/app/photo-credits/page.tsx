@@ -9,7 +9,7 @@ export const metadata = {
 export default function PhotoCreditsPage() {
   return (
     <PageFrame>
-      <PageIntro eyebrow="Image acknowledgements" title="Photo credits" description="Photographs in the homepage gallery are credited below. Each entry links to its source and license; images remain under the terms stated by their creators." />
+      <PageIntro title="Photo credits" description="Photographs in the homepage gallery are credited below. Each entry links to its source and license; images remain under the terms stated by their creators." />
       <article className="ui-prose" aria-label="Homepage photo attributions">
         <h2>Homepage gallery</h2>
         <ol>

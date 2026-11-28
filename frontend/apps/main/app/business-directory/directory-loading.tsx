@@ -5,7 +5,6 @@ export default function Loading() {
   return <div className={`${styles.page} page-full-bleed`}>
     <section className={styles.hero} aria-labelledby="directory-loading-title">
       <div className={styles.container}>
-        <p className={styles.eyebrow}>EPE LAWA · Business directory</p>
         <h1 id="directory-loading-title">Discover Local Businesses</h1>
         <p className={styles.lede}>Find trusted services, businesses and organisations around Epe.</p>
       </div>

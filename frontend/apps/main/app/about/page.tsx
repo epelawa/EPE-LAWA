@@ -45,7 +45,6 @@ export default async function AboutPage() {
   return (
     <PageFrame className={styles.page}>
       <PageIntro
-        eyebrow="About EPE LAWA"
         title={<>Our place.<br />A shared perspective.</>}
         description="A web home for people in Epe Division, Lagos State, and everyone connected to the community."
         actions={<TextLink href="/news">Explore the latest</TextLink>}
@@ -73,7 +72,6 @@ export default async function AboutPage() {
 
       <section className={styles.mission} aria-labelledby="mission-title">
         <div className={styles.missionLead}>
-          <p className="ui-eyebrow">Why it exists</p>
           <h2 id="mission-title">Useful local knowledge should feel close, clear and considered.</h2>
         </div>
         <div className={`${styles.missionCopy} ui-prose`}>
@@ -84,7 +82,6 @@ export default async function AboutPage() {
 
       <section className={styles.destinationSection} aria-labelledby="destination-title">
         <SectionHeading
-          eyebrow="Find your way around"
           title="One community, several useful paths."
           description="Start with the area that helps you today. Availability varies by approved records and configured services."
         />
@@ -101,7 +98,7 @@ export default async function AboutPage() {
 
       <div className="ui-split">
         <Panel>
-          <SectionHeading eyebrow="Our standard" title="Built with care." />
+          <SectionHeading title="Built with care." />
           <div className="ui-prose">
             <p>Clear sources, thoughtful discussion and respect for private information guide the work. Public pages use approved records, and unknown details remain unknown rather than being invented.</p>
             <p>The people behind EPE LAWA are its founding team. Editorial staff details will appear here once confirmed.</p>

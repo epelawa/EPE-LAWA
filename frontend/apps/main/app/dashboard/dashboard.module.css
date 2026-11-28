@@ -12,7 +12,6 @@
 .hero { max-width: 700px; margin-bottom: clamp(24px, 4vw, 40px); }
 .hero h1 { margin: 8px 0 10px; font-size: clamp(2rem, 5vw, 3.35rem); line-height: 1.08; overflow-wrap: anywhere; }
 .hero > p:last-child { max-width: 60ch; color: hsl(var(--muted-foreground)); }
-.eyebrow { margin: 0; color: var(--palette-royal-steel, #294b91); font-size: 12px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
 .grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(260px, .75fr); gap: 22px; align-items: start; }
 .panel, .unavailable { min-width: 0; padding: clamp(20px, 3vw, 30px); border: 1px solid var(--palette-border); border-left: 3px solid var(--palette-cobalt); border-radius: 14px; background: hsl(var(--card)); box-shadow: 0 12px 30px rgb(10 16 35 / .07); }
 .panel h2, .unavailable h1 { margin: 6px 0 12px; font-size: clamp(1.3rem, 2.6vw, 1.7rem); line-height: 1.18; }
@@ -38,7 +37,6 @@
 .links a span { color: hsl(var(--link)); font-size: 18px; }
 .signOut { margin-top: 22px; padding-top: 18px; border-top: 1px solid hsl(var(--border)); }
 .unavailable { width: min(620px, 100%); margin: 10vh auto; }
-.unavailable > p:not(.eyebrow) { margin: 0 0 22px; color: hsl(var(--muted-foreground)); }
 .unavailable form { margin-top: 22px; }
 @media (max-width: 760px) {
   .shell { padding-block: 30px 60px; }

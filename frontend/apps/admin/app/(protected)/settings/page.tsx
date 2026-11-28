@@ -55,7 +55,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   const db = await createStaffClient();
   let authorized = false;
   { const { data, error } = await db.rpc("staff_roles_authorized"); authorized = !error && data === true; }
-  if (!authorized) return <PageFrame><PageIntro eyebrow="Administration" title="Settings" description="Maintenance control and workspace status are restricted to the primary administrator, or authorization could not be verified." /></PageFrame>;
+  if (!authorized) return <PageFrame><PageIntro title="Settings" description="Maintenance control and workspace status are restricted to the primary administrator, or authorization could not be verified." /></PageFrame>;
 
   let maintenance: {enabled:boolean; revision:number} | null = null;
   if (process.env.MAINTENANCE_GATE_ENABLED === "false") {
@@ -68,7 +68,6 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
 
   return <PageFrame className={styles.page}>
     <PageIntro
-      eyebrow="Administration"
       title="Settings"
       description="Maintenance control, workspace status and shortcuts. Status shows presence only; values are never displayed here."
       meta={<>
@@ -125,7 +124,6 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
     <section className={styles.readiness} aria-labelledby="readiness-heading">
       <SectionHeading
         id="readiness-heading"
-        eyebrow="System status"
         title="What is switched on"
         description="Presence of the server variables each feature needs. Presence is not verification; open the linked desk to see real behavior."
       />
@@ -148,7 +146,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
     </section>
 
     <Panel className={styles.shortcutsPanel}>
-      <SectionHeading eyebrow="Workspace" title="Jump to a desk" description="Frequent destinations for day-to-day operations." />
+      <SectionHeading title="Jump to a desk" description="Frequent destinations for day-to-day operations." />
       <ul className={styles.shortcuts}>
         {shortcuts.map(shortcut => (
           <li key={shortcut.href}>

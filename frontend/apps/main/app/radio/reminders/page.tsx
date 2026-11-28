@@ -8,7 +8,7 @@ export const metadata: Metadata = pageMetadata({ title: "Radio notifications", d
 
 export default function RadioRemindersPage() {
   return <PageFrame className="ui-stack">
-    <PageIntro eyebrow="EPE LAWA RADIO" title="Radio notifications" description="Get told the moment EPE LAWA Radio goes on air." />
+    <PageIntro title="Radio notifications" description="Get told the moment EPE LAWA Radio goes on air." />
     <Panel><RadioReminderSettings /></Panel>
     <Link href="/radio" className="ui-text-link">Back to radio</Link>
   </PageFrame>;

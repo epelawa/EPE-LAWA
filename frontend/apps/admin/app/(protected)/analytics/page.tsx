@@ -42,7 +42,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
   const allowed = publish.data === true || business.data === true || moderation.data === true;
   if (!allowed) {
     return <PageFrame className="ui-stack">
-      <PageIntro eyebrow="Insight · Staff" title="Analytics" description="Trends from the site's own counters." />
+      <PageIntro title="Analytics" description="Trends from the site's own counters." />
       <Notice tone="danger" role="alert">A staff review capability is required to view analytics.</Notice>
     </PageFrame>;
   }
@@ -55,7 +55,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
 
   if (timeseriesResult.error || engagementResult.error || topResult.error) {
     return <PageFrame className="ui-stack">
-      <PageIntro eyebrow="Insight · Staff" title="Analytics" description={`Trends across the last ${days} days.`} />
+      <PageIntro title="Analytics" description={`Trends across the last ${days} days.`} />
       <EmptyPanel title="Analytics unavailable" description="Counters could not be aggregated. Try again later." />
     </PageFrame>;
   }
@@ -68,7 +68,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
   const topArticles = ((topResult.data ?? []) as unknown as TopArticleRow[]).slice(0, 10);
 
   return <PageFrame className="ui-stack">
-    <PageIntro eyebrow="Insight · Staff" title="Analytics" description={`Trends across the last ${days} days, aggregated from the site's own counters. No personal data is shown.`} />
+    <PageIntro title="Analytics" description={`Trends across the last ${days} days, aggregated from the site's own counters. No personal data is shown.`} />
     <div className="ui-row">
       {[
         { label: "Last 7 days", days: 7 },
@@ -78,7 +78,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
     </div>
 
     <section className="ui-stack-sm">
-      <SectionHeading eyebrow="Trends" title="Daily activity" description="Counts are aggregated in the database; nothing here identifies an individual reader." />
+      <SectionHeading title="Daily activity" description="Counts are aggregated in the database; nothing here identifies an individual reader." />
       <div className="ui-stack-sm">
         {["article_views", "business_clicks", "new_members"].map((metric) => (
           <Panel key={metric} className="ui-stack-sm">
@@ -89,7 +89,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
     </section>
 
     <section className="ui-stack-sm">
-      <SectionHeading eyebrow="Community" title="Community activity" description="What the community contributes each day: forum threads and messages, event submissions and radio song requests. Counts never identify an individual member." />
+      <SectionHeading title="Community activity" description="What the community contributes each day: forum threads and messages, event submissions and radio song requests. Counts never identify an individual member." />
       <div className="ui-stack-sm">
         {["forum_threads", "forum_posts", "event_submissions", "radio_song_requests"].map((metric) => (
           <Panel key={metric} className="ui-stack-sm">
@@ -100,7 +100,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
     </section>
 
     <section className="ui-stack-sm">
-      <SectionHeading eyebrow="Stories" title={`Most-read stories · ${days} days`} description="Reads counted per unique viewer per day, matching the public counter." />
+      <SectionHeading title={`Most-read stories · ${days} days`} description="Reads counted per unique viewer per day, matching the public counter." />
       {topArticles.length
         ? <ul className="ui-list ui-stack-sm">{topArticles.map((article) => <li key={article.article_id}>
           <Panel className="ui-stack-sm">

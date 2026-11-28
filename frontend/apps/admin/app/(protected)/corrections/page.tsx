@@ -22,20 +22,20 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ r
   const p = await searchParams;
   const db = await createStaffClient();
   const { data: allowed, error: ge } = await db.rpc("has_capability", { p_capability: "article.review" });
-  if (ge || allowed !== true) return <PageFrame className="ui-stack"><PageIntro eyebrow="Newsroom · Staff" title="Correction reports" description="Reader-reported corrections on published stories." /><Notice tone="danger" role="alert">Article review capability is required to read correction reports.</Notice></PageFrame>;
+  if (ge || allowed !== true) return <PageFrame className="ui-stack"><PageIntro title="Correction reports" description="Reader-reported corrections on published stories." /><Notice tone="danger" role="alert">Article review capability is required to read correction reports.</Notice></PageFrame>;
   const { data, error } = await db.from("article_correction_reports").select("id,article_id,reason,status,resolution_note,created_at,reporter_id,reporter_name,reporter_email,articles(slug)").order("created_at", { ascending: false }).limit(100);
   const rows = (data ?? []) as unknown as Report[];
   if (error) console.error("correction reports unavailable", { code: error.code });
   const open = rows.filter((r) => r.status === "open");
   const handled = rows.filter((r) => r.status !== "open");
   return <PageFrame className="ui-stack">
-    <PageIntro eyebrow="Newsroom · Staff" title="Correction reports" description="Readers report factual errors on published stories. Review each report, then resolve it with a correction note or dismiss it." />
+    <PageIntro title="Correction reports" description="Readers report factual errors on published stories. Review each report, then resolve it with a correction note or dismiss it." />
     {p.resolved ? <Notice tone="success" role="status">Correction recorded as resolved.</Notice> : null}
     {p.dismissed ? <Notice tone="success" role="status">Correction dismissed.</Notice> : null}
     {p.error ? <Notice tone="danger" role="alert">Correction action failed. Confirm capability and decision, then retry.</Notice> : null}
     {error ? <EmptyPanel title="Reports unavailable" description="Correction reports could not be loaded. Try again later." /> : !rows.length ? <EmptyPanel title="No correction reports yet" description="When readers report an error on a published story, the report appears here." /> : <div className="ui-stack">
       <section className="ui-stack-sm">
-        <SectionHeading eyebrow="Open" title="Awaiting decision" description="Each report needs a recorded decision before it leaves this queue." />
+        <SectionHeading title="Awaiting decision" description="Each report needs a recorded decision before it leaves this queue." />
         {open.length ? <ul className="ui-list ui-stack-sm">{open.map((r) => <li key={r.id}><Panel className="ui-stack-sm">
           <div className="ui-row"><StatusBadge tone="warning">open</StatusBadge><span className="ui-meta">Filed {new Date(r.created_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}{r.articles?.slug ? <> · <a href={publicNewsArticleUrl(r.articles.slug)} className="ui-text-link">Open article</a></> : null}</span></div>
           <p className="ui-prose">{r.reason}</p>
@@ -51,7 +51,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ r
         </Panel></li>)}</ul> : <EmptyPanel title="Queue is clear" description="No correction reports are awaiting a decision." />}
       </section>
       {handled.length ? <section className="ui-stack-sm">
-        <SectionHeading eyebrow="History" title="Recently handled" description="Decisions already recorded on correction reports." />
+        <SectionHeading title="Recently handled" description="Decisions already recorded on correction reports." />
         <ul className="ui-list ui-stack-sm">{handled.map((r) => <li key={r.id}><Panel className="ui-stack-sm">
           <div className="ui-row"><StatusBadge tone={r.status === "resolved" ? "success" : "neutral"}>{r.status}</StatusBadge><span className="ui-meta">Filed {new Date(r.created_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}{r.articles?.slug ? <> · <a href={publicNewsArticleUrl(r.articles.slug)} className="ui-text-link">Open article</a></> : null}</span></div>
           <p className="ui-prose">{r.reason}</p>

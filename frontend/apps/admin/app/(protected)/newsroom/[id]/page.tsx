@@ -118,7 +118,7 @@ export default async function EditArticlePage({
     supabase.auth.getUser(),
   ]);
   if (articleResult.error) {
-    return <PageFrame className="ui-stack"><PageIntro eyebrow="Newsroom" title="Article unavailable" description="Article details could not be verified." /><Notice tone="danger" role="alert"><strong>Article details could not be loaded.</strong><p>No changes were made. Try again in a moment.</p></Notice></PageFrame>;
+    return <PageFrame className="ui-stack"><PageIntro title="Article unavailable" description="Article details could not be verified." /><Notice tone="danger" role="alert"><strong>Article details could not be loaded.</strong><p>No changes were made. Try again in a moment.</p></Notice></PageFrame>;
   }
   if (!articleResult.data) notFound();
   const article = articleResult.data as {
@@ -167,7 +167,7 @@ export default async function EditArticlePage({
 
   return (
     <PageFrame className="ui-stack">
-      <PageIntro eyebrow={`Newsroom · Revision ${article.revision}`} title={version.title} description={<>Current version: <StatusBadge tone={displayTone}>{displayState}</StatusBadge>. {currentVersionIsPublic ? "This version is public." : olderVersionRemainsPublic ? "The previously published version remains live; this current version is private." : "No version of this article is public yet."}</>} actions={<Link href={adminHref("/newsroom")} className={buttonClassName("secondary")}>Back to newsroom</Link>} meta={<><span title={article.id}>ID {shortArticleId(article.id)}</span><span>Revision {article.revision}</span><span>Slug: {article.slug}</span></>} />
+      <PageIntro title={version.title} description={<>Current version: <StatusBadge tone={displayTone}>{displayState}</StatusBadge>. {currentVersionIsPublic ? "This version is public." : olderVersionRemainsPublic ? "The previously published version remains live; this current version is private." : "No version of this article is public yet."}</>} actions={<Link href={adminHref("/newsroom")} className={buttonClassName("secondary")}>Back to newsroom</Link>} meta={<><span title={article.id}>ID {shortArticleId(article.id)}</span><span>Revision {article.revision}</span><span>Slug: {article.slug}</span></>} />
       {Object.keys(query).some((key) => ["created", "saved", "submitted", "reviewed", "published", "unpublished", "revised", "breaking", "error"].includes(key)) ? <NewsroomToast key={JSON.stringify(query)}><StatusMessage query={query} /></NewsroomToast> : null}
       {article.published_version_id ? <Notice tone="neutral"><a href={publicNewsArticleUrl(article.slug)} className="ui-text-link">Open public article</a>{article.published_at ? <span className="ui-meta">Published {new Date(article.published_at).toLocaleDateString("en-NG")}</span> : null}</Notice> : null}
 
@@ -176,7 +176,7 @@ export default async function EditArticlePage({
       {editablePrivateVersion || canCreateRevision ? (
         !referencesAvailable ? <EmptyPanel title="Bylines and categories unavailable" description="The article was not changed. Reload after the reference lists can be verified." /> : (
           <Panel>
-            <SectionHeading eyebrow={editablePrivateVersion ? "Edit and publish" : "Correct and publish"} title={editablePrivateVersion ? "Edit this story" : "Correct the live story"} description="Saving publishes immediately — readers see the update the moment you press the button." />
+            <SectionHeading title={editablePrivateVersion ? "Edit this story" : "Correct the live story"} description="Saving publishes immediately — readers see the update the moment you press the button." />
             <ProgressiveEditor action={editablePrivateVersion ? saveDraft : reviseArticle} feedbackAction={editablePrivateVersion ? saveDraftWithFeedback : reviseArticleWithFeedback} recoveryActor={sessionResult.error ? undefined : sessionResult.data.user?.id} articleId={article.id} revision={String(article.revision)} submitLabel={editablePrivateVersion ? "Save & publish" : "Save correction & publish"} intent={editablePrivateVersion ? "save" : undefined} steps={[
               { title: "Story details", content: <>
               <div className="ui-field"><label className="label" htmlFor="title">Headline</label><input id="title" name="title" className="input" maxLength={200} required defaultValue={version.title} /></div>
@@ -202,11 +202,11 @@ export default async function EditArticlePage({
       ) : <EmptyPanel title="This version is read-only" description="Your current access does not allow editing this version or creating a private correction." />}
 
       {!currentVersionIsPublic && canPublishCurrentVersion ? <Panel>
-        <SectionHeading eyebrow="Publication" title="Publish now" description="Publishing makes the current version publicly visible immediately." />
+        <SectionHeading title="Publish now" description="Publishing makes the current version publicly visible immediately." />
         {canPublish ? <><p className="ui-muted">No second reviewer is required; every save normally publishes on its own. Publish here if a save ended up private — the database checks your verified session and records the action in the audit log.</p><form action={publishArticle} className="ui-actions"><input type="hidden" name="articleId" value={article.id} /><input type="hidden" name="revision" value={String(article.revision)} /><SubmitButton pendingLabel="Publishing…" className={buttonClassName("primary")}>Publish now</SubmitButton></form></> : <p className="ui-muted">This account does not have article.publish access.</p>}
       </Panel> : null}
       {hasPublishedVersion ? <Panel>
-        <SectionHeading eyebrow="Publication" title="Breaking news" description="Show this story in the blue breaking-news banner for a while. You can have several breaking stories at once - each one slides in the banner until its time runs out. This never makes an unpublished story public." />
+        <SectionHeading title="Breaking news" description="Show this story in the blue breaking-news banner for a while. You can have several breaking stories at once - each one slides in the banner until its time runs out. This never makes an unpublished story public." />
         {article.is_breaking && article.breaking_until && new Date(article.breaking_until).getTime() > Date.now()
           ? <p className="ui-muted">Breaking until <time dateTime={article.breaking_until}>{new Date(article.breaking_until).toLocaleString('en-NG')}</time>. Pause it below to take it out of the banner now.</p>
           : <p className="ui-muted">Not currently marked as breaking.</p>}
@@ -221,7 +221,6 @@ export default async function EditArticlePage({
       </Panel> : null}
       {hasPublishedVersion ? <Panel>
         <SectionHeading
-          eyebrow="Publication"
           title="Take down public article"
           description={olderVersionRemainsPublic
             ? "An older version remains live while this current version is private. This takes down the version currently visible to readers; it does not publish or change the private draft."
@@ -236,7 +235,7 @@ export default async function EditArticlePage({
       </Panel> : null}
       {canReviewTags ? <Panel className="ui-subtle">
         <div className="ui-stack-sm">
-          <div><p className="ui-eyebrow">Public story</p><h2 className="text-lg font-semibold">Topic tags</h2></div>
+          <div><h2 className="text-lg font-semibold">Topic tags</h2></div>
           <p className="ui-muted">Comma-separated topics, up to 12. Readers can filter the news page by these tags.{currentVersionIsPublic ? "" : " Tags apply to the current version and appear publicly once this version is published."}</p>
           <form action={saveArticleTags} className="ui-stack-sm">
             <input type="hidden" name="articleId" value={article.id} />
@@ -248,7 +247,7 @@ export default async function EditArticlePage({
       </Panel> : null}
       {canReviewTags && versions.length > 1 && diffBefore && diffAfter ? <Panel className="ui-subtle">
         <div className="ui-stack-sm">
-          <div><p className="ui-eyebrow">History</p><h2 className="text-lg font-semibold">Revision diff</h2></div>
+          <div><h2 className="text-lg font-semibold">Revision diff</h2></div>
           <p className="ui-muted">Pick any two saved revisions to compare headlines, summaries and body paragraphs.</p>
           <form method="get" className="ui-row">
             <label className="ui-field"><span className="ui-label">Older revision</span>

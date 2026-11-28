@@ -7,7 +7,6 @@ export const metadata = { title: "Choose a new password" };
 export default function NewPasswordPage() {
   return (
     <AccountShell
-      eyebrow="Account recovery"
       title="Choose a new password"
       description="Set a new password for your account."
     >

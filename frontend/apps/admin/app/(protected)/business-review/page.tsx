@@ -40,7 +40,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
   const p = await searchParams;
   const db = await createStaffClient();
   const { data: allowed, error: ge } = await db.rpc("has_capability", { p_capability: "business.review" });
-  if (ge || allowed !== true) return <PageFrame className="ui-stack"><PageIntro eyebrow="Business Directory · Staff" title="Business submissions" description="Review and verify new business listings." /><Notice tone="danger" role="alert">Business review capability is required to access this queue.</Notice></PageFrame>;
+  if (ge || allowed !== true) return <PageFrame className="ui-stack"><PageIntro title="Business submissions" description="Review and verify new business listings." /><Notice tone="danger" role="alert">Business review capability is required to access this queue.</Notice></PageFrame>;
   const { data, error } = await db.from("businesses").select("id,name,category_id,description,area,address,landmark,phone,whatsapp,email,website,status,created_at,hours").in("status", ["submitted", "reviewing"]).is("deleted_at", null).order("created_at").limit(100);
   const { data: cats } = await db.from("business_categories").select("id,label").limit(100);
   const [claimsResult, featuredResult, publishedResult] = await Promise.all([
@@ -60,7 +60,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
   const submitterRows = data?.length ? (await db.rpc("staff_business_submitters", { p_ids: data.map(b => b.id) })).data : null;
   const submitters = new Map(((submitterRows ?? []) as { business_id: string; submitter_name: string | null; submitter_email: string | null }[]).map(r => [r.business_id, r]));
   return <PageFrame className="ui-stack">
-    <PageIntro eyebrow="Business Directory · Staff" title="Business submissions" description="Review unpublished submissions, record evidence, then publish or reject with a reason." />
+    <PageIntro title="Business submissions" description="Review unpublished submissions, record evidence, then publish or reject with a reason." />
     {p.error ? <Notice tone="danger" role="alert">Review action failed. Confirm evidence and capability, then retry.</Notice> : null}
     {p.updated ? <Notice tone="success" role="status">Review action recorded.</Notice> : null}
     {p.added ? <Notice tone="success" role="status">Listing published — it is now visible in the public business directory.</Notice> : null}
@@ -73,7 +73,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
     {p.error === "delete-failed" ? <Notice tone="danger" role="alert">The listing could not be deleted. Confirm your business.review access, reload and try again; nothing was removed.</Notice> : null}
 
     <section className="ui-stack-sm">
-      <SectionHeading eyebrow="Published listings" title="Live listings" description={`${publishedBusinesses.length} published ${publishedBusinesses.length === 1 ? "listing" : "listings"} · expand one to edit its details or remove it completely.`} />
+      <SectionHeading title="Live listings" description={`${publishedBusinesses.length} published ${publishedBusinesses.length === 1 ? "listing" : "listings"} · expand one to edit its details or remove it completely.`} />
       {!publishedBusinesses.length ? <EmptyPanel title="No published listings" description="Listings appear here as soon as they are published, including the ones you add directly." /> : <ul className="ui-list ui-stack-sm">{publishedBusinesses.map((b) => { const hours = parseBusinessHours(b.hours); const rows = hourRows(hours).filter((row) => row.range); return <li key={b.id}><Panel className="ui-stack-sm">
         <div className="ui-row">
           <div className="ui-stack-sm">
@@ -113,10 +113,10 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
         </form>
       </Panel></li>; })}</ul>}
     </section>
-    {cats?.length ? <Panel><SectionHeading eyebrow="Direct listing" title="Add a business" description="Publish a listing yourself, right now — no submission needed. Everything you save here appears in the public directory immediately." /><BusinessCreateForm categories={cats} areas={knownAreas} /></Panel> : null}
+    {cats?.length ? <Panel><SectionHeading title="Add a business" description="Publish a listing yourself, right now — no submission needed. Everything you save here appears in the public directory immediately." /><BusinessCreateForm categories={cats} areas={knownAreas} /></Panel> : null}
 
     <section className="ui-stack-sm">
-      <SectionHeading eyebrow="Ownership claims" title="Business claims" description="Members who say they run a listing. Approving the claim links their account as owner; reject with a reason otherwise." />
+      <SectionHeading title="Business claims" description="Members who say they run a listing. Approving the claim links their account as owner; reject with a reason otherwise." />
       {!claims.length ? <EmptyPanel title="No open claims" description="Claim requests appear here when members use the claim action on a listing." /> : <ul className="ui-list ui-stack-sm">{claims.map(claim => <li key={claim.id}><Panel className="ui-stack-sm">
         <div className="ui-row"><StatusBadge tone="warning">open</StatusBadge><span className="ui-meta">Received {new Date(claim.created_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}</span></div>
         <p className="ui-prose">{claim.message}</p>
@@ -132,7 +132,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
     </section>
 
     <Panel className="ui-subtle">
-      <SectionHeading eyebrow="Featured slot" title="Featured business placement" description="One listing at a time is highlighted at the top of the public directory for the chosen days. Placement is paid offline; record the arrangement before switching the slot." />
+      <SectionHeading title="Featured business placement" description="One listing at a time is highlighted at the top of the public directory for the chosen days. Placement is paid offline; record the arrangement before switching the slot." />
       {featuredNow.length ? <p className="ui-meta">Now featured: <strong>{featuredNow[0].businesses?.name ?? "Unknown"}</strong> until {new Date(featuredNow[0].ends_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}</p> : <p className="ui-meta">The featured slot is empty.</p>}
       <form action={featureBusiness} className="ui-stack-sm ui-divider">
         <div className="ui-form-grid">
@@ -142,7 +142,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
         <div className="ui-actions"><SubmitButton className="btn-primary">Feature this business</SubmitButton></div>
       </form>
     </Panel>
-    {error ? <EmptyPanel title="Queue unavailable" description="No listing details are shown. Try again later." /> : !data?.length ? <EmptyPanel title="No submissions awaiting review" description="New business submissions will appear here for staff review." /> : <section className="ui-stack-sm"><SectionHeading eyebrow="Review queue" title="Pending submissions" description="Review each listing and record a clear, auditable decision." action={<a className="btn-secondary" href="/admin/business-review/export">Download CSV</a>} />
+    {error ? <EmptyPanel title="Queue unavailable" description="No listing details are shown. Try again later." /> : !data?.length ? <EmptyPanel title="No submissions awaiting review" description="New business submissions will appear here for staff review." /> : <section className="ui-stack-sm"><SectionHeading title="Pending submissions" description="Review each listing and record a clear, auditable decision." action={<a className="btn-secondary" href="/admin/business-review/export">Download CSV</a>} />
       <ul className="ui-list ui-stack-sm">{data.map(b => <li key={b.id}><Panel className="ui-stack-sm">
         <div className="ui-row"><StatusBadge tone={b.status === "submitted" ? "warning" : "neutral"}>{b.status}</StatusBadge><span className="ui-meta">{labels.get(b.category_id) ?? "Category"} · Received {new Date(b.created_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}</span></div>
         <div><h2 className="ui-item-title">{b.name}</h2><p className="ui-prose">{b.description || "No description provided."}</p></div>

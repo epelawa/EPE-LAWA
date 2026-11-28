@@ -26,7 +26,6 @@
 .auth-card > .focused-page-controls { margin-bottom: 15px; }
 .auth-card__heading { display: grid; gap: 6px; }
 .auth-card h1 { margin: 0; font-size: clamp(1.65rem, 4.4vw, 2.15rem); line-height: 1.12; letter-spacing: -.045em; }
-.auth-card__heading .ui-eyebrow,
 .auth-card__heading .auth-description { margin: 0; }
 .auth-description { max-width: 48ch; color: hsl(var(--muted-foreground)); font-size: 14px; line-height: 1.55; }
 .auth-card__content { margin-top: 17px; }
@@ -183,7 +182,6 @@ body:has(.auth-link-issue) .site-main {
   .auth-link-issue * { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
 }
 
-
 /* Reference-inspired auth composition: cobalt art panel, textured light canvas and an overlapping form card. */
 .auth-page {
   height: 100dvh;
@@ -248,7 +246,6 @@ body:has(.auth-page--fixed-viewport) .site-main { height: 100vh; min-height: 0; 
 .auth-art .brand__name { color: var(--palette-cloud); }
 .auth-art .brand__mark { padding: 2px; border-radius: 9px; background: var(--palette-cloud); }
 .auth-art__heading { position: relative; z-index: 1; max-width: 32ch; margin: 15px auto 0; text-align: center; }
-.auth-art__eyebrow { margin: 0; color: var(--palette-ice-blue); font-size: 10px; font-weight: 700; letter-spacing: .14em; line-height: 1.35; text-transform: uppercase; }
 .auth-art h1 { margin: 5px 0 6px; color: #fff; font-size: clamp(1.55rem, 5.5vw, 1.95rem); font-weight: 700; letter-spacing: -.045em; line-height: 1.08; }
 .auth-art__description { max-width: 42ch; margin: 0 auto; color: rgb(241 244 250 / .9); font-size: 12px; line-height: 1.45; }
 .auth-card {
@@ -385,7 +382,6 @@ body:has(.auth-page--fixed-viewport) .site-main { height: 100vh; min-height: 0; 
   .auth-art { min-height: 108px; padding: 4px 14px 0; border-radius: 22px 22px 14px 14px; }
   .auth-art > .focused-page-controls { min-height: 44px; }
   .auth-art__heading { margin-top: -2px; }
-  .auth-art__eyebrow { font-size: 9px; }
   .auth-art h1 { margin: 1px 0 0; font-size: 1.2rem; line-height: 1.05; }
   .auth-art__description { font-size: 10px; line-height: 1.25; }
   .auth-card { margin-top: -6px; padding: 4px 10px; border-radius: 22px; }

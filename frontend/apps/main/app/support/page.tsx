@@ -10,7 +10,7 @@ export const metadata: Metadata = pageMetadata({ title: "Support", description: 
 export default function SupportPage() {
   const open = process.env.ENQUIRY_INTAKE_ENABLED === "true" && process.env.SUPPORT_TICKETS_ENABLED !== "false";
   return <PageFrame className="ui-stack">
-    <PageIntro eyebrow="Support" title="How can we help?" description="Open a ticket and follow the whole conversation from one private link." />
+    <PageIntro title="How can we help?" description="Open a ticket and follow the whole conversation from one private link." />
     <ol className="support-steps" aria-label="How support works">
       <li><strong>Open a ticket</strong><span>You get a reference like EPE-7K3QX9 and a private link by email.</span></li>
       <li><strong>Quick first answer</strong><span>Our AI assistant answers simple questions; anything else goes straight to our team.</span></li>

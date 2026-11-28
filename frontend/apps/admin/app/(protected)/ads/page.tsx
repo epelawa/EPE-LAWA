@@ -24,8 +24,8 @@ export default async function AdsPage({ searchParams }: { searchParams: Promise<
   const params = await searchParams;
   const db = await createStaffClient();
   const { data: grants, error: grantError } = await db.from("staff_capability_grants").select("capability").eq("capability", "advertising.manage").limit(1);
-  if (grantError) return <PageFrame className="ui-stack"><PageIntro eyebrow="Staff workspace" title="Ads" description="Choose which businesses rotate in the public ad carousel." /><Notice tone="danger" role="alert">The ads workspace is unavailable right now. Reload the page to try again.</Notice></PageFrame>;
-  if (!grants?.length) return <PageFrame className="ui-stack"><PageIntro eyebrow="Staff workspace" title="Ads" description="Choose which businesses rotate in the public ad carousel." /><Notice tone="danger" role="alert">The advertising.manage capability is required. No records are shown.</Notice></PageFrame>;
+  if (grantError) return <PageFrame className="ui-stack"><PageIntro title="Ads" description="Choose which businesses rotate in the public ad carousel." /><Notice tone="danger" role="alert">The ads workspace is unavailable right now. Reload the page to try again.</Notice></PageFrame>;
+  if (!grants?.length) return <PageFrame className="ui-stack"><PageIntro title="Ads" description="Choose which businesses rotate in the public ad carousel." /><Notice tone="danger" role="alert">The advertising.manage capability is required. No records are shown.</Notice></PageFrame>;
 
   const [{ data: slots, error: slotError }, { data: businesses, error: bizError }] = await Promise.all([
     db.from("business_ad_slots").select("id,business_id,position,is_active").order("position").order("created_at").limit(24),
@@ -44,7 +44,7 @@ export default async function AdsPage({ searchParams }: { searchParams: Promise<
   const status = params.ads && STATUS[params.ads] ? STATUS[params.ads] : null;
 
   return <PageFrame className="ui-stack">
-    <PageIntro eyebrow="Staff workspace · Advertising" title="Ads" description="Control the businesses that appear in the public ads carousel across the website. Select multiple businesses; visitors see them rotate every few seconds, in your chosen order." />
+    <PageIntro title="Ads" description="Control the businesses that appear in the public ads carousel across the website. Select multiple businesses; visitors see them rotate every few seconds, in your chosen order." />
     {status ? <Notice role="status" tone={status.tone}>{status.text}</Notice> : null}
 
     <section className="ui-stack-sm" aria-labelledby="ads-lineup">

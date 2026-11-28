@@ -178,7 +178,6 @@ export default function PushOnboarding({ smokeTest = false }: { smokeTest?: bool
         <button type="button" className={`${styles.cta} ${styles.ctaQuiet}`} onClick={close}>Close</button>
       </> : <>
         <span className={styles.brandMark} aria-hidden="true"><BellIcon size={21} /></span>
-        <p className={styles.eyebrow}>EPE LAWA · COMMUNITY UPDATES</p>
         <h2 id={titleId} ref={headingRef} tabIndex={-1} className={styles.title}>Good things happen in Epe. Be there for them.</h2>
         <p id={copyId} className={styles.copy}>Get Epe Division news the moment it breaks, and a nudge when EPE LAWA radio goes on air. Free, and no account needed.</p>
         <div className={styles.browserNote}>

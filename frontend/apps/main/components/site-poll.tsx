@@ -55,7 +55,6 @@ async function renderSitePoll() {
   };
 
   return <div className="ep-container home-poll"><section className="site-poll ui-card" aria-labelledby="site-poll-question">
-    <p className="ui-eyebrow">Community poll</p>
     <h2 id="site-poll-question" className="text-lg font-semibold">{pollRow.question}</h2>
     {canVote ? <form action={pollVote} className="ui-stack-sm pt-1">
       <fieldset className="ui-stack-sm border-0 p-0">

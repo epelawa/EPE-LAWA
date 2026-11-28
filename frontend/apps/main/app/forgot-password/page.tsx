@@ -8,7 +8,6 @@ export const metadata = { title: "Reset your password" };
 export default function ForgotPasswordPage() {
   return (
     <AccountShell
-      eyebrow="Account recovery"
       title="Reset your password"
       description="Enter your email to request a reset link."
     >

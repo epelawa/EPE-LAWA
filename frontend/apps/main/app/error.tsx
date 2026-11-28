@@ -15,7 +15,6 @@ export default function ErrorPage({ reset }: { error: Error & { digest?: string 
           <svg viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="29" fill="#e7f0ff" stroke="#477fe0" strokeWidth="2"/><path d="M37 58c7-10 19-10 26 0M38 43h.1M62 43h.1" stroke="#294b91" strokeWidth="4" strokeLinecap="round"/><path d="M18 24l3 3m56 46 4 4M77 19l4-4M15 66h6" stroke="#477fe0" strokeWidth="3" strokeLinecap="round"/></svg>
         </div>
         <PageIntro
-          eyebrow="A brief interruption"
           title="This page couldn’t be loaded."
           description="Something interrupted the request. Your next step is still simple."
         />

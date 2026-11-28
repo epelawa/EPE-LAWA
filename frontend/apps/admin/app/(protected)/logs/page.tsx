@@ -36,7 +36,7 @@ export default async function AdminLogsPage({ searchParams }: { searchParams: Pr
   const db = await createStaffClient();
   const access = await db.rpc("staff_roles_authorized");
   if (access.error || access.data !== true) {
-    return <PageFrame><PageIntro eyebrow="System · Security" title="Logs" description="Administrator activity." />
+    return <PageFrame><PageIntro title="Logs" description="Administrator activity." />
       <EmptyPanel title={access.error ? "Access could not be verified" : "Primary administrators only"} description="The admin activity log is restricted to the primary administrators." actions={<Link href={adminHref("/")}>Back to dashboard</Link>} />
     </PageFrame>;
   }
@@ -58,7 +58,7 @@ export default async function AdminLogsPage({ searchParams }: { searchParams: Pr
     db.from("admin_activity_log").select("actor_id,actor_email").not("actor_id", "is", null).order("created_at", { ascending: false }).limit(500),
   ]);
   if (logsResult.error) {
-    return <PageFrame><PageIntro eyebrow="System · Security" title="Logs" description="Administrator activity." />
+    return <PageFrame><PageIntro title="Logs" description="Administrator activity." />
       <EmptyPanel title="Logs unavailable" description="Apply the database migration 20261129080000, then reload." />
     </PageFrame>;
   }
@@ -77,7 +77,7 @@ export default async function AdminLogsPage({ searchParams }: { searchParams: Pr
 
   return (
     <PageFrame className="ui-stack">
-      <PageIntro eyebrow="System · Security" title="Logs" description="Every administrator sign-in, sign-out and action with the exact time, who did it, the reason given, and where from: IP address, device, browser, and the network’s city, region, country and approximate coordinates (from the hosting edge, no permission prompt). Members and visitors are not logged here." />
+      <PageIntro title="Logs" description="Every administrator sign-in, sign-out and action with the exact time, who did it, the reason given, and where from: IP address, device, browser, and the network’s city, region, country and approximate coordinates (from the hosting edge, no permission prompt). Members and visitors are not logged here." />
       {params.result === "explained" ? <Notice tone="success" role="status">{params.summary || "Explanations updated."}</Notice> : null}
       {params.result === "denied" ? <Notice tone="danger" role="alert">Only the primary administrators can run the explainer.</Notice> : null}
 

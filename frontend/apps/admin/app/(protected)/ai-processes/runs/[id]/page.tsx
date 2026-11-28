@@ -48,12 +48,12 @@ export default async function AiRunPage({ params }: { params: Promise<{ id: stri
   const db = await createStaffClient();
   const access = await db.rpc("staff_roles_authorized");
   if (access.error || access.data !== true) {
-    return <PageFrame><PageIntro eyebrow="System · AI" title="AI run" description="Live view of one AI run." />
+    return <PageFrame><PageIntro title="AI run" description="Live view of one AI run." />
       <EmptyPanel title="Primary administrators only" description="The AI audit is restricted to the primary administrators." actions={<Link href={adminHref("/")}>Back to dashboard</Link>} />
     </PageFrame>;
   }
   if (!/^[0-9a-f-]{36}$/i.test(id)) {
-    return <PageFrame><PageIntro eyebrow="System · AI" title="AI run" description="Live view of one AI run." /><EmptyPanel title="Run not found" description="This link is not a valid run." actions={<Link href={adminHref("/ai-processes")}>Back to AI processes</Link>} /></PageFrame>;
+    return <PageFrame><PageIntro title="AI run" description="Live view of one AI run." /><EmptyPanel title="Run not found" description="This link is not a valid run." actions={<Link href={adminHref("/ai-processes")}>Back to AI processes</Link>} /></PageFrame>;
   }
   const [runResult, activityResult, callsResult] = await Promise.all([
     db.from("ai_runs").select("id,job,trigger,started_at,finished_at,status,summary,stats,progress,progress_at,steps").eq("id", id).maybeSingle(),
@@ -62,7 +62,7 @@ export default async function AiRunPage({ params }: { params: Promise<{ id: stri
   ]);
   const run = runResult.data as Run | null;
   if (!run) {
-    return <PageFrame><PageIntro eyebrow="System · AI" title="AI run" description="Live view of one AI run." /><EmptyPanel title="Run not found" description={runResult.error ? "The run could not be read. Apply the latest AI migration and reload." : "This run does not exist or was removed."} actions={<Link href={adminHref("/ai-processes")}>Back to AI processes</Link>} /></PageFrame>;
+    return <PageFrame><PageIntro title="AI run" description="Live view of one AI run." /><EmptyPanel title="Run not found" description={runResult.error ? "The run could not be read. Apply the latest AI migration and reload." : "This run does not exist or was removed."} actions={<Link href={adminHref("/ai-processes")}>Back to AI processes</Link>} /></PageFrame>;
   }
   const activity = (activityResult.data ?? []) as Activity[];
   const calls = (callsResult.data ?? []) as Call[];
@@ -74,7 +74,7 @@ export default async function AiRunPage({ params }: { params: Promise<{ id: stri
 
   return (
     <PageFrame className="ui-stack">
-      <PageIntro eyebrow="System · AI · Run" title={label} description={`${run.trigger === "manual" ? "Started with Run now" : "Scheduled run"} at ${lagosExact(run.started_at)}.`} meta={<span style={{ display: "flex", gap: 16, flexWrap: "wrap" }}><Link href={adminHref("/ai-processes")}>← AI processes</Link><Link href={adminHref("/ai-scheduler")}>AI Scheduler</Link></span>} />
+      <PageIntro title={label} description={`${run.trigger === "manual" ? "Started with Run now" : "Scheduled run"} at ${lagosExact(run.started_at)}.`} meta={<span style={{ display: "flex", gap: 16, flexWrap: "wrap" }}><Link href={adminHref("/ai-processes")}>← AI processes</Link><Link href={adminHref("/ai-scheduler")}>AI Scheduler</Link></span>} />
 
       <Panel className="ui-stack-sm" aria-live="polite">
         <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12, justifyContent: "space-between" }}>

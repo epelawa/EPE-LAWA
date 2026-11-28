@@ -42,7 +42,6 @@ export default function BackupControls({
       <section className={styles.panel} aria-labelledby="create-heading">
         <div className={styles.panelHead}>
           <div>
-            <p className={styles.eyebrow}>On demand</p>
             <h2 id="create-heading">Create a backup</h2>
           </div>
           {canCreate ? (
@@ -70,7 +69,6 @@ export default function BackupControls({
       <section className={styles.panel} aria-labelledby="list-heading">
         <div className={styles.panelHead}>
           <div>
-            <p className={styles.eyebrow}>Private storage</p>
             <h2 id="list-heading">Available backups</h2>
           </div>
         </div>
@@ -112,7 +110,6 @@ export default function BackupControls({
         <section className={`${styles.panel} ${styles.dangerPanel}`} aria-labelledby="restore-heading">
           <div className={styles.panelHead}>
             <div>
-              <p className={styles.eyebrow}>Destructive action</p>
               <h2 id="restore-heading">Confirm restore</h2>
             </div>
             <button type="button" className={styles.cancelButton} onClick={() => setRestoreKey(null)} disabled={restorePending}>

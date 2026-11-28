@@ -37,7 +37,6 @@ export default async function RadioPage() {
     <section className={styles.hero} aria-labelledby="radio-hero-title">
       <div className={styles.heroInner}>
         <div className={styles.heroCopy}>
-          <p className={styles.heroEyebrow}>EPE LAWA RADIO</p>
           <h1 id="radio-hero-title" className={styles.heroTitle}>The sound of Epe.</h1>
           <p className={styles.heroLede}>Stay connected to the people, stories and conversations shaping our community.</p>
           <div className={styles.heroActions}>
@@ -66,14 +65,13 @@ export default async function RadioPage() {
 
       <section className={styles.reminder} aria-labelledby="radio-reminder-title">
         <div>
-          <p className={styles.eyebrow}>On-air notifications</p>
           <h2 id="radio-reminder-title">Never miss a programme</h2>
         </div>
         <RadioReminderSettings confirm compact />
       </section>
 
       <section className={styles.explore} aria-labelledby="radio-explore-title">
-        <div><p className={styles.eyebrow}>More from EPE LAWA</p><h2 id="radio-explore-title">Keep exploring</h2></div>
+        <div><h2 id="radio-explore-title">Keep exploring</h2></div>
         <div className={styles.links}>
           <Link href="/radio/programmes"><span><strong>Programmes &amp; schedule</strong><small>Weekly programme grid</small></span><ArrowRightIcon size={20} /></Link>
           <Link href="/radio/reminders"><span><strong>Radio reminders</strong><small>Browser push when a programme starts</small></span><ArrowRightIcon size={20} /></Link>

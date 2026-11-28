@@ -196,7 +196,7 @@ export default function SiteHeader({ items, lang = "en" }: { items: NavItem[]; l
         <button type="button" className="drawer-scrim" tabIndex={-1} aria-label="Close navigation menu" onClick={closeDrawer} />
         <div ref={drawerRef} id="site-drawer" className="drawer" role="dialog" aria-modal="true" aria-labelledby="site-drawer-title" inert={!drawerOpen}>
           <div className="drawer-heading">
-            <div><p className="drawer-eyebrow">EPE LAWA</p><p id="site-drawer-title">Find your place in Epe.</p></div>
+            <div><p id="site-drawer-title">Find your place in Epe.</p></div>
             <div className="drawer-heading__tools">
             <button className="btn-icon" type="button" aria-label="Close navigation menu" onClick={closeDrawer}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg></button></div>
           </div>

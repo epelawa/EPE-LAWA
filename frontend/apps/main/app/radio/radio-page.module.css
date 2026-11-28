@@ -12,7 +12,6 @@
 }
 .playerPosition { transform: translateY(-12px); }
 .heroCopy { display: grid; gap: 14px; min-width: 0; }
-.heroEyebrow { margin: 0; color: #294B91; font-size: .75rem; font-weight: 800; letter-spacing: .2em; }
 .heroTitle { margin: 0; color: #17264A; font-size: clamp(2.1rem, 1.2rem + 4.2vw, 4.25rem); line-height: 1.02; letter-spacing: -.035em; }
 .heroLede { max-width: 34ch; margin: 0; color: #34435C; font-size: clamp(1rem, .92rem + .4vw, 1.2rem); line-height: 1.55; }
 .heroActions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
@@ -29,7 +28,6 @@
 .heroNote { margin: 0; color: #53627A; font-size: .85rem; line-height: 1.5; }
 
 .content { display: grid; gap: clamp(36px, 6vw, 64px); width: min(100% - 2rem, 1200px); margin: clamp(28px, 5vw, 56px) auto clamp(48px, 7vw, 88px); }
-.eyebrow { margin: 0; color: #294B91; font-size: .72rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
 .reminder { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 16px 32px; align-items: start; padding: clamp(18px, 3vw, 28px); border: 1px solid #D9E3F1; border-radius: 14px; background: #FFFFFF; }
 .reminder h2, .explore h2 { margin: 6px 0 0; color: #17264A; font-size: clamp(1.35rem, 1.05rem + 1.3vw, 1.9rem); line-height: 1.15; letter-spacing: -.02em; }
 .explore { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 16px 28px; }

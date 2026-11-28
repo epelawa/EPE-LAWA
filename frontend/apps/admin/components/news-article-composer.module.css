@@ -2,7 +2,6 @@
 .intro { display:flex; justify-content:space-between; align-items:center; gap:14px; padding:clamp(14px,2vw,20px); border:1px solid #d4e2f5; border-radius:16px; background:linear-gradient(115deg,#eaf2ff,#f9fbff 75%); }
 .intro h2 { margin:4px 0; font-size:clamp(1.35rem,2.5vw,1.7rem); letter-spacing:-.04em; }
 .intro p,.sectionTop p,.publishInfo p,.dialogHeader p { margin:0; color:#52617a; line-height:1.6; font-size:.875rem; }
-.eyebrow { color:#294b91; font-size:.7rem; font-weight:800; letter-spacing:.1em; }
 .introBadge { flex:none; border:1px solid #c8d9f0; border-radius:999px; padding:8px 12px; color:#294b91; background:#fff; font-size:.75rem; font-weight:750; }
 .layout { display:grid; grid-template-columns:minmax(0,1fr) minmax(250px,300px); gap:20px; align-items:start; }
 .mainColumn,.sidebar { display:grid; gap:20px; min-width:0; }

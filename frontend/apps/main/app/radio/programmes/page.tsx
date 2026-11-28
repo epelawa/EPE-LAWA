@@ -31,7 +31,6 @@ export default async function RadioProgrammesPage() {
   return (
     <PageFrame className={`ui-stack ${styles.page}`}>
       <PageIntro
-        eyebrow="EPE LAWA RADIO"
         title="Programmes and schedule"
         description="Published EPE LAWA programmes and weekly listings. All times are West Africa Time (WAT)."
       />
@@ -45,7 +44,7 @@ export default async function RadioProgrammesPage() {
       ) : (
         <div className="ui-stack">
           <Panel>
-            <SectionHeading eyebrow="On air and in the community" title="Programmes" />
+            <SectionHeading title="Programmes" />
             {programmes.length ? (
               <ul className="ui-list ui-stack-sm">
                 {programmes.map((programme) => (
@@ -61,7 +60,7 @@ export default async function RadioProgrammesPage() {
           </Panel>
 
           <Panel>
-            <SectionHeading eyebrow="Weekly listings" title="Schedule" action={<a className="btn-secondary" href="/api/radio/schedule.ics">Add to calendar (.ics)</a>} />
+            <SectionHeading title="Schedule" action={<a className="btn-secondary" href="/api/radio/schedule.ics">Add to calendar (.ics)</a>} />
             {slots.length ? (
               <ul className="ui-list">
                 {slots.map((slot) => (

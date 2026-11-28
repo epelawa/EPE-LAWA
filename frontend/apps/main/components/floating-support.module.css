@@ -44,7 +44,6 @@
 .modalHeader { display:flex; align-items:start; justify-content:space-between; gap:16px; padding:24px 24px 20px; background:linear-gradient(135deg,#eff5ff,#f9fbff); border-bottom:1px solid #dce6f4; }
 .modalHeader h2 { margin:4px 0 8px; font-size:1.55rem; line-height:1.2; color:#112b55; }
 .modalHeader p { margin:0; color:#4a5f7b; line-height:1.5; }
-.modalHeader .eyebrow { color:#315b98; font-size:.68rem; font-weight:800; letter-spacing:.08em; }
 .close { flex:none; display:grid; place-items:center; width:44px; height:44px; border:1px solid #d2def0; border-radius:50%; background:#fff; color:#17345f; font-size:1.6rem; cursor:pointer; }
 .close:disabled { opacity:.5; cursor:wait; }
 .modalBody { padding:22px 24px 24px; }

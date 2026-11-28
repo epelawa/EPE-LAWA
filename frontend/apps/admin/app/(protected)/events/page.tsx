@@ -51,7 +51,6 @@ export default async function EventsReviewPage({ searchParams }: { searchParams:
   return (
     <PageFrame className="ui-stack">
       <PageIntro
-        eyebrow="Editorial workspace · Events"
         title="Events review"
         description="Community event submissions land here, not in Enquiries. Check the date, venue and organiser before publishing. Submitter contact details are private to staff."
         meta={<StatusBadge>Staff review</StatusBadge>}

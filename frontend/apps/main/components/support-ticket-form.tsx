@@ -30,7 +30,6 @@ function SupportTicketFormInner({ onReset }: { onReset: () => void }) {
 
   if (state.status === "success" && state.reference) {
     return <section className="support-ticket-done ui-stack" aria-labelledby={`${id}-done`}>
-      <p className="support-ticket-done__eyebrow">Ticket opened</p>
       <h3 id={`${id}-done`} className="support-ticket-done__ref">{state.reference}</h3>
       <p>{state.emailed ? "We emailed you a confirmation with a private link to this ticket. Replies from our assistant and team arrive by email too." : "We couldn't confirm the confirmation email — keep this reference and the link below."}</p>
       <div className="ui-row">

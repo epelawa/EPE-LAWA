@@ -23,7 +23,7 @@ export default async function SupportTickets({ searchParams }: { searchParams: P
   const { data, error } = await db.rpc("staff_support_list", { p_status: filter });
   const rows = (data ?? []) as Row[];
   return <PageFrame className="ui-stack">
-    <PageIntro eyebrow="People & work" title="Support tickets" description="Requests from the public Support page. The AI assistant sorts every ticket and answers simple ones; anything it hands over is marked “Needs staff”." />
+    <PageIntro title="Support tickets" description="Requests from the public Support page. The AI assistant sorts every ticket and answers simple ones; anything it hands over is marked “Needs staff”." />
     <nav aria-label="Ticket filters" className="ui-row" style={{ flexWrap: "wrap", gap: "0.5rem" }}>
       {FILTERS.map((entry) => <a key={entry.key} href={`${adminHref("/support")}?status=${entry.key}`} className={entry.key === filter ? "btn-primary" : "btn-secondary"} aria-current={entry.key === filter ? "page" : undefined}>{entry.label}</a>)}
     </nav>

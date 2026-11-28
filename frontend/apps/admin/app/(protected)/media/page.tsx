@@ -41,7 +41,7 @@ export default async function MediaAdminPage({ searchParams }: { searchParams: P
   const db = await createStaffClient();
   const { data: allowed, error: capabilityError } = await db.rpc("has_capability", { p_capability: "site.content" });
   if (capabilityError || allowed !== true) {
-    return <PageFrame className="ui-stack"><PageIntro eyebrow="Staff workspace" title="Gallery & media" description="The public photo archive and media records." /><Notice tone="danger" role="alert">The site.content capability is required. No records are shown.</Notice></PageFrame>;
+    return <PageFrame className="ui-stack"><PageIntro title="Gallery & media" description="The public photo archive and media records." /><Notice tone="danger" role="alert">The site.content capability is required. No records are shown.</Notice></PageFrame>;
   }
 
   const r2Base = process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL ?? "";
@@ -51,7 +51,6 @@ export default async function MediaAdminPage({ searchParams }: { searchParams: P
   return (
     <PageFrame className="ui-stack">
       <PageIntro
-        eyebrow="Staff workspace · Media"
         title="Gallery & media"
         description="Publish photographs to the public gallery with a source and a credit for every image. Delete a photograph to withdraw it from the archive."
         meta={<span>Public page: /gallery</span>}
@@ -60,7 +59,7 @@ export default async function MediaAdminPage({ searchParams }: { searchParams: P
       {photosError ? <EmptyPanel title="Media records unavailable" description="The gallery records could not be loaded. Reload the page to try again." /> : (
         <>
           <section className="ui-stack-sm" aria-labelledby="gallery-add-title">
-            <SectionHeading eyebrow="Publish" title="Add a photograph" id="gallery-add-title" />
+            <SectionHeading title="Add a photograph" id="gallery-add-title" />
             <Panel className="ui-stack-sm">
               <form action={addGalleryPhoto} className="ui-stack-sm">
                 <div className="ui-form-grid">
@@ -79,7 +78,7 @@ export default async function MediaAdminPage({ searchParams }: { searchParams: P
           </section>
 
           <section className="ui-stack-sm" aria-labelledby="gallery-list-title">
-            <SectionHeading eyebrow="Archive" title="Published photographs" id="gallery-list-title" />
+            <SectionHeading title="Published photographs" id="gallery-list-title" />
             {photos.length === 0
               ? <EmptyPanel title="No gallery photographs yet" description="Add the first photograph above. It appears on the public gallery page immediately." />
               : <ul className="ui-list ui-stack-sm">{photos.map((photo) => {

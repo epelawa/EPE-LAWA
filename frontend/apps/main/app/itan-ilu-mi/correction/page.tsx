@@ -25,7 +25,7 @@ export default async function HistoryCorrectionPage({ searchParams }: { searchPa
   const record = typeof params.record === "string" ? params.record.slice(0, 300) : "";
   return <PageFrame className={`${styles.page} ui-stack`}>
     <Link className={styles.back} href="/itan-ilu-mi"><ArrowRightIcon size={18} className={styles.backIcon} aria-hidden /> Back to Ìtàn Ilú Mi</Link>
-    <PageIntro eyebrow="Fix the record" title="Correction and removal requests" description="Point us to what is wrong in a published history record, or ask for a record about you or your family to be removed. Requests go to a private staff queue and are never published; we reply by email after checking." />
+    <PageIntro title="Correction and removal requests" description="Point us to what is wrong in a published history record, or ask for a record about you or your family to be removed. Requests go to a private staff queue and are never published; we reply by email after checking." />
     <ol className={styles.steps} aria-label="What happens next">
       <li><strong>You send the request.</strong> Name the record and explain what should change.</li>
       <li><strong>Staff review it privately.</strong> We check the sources you point to.</li>

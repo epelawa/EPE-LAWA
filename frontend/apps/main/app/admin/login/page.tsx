@@ -20,7 +20,6 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: S
 
   return (
     <AccountShell
-      eyebrow="Staff sign in"
       title="Welcome back"
       description="Authorised staff only. Sign in to continue."
       fixedViewport

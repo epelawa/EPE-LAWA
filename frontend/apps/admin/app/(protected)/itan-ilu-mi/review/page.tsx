@@ -54,7 +54,6 @@ export default async function HistoryReviewPage({ searchParams }: { searchParams
   return (
     <PageFrame className="ui-stack">
       <PageIntro
-        eyebrow="Itan Ilu Mi · Staff"
         title="Contribution review"
         description="Review submitted accounts, provenance, consent, lineage context and publication-rights evidence. Only explicitly approved account, family/lineage and citation fields are public; submitted source evidence, rights and consent remain private."
         meta={<StatusBadge tone="neutral">History review</StatusBadge>}
@@ -68,11 +67,10 @@ export default async function HistoryReviewPage({ searchParams }: { searchParams
         <EmptyPanel title="No pending contributions" description="New submissions will appear here for authorized staff." />
       ) : (
         <div className="ui-stack">
-          <SectionHeading eyebrow="Pending queue" title="Submissions awaiting review" description="Review private evidence first, then enter only content explicitly approved for public display." />
+          <SectionHeading title="Submissions awaiting review" description="Review private evidence first, then enter only content explicitly approved for public display." />
           {rows.map((row) => (
             <Panel className="ui-stack-sm" key={row.id}>
               <header className="ui-stack-sm">
-                <p className="ui-eyebrow">Submitted {new Date(row.submitted_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}</p>
                 <h2 className="ui-item-title">{row.title}</h2>
                 <div className="ui-meta">
                   <StatusBadge tone="neutral">{labels[row.category] ?? row.category}</StatusBadge>
@@ -84,6 +82,7 @@ export default async function HistoryReviewPage({ searchParams }: { searchParams
                   {row.submitter_email ? <> · <a className="ui-text-link" href={`mailto:${row.submitter_email}`}>{row.submitter_email}</a></> : null}
                   {" "}(private)
                 </p>
+                {row.submitted_at ? <p className="ui-meta">Submitted {new Date(row.submitted_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}</p> : null}
               </header>
               {publicMediaUrl(row.image_key) ? (
                 <figure className="ui-stack-sm" style={{ margin: 0 }}>
@@ -155,13 +154,13 @@ export default async function HistoryReviewPage({ searchParams }: { searchParams
       )}
       {permitted ? (
         <section id="corrections" className="ui-stack" aria-label="Corrections and removal requests">
-          <SectionHeading eyebrow="Public requests" title="Corrections and removal requests" description="Sent from the public “Request a correction” form. Edit the published record separately, then close the request with a note." />
+          <SectionHeading title="Corrections and removal requests" description="Sent from the public “Request a correction” form. Edit the published record separately, then close the request with a note." />
           {correctionsFailed ? <EmptyPanel title="Requests unavailable" description="Correction requests could not be loaded. Try again later." />
             : corrections.length === 0 ? <EmptyPanel title="No open requests" description="New correction and removal requests will appear here." />
             : corrections.map((req) => (
               <Panel className="ui-stack-sm" key={req.id}>
-                <p className="ui-eyebrow">{req.request_kind === "removal" ? "Removal request" : "Correction request"} · {new Date(req.created_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}</p>
                 <h3 className="ui-item-title">{req.record_ref}</h3>
+                <p className="ui-meta">{req.request_kind === "removal" ? "Removal request" : "Correction request"} · {new Date(req.created_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}</p>
                 <p className="ui-prose" style={{ whiteSpace: "pre-wrap" }}>{req.message}</p>
                 <p className="ui-meta">{req.sender_name} · <a className="ui-text-link" href={`mailto:${req.sender_email}`}>{req.sender_email}</a>{req.submitter_id ? " · member account" : " · guest"} (private)</p>
                 <form action={resolveHistoryCorrection} className="ui-stack-sm">

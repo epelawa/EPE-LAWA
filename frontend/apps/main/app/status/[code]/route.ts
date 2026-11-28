@@ -32,7 +32,6 @@ export async function GET(_request: Request, context: { params: Promise<{ code: 
     * { box-sizing: border-box; }
     body { margin: 0; min-height: 100vh; padding: 40px 20px; display: grid; place-items: center; background-color: var(--page); background-image: linear-gradient(135deg, transparent 49.85%, rgb(71 127 224 / .025) 50%, transparent 50.15%), linear-gradient(45deg, transparent 49.9%, rgb(41 75 145 / .018) 50%, transparent 50.1%); background-size: 152px 152px,228px 228px; color: var(--ink); font-family: ui-sans-serif,system-ui,sans-serif; font-size: 16px; line-height: 1.7; }
     main { width: 100%; max-width: 680px; padding: clamp(24px,6vw,56px); border: 1px solid var(--line); border-radius: 28px; background: var(--surface); }
-    .eyebrow { color: var(--link); font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
     .code { display: inline-block; margin-top: 20px; padding: 5px 12px; border-radius: 999px; background: var(--soft); color: var(--link); font-size: 14px; }
     h1 { margin: 20px 0; font-size: clamp(28px,5vw,36px); line-height: 1.15; letter-spacing: -.04em; font-weight: 550; }
     p { margin: 0 0 24px; color: var(--muted); }
@@ -50,7 +49,6 @@ export async function GET(_request: Request, context: { params: Promise<{ code: 
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
   <main id="main" tabindex="-1">
-    <p class="eyebrow">EPE LAWA · Request reference</p>
     <span class="code">HTTP ${status}</span>
     <h1>${label}</h1>
     <p>This is a status reference page, not a live service or incident report.</p>

@@ -15,7 +15,6 @@ export default async function NewsletterUnsubscribePage({ searchParams }: { sear
   const params = await searchParams;
   const token = typeof params.token === "string" && /^[a-f0-9]{64}$/.test(params.token) ? params.token : "";
   return <main className={styles.page}><div className={styles.card}>
-    <p className={styles.eyebrow}>EPE LAWA NEWSLETTER</p>
     <h1>Manage your subscription</h1>
     <p className={styles.copy}>Use this page to stop newsletter emails. Your request is handled by EPE LAWA’s own subscriber system, not a verification email link.</p>
     {token ? <UnsubscribeForm token={token} /> : <p className={styles.error}>This unsubscribe link is invalid or incomplete. Open the latest newsletter email and try again.</p>}

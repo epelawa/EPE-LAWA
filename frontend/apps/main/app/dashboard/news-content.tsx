@@ -205,7 +205,7 @@ function ErrorState({ title, href }: { title: string; href: string }) {
 function HomeSectionHeading({ id, title, helper, level = "h2" }: { id: string; title: string; helper?: string; level?: "h1" | "h2" }) {
   const Heading = level;
   return <header className={styles.feedSectionHeading}>
-    <div><p className={styles.eyebrow}>EPE LAWA · NEWS</p><Heading id={id}>{title}</Heading></div>
+    <div><Heading id={id}>{title}</Heading></div>
     {helper ? <p>{helper}</p> : null}
   </header>;
 }

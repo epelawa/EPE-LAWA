@@ -62,11 +62,11 @@ export default async function TourismPage({ searchParams }: { searchParams: Prom
   if (supabase) { try { const result = await supabase.auth.getUser(); signedIn = Boolean(result.data.user); accountEmail = result.data.user?.email ?? null; } catch {} }
 
   return <PageFrame className="ui-stack">
-    <PageIntro eyebrow="Epe Lawa · Public record" title="Historical Sites &amp; Tourism" description="A guide to Epe destinations, built from verified sources. Visitor and location details appear only when checked by our editorial team." />
+    <PageIntro title="Historical Sites &amp; Tourism" description="A guide to Epe destinations, built from verified sources. Visitor and location details appear only when checked by our editorial team." />
     <Notice tone="neutral">We do not guess opening hours, prices, access conditions or locations. Confirm current arrangements with the destination before travelling.</Notice>
 
     <section className="ui-stack-sm" aria-labelledby="tourism-photo-references">
-      <SectionHeading eyebrow="Photo references" title="Epe in photographs" id="tourism-photo-references" description="Reference photographs of Epe. These are not approved destination listings." />
+      <SectionHeading title="Epe in photographs" id="tourism-photo-references" description="Reference photographs of Epe. These are not approved destination listings." />
       <ul className="ui-grid ui-grid--2 ui-list" aria-label="Epe photo references">
         <li className="ui-card ui-stack-sm">
           <figure className={styles.figure}>
@@ -84,13 +84,13 @@ export default async function TourismPage({ searchParams }: { searchParams: Prom
     </section>
 
     <form method="get" action="/tourism" role="search" aria-label="Search approved tourism destinations" className="ui-toolbar filter-panel">
-      <div className="filter-panel__heading"><span className="filter-panel__icon"><FilterIcon/></span><div><p className="ui-eyebrow">Approved records</p><h2 className="filter-panel__title">Find a destination</h2></div></div>
+      <div className="filter-panel__heading"><span className="filter-panel__icon"><FilterIcon/></span><div><h2 className="filter-panel__title">Find a destination</h2></div></div>
       <div className="ui-field"><label className="label" htmlFor="tourism-query">Search approved destinations</label><div className="filter-panel__control"><SearchIcon className="filter-panel__input-icon"/><input className="input" id="tourism-query" name="q" maxLength={100} defaultValue={query} placeholder="Name or description" data-slash-focus /></div></div>
       <button className="btn-primary" type="submit"><SearchIcon size={16}/>Search</button>
     </form>
 
     {failed ? <EmptyPanel title="Destinations could not be loaded" description="Please try again later. We are not showing unverified destination information." actions={<Link href={pageHref(page, query)} className="btn-secondary">Reload destinations</Link>} /> : records.length === 0 ? <EmptyPanel title={query ? "No approved destinations match" : page > 1 ? "No destinations on this page" : "No approved destinations yet"} description={query ? "There are no published, source-backed destinations matching this search. Try another term or clear the search." : page > 1 ? "There are no older approved destinations on this page." : "There are currently no published, source-backed tourism records. We will add information only after source, visitor detail and publication-rights review."} actions={query ? <Link href="/tourism" className="btn-secondary">Clear search</Link> : undefined} /> : <section className="ui-stack-sm" aria-labelledby="destinations-heading">
-      <SectionHeading eyebrow="01 · Approved records" title="Explore destinations" id="destinations-heading" description={<>{records.length} record{records.length === 1 ? "" : "s"} on page {page}</>} />
+      <SectionHeading title="Explore destinations" id="destinations-heading" description={<>{records.length} record{records.length === 1 ? "" : "s"} on page {page}</>} />
       <ul className="ui-grid ui-grid--2 ui-list">
         {records.map((item) => <li key={item.id} className="ui-card ui-stack-sm">
           <p className="ui-meta">{item.location_label ?? "Location details not verified"}</p>
@@ -105,7 +105,7 @@ export default async function TourismPage({ searchParams }: { searchParams: Prom
     {page > 1 || hasOlder ? <nav className="ui-actions" aria-label="Tourism pages">{page > 1 ? <Link className="btn-secondary" href={pageHref(page - 1, query)}>Newer destinations</Link> : null}<span className="ui-meta" aria-live="polite">Page {page}</span>{hasOlder ? <Link className="btn-secondary" href={pageHref(page + 1, query)}>Older destinations</Link> : null}</nav> : null}
 
     <section className="ui-stack" aria-labelledby="contribute-title">
-      <SectionHeading eyebrow="02 · Community contribution" title="Suggest a destination" id="contribute-title" description="Anyone can suggest a place — signing in is optional. Contributions stay private until staff verify the source and publication rights. Do not submit sensitive access details or personal residential addresses. Submission is not approval." />
+      <SectionHeading title="Suggest a destination" id="contribute-title" description="Anyone can suggest a place — signing in is optional. Contributions stay private until staff verify the source and publication rights. Do not submit sensitive access details or personal residential addresses. Submission is not approval." />
       {submission === "sent" ? <Notice tone="success" role="status">Your suggestion was received privately for editorial review. It is not published.</Notice> : null}
       {submission === "invalid" ? <Notice tone="warning" role="alert">Please check the required fields, HTTPS links, media-rights description and consent.</Notice> : null}
       {submission === "limited" ? <Notice tone="warning" role="alert">Too many suggestions from this network this hour. Please wait a while and try again.</Notice> : null}

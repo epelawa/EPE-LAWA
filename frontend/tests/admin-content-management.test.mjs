@@ -58,7 +58,7 @@ test("article comments desk is wired on both apps", () => {
 
 test("business review page manages published listings", () => {
   const page = repo("frontend/apps/admin/app/(protected)/business-review/page.tsx");
-  assert.match(page, /Published listings/);
+  assert.match(page, /Live listings/);
   assert.match(page, /BusinessEditForm/);
   assert.match(page, /deleteBusiness/);
   const actions = repo("frontend/apps/admin/app/(protected)/business-review/actions.ts");

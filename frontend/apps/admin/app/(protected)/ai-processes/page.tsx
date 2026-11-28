@@ -73,7 +73,7 @@ export default async function AiProcessesPage({ searchParams }: { searchParams: 
   const db = await createStaffClient();
   const access = await db.rpc("staff_roles_authorized");
   if (access.error || access.data !== true) {
-    return <PageFrame><PageIntro eyebrow="System · AI" title="AI processes" description="Audit of everything the AI did." />
+    return <PageFrame><PageIntro title="AI processes" description="Audit of everything the AI did." />
       <EmptyPanel title={access.error ? "Access could not be verified" : "Primary administrators only"} description="The AI audit is restricted to the primary administrators." actions={<Link href={adminHref("/")}>Back to dashboard</Link>} />
     </PageFrame>;
   }
@@ -98,7 +98,7 @@ export default async function AiProcessesPage({ searchParams }: { searchParams: 
   const runs = (runsResult.data ?? []) as { id: string; job: string; trigger: string; started_at: string; finished_at: string | null; status: string; summary: string | null; progress: string | null; progress_at: string | null }[];
   const activeRuns = runs.filter((run) => run.status === "running" && Date.now() - Date.parse(run.progress_at ?? run.started_at) < 6 * 60_000);
   if (timelineResult.error) {
-    return <PageFrame><PageIntro eyebrow="System · AI" title="AI processes" description="Audit of everything the AI did." />
+    return <PageFrame><PageIntro title="AI processes" description="Audit of everything the AI did." />
       <EmptyPanel title="AI audit unavailable" description="Apply the AI database migration (20261129080000), then reload." />
     </PageFrame>;
   }
@@ -125,7 +125,7 @@ export default async function AiProcessesPage({ searchParams }: { searchParams: 
 
   return (
     <PageFrame className="ui-stack">
-      <PageIntro eyebrow="System · AI" title="AI processes" description="A complete audit of the AI desk: what it did, what it decided not to do, what it escalated to a human and why, with exact Lagos timestamps, by day and by hour." meta={<Link href={adminHref("/ai-scheduler")}>← AI Scheduler</Link>} />
+      <PageIntro title="AI processes" description="A complete audit of the AI desk: what it did, what it decided not to do, what it escalated to a human and why, with exact Lagos timestamps, by day and by hour." meta={<Link href={adminHref("/ai-scheduler")}>← AI Scheduler</Link>} />
       {notice ? <Notice tone={notice.tone} role={notice.tone === "success" ? "status" : "alert"}>{notice.text}</Notice> : null}
 
       <Panel className="ui-stack-sm">

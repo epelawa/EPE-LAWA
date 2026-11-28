@@ -7,7 +7,6 @@
 .support-ticket-form__note { font-size: 0.9rem; color: var(--muted, #5b6478); }
 .support-subhead { margin: 0; font-size: 1.15rem; }
 .support-ticket-done { text-align: left; }
-.support-ticket-done__eyebrow { margin: 0; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted, #5b6478); }
 .support-ticket-done__ref { margin: 0; font-size: clamp(1.8rem, 6vw, 2.4rem); letter-spacing: 0.06em; font-variant-numeric: tabular-nums; }
 .support-thread { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.85rem; }
 .support-thread__msg { max-width: 46rem; padding: 0.9rem 1rem; border-radius: 1rem; border: 1px solid var(--line, #dfe5f0); background: var(--surface, #fff); }

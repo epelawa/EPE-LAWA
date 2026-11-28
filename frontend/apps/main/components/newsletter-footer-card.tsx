@@ -8,7 +8,6 @@ export default function NewsletterFooterCard() {
       className={styles.card}
       aria-labelledby="newsletter-footer-heading"
     >
-      <p className={styles.eyebrow}>Stay informed</p>
       <div className={styles.headingRow}>
         <h2 id="newsletter-footer-heading">EPE LAWA Newsletter</h2>
         <span className={styles.status}>Open</span>

@@ -39,7 +39,6 @@ export default function RadioSchedule({ slots, initialDay, unavailable = false }
   return <section className={styles.schedule} aria-labelledby="radio-schedule-title" id="schedule">
     <div className={styles.heading}>
       <div>
-        <p className={styles.eyebrow}>Programme guide</p>
         <h2 id="radio-schedule-title">{day === today ? "Today on EPE LAWA Radio" : `${DAYS[day]} on EPE LAWA Radio`}</h2>
       </div>
       <p className={styles.zone}>All times WAT (UTC+1)</p>

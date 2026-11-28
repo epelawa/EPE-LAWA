@@ -56,7 +56,7 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
   const db = await createStaffClient();
   const access = await db.rpc("staff_roles_authorized");
   if (access.error || access.data !== true) {
-    return <PageFrame><PageIntro eyebrow="System · AI" title="AI Scheduler" description="The EPE LAWA AI desk." />
+    return <PageFrame><PageIntro title="AI Scheduler" description="The EPE LAWA AI desk." />
       <EmptyPanel title={access.error ? "Access could not be verified" : "Primary administrators only"} description="The AI can publish and send email on the site's behalf, so only the primary administrators can steer it." actions={<Link href={adminHref("/")}>Back to dashboard</Link>} />
     </PageFrame>;
   }
@@ -67,7 +67,7 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
   ]);
   const settings = normaliseSettings(settingsResult.data as Record<string, unknown> | null);
   if (settingsResult.error || !settings) {
-    return <PageFrame><PageIntro eyebrow="System · AI" title="AI Scheduler" description="The EPE LAWA AI desk." />
+    return <PageFrame><PageIntro title="AI Scheduler" description="The EPE LAWA AI desk." />
       <EmptyPanel title="AI tables are not installed" description="Apply the database migration 20261129080000_ai_autopilot_admin_logs_guest_engagement.sql, then reload this page." />
     </PageFrame>;
   }
@@ -107,7 +107,6 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
   return (
     <PageFrame className="ui-stack">
       <PageIntro
-        eyebrow="System · AI"
         title="AI Scheduler"
         description="The EPE LAWA AI desk drafts Epe Division news for editors, checks businesses, replies to enquiries and support tickets, places approved ads, moderates comments and explains admin activity — on free models only."
         meta={<Link href={adminHref("/ai-processes")}>Open AI processes →</Link>}
