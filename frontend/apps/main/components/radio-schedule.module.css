@@ -14,7 +14,7 @@
 .todayMark { position: absolute; top: 6px; right: 6px; width: 6px; height: 6px; border-radius: 50%; background: #477FE0; }
 .list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
 .item { display: grid; grid-template-columns: minmax(96px, auto) minmax(0, 1fr) auto; align-items: center; gap: 8px 16px; min-width: 0; padding: 14px 16px; border: 1px solid #D9E3F1; border-radius: 12px; background: #FFFFFF; }
-.item[data-current="true"] { border-color: #294B91; box-shadow: inset 3px 0 0 #294B91; }
+.item[data-current="true"] { border-color: #294B91; background: #EAF0FB; }
 .time { color: #294B91; font-variant-numeric: tabular-nums; font-weight: 800; white-space: nowrap; }
 .body { display: grid; gap: 2px; min-width: 0; }
 .body strong { color: #17264A; overflow-wrap: anywhere; }

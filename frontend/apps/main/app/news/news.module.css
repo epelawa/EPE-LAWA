@@ -295,7 +295,6 @@
 /* Four related editorial compositions, with content and controls in the same DOM order. */
 .articlePage :global([data-layout-variant="1"]) .articleHeroCopy { padding: 8px 0; }
 .articlePage :global([data-layout-variant="2"]) .articleHero { gap: 12px; }
-.articlePage :global([data-layout-variant="2"]) .articleHeroCopy { border-left: 4px solid #477fe0; }
 .articlePage :global([data-layout-variant="2"]) .articleCoverFrame { aspect-ratio: 2 / 1; }
 .articlePage :global([data-layout-variant="2"]) .articleHeroImage { aspect-ratio: 2 / 1; }
 .articlePage :global([data-layout-variant="3"]) .articleHeroCopy { text-align: center; justify-items: center; padding: 12px 0; }
