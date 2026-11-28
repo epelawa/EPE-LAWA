@@ -304,6 +304,12 @@ test('map_correction_decide keeps one callable nine-argument definition; the gra
   assert.deepEqual(decideAcl, { anon_exec: false, auth_exec: true, service_exec: false });
 });
 
+test('staff_analytics_engagement keeps one definition and stays authenticated-only', async () => {
+  assert.equal((await rows("select count(*)::int as n from pg_proc where proname='staff_analytics_engagement' and pg_get_function_identity_arguments(oid)='p_days integer'"))[0].n, 1);
+  const engagementAcl = (await rows("select has_function_privilege('anon','public.staff_analytics_engagement(integer)','execute') anon_exec, has_function_privilege('authenticated','public.staff_analytics_engagement(integer)','execute') auth_exec, has_function_privilege('service_role','public.staff_analytics_engagement(integer)','execute') service_exec"))[0];
+  assert.deepEqual(engagementAcl, { anon_exec: false, auth_exec: true, service_exec: false });
+});
+
 test('the security definer form_rate_limit stays callable by service_role only across the full chain', async () => {
   const acl = (await rows("select has_function_privilege('anon','public.form_rate_limit(text,text,integer,integer)','execute') anon_exec, has_function_privilege('authenticated','public.form_rate_limit(text,text,integer,integer)','execute') auth_exec, has_function_privilege('service_role','public.form_rate_limit(text,text,integer,integer)','execute') service_exec"))[0];
   assert.deepEqual(acl, { anon_exec: false, auth_exec: false, service_exec: true });

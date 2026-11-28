@@ -152,7 +152,8 @@ test("staff routes render at each supported width and preset hashtags remain edi
     "/itan-ilu-mi/review", "/corrections", "/people", "/business-review", "/business-review/moderation",
     "/tourism", "/events", "/ads", "/moderation/forum", "/moderation/comments", "/appeals",
     "/enquiries", "/members", "/users", "/roles", "/broadcast", "/site-pages", "/legal-pages",
-    "/backups", "/settings", "/settings/cron",
+    "/backups", "/settings", "/settings/cron", "/ai-chat", "/ai-processes", "/ai-scheduler",
+    "/logs", "/map-corrections", "/storage", "/support", "/support/00000000-0000-0000-0000-000000000000",
   ];
   await page.emulateMedia({ reducedMotion: "reduce" });
   for (const [index, route] of routes.entries()) {
@@ -162,6 +163,9 @@ test("staff routes render at each supported width and preset hashtags remain edi
     expect(response?.status(), route).toBe(200);
     expect(new URL(page.url()).pathname).toBe(`/admin${route}`);
     await expect(page.locator(".admin-shell__content").getByRole("heading", { level: 1 }).first(), route).toBeVisible();
+    if (route === "/support/00000000-0000-0000-0000-000000000000") {
+      await expect(page.getByText("Ticket not found", { exact: true }), route).toBeVisible();
+    }
     await expect(page.getByRole("heading", { name: "This page could not be loaded" }), route).toHaveCount(0);
     await expectNoHorizontalOverflow(page, width);
   }

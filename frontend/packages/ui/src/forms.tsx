@@ -200,7 +200,7 @@ export function SubmitButton({
         aria-busy={pending}
         {...rest}
       >
-        {children}
+        {pending ? pendingLabel : children}
       </button>
     );
   }
