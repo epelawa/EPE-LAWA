@@ -13,6 +13,10 @@ const metricLabel: Record<string, string> = {
   article_views: "Story reads",
   business_clicks: "Business contact clicks",
   new_members: "New member profiles",
+  forum_threads: "New forum threads",
+  forum_posts: "Forum messages",
+  event_submissions: "Event submissions",
+  radio_song_requests: "Radio song requests",
 };
 
 function dayRange(days: number) {
@@ -43,12 +47,13 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
     </PageFrame>;
   }
 
-  const [timeseriesResult, topResult] = await Promise.all([
+  const [timeseriesResult, engagementResult, topResult] = await Promise.all([
     db.rpc("staff_analytics_timeseries", { p_days: days }),
+    db.rpc("staff_analytics_engagement", { p_days: days }),
     db.rpc("staff_analytics_top_articles", { p_days: days, p_limit: 10 }),
   ]);
 
-  if (timeseriesResult.error || topResult.error) {
+  if (timeseriesResult.error || engagementResult.error || topResult.error) {
     return <PageFrame className="ui-stack">
       <PageIntro eyebrow="Insight · Staff" title="Analytics" description={`Trends across the last ${days} days.`} />
       <EmptyPanel title="Analytics unavailable" description="Counters could not be aggregated. Try again later." />
@@ -56,9 +61,10 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
   }
 
   const rows = (timeseriesResult.data ?? []) as unknown as TimeseriesRow[];
+  const engagementRows = (engagementResult.data ?? []) as unknown as TimeseriesRow[];
   const wantedDays = dayRange(days);
-  const seriesFor = (metric: string) =>
-    wantedDays.map((day) => ({ day, total: rows.find((row) => row.metric === metric && row.day === day)?.total ?? 0 }));
+  const seriesFor = (metric: string, source: TimeseriesRow[] = rows) =>
+    wantedDays.map((day) => ({ day, total: source.find((row) => row.metric === metric && row.day === day)?.total ?? 0 }));
   const topArticles = ((topResult.data ?? []) as unknown as TopArticleRow[]).slice(0, 10);
 
   return <PageFrame className="ui-stack">
@@ -77,6 +83,17 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
         {["article_views", "business_clicks", "new_members"].map((metric) => (
           <Panel key={metric} className="ui-stack-sm">
             <TrendChart label={metricLabel[metric] ?? metric} points={seriesFor(metric)} />
+          </Panel>
+        ))}
+      </div>
+    </section>
+
+    <section className="ui-stack-sm">
+      <SectionHeading eyebrow="Community" title="Community activity" description="What the community contributes each day: forum threads and messages, event submissions and radio song requests. Counts never identify an individual member." />
+      <div className="ui-stack-sm">
+        {["forum_threads", "forum_posts", "event_submissions", "radio_song_requests"].map((metric) => (
+          <Panel key={metric} className="ui-stack-sm">
+            <TrendChart label={metricLabel[metric] ?? metric} points={seriesFor(metric, engagementRows)} />
           </Panel>
         ))}
       </div>

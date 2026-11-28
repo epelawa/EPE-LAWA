@@ -1,4 +1,4 @@
-import { PageFrame, PageIntro, Panel, Notice, StatusBadge } from "@epelawa/ui";
+import { PageFrame, PageIntro, Panel, Notice, StatusBadge, SubmitButton } from "@epelawa/ui";
 import { createStaffClient } from "../../../../lib/supabase";
 import { adminHref } from "../../../../lib/admin-path";
 import { categoryLabel, statusLabel, SUPPORT_CATEGORIES, SUPPORT_PRIORITIES, SUPPORT_STATUSES } from "../../../../../main/lib/support/rules";
@@ -57,7 +57,7 @@ export default async function SupportTicket({ params, searchParams }: { params: 
         <div className="ui-field"><label htmlFor="support-body">Message</label><textarea id="support-body" name="body" rows={6} minLength={2} maxLength={8000} required placeholder="Write your reply. A friendly greeting with the requester's name is added to the email automatically." /></div>
         <label className="ui-row" style={{ gap: "0.5rem", alignItems: "center" }}><input type="checkbox" name="internal" /> Internal note only (not emailed, not shown to the requester)</label>
         <div className="ui-field"><label htmlFor="support-after">Status after replying</label><select id="support-after" name="status" defaultValue=""><option value="">Waiting for requester (default)</option>{SUPPORT_STATUSES.map((entry) => <option key={entry.key} value={entry.key}>{statusLabel(entry.key, "staff")}</option>)}</select></div>
-        <button className="btn-primary" type="submit">Send</button>
+        <SubmitButton pendingLabel="Sending reply…" useLegacyClasses>Send</SubmitButton>
       </form>
     </Panel>
     <Panel className="ui-stack">
@@ -68,7 +68,7 @@ export default async function SupportTicket({ params, searchParams }: { params: 
         <div className="ui-field"><label htmlFor="support-priority">Priority</label><select id="support-priority" name="priority" defaultValue={ticket.priority}>{SUPPORT_PRIORITIES.map((value) => <option key={value} value={value}>{value}</option>)}</select></div>
         <div className="ui-field"><label htmlFor="support-category">Category</label><select id="support-category" name="category" defaultValue={ticket.category}>{SUPPORT_CATEGORIES.map((entry) => <option key={entry.key} value={entry.key}>{entry.label}</option>)}</select></div>
         <label className="ui-row" style={{ gap: "0.5rem", alignItems: "center" }}><input type="checkbox" name="assign_me" /> Assign this ticket to me</label>
-        <button className="btn-secondary" type="submit">Save details</button>
+        <SubmitButton pendingLabel="Saving…" variant="secondary" useLegacyClasses>Save details</SubmitButton>
       </form>
     </Panel>
   </PageFrame>;

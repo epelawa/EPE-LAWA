@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PageFrame, PageIntro, Panel, StatusBadge, Notice } from "../../../../components/design-system";
 import SupportTicketReply from "../../../../components/support-ticket-reply";
+import { SubmitButton } from "@epelawa/ui";
 import { formAdminClient } from "../../../../lib/form-server";
 import { ticketForLink } from "../../../../lib/support/tickets";
 import { categoryLabel, statusLabel, SUPPORT_STATUSES } from "../../../../lib/support/rules";
@@ -54,7 +55,7 @@ export default async function TicketPage({ params, searchParams }: { params: Pro
     {ticket.status === "closed" ? <Panel><p>This ticket is closed. If you still need help, <Link href="/support">open a new ticket</Link> and mention {ticket.reference}.</p></Panel> : <Panel className="ui-stack">
       <h2 className="support-subhead">{finished ? "Still need help? Reply to reopen" : "Add a reply"}</h2>
       <SupportTicketReply reference={ticket.reference} token={token ?? ""} />
-      {!finished ? <form action={resolveSupportTicket}><input type="hidden" name="reference" value={ticket.reference} /><input type="hidden" name="token" value={token ?? ""} /><button type="submit" className="btn-secondary">My problem is solved — close it</button></form> : null}
+      {!finished ? <form action={resolveSupportTicket}><input type="hidden" name="reference" value={ticket.reference} /><input type="hidden" name="token" value={token ?? ""} /><SubmitButton pendingLabel="Closing…" variant="secondary" useLegacyClasses>My problem is solved — close it</SubmitButton></form> : null}
     </Panel>}
   </PageFrame>;
 }

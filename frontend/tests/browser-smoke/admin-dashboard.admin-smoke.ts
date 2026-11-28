@@ -152,7 +152,8 @@ test("staff routes render at each supported width and preset hashtags remain edi
     "/itan-ilu-mi/review", "/corrections", "/people", "/business-review", "/business-review/moderation",
     "/tourism", "/events", "/ads", "/moderation/forum", "/moderation/comments", "/appeals",
     "/enquiries", "/members", "/users", "/roles", "/broadcast", "/site-pages", "/legal-pages",
-    "/backups", "/settings", "/settings/cron",
+    "/backups", "/settings", "/settings/cron", "/ai-chat", "/ai-processes", "/ai-scheduler",
+    "/logs", "/map-corrections", "/storage", "/support", "/support/00000000-0000-0000-0000-000000000000",
   ];
   await page.emulateMedia({ reducedMotion: "reduce" });
   for (const [index, route] of routes.entries()) {
