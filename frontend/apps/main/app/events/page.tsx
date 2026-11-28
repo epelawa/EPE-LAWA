@@ -59,7 +59,6 @@ export default async function EventsPage() {
   return <PageFrame className="ui-stack">
     <header className={styles.header}>
       <div>
-        <p className="ui-eyebrow">Community calendar</p>
         <h1>What is happening in Epe.</h1>
         <p className={styles.lede}>Festivals, meetings, markets and gatherings — every entry is reviewed before it is listed. Times are local (WAT).</p>
       </div>

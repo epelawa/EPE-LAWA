@@ -68,7 +68,7 @@ export default async function ItanIluMiPage({ searchParams }: { searchParams: Pr
   } catch { failed = true; }
 
   return <PageFrame className="ui-stack">
-    <PageIntro eyebrow="Community record" title="Ìtàn Ilú Mi" description="A community archive built from identifiable sources and reviewed contributions. Accounts are not published until evidence, consent and publication rights have been checked." meta={<span>Verified accounts · Private submissions</span>} />
+    <PageIntro title="Ìtàn Ilú Mi" description="A community archive built from identifiable sources and reviewed contributions. Accounts are not published until evidence, consent and publication rights have been checked." meta={<span>Verified accounts · Private submissions</span>} />
 
     <form method="get" className="ui-toolbar filter-panel filter-panel--compact" role="search" aria-label="Search published records">
       <div className="filter-panel__heading"><span className="filter-panel__icon" aria-hidden="true"><FilterIcon/></span><div><h2 className="filter-panel__title">Search the archive</h2></div></div>
@@ -79,7 +79,7 @@ export default async function ItanIluMiPage({ searchParams }: { searchParams: Pr
 
     <div id="archive" />
     {failed ? <EmptyPanel title="History records could not be loaded" description="Please try again later. No archive content is shown while records or source notes cannot be verified." /> : records.length === 0 ? <EmptyPanel title={page > 1 ? "No records on this page" : query || category ? "No published records match" : "No approved history records yet"} description="There are currently no published, source-backed accounts matching this search. We do not fill this space with unverified or invented history." /> : <section className="ui-stack" aria-labelledby="archive-heading">
-      <SectionHeading eyebrow="The archive" title="Published accounts" description="Source-backed histories approved for public reading." id="archive-heading" />
+      <SectionHeading title="Published accounts" description="Source-backed histories approved for public reading." id="archive-heading" />
       <ol className="ui-list ui-stack-sm">{records.map((record, index) => {
         const recordSources = sources.filter((source) => source.record_id === record.id);
         return <li className="ui-card ui-stack-sm" key={record.id}>
@@ -107,7 +107,7 @@ export default async function ItanIluMiPage({ searchParams }: { searchParams: Pr
     </nav> : null}
 
     <section id="contribute" className="ui-stack" aria-labelledby="contribute-heading">
-      <SectionHeading eyebrow="Share a history" title="Contribute an account" description="Anyone can contribute — signing in is optional. Submissions, photos and evidence stay private until staff review and verify them. Please identify the source and publication rights, and never submit another person’s private contact details." id="contribute-heading" />
+      <SectionHeading title="Contribute an account" description="Anyone can contribute — signing in is optional. Submissions, photos and evidence stay private until staff review and verify them. Please identify the source and publication rights, and never submit another person’s private contact details." id="contribute-heading" />
       <Notice tone="neutral">You can attach one photograph (a document, place, object or family picture). Video is not accepted. Photos are reviewed privately and published only if staff approve them with the record.</Notice>
       <Panel>
         <ContributeForm signedIn={signedIn} accountEmail={accountEmail} />

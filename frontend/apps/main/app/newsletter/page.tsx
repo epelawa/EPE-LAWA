@@ -16,7 +16,6 @@ export default function NewsletterSignupPage() {
   return (
     <PageFrame className="ui-stack">
       <PageIntro
-        eyebrow="EPE LAWA NEWSLETTER"
         title="Keep up with Epe."
         description={process.env.NEWSLETTER_SIGNUP_ENABLED === "true" ? "Confirm your email to receive reporting and community updates." : "Sign-up is temporarily unavailable while subscription security is improved. Existing unsubscribe links remain available."}
       />

@@ -7,7 +7,6 @@ export default function LinkIssueView({ expired }: { expired: boolean }) {
     <section className="auth-link-issue" aria-labelledby="auth-link-issue-title">
       <div className="auth-link-issue__card">
         <FocusedPageControls />
-        <p className="ui-eyebrow">EPE LAWA account security</p>
         <h1 id="auth-link-issue-title">
           {expired ? "That email link has expired." : "We couldn’t verify that email link."}
         </h1>

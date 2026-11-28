@@ -33,14 +33,14 @@ export default async function TicketPage({ params, searchParams }: { params: Pro
 
   if (!ticket) {
     return <PageFrame className="ui-stack">
-      <PageIntro eyebrow="Support" title="We can't open this ticket" description="The link is incomplete or no longer valid." />
+      <PageIntro title="We can't open this ticket" description="The link is incomplete or no longer valid." />
       <Panel className="ui-stack"><p>Use the full link from your ticket email, or ask for a fresh link on the <Link href="/support">Support page</Link>.</p></Panel>
     </PageFrame>;
   }
   const tone = SUPPORT_STATUSES.find((entry) => entry.key === ticket.status)?.tone ?? "neutral";
   const finished = ticket.status === "resolved" || ticket.status === "closed";
   return <PageFrame className="ui-stack">
-    <PageIntro eyebrow={`Ticket ${ticket.reference}`} title={ticket.subject} description={`${categoryLabel(ticket.category)} · opened ${when(ticket.created_at)}`} />
+    <PageIntro title={ticket.subject} description={`${categoryLabel(ticket.category)} · opened ${when(ticket.created_at)}`} />
     <div className="support-ticket-head"><StatusBadge tone={tone}>{statusLabel(ticket.status)}</StatusBadge>{ticket.needs_human && !finished ? <span>A member of our team is looking at this.</span> : null}</div>
     <Notice>Keep this page's link private — anyone with it can read and reply to this ticket.</Notice>
     <Panel className="ui-stack">

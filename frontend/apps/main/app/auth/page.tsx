@@ -7,7 +7,6 @@ export const metadata = { title: "Create your member account" };
 export default function RegisterPage() {
   return (
     <AccountShell
-      eyebrow="EPE LAWA members"
       title="Create an account"
       description="Join the EPE LAWA community."
     >

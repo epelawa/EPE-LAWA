@@ -14,10 +14,6 @@
   color: var(--palette-midnight);
 }
 
-.connection-panel .ui-eyebrow {
-  color: var(--palette-royal-steel);
-}
-
 .connection-panel h2 {
   max-width: 16ch;
   margin: 8px 0 12px;

@@ -123,7 +123,6 @@ export async function CommentThread({ articleId, slug, notice }: Props) {
   return <section id="comments" className={`ui-stack ${styles.commentSection}`} aria-label="Comments">
     <header className={styles.commentHeading}>
       <div>
-        <p className="ui-eyebrow">Conversation</p>
         <h2>{!error && comments.length < 100 && visibleCount > 0 ? `Comments (${visibleCount})` : "Comments"}</h2>
       </div>
       {!error && comments.length < 100 ? <span className={styles.commentCountPill} aria-hidden="true"><MessageCircleIcon size={15} /> {visibleCount}</span> : null}
@@ -131,7 +130,7 @@ export async function CommentThread({ articleId, slug, notice }: Props) {
     {noticeText ? <Notice tone={alertNotice ? "warning" : "success"} role={alertNotice ? "alert" : "status"}>{noticeText}</Notice> : null}
     {reviewer ? <Panel className="ui-subtle" aria-labelledby="comment-review-title">
       <div className="ui-stack-sm">
-        <div><p className="ui-eyebrow">Staff tools</p><h3 id="comment-review-title" className="text-lg font-semibold">Staff moderation review</h3></div>
+        <div><h3 id="comment-review-title" className="text-lg font-semibold">Staff moderation review</h3></div>
         {reports.length ? <ul className="ui-list ui-stack-sm">{reports.map(report => <li key={report.id} className="ui-card">
           <p><strong>Report reason:</strong> {report.reason}{report.note ? ` — ${report.note}` : ""}</p>
           <form action={resolveArticleCommentReport} className="ui-stack-sm mt-4">

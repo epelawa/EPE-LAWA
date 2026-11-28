@@ -132,7 +132,7 @@ export default function MapSearch({ businesses, businessError = false }: { busin
   return <div className="ui-stack">
     <section className="ui-stack" aria-labelledby="manual-map-title">
       <form onSubmit={submitSearch} className="ui-toolbar filter-panel filter-panel--compact" role="search" aria-label="Search map places">
-        <div className="filter-panel__heading"><span className="filter-panel__icon" aria-hidden="true"><FilterIcon/></span><div><p className="ui-eyebrow">Manual map search</p><h2 id="manual-map-title" className="filter-panel__title">Find a place</h2></div></div>
+        <div className="filter-panel__heading"><span className="filter-panel__icon" aria-hidden="true"><FilterIcon/></span><div><h2 id="manual-map-title" className="filter-panel__title">Find a place</h2></div></div>
         <div className="ui-field ui-field--wide"><label htmlFor="map-query" className="label sr-only">Street, landmark, business or address</label><div className="filter-panel__control"><SearchIcon className="filter-panel__input-icon"/><input id="map-query" type="text" value={query} onChange={(event) => { setQuery(event.target.value.slice(0, 200)); setSelectedBusinessSlug(null); }} maxLength={200} autoComplete="off" placeholder="Street, landmark, business or address" className="input w-full" aria-describedby="map-query-hint"/></div></div>
         <div className="ui-actions"><button type="submit" className="btn-secondary">Search and show map</button><button type="button" className="btn-secondary" onClick={requestLocation} aria-describedby="map-location-status"><MapPinIcon size={16}/>Use my location</button></div>
         <p id="map-query-hint" className="filter-panel__hint">Published businesses are matched locally. The map is loaded only after you choose search or location. Other places are sent to Google Maps only if you open a result.</p>
@@ -140,7 +140,7 @@ export default function MapSearch({ businesses, businessError = false }: { busin
       <p id="map-location-status" className="ui-muted" aria-live="polite">{locationMessage}</p>
 
       <Panel className={`ui-card ${styles.mapPanel}`}>
-        <SectionHeading eyebrow="Manual directions" title="Choose a start and destination" description="Enter places in Epe Division. Your entries stay in this tab until you choose to open directions in Google Maps." />
+        <SectionHeading title="Choose a start and destination" description="Enter places in Epe Division. Your entries stay in this tab until you choose to open directions in Google Maps." />
         <form onSubmit={submitDirections} className="ui-stack">
           <div className="ui-form-grid">
             <div className="ui-field"><label className="label" htmlFor="map-origin">Starting point</label><input className="input" id="map-origin" value={origin} onChange={(event) => setOrigin(event.target.value.slice(0, 200))} maxLength={200} placeholder="e.g. Lekki Phase 1 or Epe town" /></div>
@@ -158,7 +158,7 @@ export default function MapSearch({ businesses, businessError = false }: { busin
       </details>
 
       {mapVisible ? <Panel className={`ui-card ${styles.mapPanel}`}>
-        <SectionHeading eyebrow="Free map, no sign-in" title="Epe Division on the map" id="epe-embed-map" description="The map shows Epe Division: Epe, Eredo, Ikosi-Ejinrin, Ibeju-Lekki and Lekki. Device coordinates never enter this preview; Google receives them only when you open directions." />
+        <SectionHeading title="Epe Division on the map" id="epe-embed-map" description="The map shows Epe Division: Epe, Eredo, Ikosi-Ejinrin, Ibeju-Lekki and Lekki. Device coordinates never enter this preview; Google receives them only when you open directions." />
         <iframe title="Epe Division map on Google Maps" src={embedUrl} loading="lazy" className={styles.mapFrame} referrerPolicy="no-referrer-when-downgrade" sandbox="allow-same-origin allow-scripts allow-popups allow-forms" />
         <div className="ui-actions">
           <a className="btn-secondary" target="_blank" rel="noopener noreferrer" href={mapsSearchUrl(selectedDestination || destination || "Epe")}>Search this in Google Maps <span className="sr-only">(opens in a new tab)</span></a>
@@ -168,7 +168,7 @@ export default function MapSearch({ businesses, businessError = false }: { busin
 
       {businessError ? <Notice tone="neutral">Published business listings could not be loaded just now. This is different from no matching listings; manual street and landmark search remains available.</Notice> : null}
       {q && <Panel className="ui-card" aria-live="polite" aria-labelledby="map-results-title">
-        <SectionHeading eyebrow="Search results" title={matches.length ? "Published business matches" : businessError ? "Local business data unavailable" : "No published business matches"} id="map-results-title" />
+        <SectionHeading title={matches.length ? "Published business matches" : businessError ? "Local business data unavailable" : "No published business matches"} id="map-results-title" />
         {matches.length ? <ul className="ui-list ui-results">{matches.map((business) => {
           const address = [business.name, business.address, business.landmark, business.area].filter(Boolean).join(", ");
           const selected = selectedBusiness?.slug === business.slug;
@@ -192,7 +192,7 @@ export default function MapSearch({ businesses, businessError = false }: { busin
     </section>
 
     <section id="map-corrections" className="ui-stack" aria-labelledby="map-corrections-title">
-      <SectionHeading eyebrow="Help improve local map knowledge" title="Share a correction for human review" id="map-corrections-title" description="Tell us what is wrong or missing. Your submission stays private and will not be used by the assistant unless a reviewer verifies and approves it." />
+      <SectionHeading title="Share a correction for human review" id="map-corrections-title" description="Tell us what is wrong or missing. Your submission stays private and will not be used by the assistant unless a reviewer verifies and approves it." />
       <form className="ui-stack ui-card" onSubmit={submitCorrection}>
         <div className="ui-field"><label className="label" htmlFor={`${correctionId}-place`}>Place or route name</label><input className="input" id={`${correctionId}-place`} name="place_name" minLength={2} maxLength={160} required /></div>
         <div className="ui-field"><label className="label" htmlFor={`${correctionId}-details`}>Correction or local information</label><textarea className="input" id={`${correctionId}-details`} name="details" minLength={10} maxLength={2000} rows={4} required /></div>

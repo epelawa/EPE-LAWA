@@ -17,7 +17,6 @@ export default function NotFound() {
           </svg>
         </div>
         <PageIntro
-          eyebrow="404 · A different direction"
           title="Page not found."
           description="The address may have changed, or the page may not be public."
         />

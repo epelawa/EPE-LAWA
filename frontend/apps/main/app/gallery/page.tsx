@@ -47,7 +47,6 @@ export default async function GalleryPage() {
   return (
     <PageFrame className={styles.page}>
       <PageIntro
-        eyebrow="The visual archive"
         title={<>Epe,<br />through a local lens.</>}
         description="A considered home for photographs from across Epe, published with a source and credit for every image."
         meta={<StatusBadge tone={photos.length ? "success" : "warning"}>{photos.length ? "Published photographs" : "Archive not yet published"}</StatusBadge>}
@@ -56,7 +55,7 @@ export default async function GalleryPage() {
 
       {photos.length > 0 ? (
         <section className={styles.archiveSection} aria-labelledby="gallery-archive-title">
-          <SectionHeading eyebrow="Now showing" title="Photographs of Epe" id="gallery-archive-title" />
+          <SectionHeading title="Photographs of Epe" id="gallery-archive-title" />
           {(() => {
             const withUrl: LightboxPhoto[] = [];
             const withoutUrl: GalleryPhoto[] = [];

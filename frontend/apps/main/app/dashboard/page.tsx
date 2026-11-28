@@ -158,7 +158,6 @@ async function DashboardSaved() {
   return <section className={styles.panel} aria-labelledby="saved-title">
     <div className={styles.panelHeading}>
       <div>
-        <p className={styles.eyebrow}>Saved</p>
         <h1 id="saved-title">Your reading list</h1>
       </div>
       <span className={styles.handle}>{items.length} saved</span>
@@ -200,7 +199,6 @@ function DashboardNotifications({ notifications, error, preferences }: { notific
   return <section className={`${styles.panel} ${styles.notificationsPanel}`} aria-labelledby="notifications-title">
     <header className={styles.notificationsHeading}>
       <div>
-        <p className={styles.eyebrow}>Notifications</p>
         <h1 id="notifications-title">Your notifications</h1>
         <p className={styles.helper}>Replies, moderation decisions and newsroom updates addressed to your member account.</p>
       </div>
@@ -236,7 +234,7 @@ function DashboardNotifications({ notifications, error, preferences }: { notific
 }
 
 function setupScreen({ title, description, children }: { title: string; description: string; children: ReactNode }) {
-  return <AccountShell eyebrow="Member dashboard" title={title} description={description}>
+  return <AccountShell title={title} description={description}>
     {children}
     <form action={signOut}><SubmitButton pendingLabel="Signing out…" className="btn-secondary" useLegacyClasses>Sign out</SubmitButton></form>
   </AccountShell>;
@@ -257,7 +255,7 @@ export default async function MemberDashboardPage({ searchParams }: { searchPara
   try {
     supabase = await createClient();
   } catch {
-    return <main className={`${styles.shell} member-dashboard-shell`}><section className={styles.unavailable}><p className={styles.eyebrow}>Member dashboard</p><h1>Account service unavailable</h1><p>We couldn’t connect to your member account. Please try again later.</p><Link className="btn-secondary" href="/">Back to EPE LAWA</Link></section></main>;
+    return <main className={`${styles.shell} member-dashboard-shell`}><section className={styles.unavailable}><h1>Account service unavailable</h1><p>We couldn’t connect to your member account. Please try again later.</p><Link className="btn-secondary" href="/">Back to EPE LAWA</Link></section></main>;
   }
 
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -279,7 +277,7 @@ export default async function MemberDashboardPage({ searchParams }: { searchPara
   let profile = initialProfile.data as MemberProfileSnapshot | null;
 
   if (error) {
-    return <main className={`${styles.shell} member-dashboard-shell`}><section className={styles.unavailable}><p className={styles.eyebrow}>Member dashboard</p><h1>Profile unavailable</h1><p>We couldn’t load your member profile. Your account is still protected; try again later.</p><form action={signOut}><SubmitButton pendingLabel="Signing out…" className="btn-secondary" useLegacyClasses>Sign out</SubmitButton></form></section></main>;
+    return <main className={`${styles.shell} member-dashboard-shell`}><section className={styles.unavailable}><h1>Profile unavailable</h1><p>We couldn’t load your member profile. Your account is still protected; try again later.</p><form action={signOut}><SubmitButton pendingLabel="Signing out…" className="btn-secondary" useLegacyClasses>Sign out</SubmitButton></form></section></main>;
   }
 
   let bootstrap: MemberEntryInput["bootstrap"] = "not-needed";
@@ -361,7 +359,6 @@ export default async function MemberDashboardPage({ searchParams }: { searchPara
         <DashboardTabs active={activeTab} />
         <DashboardSwipe active={activeTab}>
         {!showNewsFeed && activeTab !== "notifications" && activeTab !== "saved" ? <header className={styles.hero}>
-          <p className={styles.eyebrow}>Member dashboard</p>
           <h1>Profile</h1>
           <p>Manage your public profile details.</p>
         </header> : null}

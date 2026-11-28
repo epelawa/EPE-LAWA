@@ -11,7 +11,6 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const nextPath = safeAuthNext(typeof next === "string" ? next : null);
   return (
     <AccountShell
-      eyebrow="Member sign in"
       title="Welcome back"
       description="Access your EPE LAWA member account."
       fixedViewport

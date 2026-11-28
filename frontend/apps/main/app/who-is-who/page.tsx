@@ -57,7 +57,7 @@ export default async function WhoIsWhoPage({ searchParams }: { searchParams: Pro
   let supabase: Awaited<ReturnType<typeof createClient>>;
   try { supabase = await createClient(); } catch (error) {
     if (!(error instanceof SupabaseConfigurationError)) throw error;
-    return <PageFrame className="ui-stack"><PageIntro eyebrow="People" title="Who is Who" description="A sourced directory of people and public office holders."/><EmptyPanel title="The directory is not configured" description="We cannot load public profiles right now. No profile information is being guessed." actions={<Link href="/" className="btn-secondary">Return to the homepage</Link>}/></PageFrame>;
+    return <PageFrame className="ui-stack"><PageIntro title="Who is Who" description="A sourced directory of people and public office holders."/><EmptyPanel title="The directory is not configured" description="We cannot load public profiles right now. No profile information is being guessed." actions={<Link href="/" className="btn-secondary">Return to the homepage</Link>}/></PageFrame>;
   }
 
   let officePersonIds: string[] | null = null;
@@ -67,7 +67,7 @@ export default async function WhoIsWhoPage({ searchParams }: { searchParams: Pro
       .or(buildOrIlikeContains(["title", "institution"], officeFilter)).limit(501);
     if (officeError) {
       console.error("people_offices filter failed", { code: officeError.code });
-      return <PageFrame className="ui-stack"><PageIntro eyebrow="People" title="Who is Who" description="A sourced directory of people and public office holders."/><EmptyPanel title="Office search could not be loaded" description="We could not check public office records, so we are not presenting an incomplete result as if it were complete." actions={<Link href={pageHref(1, nameFilter, officeFilter, communityFilter)} className="btn-secondary">Try again</Link>}/></PageFrame>;
+      return <PageFrame className="ui-stack"><PageIntro title="Who is Who" description="A sourced directory of people and public office holders."/><EmptyPanel title="Office search could not be loaded" description="We could not check public office records, so we are not presenting an incomplete result as if it were complete." actions={<Link href={pageHref(1, nameFilter, officeFilter, communityFilter)} className="btn-secondary">Try again</Link>}/></PageFrame>;
     }
     const officeRows = matchingOffices ?? [];
     officeFilterCapped = officeRows.length > 500;
@@ -84,7 +84,7 @@ export default async function WhoIsWhoPage({ searchParams }: { searchParams: Pro
 
   if (error) {
     console.error("published_people list read failed", { code: error.code });
-    return <PageFrame className="ui-stack"><PageIntro eyebrow="People" title="Who is Who" description="A sourced directory of people and public office holders."/><EmptyPanel title="The directory did not load" description={<><p>We could not reach the directory, so nothing is shown rather than a partial list that would read as missing people. Nothing has changed on your side.</p><p className="mt-3">Reload the page, or <Link href="/" className="ui-text-link">return to the homepage</Link>.</p></>} actions={<Link href={pageHref(page, nameFilter, officeFilter, communityFilter)} className="btn-secondary">Reload directory</Link>}/></PageFrame>;
+    return <PageFrame className="ui-stack"><PageIntro title="Who is Who" description="A sourced directory of people and public office holders."/><EmptyPanel title="The directory did not load" description={<><p>We could not reach the directory, so nothing is shown rather than a partial list that would read as missing people. Nothing has changed on your side.</p><p className="mt-3">Reload the page, or <Link href="/" className="ui-text-link">return to the homepage</Link>.</p></>} actions={<Link href={pageHref(page, nameFilter, officeFilter, communityFilter)} className="btn-secondary">Reload directory</Link>}/></PageFrame>;
   }
 
   const rows = (data ?? []) as PersonListItem[];
@@ -110,9 +110,9 @@ export default async function WhoIsWhoPage({ searchParams }: { searchParams: Pro
   }
 
   return <PageFrame className="ui-stack">
-    <PageIntro eyebrow="People" title="Who is Who" description="People and public office holders, with a recorded source behind every profile. The verified badge means a member of the editorial team checked and recorded a source." />
+    <PageIntro title="Who is Who" description="People and public office holders, with a recorded source behind every profile. The verified badge means a member of the editorial team checked and recorded a source." />
     <form method="get" action="/who-is-who" className="ui-toolbar filter-panel filter-panel--compact" role="search" aria-label="Filter people">
-      <div className="filter-panel__heading"><span className="filter-panel__icon" aria-hidden="true"><FilterIcon/></span><div><p className="ui-eyebrow">Public profiles</p><h2 className="filter-panel__title">Find a person</h2></div></div>
+      <div className="filter-panel__heading"><span className="filter-panel__icon" aria-hidden="true"><FilterIcon/></span><div><h2 className="filter-panel__title">Find a person</h2></div></div>
       <label className="ui-field ui-field--wide"><span className="label sr-only">Name</span><div className="filter-panel__control"><SearchIcon className="filter-panel__input-icon"/><input className="input" name="name" defaultValue={nameFilter} maxLength={100} autoComplete="off" placeholder="Name" data-slash-focus /></div></label>
       <label className="ui-field"><span className="label sr-only">Office or institution</span><input className="input" name="office" defaultValue={officeFilter} maxLength={100} autoComplete="off" placeholder="Office or institution" /></label>
       <div className="ui-field"><label className="label sr-only" htmlFor="people-community">Community</label><select className="input" id="people-community" name="community" defaultValue={communityFilter}><option value="">All communities</option><option value="eko_epe">Eko Epe</option><option value="ijebu_epe">Ijebu Epe</option><option value="other">Other</option></select></div>

@@ -16,14 +16,12 @@ export default function AdvertisePage() {
     <>
       <PageFrame className={`${styles.page} ui-stack`}>
         <header className={styles.hero}>
-          <p className={styles.eyebrow}>EPE LAWA · PARTNERSHIPS</p>
           <h1>Advertise with EPE LAWA</h1>
           <p>Reach Epe readers, listeners and community members with a clearly labelled placement.</p>
         </header>
         <section className={styles.panel} aria-labelledby="placements-heading">
           <div className={styles.panelHeading}>
             <div>
-              <p className={styles.eyebrow}>CURRENT STATUS</p>
               <h2 id="placements-heading">Build a useful presence in Epe</h2>
             </div>
             <span className={styles.statusBadge}>{process.env.ENQUIRY_INTAKE_ENABLED === "true" ? "Enquiries open" : "Enquiries unavailable"}</span>

@@ -25,7 +25,6 @@
   box-shadow: var(--ep-shadow-1);
 }
 .appBarCopy { min-width: 0; }
-.eyebrow { margin: 0 0 2px; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--ep-color-muted, #52617a); }
 .appTitle { margin: 0; font-size: 24px; line-height: 1.15; letter-spacing: -0.01em; }
 .appSub { margin: 4px 0 0; color: var(--ep-color-muted, #52617a); font-size: 13px; }
 .appBarActions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }

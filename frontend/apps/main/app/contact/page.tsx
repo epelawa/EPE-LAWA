@@ -11,11 +11,10 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default function ContactPage() {
-  if (process.env.ENQUIRY_INTAKE_ENABLED === "true") return <PageFrame className="ui-stack"><PageIntro eyebrow="Contact" title="Contact EPE LAWA" description="Send the team a message or report a correction." /><Panel className="ui-stack"><h2>General enquiry</h2><EnquiryForm kind="contact" /></Panel><Panel className="ui-stack"><h2>Request a correction</h2><EnquiryForm kind="correction" /></Panel></PageFrame>;
+  if (process.env.ENQUIRY_INTAKE_ENABLED === "true") return <PageFrame className="ui-stack"><PageIntro title="Contact EPE LAWA" description="Send the team a message or report a correction." /><Panel className="ui-stack"><h2>General enquiry</h2><EnquiryForm kind="contact" /></Panel><Panel className="ui-stack"><h2>Request a correction</h2><EnquiryForm kind="correction" /></Panel></PageFrame>;
   return (
     <PageFrame className="ui-stack">
       <PageIntro
-        eyebrow="Contact"
         title="Contact intake is coming soon."
         description="A private, reliable channel for receiving messages has not been configured yet."
         meta={<StatusBadge tone="warning">Coming Soon</StatusBadge>}

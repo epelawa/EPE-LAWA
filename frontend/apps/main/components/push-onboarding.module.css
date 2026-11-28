@@ -68,13 +68,6 @@
 }
 .badge { border-radius: 50%; }
 .badgeOn { border-color: #b9e4cb; background: #eaf7ef; color: #17623a; }
-.eyebrow {
-  margin: -4px 0 -7px;
-  color: #294b91;
-  font-size: .68rem;
-  font-weight: 800;
-  letter-spacing: .13em;
-}
 .title {
   margin: 0;
   max-width: 18em;
@@ -293,7 +286,6 @@
   .close { top: 12px; right: 13px; }
   .brandMark, .badge { width: 48px; height: 48px; border-radius: 15px; }
   .badge { border-radius: 50%; }
-  .eyebrow { font-size: .64rem; }
   .title { max-width: 20em; font-size: clamp(1.3rem, 6vw, 1.55rem); }
   .copy { font-size: .9rem; }
   .browserNote { padding: 10px; }

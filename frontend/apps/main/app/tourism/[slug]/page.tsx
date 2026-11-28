@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function TourismDetail({ params }: { params: Promise<{ slug: string }> }) {
   let item: Destination | null;
   try { item = await destination((await params).slug); }
-  catch { return <PageFrame><Panel role="alert" className="ui-stack-sm"><p className="ui-eyebrow">Historical Sites &amp; Tourism</p><h1>Destination could not be loaded</h1><p className="ui-muted">Please try again later. Unverified information is not shown.</p><Link className="ui-text-link" href="/tourism">Return to Tourism</Link></Panel></PageFrame>; }
+  catch { return <PageFrame><Panel role="alert" className="ui-stack-sm"><h1>Destination could not be loaded</h1><p className="ui-muted">Please try again later. Unverified information is not shown.</p><Link className="ui-text-link" href="/tourism">Return to Tourism</Link></Panel></PageFrame>; }
   if (!item) notFound();
   const direction = item.directions_query || item.location_label;
   let related: RelatedDestination[] = [];
@@ -44,20 +44,20 @@ export default async function TourismDetail({ params }: { params: Promise<{ slug
   return <PageFrame className="ui-stack">
     <nav aria-label="Breadcrumb" className="ui-meta"><Link className="ui-back-link" href="/tourism">Historical Sites &amp; Tourism</Link><span aria-hidden="true">/</span><span aria-current="page">{item.name}</span></nav>
     <article className="ui-stack">
-      <PageIntro eyebrow="Verified destination" title={item.name} description={item.location_label ?? undefined} />
+      <PageIntro title={item.name} description={item.location_label ?? undefined} />
       {item.media_url ? <figure className="ui-cover"><img src={item.media_url} alt={`Approved image of ${item.name}`} loading="lazy" /><figcaption className="ui-meta">Media used under documented rights clearance.</figcaption></figure> : null}
       <div className="ui-split">
         <div className="ui-stack">
-          <section className="ui-prose"><SectionHeading eyebrow="01 · Destination" title="About this destination" /><p className="whitespace-pre-wrap">{item.description}</p></section>
+          <section className="ui-prose"><SectionHeading title="About this destination" /><p className="whitespace-pre-wrap">{item.description}</p></section>
           {item.visitor_context ? <section className="ui-prose"><SectionHeading title="Visitor context" /><p className="whitespace-pre-wrap">{item.visitor_context}</p></section> : null}
           {item.visit_details ? <section className="ui-prose"><SectionHeading title="Visit information" /><p className="whitespace-pre-wrap">{item.visit_details}</p></section> : null}
-          <Panel className="ui-stack-sm"><SectionHeading eyebrow="02 · Provenance" title="Sources" /><p>{item.source_url ? <a href={item.source_url} rel="noreferrer">{item.source_citation}</a> : item.source_citation}</p><p className="ui-meta">Published {new Intl.DateTimeFormat("en", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(item.published_at))}</p></Panel>
+          <Panel className="ui-stack-sm"><SectionHeading title="Sources" /><p>{item.source_url ? <a href={item.source_url} rel="noreferrer">{item.source_citation}</a> : item.source_citation}</p><p className="ui-meta">Published {new Intl.DateTimeFormat("en", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(item.published_at))}</p></Panel>
         </div>
-        <aside className="ui-sidebar"><Panel className="ui-stack-sm"><SectionHeading eyebrow="Plan carefully" title="Plan a visit" /><dl className="ui-list ui-stack-sm">{[["Opening hours", item.opening_hours], ["Prices", item.price_details], ["Access", item.access_details]].map(([label, value]) => <div className="ui-item" key={label}><dt className="ui-item-title">{label}</dt><dd className="ui-muted">{value || "Not verified / not provided"}</dd></div>)}</dl>{direction ? <a className="btn-primary" target="_blank" rel="noopener noreferrer" href={mapsUrl(direction)}>Search in Google Maps <span className="sr-only">(opens in a new tab)</span></a> : <Notice tone="neutral">A destination location has not been verified, so no map handoff is available.</Notice>}<p className="ui-meta">External map link only. Confirm location and current arrangements before travel.</p></Panel></aside>
+        <aside className="ui-sidebar"><Panel className="ui-stack-sm"><SectionHeading title="Plan a visit" /><dl className="ui-list ui-stack-sm">{[["Opening hours", item.opening_hours], ["Prices", item.price_details], ["Access", item.access_details]].map(([label, value]) => <div className="ui-item" key={label}><dt className="ui-item-title">{label}</dt><dd className="ui-muted">{value || "Not verified / not provided"}</dd></div>)}</dl>{direction ? <a className="btn-primary" target="_blank" rel="noopener noreferrer" href={mapsUrl(direction)}>Search in Google Maps <span className="sr-only">(opens in a new tab)</span></a> : <Notice tone="neutral">A destination location has not been verified, so no map handoff is available.</Notice>}<p className="ui-meta">External map link only. Confirm location and current arrangements before travel.</p></Panel></aside>
       </div>
     </article>
     {related.length ? <section className="ui-stack-sm" aria-labelledby="related-destinations">
-      <SectionHeading eyebrow="Keep exploring" title="More destinations" id="related-destinations" />
+      <SectionHeading title="More destinations" id="related-destinations" />
       <ul className="ui-list">
         {related.map((relatedItem) => <li className="ui-item" key={relatedItem.slug}>
           <h3 className="ui-item-title"><Link href={`/tourism/${encodeURIComponent(relatedItem.slug)}`}>{relatedItem.name}</Link></h3>
