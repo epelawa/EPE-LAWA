@@ -100,7 +100,7 @@
 
 @layer components {
   /* Hover movement is a 3px lift in 120ms. Colour crossfades need no glow. */
-  .btn-primary,.btn-secondary,.btn-ghost { display: inline-flex; justify-content: center; align-items: center; gap: var(--ep-space-2); min-height: var(--ep-touch-min); padding: var(--ep-space-3) var(--ep-space-6); border-radius: var(--ep-radius-pill); border: 1px solid transparent; font-size: var(--ep-type-sm); font-weight: var(--ep-weight-semibold); line-height: var(--ep-leading-sm); text-decoration: none; transition: transform var(--dur-fast) var(--ease-out), opacity var(--dur-fast) var(--ease-out); }
+  .btn-primary,.btn-secondary,.btn-ghost { display: inline-flex; justify-content: center; align-items: center; gap: var(--ep-space-2); min-height: var(--ep-touch-min); padding: var(--ep-space-3) var(--ep-space-6); border-radius: var(--ep-radius-md); border: 1px solid transparent; font-size: var(--ep-type-sm); font-weight: var(--ep-weight-semibold); line-height: var(--ep-leading-sm); text-decoration: none; transition: transform var(--dur-fast) var(--ease-out), opacity var(--dur-fast) var(--ease-out); }
   .btn-primary { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
   .btn-primary:hover { transform: translateY(var(--ep-motion-lift, -3px)); opacity: .94; }
   .btn-secondary { border-color: hsl(var(--input)); background: hsl(var(--card)); color: hsl(var(--foreground)); }
@@ -108,9 +108,9 @@
   .btn-primary:active,.btn-secondary:active,.btn-ghost:active { transform: scale(.97); }
   @media (prefers-reduced-motion: reduce) { .btn-primary:active,.btn-secondary:active,.btn-ghost:active { transform: none; } }
   .btn-ghost { color: hsl(var(--foreground)); padding-inline: var(--ep-space-4); border-color: hsl(var(--input)); }
-  button:not([class]) { display: inline-flex; justify-content: center; align-items: center; gap: var(--ep-space-2); min-height: var(--ep-touch-min); padding: var(--ep-space-3) var(--ep-space-6); border: 1px solid hsl(var(--input)); border-radius: var(--ep-radius-pill); background: hsl(var(--card)); color: hsl(var(--foreground)); font-size: var(--ep-type-sm); font-weight: var(--ep-weight-semibold); }
+  button:not([class]) { display: inline-flex; justify-content: center; align-items: center; gap: var(--ep-space-2); min-height: var(--ep-touch-min); padding: var(--ep-space-3) var(--ep-space-6); border: 1px solid hsl(var(--input)); border-radius: var(--ep-radius-md); background: hsl(var(--card)); color: hsl(var(--foreground)); font-size: var(--ep-type-sm); font-weight: var(--ep-weight-semibold); }
   .btn-ghost:hover { transform: translateY(var(--ep-motion-lift, -3px)); background: hsl(var(--muted)); }
-  .btn-icon { display: inline-flex; flex: 0 0 var(--ep-touch-min); align-items: center; justify-content: center; min-width: var(--ep-touch-min); min-height: var(--ep-touch-min); border: 1px solid transparent; border-radius: var(--ep-radius-pill); background: transparent; color: hsl(var(--foreground)); }
+  .btn-icon { display: inline-flex; flex: 0 0 var(--ep-touch-min); align-items: center; justify-content: center; min-width: var(--ep-touch-min); min-height: var(--ep-touch-min); border: 1px solid transparent; border-radius: var(--ep-radius-md); background: transparent; color: hsl(var(--foreground)); }
   .btn-icon:hover { background: hsl(var(--secondary)); }
   .btn-icon svg { width: 19px; height: 19px; }
   .card,.ui-card,.ui-panel { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--ep-radius-md, 12px); box-shadow: var(--shadow-1); }

@@ -116,3 +116,14 @@ test("Tidegate loaders remain wired and public motion is hydration-safe", () => 
   assert.doesNotMatch(staffCss, /has-scroll-reveal|data-scroll-reveal/);
   assert.match(staffCss, /prefers-reduced-motion:\s*reduce/);
 });
+
+test("primary buttons use a rounded-rectangle radius, not pills", () => {
+  const publicCss = read("frontend/apps/main/app/globals.css");
+  const buttonRule = publicCss.match(/\.btn-primary,\.btn-secondary,\.btn-ghost \{[^}]*\}/)?.[0] ?? "";
+  assert.match(buttonRule, /border-radius: var\(--ep-radius-md\)/);
+  assert.doesNotMatch(buttonRule, /--ep-radius-pill/);
+  const plainButton = publicCss.match(/button:not\(\[class\]\) \{[^}]*\}/)?.[0] ?? "";
+  assert.match(plainButton, /border-radius: var\(--ep-radius-md\)/);
+  const iconButton = publicCss.match(/\.btn-icon \{[^}]*\}/)?.[0] ?? "";
+  assert.match(iconButton, /border-radius: var\(--ep-radius-md\)/);
+});
