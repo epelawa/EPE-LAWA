@@ -17,13 +17,14 @@ const DIRECTIVES = [
 function turnstileDirective(name: "script-src" | "connect-src" | "frame-src" | "worker-src", value: string): string {
   if (name === "script-src") value = `${value} https://a.plerdy.com`;
   if (name === "connect-src") value = `${value} https://a.plerdy.com`;
-  // The /map page embeds the OpenStreetMap viewer, so its origin is always framable;
-  // without an explicit frame-src the iframe falls back to default-src 'self' and is blocked.
-  if (!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim()) return name === "frame-src" ? "frame-src https://www.openstreetmap.org" : value;
+  // The /map pages embed keyless Google Maps preview frames, so Google's map origins are
+  // always framable; without an explicit frame-src the iframe falls back to default-src
+  // 'self' and is blocked.
+  if (!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim()) return name === "frame-src" ? "frame-src https://www.google.com https://maps.google.com" : value;
   if (name === "script-src") return `${value} https://challenges.cloudflare.com`;
   if (name === "connect-src") return `${value} https://challenges.cloudflare.com`;
   if (name === "worker-src") return `${value} https://challenges.cloudflare.com`;
-  return `frame-src https://challenges.cloudflare.com https://www.openstreetmap.org`;
+  return `frame-src https://challenges.cloudflare.com https://www.google.com https://maps.google.com`;
 }
 
 function connectOrigins(): string[] {
