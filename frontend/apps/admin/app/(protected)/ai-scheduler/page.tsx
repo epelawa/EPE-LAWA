@@ -42,10 +42,10 @@ const messages: Record<string, { tone: "success" | "danger" | "warning"; text: s
   "key-saved": { tone: "success", text: "Key checked with the provider, encrypted and saved. It is never shown again; its free models now appear below." },
   "key-saved-unverified": { tone: "warning", text: "Key encrypted and saved, but the provider could not be reached to check it. If its models do not appear below, save the key again." },
   "key-rejected": { tone: "danger", text: "The provider rejected that key, so it was not saved. Copy the key again from the provider's console." },
-  "key-invalid": { tone: "warning", text: "That does not look like an API key for this provider (OpenRouter keys start with sk-or-). Nothing was saved." },
-  "key-vault": { tone: "danger", text: "Keys cannot be saved yet: the server's encryption secret (AI_KEYS_SECRET) is missing in Vercel." },
+  "key-invalid": { tone: "warning", text: "That does not look like an API key for this provider. Nothing was saved." },
+  "key-vault": { tone: "danger", text: "Keys cannot be saved yet: the server's encryption secret (AI_KEYS_SECRET) is missing in the hosting environment." },
   "key-failed": { tone: "danger", text: "The key could not be saved. Try again." },
-  "key-removed": { tone: "success", text: "Key removed. The provider is no longer used unless its Vercel env var is set." },
+  "key-removed": { tone: "success", text: "Key removed. The provider is no longer used unless its environment variable is set." },
 };
 
 function statusTone(status: string): "success" | "warning" | "danger" | "neutral" {
@@ -109,7 +109,7 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
       <PageIntro
         eyebrow="System · AI"
         title="AI Scheduler"
-        description="The EPE LAWA AI desk drafts Epe Division news for editors, checks businesses, replies to enquiries and support tickets, places approved ads, moderates comments and explains admin activity — on free models only (OpenRouter, Kilo Code, Google AI Studio, Groq, Cerebras, Mistral AI and NVIDIA NIM)."
+        description="The EPE LAWA AI desk drafts Epe Division news for editors, checks businesses, replies to enquiries and support tickets, places approved ads, moderates comments and explains admin activity — on free models only."
         meta={<Link href={adminHref("/ai-processes")}>Open AI processes →</Link>}
       />
       {notice ? <Notice tone={notice.tone} role={notice.tone === "success" ? "status" : "alert"}>{notice.text}</Notice> : null}
@@ -121,14 +121,14 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
           <p className={styles.statNote}>{settings.autopilot_enabled ? "Acting without approval." : "Drafts and recommendations only."}</p>
         </div>
         <div className={styles.stat}>
-          <p className={styles.statLabel}>OpenRouter · {statuses.filter((entry) => entry.configured).length} of {statuses.length} providers ready</p>
+          <p className={styles.statLabel}>Model gateway · {statuses.filter((entry) => entry.configured).length} of {statuses.length} providers ready</p>
           <p className={styles.statValue}>{key.placeholder ? <StatusBadge tone="warning">Test key</StatusBadge> : !key.configured ? <StatusBadge tone="danger">No key</StatusBadge> : !key.reachable ? <StatusBadge tone="warning">Not reachable</StatusBadge> : <StatusBadge tone="success">Connected</StatusBadge>}</p>
-          <p className={styles.statNote}>{key.placeholder ? <>Replace <code>OPENROUTER_API_KEY</code> in Vercel with your <code>sk-or-</code> key, then redeploy.</> : !key.configured ? <>Add <code>OPENROUTER_API_KEY</code> in Vercel, then redeploy.</> : typeof key.freeDailyRemaining === "number" ? `${key.freeDailyRemaining} of ${key.freeDailyLimit ?? "?"} free requests left today. Never billed.` : "Free models only. Never billed."}</p>
+          <p className={styles.statNote}>{key.placeholder ? <>Replace <code>OPENROUTER_API_KEY</code> in the hosting environment, then redeploy.</> : !key.configured ? <>Add <code>OPENROUTER_API_KEY</code> in the hosting environment, then redeploy.</> : typeof key.freeDailyRemaining === "number" ? `${key.freeDailyRemaining} of ${key.freeDailyLimit ?? "?"} free requests left today. Never billed.` : "Free models only. Never billed."}</p>
         </div>
         <div className={styles.stat}>
           <p className={styles.statLabel}>Today’s requests</p>
           <p className={styles.statValue}>{used}</p>
-          <p className={styles.statNote}>No local cap: the AI keeps working while OpenRouter accepts requests, and stops only if OpenRouter itself says the allowance is used up.</p>
+          <p className={styles.statNote}>No local cap: the AI keeps working while the model gateway accepts requests, and stops only if the gateway itself says the allowance is used up.</p>
         </div>
         <div className={styles.stat}>
           <p className={styles.statLabel}>Free models</p>
@@ -180,7 +180,7 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
 
       <Panel className="ui-stack" id="ai-providers">
         <SectionHeading title="AI providers and keys" description="Paste a free API key for each provider you want the AI to use. Keys are checked with the provider, encrypted on the server (AES-256-GCM) and never shown again or sent to any browser — not even to you. Only free models are ever loaded or called." />
-        {!vault ? <Notice tone="danger" role="alert">The encryption secret <code>AI_KEYS_SECRET</code> is missing in Vercel, so keys cannot be saved here yet. Keys set as Vercel env vars still work.</Notice> : null}
+        {!vault ? <Notice tone="danger" role="alert">The encryption secret <code>AI_KEYS_SECRET</code> is missing in the hosting environment, so keys cannot be saved here yet. Keys set as environment variables still work.</Notice> : null}
         <div className={styles.jobs}>
           {statuses.map(({ provider, configured, placeholder, from }) => {
             const info = saved.find((entry) => entry.provider === provider.id);
@@ -192,7 +192,7 @@ export default async function AiSchedulerPage({ searchParams }: { searchParams: 
                   <p>{provider.freeNote}</p>
                 </div>
                 <p className="ui-meta" style={{ margin: 0 }}>
-                  {info ? <>Key saved {lagosExact(info.savedAt)} (encrypted{info.readable ? "" : " — cannot be opened with the current secret; save it again"}).</> : from === "env" ? <>Using the <code>{provider.env[0]}</code> env var from Vercel.</> : "No key yet."}
+                  {info ? <>Key saved {lagosExact(info.savedAt)} (encrypted{info.readable ? "" : " — cannot be opened with the current secret; save it again"}).</> : from === "env" ? <>Using the <code>{provider.env[0]}</code> env var from the hosting environment.</> : "No key yet."}
                   {loaded ? <> · {loaded.count} free model{loaded.count === 1 ? "" : "s"}{loaded.source === "saved" ? " (last saved list)" : ""}{loaded.error ? ` · ${loaded.error}` : ""}</> : null}
                 </p>
                 <form action={saveProviderKey} className={styles.keyForm}>

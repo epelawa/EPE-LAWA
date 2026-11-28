@@ -19,7 +19,7 @@ export default function LinkIssueView({ expired }: { expired: boolean }) {
         <div className="auth-link-issue__resend">
           <h2>Verifying a new account?</h2>
           <p>
-            Enter the email address you used to sign up. If the account is awaiting verification, Supabase Auth may send a new link. Delivery depends on this project’s email configuration.
+            Enter the email address you used to sign up. If the account is awaiting verification, our account service may send a new link. Delivery depends on the email settings for this site.
           </p>
           <ResendVerificationForm />
         </div>

@@ -136,7 +136,7 @@ export const PART_1: Record<string, string> = {
   "Account recovery": "Ìmúpadà àkọọ́lẹ̀",
   "EPE LAWA account security": "Ààbò àkọọ́lẹ̀ EPE LAWA",
   "Email links can expire or be used only once. You can request a fresh verification email below, reset your password, or return to sign in.": "Ìjápọ̀ ímeèlì lè parí tàbí kí a lò ó lẹ́ẹ̀kan ṣoṣo. O lè béèrè ímeèlì ìfìdímúlẹ̀ tuntun nísàlẹ̀, tún ọ̀rọ̀ aṣínà rẹ ṣe, tàbí padà sí ìwọlé.",
-  "Enter the email address you used to sign up. If the account is awaiting verification, Supabase Auth may send a new link. Delivery depends on this project’s email configuration.": "Tẹ àdírẹ́sì ímeèlì tí o fi forúkọ sílẹ̀. Bí àkọọ́lẹ̀ bá ń dúró de ìfìdímúlẹ̀, a lè fi ìjápọ̀ tuntun ránṣẹ́. Ìfiránṣẹ́ sinmi lé ìṣètò ímeèlì iṣẹ́ yìí.",
+  "Enter the email address you used to sign up. If the account is awaiting verification, our account service may send a new link. Delivery depends on the email settings for this site.": "Tẹ àdírẹ́sì ímeèlì tí o fi forúkọ sílẹ̀. Bí àkọọ́lẹ̀ bá ń dúró de ìfìdímúlẹ̀, a lè fi ìjápọ̀ tuntun ránṣẹ́. Ìfiránṣẹ́ sinmi lé ìṣètò ímeèlì iṣẹ́ yìí.",
   "Request a password reset": "Béèrè àtúnṣe ọ̀rọ̀ aṣínà",
   "Return to sign in": "Padà sí ìwọlé",
   "That email link has expired.": "Ìjápọ̀ ímeèlì yẹn ti parí.",

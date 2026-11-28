@@ -25,7 +25,7 @@ export async function inviteStaff(form: FormData) {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const origin = process.env.ADMIN_ORIGIN;
-  if (!url || !key || !origin) throw new Error("Invitations are unavailable: server-only Supabase invite configuration is missing.");
+  if (!url || !key || !origin) throw new Error("Invitations are unavailable: the server-side invite configuration is missing.");
   // No credentials or invitation tokens are logged or returned. The user receives
   // Supabase's invite-only setup link through its configured Auth email provider.
   const { createClient: createAdmin } = await import("@supabase/supabase-js");

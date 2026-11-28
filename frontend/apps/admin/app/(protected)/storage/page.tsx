@@ -24,7 +24,7 @@ const messages: Record<string, { tone: "success" | "danger" | "warning"; text: s
   failed: { tone: "danger", text: "The job could not be started. Try again." },
   busy: { tone: "warning", text: "Another storage job is still running. Wait for it to finish below." },
   confirm: { tone: "warning", text: "Removal was not confirmed, so nothing was deleted." },
-  "no-service": { tone: "danger", text: "SUPABASE_SERVICE_ROLE_KEY is not set in Vercel, so storage jobs cannot run." },
+  "no-service": { tone: "danger", text: "The storage service key is not set in the hosting environment, so storage jobs cannot run." },
   "check-started": { tone: "success", text: "Checking which files are unused. Nothing is deleted by a check." },
   "cleanup-started": { tone: "success", text: "Removing unused files. Every image an article, page or listing uses is kept." },
   "compress-started": { tone: "success", text: "Compressing every image to the maximum. Links stay the same, so nothing disappears from the site." },
@@ -103,8 +103,8 @@ export default async function StoragePage({ searchParams }: { searchParams: Prom
   const r2Bytes = bucketTotal(publicBucket) + bucketTotal(privateBucket);
   const r2Objects = (publicBucket.state === "ready" ? publicBucket.objects.length : 0) + (privateBucket.state === "ready" ? privateBucket.objects.length : 0);
   const slices: (Slice & { key: string; count?: number })[] = [
-    { key: "database", label: "Supabase database", bytes: databaseBytes, color: COLORS.database },
-    ...[...areaBytes.entries()].sort((a, b) => b[1].bytes - a[1].bytes).map(([area, entry]) => ({ key: area, label: `R2 · ${AREA_LABELS[area]}`, bytes: entry.bytes, count: entry.count, color: COLORS[area] ?? COLORS.other })),
+    { key: "database", label: "Site database", bytes: databaseBytes, color: COLORS.database },
+    ...[...areaBytes.entries()].sort((a, b) => b[1].bytes - a[1].bytes).map(([area, entry]) => ({ key: area, label: `Files · ${AREA_LABELS[area]}`, bytes: entry.bytes, count: entry.count, color: COLORS[area] ?? COLORS.other })),
   ];
   const paths = pieSlices(slices);
   const total = databaseBytes + r2Bytes;
@@ -118,15 +118,15 @@ export default async function StoragePage({ searchParams }: { searchParams: Prom
       <PageIntro
         eyebrow="System"
         title="Storage"
-        description="How much space the site uses in the Supabase database and the Cloudflare R2 file buckets, with tools to remove unused files and compress every image."
+        description="How much space the site uses in the site database and the file buckets, with tools to remove unused files and compress every image."
         meta={<Link href={adminHref("/backups")}>Database backups →</Link>}
       />
       {notice ? <Notice tone={notice.tone} role={notice.tone === "success" ? "status" : "alert"}>{notice.text}</Notice> : null}
-      {!serviceReady ? <Notice tone="danger" role="alert">SUPABASE_SERVICE_ROLE_KEY is not set in Vercel, so the database size and storage jobs are unavailable.</Notice> : null}
-      {r2Missing.length ? <Notice tone="warning" role="status">Cloudflare R2 is not configured in Vercel yet (missing {r2Missing.join(", ")}). The chart shows the database only until these are added.</Notice> : null}
+      {!serviceReady ? <Notice tone="danger" role="alert">The storage service key is not set in the hosting environment, so the database size and storage jobs are unavailable.</Notice> : null}
+      {r2Missing.length ? <Notice tone="warning" role="status">File storage is not configured in the hosting environment yet (missing {r2Missing.join(", ")}). The chart shows the database only until these are added.</Notice> : null}
 
       <Panel className="ui-stack">
-        <SectionHeading title="Storage used" description={`${formatBytes(total)} in total. Supabase: there are no Supabase Storage buckets — every file lives in R2.`} />
+        <SectionHeading title="Storage used" description={`${formatBytes(total)} in total. Files live in the file buckets, not in the database.`} />
         <div className={styles.chartRow}>
           <figure className={styles.chart} aria-label={`Storage used: ${slices.filter((slice) => slice.bytes > 0).map((slice) => `${slice.label} ${formatBytes(slice.bytes)}`).join(", ")}`}>
             <svg viewBox="0 0 200 200" role="img" aria-hidden="true">
@@ -146,11 +146,11 @@ export default async function StoragePage({ searchParams }: { searchParams: Prom
         </div>
         <div className={styles.meters}>
           <div className={styles.meter}>
-            <p><strong>Supabase database</strong><span>{formatBytes(databaseBytes)} of {formatBytes(SUPABASE_FREE_BYTES)} free plan</span></p>
+            <p><strong>Site database</strong><span>{formatBytes(databaseBytes)} of {formatBytes(SUPABASE_FREE_BYTES)} free plan</span></p>
             <div className={styles.bar}><span style={{ width: `${Math.min(100, (databaseBytes / SUPABASE_FREE_BYTES) * 100)}%`, background: COLORS.database }} /></div>
           </div>
           <div className={styles.meter}>
-            <p><strong>Cloudflare R2</strong><span>{r2Ready ? `${formatBytes(r2Bytes)} in ${r2Objects.toLocaleString("en-NG")} files of ${formatBytes(R2_FREE_BYTES)} free` : "Not available"}</span></p>
+            <p><strong>File storage</strong><span>{r2Ready ? `${formatBytes(r2Bytes)} in ${r2Objects.toLocaleString("en-NG")} files of ${formatBytes(R2_FREE_BYTES)} free` : "Not available"}</span></p>
             <div className={styles.bar}><span style={{ width: `${Math.min(100, (r2Bytes / R2_FREE_BYTES) * 100)}%`, background: COLORS.covers }} /></div>
           </div>
         </div>
@@ -169,7 +169,7 @@ export default async function StoragePage({ searchParams }: { searchParams: Prom
             <li>Only site uploads (<code>media/…</code>) are considered — database backups are never touched.</li>
             <li>Files uploaded in the last 24 hours stay, in case a form is still being filled in.</li>
             <li>If the check cannot run, nothing is deleted.</li>
-            <li>AI news covers are linked from the outlet, so they never live in R2 and cannot be affected.</li>
+            <li>AI news covers are linked from the outlet, so they never live in the file buckets and cannot be affected.</li>
           </ul>
           {latestCheck ? <p className="ui-meta" style={{ margin: 0 }}>Last {latestCheck.scope.endsWith(":check") ? "check" : "cleanup"} ({lagosExact(latestCheck.started_at)}): {latestCheck.progress}</p> : null}
           <form action={removeUnusedFiles} className={styles.actions}>

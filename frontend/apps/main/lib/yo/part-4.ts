@@ -254,7 +254,7 @@ export const PART_4: Record<string, string> = {
   "Manage your subscription": "Ṣàkóso ìforúkọsílẹ̀ rẹ",
   "This unsubscribe link is invalid or incomplete. Open the latest newsletter email and try again.": "Ìjápọ̀ ìyọkúrò yìí kò tọ́ tàbí kò pé. Ṣí ímeèlì ìwé ìròyìn tuntun jùlọ, kí o sì gbìyànjú lẹ́ẹ̀kan sí i.",
   "Unsubscribe from the newsletter": "Yọ ara rẹ kúrò nínú ìwé ìròyìn",
-  "Use this page to stop newsletter emails. Your request is handled by EPE LAWA’s own subscriber system, not a Supabase Auth email link.": "Lo ojú-ìwé yìí láti dá ímeèlì ìwé ìròyìn dúró. Ètò olùforúkọsílẹ̀ EPE LAWA fúnra rẹ̀ ló ń ṣe ìbéèrè rẹ, kì í ṣe ìjápọ̀ ímeèlì Supabase Auth.",
+  "Use this page to stop newsletter emails. Your request is handled by EPE LAWA’s own subscriber system, not a verification email link.": "Lo ojú-ìwé yìí láti dá ímeèlì ìwé ìròyìn dúró. Ètò olùforúkọsílẹ̀ EPE LAWA fúnra rẹ̀ ló ń ṣe ìbéèrè rẹ, kì í ṣe ìjápọ̀ ímeèlì ìfọwọ́sì.",
   "Unsubscribe me": "Yọ mí kúrò",
   "404 · A different direction": "404 · Ọ̀nà míì",
   "Business Directory": "Àkọsílẹ̀ Òwò",

@@ -153,7 +153,7 @@ export async function runAutopilotPass(options: { trigger: "schedule" | "manual"
     const runId = await startRun(db, job, options.trigger, options.triggeredBy ?? null);
     const log = new RunLog(db, runId, actorId);
     if (runId) options.onRunStarted?.(runId);
-    await log.step(`Started ${AI_JOB_LABELS[job]} (${options.trigger === "manual" ? "Run now" : "scheduled"}${publish ? "" : ", approval mode — results go to a human"}). Free models only; it keeps going while OpenRouter accepts requests.`);
+    await log.step(`Started ${AI_JOB_LABELS[job]} (${options.trigger === "manual" ? "Run now" : "scheduled"}${publish ? "" : ", approval mode — results go to a human"}). Free models only; it keeps going while the model gateway accepts requests.`);
     let summary = "";
     try {
       if (job === "news" && newsReedit) {

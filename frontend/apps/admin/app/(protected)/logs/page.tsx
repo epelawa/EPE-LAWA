@@ -77,7 +77,7 @@ export default async function AdminLogsPage({ searchParams }: { searchParams: Pr
 
   return (
     <PageFrame className="ui-stack">
-      <PageIntro eyebrow="System · Security" title="Logs" description="Every administrator sign-in, sign-out and action with the exact time, who did it, the reason given, and where from: IP address, device, browser, and the network’s city, region, country and approximate coordinates (from Vercel’s edge, no permission prompt). Members and visitors are not logged here." />
+      <PageIntro eyebrow="System · Security" title="Logs" description="Every administrator sign-in, sign-out and action with the exact time, who did it, the reason given, and where from: IP address, device, browser, and the network’s city, region, country and approximate coordinates (from the hosting edge, no permission prompt). Members and visitors are not logged here." />
       {params.result === "explained" ? <Notice tone="success" role="status">{params.summary || "Explanations updated."}</Notice> : null}
       {params.result === "denied" ? <Notice tone="danger" role="alert">Only the primary administrators can run the explainer.</Notice> : null}
 

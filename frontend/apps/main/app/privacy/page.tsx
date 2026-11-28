@@ -14,7 +14,7 @@ export default function PrivacyPage() {
   const intake = process.env.ENQUIRY_INTAKE_ENABLED === "true";
   return (
     <InformationPage title="Privacy notice" description="How EPE LAWA collects, uses, stores and protects your personal information.">
-      <p className="legal-date"><strong>Last updated:</strong> 27 November 2026</p>
+      <p className="legal-date"><strong>Last updated:</strong> 28 November 2026</p>
 
       <SitePageNote page="privacy" label="A note from EPE LAWA" />
 
@@ -23,20 +23,20 @@ export default function PrivacyPage() {
 
       <h2>2. Information we collect</h2>
       <h3>2.1 Information you give us directly</h3>
-      <p><strong>Member accounts.</strong> When you create an account we collect your email address, password (stored only as a cryptographic hash), display name and handle. Authentication is handled by Supabase.</p>
+      <p><strong>Member accounts.</strong> When you create an account we collect your email address, password (stored only as a cryptographic hash), display name and handle. Sign-in is handled by our own account service.</p>
       <p><strong>Community content.</strong> Comments, forum posts, discussion titles and other material you choose to publish, together with your display name and handle.</p>
       <p><strong>Contributions and submissions.</strong> History, tourism and business contributions you send for review, including any source notes, media and rights information you provide.</p>
       <p><strong>Enquiries.</strong> {intake ? "When you use the contact, advertising or correction forms we store your name, email address, phone numbers you choose to share, and your message, privately, for staff review." : "Contact and support forms are currently unavailable, so no message can be submitted through them."}</p>
       <p><strong>Support tickets.</strong> When you open a support ticket we store your name, email address, the topic you choose, a short title and every message in the conversation, together with the ticket's status, priority and an internal summary. You reach your ticket through a private link that we email to you; we keep only a scrambled (hashed) form of the secret in that link. Anyone who has the link can read and reply to the ticket, so keep it private.</p>
-      <p><strong>Push notifications.</strong> If you turn on alerts, your browser gives us a push address (a subscription endpoint) for this device. We store it encrypted, together with the topics you chose (news, radio) and when it was last used, and use it only to send those alerts. Alerts are delivered through your browser maker's push service, and where our Firebase Cloud Messaging channel is used, through Google Firebase. Turn alerts off from the bell at the top of the page or in your browser's site settings; we delete addresses the push service reports as expired.</p>
+      <p><strong>Push notifications.</strong> If you turn on alerts, your browser gives us a push address (a subscription endpoint) for this device. We store it encrypted, together with the topics you chose (news, radio) and when it was last used, and use it only to send those alerts. Alerts are delivered through your browser maker's push service, and where a mobile messaging channel is enabled, through that channel's delivery service. Turn alerts off from the bell at the top of the page or in your browser's site settings; we delete addresses the push service reports as expired.</p>
 
       <h3>2.2 Information collected automatically</h3>
       <p><strong>Essential cookies and browser storage.</strong> We use essential session cookies so the site can keep you signed in securely, and small browser storage entries to remember your theme choice, the dismissal of the storage notice, whether you have answered the alerts prompt and which alert topics you chose. We do not use advertising cookies.</p>
       <p><strong>Plerdy site verification.</strong> We load Plerdy’s asynchronous site script on every page to verify that this website is connected to our Plerdy account. The script may process technical information and page interactions such as clicks to provide Plerdy’s services. Information sent to Plerdy is subject to its own processing practices. We do not use advertising cookies.</p>
-      <p><strong>Technical logs.</strong> Our hosting, database and authentication providers (including Vercel and Supabase) may process technical information such as IP address, device and request details needed to serve pages, secure accounts, prevent abuse and investigate failures.</p>
+      <p><strong>Technical logs.</strong> Our hosting and account-service providers may process technical information such as IP address, device and request details needed to serve pages, secure accounts, prevent abuse and investigate failures.</p>
 
       <h3>2.3 Our AI assistant</h3>
-      <p>EPE LAWA uses an AI assistant, run through OpenRouter on free models from third-party AI providers, to help our small team. It can: draft and publish news stories rewritten from other outlets' public reports (every story is labelled as AI-written, and we keep a record of the source reports it was based on); choose a cover image for those stories (a picture from the source report, a freely licensed photo, or an AI-generated illustration, labelled as such); read and reply to contact enquiries and support tickets by email (every AI reply says it was written by the AI assistant); check comments for spam and abuse; check submitted businesses against public information; and summarise staff activity for our audit logs.</p>
+      <p>EPE LAWA uses an AI assistant, run on models from third-party AI providers, to help our small team. It can: draft and publish news stories rewritten from other outlets' public reports (every story is labelled as AI-written, and we keep a record of the source reports it was based on); choose a cover image for those stories (a picture from the source report, a freely licensed photo, or an AI-generated illustration, labelled as such); read and reply to contact enquiries and support tickets by email (every AI reply says it was written by the AI assistant); check comments for spam and abuse; check submitted businesses against public information; and summarise staff activity for our audit logs.</p>
       <p>When the assistant handles your enquiry, ticket, comment or business submission, the relevant text (and your first name, so it can greet you) is sent to the AI provider to produce an answer. We do not send passwords, payment details or your full account record, and we instruct the assistant to treat what you write as information, not instructions. Providers of free models may keep prompts to improve their services under their own terms, so please do not put sensitive personal information in messages. Corrections, legal, privacy, payment and safety matters are always passed to a person, and you can ask for a person at any time by replying to an AI email.</p>
 
       <h3>2.4 Optional device location</h3>
@@ -58,7 +58,7 @@ export default function PrivacyPage() {
       <h2>4. Who we share information with</h2>
       <p>We do not sell personal information. We share it only with:</p>
       <ul>
-        <li><strong>Service providers</strong> who help us operate the platform: hosting (Vercel), authentication and database (Supabase), media storage (Cloudflare), email delivery providers for account, acknowledgement, support and newsletter emails, browser push services (and Google Firebase Cloud Messaging) for alerts you turn on, and OpenRouter with the AI model providers it routes to for the AI assistant described in section 2.3. They process information on our instructions or under their own published terms.</li>
+        <li><strong>Service providers</strong> who help us operate the platform: our hosting, account and media storage providers, email delivery providers for account, acknowledgement, support and newsletter emails, browser push services for alerts you turn on, and the AI model providers behind the assistant described in section 2.3. They process information on our instructions or under their own published terms.</li>
         <li><strong>Plerdy</strong> receives information through its site script for website verification and its configured site services.</li>
         <li><strong>Authorised staff</strong> who review submissions, contributions and enquiries.</li>
         <li><strong>Authorities</strong> where the law requires or permits it, such as to respond to a valid legal request, or to protect someone's safety.</li>

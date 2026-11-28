@@ -25,7 +25,7 @@ function error(status: number, message: string) {
 }
 
 export async function POST(request: Request): Promise<Response> {
-  if (!WEB_PUSH_READY || !pushCryptoReady() || !fcmSenderReady()) return error(503, "Firebase messaging is not configured");
+  if (!WEB_PUSH_READY || !pushCryptoReady() || !fcmSenderReady()) return error(503, "Push messaging is not configured");
   const raw = await request.text().catch(() => "");
   if (raw.length > 12 * 1024) return error(400, "Invalid request");
   let record: Record<string, unknown> | null = null;

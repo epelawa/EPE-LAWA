@@ -130,7 +130,7 @@ export default async function AiRunPage({ params }: { params: Promise<{ id: stri
       </Panel>
 
       <Panel className="ui-stack">
-        <SectionHeading title={`Model requests (${calls.length})`} description="Every request to OpenRouter in this run. Failed ones count towards the daily free allowance too." />
+        <SectionHeading title={`Model requests (${calls.length})`} description="Every model request in this run. Failed ones count towards the daily free allowance too." />
         {calls.length === 0 ? <p className="ui-muted">No model requests{running ? " yet" : ""}.</p> : (
           <div className="ui-table"><table><thead><tr><th>Time</th><th>Model</th><th>Result</th><th>Took</th></tr></thead><tbody>
             {calls.map((call) => <tr key={call.id}><td className="ui-number">{lagosClock(call.created_at)}</td><td><code>{call.model}</code></td><td>{call.ok ? <StatusBadge tone="success">answered</StatusBadge> : <><StatusBadge tone="danger">failed</StatusBadge> {call.error ?? (call.http_status ? `HTTP ${call.http_status}` : "")}</>}</td><td className="ui-number">{call.latency_ms != null ? `${(call.latency_ms / 1000).toFixed(1)} s` : "—"}</td></tr>)}
