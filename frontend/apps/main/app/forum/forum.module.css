@@ -19,9 +19,7 @@
   padding: 14px 18px;
   border: 1px solid var(--palette-border);
   border-radius: 18px;
-  background: var(--ep-glass-bg, rgb(255 255 255 / .78));
-  -webkit-backdrop-filter: blur(14px) saturate(1.1);
-  backdrop-filter: blur(14px) saturate(1.1);
+  background: rgb(255 255 255 / .97);
   box-shadow: var(--ep-shadow-1);
 }
 .appBarCopy { min-width: 0; }
@@ -313,9 +311,7 @@
   padding: 12px 14px;
   border: 1px solid var(--palette-border);
   border-radius: 16px;
-  background: var(--ep-glass-bg, rgb(255 255 255 / .82));
-  -webkit-backdrop-filter: blur(12px) saturate(1.05);
-  backdrop-filter: blur(12px) saturate(1.05);
+  background: rgb(255 255 255 / .97);
   position: sticky;
   top: 0;
   z-index: 10;

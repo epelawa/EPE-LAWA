@@ -18,7 +18,7 @@
 .column { width: 100%; max-width: 68ch; margin-inline: auto; }
 
 /* Top bar: back, save (members) and the single share control. */
-.topBar { position: sticky; top: 8px; z-index: 4; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px; border: 1px solid var(--line); border-radius: 999px; background: rgb(255 255 255 / .92); backdrop-filter: blur(10px); box-shadow: 0 6px 20px rgb(10 16 35 / .06); }
+.topBar { position: sticky; top: 8px; z-index: 4; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px; border: 1px solid var(--line); border-radius: 999px; background: rgb(255 255 255 / .97); box-shadow: 0 6px 20px rgb(10 16 35 / .06); }
 .topBarEnd { display: flex; align-items: center; gap: 8px; }
 .iconControl { display: inline-grid; min-width: 44px; height: 44px; place-items: center; padding: 0 12px; border: 1px solid var(--line); border-radius: 999px; color: var(--navy); background: #fff; font-size: .8125rem; font-weight: 750; text-decoration: none; cursor: pointer; }
 .iconControl > button { display: inline-flex; width: 100%; height: 100%; align-items: center; justify-content: center; gap: 6px; padding: 0; border: 0; border-radius: inherit; color: inherit; background: transparent; font: inherit; cursor: pointer; }
@@ -98,7 +98,6 @@
   .shareButton span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .shareButton { width: 44px; justify-content: center; padding: 0; }
 }
-@media (prefers-reduced-motion: reduce) { .topBar { backdrop-filter: none; } }
 
 /* Missing or broken covers show the brand mark whole, never cropped. */
 .coverImage[data-news-fallback="true"],.relatedImage[data-news-fallback="true"] { padding: 10%; box-sizing: border-box; background: linear-gradient(135deg, #17264A, #294B91); object-fit: contain; }

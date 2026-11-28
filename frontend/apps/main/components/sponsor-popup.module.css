@@ -14,17 +14,12 @@
   border: var(--ep-space-hair, 1px) solid var(--ep-glass-border);
   border-radius: var(--ep-radius-md, 12px);
   color: var(--ep-text, #17264A);
-  background: var(--ep-glass-bg, rgb(241 244 250 / .84));
-  -webkit-backdrop-filter: blur(var(--ep-glass-blur, 10px));
-  backdrop-filter: blur(var(--ep-glass-blur, 10px));
+  background: var(--ep-surface, #FFFFFF);
   box-shadow: var(--ep-shadow-3);
   animation: ep-ad-rise var(--ep-ad-rise, 240ms) var(--ep-ease-out) both;
 }
 .popup[data-leaving="true"] {
   animation: ep-ad-leave var(--ep-dur-fast, 120ms) var(--ep-ease-in) both;
-}
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .popup { background: var(--ep-surface, #FFFFFF); }
 }
 @keyframes ep-ad-rise {
   from { opacity: 0; transform: translateY(var(--ep-space-6, 24px)); }

@@ -23,7 +23,7 @@ test('the newsroom upload form sits beside the article list, not in a popup moda
   assert.match(dashboard, /href=\{`\$\{adminHref\("\/newsroom"\)\}#upload-article`\}/);
 });
 
-test('other upload forms keep popup modal entry points with blur backdrops', async () => {
+test('other upload forms keep popup modal entry points with solid scrims', async () => {
   const [uploadField, coverFields, mainDialog, mainDialogCss] = await Promise.all([
     read('frontend/apps/admin/components/upload-modal-field.tsx'),
     read('frontend/apps/admin/components/news-cover-url-fields.tsx'),
@@ -34,5 +34,6 @@ test('other upload forms keep popup modal entry points with blur backdrops', asy
   assert.match(uploadField, /BrandedDialog/);
   assert.match(coverFields, /BrandedDialog/);
   assert.match(mainDialog, /showModal\(\)/);
-  assert.match(mainDialogCss, /\.ui-dialog::backdrop[\s\S]*?backdrop-filter/);
+  assert.match(mainDialogCss, /\.ui-dialog::backdrop/);
+  assert.doesNotMatch(mainDialogCss, /backdrop-filter/);
 });
