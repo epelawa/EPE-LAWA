@@ -91,7 +91,6 @@ test("connection panel precedes the footer and hero images have no overlay contr
     await page.goto("/");
     const panel = page.locator(".connection-panel");
     await expect(panel).toBeVisible();
-    await expect(panel.getByText("OUR PLACE. OUR VOICES.")).toBeVisible();
     await expect(panel.getByRole("heading", { name: "Good things begin with connection." })).toBeVisible();
     await expect(panel.locator(".connection-panel__icon svg")).toBeVisible();
     await expect(page.getByText("Explore Sections", { exact: true })).toHaveCount(0);

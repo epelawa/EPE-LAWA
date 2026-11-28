@@ -12,7 +12,7 @@ test('hero entrance is a staggered cascade reduced-motion can switch off', () =>
   assert.match(homeCss, /home-hero-rise/);
   assert.match(homeCss, /\.home-hero__content h1 \{ animation-delay: 90ms; \}/);
   assert.match(homeCss, /\.home-hero__actions \{ animation-delay: 250ms; \}/);
-  const reduced = homeCss.match(/@media \(prefers-reduced-motion: reduce\) \{[^@]*home-hero__eyebrow[^}]*\}[^@]*\}/);
+  const reduced = homeCss.match(/@media \(prefers-reduced-motion: reduce\) \{[^@]*home-hero__content h1[^}]*\}[^@]*\}/);
   assert.ok(reduced, 'reduced-motion guard for hero entrance');
 });
 
