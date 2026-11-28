@@ -10,9 +10,7 @@
 .scrim {
   position: absolute;
   inset: 0;
-  background: rgb(10 16 35 / .67);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
+  background: rgb(10 16 35 / .72);
   animation: fadeIn 220ms ease-out both;
 }
 .card {

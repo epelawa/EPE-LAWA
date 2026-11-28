@@ -11,14 +11,14 @@
 .eyes { transform-box:fill-box; transform-origin:center; }
 .handle:focus-visible,.link:focus-visible { outline:3px solid var(--palette-midnight, #0A1023); outline-offset:-4px; }
 /* Prompt bubble: a small speech bubble above the button that pops in, holds for about 2.6s and leaves. */
-.bubble { position:absolute; right:4px; bottom:calc(100% + 12px); max-width:min(240px, calc(100vw - 32px)); margin:0; padding:9px 13px; border:1px solid #d6e2f5; border-radius:14px 14px 4px 14px; background:#fff; color:var(--palette-midnight, #0A1023); font-size:13px; font-weight:700; line-height:1.35; white-space:nowrap; box-shadow:0 10px 26px rgb(10 16 35 / .2); pointer-events:none; opacity:0; visibility:hidden; transform:translateY(6px) scale(.9); transform-origin:bottom right; transition:opacity 200ms ease, transform 260ms cubic-bezier(.2,.9,.3,1.25), visibility 0s linear 260ms; }
+.bubble { position:absolute; right:4px; bottom:calc(100% + 12px); max-width:min(240px, calc(100vw - 32px)); margin:0; padding:9px 13px; border:1px solid #d6e2f5; border-radius:14px 14px 4px 14px; background:#fff; color:var(--palette-midnight, #0A1023); font-size:13px; font-weight:700; line-height:1.35; white-space:nowrap; box-shadow:0 10px 26px rgb(10 16 35 / .2); pointer-events:none; opacity:0; visibility:hidden; transform:translateY(6px) scale(.9); transform-origin:bottom right; transition:opacity 200ms ease, transform 260ms cubic-bezier(.165,.84,.44,1), visibility 0s linear 260ms; }
 .bubble::after { content:""; position:absolute; right:18px; bottom:-6px; width:11px; height:11px; border-right:1px solid #d6e2f5; border-bottom:1px solid #d6e2f5; background:#fff; transform:rotate(45deg); }
 .bubble[data-below="true"] { top:calc(100% + 12px); bottom:auto; border-radius:14px 4px 14px 14px; transform-origin:top right; }
 .bubble[data-below="true"]::after { top:-6px; bottom:auto; transform:rotate(225deg); }
-.bubble[data-visible="true"] { opacity:1; visibility:visible; transform:none; transition:opacity 200ms ease, transform 260ms cubic-bezier(.2,.9,.3,1.25), visibility 0s; }
+.bubble[data-visible="true"] { opacity:1; visibility:visible; transform:none; transition:opacity 200ms ease, transform 260ms cubic-bezier(.165,.84,.44,1), visibility 0s; }
 @media (prefers-reduced-motion: no-preference) {
   .widget[data-talking="true"] .eyes, .link:hover .eyes, .link:focus-visible .eyes { animation:support-look 2.4s ease-in-out both; }
-  .widget[data-talking="true"] .avatar { animation:support-nudge 700ms cubic-bezier(.3,1.4,.5,1) both; }
+  .widget[data-talking="true"] .avatar { animation:support-nudge 700ms cubic-bezier(.165,.84,.44,1) both; }
 }
 @keyframes support-look {
   0%, 100% { transform:translate(0, 0); }

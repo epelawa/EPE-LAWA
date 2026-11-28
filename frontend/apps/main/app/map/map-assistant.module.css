@@ -110,7 +110,7 @@
 .composer { flex-shrink: 0; display: grid; gap: 8px; width: min(100%, 720px); margin: 0 auto; padding: 10px 16px max(16px, env(safe-area-inset-bottom)); background: linear-gradient(180deg, transparent, rgb(10 16 35 / .88) 38%); }
 .error { margin: 0; color: #ffb3b3; font-size: .84rem; font-weight: 650; }
 .notice { margin: 0; color: #a7c5f5; font-size: .84rem; font-weight: 600; }
-.form { display: flex; align-items: flex-end; gap: 8px; padding: 8px 8px 8px 18px; border: 1px solid rgb(166 178 197 / .38); border-radius: 999px; background: rgb(10 16 35 / .72); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.form { display: flex; align-items: flex-end; gap: 8px; padding: 8px 8px 8px 18px; border: 1px solid rgb(166 178 197 / .38); border-radius: 999px; background: rgb(10 16 35 / .88); }
 .form:focus-within { border-color: #477fe0; box-shadow: 0 0 0 3px rgb(71 127 224 / .25); }
 .form textarea {
   flex: 1;

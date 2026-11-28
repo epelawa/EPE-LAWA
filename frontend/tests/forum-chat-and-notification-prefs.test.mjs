@@ -19,7 +19,8 @@ test("forum listing reads as a chat app: app bar, topic rail, conversation strea
   for (const needle of ["forum-shell", "ForumLiveCount", "Start a discussion", "sortHref", "formatLagosDateTime", "/forum/category/", "/forum/thread/"]) {
     assert.match(page, new RegExp(needle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), needle);
   }
-  for (const needle of [".appBar", "backdrop-filter", ".split", ".rail", ".railList", ".stream", ".chatList", ".sortLink", ".pinnedBadge", ".postAvatar", "max-width: 860px", "prefers-reduced-motion"]) {
+  assert.doesNotMatch(css, /backdrop-filter/);
+  for (const needle of [".appBar", ".split", ".rail", ".railList", ".stream", ".chatList", ".sortLink", ".pinnedBadge", ".postAvatar", "max-width: 860px", "prefers-reduced-motion"]) {
     assert.match(css, new RegExp(needle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), needle);
   }
 });

@@ -19,7 +19,7 @@
 .listingIdentity p { max-width:32ch; margin:18px 0 22px; color:#c7d5ec; line-height:1.6; }
 .listingIdentity :global(.brand__word),.listingIdentity :global(.brand__name) { color:#fff; }
 .socialLinks { display:flex; flex-wrap:wrap; gap:10px; }
-.socialLinks a { display:inline-flex; align-items:center; min-height:48px; gap:8px; padding:0 15px; border:1px solid rgb(204 220 246 / .3); border-radius:999px; background:rgb(255 255 255 / .08); color:#fff; text-decoration:none; font-size:.85rem; font-weight:700; backdrop-filter:blur(10px); transition:transform .2s,background-color .2s; }
+.socialLinks a { display:inline-flex; align-items:center; min-height:48px; gap:8px; padding:0 15px; border:1px solid rgb(204 220 246 / .3); border-radius:999px; background:rgb(255 255 255 / .08); color:#fff; text-decoration:none; font-size:.85rem; font-weight:700; transition:transform .2s,background-color .2s; }
 .socialLinks svg { width:19px; height:19px; }
 .socialLinks a:hover { color:#fff; background:#294b91; transform:translateY(-2px); }
 .listingColumn h2 { margin:0 0 14px; color:#fff; font-size:.9rem; }

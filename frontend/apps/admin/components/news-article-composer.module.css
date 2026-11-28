@@ -33,7 +33,7 @@
 .submit:hover:not(:disabled) { background:#172f63; transform:translateY(-2px); box-shadow:0 8px 20px rgb(41 75 145 / .25); }
 .submit:disabled { opacity:.7; cursor:wait; }
 .dialog { width:min(500px,calc(100% - 32px)); max-height:min(80vh,650px); padding:24px; border:1px solid #dce5f1; border-radius:20px; background:#fff; color:#17264a; box-shadow:0 25px 80px rgb(10 16 35 / .3); }
-.dialog::backdrop { background:rgb(10 16 35 / .65); backdrop-filter:blur(4px); }
+.dialog::backdrop { background:rgb(10 16 35 / .65); }
 .dialogHeader { display:flex; justify-content:space-between; gap:12px; }
 .dialogHeader h2 { margin:6px 0; font-size:1.4rem; }
 .close { width:44px; min-width:44px; height:44px; border:0; border-radius:50%; background:#eef3fa; color:#17264a; font-size:1.5rem; cursor:pointer; }
