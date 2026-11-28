@@ -40,7 +40,6 @@ export default function Home() {
       <section className="home-hero" aria-labelledby="home-title">
         <HeroCarousel>
           <div className="home-hero__content ep-container">
-            <p className="home-hero__eyebrow">{t(lang, "home.eyebrow")}</p>
             <h1 id="home-title">{t(lang, "home.title.line1")}<br />{t(lang, "home.title.line2")}</h1>
             <p className="home-hero__lede">{t(lang, "home.lede")}</p>
             <div className="home-hero__actions">
@@ -68,7 +67,7 @@ export default function Home() {
         </nav>
         <section className="home-radio" aria-labelledby="home-radio-title">
           <span className="home-radio__icon" aria-hidden="true"><ListenShortcutIcon size={32} /></span>
-          <div><p className="home-radio__eyebrow">{t(lang, "home.radio.eyebrow")}</p><h2 id="home-radio-title">Radio Lagos 107.5 FM</h2><p>{t(lang, "home.radio.subtitle")}</p></div>
+          <div><h2 id="home-radio-title">Radio Lagos 107.5 FM</h2><p>{t(lang, "home.radio.subtitle")}</p></div>
           <Link href="/radio" className="home-radio__action">{t(lang, "home.radio.cta")} <ArrowRightIcon size={17} aria-hidden="true" /></Link>
         </section>
       </div></HomeSectionReveal>
@@ -79,7 +78,6 @@ export default function Home() {
 
       <section className="ep-container home-community connection-panel" aria-labelledby="community-title">
         <div>
-          <p className="ui-eyebrow">{t(lang, "home.community.eyebrow")}</p>
           <h2 id="community-title">{t(lang, "home.community.title1")} <em>{t(lang, "home.community.emphasis")}</em></h2>
           <p>{t(lang, "home.community.body")}</p>
         </div>

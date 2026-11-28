@@ -4,7 +4,6 @@
 .home-hero__media::after { background: linear-gradient(0deg, rgb(4 16 37 / .76), rgb(4 16 37 / .55)); }
 .home-hero__content, .public-home:has(.storage-notice) .home-hero__content { align-items: center; justify-content: center; text-align: center; padding-block: 60px; }
 .home-hero__content h1 { max-width: 18ch; margin: 12px 0; font-size: clamp(2.4rem, 4.5vw, 4.6rem); line-height: 1.08; letter-spacing: -.045em; }
-.home-hero__eyebrow { margin: 0; padding: 6px 12px; border-radius: 7px; background: #294b91; color: white; font-size: 12px; font-weight: 800; letter-spacing: .08em; }
 .home-hero__lede { margin: 0; font-size: clamp(16px, 1.4vw, 20px); }
 .home-hero__actions { justify-content: center; padding-top: 22px; }
 .home-hero__actions .btn-primary { background: #a7c5f5; border: 1px solid #a7c5f5; color: #0a1023; }
@@ -15,7 +14,6 @@
 .home-discovery { display: grid; gap: 16px; padding-top: 16px; }
 .home-radio { display: flex; align-items: center; gap: 22px; padding: 20px 24px; border-radius: 18px; background: #071936; color: white; }
 .home-radio__icon { display: grid; width: 56px; height: 56px; flex: 0 0 auto; place-items: center; border-radius: 50%; background: #294b91; }
-.home-radio__eyebrow { margin: 0 0 3px; color: #a7c5f5; font-size: 11px; font-weight: 800; letter-spacing: .12em; }
 .home-radio h2 { margin: 0; font-size: clamp(1.1rem, 2vw, 1.4rem); }
 .home-radio p:last-child { margin: 4px 0 0; color: #dce7fa; font-size: 13px; }
 .home-radio__action { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; margin-left: auto; padding: 10px 18px; border: 1px solid #dce7fa; border-radius: 999px; color: white; font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap; }
@@ -131,9 +129,6 @@
    press feedback and cover zoom. Transform/opacity only, each effect runs once,
    and every rule is disabled under prefers-reduced-motion. */
 @media (prefers-reduced-motion: no-preference) {
-  .home-hero__eyebrow, .home-hero__content h1, .home-hero__lede, .home-hero__actions {
-    animation: home-hero-rise 620ms var(--ep-ease-out) both;
-  }
   .home-hero__content h1 { animation-delay: 90ms; }
   .home-hero__lede { animation-delay: 170ms; }
   .home-hero__actions { animation-delay: 250ms; }
@@ -158,7 +153,6 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .home-shortcuts a:active, .home-story-card, .home-story-card:hover, .home-story-card:active, .home-story-card:hover .home-story-image { animation: none; transition: none; transform: none; }
-  .home-hero__eyebrow, .home-hero__content h1, .home-hero__lede, .home-hero__actions { animation: none; }
   .home-section-reveal .home-shortcuts a { transition: none; }
 }
 .home-shortcuts a, .home-story-cover-link { -webkit-tap-highlight-color: transparent; }
