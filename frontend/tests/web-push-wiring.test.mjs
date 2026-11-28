@@ -47,6 +47,8 @@ test('web push is fully wired: worker, guest-capable subscribe route, encrypted 
   assert.match(prompt, /permissionGuide/, 'the browser step includes a dedicated visual guide');
   assert.match(promptStyles, /\.permissionGuide/);
   assert.match(promptStyles, /height: min\(80dvh, 620px\)/, 'the guide arrow reaches toward the browser permission prompt');
+  assert.match(promptStyles, /display: block/, 'the guide renders on every device, not only phones');
+  assert.doesNotMatch(promptStyles, /\.permissionGuide \{ display: none; \}/, 'the guide is never hidden on tablets or desktop');
   assert.doesNotMatch(promptStyles, /\.card::before/, 'the card has no blue stripe along its top edge');
   assert.match(promptStyles, /prefers-reduced-motion/);
   assert.match(client, /pushManager\.getSubscription/, 'existing subscriptions are reused');
