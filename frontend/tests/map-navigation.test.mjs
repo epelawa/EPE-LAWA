@@ -77,6 +77,12 @@ test('the manual map preview still needs an explicit interaction and now embeds 
   assert.doesNotMatch(ui, /osmEmbedUrl|osmSearchUrl|export\/embed\.html/);
 });
 
+test('the map preview iframe never receives device coordinates', () => {
+  assert.match(ui, /googleEmbedUrl\(inside \? "Epe Division" : selectedDestination \|\| destination \|\| "Epe Division"\)/);
+  assert.doesNotMatch(ui, /googleEmbedUrl\([^)]*\$\{lat/);
+  assert.match(ui, /Device coordinates never enter this preview/);
+});
+
 test('Google Maps outbound links use a fixed HTTPS origin and encoded scoped locations', () => {
   assert.match(ui, /const MAPS_ORIGIN = "https:\/\/www\.google\.com\/maps\/"/);
   assert.match(ui, /new URL\("search\/", MAPS_ORIGIN\)/);
