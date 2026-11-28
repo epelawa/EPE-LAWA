@@ -82,6 +82,7 @@ export default async function HistoryReviewPage({ searchParams }: { searchParams
                   {row.submitter_email ? <> · <a className="ui-text-link" href={`mailto:${row.submitter_email}`}>{row.submitter_email}</a></> : null}
                   {" "}(private)
                 </p>
+                {row.submitted_at ? <p className="ui-meta">Submitted {new Date(row.submitted_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}</p> : null}
               </header>
               {publicMediaUrl(row.image_key) ? (
                 <figure className="ui-stack-sm" style={{ margin: 0 }}>
@@ -159,6 +160,7 @@ export default async function HistoryReviewPage({ searchParams }: { searchParams
             : corrections.map((req) => (
               <Panel className="ui-stack-sm" key={req.id}>
                 <h3 className="ui-item-title">{req.record_ref}</h3>
+                <p className="ui-meta">{req.request_kind === "removal" ? "Removal request" : "Correction request"} · {new Date(req.created_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}</p>
                 <p className="ui-prose" style={{ whiteSpace: "pre-wrap" }}>{req.message}</p>
                 <p className="ui-meta">{req.sender_name} · <a className="ui-text-link" href={`mailto:${req.sender_email}`}>{req.sender_email}</a>{req.submitter_id ? " · member account" : " · guest"} (private)</p>
                 <form action={resolveHistoryCorrection} className="ui-stack-sm">

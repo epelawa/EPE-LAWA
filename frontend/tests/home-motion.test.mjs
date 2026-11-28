@@ -9,11 +9,15 @@ const homeCss = fs.readFileSync(path.join(root, 'frontend/apps/main/app/home-cli
 const globals = fs.readFileSync(path.join(root, 'frontend/apps/main/app/globals.css'), 'utf8');
 
 test('hero entrance is a staggered cascade reduced-motion can switch off', () => {
-  assert.match(homeCss, /home-hero-rise/);
-  assert.match(homeCss, /\.home-hero__content h1 \{ animation-delay: 90ms; \}/);
-  assert.match(homeCss, /\.home-hero__actions \{ animation-delay: 250ms; \}/);
-  const reduced = homeCss.match(/@media \(prefers-reduced-motion: reduce\) \{[^@]*home-hero__content h1[^}]*\}[^@]*\}/);
-  assert.ok(reduced, 'reduced-motion guard for hero entrance');
+  const section = homeCss.slice(homeCss.indexOf('Apple-style micro-motion'));
+  const [noPreference, reduced] = section.split('@media (prefers-reduced-motion: reduce)');
+  assert.ok(noPreference && reduced !== undefined, 'micro-motion section has both motion blocks');
+  assert.match(noPreference, /\.home-hero__content h1, \.home-hero__lede, \.home-hero__actions \{\s*animation: home-hero-rise 620ms var\(--ep-ease-out\) both;\s*\}/);
+  assert.match(noPreference, /\.home-hero__content h1 \{ animation-delay: 90ms; \}/);
+  assert.match(noPreference, /\.home-hero__lede \{ animation-delay: 170ms; \}/);
+  assert.match(noPreference, /\.home-hero__actions \{ animation-delay: 250ms; \}/);
+  assert.match(noPreference, /@keyframes home-hero-rise \{ from \{ opacity: 0; transform: translateY\(var\(--ep-motion-enter-y, 8px\)\); \} to \{ opacity: 1; transform: none; \} \}/);
+  assert.match(reduced, /\.home-hero__content h1, \.home-hero__lede, \.home-hero__actions \{ animation: none; \}/);
 });
 
 test('shortcut tiles cascade staggered and press like a native control', () => {

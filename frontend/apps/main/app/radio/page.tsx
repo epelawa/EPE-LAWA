@@ -37,7 +37,6 @@ export default async function RadioPage() {
     <section className={styles.hero} aria-labelledby="radio-hero-title">
       <div className={styles.heroInner}>
         <div className={styles.heroCopy}>
-          <p className={styles.heroEyebrow}>EPE LAWA RADIO</p>
           <h1 id="radio-hero-title" className={styles.heroTitle}>The sound of Epe.</h1>
           <p className={styles.heroLede}>Stay connected to the people, stories and conversations shaping our community.</p>
           <div className={styles.heroActions}>

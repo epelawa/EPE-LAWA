@@ -159,15 +159,19 @@ export default async function CronJobHistoryPage() {
         <div className="ui-grid ui-grid--4">
           <div className="ui-card">
             <p className="text-4xl font-bold">{stats.total}</p>
+            <p className="ui-meta">Total runs</p>
           </div>
           <div className="ui-card">
             <p className="text-4xl font-bold text-green-600">{stats.success}</p>
+            <p className="ui-meta">Successful</p>
           </div>
           <div className="ui-card">
             <p className="text-4xl font-bold text-red-600">{stats.failed}</p>
+            <p className="ui-meta">Failed</p>
           </div>
           <div className="ui-card">
             <p className="text-4xl font-bold text-yellow-600">{stats.timeout}</p>
+            <p className="ui-meta">Timed out</p>
           </div>
         </div>
       </Panel>
@@ -188,6 +192,7 @@ export default async function CronJobHistoryPage() {
             <Panel key={record.id} className="ui-stack-sm">
               <div className="ui-row">
                 <div className="ui-stack-sm">
+                  <span className="ui-item-title">{record.job_name}</span>
                   <StatusBadge status={record.status} />
                 </div>
                 <span className="ui-meta">

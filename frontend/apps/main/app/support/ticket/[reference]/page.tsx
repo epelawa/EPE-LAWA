@@ -40,7 +40,7 @@ export default async function TicketPage({ params, searchParams }: { params: Pro
   const tone = SUPPORT_STATUSES.find((entry) => entry.key === ticket.status)?.tone ?? "neutral";
   const finished = ticket.status === "resolved" || ticket.status === "closed";
   return <PageFrame className="ui-stack">
-    <PageIntro title={ticket.subject} description={`${categoryLabel(ticket.category)} · opened ${when(ticket.created_at)}`} />
+    <PageIntro title={ticket.subject} description={`Ticket ${ticket.reference} · ${categoryLabel(ticket.category)} · opened ${when(ticket.created_at)}`} />
     <div className="support-ticket-head"><StatusBadge tone={tone}>{statusLabel(ticket.status)}</StatusBadge>{ticket.needs_human && !finished ? <span>A member of our team is looking at this.</span> : null}</div>
     <Notice>Keep this page's link private — anyone with it can read and reply to this ticket.</Notice>
     <Panel className="ui-stack">

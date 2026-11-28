@@ -129,6 +129,9 @@
    press feedback and cover zoom. Transform/opacity only, each effect runs once,
    and every rule is disabled under prefers-reduced-motion. */
 @media (prefers-reduced-motion: no-preference) {
+  .home-hero__content h1, .home-hero__lede, .home-hero__actions {
+    animation: home-hero-rise 620ms var(--ep-ease-out) both;
+  }
   .home-hero__content h1 { animation-delay: 90ms; }
   .home-hero__lede { animation-delay: 170ms; }
   .home-hero__actions { animation-delay: 250ms; }
@@ -153,6 +156,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .home-shortcuts a:active, .home-story-card, .home-story-card:hover, .home-story-card:active, .home-story-card:hover .home-story-image { animation: none; transition: none; transform: none; }
+  .home-hero__content h1, .home-hero__lede, .home-hero__actions { animation: none; }
   .home-section-reveal .home-shortcuts a { transition: none; }
 }
 .home-shortcuts a, .home-story-cover-link { -webkit-tap-highlight-color: transparent; }
