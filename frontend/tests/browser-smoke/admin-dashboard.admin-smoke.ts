@@ -163,6 +163,9 @@ test("staff routes render at each supported width and preset hashtags remain edi
     expect(response?.status(), route).toBe(200);
     expect(new URL(page.url()).pathname).toBe(`/admin${route}`);
     await expect(page.locator(".admin-shell__content").getByRole("heading", { level: 1 }).first(), route).toBeVisible();
+    if (route === "/support/00000000-0000-0000-0000-000000000000") {
+      await expect(page.getByText("Ticket not found", { exact: true }), route).toBeVisible();
+    }
     await expect(page.getByRole("heading", { name: "This page could not be loaded" }), route).toHaveCount(0);
     await expectNoHorizontalOverflow(page, width);
   }

@@ -5,6 +5,9 @@
 -- event submissions and radio song requests. Same contract as
 -- staff_analytics_timeseries: security definer, capability-gated, internal
 -- aliases prefixed so they cannot collide with the OUT parameters (42702).
+-- Each metric mirrors its table's own SELECT policies (public rows plus own
+-- rows plus the owning capability), so the security definer aggregate can never
+-- count rows the caller's row-level security would deny them.
 
 create or replace function public.staff_analytics_engagement(p_days integer default 30)
 returns table ("day" date, "metric" text, "total" bigint)
@@ -29,24 +32,41 @@ begin
     select t.created_at::date as thread_day, count(*)::bigint as thread_total
     from public.forum_threads t
     where t.created_at::date > current_date - greatest(p_days, 1)
+      and ((t.state in ('open', 'locked') and t.deleted_at is null)
+        or t.author_id = (select auth.uid())
+        or public.has_capability('moderation.review'))
     group by 1
   ),
   posts as (
     select p.created_at::date as post_day, count(*)::bigint as post_total
     from public.forum_posts p
     where p.created_at::date > current_date - greatest(p_days, 1)
+      and ((p.state = 'visible'
+        and exists (
+          select 1 from public.forum_threads t
+          where t.id = p.thread_id
+            and t.state in ('open', 'locked')
+            and t.deleted_at is null
+        ))
+        or p.author_id = (select auth.uid())
+        or public.has_capability('moderation.review'))
     group by 1
   ),
   events as (
     select e.created_at::date as event_day, count(*)::bigint as event_total
     from public.events e
     where e.created_at::date > current_date - greatest(p_days, 1)
+      and ((e.status = 'published' and e.published_at is not null)
+        or (e.submitter_id = (select auth.uid()) and (select auth.uid()) is not null)
+        or public.has_capability('article.publish'))
     group by 1
   ),
   songs as (
     select r.created_at::date as song_day, count(*)::bigint as song_total
     from public.radio_song_requests r
     where r.created_at::date > current_date - greatest(p_days, 1)
+      and (r.user_id = (select auth.uid())
+        or public.has_capability('radio.manage'))
     group by 1
   ),
   combined as (

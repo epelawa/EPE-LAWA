@@ -1,6 +1,6 @@
 # UX audit sweep
 
-Generated 2026-11-28T04:30:43.034Z
+Generated 2026-11-28T04:58:27.068Z
 
 Scope: frontend/apps + frontend/packages/ui (.tsx). Checks: native popups (alert/confirm/prompt), native validation (reportValidity/checkValidity), bare <dialog> without branded chrome, unstyled <select>, server-page submit buttons without a pending-state component.
 
