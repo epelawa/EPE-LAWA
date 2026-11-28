@@ -48,7 +48,6 @@
 .drawer-root[data-open="true"] .drawer { transform:translateX(0); }
 .drawer-heading { display:flex; flex:0 0 auto; align-items:center; justify-content:space-between; gap:12px; padding-bottom:16px; border-bottom:1px solid hsl(var(--border)); }
 .drawer-heading > div { display:grid; gap:4px; }
-.drawer-eyebrow { color:hsl(var(--link)); font-size:11px; font-weight:750; letter-spacing:.12em; }
 .drawer-heading p:last-child { color:hsl(var(--foreground)); font-size:17px; font-weight:650; }
 .drawer-nav { flex:1 1 auto; min-height:0; overflow-y:auto; overscroll-behavior:contain; margin:12px -10px; padding:0 10px; scrollbar-width:thin; }
 .drawer-group { padding:12px 0 10px; border-bottom:1px solid hsl(var(--border)); }
@@ -161,7 +160,6 @@ body:has(.focused-error-shell) .mobile-bottom-nav,body:has(.auth-link-issue) .mo
 .drawer { padding: 18px clamp(16px,4vw,26px) 14px; }
 .drawer-heading { padding-bottom: 8px; }
 .drawer-heading > div { gap: 1px; }
-.drawer-eyebrow { font-size: 10px; }
 .drawer-heading p:last-child { font-size: 15px; line-height: 1.25; }
 .drawer-nav { margin: 4px -8px; padding: 0 8px; scrollbar-width: none; }
 .drawer-nav::-webkit-scrollbar { display: none; }

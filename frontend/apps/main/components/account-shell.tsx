@@ -2,13 +2,11 @@ import type { ReactNode } from "react";
 import FocusedPageControls from "./focused-page-controls";
 
 export default function AccountShell({
-  eyebrow,
   title,
   description,
   children,
   fixedViewport = false,
 }: {
-  eyebrow: string;
   title: string;
   description: string;
   children: ReactNode;
@@ -23,7 +21,6 @@ export default function AccountShell({
           <span className="auth-art__texture" aria-hidden="true" />
           <FocusedPageControls />
           <div className="auth-art__heading">
-            <p className="auth-art__eyebrow">{eyebrow}</p>
             <h1 id="auth-title">{title}</h1>
             <p className="auth-art__description">{description}</p>
           </div>
