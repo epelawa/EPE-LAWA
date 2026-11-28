@@ -37,7 +37,7 @@ test('no map iframe is requested on arrival; frames render only under assistant 
 });
 
 test('assistant answers pinpoint the destination on Google Maps below the message', () => {
-  assert.match(assistant, /https:\/\/www\.google\.com\/maps/);
+  assert.match(assistant, /new URL\("https:\/\/www\.google\.com\/maps"\)/);
   assert.match(assistant, /url\.searchParams\.set\("output", "embed"\)/);
   assert.match(assistant, /url\.searchParams\.set\("q", coordinate\(place\) \?\? epeScopedQuery\(place\.query\)\)/);
   assert.match(assistant, /Google Maps preview for \$\{place\.name\}/);
@@ -48,7 +48,7 @@ test('assistant answers pinpoint the destination on Google Maps below the messag
 });
 
 test('the content security policy frames Google Maps and no longer OpenStreetMap on the public app', () => {
-  assert.match(csp, /frame-src https:\/\/www\.google\.com https:\/\/maps\.google\.com/);
+  assert.match(csp, /"frame-src https:\/\/www\.google\.com https:\/\/maps\.google\.com"/);
   assert.doesNotMatch(csp, /openstreetmap\.org/);
 });
 
