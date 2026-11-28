@@ -276,7 +276,7 @@ const server = createServer((request, response) => {
 
     // Turn 5: other public, read-only collections answer with an honest empty list (instead of 405) so
     // their empty states and filter forms can be checked.
-    if (["/rest/v1/published_people", "/rest/v1/people_offices", "/rest/v1/history_records", "/rest/v1/history_record_sources"].includes(url.pathname)) {
+    if (["/rest/v1/published_people", "/rest/v1/people_offices", "/rest/v1/history_records", "/rest/v1/history_record_sources", "/rest/v1/notification_preferences", "/rest/v1/tourism_destinations"].includes(url.pathname)) {
       respond(response, 200, [], { "content-range": "*/0" });
       return;
     }

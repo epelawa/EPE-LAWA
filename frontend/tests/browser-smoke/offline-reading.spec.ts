@@ -10,7 +10,7 @@ test("a deliberately saved article reopens without a network connection", async 
     const path = "/news/smoke-market-story";
     await page.goto(path);
     await expect(page.getByRole("heading", { level: 1, name: "Smoke fixture: market story" })).toBeVisible();
-    await page.getByText("More story options", { exact: true }).click();
+    await page.getByText("Save this story for offline reading", { exact: true }).click();
     await page.getByRole("button", { name: "Save for offline reading" }).click();
     await expect(page.getByText(/Saved on this device/)).toBeVisible();
 

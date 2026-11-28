@@ -5,11 +5,10 @@ import { FilterIcon, MapPinIcon, SearchIcon } from "../../components/icons";
 import HumanCheck from "../../components/human-check";
 import { Notice, Panel, SectionHeading } from "../../components/design-system";
 import styles from "./map.module.css";
-import { EPE_DIVISION_BBOX, EPE_TOWN_VIEW, epeScopedQuery, insideEpeDivision } from "../../lib/epe-area";
+import { epeScopedQuery, insideEpeDivision } from "../../lib/epe-area";
 
 type Business = { slug: string; name: string; category_label: string; area: string | null; address: string | null; landmark: string | null };
 const MAPS_ORIGIN = "https://www.google.com/maps/";
-const OSM_ORIGIN = "https://www.openstreetmap.org/";
 
 /* Searches stay scoped to Epe Division. Manual origin/destination text and device location stay in this browser until a visitor opens Google Maps. */
 export function mapsSearchUrl(query: string) {
@@ -25,16 +24,12 @@ export function mapsDirectionsUrl(destination: string, origin?: string) {
   if (origin) url.searchParams.set("origin", origin.includes(",") && /^-?\d+(?:\.\d+)?,-?\d+(?:\.\d+)?$/.test(origin) ? origin : epeScopedQuery(origin));
   return url.toString();
 }
-export function osmSearchUrl(query: string) {
-  const url = new URL("search", OSM_ORIGIN);
-  url.searchParams.set("query", epeScopedQuery(query));
-  return url.toString();
-}
-export function osmEmbedUrl(bbox: string, marker?: string) {
-  const url = new URL("export/embed.html", OSM_ORIGIN);
-  url.searchParams.set("bbox", bbox);
-  url.searchParams.set("layer", "mapnik");
-  if (marker) url.searchParams.set("marker", marker);
+/** A Google Maps embed frame; no Maps API key is used or required for this embed. */
+export function googleEmbedUrl(query: string) {
+  const url = new URL(MAPS_ORIGIN);
+  url.searchParams.set("q", epeScopedQuery(query));
+  url.searchParams.set("z", "12");
+  url.searchParams.set("output", "embed");
   return url.toString();
 }
 
@@ -57,11 +52,9 @@ export default function MapSearch({ businesses, businessError = false }: { busin
   const selectedDestination = selectedBusiness
     ? [selectedBusiness.name, selectedBusiness.address, selectedBusiness.landmark, selectedBusiness.area].filter(Boolean).join(", ")
     : query.trim();
-  const coords = location ? location.split(",").map(Number) : null;
-  const lat = coords && Number.isFinite(coords[0]) ? coords[0] : null;
-  const lon = coords && Number.isFinite(coords[1]) ? coords[1] : null;
-  const inside = lat !== null && lon !== null && insideEpeDivision(lat, lon);
-  const embedUrl = osmEmbedUrl(EPE_DIVISION_BBOX, inside ? `${lat.toFixed(5)},${lon!.toFixed(5)}` : undefined);
+  // The preview is always the division-wide map: typed destinations and device
+  // coordinates reach Google only through the explicit outbound links below.
+  const embedUrl = googleEmbedUrl("Epe Division");
 
   const requestLocation = () => {
     setLocation(null);
@@ -72,8 +65,8 @@ export default function MapSearch({ businesses, businessError = false }: { busin
     navigator.geolocation.getCurrentPosition((position) => {
       setLocation(`${position.coords.latitude},${position.coords.longitude}`);
       setLocationMessage(insideEpeDivision(position.coords.latitude, position.coords.longitude)
-        ? "Your position is marked on the Epe Division map below. Coordinates stay in this browser tab and are sent to Google only if you open directions there."
-        : "You are outside Epe Division, so the map stays on Epe Division. Your location is kept in this tab and sent to Google only if you open directions there.");
+        ? "Your position is confirmed inside Epe Division. The map below stays on Epe Division; open directions to send your position to Google Maps."
+        : "You are outside Epe Division, so the map stays on Epe Division. Your coordinates are sent to Google only if you open directions there.");
     }, (error) => {
       const message = error.code === error.PERMISSION_DENIED
         ? "Location permission was denied. You can still search manually."
@@ -165,13 +158,12 @@ export default function MapSearch({ businesses, businessError = false }: { busin
       </details>
 
       {mapVisible ? <Panel className={`ui-card ${styles.mapPanel}`}>
-        <SectionHeading eyebrow="Free map, no sign-in" title="Epe Division on the map" id="epe-embed-map" description="The map shows Epe Division: Epe, Eredo, Ikosi-Ejinrin, Ibeju-Lekki and Lekki. Your device location is marked only when you explicitly requested it and are inside the division." />
-        <iframe title="Epe Division map" src={embedUrl} loading="lazy" className={styles.mapFrame} referrerPolicy="no-referrer-when-downgrade" sandbox="allow-same-origin allow-scripts allow-popups" />
+        <SectionHeading eyebrow="Free map, no sign-in" title="Epe Division on the map" id="epe-embed-map" description="The map shows Epe Division: Epe, Eredo, Ikosi-Ejinrin, Ibeju-Lekki and Lekki. Device coordinates never enter this preview; Google receives them only when you open directions." />
+        <iframe title="Epe Division map on Google Maps" src={embedUrl} loading="lazy" className={styles.mapFrame} referrerPolicy="no-referrer-when-downgrade" sandbox="allow-same-origin allow-scripts allow-popups allow-forms" />
         <div className="ui-actions">
-          <a className="btn-secondary" target="_blank" rel="noopener noreferrer" href={osmSearchUrl(selectedDestination || destination || "Epe")}>Search this in OpenStreetMap <span className="sr-only">(opens in a new tab)</span></a>
-          <a className="btn-secondary" target="_blank" rel="noopener noreferrer" href={`https://www.openstreetmap.org/#map=${EPE_TOWN_VIEW}`}>Open Epe town on OpenStreetMap <span className="sr-only">(opens in a new tab)</span></a>
+          <a className="btn-secondary" target="_blank" rel="noopener noreferrer" href={mapsSearchUrl(selectedDestination || destination || "Epe")}>Search this in Google Maps <span className="sr-only">(opens in a new tab)</span></a>
         </div>
-        <p className="ui-meta">Map data and search are provided by OpenStreetMap contributors. Google Maps is opened only when you choose.</p>
+        <p className="ui-meta">Map data and search are provided by Google Maps. No Maps API key or sign-in is used.</p>
       </Panel> : <p className="ui-muted">The map preview stays closed until you choose Search and show map or Use my location.</p>}
 
       {businessError ? <Notice tone="neutral">Published business listings could not be loaded just now. This is different from no matching listings; manual street and landmark search remains available.</Notice> : null}

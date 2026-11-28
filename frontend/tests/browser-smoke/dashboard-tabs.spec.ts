@@ -183,21 +183,20 @@ test("signed-in Home and Discover render and filter only published story records
   await expect(page.getByRole("link", { name: "Read: Smoke fixture: sports story" })).toBeVisible();
   const missingMetadata = page.getByRole("link", { name: "Read: Smoke fixture: sports story" });
   await expect(missingMetadata.getByText("Byline unavailable")).toBeVisible();
-  await expect(missingMetadata.getByText("News", { exact: true })).toBeVisible();
+  await expect(missingMetadata.getByText("Epe Division", { exact: true })).toBeVisible();
   await expect(missingMetadata.locator("img")).toHaveAttribute("data-news-fallback", "true");
   await expect(missingMetadata.locator("img")).toHaveAttribute("src", "/brand-logo.webp");
   await expect(page.locator("#recommendations-heading").locator("..")
     .getByText("Smoke fixture: breaking headline")).toHaveCount(0);
 
   await dashboardNavigation(page).getByRole("link", { name: "Discover", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Discover", level: 1 })).toBeVisible();
   await expect(page.getByRole("link", { name: "Read: Smoke fixture: market story" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Read: Smoke fixture: sports story" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Local News", exact: true }).first()).toBeVisible();
 
   await page.getByLabel("Search stories, topics and authors").fill("market");
-  await page.getByLabel("Category").selectOption("local-news");
   await page.getByRole("button", { name: "Search stories" }).click();
-  await expect(page).toHaveURL(/\/dashboard\?tab=discover&q=market&category=local-news$/);
+  await expect(page).toHaveURL(/\/dashboard\?tab=discover&q=market$/);
   await expect(page.getByRole("link", { name: "Read: Smoke fixture: market story" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Read: Smoke fixture: sports story" })).toHaveCount(0);
   await expect(page.getByText(/Showing 1 published story matching “market” on this page\./)).toBeVisible();
@@ -253,7 +252,7 @@ test("story query failures stay distinct from empty results on both dashboard fe
 
   await dashboardNavigation(page).getByRole("link", { name: "Discover", exact: true }).click();
   await expect(page.getByRole("alert").filter({ hasText: "Discover stories could not be loaded" })).toBeVisible();
-  await expect(page.getByText(/Story filters are temporarily unavailable/)).toBeVisible();
+  await expect(page.getByText("Published stories could not be loaded. No sample or unpublished stories are shown.")).toBeVisible();
   await expect(page.getByText("No stories published yet")).toHaveCount(0);
   await expectLocalSupabaseOnly(page);
 });
@@ -282,22 +281,21 @@ test("signed-in readers stay in member news when opening and leaving a story", a
   await setFixtureMode(request, "stories");
   await signIn(page);
   await page.setViewportSize({ width: 375, height: 850 });
-  await page.goto("/news?q=market&category=local-news");
-  await expect(page).toHaveURL(/\/dashboard\?tab=discover&q=market&category=local-news/);
+  await page.goto("/news?q=market");
+  await expect(page).toHaveURL(/\/dashboard\?tab=discover&q=market$/);
   await page.getByRole("link", { name: "Read: Smoke fixture: market story" }).click();
   await expect(page).toHaveURL(/\/news\/smoke-market-story/);
   await expect(page.getByRole("heading", { name: "Smoke fixture: market story" })).toBeVisible();
-  await expect(page.getByRole("navigation", { name: "Member reading navigation" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Back to Discover" })).toHaveAttribute("href", "/dashboard?tab=discover");
-  await expect(page.getByRole("link", { name: "Saved stories" })).toHaveAttribute("href", "/dashboard?tab=saved");
-  await expect(page.locator(".site-head")).toBeHidden();
+  await expect(page.getByRole("navigation", { name: "Story controls" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Back to News" })).toHaveAttribute("href", "/news");
+  await expect(page.getByRole("button", { name: "Save this story" })).toBeVisible();
   for (const width of [320, 375, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 850 });
     const size = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth, page: document.documentElement.scrollWidth }));
     expect(size.page, `member article at ${width}px`).toBeLessThanOrEqual(size.viewport + 1);
-    await expect(page.getByRole("link", { name: "Back to Discover" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Back to News" })).toBeVisible();
   }
-  await page.getByRole("link", { name: "Back to Discover" }).click();
+  await page.getByRole("link", { name: "Back to News" }).click();
   await expect(page).toHaveURL(/\/dashboard\?tab=discover/);
 });
 

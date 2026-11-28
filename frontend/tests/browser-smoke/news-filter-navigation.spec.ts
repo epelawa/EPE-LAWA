@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 const fixtureURL = `http://localhost:${process.env.SMOKE_FIXTURE_PORT ?? "54321"}`;
 
 for (const width of [320, 375, 768, 1024, 1440]) {
-  test(`news navigation and category tabs at ${width}px`, async ({ page, request }) => {
+  test(`news navigation and search filters at ${width}px`, async ({ page, request }) => {
     await request.post(`${fixtureURL}/__smoke__/mode`, { data: { mode: "stories" } });
     await page.setViewportSize({ width, height: 800 });
     await page.goto("/");
@@ -13,24 +13,23 @@ for (const width of [320, 375, 768, 1024, 1440]) {
     await expect(page).toHaveURL(/\/news$/);
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(10);
 
-    const category = page.getByRole("navigation", { name: "News categories", exact: true });
-    const allNews = category.getByRole("link", { name: "All news", exact: true });
-    const sports = category.getByRole("link", { name: "Sports", exact: true });
-    await expect(sports).toBeVisible();
-    await expect(allNews).toHaveAttribute("aria-current", "page");
+    const search = page.getByRole("searchbox", { name: "Search stories, topics and authors" });
+    await expect(search).toBeVisible();
+    await expect(search).toHaveValue("");
 
-    await sports.focus();
+    await search.focus();
+    await page.keyboard.type("sports");
     await page.keyboard.press("Enter");
-    await expect(page).toHaveURL(/category=sports/);
-    await expect(sports).toHaveAttribute("aria-current", "page");
-    await expect(allNews).not.toHaveAttribute("aria-current", "page");
+    await expect(page).toHaveURL(/\/news\?q=sports$/);
+    await expect(page.getByRole("searchbox", { name: "Search stories, topics and authors" })).toHaveValue("sports");
+    await expect(page.getByRole("heading", { name: "Smoke fixture: sports story" })).toBeVisible();
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(10);
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.goBack();
     await expect(page).toHaveURL(/\/news$/);
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(10);
     await page.goForward();
-    await expect(page).toHaveURL(/category=sports/);
+    await expect(page).toHaveURL(/\/news\?q=sports$/);
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(10);
     const dimensions = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth, content: document.documentElement.scrollWidth }));
     expect(dimensions.content).toBeLessThanOrEqual(dimensions.viewport + 1);
@@ -42,10 +41,12 @@ test("direct news entry and query filters retain their selected search", async (
   await page.setViewportSize({ width: 375, height: 800 });
   await page.goto("/news?q=story");
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(10);
-  const category = page.getByRole("navigation", { name: "News categories", exact: true });
-  await category.getByRole("link", { name: "Sports", exact: true }).click();
-  await expect(page).toHaveURL(/q=story.*category=sports/);
-  await expect(category.getByRole("link", { name: "Sports", exact: true })).toHaveAttribute("aria-current", "page");
+  const search = page.getByRole("searchbox", { name: "Search stories, topics and authors" });
+  await expect(search).toHaveValue("story");
+  await search.fill("sports");
+  await page.getByRole("button", { name: "Search", exact: true }).click();
+  await expect(page).toHaveURL(/\/news\?q=sports$/);
+  await expect(page.getByRole("heading", { name: "Smoke fixture: sports story" })).toBeVisible();
 });
 
 test("breaking banner includes an older active story beyond the first page, but not an expired one", async ({ page, request }) => {
@@ -55,7 +56,7 @@ test("breaking banner includes an older active story beyond the first page, but 
   const breaking = page.getByRole("region", { name: "Breaking news" });
   await expect(breaking.getByRole("link", { name: "Test story 34" })).toBeVisible();
   await expect(breaking.getByRole("link", { name: "Test story 35" })).toHaveCount(0);
-  await page.goto("/news?category=local-news");
+  await page.goto("/news?q=market");
   await expect(page.getByRole("region", { name: "Breaking news" })).toHaveCount(0);
 });
 

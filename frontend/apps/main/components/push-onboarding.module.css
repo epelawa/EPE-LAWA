@@ -217,7 +217,50 @@
 .error { margin: 0; color: #9d1c1c; font-size: .85rem; font-weight: 650; }
 .fine { margin: 0; color: #66728a; font-size: .76rem; line-height: 1.45; }
 .fineLink { color: #294b91; font-weight: 700; text-underline-offset: 2px; }
-.permissionGuide { display: none; }
+/* The working-step guide is shown on every device, so the browser permission
+   prompt is always explained the same way (phone, tablet and desktop). */
+.permissionGuide {
+  position: absolute;
+  z-index: 1;
+  top: max(6px, env(safe-area-inset-top));
+  right: clamp(12px, 6vw, 48px);
+  display: block;
+  width: clamp(92px, 27vw, 150px);
+  height: min(80dvh, 620px);
+  pointer-events: none;
+}
+.permissionGuide svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.guideTrail {
+  stroke: #fff;
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-dasharray: 1 17;
+  animation: trailIn 850ms ease-out both, trailFlow 1.6s linear 850ms infinite;
+}
+.guideArrow {
+  stroke: #477fe0;
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 2px 3px rgb(10 16 35 / .24));
+}
+.guideLabel {
+  position: absolute;
+  top: 24%;
+  right: 100%;
+  width: max-content;
+  max-width: 150px;
+  padding: 6px 9px;
+  border: 1px solid rgb(255 255 255 / .34);
+  border-radius: 999px;
+  background: rgb(10 16 35 / .78);
+  color: #fff;
+  font-size: .65rem;
+  font-weight: 750;
+  letter-spacing: .01em;
+  box-shadow: 0 4px 14px rgb(10 16 35 / .18);
+}
+.hint { position: relative; z-index: 2; }
 
 @media (max-width: 600px) {
   .overlay {
@@ -242,48 +285,6 @@
   .title { max-width: 20em; font-size: clamp(1.3rem, 6vw, 1.55rem); }
   .copy { font-size: .9rem; }
   .browserNote { padding: 10px; }
-  .permissionGuide {
-    position: absolute;
-    z-index: 1;
-    top: max(6px, env(safe-area-inset-top));
-    right: clamp(12px, 6vw, 34px);
-    display: block;
-    width: clamp(92px, 27vw, 126px);
-    height: min(80dvh, 620px);
-    pointer-events: none;
-  }
-  .permissionGuide svg { display: block; width: 100%; height: 100%; overflow: visible; }
-  .guideTrail {
-    stroke: #fff;
-    stroke-width: 5;
-    stroke-linecap: round;
-    stroke-dasharray: 1 17;
-    animation: trailIn 850ms ease-out both, trailFlow 1.6s linear 850ms infinite;
-  }
-  .guideArrow {
-    stroke: #477fe0;
-    stroke-width: 8;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    filter: drop-shadow(0 2px 3px rgb(10 16 35 / .24));
-  }
-  .guideLabel {
-    position: absolute;
-    top: 24%;
-    right: 100%;
-    width: max-content;
-    max-width: 124px;
-    padding: 6px 9px;
-    border: 1px solid rgb(255 255 255 / .34);
-    border-radius: 999px;
-    background: rgb(10 16 35 / .78);
-    color: #fff;
-    font-size: .65rem;
-    font-weight: 750;
-    letter-spacing: .01em;
-    box-shadow: 0 4px 14px rgb(10 16 35 / .18);
-  }
-  .hint { position: relative; z-index: 2; }
 }
 @keyframes trailIn { from { stroke-dashoffset: 72; opacity: 0; } to { stroke-dashoffset: 0; opacity: 1; } }
 @keyframes trailFlow { to { stroke-dashoffset: -36; } }
