@@ -119,16 +119,6 @@
   box-shadow: 0 8px 24px rgb(10 16 35 / .035);
 }
 
-.metricCard::before {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 3px;
-  background: linear-gradient(90deg, var(--palette-cobalt), var(--palette-ice-blue));
-  content: "";
-}
-
 .metricCardLinked {
   color: inherit;
   text-decoration: none;
