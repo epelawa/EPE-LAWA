@@ -56,7 +56,10 @@ export default function MapSearch({ businesses, businessError = false }: { busin
   const lat = coords && Number.isFinite(coords[0]) ? coords[0] : null;
   const lon = coords && Number.isFinite(coords[1]) ? coords[1] : null;
   const inside = lat !== null && lon !== null && insideEpeDivision(lat, lon);
-  const embedUrl = googleEmbedUrl(inside ? `${lat!.toFixed(5)},${lon!.toFixed(5)}` : selectedDestination || destination || "Epe Division");
+  // Device coordinates never enter the embed URL: loading the iframe is not a
+  // user action, and the page promises Google receives coordinates only when a
+  // directions link is opened. The preview stays scoped to Epe Division.
+  const embedUrl = googleEmbedUrl(inside ? "Epe Division" : selectedDestination || destination || "Epe Division");
 
   const requestLocation = () => {
     setLocation(null);
@@ -67,8 +70,8 @@ export default function MapSearch({ businesses, businessError = false }: { busin
     navigator.geolocation.getCurrentPosition((position) => {
       setLocation(`${position.coords.latitude},${position.coords.longitude}`);
       setLocationMessage(insideEpeDivision(position.coords.latitude, position.coords.longitude)
-        ? "Your position is marked on the Epe Division map below. Coordinates stay in this browser tab and are sent to Google only if you open directions there."
-        : "You are outside Epe Division, so the map stays on Epe Division. Your location is kept in this tab and sent to Google only if you open directions there.");
+        ? "Your position is confirmed inside Epe Division. The map below stays on Epe Division; open directions to send your position to Google Maps."
+        : "You are outside Epe Division, so the map stays on Epe Division. Your coordinates are sent to Google only if you open directions there.");
     }, (error) => {
       const message = error.code === error.PERMISSION_DENIED
         ? "Location permission was denied. You can still search manually."
@@ -160,7 +163,7 @@ export default function MapSearch({ businesses, businessError = false }: { busin
       </details>
 
       {mapVisible ? <Panel className={`ui-card ${styles.mapPanel}`}>
-        <SectionHeading eyebrow="Free map, no sign-in" title="Epe Division on the map" id="epe-embed-map" description="The map shows Epe Division: Epe, Eredo, Ikosi-Ejinrin, Ibeju-Lekki and Lekki. Your device location is marked only when you explicitly requested it and are inside the division." />
+        <SectionHeading eyebrow="Free map, no sign-in" title="Epe Division on the map" id="epe-embed-map" description="The map shows Epe Division: Epe, Eredo, Ikosi-Ejinrin, Ibeju-Lekki and Lekki. Device coordinates never enter this preview; Google receives them only when you open directions." />
         <iframe title="Epe Division map on Google Maps" src={embedUrl} loading="lazy" className={styles.mapFrame} referrerPolicy="no-referrer-when-downgrade" sandbox="allow-same-origin allow-scripts allow-popups allow-forms" />
         <div className="ui-actions">
           <a className="btn-secondary" target="_blank" rel="noopener noreferrer" href={mapsSearchUrl(selectedDestination || destination || "Epe")}>Search this in Google Maps <span className="sr-only">(opens in a new tab)</span></a>

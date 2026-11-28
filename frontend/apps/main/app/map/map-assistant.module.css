@@ -5,7 +5,6 @@
   flex-direction: column;
   min-height: calc(100dvh - 160px);
   border-radius: 24px;
-  overflow: hidden;
   border: 1px solid #293650;
   background:
     radial-gradient(120% 90% at 50% -10%, rgb(71 127 224 / .28), transparent 60%),
@@ -111,6 +110,7 @@
 .form:focus-within { border-color: #477fe0; box-shadow: 0 0 0 3px rgb(71 127 224 / .25); }
 .form textarea {
   flex: 1;
+  min-width: 0;
   min-height: 44px;
   max-height: 132px;
   padding: 12px 0;
