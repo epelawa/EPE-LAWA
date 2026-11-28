@@ -310,6 +310,14 @@ test('staff_analytics_engagement keeps one definition and stays authenticated-on
   assert.deepEqual(engagementAcl, { anon_exec: false, auth_exec: true, service_exec: false });
 });
 
+test('the analytics window stays capped no matter what the caller passes', async () => {
+  const body = (await rows("select prosrc from pg_proc where proname in ('staff_analytics_timeseries','staff_analytics_top_articles','staff_analytics_engagement')"));
+  assert.equal(body.length, 3);
+  for (const row of body) assert.match(row.prosrc, /least\(greatest\(p_days, 1\), 365\)/, 'every analytics function clamps p_days to a year');
+  const capped = await as(U.admin, () => rows('select count(*)::int as n from public.staff_analytics_engagement(100000)'));
+  assert.equal(capped[0].n, 365 * 4, 'a huge window still returns exactly one year of days per metric');
+});
+
 test('the security definer form_rate_limit stays callable by service_role only across the full chain', async () => {
   const acl = (await rows("select has_function_privilege('anon','public.form_rate_limit(text,text,integer,integer)','execute') anon_exec, has_function_privilege('authenticated','public.form_rate_limit(text,text,integer,integer)','execute') auth_exec, has_function_privilege('service_role','public.form_rate_limit(text,text,integer,integer)','execute') service_exec"))[0];
   assert.deepEqual(acl, { anon_exec: false, auth_exec: false, service_exec: true });
