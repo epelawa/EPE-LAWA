@@ -135,14 +135,14 @@ export default async function CronJobHistoryPage() {
               ) : token ? (
                 <SecretField value={token} label="Cron access token" />
               ) : (
-                <p className="ui-meta">No server secret is configured yet. Add <code>CRON_SECRET</code> (at least 16 characters) in Vercel → Settings → Environment Variables and redeploy; the token then appears here.</p>
+                <p className="ui-meta">No server secret is configured yet. Add <code>CRON_SECRET</code> (at least 16 characters) in the hosting environment's variables and redeploy; the token then appears here.</p>
               )}
             </li>
           </ol>
           <p className="ui-meta">
             Save, then use <strong>Test run</strong> on cron-job.org: a <code>200</code> response means it is authorised, and the run appears in the history below.
             A <code>401</code> means the header is missing or the value was changed.
-            The token only works for the cron endpoints. Keep it private; if it leaks, change <code>CRON_SECRET</code> in Vercel and paste the new token.
+            The token only works for the cron endpoints. Keep it private; if it leaks, change <code>CRON_SECRET</code> in the hosting environment and paste the new token.
           </p>
           <label className="ui-field">
             <span className="label">Health check (public, no token needed)</span>

@@ -58,7 +58,7 @@ const systemPages: NavItem[] = [
   { label: "Site pages", href: "/site-pages", hint: "Edit the About page and public page notes", group: "SYSTEM" },
   { label: "Legal pages", href: "/legal-pages", hint: "Maintain the Privacy, Terms and Guidelines notes", group: "SYSTEM" },
   { label: "Backups", href: "/backups", hint: "Database backups and restore in R2", group: "SYSTEM" },
-  { label: "Storage", href: "/storage", hint: "Space used in Supabase and R2; clean up and compress", group: "SYSTEM" },
+  { label: "Storage", href: "/storage", hint: "Space used by the database and files; clean up and compress", group: "SYSTEM" },
   { label: "Settings", href: "/settings", hint: "Maintenance and workspace status", group: "SYSTEM" },
   { label: "Cron Jobs", href: "/settings/cron", hint: "Cron job execution history and monitoring", group: "SYSTEM" },
   { label: "AI Scheduler", href: "/ai-scheduler", hint: "Autopilot, schedule and what the AI may do", primary: true, group: "SYSTEM" },

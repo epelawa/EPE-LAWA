@@ -50,8 +50,8 @@ async function inventory(db: SupabaseClient, id: string, buckets: BucketName[]):
   for (const bucket of buckets) {
     await progress(db, id, `Listing the ${bucket} bucket…`);
     const listed = await listBucket(bucket, MEDIA_PREFIX);
-    if (listed.state === "unconfigured") return `R2 is not configured in Vercel (missing ${listed.missing.join(", ")}).`;
-    if (listed.state !== "ready") return `The ${bucket} bucket could not be listed from Cloudflare.`;
+    if (listed.state === "unconfigured") return `File storage is not configured in the hosting environment (missing ${listed.missing.join(", ")}).`;
+    if (listed.state !== "ready") return `The ${bucket} bucket could not be listed from the file storage service.`;
     result.set(bucket, listed.objects);
   }
   return result;

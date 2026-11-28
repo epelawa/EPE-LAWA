@@ -138,7 +138,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
             </div>
             <h3>{tile.label}</h3>
             <p>{tile.description}</p>
-            <p className={styles.missing} title={tile.missing.length > 0 ? `Set these sensitive variables in Vercel: ${tile.missing.join(", ")}` : "Every variable this feature needs is present"}>
+            <p className={styles.missing} title={tile.missing.length > 0 ? `Set these sensitive variables in the hosting environment: ${tile.missing.join(", ")}` : "Every variable this feature needs is present"}>
               <ClockIcon size={14} /> {tile.set.length} of {tile.set.length + tile.missing.length} variables present
             </p>
             {tile.href && tile.href !== "/" ? <a className={styles.tileLink} href={tile.href}>Open desk</a> : null}

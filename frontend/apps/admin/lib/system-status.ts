@@ -76,7 +76,7 @@ export function systemReadiness(env: NodeJS.ProcessEnv): ReadinessTile[] {
     description: fcmMissing.length === 0
       ? "Firebase is configured: subscribed devices link an FCM token and are notified through FCM, falling back to Web Push."
       : fcmSet.length === 0
-        ? "Optional. Paste the Firebase service account and web config into Vercel, then redeploy. Until then notifications go through Web Push."
+        ? "Optional. Paste the Firebase service account and web config into the hosting environment, then redeploy. Until then notifications go through Web Push."
         : "Some Firebase variables are set; add the rest and redeploy. Notifications keep going through Web Push meanwhile.",
     state: fcmMissing.length === 0 ? "ready" : fcmSet.length === 0 ? "optional" : "incomplete",
     missing: fcmMissing,

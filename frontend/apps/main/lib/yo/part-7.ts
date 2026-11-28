@@ -110,7 +110,7 @@ export const PART_7: Record<string, string> = {
   "Your EPE LAWA sign-in link": "Ìjápọ̀ wíwọlé EPE LAWA rẹ",
   "Your EPE LAWA verification code": "Kóòdù ìfìdímúlẹ̀ EPE LAWA rẹ",
   "Enter the email address and verification code from your message.": "Tẹ àdírẹ́sì ímeèlì àti kóòdù ìfìdímúlẹ̀ láti inú ìfiránṣẹ́ rẹ.",
-  "If an account is awaiting verification, Supabase Auth may send a fresh email. Delivery depends on this project’s email configuration.": "Bí àkáǹtì kan bá ń dúró de ìfìdímúlẹ̀, Supabase Auth lè fi ímeèlì tuntun ránṣẹ́. Ìfiránṣẹ́ dá lórí ètò ímeèlì iṣẹ́ yìí.",
+  "If an account is awaiting verification, our account service may send a fresh email. Delivery depends on the email settings for this site.": "Bí àkáǹtì kan bá ń dúró de ìfìdímúlẹ̀, a lè fi ímeèlì tuntun ránṣẹ́. Ìfiránṣẹ́ dá lórí ètò ímeèlì iṣẹ́ yìí.",
   "That code could not be verified. Request a new verification email and try again.": "A kò lè fìdí kóòdù yẹn múlẹ̀. Bèèrè ímeèlì ìfìdímúlẹ̀ tuntun kí o sì gbìyànjú lẹ́ẹ̀kan sí i.",
   "We couldn’t request a fresh verification message right now. Try again later.": "A kò lè bèèrè ìfiránṣẹ́ ìfìdímúlẹ̀ tuntun báyìí. Gbìyànjú lẹ́ẹ̀kan sí i nígbà míì.",
   "That file is not an image. Choose a JPEG, PNG, WebP or phone photo.": "Fáìlì yẹn kì í ṣe àwòrán. Yan JPEG, PNG, WebP tàbí fọ́tò fóònù.",

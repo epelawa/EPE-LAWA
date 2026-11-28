@@ -58,7 +58,7 @@ export default function BackupControls({
         </p>
         {!dispatchConfigured ? (
           <Alert variant="warning">
-            <strong>Dispatch automation needs two server variables in Vercel:</strong> <code>BACKUP_DISPATCH_TOKEN</code> (a GitHub token with <em>actions:write</em> on the repository) and <code>BACKUP_WORKFLOW_REPO</code> (set it to <code>epelawa/EPE-LAWA</code>). Redeploy after saving; the workflows themselves already carry the database and R2 secrets.
+            <strong>Dispatch automation needs two server variables in the hosting environment:</strong> <code>BACKUP_DISPATCH_TOKEN</code> (a GitHub token with <em>actions:write</em> on the repository) and <code>BACKUP_WORKFLOW_REPO</code> (set it to <code>epelawa/EPE-LAWA</code>). Redeploy after saving; the workflows themselves already carry the database and file storage secrets.
           </Alert>
         ) : null}
         {createState.status !== "idle" ? (
@@ -77,7 +77,7 @@ export default function BackupControls({
 
         {initial.state === "unconfigured" ? (
           <Alert variant="warning">
-            Backup storage is not configured on the server. Missing variables: {initial.missing.join(", ")}. Set them in Vercel for the admin app, then reload this page.
+            Backup storage is not configured on the server. Missing variables: {initial.missing.join(", ")}. Set them in the hosting environment for the admin app, then reload this page.
           </Alert>
         ) : initial.state === "unavailable" ? (
           <Alert variant="error">Backup metadata could not be read right now. No action was taken.</Alert>
