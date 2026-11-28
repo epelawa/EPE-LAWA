@@ -88,23 +88,19 @@ export default function PushOnboarding({ smokeTest = false }: { smokeTest?: bool
 
   // The guide must live entirely in the free strip between the viewport top and
   // the card's top edge, or the card (full-width on phones) paints over the
-  // arrow. Measuring the card keeps the trail ending just above it on every
-  // device and zoom level.
+  // arrow. The card's entrance animation and web fonts move it after mount, and
+  // transform animations raise no resize event, so the measurement runs every
+  // frame while the guide is up; React skips re-renders when nothing moved.
   useEffect(() => {
     if (!visible || phase !== "working") return;
+    let frame = 0;
     const measure = () => {
       const card = cardRef.current;
-      if (!card) return;
-      setGuideEnd(Math.max(card.getBoundingClientRect().top, 0));
+      if (card) setGuideEnd(Math.max(card.getBoundingClientRect().top, 0));
+      frame = requestAnimationFrame(measure);
     };
-    const frame = requestAnimationFrame(measure);
-    window.addEventListener("resize", measure);
-    window.visualViewport?.addEventListener("resize", measure);
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener("resize", measure);
-      window.visualViewport?.removeEventListener("resize", measure);
-    };
+    frame = requestAnimationFrame(measure);
+    return () => cancelAnimationFrame(frame);
   }, [visible, phase]);
 
   useEffect(() => {
