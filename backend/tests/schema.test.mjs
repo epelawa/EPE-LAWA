@@ -302,6 +302,11 @@ test('map_correction_decide keeps one callable nine-argument definition; the gra
   assert.equal((await rows("select count(*)::int as n from pg_proc where proname='map_correction_decide'"))[0].n, 1);
 });
 
+test('the security definer form_rate_limit stays callable by service_role only across the full chain', async () => {
+  const acl = (await rows("select has_function_privilege('anon','public.form_rate_limit(text,text,integer,integer)','execute') anon_exec, has_function_privilege('authenticated','public.form_rate_limit(text,text,integer,integer)','execute') auth_exec, has_function_privilege('service_role','public.form_rate_limit(text,text,integer,integer)','execute') service_exec"))[0];
+  assert.deepEqual(acl, { anon_exec: false, auth_exec: false, service_exec: true });
+});
+
 test('configurable roles allow delegated admin entry and granular access while management stays primary-only', async () => {
   assert.equal((await rows("select count(*)::int n from public.staff_roles"))[0].n, 0, 'no role seeds');
   assert.equal((await rows("select count(*)::int n from public.staff_role_assignments"))[0].n, 0, 'no assignment seeds');
