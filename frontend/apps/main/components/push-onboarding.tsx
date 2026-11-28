@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useId, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import { useEffect, useId, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { BellIcon } from "./icons";
 import { OPEN_NOTIFICATIONS_EVENT } from "./notification-centre";
 import { anotherDialogIsOpen } from "../lib/site-search-events";
@@ -38,6 +38,7 @@ export default function PushOnboarding() {
   const [phase, setPhase] = useState<Phase>("intro");
   const [topics, setTopics] = useState<PushTopics>({ news: true, radio: true });
   const [message, setMessage] = useState("");
+  const [guideEnd, setGuideEnd] = useState<number | null>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const returnFocus = useRef<HTMLElement | null>(null);
   const titleId = useId();
@@ -72,6 +73,27 @@ export default function PushOnboarding() {
 
   useEffect(() => {
     if (visible) headingRef.current?.focus({ preventScroll: true });
+  }, [visible, phase]);
+
+  // The guide must live entirely in the free strip between the viewport top and
+  // the card's top edge, or the card (full-width on phones) paints over the
+  // arrow. Measuring the card keeps the trail ending just above it on every
+  // device and zoom level.
+  useEffect(() => {
+    if (!visible || phase !== "working") return;
+    const measure = () => {
+      const card = cardRef.current;
+      if (!card) return;
+      setGuideEnd(Math.max(card.getBoundingClientRect().top, 0));
+    };
+    const frame = requestAnimationFrame(measure);
+    window.addEventListener("resize", measure);
+    window.visualViewport?.addEventListener("resize", measure);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("resize", measure);
+      window.visualViewport?.removeEventListener("resize", measure);
+    };
   }, [visible, phase]);
 
   useEffect(() => {
@@ -127,7 +149,7 @@ export default function PushOnboarding() {
   // live status text below remains the accessible instruction.
   return <div className={styles.overlay} data-push-onboarding data-phase={phase}>
     <div className={styles.scrim} aria-hidden="true" onClick={() => { if (!working) dismiss(); }} />
-    {working ? <div className={styles.permissionGuide} aria-hidden="true">
+    {working ? <div className={styles.permissionGuide} aria-hidden="true" style={guideEnd == null ? undefined : { "--guide-end": `${guideEnd}px` } as CSSProperties}>
       <svg viewBox="0 0 160 560" preserveAspectRatio="none" fill="none">
         <path className={styles.guideTrail} d="M22 548C20 454 43 407 84 353c43-56 63-101 53-170" />
         <path className={styles.guideArrow} d="m120 202 17-24 17 24" />

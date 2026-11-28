@@ -17,6 +17,7 @@
     "typecheck": "turbo run typecheck --concurrency=1",
     "test": "tsx --conditions=react-server --test frontend/tests/*.test.mjs backend/tests/*.test.mjs && vitest run",
     "test:browser-smoke": "playwright test --config=playwright.smoke.config.ts",
+    "test:browser-smoke-push": "playwright test --config=playwright.smoke-push.config.ts",
     "audit": "node scripts/audit/run.mjs",
     "audit:security": "node scripts/audit/run.mjs --only=hacking",
     "audit:ui": "node scripts/audit/run.mjs --only=ui",

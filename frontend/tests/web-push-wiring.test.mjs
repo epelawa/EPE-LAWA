@@ -46,7 +46,11 @@ test('web push is fully wired: worker, guest-capable subscribe route, encrypted 
   assert.match(prompt, /Good things happen in Epe/);
   assert.match(prompt, /permissionGuide/, 'the browser step includes a dedicated visual guide');
   assert.match(promptStyles, /\.permissionGuide/);
-  assert.match(promptStyles, /height: min\(80dvh, 620px\)/, 'the guide arrow reaches toward the browser permission prompt');
+  assert.match(promptStyles, /height: min\(calc\(var\(--guide-end, 80dvh\) - max\(6px, env\(safe-area-inset-top\)\)\), 620px\)/, 'the guide ends exactly at the card top the component measures');
+  assert.match(prompt, /getBoundingClientRect\(\)\.top/, 'the component measures the card top so the arrow never hides beneath it');
+  assert.match(prompt, /--guide-end/, 'the measured card top reaches the stylesheet');
+  assert.match(promptStyles, /z-index: 3/, 'the guide stacks above the full-width mobile card');
+  assert.match(promptStyles, /max-height: calc\(100dvh - max\(150px/, 'phones always keep a strip above the card for the arrow');
   assert.match(promptStyles, /display: block/, 'the guide renders on every device, not only phones');
   assert.doesNotMatch(promptStyles, /\.permissionGuide\s*\{[^}]*display:\s*none/, 'the guide is never hidden on tablets or desktop');
   assert.doesNotMatch(promptStyles, /\.card::before/, 'the card has no blue stripe along its top edge');
