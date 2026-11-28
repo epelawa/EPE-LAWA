@@ -369,15 +369,8 @@ body:has(.member-reading-mode) .site-footer { display: none !important; }
 body:has([class*="listing_newsPage"]) { background:var(--ep-bg); background-image:none; }
 body:has([class*="directory_page"]) { background:var(--ep-bg); background-image:none; }
 
-/* Shared UX feedback and proximity-led section reveals. */
+/* Shared UX feedback. Sections paint immediately: no scroll-triggered reveals. */
 .home-section-reveal { content-visibility: auto; contain-intrinsic-size: 1px 420px; }
-.reveal { opacity: 0; transform: translateY(var(--ep-motion-enter-y, 8px)); filter: blur(7px); transition: opacity var(--dur-slow) var(--ease-out), transform var(--dur-slow) var(--ease-out), filter var(--dur-slow) var(--ease-out); }
-.reveal[data-visible="true"] { opacity: 1; transform: none; filter: blur(0); }
-@media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; filter: none; transition: none; } }
-/* Without JavaScript the observer never runs; never leave revealed content invisible. */
-@media (scripting: none) { .reveal { opacity: 1; transform: none; filter: none; transition: none; } }
-/* Homepage sections fade and lift only: animating filter: blur() is not compositor-friendly (Lighthouse non-composited-animations). */
-.home-section-reveal.reveal { filter: none; }
 
 /* Sitewide micro-interactions: press feedback on buttons, hover-lift on cards,
    a smooth palette transition on theme change. All disabled for reduced motion. */
