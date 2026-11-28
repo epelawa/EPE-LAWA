@@ -286,17 +286,16 @@ test("signed-in readers stay in member news when opening and leaving a story", a
   await page.getByRole("link", { name: "Read: Smoke fixture: market story" }).click();
   await expect(page).toHaveURL(/\/news\/smoke-market-story/);
   await expect(page.getByRole("heading", { name: "Smoke fixture: market story" })).toBeVisible();
-  await expect(page.getByRole("navigation", { name: "Member reading navigation" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Back to Discover" })).toHaveAttribute("href", "/dashboard?tab=discover");
-  await expect(page.getByRole("link", { name: "Saved stories" })).toHaveAttribute("href", "/dashboard?tab=saved");
-  await expect(page.locator(".site-head")).toBeHidden();
+  await expect(page.getByRole("navigation", { name: "Story controls" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Back to News" })).toHaveAttribute("href", "/news");
+  await expect(page.getByRole("button", { name: "Save this story" })).toBeVisible();
   for (const width of [320, 375, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 850 });
     const size = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth, page: document.documentElement.scrollWidth }));
     expect(size.page, `member article at ${width}px`).toBeLessThanOrEqual(size.viewport + 1);
-    await expect(page.getByRole("link", { name: "Back to Discover" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Back to News" })).toBeVisible();
   }
-  await page.getByRole("link", { name: "Back to Discover" }).click();
+  await page.getByRole("link", { name: "Back to News" }).click();
   await expect(page).toHaveURL(/\/dashboard\?tab=discover/);
 });
 
