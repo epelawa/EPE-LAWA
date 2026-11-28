@@ -27,6 +27,7 @@ export const CAPABILITY_GROUPS: CapabilityGroup[] = [
       { key: "moderation.review", label: "Moderate forum discussions" },
       { key: "history.review", label: "Review community history contributions" },
       { key: "tourism.review", label: "Review tourism suggestions" },
+      { key: "map.review", label: "Review and verify map corrections" },
       { key: "events.review", label: "Review community event submissions" },
       { key: "people.manage", label: "Who is Who profiles" },
     ],
