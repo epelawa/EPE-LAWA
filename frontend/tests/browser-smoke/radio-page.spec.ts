@@ -199,8 +199,10 @@ test("map location prompts after in-app navigation and the Google notice is a co
   await page.goto("/about");
   await page.getByRole("contentinfo").locator('a[href="/map"]').first().click();
   await expect(page).toHaveURL(/\/map$/);
+  await page.getByRole("link", { name: "Teach the assistant or correct the map" }).click();
+  await expect(page).toHaveURL(/\/map\/contribute$/);
   await page.getByRole("button", { name: "Use my location" }).click();
-  await expect(page.getByText(/Your position is marked on the map below/)).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText(/Your position is marked on the Epe Division map below/)).toBeVisible({ timeout: 15_000 });
   const notice = page.locator("details.fine-print");
   await expect(notice.locator("summary")).toHaveText("About Google Maps and your location");
   await expect(notice.getByText(/provided by an external service operated by Google/)).toBeHidden();

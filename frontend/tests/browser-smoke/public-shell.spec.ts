@@ -78,7 +78,7 @@ for (const width of viewportWidths) {
     }
 
     await expect(page).toHaveURL(/\/news$/);
-    await expect(page.getByRole("heading", { level: 1, name: "News from Epe." })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "News from Epe Division." })).toBeVisible();
     await expect(page.getByRole("heading", { name: "No stories published yet" })).toBeVisible();
     await captureEvidence(page, "news", width);
     await expectNoHorizontalOverflow(page, `News empty state at ${width}px`);
@@ -131,8 +131,8 @@ for (const width of [320, 375, 768, 1024, 1440] as const) {
     await page.route("https://images.example.com/**", (route) => route.fulfill({ status: 200, contentType: "image/svg+xml", body: '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" />' }));
     await page.goto("/news");
     await expect(page.getByRole("heading", { name: "Test story 1", exact: true })).toBeVisible();
-    await expect(page.getByRole("region", { name: "Sports stories" })).toBeVisible();
-    await expect(page.getByRole("region", { name: "Local News stories" })).toBeVisible();
+    await expect(page.getByRole("region", { name: "Latest reports" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Featured story" })).toBeVisible();
     await expect(page.locator('img[src="https://images.example.com/test-cover.jpg"]')).toHaveCount(1);
     await expect(page.getByRole("link", { name: "Load more news" })).toBeVisible();
     await expectNoHorizontalOverflow(page, `grouped News at ${width}px`);
@@ -158,11 +158,14 @@ test("homepage news link opens the newsroom at the top", async ({ page, request 
   await link.scrollIntoViewIfNeeded();
   await link.click();
   await expect(page).toHaveURL(/\/news$/);
-  await expect(page.getByRole("heading", { level: 1, name: "News from Epe." })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "News from Epe Division." })).toBeVisible();
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(10);
-  await page.getByRole("navigation", { name: "News categories", exact: true }).getByRole("link", { name: "Sports" }).click();
-  await expect(page).toHaveURL(/category=sports/);
+  const newsSearch = page.getByRole("searchbox", { name: "Search stories, topics and authors" });
+  await newsSearch.fill("sports");
+  await page.getByRole("button", { name: "Search", exact: true }).click();
+  await expect(page).toHaveURL(/\/news\?q=sports$/);
   await expect(page.getByRole("heading", { name: "Smoke fixture: sports story" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Smoke fixture: market story" })).toHaveCount(0);
 });
 
 for (const width of [320, 375, 768, 1024] as const) {
@@ -200,7 +203,7 @@ for (const width of [320, 375, 768, 1024] as const) {
       await page.keyboard.press("Enter");
 
       await expect(page).toHaveURL(/\/news$/);
-      await expect(page.getByRole("heading", { level: 1, name: "News from Epe." })).toBeVisible();
+      await expect(page.getByRole("heading", { level: 1, name: "News from Epe Division." })).toBeVisible();
       await expect(drawer).toBeHidden();
       await expect(menuButton).toBeFocused();
       await expect(page.locator('.drawer-nav a[href="/news"]')).toHaveAttribute("aria-current", "page");
@@ -211,7 +214,7 @@ for (const width of [320, 375, 768, 1024] as const) {
       await tabUntilFocused(page, target);
       await page.keyboard.press("Enter");
       await expect(page).toHaveURL(/\/news$/);
-      await expect(page.getByRole("heading", { level: 1, name: "News from Epe." })).toBeVisible();
+      await expect(page.getByRole("heading", { level: 1, name: "News from Epe Division." })).toBeVisible();
       if (await newsLink.isVisible()) await expect(newsLink).toHaveAttribute("aria-current", "page");
     }
 
