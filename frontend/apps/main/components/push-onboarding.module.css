@@ -218,15 +218,18 @@
 .fine { margin: 0; color: #66728a; font-size: .76rem; line-height: 1.45; }
 .fineLink { color: #294b91; font-weight: 700; text-underline-offset: 2px; }
 /* The working-step guide is shown on every device, so the browser permission
-   prompt is always explained the same way (phone, tablet and desktop). */
+   prompt is always explained the same way (phone, tablet and desktop). The
+   component measures the card's top edge into --guide-end, so the trail ends
+   just above the card and the full-width mobile card can never paint over the
+   arrow; it also stacks above the card as a belt-and-braces guarantee. */
 .permissionGuide {
   position: absolute;
-  z-index: 1;
+  z-index: 3;
   top: max(6px, env(safe-area-inset-top));
   right: clamp(12px, 6vw, 48px);
   display: block;
   width: clamp(92px, 27vw, 150px);
-  height: min(80dvh, 620px);
+  height: min(calc(var(--guide-end, 80dvh) - max(6px, env(safe-area-inset-top))), 620px);
   pointer-events: none;
 }
 .permissionGuide svg { display: block; width: 100%; height: 100%; overflow: visible; }
@@ -269,7 +272,7 @@
   }
   .card {
     width: 100%;
-    max-height: calc(100dvh - max(24px, env(safe-area-inset-top)) - 10px);
+    max-height: calc(100dvh - max(150px, calc(env(safe-area-inset-top) + 120px)) - 10px);
     gap: 12px;
     padding: 27px 22px max(22px, env(safe-area-inset-bottom));
     border-right: 0;
