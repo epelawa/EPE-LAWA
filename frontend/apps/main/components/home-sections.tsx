@@ -1,16 +1,10 @@
 import type { ReactNode } from "react";
-import Reveal from "./reveal";
 
-export function HomeSectionReveal({
-  children,
-  delay = 0,
-}: {
-  children: ReactNode;
-  delay?: number;
-}) {
-  return (
-    <Reveal className="home-section-reveal" delay={delay}>
-      {children}
-    </Reveal>
-  );
+/**
+ * Wraps a home section in the shared section container. Purely structural:
+ * content paints immediately with no entrance animation, and the class keeps
+ * the content-visibility perf hint from globals.css.
+ */
+export function HomeSectionReveal({ children }: { children: ReactNode }) {
+  return <div className="home-section-reveal">{children}</div>;
 }

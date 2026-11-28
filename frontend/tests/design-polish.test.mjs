@@ -116,3 +116,13 @@ test("Tidegate loaders remain wired and public motion is hydration-safe", () => 
   assert.doesNotMatch(staffCss, /has-scroll-reveal|data-scroll-reveal/);
   assert.match(staffCss, /prefers-reduced-motion:\s*reduce/);
 });
+
+test("home sections paint immediately: no scroll-triggered reveal machinery", () => {
+  const homeSections = read("frontend/apps/main/components/home-sections.tsx");
+  assert.doesNotMatch(homeSections, /from "\.\/reveal"|IntersectionObserver|data-visible/);
+  assert.match(homeSections, /home-section-reveal/);
+  const publicCss = read("frontend/apps/main/app/globals.css");
+  assert.doesNotMatch(publicCss, /\.reveal\b|\.reveal\[/);
+  const homeCss = read("frontend/apps/main/app/home-client-refresh.css");
+  assert.doesNotMatch(homeCss, /data-visible|animation-timeline/);
+});

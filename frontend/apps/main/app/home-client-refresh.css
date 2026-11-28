@@ -120,12 +120,6 @@
 .home-shortcuts a { transition: transform 180ms ease, box-shadow 180ms ease; }
 .home-shortcuts a:hover { transform: translateY(-3px); box-shadow: 0 12px 22px rgb(9 33 79 / .22); }
 @media (prefers-reduced-motion: reduce) { .home-shortcuts a { transition: none; } .home-shortcuts a:hover { transform: none; } }
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .home-story-card, .home-updates__list article { animation: home-card-reveal both; animation-timeline: view(); animation-range: entry 0% entry 25%; }
-    @keyframes home-card-reveal { from { opacity: .7; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-  }
-}
 
 /* Apple-style micro-motion: crisp entrance cascade, staggered tiles, card lift,
    press feedback and cover zoom. Transform/opacity only, each effect runs once,
@@ -139,14 +133,7 @@
   .home-hero__actions { animation-delay: 250ms; }
   @keyframes home-hero-rise { from { opacity: 0; transform: translateY(var(--ep-motion-enter-y, 8px)); } to { opacity: 1; transform: none; } }
 
-  .home-section-reveal[data-visible="false"] .home-shortcuts a { opacity: 0; transform: translateY(var(--ep-motion-enter-y, 8px)); }
-  .home-section-reveal .home-shortcuts a { transition: opacity .46s var(--ep-ease-out), transform .46s var(--ep-ease-out), background-color 180ms var(--ep-ease-out), color 180ms var(--ep-ease-out), box-shadow 180ms var(--ep-ease-out); }
-  .home-section-reveal .home-shortcuts a:nth-child(1) { transition-delay: 0ms; }
-  .home-section-reveal .home-shortcuts a:nth-child(2) { transition-delay: 55ms; }
-  .home-section-reveal .home-shortcuts a:nth-child(3) { transition-delay: 110ms; }
-  .home-section-reveal .home-shortcuts a:nth-child(4) { transition-delay: 165ms; }
-  .home-section-reveal .home-shortcuts a:nth-child(5) { transition-delay: 220ms; }
-  .home-section-reveal .home-shortcuts a:nth-child(6) { transition-delay: 275ms; }
+  .home-shortcuts a { transition: opacity .46s var(--ep-ease-out), transform .46s var(--ep-ease-out), background-color 180ms var(--ep-ease-out), color 180ms var(--ep-ease-out), box-shadow 180ms var(--ep-ease-out); }
 
   .home-shortcuts a:active { transform: scale(.965); box-shadow: 0 4px 10px rgb(9 33 79 / .18); }
   .home-story-card { transition: transform .38s var(--ep-ease-out), box-shadow .38s var(--ep-ease-out); }
@@ -159,7 +146,7 @@
 @media (prefers-reduced-motion: reduce) {
   .home-shortcuts a:active, .home-story-card, .home-story-card:hover, .home-story-card:active, .home-story-card:hover .home-story-image { animation: none; transition: none; transform: none; }
   .home-hero__eyebrow, .home-hero__content h1, .home-hero__lede, .home-hero__actions { animation: none; }
-  .home-section-reveal .home-shortcuts a { transition: none; }
+  .home-section-reveal .home-shortcuts a, .home-shortcuts a { transition: none; }
 }
 .home-shortcuts a, .home-story-cover-link { -webkit-tap-highlight-color: transparent; }
 
