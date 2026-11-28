@@ -60,13 +60,6 @@ jobs:
           SMOKE_SCREENSHOT_DIR: test-results/browser-smoke-evidence
           SMOKE_EVIDENCE_LABEL: ci-${{ github.sha }}
 
-      - name: Run push-guide device sweep
-        run: pnpm test:browser-smoke-push
-        env:
-          DEBUG: pw:webserver
-          SMOKE_SCREENSHOT_DIR: test-results/browser-smoke-evidence
-          SMOKE_EVIDENCE_LABEL: ci-${{ github.sha }}
-
       - name: Upload representative screenshots
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7

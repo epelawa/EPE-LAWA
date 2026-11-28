@@ -48,6 +48,7 @@ test('web push is fully wired: worker, guest-capable subscribe route, encrypted 
   assert.match(promptStyles, /\.permissionGuide/);
   assert.match(promptStyles, /height: min\(calc\(var\(--guide-end, 80dvh\) - max\(6px, env\(safe-area-inset-top\)\)\), 620px\)/, 'the guide ends exactly at the card top the component measures');
   assert.match(prompt, /getBoundingClientRect\(\)\.top/, 'the component measures the card top so the arrow never hides beneath it');
+  assert.match(prompt, /frame = requestAnimationFrame\(measure\)/, 'the measurement keeps running while the card entrance animation and fonts move it');
   assert.match(prompt, /--guide-end/, 'the measured card top reaches the stylesheet');
   assert.match(promptStyles, /z-index: 3/, 'the guide stacks above the full-width mobile card');
   assert.match(promptStyles, /max-height: calc\(100dvh - max\(150px/, 'phones always keep a strip above the card for the arrow');
@@ -60,7 +61,10 @@ test('web push is fully wired: worker, guest-capable subscribe route, encrypted 
   assert.match(client, /Notification\.requestPermission\(\)/);
   assert.match(client, /data\.saved !== true/, 'success only after the server confirms');
   assert.doesNotMatch(layout, /<NotificationPrompt \/>/);
-  assert.match(layout, /<PushOnboarding \/>/);
+  assert.match(layout, /<PushOnboarding smokeTest=\{process\.env\.BROWSER_SMOKE_TEST === "true"\} \/>/, 'the smoke browser gets a deterministic way to open the onboarding');
+  assert.match(prompt, /smokeTest = false/, 'the smoke escape hatch is off for real visitors by default');
+  assert.match(prompt, /push-smoke/, 'the smoke browser opens the modal through the push-smoke parameter');
+  assert.match(prompt, /if \(smokeTest \|\| visible \|\| quiet\) return;/, 'the smoke browser never takes the organic eligibility path');
   // Topics are stored per device (and, for members, account-wide) where the fan-out reads them.
   assert.match(route, /push_news: chosen\.news/);
   assert.match(route, /push_news: topics\.news, push_radio: topics\.radio/);

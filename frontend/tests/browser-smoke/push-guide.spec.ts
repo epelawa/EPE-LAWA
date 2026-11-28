@@ -4,6 +4,9 @@ import { resolve } from "node:path";
 
 // Phone, phablet, tablet, landscape tablet and desktop: the guide must read the
 // same way on all of them (owner report: the arrow hid beneath the card on mobile).
+// Dev builds read NEXT_PUBLIC_* at runtime, so the smoke browser cannot take the
+// organic eligibility path; the smoke layout passes smokeTest and this spec opens
+// the working-phase modal directly through the ?push-smoke=working parameter.
 const devices = [
   { label: "320x740", width: 320, height: 740 },
   { label: "375x812", width: 375, height: 812 },
@@ -27,19 +30,15 @@ test("the permission guide arrow stays above the card on every device", async ({
   const guide = overlay.locator("div[class*='permissionGuide']");
   const arrow = guide.locator("path[class*='guideArrow']");
 
+  await page.addInitScript(() => {
+    localStorage.setItem("epelawa_cookie_consent", "true");
+  });
+
   for (const device of devices) {
     await page.setViewportSize({ width: device.width, height: device.height });
-    await page.addInitScript(() => {
-      localStorage.setItem("epelawa_cookie_consent", "true");
-      // Hold the browser permission step open so the working-phase guide stays
-      // on screen: report "default", then never resolve the request.
-      Object.defineProperty(Notification, "permission", { configurable: true, get: () => "default" });
-      Notification.requestPermission = () => new Promise(() => {});
-    });
-    await page.goto("/");
-    await expect(card).toBeVisible();
-    await page.getByRole("button", { name: "Continue to browser prompt" }).click();
+    await page.goto("/?push-smoke=working");
 
+    await expect(card, `card shows at ${device.label}`).toBeVisible();
     await expect(guide, `guide shows at ${device.label}`).toBeVisible();
     await expect(arrow, `arrow shows at ${device.label}`).toBeVisible();
 

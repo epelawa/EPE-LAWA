@@ -125,7 +125,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <Suspense fallback={null}><AuthenticatedMobileNavigation /></Suspense>
         <Connectivity />
         <FloatingSupport enabled={process.env.ENQUIRY_INTAKE_ENABLED === "true"} />
-        <PushOnboarding />
+        <PushOnboarding smokeTest={process.env.BROWSER_SMOKE_TEST === "true"} />
         <RadioMiniPlayer />
         <YorubaTranslator lang={siteLanguage} />
 
