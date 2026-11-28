@@ -80,7 +80,7 @@ begin
  return v_knowledge;
 end; $$;
 revoke all on function public.map_correction_decide(uuid,text,text,text,text,numeric,numeric,text,text) from public, anon;
-grant execute on function public.map_correction_decide(uuid,text,text,text,text,numeric,numeric,text,text) to authenticated;
+grant execute on function public.map_correction_decide(uuid,text,text,text,numeric,numeric,text,text) to authenticated;
 
 -- The intake endpoint uses this dedicated scope; widen both server-side checks.
 create or replace function public.form_rate_limit(p_scope text, p_fingerprint text, p_limit integer default 5, p_global_limit integer default 100)

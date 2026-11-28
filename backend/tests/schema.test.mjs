@@ -297,6 +297,11 @@ test('History publishing requires approved copy, preserves private evidence, and
   assert.equal((await rows("select count(*)::int as n from pg_proc where proname='history_contribution_decide' and pronargs <> 8"))[0].n, 0);
 });
 
+test('map_correction_decide keeps one callable nine-argument definition; the grant-compatibility stub is gone', async () => {
+  assert.equal((await rows("select count(*)::int as n from pg_proc where proname='map_correction_decide' and pg_get_function_identity_arguments(oid)='p_submission_id uuid, p_decision text, p_place_name text, p_details text, p_directions_query text, p_latitude numeric, p_longitude numeric, p_source_note text, p_source_url text'"))[0].n, 1);
+  assert.equal((await rows("select count(*)::int as n from pg_proc where proname='map_correction_decide'"))[0].n, 1);
+});
+
 test('configurable roles allow delegated admin entry and granular access while management stays primary-only', async () => {
   assert.equal((await rows("select count(*)::int n from public.staff_roles"))[0].n, 0, 'no role seeds');
   assert.equal((await rows("select count(*)::int n from public.staff_role_assignments"))[0].n, 0, 'no assignment seeds');
