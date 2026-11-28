@@ -36,7 +36,7 @@ function pinStatusLabel(place: Place) {
     ? "Human-verified EPE LAWA location"
     : place.pinSource === "openstreetmap"
       ? "Search pin · not staff-verified"
-      : "No verified pin available · map shows Epe Division";
+      : "No verified pin · showing an unverified Google Maps search";
 }
 
 function BrainWaveMark() {

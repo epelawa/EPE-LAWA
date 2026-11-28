@@ -52,14 +52,9 @@ export default function MapSearch({ businesses, businessError = false }: { busin
   const selectedDestination = selectedBusiness
     ? [selectedBusiness.name, selectedBusiness.address, selectedBusiness.landmark, selectedBusiness.area].filter(Boolean).join(", ")
     : query.trim();
-  const coords = location ? location.split(",").map(Number) : null;
-  const lat = coords && Number.isFinite(coords[0]) ? coords[0] : null;
-  const lon = coords && Number.isFinite(coords[1]) ? coords[1] : null;
-  const inside = lat !== null && lon !== null && insideEpeDivision(lat, lon);
-  // Device coordinates never enter the embed URL: loading the iframe is not a
-  // user action, and the page promises Google receives coordinates only when a
-  // directions link is opened. The preview stays scoped to Epe Division.
-  const embedUrl = googleEmbedUrl(inside ? "Epe Division" : selectedDestination || destination || "Epe Division");
+  // The preview is always the division-wide map: typed destinations and device
+  // coordinates reach Google only through the explicit outbound links below.
+  const embedUrl = googleEmbedUrl("Epe Division");
 
   const requestLocation = () => {
     setLocation(null);

@@ -77,9 +77,10 @@ test('the manual map preview still needs an explicit interaction and now embeds 
   assert.doesNotMatch(ui, /osmEmbedUrl|osmSearchUrl|export\/embed\.html/);
 });
 
-test('the map preview iframe never receives device coordinates', () => {
-  assert.match(ui, /googleEmbedUrl\(inside \? "Epe Division" : selectedDestination \|\| destination \|\| "Epe Division"\)/);
+test('the map preview iframe never receives device coordinates or typed destinations', () => {
+  assert.match(ui, /googleEmbedUrl\("Epe Division"\)/);
   assert.doesNotMatch(ui, /googleEmbedUrl\([^)]*\$\{lat/);
+  assert.doesNotMatch(ui, /googleEmbedUrl\([^)]*(destination|selectedDestination)/);
   assert.match(ui, /Device coordinates never enter this preview/);
 });
 
