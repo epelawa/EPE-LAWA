@@ -63,7 +63,10 @@ export default function MapAssistant() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const logRef = useRef<HTMLOListElement>(null);
 
-  useEffect(() => { logRef.current?.lastElementChild?.scrollIntoView({ block: "nearest" }); }, [turns, busy]);
+  useEffect(() => {
+    const log = logRef.current;
+    if (log && turns.length) log.scrollTop = log.scrollHeight;
+  }, [turns, busy, error, notice]);
 
   async function ask(question: string) {
     const clean = question.replace(/\s+/g, " ").trim().slice(0, 500);
@@ -103,7 +106,7 @@ export default function MapAssistant() {
   const empty = !turns.length && !busy && !error;
 
   return <section className={`${styles.root} page-full-bleed`} data-empty={empty ? "true" : "false"} aria-labelledby="map-assistant-title">
-    <ol ref={logRef} className={styles.log} aria-live="polite" aria-relevant="additions text">
+    <ol ref={logRef} className={styles.log} tabIndex={0} aria-label="Map assistant conversation" aria-live="polite" aria-relevant="additions text">
       <li className={styles.greeting}>
         <BrainWaveMark />
         <p className={styles.hello}>Hello.</p>

@@ -3,7 +3,8 @@
 .root {
   display: flex;
   flex-direction: column;
-  min-height: calc(100dvh - 160px);
+  height: calc(100dvh - 160px);
+  min-height: 360px;
   border-radius: 24px;
   border: 1px solid #293650;
   background:
@@ -16,15 +17,16 @@
   flex-direction: column;
   gap: 14px;
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   width: min(100%, 720px);
   margin: 0 auto;
   padding: clamp(24px, 5vw, 48px) 16px 18px;
   list-style: none;
 }
-/* Keep the last reply clear of the sticky composer when the log is scrolled to it. */
-.log > li { scroll-margin-bottom: 132px; }
+.log > li { flex-shrink: 0; }
 /* First-visit screen: greeting centred in the remaining space, composer at the bottom. */
-.root[data-empty="true"] .log { justify-content: center; }
+.root[data-empty="true"] .log { justify-content: safe center; }
 .greeting {
   display: grid;
   justify-items: center;
@@ -105,7 +107,7 @@
 .thinking i:nth-child(3) { animation-delay: .36s; }
 @keyframes blink { 0%, 100% { opacity: .25; } 45% { opacity: 1; } }
 
-.composer { position: sticky; bottom: 0; display: grid; gap: 8px; width: min(100%, 720px); margin: 0 auto; padding: 10px 16px max(16px, env(safe-area-inset-bottom)); background: linear-gradient(180deg, transparent, rgb(10 16 35 / .88) 38%); }
+.composer { flex-shrink: 0; display: grid; gap: 8px; width: min(100%, 720px); margin: 0 auto; padding: 10px 16px max(16px, env(safe-area-inset-bottom)); background: linear-gradient(180deg, transparent, rgb(10 16 35 / .88) 38%); }
 .error { margin: 0; color: #ffb3b3; font-size: .84rem; font-weight: 650; }
 .notice { margin: 0; color: #a7c5f5; font-size: .84rem; font-weight: 600; }
 .form { display: flex; align-items: flex-end; gap: 8px; padding: 8px 8px 8px 18px; border: 1px solid rgb(166 178 197 / .38); border-radius: 999px; background: rgb(10 16 35 / .72); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
@@ -139,7 +141,7 @@
 .footnote a:focus-visible { outline: 3px solid #477fe0; outline-offset: 2px; }
 
 @media (max-width: 600px) {
-  .root { border-radius: 0; border-inline: 0; min-height: calc(100dvh - 132px); }
+  .root { border-radius: 0; border-inline: 0; height: calc(100dvh - 132px); }
   .mapFrameWrap iframe { height: 200px; }
   .form { padding-left: 12px; }
 }
