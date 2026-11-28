@@ -16,8 +16,8 @@ test('hero entrance is a staggered cascade reduced-motion can switch off', () =>
   assert.ok(reduced, 'reduced-motion guard for hero entrance');
 });
 
-test('shortcut tiles cascade staggered and press like a native control', () => {
-  assert.match(homeCss, /\.home-shortcuts a:nth-child\(6\) \{ transition-delay: 275ms; \}/);
+test('shortcut tiles press like a native control and do not cascade on scroll', () => {
+  assert.doesNotMatch(homeCss, /transition-delay: \d+ms; \}\/\* stagger \*\/|\.home-shortcuts a:nth-child\(2\) \{ transition-delay/);
   assert.match(homeCss, /\.home-shortcuts a:active \{ transform: scale\(\.965\)/);
   assert.match(homeCss, /-webkit-tap-highlight-color: transparent/);
 });
