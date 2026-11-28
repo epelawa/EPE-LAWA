@@ -39,7 +39,7 @@ export default async function AiChatPage({ searchParams }: { searchParams: Promi
   const db = await createStaffClient();
   const access = await db.rpc("staff_roles_authorized");
   if (access.error || access.data !== true) {
-    return <PageFrame><PageIntro eyebrow="System · AI" title="AI chat" description="Talk to the AI about articles and support tickets." />
+    return <PageFrame><PageIntro title="AI chat" description="Talk to the AI about articles and support tickets." />
       <EmptyPanel title={access.error ? "Access could not be verified" : "Primary administrators only"} description="The AI chat is restricted to the primary administrators." actions={<Link href={adminHref("/")}>Back to dashboard</Link>} />
     </PageFrame>;
   }
@@ -67,7 +67,7 @@ export default async function AiChatPage({ searchParams }: { searchParams: Promi
   const notice = result ? RESULTS[result] : undefined;
 
   return <PageFrame className="ui-stack">
-    <PageIntro eyebrow="System · AI" title="AI chat" description={<>Ask the AI to work on EPE LAWA&apos;s articles (by article ID, shown in the <Link href={adminHref("/newsroom")} className="ui-text-link">newsroom</Link>) and support tickets (by number, EPE-XXXXXX). Epe Division content only. Edits and replies run straight away; deletes and anything touching more than {CONFIRM_ABOVE_ITEMS} items wait for your Confirm. The AI never publishes.</>}
+    <PageIntro title="AI chat" description={<>Ask the AI to work on EPE LAWA&apos;s articles (by article ID, shown in the <Link href={adminHref("/newsroom")} className="ui-text-link">newsroom</Link>) and support tickets (by number, EPE-XXXXXX). Epe Division content only. Edits and replies run straight away; deletes and anything touching more than {CONFIRM_ABOVE_ITEMS} items wait for your Confirm. The AI never publishes.</>}
       actions={messages.length ? <form action={clearAdminChat}><SubmitButton className={buttonClassName("secondary")} pendingLabel="Clearing…">Clear conversation</SubmitButton></form> : undefined} />
     {notice ? <Notice tone={notice.tone} role={notice.tone === "danger" ? "alert" : "status"}>{notice.text}</Notice> : null}
     {loadFailed ? <Notice tone="danger" role="alert">The conversation could not be loaded. Sending still works.</Notice> : null}

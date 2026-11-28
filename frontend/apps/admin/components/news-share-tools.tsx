@@ -40,7 +40,7 @@ export default function NewsShareTools({ title, summary, url, imageUrl }: { titl
     setMessage("The cover image could not be attached. Use the copied caption and link, or select them below if clipboard access is unavailable.");
   }
   return <section className={styles.share} aria-labelledby="admin-share-title">
-    <div><p className={styles.eyebrow}>PUBLIC ARTICLE</p><h2 id="admin-share-title">Share this story</h2><p>Choose hashtags and share the public link with a caption. When supported, the cover is attached as a file; otherwise only the link and caption can be shared.</p></div>
+    <div><h2 id="admin-share-title">Share this story</h2><p>Choose hashtags and share the public link with a caption. When supported, the cover is attached as a file; otherwise only the link and caption can be shared.</p></div>
     <details><summary>Choose hashtags ({selected.length} selected)</summary><p>Suggestions are based on matching words, not AI. Review them before sharing.</p><div className={styles.tags}>{NEWS_HASHTAGS.map(({ tag }) => <button key={tag} type="button" aria-pressed={selected.includes(tag)} onClick={() => toggle(tag)}>#{tag}</button>)}</div></details>
     <div className={styles.actions}><button type="button" onClick={share}>Share article</button><button type="button" onClick={copy}>Copy caption and link</button></div>
     {message ? <p role="status" aria-live="polite">{message}</p> : null}

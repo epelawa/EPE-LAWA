@@ -59,7 +59,7 @@ export default async function StoragePage({ searchParams }: { searchParams: Prom
   const db = await createStaffClient();
   const access = await db.rpc("staff_roles_authorized");
   if (access.error || access.data !== true) {
-    return <PageFrame><PageIntro eyebrow="System" title="Storage" description="Database and file storage." />
+    return <PageFrame><PageIntro title="Storage" description="Database and file storage." />
       <EmptyPanel title={access.error ? "Access could not be verified" : "Primary administrators only"} description="Storage cleanup deletes files, so only the primary administrators can use it." actions={<Link href={adminHref("/")}>Back to dashboard</Link>} />
     </PageFrame>;
   }
@@ -116,7 +116,6 @@ export default async function StoragePage({ searchParams }: { searchParams: Prom
   return (
     <PageFrame className="ui-stack">
       <PageIntro
-        eyebrow="System"
         title="Storage"
         description="How much space the site uses in the site database and the file buckets, with tools to remove unused files and compress every image."
         meta={<Link href={adminHref("/backups")}>Database backups →</Link>}

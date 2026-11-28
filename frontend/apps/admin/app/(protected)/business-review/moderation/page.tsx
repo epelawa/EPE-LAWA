@@ -7,14 +7,14 @@ export const dynamic = "force-dynamic";
 export default async function Page() {
   const db = await createStaffClient();
   const cap = await db.rpc("has_capability", { p_capability: "business.review" });
-  if (cap.error || cap.data !== true) return <PageFrame className="ui-stack"><PageIntro eyebrow="Business directory · Staff" title="Review moderation" description="Moderate member-submitted business reviews." /><Notice tone="danger" role="alert">Business review capability is required.</Notice></PageFrame>;
+  if (cap.error || cap.data !== true) return <PageFrame className="ui-stack"><PageIntro title="Review moderation" description="Moderate member-submitted business reviews." /><Notice tone="danger" role="alert">Business review capability is required.</Notice></PageFrame>;
   const { data, error } = await db.from("business_reviews").select("id,business_id,rating,body,created_at").eq("state", "pending").is("deleted_at", null).order("created_at").limit(100);
   const ids = [...new Set((data ?? []).map(x => x.business_id))];
   const businesses = ids.length ? await db.from("businesses").select("id,name").in("id", ids).limit(100) : { data: [] };
   const names = new Map((businesses.data ?? []).map(x => [x.id, x.name]));
   return <PageFrame className="ui-stack">
-    <PageIntro eyebrow="Business directory · Staff" title="Review moderation" description="Member reviews stay private until a reviewer approves them. Hide decisions require a reason and are audited." />
-    {error ? <EmptyPanel title="Moderation queue unavailable" description="No review details are displayed. Try again later." /> : !data?.length ? <EmptyPanel title="No reviews awaiting moderation" description="New pending reviews will appear here for staff review." /> : <section className="ui-stack-sm"><SectionHeading eyebrow="Moderation queue" title="Pending member reviews" description="Choose whether to approve and publish or hide each review." />
+    <PageIntro title="Review moderation" description="Member reviews stay private until a reviewer approves them. Hide decisions require a reason and are audited." />
+    {error ? <EmptyPanel title="Moderation queue unavailable" description="No review details are displayed. Try again later." /> : !data?.length ? <EmptyPanel title="No reviews awaiting moderation" description="New pending reviews will appear here for staff review." /> : <section className="ui-stack-sm"><SectionHeading title="Pending member reviews" description="Choose whether to approve and publish or hide each review." />
       <ul className="ui-list ui-stack-sm">{data.map(r => <li key={r.id}><Panel className="ui-stack-sm">
         <div className="ui-row"><StatusBadge tone="warning">Pending</StatusBadge><span className="ui-meta">Received {new Date(r.created_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}</span></div>
         <h2 className="ui-item-title">{names.get(r.business_id) ?? "Business"} · {r.rating}/5</h2>

@@ -30,7 +30,6 @@ export default async function RolesPage() {
   const denied = (
     <PageFrame>
       <PageIntro
-        eyebrow="Access control"
         title="Roles"
         description="Role management requires the primary administrator or the configured role-management capability."
       />
@@ -60,7 +59,6 @@ export default async function RolesPage() {
   return (
     <PageFrame className="ui-stack">
       <PageIntro
-        eyebrow="Access control"
         title="Roles"
         description="Choose a role to edit permissions or manage staff access. Changes take effect on protected requests."
       />

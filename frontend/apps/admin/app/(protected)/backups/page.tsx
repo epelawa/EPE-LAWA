@@ -24,7 +24,6 @@ export default async function BackupsPage() {
   return (
     <PageFrame className={styles.page}>
       <PageIntro
-        eyebrow="System / Recovery"
         title="Backup &amp; restore"
         description="On-demand snapshots of the live database, stored in private R2. Restores are capability-gated, require typed confirmation, and always take a fresh safety snapshot first."
       />

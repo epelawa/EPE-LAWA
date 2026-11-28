@@ -50,7 +50,7 @@ export default async function CronJobHistoryPage() {
   const db = await createStaffClient();
   const access = await db.rpc("has_capability", { p_capability: "audit.read" });
   if (access.error || access.data !== true) {
-    return <PageFrame><PageIntro eyebrow="Settings · Cron" title="Cron Job History" description="Scheduled job history." />
+    return <PageFrame><PageIntro title="Cron Job History" description="Scheduled job history." />
       <EmptyPanel title={access.error ? "Access could not be verified" : "Access denied"}
         description="Cron history requires the audit.read capability."
         actions={<Link href={adminHref("/settings")}>Back to settings</Link>} />
@@ -63,7 +63,7 @@ export default async function CronJobHistoryPage() {
     .limit(200);
 
   if (error) {
-    return <PageFrame><PageIntro eyebrow="Settings · Cron" title="Cron Job History" description="Scheduled job history." />
+    return <PageFrame><PageIntro title="Cron Job History" description="Scheduled job history." />
       <EmptyPanel title="Cron history unavailable" description="Job records could not be loaded. Try again later."
         actions={<Link href={adminHref("/settings")}>Back to settings</Link>} />
     </PageFrame>;
@@ -88,7 +88,6 @@ export default async function CronJobHistoryPage() {
   return (
     <PageFrame className="ui-stack">
       <PageIntro
-        eyebrow="Settings · Cron"
         title="Cron Job History"
         description="View execution history of scheduled jobs including database pings and health checks."
         actions={
@@ -100,7 +99,6 @@ export default async function CronJobHistoryPage() {
 
       <Panel className="ui-subtle">
         <SectionHeading
-          eyebrow="Connect"
           title="Set up cron-job.org"
           description="Paste these values into a new cron job. The token is filled in for you; nothing needs to be typed."
         />
@@ -156,31 +154,25 @@ export default async function CronJobHistoryPage() {
 
       <Panel className="ui-subtle">
         <SectionHeading
-          eyebrow="Overview"
           title="Cron Job Statistics"
         />
         <div className="ui-grid ui-grid--4">
           <div className="ui-card">
-            <p className="ui-eyebrow">Total Runs</p>
             <p className="text-4xl font-bold">{stats.total}</p>
           </div>
           <div className="ui-card">
-            <p className="ui-eyebrow">Successful</p>
             <p className="text-4xl font-bold text-green-600">{stats.success}</p>
           </div>
           <div className="ui-card">
-            <p className="ui-eyebrow">Failed</p>
             <p className="text-4xl font-bold text-red-600">{stats.failed}</p>
           </div>
           <div className="ui-card">
-            <p className="ui-eyebrow">Timeouts</p>
             <p className="text-4xl font-bold text-yellow-600">{stats.timeout}</p>
           </div>
         </div>
       </Panel>
 
       <SectionHeading
-        eyebrow="History"
         title="Recent Cron Job Executions"
         description="Showing the 200 most recent job runs"
       />
@@ -196,7 +188,6 @@ export default async function CronJobHistoryPage() {
             <Panel key={record.id} className="ui-stack-sm">
               <div className="ui-row">
                 <div className="ui-stack-sm">
-                  <p className="ui-eyebrow">{record.job_name}</p>
                   <StatusBadge status={record.status} />
                 </div>
                 <span className="ui-meta">
@@ -239,7 +230,6 @@ export default async function CronJobHistoryPage() {
 
       <Panel className="ui-subtle">
         <SectionHeading
-          eyebrow="Information"
           title="About Cron Jobs"
         />
         <div className="ui-stack-sm ui-meta">

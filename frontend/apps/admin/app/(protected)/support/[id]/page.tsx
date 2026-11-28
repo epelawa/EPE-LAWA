@@ -30,10 +30,10 @@ export default async function SupportTicket({ params, searchParams }: { params: 
     const { data, error } = await db.rpc("staff_support_get", { p_id: id });
     if (!error && data) { const value = data as { ticket: Ticket; messages: Message[] }; ticket = value.ticket; messages = value.messages ?? []; }
   }
-  if (!ticket) return <PageFrame className="ui-stack"><PageIntro eyebrow="Support tickets" title="Ticket not found" /><Panel><a className="ui-text-link" href={adminHref("/support")}>Back to support tickets</a></Panel></PageFrame>;
+  if (!ticket) return <PageFrame className="ui-stack"><PageIntro title="Ticket not found" /><Panel><a className="ui-text-link" href={adminHref("/support")}>Back to support tickets</a></Panel></PageFrame>;
   const finished = ticket.status === "resolved" || ticket.status === "closed";
   return <PageFrame className="ui-stack">
-    <PageIntro eyebrow={`Support ticket ${ticket.reference}`} title={ticket.subject} description={<>From <strong>{ticket.requester_name}</strong> · {ticket.requester_email} · opened {when(ticket.created_at)}</>} actions={<a className="btn-secondary" href={adminHref("/support")}>All tickets</a>} />
+    <PageIntro title={ticket.subject} description={<>From <strong>{ticket.requester_name}</strong> · {ticket.requester_email} · opened {when(ticket.created_at)}</>} actions={<a className="btn-secondary" href={adminHref("/support")}>All tickets</a>} />
     {notice ? <Notice tone={notice.tone} role={notice.tone === "danger" ? "alert" : "status"}>{notice.text}</Notice> : null}
     <div className="ui-row" style={{ flexWrap: "wrap", gap: "0.4rem" }}>
       <StatusBadge tone={ticket.status === "open" ? "warning" : finished ? "success" : "neutral"}>{statusLabel(ticket.status, "staff")}</StatusBadge>

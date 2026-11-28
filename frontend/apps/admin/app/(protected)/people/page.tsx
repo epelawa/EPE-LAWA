@@ -30,8 +30,8 @@ export default async function PeoplePage({ searchParams }: { searchParams: Promi
   const p = await searchParams;
   const db = await createStaffClient();
   const { data: grants, error: grantError } = await db.from("staff_capability_grants").select("capability").eq("capability", "people.manage").limit(1);
-  if (grantError) return <PageFrame className="ui-stack"><PageIntro eyebrow="Staff workspace" title="People" description="Who is Who profile administration." /><Notice tone="danger" role="alert">The people workspace is unavailable right now. Reload the page to try again.</Notice></PageFrame>;
-  if (!grants?.length) return <PageFrame className="ui-stack"><PageIntro eyebrow="Staff workspace" title="People" description="Who is Who profile administration." /><Notice tone="danger" role="alert">The people.manage capability is required. No records are shown.</Notice></PageFrame>;
+  if (grantError) return <PageFrame className="ui-stack"><PageIntro title="People" description="Who is Who profile administration." /><Notice tone="danger" role="alert">The people workspace is unavailable right now. Reload the page to try again.</Notice></PageFrame>;
+  if (!grants?.length) return <PageFrame className="ui-stack"><PageIntro title="People" description="Who is Who profile administration." /><Notice tone="danger" role="alert">The people.manage capability is required. No records are shown.</Notice></PageFrame>;
 
   let query = db.from("people").select("id,full_name,preferred_name,community,community_note,biography,achievements,is_deceased,portrait_key,portrait_alt,portrait_credit,status,revision,published_at").is("deleted_at", null).order("updated_at", { ascending: false }).limit(100);
   if (p.q?.trim()) query = query.ilike("full_name", `%${p.q.trim().replace(/[,%]/g, " ")}%`);
@@ -40,17 +40,17 @@ export default async function PeoplePage({ searchParams }: { searchParams: Promi
   const [{ data: sources }, { data: offices }, { data: verifications }] = ids.length ? await Promise.all([db.from("people_sources").select("id,person_id,kind,citation,url,visibility").in("person_id", ids).order("recorded_at", { ascending: false }).limit(300), db.from("people_offices").select("id,person_id,title,institution,term_start,term_end,is_current,source_id").in("person_id", ids).limit(300), db.from("people_verifications").select("person_id,source_id,note,verified_at").in("person_id", ids).is("superseded_at", null).limit(100)]) : [{ data: [] }, { data: [] }, { data: [] }];
 
   return <PageFrame className="ui-stack">
-    <PageIntro eyebrow="Staff workspace · People verification and authoring" title="Who is Who" description="Review real submissions and maintain carefully sourced public profiles. Publish only after recording a source. Verification requires human review, evidence, and a note." />
+    <PageIntro title="Who is Who" description="Review real submissions and maintain carefully sourced public profiles. Publish only after recording a source. Verification requires human review, evidence, and a note." />
     {p.error ? <Notice tone="danger" role="alert">{ERROR_TEXT[p.error] ?? `Action could not be completed (${p.error}). Check your capability, source, and revision, then retry.`}</Notice> : null}
     {p.updated ? <Notice tone="success" role="status">Staff action recorded.</Notice> : null}
 
     <section className="ui-stack-sm" aria-labelledby="corrections-title">
-      <SectionHeading eyebrow="Submissions" title="Open correction submissions" id="corrections-title" />
+      <SectionHeading title="Open correction submissions" id="corrections-title" />
       {cerror ? <EmptyPanel title="Submissions unavailable" description="Open corrections could not be loaded." /> : !corrections?.length ? <EmptyPanel title="No open corrections" description="There are no correction submissions awaiting review." /> : <ul className="ui-list ui-stack-sm">{corrections.map(c => <li key={c.id}><Panel className="ui-stack-sm"><p className="ui-meta">Received {new Date(c.created_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}</p><p className="ui-prose" style={{ whiteSpace: "pre-wrap" }}>{c.claim}</p>{c.evidence ? <p className="ui-muted" style={{ whiteSpace: "pre-wrap" }}>Evidence: {c.evidence}</p> : null}<form action={resolveCorrection} className="ui-actions"><input type="hidden" name="correction_id" value={c.id} /><ConfirmSubmit className={primaryButton} confirmFirst message="Publish this correction to the public profile now?" name="state" value="accepted">Accept correction</ConfirmSubmit><ConfirmSubmit className={secondaryButton} confirmFirst message="Reject this correction? The submitter can raise it again." name="state" value="rejected">Reject</ConfirmSubmit></form></Panel></li>)}</ul>}
     </section>
 
     <section className="ui-stack-sm" aria-labelledby="profiles-title">
-      <SectionHeading eyebrow="Directory" title="Search and manage profiles" id="profiles-title" />
+      <SectionHeading title="Search and manage profiles" id="profiles-title" />
       <Panel className="ui-toolbar"><form className="ui-row" role="search"><label className={label}>Name<input className={input} name="q" defaultValue={p.q} placeholder="Search full name" /></label><button className={`${primaryButton} self-end`}>Search</button></form></Panel>
       {error ? <Notice tone="danger" role="alert">Profile search unavailable.</Notice> : null}
       <details className="ui-panel"><summary className="cursor-pointer font-semibold">Create sourced profile</summary><p className="ui-muted">New records start as draft; add at least one source before publishing.</p><ProfileForm action={savePerson} /></details>

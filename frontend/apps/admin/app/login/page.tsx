@@ -17,7 +17,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
   const reason = Array.isArray(query.reason) ? query.reason[0] : query.reason;
 
   return <PageFrame className="admin-login">
-    <PageIntro eyebrow="EPE LAWA staff" title="Admin sign in" description="Sign in with your authorised staff account." />
+    <PageIntro title="Admin sign in" description="Sign in with your authorised staff account." />
     <Panel className="admin-login__panel">
       {reason === "inactivity" ? <p className="ui-notice ui-notice--warning" role="status">Your staff session ended after ten hours without activity. Sign in again to continue.</p> : null}
       {reason === "session_expired" ? <p className="ui-notice ui-notice--warning" role="status">Your sign-in on the server had ended. Sign in again and your session token is refreshed automatically.</p> : null}

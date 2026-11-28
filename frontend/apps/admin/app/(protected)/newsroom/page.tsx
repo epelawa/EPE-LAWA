@@ -71,7 +71,7 @@ export default async function NewsroomPage({ searchParams }: { searchParams: Pro
   const canDelete = !deleteCapability.error && deleteCapability.data === true;
   const canCompose = canEdit && (categoryList.data ?? []).length > 0 && (authorList.data ?? []).length > 0;
   if (error) {
-    return <PageFrame className="ui-stack"><PageIntro eyebrow="Staff workspace" title="Newsroom" description="Every save publishes straight away — the stories you see here are what readers get." /><Notice tone="danger" role="alert"><strong>Articles could not be loaded.</strong><p>The newsroom could not verify article data. Try again in a moment.</p></Notice></PageFrame>;
+    return <PageFrame className="ui-stack"><PageIntro title="Newsroom" description="Every save publishes straight away — the stories you see here are what readers get." /><Notice tone="danger" role="alert"><strong>Articles could not be loaded.</strong><p>The newsroom could not verify article data. Try again in a moment.</p></Notice></PageFrame>;
   }
 
   const articles = (data ?? []) as unknown as NewsroomArticle[];
@@ -81,7 +81,7 @@ export default async function NewsroomPage({ searchParams }: { searchParams: Pro
     : <Link href={adminHref("/newsroom/new")} className={buttonClassName("primary")}>Upload an article</Link>;
   return (
     <PageFrame className="ui-stack">
-      <PageIntro eyebrow="Staff workspace · Editorial" title="Newsroom" actions={uploadAction} />
+      <PageIntro title="Newsroom" actions={uploadAction} />
       {deleted ? <Notice tone="neutral" role="status">The story and all its records were permanently deleted.</Notice> : null}
       {errorFlag === "delete_confirmation" ? <Notice tone="warning" role="alert">Tick the confirm box before a story can be deleted.</Notice> : null}
       {errorFlag === "delete" ? <Notice tone="danger" role="alert">The story could not be deleted. Check your access and try again.</Notice> : null}

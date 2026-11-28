@@ -28,7 +28,7 @@ export default async function AppealsPage({ searchParams }: { searchParams: Prom
   const { data: allowed } = await db.rpc("has_capability", { p_capability: "moderation.review" });
   if (allowed !== true) {
     return <PageFrame className="ui-stack">
-      <PageIntro eyebrow="Trust · Staff" title="Appeals" description="Review member appeals against moderation decisions." />
+      <PageIntro title="Appeals" description="Review member appeals against moderation decisions." />
       <Notice tone="danger" role="alert">The moderation.review capability is required to review appeals.</Notice>
     </PageFrame>;
   }
@@ -48,7 +48,7 @@ export default async function AppealsPage({ searchParams }: { searchParams: Prom
 
   if (openResult.error || decidedResult.error) {
     return <PageFrame className="ui-stack">
-      <PageIntro eyebrow="Trust · Staff" title="Appeals" description="Review member appeals against moderation decisions." />
+      <PageIntro title="Appeals" description="Review member appeals against moderation decisions." />
       <EmptyPanel title="Queue unavailable" description="Appeals could not be loaded. Try again later." />
     </PageFrame>;
   }
@@ -94,17 +94,17 @@ export default async function AppealsPage({ searchParams }: { searchParams: Prom
   </Panel></li>;
 
   return <PageFrame className="ui-stack">
-    <PageIntro eyebrow="Trust · Staff" title="Appeals" description="Member appeals against bans and moderation actions. Every decision requires a written note the member can read." />
+    <PageIntro title="Appeals" description="Member appeals against bans and moderation actions. Every decision requires a written note the member can read." />
     {query.decided ? <Notice tone="success" role="status">Appeal decision recorded.</Notice> : null}
     {query.error ? <Notice tone="danger" role="alert">The appeal decision needs grant/deny and a written note.</Notice> : null}
 
     {!openRows.length && !decidedRows.length ? <EmptyPanel title="No appeals" description="Member appeals appear here as they are submitted." /> : null}
     {openRows.length ? <section className="ui-stack-sm">
-      <SectionHeading eyebrow="Queue" title="Open appeals" description="Grant to lift the restriction; deny to keep it. Both answers are written to the member." />
+      <SectionHeading title="Open appeals" description="Grant to lift the restriction; deny to keep it. Both answers are written to the member." />
       <ul className="ui-list ui-stack-sm">{openRows.map(appealCard)}</ul>
     </section> : null}
     {decidedRows.length ? <section className="ui-stack-sm">
-      <SectionHeading eyebrow="History" title="Decided appeals" description="Past decisions with the notes that were shown to members." />
+      <SectionHeading title="Decided appeals" description="Past decisions with the notes that were shown to members." />
       <ul className="ui-list ui-stack-sm">{decidedRows.map(appealCard)}</ul>
     </section> : null}
   </PageFrame>;

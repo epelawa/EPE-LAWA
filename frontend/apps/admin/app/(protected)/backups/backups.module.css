@@ -20,15 +20,6 @@
 
 .panelHead h2 { margin: 4px 0 0; font-size: 1.2rem; }
 
-.eyebrow {
-  margin: 0;
-  color: hsl(var(--link));
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-}
-
 .muted { margin: 8px 0 0; color: hsl(var(--muted-foreground)); font-size: 13px; line-height: 1.6; }
 
 .list { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 10px; }

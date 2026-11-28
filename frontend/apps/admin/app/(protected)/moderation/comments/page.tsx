@@ -15,7 +15,7 @@ type CommentRow = {
 
 function Frame({ children }: { children: ReactNode }) {
   return <PageFrame className="ui-stack">
-    <PageIntro eyebrow="Staff tools · Comments" title="Article comments" description="Edit what members wrote on published stories, or remove a comment completely. Every change is recorded with your staff account and a reason." />
+    <PageIntro title="Article comments" description="Edit what members wrote on published stories, or remove a comment completely. Every change is recorded with your staff account and a reason." />
     {children}
   </PageFrame>;
 }
@@ -70,7 +70,7 @@ export default async function CommentsAdminPage({ searchParams }: { searchParams
     {error ? <Notice tone="danger" role="alert"><SectionHeading title="Comments unavailable" description="The comment list could not be loaded. Retry in a moment; nothing was changed." /></Notice> : null}
     {!error && !comments.length ? <EmptyPanel title="No comments yet" description="Member comments on published stories appear here, newest first." /> : null}
     {!error && comments.length ? <Panel>
-      <SectionHeading eyebrow="Recent activity" title="Latest comments" description={`${comments.length} ${comments.length === 1 ? "comment" : "comments"} · newest first`} />
+      <SectionHeading title="Latest comments" description={`${comments.length} ${comments.length === 1 ? "comment" : "comments"} · newest first`} />
       <ul className="ui-list ui-stack-sm">{comments.map((comment) => <CommentItem key={comment.id} comment={comment} />)}</ul>
     </Panel> : null}
   </Frame>;

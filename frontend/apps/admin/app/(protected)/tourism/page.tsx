@@ -67,7 +67,6 @@ export default async function TourismReviewPage({
   return (
     <PageFrame className="ui-stack">
       <PageIntro
-        eyebrow="Editorial workspace · Tourism"
         title="Historical Sites &amp; Tourism review"
         description="Review source provenance and publication rights before making a destination public. Hours, prices, access and directions require separate verification. This queue never publishes automatically."
         meta={<StatusBadge>Staff review</StatusBadge>}
@@ -135,7 +134,6 @@ export default async function TourismReviewPage({
 
                 <section className="ui-subtle ui-stack-sm" aria-labelledby={`evidence-${row.id}`}>
                   <SectionHeading
-                    eyebrow="Source check"
                     title="Provenance and rights evidence"
                     id={`evidence-${row.id}`}
                   />

@@ -21,7 +21,7 @@ type PostRow = {
 
 function QueuePage({ children }: { children: ReactNode }) {
   return <PageFrame className="ui-stack">
-    <PageIntro eyebrow="Staff tools · Forum" title="Forum moderation" description="Review open member reports, and keep the conversation clean by removing messages or whole chats. Moderator actions are recorded with a reason." />
+    <PageIntro title="Forum moderation" description="Review open member reports, and keep the conversation clean by removing messages or whole chats. Moderator actions are recorded with a reason." />
     {children}
   </PageFrame>;
 }
@@ -50,7 +50,7 @@ export default async function ForumModerationPage({ searchParams }: { searchPara
     {result === "restored" ? <Notice tone="success" role="status">The message was restored to the conversation.</Notice> : null}
     {result === "delete-failed" ? <Notice tone="danger" role="alert">The removal failed — write a reason of at least 5 characters and confirm your moderation.review access. Nothing was changed.</Notice> : null}
     <Panel>
-      <SectionHeading eyebrow="Open queue" title="Reports awaiting review" description={`${reports.length} open ${reports.length === 1 ? "report" : "reports"} · oldest first`} />
+      <SectionHeading title="Reports awaiting review" description={`${reports.length} open ${reports.length === 1 ? "report" : "reports"} · oldest first`} />
       {reports.length === 0 ? <EmptyPanel title="No open reports" description="There are no reports awaiting review." /> : <div className="ui-stack-sm" aria-label="Open forum reports">
         {reports.map((report) => <article key={report.id} className="ui-item ui-stack-sm" aria-labelledby={`report-${report.id}`}>
           <div className="ui-row">
@@ -76,7 +76,7 @@ export default async function ForumModerationPage({ searchParams }: { searchPara
     </Panel>
 
     <Panel>
-      <SectionHeading eyebrow="Chats" title="Recent conversations" description="The newest community chats. Removing a chat removes all of its messages; both actions need a recorded reason." />
+      <SectionHeading title="Recent conversations" description="The newest community chats. Removing a chat removes all of its messages; both actions need a recorded reason." />
       {!threads.length ? <EmptyPanel title="No conversations yet" description="Community chats appear here as soon as members start them." /> : <ul className="ui-list ui-stack-sm">{threads.map((thread) => <li key={thread.id}><Panel className="ui-stack-sm">
         <div className="ui-row">
           <div className="ui-stack-sm">
@@ -96,7 +96,7 @@ export default async function ForumModerationPage({ searchParams }: { searchPara
     </Panel>
 
     <Panel>
-      <SectionHeading eyebrow="Messages" title="Recent messages" description="The newest messages across every chat. Remove one message, or restore one the desk removed earlier." />
+      <SectionHeading title="Recent messages" description="The newest messages across every chat. Remove one message, or restore one the desk removed earlier." />
       {!posts.length ? <EmptyPanel title="No messages yet" description="Member messages appear here as soon as they are posted." /> : <ul className="ui-list ui-stack-sm">{posts.map((post) => <li key={post.id}><Panel className="ui-stack-sm">
         <div className="ui-row">
           <p className="ui-meta">In: {post.thread?.title ?? "Unknown chat"} · posted {new Date(post.created_at).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos" })}</p>

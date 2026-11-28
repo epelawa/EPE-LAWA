@@ -5,10 +5,10 @@ export const dynamic = "force-dynamic";
 export default async function MembersPage({searchParams}:{searchParams:Promise<{q?:string;page?:string;status?:string}>}) {
  const {q="",page="0",status}=await searchParams; const search=q.trim().slice(0,100); const n=Math.max(0,Math.min(2000,Number.parseInt(page,10)||0));
  const db=await createStaffClient(); const {data:allowed,error:authError}=await db.rpc("staff_roles_authorized");
- if(authError||allowed!==true) return <PageFrame><PageIntro eyebrow="Administration" title="Members" description="Restricted to the primary administrator." /></PageFrame>;
+ if(authError||allowed!==true) return <PageFrame><PageIntro title="Members" description="Restricted to the primary administrator." /></PageFrame>;
  const {data,error}=await db.rpc("admin_member_list",{p_search:search,p_offset:n*50});
  const members=(data??[]) as {user_id:string;email:string;handle:string;display_name:string}[];
- return <PageFrame className="ui-stack"><PageIntro eyebrow="Administration" title="Members" description="Search member accounts, send in-app messages or permanently delete an account. Staff accounts are excluded."/><Panel>
+ return <PageFrame className="ui-stack"><PageIntro title="Members" description="Search member accounts, send in-app messages or permanently delete an account. Staff accounts are excluded."/><Panel>
  {status==="sent"?<p role="status">Message sent to the member’s in-app notifications.</p>:status==="deleted"?<p role="status">Member account deleted.</p>:null}
  <form method="get" className="ui-row"><label>Search email or handle<input name="q" defaultValue={search} maxLength={100}/></label><button type="submit">Search</button></form>
  {error?<p role="alert">Member directory unavailable. The database migration may not be applied.</p>:members.length===0?<p>No members found.</p>:<ul>{members.map(m=><li key={m.user_id} className="ui-stack" style={{padding:"1rem 0"}}><strong>{m.display_name} (@{m.handle})</strong><span>{m.email}</span>

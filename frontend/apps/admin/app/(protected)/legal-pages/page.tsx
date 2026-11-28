@@ -51,7 +51,7 @@ export default async function LegalPagesPage({ searchParams }: { searchParams: P
   const reasonText = params.status === "error" && params.reason ? REASONS[params.reason] ?? REASONS.failed : null;
 
   return <PageFrame className="ui-stack">
-    <PageIntro eyebrow="Staff workspace" title="Legal pages" description="Maintain the notes published on the Privacy, Terms and Community guidelines pages. The full policy text on each legal page is fixed and reviewed; these notes carry your current announcements and clarifications." />
+    <PageIntro title="Legal pages" description="Maintain the notes published on the Privacy, Terms and Community guidelines pages. The full policy text on each legal page is fixed and reviewed; these notes carry your current announcements and clarifications." />
     {status ? <Notice role="status" tone={status.tone}>{status.tone === "success" ? STATUS.saved.text : reasonText ?? STATUS.error.text}</Notice> : null}
     {failed ? <Notice role="alert" tone="danger">The legal pages could not be loaded. Refresh the page to try again.</Notice> : LEGAL.map((legal) => {
       const row = rows.find((r) => r.page === legal.key) ?? null;

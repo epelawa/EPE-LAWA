@@ -47,7 +47,7 @@ export default async function SitePagesPage({ searchParams }: { searchParams: Pr
   const reasonText = params.status === "error" && params.reason ? REASONS[params.reason] ?? REASONS.failed : null;
 
   return <PageFrame className="ui-stack">
-    <PageIntro eyebrow="Staff workspace" title="Site pages" description="Edit the About page and add notes to the public pages. Text saves straight to the live page." />
+    <PageIntro title="Site pages" description="Edit the About page and add notes to the public pages. Text saves straight to the live page." />
     {status ? <Notice role="status" tone={status.tone}>{status.tone === "success" ? STATUS.saved.text : reasonText ?? STATUS.error.text}</Notice> : null}
     {failed ? <Notice role="alert" tone="danger">Site pages could not be loaded. Refresh the page to try again.</Notice> : EDITABLE.map((editable) => {
       const row = rows.find((r) => r.page === editable.key) ?? null;

@@ -115,7 +115,6 @@ export default async function DashboardPage() {
 
   return <PageFrame className={styles.page}>
     <PageIntro
-      eyebrow="Staff workspace"
       title="Welcome back"
       description="This is your EPE LAWA desk: see what needs attention, then open your workspaces below."
       actions={capabilities["article.create"] === true ? <Link className="btn-primary" href={`${adminHref("/newsroom")}#upload-article`}>Write a new story</Link> : null}

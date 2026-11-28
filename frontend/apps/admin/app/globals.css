@@ -29,7 +29,6 @@ html[data-theme="light"] body {
 .ui-page-intro h1 { margin:12px 0 14px; font-size:clamp(2.025rem,4vw,2.7rem); line-height:1.1; }
 .ui-page-intro > div:first-child { max-width:75ch; }
 .ui-page-intro > div:first-child > div:not(.ui-meta) { color:hsl(var(--muted-foreground)); }
-.ui-eyebrow { margin:0; color:hsl(var(--link)); text-transform:uppercase; letter-spacing:.12em; font-size:12px; font-weight:600; }
 .ui-stack,.ui-stack-sm,.ui-list { display:flex; flex-direction:column; gap:24px; }
 .ui-stack-sm { gap:12px; }
 .ui-list { list-style:none; margin:0; padding:0; }
@@ -141,7 +140,6 @@ button:not([class]) { display:inline-flex; align-items:center; justify-content:c
 @media(max-width:760px) { .ui-page-intro { flex-direction:column; align-items:flex-start; gap:16px; }.ui-grid--2,.ui-grid--3,.ui-form-grid,.ui-split { grid-template-columns:1fr; }.ui-grid > *,.ui-form-grid > * { grid-column:auto!important; }.ui-section-heading { flex-direction:column; align-items:flex-start; }.admin-masthead__label { display:none; }.ui-page,.site-footer__inner { width:calc(100% - 32px); }.ui-panel,.ui-card,.ui-empty { padding:20px; }.site-main { padding-top:28px; } }
 @media(max-width:440px) { .admin-masthead { top:8px; margin-top:8px; padding:8px 10px; border-radius:20px; }.admin-masthead__bar { gap:8px; }.admin-public-link { display:none; }.admin-masthead__actions { gap:0; }.admin-login { width:calc(100% - 32px); }.drawer { padding:20px; }.site-footer__inner { flex-direction:column; } }
 @media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } *,*::before,*::after { transition-duration:.01ms!important; animation-duration:.01ms!important; animation-iteration-count:1!important; scroll-behavior:auto!important; } }
-
 
 /* EPE-LAWA Tidegate route loader. */
 .admin-loading__message { display:flex; align-items:center; gap:16px; }
