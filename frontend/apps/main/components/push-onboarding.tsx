@@ -32,7 +32,7 @@ function busyWithForm() {
  * the "Enable notifications" click, and success is shown only after the server
  * confirms the subscription and topics were stored.
  */
-export default function PushOnboarding() {
+export default function PushOnboarding({ smokeTest = false }: { smokeTest?: boolean }) {
   const pathname = usePathname() ?? "/";
   const [visible, setVisible] = useState(false);
   const [phase, setPhase] = useState<Phase>("intro");
@@ -49,8 +49,19 @@ export default function PushOnboarding() {
   // Keeps an existing, already-permitted subscription registered (never prompts).
   useEffect(() => { void syncPush(); }, []);
 
+  // Smoke-only escape hatch: dev builds read NEXT_PUBLIC_* at runtime, so the
+  // smoke browser cannot take the organic eligibility path; the smoke layout
+  // passes smokeTest and the spec opens the modal through a URL parameter.
   useEffect(() => {
-    if (visible || quiet) return;
+    if (!smokeTest) return;
+    const value = new URLSearchParams(window.location.search).get("push-smoke");
+    if (value == null) return;
+    setVisible(true);
+    setPhase(value === "working" ? "working" : "intro");
+  }, [smokeTest]);
+
+  useEffect(() => {
+    if (smokeTest || visible || quiet) return;
     if (pushSupport() !== "supported" || pushPermission() !== "default" || onboardingSeen()) return;
     let cancelled = false;
     let timer = 0;
