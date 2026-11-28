@@ -49,7 +49,7 @@ test('assistant answers pinpoint the destination on Google Maps below the messag
 
 test('the content security policy frames Google Maps and no longer OpenStreetMap on the public app', () => {
   assert.ok(csp.includes("frame-src https://www.google.com https://maps.google.com"));
-  assert.ok(!csp.includes("openstreetmap.org"));
+  assert.doesNotMatch(csp, /openstreetmap/);
 });
 
 test('the site footer stays off the chat page and elsewhere unchanged', () => {
